@@ -308,8 +308,6 @@ void HTMLIFrameElement::ParseAttribute(
   }
 }
 
-// TODO(crbug.com/993790): Emit error message 'endpoint cannot be specified
-// on iframe attribute.'.
 DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
     const {
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled(&GetDocument()))
@@ -321,19 +319,32 @@ DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
         mojom::blink::WebFeature::kDocumentPolicyIframePolicyAttribute);
   }
 
-  DocumentPolicy::FeatureState new_required_policy =
-      DocumentPolicyParser::Parse(required_policy_)
-          .value_or(DocumentPolicy::ParsedDocumentPolicy{})
-          .feature_state;
+  PolicyParserMessageBuffer logger;
+  DocumentPolicy::ParsedDocumentPolicy new_required_policy =
+      DocumentPolicyParser::Parse(required_policy_, logger)
+          .value_or(DocumentPolicy::ParsedDocumentPolicy{});
 
-  for (const auto& policy_entry : new_required_policy) {
+  for (const auto& message : logger.GetMessages()) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther, message.level,
+        message.content));
+  }
+
+  if (!new_required_policy.endpoint_map.empty()) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        "Iframe policy attribute cannot specify reporting endpoint."));
+  }
+
+  for (const auto& policy_entry : new_required_policy.feature_state) {
     mojom::blink::DocumentPolicyFeature feature = policy_entry.first;
     if (!GetDocument().DocumentPolicyFeatureObserved(feature)) {
       UMA_HISTOGRAM_ENUMERATION(
           "Blink.UseCounter.DocumentPolicy.PolicyAttribute", feature);
     }
   }
-  return new_required_policy;
+  return new_required_policy.feature_state;
 }
 
 ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(

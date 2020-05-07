@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ଜର୍ମାନ୍‍ କୀବୋର୍ଡ୍</translation>
 <translation id="1972984168337863910">ମତାମତ ପ୍ୟାନେଲ୍‍ଗୁଡ଼ିକୁ ପ୍ରସାରଣ କରନ୍ତୁ</translation>
 <translation id="1984603991036629094">ଆର୍ମେନିଆନ୍ ଫୋନେଟିକ୍ କୀବୋର୍ଡ</translation>
+<translation id="1995337122023280937">ଫାଇଲ୍ ଲୋକେସନକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="2001796770603320721">Driveରେ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="2009067268969781306">କୌଣସି ଡ୍ରାଇଭ୍‍କୁ ଡିଲିଟ୍ କରିବା ଦ୍ୱାରା ଏଥିରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଡିଲିଟ୍ ହୋଇଯିବ। ଏହି କାର୍ଯ୍ୟକୁ ପୂର୍ବବତ୍ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="2028997212275086731">ରାର୍‌ ଆର୍କାଇଭ୍‌</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google Drive ପର୍ଯ୍ୟନ୍ତ ପହଞ୍ଚିହେଲା ନାହିଁ। ଦୟାକରି <ph name="BEGIN_LINK" />ଲଗ୍‌ ଆଉଟ୍‍<ph name="END_LINK" /> ଏବଂ ଫେରି ଲଗ୍‍ ଇନ୍‍ କରନ୍ତୁ।</translation>
 <translation id="2649120831653069427">ରେନ୍‌ବୋଫିସ୍</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ଫାଇଲ୍ ଲୋକେସନ୍</translation>
 <translation id="2672394958563893062">ଏକ ତ୍ରୁଟି ଦେଖାଦେଲା। ଆରମ୍ଭରୁ ପୁଣିଥରେ ଚଲାଇବାକୁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="2676946222714718093">ଏଥିରେ ଚାଲୁଛି</translation>
 <translation id="2735698359135166290">ରୋମାନିୟାନ୍ ସାଧାରଣ କୀ'ବୋର୍ଡ</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" />ଟି ଫାଇଲ୍ ଡିଲିଟ୍ କରାଯିବ</translation>
 <translation id="509429900233858213">ଏକ ତ୍ରୁଟି ଦେଖାଦେଲା।</translation>
 <translation id="5098629044894065541">ହେବ୍ର୍ୟୁ</translation>
+<translation id="5112685521274804841">ଏହି ଫୋଲ୍ଡରରେ ଥିବା ଫାଇଲ୍ କେବଳ ପଢ଼ିବା ପାଇଁ ଅଟେ। କିଛି କାର୍ଯ୍ୟକଳାପ ସମର୍ଥିତ ନୁହେଁ।</translation>
 <translation id="5123433949759960244">ବାସ୍କେଟବଲ୍</translation>
 <translation id="5129662217315786329">ପୋଲିସ୍</translation>
 <translation id="5144820558584035333">ହଂଗୁଲ୍ 3 ସେଟ୍ (390)</translation>
@@ -693,6 +696,7 @@
 <translation id="9034924485347205037">Linux ଫାଇଲ୍‍ଗୁଡ଼ିକ</translation>
 <translation id="9035012421917565900">ଆଇଟମ୍‌କୁ <ph name="DESTINATION_NAME" />'କୁ ଫେରାଇ ନିଆଯାଇପାରିଲା ନାହିଁ, ତେଣୁ ଏହି କାର୍ଯ୍ୟକୁ ଆପଣ ପୂର୍ବବତ୍‍ କରିପାରିବେ ନାହିଁ।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" ଫାଇଲ୍ ନାମ ପୂର୍ବରୁ ବିଦ୍ୟମାନ ଅଛି। ଏକ ଭିନ୍ନ ନାମ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> ଆପ୍ ମାଧ୍ୟମରେ ଫାଇଲଗୁଡ଼ିକ ଖୋଲିବାକୁ, ପ୍ରଥମେ ସେଗୁଡ଼ିକୁ <ph name="APP_NAME" />ର ସେୟାର୍ କରାଯାଇଥିବା ଫାଇଲ୍ ଫୋଲ୍ଡରକୁ ମୁଭ୍ କରନ୍ତୁ।</translation>
 <translation id="9064939804718829769">ସ୍ଥାନାନ୍ତର ହେଉଛି…</translation>
 <translation id="9065203028668620118">ସମ୍ପାଦନ</translation>
 <translation id="9099674669267916096">ପୃଷ୍ଠା ସଂଖ୍ୟା</translation>

@@ -471,6 +471,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4913169188695071480">Slutt å laste inn på nytt</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /> mens du skanner etter enheter …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# side}other{# sider}}</translation>
+<translation id="49268022542405662">Passordene dine blir eksportert og lastet ned som en tekstfil. De blir synlige for alle personer og apper som har tilgang til målmappen.</translation>
 <translation id="4932247056774066048">Fordi du logger av en konto som administreres av <ph name="DOMAIN_NAME" />, slettes Chrome-dataene dine fra denne enheten. De blir værende i Google-kontoen din.</translation>
 <translation id="4943703118917034429">Virtuell virkelighet</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
@@ -753,6 +754,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7302081693174882195">Informasjon: Sortert etter mengden data som er lagret</translation>
 <translation id="7328017930301109123">I forenklet modus laster Chrome inn sider raskere og bruker opptil 60 prosent mindre data.</translation>
 <translation id="7333031090786104871">Holder fortsatt på å legge til det forrige nettstedet</translation>
+<translation id="7340958967809483333">Alternativer for Discover</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7359002509206457351">Gå til betalingsmåter</translation>
@@ -817,6 +819,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="7810647596859435254">Åpne med…</translation>
 <translation id="7821588508402923572">Datasparingen din vises her</translation>
+<translation id="7835852323729233924">Spiller av medier</translation>
 <translation id="783819812427904514">Slå på lyden i videoen</translation>
 <translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>

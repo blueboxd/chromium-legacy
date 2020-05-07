@@ -1998,13 +1998,13 @@
     Clear all data
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_CONFIRMATION" desc="Text for the dialog that warns about clearing storage used by all sites.">
-    This will clear <ph name="TOTAL_USAGE">$1<ex>8 GB</ex></ph> of data stored by sites.
+    This will clear <ph name="TOTAL_USAGE">$1<ex>8 GB</ex></ph> of data stored by sites
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_CONFIRMATION_INSTALLED" desc="Text for the dialog that warns about clearing storage used by all sites, shown when there are installed apps.">
-    This will clear <ph name="TOTAL_USAGE">$1<ex>8 GB</ex></ph> of data stored by sites and installed apps.
+    This will clear <ph name="TOTAL_USAGE">$1<ex>8 GB</ex></ph> of data stored by sites and installed apps
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_SIGN_OUT" desc="Text for the dialog that warns about being signed out when clearing storage used by all sites.">
-    You'll be signed out of all sites, including in open tabs.
+    You'll be signed out of all sites, including in open tabs
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data.">
     Clear site data
@@ -2046,13 +2046,13 @@
     All data stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph> and any sites under it will be deleted. This includes cookies. You'll be signed out of these sites, including in open tabs.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_NEW" desc="Text for the dialog that warns about clearing all storage data for a group of sites.">
-    This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph> and any sites under it.
+    This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph> and any sites under it
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_INSTALLED" desc="Text for the dialog that warns about clearing all storage data for a group of sites that has only one installed app.">
-    This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph>, any sites under it, and its installed app.
+    This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph>, any sites under it, and its installed app
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_INSTALLED_PLURAL" desc="Text for the dialog that warns about clearing all storage data for a group of sites that have more than one installed apps.">
-    This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph>, any sites under it, and its installed apps.
+    This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph>, any sites under it, and its installed apps
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_SIGN_OUT" desc="Text for the dialog that warns about being signed out when clearing all storage data.">
     You’ll be signed out of these sites, including in open tabs
@@ -2064,10 +2064,10 @@
     Offline data in installed apps will also be cleared
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION" desc="Text for the dialog that warns about clearing all storage data for an origin.">
-    This will clear all data and cookies stored by <ph name="ORIGIN_NAME">$1<ex>www.example.com</ex></ph>.
+    This will clear all data and cookies stored by <ph name="ORIGIN_NAME">$1<ex>www.example.com</ex></ph>
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION_INSTALLED" desc="Text for the dialog that warns about clearing all storage data for an origin that has one or more installed apps.">
-    This will clear all data and cookies stored by <ph name="ORIGIN_NAME">$1<ex>www.example.com</ex></ph> and its installed apps.
+    This will clear all data and cookies stored by <ph name="ORIGIN_NAME">$1<ex>www.example.com</ex></ph> and its installed apps
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_MULTIPLE" desc="Text for the dialog that warns about deleting all site data.">
     This will delete any data stored on your device for all the sites shown. Do you want to continue?

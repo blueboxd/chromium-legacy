@@ -38,11 +38,6 @@ class CredentialCache {
       IsOriginBlacklisted is_blacklisted,
       const url::Origin& origin);
 
-  // Updates the blacklisted status for the origin. This is triggered by the
-  // user while still on the page.
-  void UpdateBlacklistedForOrigin(const url::Origin& origin,
-                                  IsOriginBlacklisted is_blacklisted);
-
   // Returns the credential store for a given origin. If it does not exist, an
   // empty store will be created.
   const OriginCredentialStore& GetCredentialStore(const url::Origin& origin);

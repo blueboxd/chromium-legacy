@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Valitse haluamasi merkki ja kirjoita se sitten nostamalla sormesi</translation>
 <translation id="1012173283529841972">Luettelokohde</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Pyyhkäise oikealle kahdella sormella</translation>
 <translation id="1022586497894531524">Käytätkö ChromeVoxin äänipalautetta ensimmäistä kertaa? Tämän ohjeen avulla voit tutustua ChromeVoxin perusteisiin nopeasti.</translation>
 <translation id="1025074108959230262">Kiinnitetty tila pois käytöstä</translation>
 <translation id="1031961866430398710">sitten</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Ei edellisiä luettelokohteita</translation>
 <translation id="1114836634143403764">Ehdotus</translation>
 <translation id="1120743664840974483">{"a": "aarne", "b": "bertta", "c": "celcius", "d": "daavid", "e": "eemeli", "f": "faarao", "g": "gideon", "h": "heikki", "i": "iivari", "j": "jussi","k": "kalle", "l": "lauri", "m": "matti", "n": "niilo", "o": "otto","p": "paavo", "q": "kuu", "r": "risto", "s": "sakari", "t": "tyyne", "u": "urho", "v": "vihtori", "w": "wiski","x": "äksä", "y": "yrjö", "z": "tseta", "å": "åke", "ä": "äiti", "ö": "öljy"}</translation>
+<translation id="1120938014254001895">Pyyhkäise ylös kahdella sormella</translation>
 <translation id="1126928665165112660">Ei kursiivia</translation>
 <translation id="113582498867142724"><ph name="TAG" />-kokoelma, jossa <ph name="NUM" /> kohdetta</translation>
 <translation id="1161762950103988776">Siirtyminen</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">footer</translation>
 <translation id="174268867904053074">Seuraava grafiikka</translation>
 <translation id="1756785467854861272">Tumma purppura</translation>
+<translation id="1765245556747822181">Pyyhkäise ylös yhdellä sormella</translation>
 <translation id="1771761307086386028">Vieritä oikealle</translation>
 <translation id="1781173782405573156">Ohitusnäppäin</translation>
 <translation id="1787176709638001873">Salasanan muokkausteksti</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">Lisää puhenopeutta</translation>
 <translation id="2267538686624070261">Kirjoitusasua ei korjata</translation>
 <translation id="2267945578749931355">Seuraava merkki</translation>
+<translation id="2278490101488436824">Pyyhkäise vasemmalle kolmella sormella</translation>
 <translation id="2305942658236913680">Ei seuraavia otsikoita</translation>
 <translation id="2311237334957139798">Palaa edelliseen tarkkuustasoon</translation>
 <translation id="2314393392395134769">Ei alaindeksiä</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">Lähdeluettelo</translation>
 <translation id="2873259058405069099">Siirry taulukon alkuun</translation>
 <translation id="287383510823843610">Tumma oranssi</translation>
+<translation id="2879867157561757640">Pyyhkäise alas kolmella sormella</translation>
 <translation id="288178314850623291">Siirtymiskomennoilla voit siirtyä tietyn tyyppisten elementtien välillä. Siirry seuraavaan otsikkoon painamalla haku + H tai edelliseen painamalla haku + vaihto + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minuutti}other{minuuttia}}</translation>
 <translation id="2894654529758326923">Tiedot</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vasen aaltosulje}other{# vasenta aaltosuljetta}}</translation>
 <translation id="2909584066358367921">Ei seuraavia painikkeita</translation>
 <translation id="2911433807131383493">Avaa ChromeVox-opetusohjelma</translation>
+<translation id="2912405967290226587">Pyyhkäise oikealle kolmella sormella</translation>
 <translation id="2937799153569150791">Ei seuraavia tason 3 otsikoita</translation>
 <translation id="2942710183375260152">Tumma liuskekivensininen</translation>
 <translation id="2943596527105977722">Tumma kultapiisku</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">Merenvihreä</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{sarkain}other{# sarkainta}}</translation>
 <translation id="2972205263822847197">Työkaluvinkki</translation>
+<translation id="297825089465017871">Pyyhkäise vasemmalle kahdella sormella</translation>
 <translation id="2998131015536248178">Edellinen merkki</translation>
 <translation id="2999559350546931576">Vähennä äänenkorkeutta</translation>
 <translation id="3014130421870723208">@muok 8pist</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">ChromeVox-asetukset</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />-valikko avattu</translation>
 <translation id="3060880924447482063">Siirry kohde kerrallaan pyyhkäisemällä vasemmalle tai oikealle</translation>
+<translation id="3070245424257836917">Pyyhkäise ylös kolmella sormella</translation>
 <translation id="3078345202707391975">Seuraava tason 2 otsikko</translation>
 <translation id="3078740164268491126">taulukko</translation>
 <translation id="3082249673510793544">Vieritä taaksepäin</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">Siirry seuraavaan sarakkeeseen</translation>
 <translation id="4688873778442829762">ruud.</translation>
 <translation id="4693675773662933727">Edellinen maamerkki</translation>
+<translation id="4710166929009737753">Pyyhkäise oikealle yhdellä sormella</translation>
 <translation id="4712898966495541134">Valinnan loppu</translation>
 <translation id="4740661827607246557">Apukomennot</translation>
 <translation id="4755857887974653209">Poista ChromeVox käytöstä</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">luett.kenttä</translation>
 <translation id="6815255864998354418">Sitruunankeltainen</translation>
 <translation id="6816066673340002913">Hailakka kultapiisku</translation>
+<translation id="6826226459053491773">Pyyhkäise alas kahdella sormella</translation>
 <translation id="6833103209700200188">Alaviite</translation>
 <translation id="6837853484260746864">Valitse ääni:</translation>
 <translation id="6858047746862060282">Prologi</translation>
+<translation id="6859876496651143278">Pyyhkäise vasemmalle yhdellä sormella</translation>
 <translation id="6865519907510167493">Kirjoitusvirhe</translation>
 <translation id="6894148351896207544">Lue nykyinen aika ja päivämäärä ääneen</translation>
 <translation id="6896758677409633944">Kopioi</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">ChromeVox päivitetty</translation>
 <translation id="93384979447910801">Tumma merenvihreä</translation>
 <translation id="948171205378458592">Vähennä puhenopeutta</translation>
+<translation id="958854023026327378">Pyyhkäise alas yhdellä sormella</translation>
 <translation id="962913030769097253">Seuraava tason 1 otsikko</translation>
 <translation id="966588271015727539">Valitse Bluetooth-pistekirjoitusnäyttö</translation>
 <translation id="973955474346881951">Kiinnitystilan ottaminen käyttöön / poistaminen käytöstä</translation>

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "media/base/media_log.h"
 #include "media/base/status.h"
 #include "media/base/video_decoder.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -96,6 +97,7 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   // Could be a configure, flush, or reset. Decodes go in |pending_decodes_|.
   Member<Request> pending_request_;
 
+  std::unique_ptr<media::MediaLog> media_log_;
   // TODO(sandersd): Store the last config, flush, and reset so that duplicates
   // can be elided.
   std::unique_ptr<media::VideoDecoder> decoder_;

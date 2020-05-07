@@ -121,8 +121,9 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
         CanvasResourceProvider::kAllowImageChromiumPresentationMode;
   }
 
-  CanvasResourceProvider::ResourceUsage usage;
+  std::unique_ptr<CanvasResourceProvider> provider;
   if (SharedGpuContext::IsGpuCompositingEnabled()) {
+    CanvasResourceProvider::ResourceUsage usage;
     if (LowLatencyEnabled() && RenderingContext() &&
         RenderingContext()->UsingSwapChain()) {
       // Allow swap chain presentation only if 3d context is using a swap
@@ -135,17 +136,27 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
       usage = CanvasResourceProvider::ResourceUsage::
           kAcceleratedCompositedResourceUsage;
     }
+    provider = CanvasResourceProvider::Create(
+        Size(), usage, SharedGpuContext::ContextProviderWrapper(),
+        0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
+        presentation_mode, std::move(dispatcher),
+        RenderingContext()->IsOriginTopLeft());
   } else {
-    usage =
-        CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage;
+    // Here it should try a SoftwareCompositedResourceUsage, but as
+    // SharedGpuCOntext::IsGpuCompositingEnabled() is false and that being true
+    // is a requirement  to try and create a SharedImageProvider if
+    // SoftwareCompositeResourceUsage is used, it will go straight ahead to a
+    // fallback SharedBitmap and then to a Bitmap provider
+    provider = CanvasResourceProvider::CreateSharedBitmapProvider(
+        Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
+        ColorParams(), std::move(dispatcher));
+    if (!provider) {
+      provider = CanvasResourceProvider::CreateBitmapProvider(
+          Size(), FilterQuality(), ColorParams());
+    }
   }
 
-  base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
-  ReplaceResourceProvider(CanvasResourceProvider::Create(
-      Size(), usage, SharedGpuContext::ContextProviderWrapper(),
-      0 /* msaa_sample_count */, FilterQuality(), ColorParams(),
-      presentation_mode, std::move(dispatcher),
-      RenderingContext()->IsOriginTopLeft()));
+  ReplaceResourceProvider(std::move(provider));
   if (ResourceProvider() && ResourceProvider()->IsValid()) {
     base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
                               ResourceProvider()->IsAccelerated());

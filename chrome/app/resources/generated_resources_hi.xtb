@@ -329,7 +329,7 @@
 <translation id="143027896309062157">अपने कंप्यूटर और जिन वेबसाइट पर आप विज़िट करते हैं, उन पर मौजूद आपका डेटा पढ़ और बदल सकता है</translation>
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1431188203598586230">आखिरी साॅफ़्टवेयर अपडेट</translation>
-<translation id="1431432486300429272">Search और दूसरी Google सेवाओं को मनमुताबिक बनाने के लिए, Google आपके ब्राउज़िंग इतिहास का इस्तेमाल कर सकता है. आप या आपके अभिभावक myaccount.google.com/activitycontrols/search में इसे कभी भी बदल सकते हैं</translation>
+<translation id="1431432486300429272">Google आपके ब्राउज़िंग इतिहास का इस्तेमाल कर सकता है ताकि आपको Search और दूसरी Google सेवाओं पर आपकी पसंद का अनुभव दे सके. आप या आपके अभिभावक myaccount.google.com/activitycontrols/search में इसे कभी भी बदल सकते हैं</translation>
 <translation id="1432581352905426595">सर्च इंजन प्रबंधित करें</translation>
 <translation id="1433811987160647649">ऐक्सेस करने से पहले पूछें</translation>
 <translation id="1434696352799406980">यह आपके शुरुआती पेज, नए टैब पेज, खोज इंजन और पिन किए गए टैब को रीसेट करेगा. यह सभी एक्सटेंशन को भी बंद करेगा और कुकी जैसे अस्थायी डेटा को मिटाएगा. आपके बुकमार्क, इतिहास और सेव किए गए पासवर्ड नहीं मिटाए जाएंगे.</translation>
@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">ऐप्लिकेशन विंडो</translation>
 <translation id="1531275250079031713">'नया वाई-फ़ाई जोड़ें' संवाद दिखाएं</translation>
 <translation id="1536754031901697553">डिसकनेक्ट हो रहा है...</translation>
+<translation id="1537254971476575106">फ़ुलस्क्रीन पर सामग्री को बड़ा दिखाने की सुविधा</translation>
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1540605929960647700">'डेमो मोड' चालू करें</translation>
 <translation id="1542514202066550870">यह टैब, हेडसेट में VR सामग्री को दिखाता है.</translation>
@@ -1164,6 +1165,7 @@
 <translation id="2501173422421700905">प्रमाणपत्र लंबित है</translation>
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2501797496290880632">कोई शॉर्टकट लिखें</translation>
+<translation id="2501920221385095727">स्टिकी बटन</translation>
 <translation id="2502441965851148920">अपने आप अपडेट सक्षम किए गए हैं. मैन्युअल अपडेट आपके व्यवस्थापक के द्वारा अक्षम किए गए हैं.</translation>
 <translation id="2502719318159902502">पूरा ऐक्सेस</translation>
 <translation id="2505127913256479918">निगरानी में रखे गए इस उपयोगकर्ता खाते को जल्द ही हटा दिया जाएगा</translation>
@@ -1549,7 +1551,8 @@
 <translation id="2993517869960930405">ऐप्‍लिकेशन की जानकारी</translation>
 <translation id="2996286169319737844">आपका डेटा आपके सिंक लंबे पासवर्ड से सुरक्षित किया गया था. इसमें Google Pay से भुगतान करने के तरीके और पते शामिल नहीं हैं.</translation>
 <translation id="2996722619877761919">लंबे किनारे की तरफ़ पलटें</translation>
-<translation id="3001144475369593262">बच्चे का खाते</translation>
+<translation id="3000461861112256445">मोनो ऑडियो</translation>
+<translation id="3001144475369593262">बच्चे के खाते</translation>
 <translation id="3003144360685731741">पसंदीदा नेटवर्क</translation>
 <translation id="3003623123441819449">CSS कैश मेमोरी</translation>
 <translation id="3003828226041301643">डिवाइस को डोमेन से नहीं जोड़ सकते. यह पक्का करने के लिए अपना खाता देखें कि आपके पास डिवाइस जोड़ने के खास अधिकार हैं.</translation>
@@ -1687,7 +1690,7 @@
 <translation id="3181954750937456830">सुरक्षित ब्राउज़िंग (आपकी और आपके डिवाइस की खतरनाक साइट से सुरक्षा करती है)</translation>
 <translation id="3182749001423093222">वर्तनी जांच</translation>
 <translation id="3183139917765991655">प्रोफ़ाइल आयातकर्ता</translation>
-<translation id="3183944777708523606">मॉनिटर की सेटिंग</translation>
+<translation id="3183944777708523606">मॉनिटर की डिसप्ले सेटिंग</translation>
 <translation id="3184536091884214176">CUPS प्रिंटर सेट अप या प्रबंधित करें. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="3188257591659621405">मेरी फ़ाइलें</translation>
 <translation id="3188465121994729530">गतिशील औसत</translation>
@@ -2108,7 +2111,7 @@
 <translation id="372722114124766626">बस एक बार</translation>
 <translation id="3729303374699765035">जब कोई साइट आस-पास के ब्लूटूथ डिवाइस को खोजना चाहे, तो इसके लिए पूछें</translation>
 <translation id="3729506734996624908">मंज़ूर की गई साइटें</translation>
-<translation id="3730076362938942381">स्टाइलस से लिखने वाला ऐप्लिकेशन</translation>
+<translation id="3730076362938942381">स्टाइलस की मदद से लिखने के लिए ऐप्लिकेशन</translation>
 <translation id="3732078975418297900">लाइन <ph name="ERROR_LINE" /> पर गड़बड़ी</translation>
 <translation id="3732530910372558017">पिन में ज़्यादा से ज़्यादा 63 वर्ण हो सकते हैं</translation>
 <translation id="3733127536501031542">स्टेप-अप वाला SSL सर्वर</translation>
@@ -2482,6 +2485,7 @@
 <translation id="4211851069413100178">इस्तेमाल और निदान से जुड़ा डेटा भेजें. Google को निदान, डिवाइस, और ऐप्लिकेशन के इस्तेमाल से जुड़ा डेटा अपने आप भेजकर, अपने Android अनुभव को बेहतर बनाने में मदद करें. यह सिस्टम और ऐप्लिकेशन की स्थिरता और दूसरे सुधारों में मदद करेगा. कुछ एग्रीगेट डेटा Google ऐप्लिकेशन और पार्टनर, जैसे कि Android डेवलपरों की भी मदद करेगा. यह <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> डिवाइस के मालिक ने लागू की है. डिवाइस का मालिक यह चुन सकता है कि निदान और इस डिवाइस के इस्तेमाल से जुड़ा डेटा Google को भेजना है. अगर आपकी दूसरी 'वेब और ऐप्लिकेशन गतिविधि' सेटिंग चालू है, तो यह डेटा आपके Google खाते में सेव किया जा सकता है. <ph name="BEGIN_LINK2" />ज़्यादा जानें<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">निर्यात करें</translation>
 <translation id="42137655013211669">इस संसाधन के लिए सर्वर ने ऐक्सेस नहीं दिया था.</translation>
+<translation id="4217571870635786043">लिखवाना</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> के लिए अपवाद हटाएं</translation>
 <translation id="4220648711404560261">सेटअप पूरा करने के दौरान कुछ गड़बड़ी हुई.</translation>
 <translation id="4222772810963087151">ब्यौरा तैयार करें</translation>
@@ -2741,7 +2745,7 @@
 <translation id="4585793705637313973">पेज में बदलाव करें</translation>
 <translation id="4586275095964870617"><ph name="URL" /> वैकल्पिक ब्राउज़र में नहीं खुला. कृपया अपने सिस्टम एडमिन से संपर्क करें.</translation>
 <translation id="4590324241397107707">डेटाबेस मेमोरी</translation>
-<translation id="4592891116925567110">स्टाइलस से ड्रॉ करने वाला ऐप्लिकेशन</translation>
+<translation id="4592891116925567110">स्टाइलस की मदद से ड्रॉ करने के लिए ऐप्लिकेशन</translation>
 <translation id="4593021220803146968"><ph name="URL" /> पर &amp;जाएं</translation>
 <translation id="4595560905247879544">ऐप्स और एक्सटेंशन केवल प्रबंधक (<ph name="CUSTODIAN_NAME" />) के द्वारा बदले जा सकते हैं.</translation>
 <translation id="4596295440756783523">इन सर्वर की पहचान करने वाले प्रमाणपत्र आपके रिकॉर्ड में हैं</translation>
@@ -2847,7 +2851,7 @@
 <translation id="4739639199548674512">टिकट</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ऐप्लिकेशन अपडेट करने का तरीका जानें<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{साइट अनम्यूट करें}one{साइटें अनम्यूट करें}other{साइटें अनम्यूट करें}}</translation>
-<translation id="4746351372139058112">संदेश</translation>
+<translation id="4746351372139058112">मैसेज</translation>
 <translation id="4750394297954878236">सुझाव</translation>
 <translation id="475088594373173692">पहला उपयोगकर्ता</translation>
 <translation id="4751476147751820511">गति या लाइट सेंसर</translation>
@@ -3166,6 +3170,7 @@
 <translation id="5204967432542742771">पासवर्ड डालें</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" मिटाएं?</translation>
 <translation id="520621735928254154">प्रमाणपत्र आयात करने में गड़बड़ी</translation>
+<translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5209320130288484488">कोई डिवाइस नहीं मि‍ला</translation>
 <translation id="5210365745912300556">टैब बंद करें</translation>
 <translation id="5213481667492808996">आपकी '<ph name="NAME" />' डेटा सेवा इस्तेमाल किए जाने के लिए तैयार है</translation>
@@ -3190,7 +3195,7 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">नया टैब खोलते समय दिखाई देने वाला पेज बदलें</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ऐप्लिकेशन को अपने आप हटा दिया गया था.</translation>
-<translation id="5238435043462632060">आपके अभिभावक ने Chrome के लिए, "साइटों, ऐप्लिकेशन, और एक्सटेंशन के लिए अनुमतियां" को बंद कर दिया है. इस <ph name="EXTENSION_TYPE_PARAMETER" /> को <ph name="ACTION_PARAMETER" /> करना मना है.</translation>
+<translation id="5238435043462632060">आपके अभिभावक ने Chrome के लिए, "साइट, ऐप्लिकेशन, और एक्सटेंशन के लिए अनुमतियां" को बंद कर दिया है. इस <ph name="EXTENSION_TYPE_PARAMETER" /> को <ph name="ACTION_PARAMETER" /> करना मना है.</translation>
 <translation id="5239730228370806996">खींचकर छोड़ा गया यह डेटा, आपके संगठन की सुरक्षा नीतियों का उल्लंघन करता है. क्या आप फिर भी आगे बढ़ना चाहते हैं?</translation>
 <translation id="5241128660650683457">जिन वेबसाइट पर आप जाते हैं, उन पर मौजूद अपना सारा डेटा पढ़ें</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" को चालू करें?</translation>
@@ -3947,7 +3952,7 @@
 <translation id="6232116551750539448"><ph name="NAME" /> से कनेक्शन टूट गया</translation>
 <translation id="6233154960150021497">कीबोर्ड के बजाय आवाज़ का इस्तेमाल करना डिफ़ॉल्ट करें</translation>
 <translation id="6234474535228214774">इंस्टॉल होना बाकी है</translation>
-<translation id="6237474966939441970">स्टाइलस से नोट लेने वाला ऐप्लिकेशन</translation>
+<translation id="6237474966939441970">स्टाइलस की मदद से नोट के लिए ऐप्लिकेशन</translation>
 <translation id="6237816943013845465">आपको अपना स्क्रीन रिज़ॉल्‍यूशन समायोजित करने देती है</translation>
 <translation id="6238624845858322552">ब्लूटूथ डिवाइस से कनेक्ट करना</translation>
 <translation id="6238767809035845642">अन्य डिवाइस से शेयर किया गया टेक्स्ट</translation>
@@ -5079,6 +5084,7 @@
 <translation id="7766807826975222231">एक झलक देखें</translation>
 <translation id="7766838926148951335">अनुमतियां स्वीकार करें</translation>
 <translation id="7768770796815395237">बदलें</translation>
+<translation id="7768784765476638775">चुनें और सुनें</translation>
 <translation id="7769672763586021400">मॉडल आईडी</translation>
 <translation id="7770612696274572992">दूसरे डिवाइस से इमेज कॉपी की गई</translation>
 <translation id="7770651108375708429">वाई-फ़ाई डिसकनेक्ट करें</translation>

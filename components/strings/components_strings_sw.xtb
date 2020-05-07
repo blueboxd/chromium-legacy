@@ -218,6 +218,7 @@
 <translation id="1838374766361614909">Futa utafutaji</translation>
 <translation id="1839551713262164453">Imeshindwa kuthibitisha thamani za sera kutokana na hitilafu</translation>
 <translation id="1842969606798536927">Lipa</translation>
+<translation id="1852694792039666893">Tumia Akaunti yako ya Google kutunga nenosiri thabiti</translation>
 <translation id="1871208020102129563">Proksi imewekwa ili kutumia seva za proksi thabiti, siyo URL ya hati .pac.</translation>
 <translation id="1871284979644508959">Lazima sehemu hii ijazwe</translation>
 <translation id="1875512691959384712">Fomu za Google</translation>
@@ -403,6 +404,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Itoshee vizuri</translation>
 <translation id="2691924980723297736">Onyo la usalama</translation>
+<translation id="2696268945573510710">Tumia manenosiri uliyohifadhi kwenye Akaunti yako ya Google</translation>
 <translation id="2699302886720511147">Kadi Zinazokubaliwa</translation>
 <translation id="2701514975700770343">Inayoangalia chini</translation>
 <translation id="2702801445560668637">Orodha ya Kusoma</translation>
@@ -450,6 +452,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2915068235268646559">Ripoti ya programu kuacha kufanya kazi kuanzia <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Funga programu nyingine</translation>
 <translation id="2922350208395188000">Cheti cha seva hakiwezi kukaguliwa.</translation>
+<translation id="2924027812781652774">Ingia katika akaunti ili utumie manenosiri uliyohifadhi kwenye Akaunti yako ya Google</translation>
 <translation id="2925673989565098301">Njia ya Kusafirisha</translation>
 <translation id="2928905813689894207">Anwani ya kutuma Bili</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> na nyingine <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> na nyingine <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -1404,6 +1407,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7050187094878475250">Ulijaribu kufikia <ph name="DOMAIN" />, lakini seva ikawasilisha cheti ambacho muda wake sahihi ni mrefu sana wa kuweza kuaminika.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Huwezi kuhifadhi kadi hii sasa hivi}other{Huwezi kuhifadhi kadi hizi sasa hivi}}</translation>
 <translation id="7053983685419859001">Zuia</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> imethibitisha kuwa <ph name="ISSUER" /> ilitoa cheti cha tovuti hii.</translation>
 <translation id="7062635574500127092">Samawati ya kijani</translation>
 <translation id="7064851114919012435">Maelezo ya mawasiliano</translation>
 <translation id="70705239631109039">Muunganisho wako si salama kabisa</translation>

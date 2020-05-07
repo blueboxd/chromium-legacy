@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Nađite taster, pa podignite prst da biste uneli</translation>
 <translation id="1012173283529841972">Stavka liste</translation>
 <translation id="1013742170491673792">pretraga</translation>
+<translation id="1014370462248694370">Prevlačite nadesno pomoću dva prsta</translation>
 <translation id="1022586497894531524">Da li prvi put koristite ChromeVox govorne povratne informacije? Ovaj kratki vodič objašnjava osnovne stvari potrebne za početne korake sa uslugom ChromeVox.</translation>
 <translation id="1025074108959230262">Lepljivi režim je onemogućen</translation>
 <translation id="1031961866430398710">i</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Nema prethodne stavke liste</translation>
 <translation id="1114836634143403764">Predlog</translation>
 <translation id="1120743664840974483">{"a": "avala", "b": "beograd", "c": "cetinje", "d": "drina", "e": "evropa", "f": "futog", "g": "golija", "h": "heroj", "i": "igalo", "j": "jadran", "k": "kosovo", "l": "lovćen", "m": "morava", "n": "niš", "o": "obilić", "p": "pirot", "q": "kvorum", "r": "ruma", "s": "sava", "t": "timok", "u": "užice", "v": "valjevo", "w": "duplo ve", "x": "ksilofon", "y": "ipsilon", "z": "zemun", "ć": "ćuprija", "č": "čačak", "dž": "džep", "đ": "đakovica", "lj": "ljubovija", "nj": "njegoš", "š": "šabac", "ž": "žabljak"}</translation>
+<translation id="1120938014254001895">Prevlačite nagore pomoću dva prsta</translation>
 <translation id="1126928665165112660">Nije kurziv</translation>
 <translation id="113582498867142724">Kolekcija <ph name="TAG" /> sa <ph name="NUM" /> stavke(i)</translation>
 <translation id="1161762950103988776">Prelazak</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Sledeća slika</translation>
 <translation id="1756785467854861272">Tamnociklama</translation>
+<translation id="1765245556747822181">Prevlačite nagore jednim prstom</translation>
 <translation id="1771761307086386028">Pomeri nadesno</translation>
 <translation id="1781173782405573156">Prolazni taster</translation>
 <translation id="1787176709638001873">Tekst za izmenu lozinke</translation>
@@ -133,6 +136,7 @@
 <translation id="2010555995361223825">ChromeVox meniji</translation>
 <translation id="203030071582665758">Nema prethodnog zaglavlja 4. nivoa</translation>
 <translation id="2045055672832940894">Nema prethodne kontrole</translation>
+<translation id="2045606329038304310">Kontrola polja obrazaca</translation>
 <translation id="2063539687800151747">Natpis</translation>
 <translation id="2086961585857038472">Sledeća reč</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
@@ -159,6 +163,7 @@
 <translation id="225732394367814946">Povećavanje brzine govora</translation>
 <translation id="2267538686624070261">Ostavljate pogrešno napisanu reč</translation>
 <translation id="2267945578749931355">Sledeći znak</translation>
+<translation id="2278490101488436824">Prevlačite nalevo pomoću tri prsta</translation>
 <translation id="2305942658236913680">Nema sledećeg zaglavlja</translation>
 <translation id="2311237334957139798">Pređite na prethodni element granularnosti</translation>
 <translation id="2314393392395134769">Nije indeksni tekst</translation>
@@ -232,12 +237,14 @@
 <translation id="2867808975387772810">Bibliografija</translation>
 <translation id="2873259058405069099">Prelazak na početak tabele</translation>
 <translation id="287383510823843610">Tamnonarandžasta</translation>
+<translation id="2879867157561757640">Prevlačite nadole pomoću tri prsta</translation>
 <translation id="288178314850623291">Koristite komande za prelazak da biste prelazili na određene tipove elemenata. Da biste prelazili na naslove unapred, pritisnite taster za pretragu + H, a da biste prelazili na naslove unazad, pritisnite taster za pretragu + Shift + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minut}one{minuti}few{minuti}other{minuti}}</translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{leva vitičasta zagrada}one{# leva vitičasta zagrada}few{# leve vitičaste zagrade}other{# levih vitičastih zagrada}}</translation>
 <translation id="2909584066358367921">Nema sledećeg dugmeta</translation>
 <translation id="2911433807131383493">Otvaranje ChromeVox vodiča</translation>
+<translation id="2912405967290226587">Prevlačite nadesno pomoću tri prsta</translation>
 <translation id="2937799153569150791">Nema sledećeg zaglavlja 3. nivoa</translation>
 <translation id="2942710183375260152">Tamna sivoplava</translation>
 <translation id="2943596527105977722">Tamna zlatnožuta</translation>
@@ -245,6 +252,7 @@
 <translation id="2968634799764242930">Plavozelena</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulator}one{# tabulator}few{# tabulatora}other{# tabulatora}}</translation>
 <translation id="2972205263822847197">Opis alatke</translation>
+<translation id="297825089465017871">Prevlačite nalevo pomoću dva prsta</translation>
 <translation id="2998131015536248178">Prethodni znak</translation>
 <translation id="2999559350546931576">Smanjivanje registra</translation>
 <translation id="3014130421870723208">@izm 8tač</translation>
@@ -254,6 +262,7 @@
 <translation id="3046838483509668188">Opcije za ChromeVox</translation>
 <translation id="3060756054951570867">Otvoren je meni <ph name="TITLE" /></translation>
 <translation id="3060880924447482063">Prevucite ulevo ili udesno da biste se pomerili za stavku</translation>
+<translation id="3070245424257836917">Prevlačite nagore pomoću tri prsta</translation>
 <translation id="3078345202707391975">Sledeće zaglavlje 2. nivoa</translation>
 <translation id="3078740164268491126">tabela</translation>
 <translation id="3082249673510793544">Pomera unazad</translation>
@@ -435,6 +444,7 @@
 <translation id="4391478986194775161">informacije o sadržaju</translation>
 <translation id="4402014469255336455">Tamna nebeskoplava</translation>
 <translation id="4432457053224379116">Braoncrvena</translation>
+<translation id="4437615272777527928">Unesite tekst da biste pretražili menije. Koristite tastere sa strelicama nagore i nadole za kretanje kroz rezultate. Koristite tastere sa strelicama ulevo i udesno da biste prilagodili kursor za tekst i prelazili iz jednog menija u drugi.</translation>
 <translation id="4457472090507035117">Izaberite aktuelni glas:</translation>
 <translation id="4476183483923481720">novi red</translation>
 <translation id="4479068155583208887">Zatvorenocrvena</translation>
@@ -459,6 +469,7 @@
 <translation id="4677535310137735442">Idite na sledeću kolonu</translation>
 <translation id="4688873778442829762">mreža</translation>
 <translation id="4693675773662933727">Prethodno obeležje</translation>
+<translation id="4710166929009737753">Prevlačite nadesno jednim prstom</translation>
 <translation id="4712898966495541134">Kraj izbora</translation>
 <translation id="4740661827607246557">Komande pomoći</translation>
 <translation id="4755857887974653209">Onemogući ChromeVox</translation>
@@ -709,9 +720,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">Bledožuta</translation>
 <translation id="6816066673340002913">Otvorena zlatnožuta</translation>
+<translation id="6826226459053491773">Prevlačite nadole pomoću dva prsta</translation>
 <translation id="6833103209700200188">Podnožje</translation>
 <translation id="6837853484260746864">Izaberite glas:</translation>
 <translation id="6858047746862060282">Prolog</translation>
+<translation id="6859876496651143278">Prevlačite nalevo jednim prstom</translation>
 <translation id="6865519907510167493">Pogrešno je napisano</translation>
 <translation id="6894148351896207544">Izgovara aktuelno vreme i datum</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
@@ -994,6 +1007,7 @@
 <translation id="923331726185079994">ChromeVox je ažuriran</translation>
 <translation id="93384979447910801">Tamna plavozelena</translation>
 <translation id="948171205378458592">Smanjivanje brzine govora</translation>
+<translation id="958854023026327378">Prevlačite nadole jednim prstom</translation>
 <translation id="962913030769097253">Sledeće zaglavlje 1. nivoa</translation>
 <translation id="966588271015727539">Izaberite Bluetooth Brajev ekran</translation>
 <translation id="973955474346881951">Omogućavanje/onemogućavanje lepljivog režima</translation>

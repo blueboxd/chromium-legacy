@@ -433,14 +433,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   CheckStoredDirectoryMatches(base::FilePath());
 }
 
-// http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_FileSystemApiOpenExistingFileWithWriteTest DISABLED_FileSystemApiOpenExistingFileWithWriteTest
-#else
-#define MAYBE_FileSystemApiOpenExistingFileWithWriteTest FileSystemApiOpenExistingFileWithWriteTest
-#endif
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
-    MAYBE_FileSystemApiOpenExistingFileWithWriteTest) {
+                       FileSystemApiOpenExistingFileWithWriteTest) {
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   FileSystemChooseEntryFunction::SkipPickerAndAlwaysSelectPathForTest(

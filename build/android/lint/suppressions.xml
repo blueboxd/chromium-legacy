@@ -200,9 +200,6 @@ Still reading?
   </issue>
   <issue id="InflateParams" severity="ignore"/>
   <issue id="InlinedApi" severity="ignore"/>
-  <issue id="InvalidPackage" severity="Error">
-    <ignore regexp="espresso/espresso_core_java.interface.jar"/>
-  </issue>
   <issue id="InvalidVectorPath" severity="ignore"/>
   <!-- TODO(crbug.com/804453): Remove this after fixing. -->
   <issue id="KeyboardInaccessibleWidget" severity="ignore"/>
@@ -420,14 +417,14 @@ Still reading?
     <ignore regexp="R.string.TestSupportImplClass"/>
     <!-- 1 resource used by android webview glue layer, could be refactored -->
     <ignore regexp="R.string.private_browsing_warning"/>
-    <!-- The WAM server currently has 2 codes paths for minting a WebAPK, and
+    <!-- 4 The WAM server currently has 2 codes paths for minting a WebAPK, and
          it needs these "unused" resources.
          TODO(crbug.com/1001115): Remove suppression once 2 code paths are merged -->
     <ignore regexp="The resource `R.mipmap.ic_launcher_background` appears to be unused"/>
     <ignore regexp="The resource `R.mipmap.ic_launcher_foreground` appears to be unused"/>
     <ignore regexp="The resource `R.mipmap.maskable_splash_icon_xxhdpi` appears to be unused"/>
     <ignore regexp="The resource `R.mipmap.maskable_splash_icon_xxxhdpi` appears to be unused"/>
-    <!-- Module titles may only be used by the Play Store. -->
+    <!-- 1 Module titles may only be used by the Play Store. -->
     <ignore regexp="The resource `R.string.*_module_title` appears to be unused"/>
     <!-- 2 resource sets used by clank widgets for each channel -->
     <ignore regexp="The resource `R.string.bookmark_widget_title.*` appears to be unused"/>

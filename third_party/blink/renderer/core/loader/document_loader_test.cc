@@ -317,6 +317,33 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyNoEffectWhenFlagNotSet) {
       PolicyValue(1.0)));
 }
 
+TEST_F(DocumentLoaderSimTest, ReportDocumentPolicyHeaderParsingError) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest::Params params;
+  params.response_http_headers = {{"Document-Policy", "bad-feature-name"}};
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  EXPECT_EQ(ConsoleMessages().size(), 1u);
+  EXPECT_TRUE(
+      ConsoleMessages().front().StartsWith("Document-Policy HTTP header:"));
+}
+
+TEST_F(DocumentLoaderSimTest, ReportRequireDocumentPolicyHeaderParsingError) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Require-Document-Policy", "bad-feature-name"}};
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  EXPECT_EQ(ConsoleMessages().size(), 1u);
+  EXPECT_TRUE(ConsoleMessages().front().StartsWith(
+      "Require-Document-Policy HTTP header:"));
+}
+
 TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
   blink::ScopedDocumentPolicyForTest sdp(true);
   SimRequest::Params params;

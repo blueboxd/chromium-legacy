@@ -12,12 +12,18 @@
 #include "components/feed/core/proto/v2/ui.pb.h"
 
 namespace feedwire {
+class ClientInfo;
 class ContentId;
+class DisplayInfo;
+class Version;
 }  // namespace feedwire
 namespace feed {
 struct StreamModelUpdateRequest;
 
 std::string ToTextProto(const feedwire::ContentId& v);
+std::string ToTextProto(const feedwire::Version& v);
+std::string ToTextProto(const feedwire::DisplayInfo& v);
+std::string ToTextProto(const feedwire::ClientInfo& v);
 std::string ToTextProto(const feedstore::StreamData& v);
 std::string ToTextProto(const feedstore::StreamStructureSet& v);
 std::string ToTextProto(const feedstore::StreamStructure& v);
@@ -29,6 +35,17 @@ std::string ToTextProto(const feedui::StreamUpdate& v);
 
 inline std::ostream& operator<<(std::ostream& os,
                                 const feedwire::ContentId& v) {
+  return os << ToTextProto(v);
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const feedwire::DisplayInfo& v) {
+  return os << ToTextProto(v);
+}
+inline std::ostream& operator<<(std::ostream& os, const feedwire::Version& v) {
+  return os << ToTextProto(v);
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const feedwire::ClientInfo& v) {
   return os << ToTextProto(v);
 }
 inline std::ostream& operator<<(std::ostream& os,

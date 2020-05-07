@@ -268,8 +268,7 @@ suite('PrivacyPageRedesignEnabled', function() {
   setup(function() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
-    siteSettingsBrowserProxy.setResultFor(
-        'getCookieSettingDescription', Promise.resolve(testLabels[0]));
+    siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
     PolymerTest.clearBody();
     page = document.createElement('settings-privacy-page');
     document.body.appendChild(page);

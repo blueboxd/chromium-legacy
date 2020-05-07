@@ -131,6 +131,14 @@ class PLATFORM_EXPORT CanvasResourceProvider
       RasterMode raster_mode,
       uint32_t shared_image_usage_flags);
 
+  static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
+      const IntSize&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      SkFilterQuality,
+      const CanvasColorParams&,
+      bool is_origin_top_left,
+      base::WeakPtr<CanvasResourceDispatcher>);
+
   // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
   static std::unique_ptr<CanvasResourceProvider> Create(
       const IntSize&,

@@ -915,6 +915,11 @@ if (enable_java_templates) {
         "--min-sdk-version=$_min_sdk_version",
       ]
 
+      if (defined(testonly) && testonly) {
+        # Allows us to ignore unnecessary checks when linting test targets.
+        args += [ "--testonly" ]
+      }
+
       if (defined(invoker.create_cache) && invoker.create_cache) {
         args += [ "--silent" ]
       } else {
@@ -3318,6 +3323,22 @@ if (enable_java_templates) {
              "main_class cannot be used for target of type ${invoker.type}")
     }
 
+    # Don't enable coverage or lint unless the target has some non-generated
+    # files.
+    if (defined(invoker.chromium_code)) {
+      _chromium_code = invoker.chromium_code
+    } else {
+      # Default based on whether target is in third_party.
+      _chromium_code =
+          filter_exclude([ get_label_info(":$_main_target_name", "dir") ],
+                         [ "*\bthird_party\b*" ]) != []
+      if (!_chromium_code && !_is_prebuilt && _java_files != []) {
+        # Unless third_party code has an org.chromium file in it.
+        _chromium_code =
+            filter_exclude(_java_files, [ "*\bchromium\b*" ]) != _java_files
+      }
+    }
+
     # The only target that might have no prebuilt and no sources is a java_binary.
     if (_is_prebuilt || _has_sources) {
       if (defined(invoker.output_name)) {
@@ -3337,15 +3358,26 @@ if (enable_java_templates) {
         _final_jar_path = invoker.final_jar_path
       }
 
+      # TODO(wnwen): Enable turbine for non-chromium code when r8 optimizes out
+      #              bridge methods.
+      _enable_turbine = _has_sources && _chromium_code
+      if (defined(invoker.enable_turbine)) {
+        _enable_turbine = invoker.enable_turbine
+      }
+
       # For static libraries, the javac jar output is created at the intermediate
       # path so that it can be processed by another target and moved to the final
       # spot that the .build_config knows about. Technically this should be done
       # for the ijar as well, but this is only used for APK targets where
       # the ijar path isn't actually used.
       _build_config_jar_path = _final_jar_path
-      _final_ijar_path =
-          get_path_info(_final_jar_path, "dir") + "/" +
-          get_path_info(_final_jar_path, "name") + ".interface.jar"
+      _final_ijar_path = get_path_info(_final_jar_path, "dir") + "/" +
+                         get_path_info(_final_jar_path, "name")
+      if (_enable_turbine) {
+        _final_ijar_path += ".turbine.jar"
+      } else {
+        _final_ijar_path += ".ijar.jar"
+      }
 
       if (_has_sources) {
         _javac_jar_path = "$target_out_dir/$_main_target_name.javac.jar"
@@ -3398,22 +3430,6 @@ if (enable_java_templates) {
           [ "//third_party/bazel/desugar:desugar_runtime_java__header" ]
       _java_impl_deps +=
           [ "//third_party/bazel/desugar:desugar_runtime_java__impl" ]
-    }
-
-    # Don't enable coverage or lint unless the target has some non-generated
-    # files.
-    if (defined(invoker.chromium_code)) {
-      _chromium_code = invoker.chromium_code
-    } else {
-      # Default based on whether target is in third_party.
-      _chromium_code =
-          filter_exclude([ get_label_info(":$_main_target_name", "dir") ],
-                         [ "*\bthird_party\b*" ]) != []
-      if (!_chromium_code && !_is_prebuilt && _java_files != []) {
-        # Unless third_party code has an org.chromium file in it.
-        _chromium_code =
-            filter_exclude(_java_files, [ "*\bchromium\b*" ]) != _java_files
-      }
     }
 
     if (defined(_final_jar_path)) {

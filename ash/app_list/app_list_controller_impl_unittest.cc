@@ -97,7 +97,7 @@ aura::Window* GetVirtualKeyboardWindow() {
 }
 
 AppsGridView* GetAppsGridView() {
-  return GetContentsView()->GetAppsContainerView()->apps_grid_view();
+  return GetContentsView()->apps_container_view()->apps_grid_view();
 }
 
 void ShowAppListNow() {
@@ -747,7 +747,7 @@ TEST_P(HotseatAppListControllerImplTest, GetItemBoundsForWindow) {
   AppsGridView* apps_grid_view = GetAppListView()
                                      ->app_list_main_view()
                                      ->contents_view()
-                                     ->GetAppsContainerView()
+                                     ->apps_container_view()
                                      ->apps_grid_view();
   auto apps_grid_test_api =
       std::make_unique<test::AppsGridViewTestApi>(apps_grid_view);

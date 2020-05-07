@@ -201,7 +201,6 @@ void HotseatWidget::DelegateView::Init(
 
   DCHECK(scrollable_shelf_view);
   scrollable_shelf_view_ = scrollable_shelf_view;
-  UpdateTranslucentBackground();
 }
 
 void HotseatWidget::DelegateView::UpdateTranslucentBackground() {
@@ -248,7 +247,7 @@ void HotseatWidget::DelegateView::SetTranslucentBackground(
                              metrics_reporter);
   }
 
-  const int radius = ShelfConfig::Get()->hotseat_size() / 2;
+  const int radius = hotseat_widget_->GetHotseatSize() / 2;
   gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
   if (translucent_background_.rounded_corner_radii() != rounded_corners)
     translucent_background_.SetRoundedCornerRadius(rounded_corners);
@@ -360,8 +359,12 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
 
   scrollable_shelf_view_ = GetContentsView()->AddChildView(
       std::make_unique<ScrollableShelfView>(ShelfModel::Get(), shelf));
-  scrollable_shelf_view_->Init();
   delegate_view_->Init(scrollable_shelf_view(), GetLayer(), this);
+
+  // The initialization of scrollable shelf should update the translucent
+  // background which is stored in |delegate_view_|. So initializes
+  // |scrollable_shelf_view_| after |delegate_view_|.
+  scrollable_shelf_view_->Init();
 }
 
 void HotseatWidget::OnHotseatTransitionAnimatorCreated(
@@ -398,15 +401,14 @@ void HotseatWidget::OnShelfConfigUpdated() {
 
 bool HotseatWidget::IsExtended() const {
   DCHECK(GetShelfView()->shelf()->IsHorizontalAlignment());
-  const int extended_y =
+  const int extended_bottom =
       display::Screen::GetScreen()
           ->GetDisplayNearestView(GetShelfView()->GetWidget()->GetNativeView())
           .bounds()
           .bottom() -
       (ShelfConfig::Get()->shelf_size() +
-       ShelfConfig::Get()->hotseat_bottom_padding() +
-       ShelfConfig::Get()->hotseat_size());
-  return GetWindowBoundsInScreen().y() == extended_y;
+       ShelfConfig::Get()->hotseat_bottom_padding());
+  return GetWindowBoundsInScreen().bottom() == extended_bottom;
 }
 
 void HotseatWidget::FocusFirstOrLastFocusableChild(bool last) {
@@ -433,7 +435,7 @@ int HotseatWidget::CalculateHotseatYInScreen(
     HotseatState hotseat_target_state) const {
   DCHECK(shelf_->IsHorizontalAlignment());
   int hotseat_distance_from_bottom_of_display;
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatSize();
   switch (hotseat_target_state) {
     case HotseatState::kShownClamshell:
       hotseat_distance_from_bottom_of_display = hotseat_size;
@@ -499,7 +501,7 @@ void HotseatWidget::CalculateTargetBounds() {
     }
     hotseat_origin =
         gfx::Point(hotseat_x, CalculateHotseatYInScreen(hotseat_target_state));
-    hotseat_height = ShelfConfig::Get()->hotseat_size();
+    hotseat_height = GetHotseatSize();
   } else {
     hotseat_origin = gfx::Point(shelf_bounds.x(),
                                 nav_bounds.bottom() + vertical_edge_spacing);
@@ -572,6 +574,16 @@ void HotseatWidget::SetFocusCycler(FocusCycler* focus_cycler) {
 ShelfView* HotseatWidget::GetShelfView() {
   DCHECK(scrollable_shelf_view_);
   return scrollable_shelf_view_->shelf_view();
+}
+
+int HotseatWidget::GetHotseatSize() const {
+  return ShelfConfig::Get()->GetShelfButtonSize(is_forced_dense_);
+}
+
+int HotseatWidget::GetHotseatFullDragAmount() const {
+  ShelfConfig* shelf_config = ShelfConfig::Get();
+  return shelf_config->shelf_size() + shelf_config->hotseat_bottom_padding() +
+         GetHotseatSize();
 }
 
 int HotseatWidget::GetHotseatBackgroundBlurForTest() const {

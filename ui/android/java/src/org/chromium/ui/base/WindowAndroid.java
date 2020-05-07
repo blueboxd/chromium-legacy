@@ -71,7 +71,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private KeyboardVisibilityDelegate mKeyboardVisibilityDelegate =
             KeyboardVisibilityDelegate.getInstance();
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private class TouchExplorationMonitor {
         // Listener that tells us when touch exploration is enabled or disabled.
         private AccessibilityManager.TouchExplorationStateChangeListener mTouchExplorationListener;
@@ -129,7 +128,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     // Whether touch exploration is enabled.
     private boolean mIsTouchExplorationEnabled;
 
-    // On KitKat and higher, a class that monitors the touch exploration state.
+    // A class that monitors the touch exploration state.
     private TouchExplorationMonitor mTouchExplorationMonitor;
 
     private AndroidPermissionDelegate mPermissionDelegate;
@@ -634,9 +633,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             WindowAndroidJni.get().destroy(mNativeWindowAndroid, WindowAndroid.this);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
-        }
+        if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
 
         mApplicationBottomInsetProvider.destroy();
     }
@@ -706,9 +703,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         // make sure the animation placeholder view is in place if touch exploration is on.
         mIsTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
         refreshWillNotDraw();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mTouchExplorationMonitor = new TouchExplorationMonitor();
-        }
+        mTouchExplorationMonitor = new TouchExplorationMonitor();
     }
 
     /**

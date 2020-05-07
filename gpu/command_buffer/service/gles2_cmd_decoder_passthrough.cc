@@ -933,6 +933,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       "GL_ANGLE_texture_usage",
       "GL_CHROMIUM_bind_uniform_location",
       "GL_CHROMIUM_sync_query",
+      "GL_CHROMIUM_texture_filtering_hint",
       "GL_EXT_debug_marker",
       "GL_EXT_memory_object",
       "GL_EXT_memory_object_fd",

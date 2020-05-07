@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -279,11 +278,8 @@ void CaptivePortalTabReloader::ReloadTabIfNeeded() {
   if (state_ != STATE_NEEDS_RELOAD)
     return;
 
-  // If there's still a provisional load going, do nothing unless there's an
-  // interstitial page.  Reloading when displaying an interstitial page will
-  // reload the underlying page, even if it hasn't yet committed.
-  if (provisional_main_frame_load_ &&
-      !content::InterstitialPage::GetInterstitialPage(web_contents_)) {
+  // If there's still a provisional load going, do nothing.
+  if (provisional_main_frame_load_) {
     return;
   }
 

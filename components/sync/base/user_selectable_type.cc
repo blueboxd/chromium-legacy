@@ -35,6 +35,7 @@ constexpr char kExtensionsTypeName[] = "extensions";
 constexpr char kAppsTypeName[] = "apps";
 constexpr char kReadingListTypeName[] = "readingList";
 constexpr char kTabsTypeName[] = "tabs";
+constexpr char kWifiConfigurationsTypeName[] = "wifiConfigurations";
 
 UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
   // UserSelectableTypeInfo::type_name is used in js code and shouldn't be
@@ -91,6 +92,16 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
               PROXY_TABS,
               {PROXY_TABS, SESSIONS, DEPRECATED_FAVICON_IMAGES,
                DEPRECATED_FAVICON_TRACKING, SEND_TAB_TO_SELF}};
+    case UserSelectableType::kWifiConfigurations: {
+#if defined(OS_CHROMEOS)
+      // SplitSettingsSync moves Wi-Fi configurations to Chrome OS settings.
+      if (chromeos::features::IsSplitSettingsSyncEnabled())
+        return {kWifiConfigurationsTypeName, UNSPECIFIED};
+#endif
+      return {kWifiConfigurationsTypeName,
+              WIFI_CONFIGURATIONS,
+              {WIFI_CONFIGURATIONS}};
+    }
   }
   NOTREACHED();
   return {nullptr, UNSPECIFIED};
@@ -99,7 +110,7 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
 #if defined(OS_CHROMEOS)
 constexpr char kOsAppsTypeName[] = "osApps";
 constexpr char kOsPreferencesTypeName[] = "osPreferences";
-constexpr char kWifiConfigurationsTypeName[] = "wifiConfigurations";
+constexpr char kOsWifiConfigurationsTypeName[] = "osWifiConfigurations";
 
 UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
   // UserSelectableTypeInfo::type_name is used in js code and shouldn't be
@@ -113,8 +124,8 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
       return {kOsPreferencesTypeName,
               OS_PREFERENCES,
               {OS_PREFERENCES, OS_PRIORITY_PREFERENCES, PRINTERS}};
-    case UserSelectableOsType::kWifiConfigurations:
-      return {kWifiConfigurationsTypeName,
+    case UserSelectableOsType::kOsWifiConfigurations:
+      return {kOsWifiConfigurationsTypeName,
               WIFI_CONFIGURATIONS,
               {WIFI_CONFIGURATIONS}};
   }
@@ -159,6 +170,9 @@ base::Optional<UserSelectableType> GetUserSelectableTypeFromString(
   if (type == kTabsTypeName) {
     return UserSelectableType::kTabs;
   }
+  if (type == kWifiConfigurationsTypeName) {
+    return UserSelectableType::kWifiConfigurations;
+  }
   return base::nullopt;
 }
 
@@ -201,8 +215,8 @@ base::Optional<UserSelectableOsType> GetUserSelectableOsTypeFromString(
   if (type == kOsPreferencesTypeName) {
     return UserSelectableOsType::kOsPreferences;
   }
-  if (type == kWifiConfigurationsTypeName) {
-    return UserSelectableOsType::kWifiConfigurations;
+  if (type == kOsWifiConfigurationsTypeName) {
+    return UserSelectableOsType::kOsWifiConfigurations;
   }
 
   // Some pref types migrated from browser prefs to OS prefs. Map the browser

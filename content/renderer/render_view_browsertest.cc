@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1532,15 +1533,65 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
   // panel policy to auto.
   ExecuteJavaScriptForTests(
       "const editContext = new EditContext(); "
-      "editContext.focus();editContext.inputPanelPolicy=\"auto\";editContext."
-      "updateLayout(new DOMRect(10, 20, 30, 40), new DOMRect(10,20, 1, 5));");
-  base::RunLoop().RunUntilIdle();
+      "editContext.focus();editContext.inputPanelPolicy=\"auto\"; "
+      "const control_bound = new DOMRect(10, 20, 30, 40); "
+      "const selection_bound = new DOMRect(10, 20, 1, 5); "
+      "editContext.updateLayout(control_bound, selection_bound);");
+  // This RunLoop is waiting for EditContext to be created and layout bounds
+  // to be updated in the EditContext.
+  base::RunLoop run_loop;
+  base::PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
   main_widget()->UpdateTextInputState();
   auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
   EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
   blink::WebRect edit_context_control_bounds_expected(10, 20, 30, 40);
+  blink::WebRect edit_context_selection_bounds_expected(10, 20, 1, 5);
+  main_widget()->ConvertViewportToWindow(&edit_context_control_bounds_expected);
+  main_widget()->ConvertViewportToWindow(
+      &edit_context_selection_bounds_expected);
+  blink::WebRect actual_active_element_control_bounds(
+      std::get<0>(params).edit_context_control_bounds.value());
+  blink::WebRect actual_active_element_selection_bounds(
+      std::get<0>(params).edit_context_selection_bounds.value());
+  EXPECT_EQ(edit_context_control_bounds_expected,
+            actual_active_element_control_bounds);
+  EXPECT_EQ(edit_context_selection_bounds_expected,
+            actual_active_element_selection_bounds);
+}
+
+TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsWithFloatingValues) {
+  // Load an HTML page.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "</body>"
+      "</html>");
+  render_thread_->sink().ClearMessages();
+  // Create an EditContext with control and selection bounds and set input
+  // panel policy to auto.
+  ExecuteJavaScriptForTests(
+      "const editContext = new EditContext(); "
+      "editContext.focus();editContext.inputPanelPolicy=\"auto\"; "
+      "const control_bound = new DOMRect(10.14, 20.25, 30.15, 40.50); "
+      "const selection_bound = new DOMRect(10, 20, 1, 5); "
+      "editContext.updateLayout(control_bound, selection_bound);");
+  // This RunLoop is waiting for EditContext to be created and layout bounds
+  // to be updated in the EditContext.
+  base::RunLoop run_loop;
+  base::PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify layout bounds of the EditContext.
+  main_widget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
+  blink::WebRect edit_context_control_bounds_expected(10, 20, 31, 41);
   blink::WebRect edit_context_selection_bounds_expected(10, 20, 1, 5);
   main_widget()->ConvertViewportToWindow(&edit_context_control_bounds_expected);
   main_widget()->ConvertViewportToWindow(
@@ -1569,7 +1620,10 @@ TEST_F(RenderViewImplTest, ActiveElementGetLayoutBounds) {
   // Create an EditContext with control and selection bounds and set input
   // panel policy to auto.
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
-  base::RunLoop().RunUntilIdle();
+  // This RunLoop is waiting for focus to be processed for the active element.
+  base::RunLoop run_loop;
+  base::PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
   main_widget()->UpdateTextInputState();

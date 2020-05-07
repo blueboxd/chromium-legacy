@@ -28,7 +28,10 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+
+import com.google.common.collect.ImmutableMap;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -38,6 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -89,7 +93,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.SelectionClient;
@@ -109,13 +112,15 @@ import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.touch_selection.SelectionEventType;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 // TODO(donnd): Create class with limited API to encapsulate the internals of simulations.
 // TODO(donnd): Separate tests into different classes grouped by type of tests. Examples:
-// Gestures (Tap, LongPress), Search Term Resolution (resolves, expand selection, prevent preload,
+// Gestures (Tap, Long-press), Search Term Resolution (resolves, expand selection, prevent preload,
 // translation), Panel interaction (tap, fling up/down, close), Content (creation, loading,
 // visibility, history, delayed load), Tab Promotion, Policy (add tests to check if policies
 // affect the behavior correctly), General (remaining tests), etc.
@@ -137,12 +142,15 @@ public class ContextualSearchManagerTest {
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    /** Parameter provider for enabling/disabling the longpress experiment. */
-    public static class LongpressResolveParams implements ParameterProvider {
+    /** Parameter provider for enabling/disabling triggering-related Features. */
+    public static class FeatureParamProvider implements ParameterProvider {
         @Override
         public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(true).name("disableLongpress"),
-                    new ParameterSet().value(false).name("enableLongpress"));
+            return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
+                    new ParameterSet().value(EnabledFeature.LONGPRESS).name("enableLongpress"),
+                    new ParameterSet()
+                            .value(EnabledFeature.TRANSLATIONS)
+                            .name("enableTranslations"));
         }
     }
 
@@ -160,6 +168,16 @@ public class ContextualSearchManagerTest {
     // The number of ms to delay startup for all tests.
     private static final int ACTIVITY_STARTUP_DELAY_MS = 1000;
 
+    private static final ImmutableMap<String, Boolean> ENABLE_NONE =
+            ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, false,
+                    ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS, false);
+    private static final ImmutableMap<String, Boolean> ENABLE_LONGPRESS =
+            ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, true,
+                    ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS, false);
+    private static final ImmutableMap<String, Boolean> ENABLE_TRANSLATIONS =
+            ImmutableMap.of(ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE, false,
+                    ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS, true);
+
     private ActivityMonitor mActivityMonitor;
     private ContextualSearchFakeServer mFakeServer;
     private ContextualSearchManager mManager;
@@ -173,11 +191,20 @@ public class ContextualSearchManagerTest {
     // State for an individual test.
     private FakeSlowResolveSearch mLatestSlowResolveSearch;
 
-    private boolean mLongpressExperiment;
+    @IntDef({EnabledFeature.NONE, EnabledFeature.LONGPRESS, EnabledFeature.TRANSLATIONS})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface EnabledFeature {
+        int NONE = 0;
+        int LONGPRESS = 1;
+        int TRANSLATIONS = 2;
+    }
 
-    @ParameterAnnotations.UseMethodParameterBefore(LongpressResolveParams.class)
-    public void disableLongpress(boolean disableLongpressExperiment) {
-        mLongpressExperiment = disableLongpressExperiment;
+    // Tracks whether a long-press triggering experiment is active.
+    private @EnabledFeature int mEnabledFeature;
+
+    @ParameterAnnotations.UseMethodParameterBefore(FeatureParamProvider.class)
+    public void setFeatureParameterForTest(@EnabledFeature int enabledFeature) {
+        mEnabledFeature = enabledFeature;
     }
 
     @Before
@@ -225,6 +252,25 @@ public class ContextualSearchManagerTest {
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
 
         mDpToPx = mActivityTestRule.getActivity().getResources().getDisplayMetrics().density;
+
+        // Set the test Features map for all tests regardless of whether they are parameterized.
+        // Non-parameterized tests typically override this setting by calling setTestFeatures
+        // again.
+        ImmutableMap<String, Boolean> whichFeature = null;
+        switch (mEnabledFeature) {
+            case EnabledFeature.NONE:
+                whichFeature = ENABLE_NONE;
+                break;
+            case EnabledFeature.LONGPRESS:
+                whichFeature = ENABLE_LONGPRESS;
+                break;
+            case EnabledFeature.TRANSLATIONS:
+                whichFeature = ENABLE_TRANSLATIONS;
+                break;
+        }
+        Assert.assertNotNull(
+                "Did you change test Features without setting the correct Map?", whichFeature);
+        FeatureList.setTestFeatures(whichFeature);
     }
 
     @After
@@ -1210,7 +1256,7 @@ public class ContextualSearchManagerTest {
     //@SmallTest
     //@Feature({"ContextualSearch"})
     @Test
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @FlakyTest(message = "Flaked in 2017.  https://crbug.com/707529")
     public void testHidesWhenOmniboxFocused() throws Exception {
         clickWordNode("intelligence");
@@ -1274,8 +1320,9 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     // Ranker is only used for Tap triggering.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testResolvingSearchRankerLogging() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         simulateResolveSearch("intelligence");
         assertLoadedLowPriorityUrl();
 
@@ -1297,8 +1344,9 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     // Non-resolve Long-press is only used when Tap is the primary gesture.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testNonResolveTrigger() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         triggerNonResolve("states");
 
         Assert.assertNull(mFakeServer.getSearchTermRequested());
@@ -1314,9 +1362,11 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
-    public void testSwipeExpand(boolean isLongpressDisabled) throws Exception {
+    public void testSwipeExpand() throws Exception {
+        // TODO(donnd): enable for all features.
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         assertNoSearchesLoaded();
         triggerResolve("intelligence");
         assertNoSearchesLoaded();
@@ -1346,8 +1396,9 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // Non-resolve Long-press is only used when Tap is the primary gesture.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testNonResolveSwipeExpand() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         simulateNonResolveSearch("search");
         assertNoWebContents();
         assertLoadedNoUrl();
@@ -1369,9 +1420,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @FlakyTest(message = "High priority test.  See https://crbug.com/1058297")
-    public void testResolveCausesOneLowPriorityRequest(boolean isLongpressDisabled)
+    public void testResolveCausesOneLowPriorityRequest(@EnabledFeature int enabledFeature)
             throws Exception {
         mFakeServer.reset();
         simulateResolveSearch("states");
@@ -1401,8 +1452,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testPrefetchFailoverRequestMadeAfterOpen(boolean isLongpressDisabled)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testPrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
             throws Exception {
         mFakeServer.reset();
         triggerResolve("states");
@@ -1432,8 +1483,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testLivePrefetchFailoverRequestMadeAfterOpen(boolean isLongpressDisabled)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Test fails with out-of-process network service. crbug.com/1071721
         if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess")) return;
@@ -1468,8 +1519,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testResolveDisablePreload(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testResolveDisablePreload(@EnabledFeature int enabledFeature) throws Exception {
         simulateSlowResolveSearch("intelligence");
 
         assertSearchTermRequested();
@@ -1487,8 +1538,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testLongPressGestureSelects(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testLongPressGestureSelects(@EnabledFeature int enabledFeature) throws Exception {
         longPressNode("intelligence");
         Assert.assertEquals("Intelligence", getSelectedText());
         waitForPanelToPeek();
@@ -1505,8 +1556,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testResolveGestureSelects(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testResolveGestureSelects(@EnabledFeature int enabledFeature) throws Exception {
         simulateResolveSearch("intelligence");
         Assert.assertEquals("Intelligence", getSelectedText());
         assertLoadedLowPriorityUrl();
@@ -1525,8 +1576,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapGestureOnSpecialCharacterDoesntSelect() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         clickNode("question-mark");
         Assert.assertNull(getSelectedText());
         assertPanelClosedOrUndefined();
@@ -1541,8 +1593,9 @@ public class ContextualSearchManagerTest {
     Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/841017")
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapGestureFollowedByScrollClearsSelection() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         clickWordNode("intelligence");
         fakeResponse(false, 200, "Intelligence", "Intelligence", "alternate-term", false);
         assertContainsParameters("Intelligence", "alternate-term");
@@ -1559,8 +1612,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapGestureFollowedByInvalidTextTapCloses() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         clickWordNode("states-far");
         waitForPanelToPeek();
         clickNode("question-mark");
@@ -1576,8 +1630,9 @@ public class ContextualSearchManagerTest {
      */
     @Test
     @DisabledTest
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapGestureFollowedByNonTextTap() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         clickWordNode("states-far");
         waitForPanelToPeek();
         clickNode("button");
@@ -1590,8 +1645,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapGestureFarAwayTogglesSelecting() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -1609,9 +1665,10 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     @DisabledTest(message = "https://crbug.com/1075895")
     public void testTapGesturesNearbyKeepSelecting() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         clickWordNode("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -1645,10 +1702,10 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1071080")
-    public void testLongPressGestureFollowedByScrollMaintainsSelection(boolean isLongpressDisabled)
-            throws Exception {
+    public void testLongPressGestureFollowedByScrollMaintainsSelection(
+            @EnabledFeature int enabledFeature) throws Exception {
         longPressNode("intelligence");
         waitForPanelToPeek();
         scrollBasePage();
@@ -1664,9 +1721,10 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     @DisabledTest(message = "See https://crbug.com/837998")
     public void testLongPressGestureFollowedByTapDoesntSelect() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         longPressNode("intelligence");
         waitForPanelToPeek();
         clickWordNode("states-far");
@@ -1684,10 +1742,10 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @FlakyTest(message = "Disabled in 2018 due to flakes.  See https://crbug.com/832539.")
-    public void testContextualSearchDismissedOnForegroundTabCrash(boolean isLongpressDisabled)
-            throws Exception {
+    public void testContextualSearchDismissedOnForegroundTabCrash(
+            @EnabledFeature int enabledFeature) throws Exception {
         triggerResolve("states");
         Assert.assertEquals("States", getSelectedText());
         waitForPanelToPeek();
@@ -1716,9 +1774,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testContextualSearchNotDismissedOnBackgroundTabCrash(boolean isLongpressDisabled)
-            throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testContextualSearchNotDismissedOnBackgroundTabCrash(
+            @EnabledFeature int enabledFeature) throws Exception {
         ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());
         final Tab tab2 =
@@ -1747,8 +1805,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testPromotesToTab(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testPromotesToTab(@EnabledFeature int enabledFeature) throws Exception {
         // -------- SET UP ---------
         // Track Tab creation with this helper.
         final CallbackHelper tabCreatedHelper = new CallbackHelper();
@@ -1799,8 +1857,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapOnRoleIgnored() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         @PanelState
         int initialState = mPanel.getPanelState();
         clickNode("role");
@@ -1814,8 +1873,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapOnARIAIgnored() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         @PanelState
         int initialState = mPanel.getPanelState();
         clickNode("aria");
@@ -1828,8 +1888,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapOnFocusableIgnored() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         @PanelState
         int initialState = mPanel.getPanelState();
         clickNode("focusable");
@@ -1847,8 +1908,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testExpandBeforeSearchTermResolution(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testExpandBeforeSearchTermResolution(@EnabledFeature int enabledFeature)
+            throws Exception {
         simulateSlowResolveSearch("states");
         assertNoWebContents();
 
@@ -1871,9 +1933,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
-    public void testSearchTermResolutionError(boolean isLongpressDisabled) throws Exception {
+    public void testSearchTermResolutionError(@EnabledFeature int enabledFeature) throws Exception {
         simulateSlowResolveSearch("states");
         assertSearchTermRequested();
         fakeResponse(false, 403, "", "", "", false);
@@ -1892,8 +1954,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testHttpsBeforeAcceptForOptOut(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testHttpsBeforeAcceptForOptOut(@EnabledFeature int enabledFeature)
+            throws Exception {
         mPolicy.overrideDecidedStateForTesting(false);
         mFakeServer.setShouldUseHttps(true);
 
@@ -1907,8 +1970,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testHttpsAfterAcceptForOptOut(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testHttpsAfterAcceptForOptOut(@EnabledFeature int enabledFeature) throws Exception {
         mPolicy.overrideDecidedStateForTesting(true);
         mFakeServer.setShouldUseHttps(true);
 
@@ -1921,8 +1984,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testHttpBeforeAcceptForOptOut(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testHttpBeforeAcceptForOptOut(@EnabledFeature int enabledFeature) throws Exception {
         mPolicy.overrideDecidedStateForTesting(false);
 
         triggerToResolveAndAssertPrefetch();
@@ -1934,8 +1997,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testHttpAfterAcceptForOptOut(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testHttpAfterAcceptForOptOut(@EnabledFeature int enabledFeature) throws Exception {
         mPolicy.overrideDecidedStateForTesting(true);
 
         triggerToResolveAndAssertPrefetch();
@@ -1974,9 +2037,10 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    public void testAppMenuSuppressedWhenExpanded(boolean isLongpressDisabled) throws Exception {
+    public void testAppMenuSuppressedWhenExpanded(@EnabledFeature int enabledFeature)
+            throws Exception {
         triggerResolve("states");
         tapPeekingBarToExpandAndAssert();
 
@@ -1995,8 +2059,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testAppMenuSuppressedWhenMaximized(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testAppMenuSuppressedWhenMaximized(@EnabledFeature int enabledFeature)
+            throws Exception {
         triggerResolve("states");
         flingPanelUpToTop();
         waitForPanelToMaximize();
@@ -2024,9 +2089,10 @@ public class ContextualSearchManagerTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
     // Only useful for disabling Tap triggering.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     @DisabledTest(message = "crbug.com/965706")
     public void testPromoOpenCountForUndecided() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         mPolicy.overrideDecidedStateForTesting(false);
 
         // A simple click / resolve / prefetch sequence without open should not change the counter.
@@ -2054,9 +2120,10 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
     public void testPromoOpenCountForDecided() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         mPolicy.overrideDecidedStateForTesting(true);
 
         // An open should not count for decided users.
@@ -2073,9 +2140,10 @@ public class ContextualSearchManagerTest {
     @Test
     @DisabledTest(message = "crbug.com/800334")
     @SmallTest
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     @Feature({"ContextualSearch"})
     public void testTapCount() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         resetCounters();
         Assert.assertEquals(0, mPolicy.getTapCount());
 
@@ -2165,8 +2233,9 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // Non-resolve gesture only applies when Tap is the primary gesture.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testNotifyObserversAfterNonResolve() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
         triggerNonResolve("states");
@@ -2187,8 +2256,9 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testNotifyObserversAfterLongPressWithoutSurroundings() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // Mark the user undecided so we won't allow sending surroundings.
         mPolicy.overrideDecidedStateForTesting(false);
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
@@ -2213,8 +2283,9 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testNotifyObserversAfterResolve(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testNotifyObserversAfterResolve(@EnabledFeature int enabledFeature)
+            throws Exception {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
         simulateResolveSearch("states");
@@ -2252,9 +2323,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testNotifyObserversOnClearSelectionAfterLongpress(boolean isLongpressDisabled)
-            throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testNotifyObserversOnClearSelectionAfterLongpress(
+            @EnabledFeature int enabledFeature) throws Exception {
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
         longPressNode("states");
@@ -2280,8 +2351,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testPreventHandlingCurrentSelectionModification() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         simulateNonResolveSearch("search");
 
         // Dismiss the Contextual Search panel.
@@ -2312,8 +2384,9 @@ public class ContextualSearchManagerTest {
     @LargeTest
     @Feature({"ContextualSearch"})
     @FlakyTest(message = "crbug.com/1036414, crbug.com/1039488")
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testTapALot() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         for (int i = 0; i < 50; i++) {
             clickToTriggerPrefetch();
             assertSearchTermRequested();
@@ -2327,8 +2400,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testExternalNavigationWithUserGesture(boolean isLongpressDisabled) {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testExternalNavigationWithUserGesture(@EnabledFeature int enabledFeature) {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(new ExternalNavigationDelegateImpl(
                         mActivityTestRule.getActivity().getActivityTab()));
@@ -2354,8 +2427,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testRedirectedExternalNavigationWithUserGesture(boolean isLongpressDisabled) {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testRedirectedExternalNavigationWithUserGesture(
+            @EnabledFeature int enabledFeature) {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(new ExternalNavigationDelegateImpl(
                         mActivityTestRule.getActivity().getActivityTab()));
@@ -2390,8 +2464,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testExternalNavigationWithoutUserGesture(boolean isLongpressDisabled) {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testExternalNavigationWithoutUserGesture(@EnabledFeature int enabledFeature) {
         final ExternalNavigationHandler externalNavHandler =
                 new ExternalNavigationHandler(new ExternalNavigationDelegateImpl(
                         mActivityTestRule.getActivity().getActivityTab()));
@@ -2413,8 +2487,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testSelectionExpansionOnSearchTermResolution(boolean isLongpressDisabled)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testSelectionExpansionOnSearchTermResolution(@EnabledFeature int enabledFeature)
             throws Exception {
         mFakeServer.reset();
         triggerResolve("intelligence");
@@ -2440,8 +2514,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testResolveContentVisibility(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testResolveContentVisibility(@EnabledFeature int enabledFeature) throws Exception {
         // Simulate a resolving search and make sure Content is not visible.
         simulateResolveSearch("search");
         assertWebContentsCreatedButNeverMadeVisible();
@@ -2464,8 +2538,9 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     // Non-resolve gesture only applies when Tap is the primary gesture.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testNonResolveContentVisibility() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // Simulate a non-resolve search and make sure no Content is created.
         simulateNonResolveSearch("search");
         assertNoWebContents();
@@ -2488,9 +2563,9 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @FlakyTest(message = "crbug.com/1032955")
-    public void testResolveMultipleSwipeOnlyLoadsContentOnce(boolean isLongpressDisabled)
+    public void testResolveMultipleSwipeOnlyLoadsContentOnce(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and make sure Content is not visible.
         simulateResolveSearch("search");
@@ -2526,9 +2601,10 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P, message = "crbug.com/1032760")
     public void testNonResolveMultipleSwipeOnlyLoadsContentOnce() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // Simulate a non-resolve search and make sure no Content is created.
         simulateNonResolveSearch("search");
         assertNoWebContents();
@@ -2565,8 +2641,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testChainedSearchCreatesNewContent(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testChainedSearchCreatesNewContent(@EnabledFeature int enabledFeature)
+            throws Exception {
         // Simulate a resolving search and make sure Content is not visible.
         simulateResolveSearch("search");
         assertWebContentsCreatedButNeverMadeVisible();
@@ -2605,8 +2682,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testChainedSearchLoadsCorrectSearchTerm(boolean isLongpressDisabled)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testChainedSearchLoadsCorrectSearchTerm(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and make sure Content is not visible.
         simulateResolveSearch("search");
@@ -2651,8 +2728,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testChainedSearchContentVisibility() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // Simulate a resolving search and make sure Content is not visible.
         simulateResolveSearch("search");
         assertWebContentsCreatedButNeverMadeVisible();
@@ -2686,8 +2764,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTapCloseRemovedFromHistory(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTapCloseRemovedFromHistory(@EnabledFeature int enabledFeature)
+            throws Exception {
         // Simulate a resolving search and make sure a URL was loaded.
         simulateResolveSearch("search");
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -2707,8 +2786,9 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTapExpandNotRemovedFromHistory(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTapExpandNotRemovedFromHistory(@EnabledFeature int enabledFeature)
+            throws Exception {
         // Simulate a resolving search and make sure a URL was loaded.
         simulateResolveSearch("search");
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -2730,8 +2810,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testChainedTapsRemovedFromHistory(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testChainedTapsRemovedFromHistory(@EnabledFeature int enabledFeature)
+            throws Exception {
         // Simulate a resolving search and make sure a URL was loaded.
         simulateResolveSearch("search");
         String url1 = mFakeServer.getLoadedUrl();
@@ -2771,8 +2852,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTapWithLanguage(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTapWithLanguage(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving a German word should trigger translation.
         simulateResolveSearch("german");
 
@@ -2788,8 +2869,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTapWithoutLanguage(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTapWithoutLanguage(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving an English word should NOT trigger translation.
         simulateResolveSearch("search");
 
@@ -2803,8 +2884,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testNonResolveTranslates() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // LongPress on any word should trigger translation.
         simulateNonResolveSearch("search");
         // Make sure we did try to trigger translate.
@@ -2820,8 +2902,8 @@ public class ContextualSearchManagerTest {
     @Test
     @LargeTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTranslateCaption(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTranslateCaption(@EnabledFeature int enabledFeature) throws Exception {
         // Resolving a German word should trigger translation.
         simulateResolveSearch("german");
 
@@ -2845,8 +2927,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.EnableFeatures("ContextualSearchTranslations")
-    public void testTranslationFeatureImpliesLongpressFeature() throws Exception {
+    public void testTranslationsFeatureCanResolveLongpressGesture() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_TRANSLATIONS);
+
         Assert.assertTrue(mPolicy.canResolveLongpress());
     }
 
@@ -2863,8 +2946,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTapContentAndExpandPanelInFullscreen(boolean isLongpressDisabled)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTapContentAndExpandPanelInFullscreen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Toggle tab to fulllscreen.
         FullscreenTestUtils.togglePersistentFullscreenAndAssert(
@@ -2890,9 +2973,10 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Device(type = {UiDisableIf.PHONE}) // Flaking on phones crbug.com/765796
-    public void testPanelDismissedOnToggleFullscreen(boolean isLongpressDisabled) throws Exception {
+    public void testPanelDismissedOnToggleFullscreen(@EnabledFeature int enabledFeature)
+            throws Exception {
         // Simulate a resolving search and assert that the panel peeks.
         simulateResolveSearch("search");
 
@@ -2922,8 +3006,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testImageControl(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testImageControl(@EnabledFeature int enabledFeature) throws Exception {
         simulateResolveSearch("search");
 
         final ContextualSearchImageControl imageControl = mPanel.getImageControl();
@@ -2952,13 +3036,13 @@ public class ContextualSearchManagerTest {
      * Tests that Contextual Search is fully disabled when offline.
      */
     @Test
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @FlakyTest(message = "Disabled in 2017.  https://crbug.com/761946")
     // @SmallTest
     // @Feature({"ContextualSearch"})
     // // NOTE: Remove the flag so we will run just this test with onLine detection enabled.
     // @CommandLineFlags.Remove(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
-    public void testNetworkDisconnectedDeactivatesSearch(boolean isLongpressDisabled)
+    public void testNetworkDisconnectedDeactivatesSearch(@EnabledFeature int enabledFeature)
             throws Exception {
         setOnlineStatusAndReload(false);
         longPressNodeWithoutWaiting("states");
@@ -2982,8 +3066,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testQuickActionCaptionAndImage(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testQuickActionCaptionAndImage(@EnabledFeature int enabledFeature)
+            throws Exception {
         CompositorAnimationHandler.setTestingMode(true);
 
         // Simulate a resolving search to show the Bar, then set the quick action data.
@@ -3035,8 +3120,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testQuickActionIntent(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testQuickActionIntent(@EnabledFeature int enabledFeature) throws Exception {
         // Add a new filter to the activity monitor that matches the intent that should be fired.
         IntentFilter quickActionFilter = new IntentFilter(Intent.ACTION_VIEW);
         quickActionFilter.addDataScheme("tel");
@@ -3065,9 +3150,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1075895")
-    public void testQuickActionUrl(boolean isLongpressDisabled) throws Exception {
+    public void testQuickActionUrl(@EnabledFeature int enabledFeature) throws Exception {
         final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
 
         // Simulate a resolving search to show the Bar, then set the quick action data.
@@ -3107,8 +3192,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testDictionaryDefinitions(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testDictionaryDefinitions(@EnabledFeature int enabledFeature) throws Exception {
         runDictionaryCardTest(CardTag.CT_DEFINITION);
     }
 
@@ -3119,8 +3204,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testContextualDictionaryDefinitions(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testContextualDictionaryDefinitions(@EnabledFeature int enabledFeature)
+            throws Exception {
         runDictionaryCardTest(CardTag.CT_CONTEXTUAL_DEFINITION);
     }
 
@@ -3130,8 +3216,8 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testAccesibilityMode(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testAccesibilityMode(@EnabledFeature int enabledFeature) throws Exception {
         mManager.onAccessibilityModeChanged(true);
 
         // Simulate a tap that resolves to show the Bar.
@@ -3156,8 +3242,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testAllInternalStatesVisitedResolvingTap() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // Set up a tracking version of the Internal State Controller.
         ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
                 ContextualSearchInternalStateControllerWrapper
@@ -3187,8 +3274,11 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.EnableFeatures("ContextualSearchLongpressResolve")
-    public void testAllInternalStatesVisitedResolvingLongpress() throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testAllInternalStatesVisitedResolvingLongpress(@EnabledFeature int enabledFeature)
+            throws Exception {
+        if (!mPolicy.canResolveLongpress()) return;
+
         // Set up a tracking version of the Internal State Controller.
         ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
                 ContextualSearchInternalStateControllerWrapper
@@ -3218,8 +3308,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testAllInternalStatesVisitedNonResolveLongpress() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         // Set up a tracking version of the Internal State Controller.
         ContextualSearchInternalStateControllerWrapper internalStateControllerWrapper =
                 ContextualSearchInternalStateControllerWrapper
@@ -3246,9 +3337,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTriggeringContextualSearchHidesFindInPageOverlay(boolean isLongpressDisabled)
-            throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTriggeringContextualSearchHidesFindInPageOverlay(
+            @EnabledFeature int enabledFeature) throws Exception {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.find_in_page_id);
 
@@ -3284,8 +3375,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testNotifyObserversOnExpandSelection(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testNotifyObserversOnExpandSelection(@EnabledFeature int enabledFeature)
+            throws Exception {
         mPolicy.overrideDecidedStateForTesting(true);
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
@@ -3313,8 +3405,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testSecondTap() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
+
         TestContextualSearchObserver observer = new TestContextualSearchObserver();
         mManager.addObserver(observer);
 
@@ -3343,8 +3436,8 @@ public class ContextualSearchManagerTest {
     @Feature({"ContextualSearch"})
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     @MinAndroidSdkLevel(Build.VERSION_CODES.N)
-    @ParameterAnnotations.UseMethodParameter(LongpressResolveParams.class)
-    public void testTabReparenting(boolean isLongpressDisabled) throws Exception {
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
+    public void testTabReparenting(@EnabledFeature int enabledFeature) throws Exception {
         // Move our "tap_test" tab to another activity.
         final ChromeActivity ca = mActivityTestRule.getActivity();
         int testTabId = ca.getActivityTab().getId();
@@ -3372,8 +3465,8 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     // TODO(donnd): Investigate support for logging user interactions for Long-press.
-    @Features.DisableFeatures("ContextualSearchLongpressResolve")
     public void testLoggedEventId() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_NONE);
         mFakeServer.reset();
         simulateResolveSearch("intelligence-logged-event-id");
         tapPeekingBarToExpandAndAssert();
@@ -3402,8 +3495,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.EnableFeatures("ContextualSearchLongpressResolve")
     public void testTapIsIgnoredWithLongpressResolveEnabled() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+
         clickNode("states");
         Assert.assertNull(getSelectedText());
         assertPanelClosedOrUndefined();
@@ -3413,8 +3507,9 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.EnableFeatures("ContextualSearchLongpressResolve")
     public void testLongpressResolveEnabled() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+
         longPressNode("states");
         assertLoadedNoUrl();
         assertSearchTermRequested();
@@ -3428,11 +3523,12 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
-    @Features.EnableFeatures("ContextualSearchLongpressResolve")
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,
             message = "Flaky < P, https://crbug.com/1048827")
     public void
     testLongpressExtendingSelectionExactResolve() throws Exception {
+        FeatureList.setTestFeatures(ENABLE_LONGPRESS);
+
         // First test regular long-press.  It should not require an exact resolve.
         longPressNode("search");
         fakeAResponse();

@@ -4,14 +4,10 @@ public_headers = [
   "//printing/page_range.h",
   "//ui/gfx/geometry/size.h",
 ]
-traits_headers = [ "//chrome/browser/chromeos/arc/print/print_mojom_traits.h" ]
-sources = [
-  "//chrome/browser/chromeos/arc/print/print_mojom_traits.cc",
-]
+traits_headers = [ "//components/arc/mojom/print_mojom_traits.h" ]
+sources = [ "//components/arc/mojom/print_mojom_traits.cc" ]
 deps = []
-public_deps = [
-  "//printing:printing",
-]
+public_deps = [ "//printing:printing" ]
 type_mappings = [
   "arc.mojom.PrintPageRange=::printing::PageRange",
   "arc.mojom.PrintResolution=::gfx::Size",

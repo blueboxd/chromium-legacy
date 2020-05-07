@@ -69,8 +69,9 @@ OverviewItem* GetOverviewItemForWindow(aura::Window* window) {
 
 gfx::Rect ShrinkBoundsByHotseatInset(const gfx::Rect& rect) {
   gfx::Rect new_rect = rect;
-  const int hotseat_bottom_inset = ShelfConfig::Get()->hotseat_size() +
-                                   ShelfConfig::Get()->hotseat_bottom_padding();
+  const int hotseat_bottom_inset =
+      ShelfConfig::Get()->GetHotseatSize(/*force_dense=*/false) +
+      ShelfConfig::Get()->hotseat_bottom_padding();
   new_rect.Inset(0, 0, 0, hotseat_bottom_inset);
   return new_rect;
 }

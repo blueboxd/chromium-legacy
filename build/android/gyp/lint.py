@@ -26,6 +26,21 @@ from util import resource_utils
 
 _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md' # pylint: disable=line-too-long
 
+# These checks are not useful for test targets and adds an unnecessary burden
+# to suppress them.
+_DISABLED_FOR_TESTS = [
+    # We should not require test strings.xml files to explicitly add
+    # translatable=false since they are not translated and not used in
+    # production.
+    "MissingTranslation",
+    # Test strings.xml files often have simple names and are not translatable,
+    # so it may conflict with a production string and cause this error.
+    "Untranslatable",
+    # Test targets often use the same strings target and resources target as the
+    # production targets but may not use all of them.
+    "UnusedResources",
+]
+
 
 def _RunLint(lint_path,
              config_path,
@@ -40,6 +55,7 @@ def _RunLint(lint_path,
              manifest_package,
              resource_sources,
              resource_zips,
+             testonly_target=False,
              can_fail_build=False,
              include_unexpected=False,
              silent=False):
@@ -91,6 +107,8 @@ def _RunLint(lint_path,
     ]
     if config_path:
       cmd.extend(['--config', _RebasePath(config_path)])
+    if testonly_target:
+      cmd.extend(['--disable', ','.join(_DISABLED_FOR_TESTS)])
 
     tmp_dir_counter = [0]
     def _NewTempSubdir(prefix, append_digit=True):
@@ -288,6 +306,11 @@ def _FindInDirectories(directories, filename_filter):
 def _ParseArgs(argv):
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
+  parser.add_argument('--testonly',
+                      action='store_true',
+                      help='If set, some checks like UnusedResources will be '
+                      'disabled since they are not helpful for test '
+                      'targets.')
   parser.add_argument('--lint-path', required=True,
                       help='Path to lint executable.')
   parser.add_argument('--product-dir', required=True,
@@ -378,6 +401,7 @@ def main():
            args.manifest_package,
            resource_sources,
            args.resource_zips,
+           testonly_target=args.testonly,
            can_fail_build=args.can_fail_build,
            include_unexpected=args.include_unexpected_failures,
            silent=args.silent)

@@ -17,7 +17,6 @@
 #include "components/safe_browsing/core/db/v4_test_util.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"

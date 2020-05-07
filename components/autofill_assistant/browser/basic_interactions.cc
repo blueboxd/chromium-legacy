@@ -35,7 +35,8 @@ bool BooleanAnd(UserModel* user_model,
   for (const auto& value : *values) {
     result &= value.booleans().values(0);
   }
-  user_model->SetValue(result_model_identifier, SimpleValue(result));
+  user_model->SetValue(result_model_identifier,
+                       SimpleValue(result, ContainsClientOnlyValue(*values)));
   return true;
 }
 
@@ -58,7 +59,8 @@ bool BooleanOr(UserModel* user_model,
   for (const auto& value : *values) {
     result |= value.booleans().values(0);
   }
-  user_model->SetValue(result_model_identifier, SimpleValue(result));
+  user_model->SetValue(result_model_identifier,
+                       SimpleValue(result, ContainsClientOnlyValue(*values)));
   return true;
 }
 
@@ -77,8 +79,9 @@ bool BooleanNot(UserModel* user_model,
     return false;
   }
 
-  user_model->SetValue(result_model_identifier,
-                       SimpleValue(!value->booleans().values(0)));
+  user_model->SetValue(
+      result_model_identifier,
+      SimpleValue(!value->booleans().values(0), value->is_client_side_only()));
   return true;
 }
 
@@ -146,7 +149,8 @@ bool ValueToString(UserModel* user_model,
       return false;
   }
 
-  user_model->SetValue(result_model_identifier, SimpleValue(result));
+  user_model->SetValue(result_model_identifier,
+                       SimpleValue(result, value->is_client_side_only()));
   return true;
 }
 
@@ -171,8 +175,10 @@ bool Compare(UserModel* user_model,
   }
 
   if (proto.mode() == ValueComparisonProto::EQUAL) {
-    user_model->SetValue(result_model_identifier,
-                         SimpleValue(*value_a == *value_b));
+    user_model->SetValue(
+        result_model_identifier,
+        SimpleValue(*value_a == *value_b,
+                    ContainsClientOnlyValue({*value_a, *value_b})));
     return true;
   }
 
@@ -220,7 +226,9 @@ bool Compare(UserModel* user_model,
       NOTREACHED();
       return false;
   }
-  user_model->SetValue(result_model_identifier, SimpleValue(result));
+  user_model->SetValue(
+      result_model_identifier,
+      SimpleValue(result, ContainsClientOnlyValue({*value_a, *value_b})));
   return true;
 }
 
@@ -246,7 +254,8 @@ bool IntegerSum(UserModel* user_model,
     sum += value.ints().values(0);
   }
 
-  user_model->SetValue(result_model_identifier, SimpleValue(sum));
+  user_model->SetValue(result_model_identifier,
+                       SimpleValue(sum, ContainsClientOnlyValue(*values)));
   return true;
 }
 

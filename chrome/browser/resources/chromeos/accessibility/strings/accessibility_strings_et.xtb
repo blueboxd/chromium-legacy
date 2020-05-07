@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Leidke soovitud klahv ja tõstke sisestamiseks sõrm ekraanilt</translation>
 <translation id="1012173283529841972">Loendiüksus</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Pühkige kahe sõrmega paremale</translation>
 <translation id="1022586497894531524">Kas kasutate esimest korda ChromeVoxi suulist tagasisidet? Selles kiirõpetuses selgitatakse ChromeVoxi kasutamiseks vajalikku põhiteavet.</translation>
 <translation id="1025074108959230262">Nakkerežiim on keelatud</translation>
 <translation id="1031961866430398710">siis</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Eelmist loendiüksust ei ole</translation>
 <translation id="1114836634143403764">Soovitus</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "braavo", "c": "charlie", "d": "delta", "e": "eesti", "f": "fokstrott", "g": "golf", "h": "hotell", "i": "india", "j": "juuni","k": "kilo", "l": "liim", "m": "mati", "n": "november", "o": "oskar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "š": "šokolaad", "z": "zoo", "ž": "žanr",  "t": "tango", "u": "uni", "v": "viktor", "w": "wales","x": "xavier", "y": "yankee", "õ": "õnne", "ä": "ärni", "ö": "ööbik", "ü": "ülle"}</translation>
+<translation id="1120938014254001895">Pühkige kahe sõrmega üles</translation>
 <translation id="1126928665165112660">Ei ole kursiivis</translation>
 <translation id="113582498867142724">Kollektsioon <ph name="TAG" />, mis hõlmab <ph name="NUM" /> üksust</translation>
 <translation id="1161762950103988776">Hüpe</translation>
@@ -105,6 +107,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Järgmine graafik</translation>
 <translation id="1756785467854861272">Tume magenta</translation>
+<translation id="1765245556747822181">Pühkige ühe sõrmega üles</translation>
 <translation id="1771761307086386028">Keri paremale</translation>
 <translation id="1781173782405573156">Läbimisklahv</translation>
 <translation id="1787176709638001873">Parooli muutmise tekst</translation>
@@ -159,6 +162,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="225732394367814946">Suurenda kõne kiirust</translation>
 <translation id="2267538686624070261">Kirjaviga jäeti alles</translation>
 <translation id="2267945578749931355">Järgmine tärk</translation>
+<translation id="2278490101488436824">Pühkige kolme sõrmega vasakule</translation>
 <translation id="2305942658236913680">Järgmist pealkirja ei ole</translation>
 <translation id="2311237334957139798">Eelmisele tasemele liikumine</translation>
 <translation id="2314393392395134769">Pole allindeks</translation>
@@ -232,12 +236,14 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="2867808975387772810">Bibliograafia</translation>
 <translation id="2873259058405069099">Mine tabeli algusesse</translation>
 <translation id="287383510823843610">Tumeoranž</translation>
+<translation id="2879867157561757640">Pühkige kolme sõrmega alla</translation>
 <translation id="288178314850623291">Teatud elementide vahelejätmiseks kasutage hüppekäske. Päiste hulgas edasihüppamiseks vajutage otsinguklahvi ja klahvi H, tagasihüppamiseks otsinguklahvi, tõstuklahvi ja klahvi H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minut}other{minutit}}</translation>
 <translation id="2894654529758326923">Teave</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vasak loogeline sulg}other{# vasakut loogelist sulgu}}</translation>
 <translation id="2909584066358367921">Järgmist nuppu ei ole</translation>
 <translation id="2911433807131383493">ChromeVoxi õpetuse avamine</translation>
+<translation id="2912405967290226587">Pühkige kolme sõrmega paremale</translation>
 <translation id="2937799153569150791">Järgmist 3. taseme pealkirja ei ole</translation>
 <translation id="2942710183375260152">Tume kiltsinine</translation>
 <translation id="2943596527105977722">Tumekuldne</translation>
@@ -245,6 +251,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="2968634799764242930">Mereroheline</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulaator}other{# tabulaatorit}}</translation>
 <translation id="2972205263822847197">Tööriista nõuanne</translation>
+<translation id="297825089465017871">Pühkige kahe sõrmega vasakule</translation>
 <translation id="2998131015536248178">Eelmine tärk</translation>
 <translation id="2999559350546931576">Vähenda helikõrgust</translation>
 <translation id="3014130421870723208">@muut. 8-p</translation>
@@ -254,6 +261,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="3046838483509668188">ChromeVoxi valikud</translation>
 <translation id="3060756054951570867">Menüü <ph name="TITLE" /> on avatud</translation>
 <translation id="3060880924447482063">Üksuste kaupa liikumiseks pühkige vasakule või paremale</translation>
+<translation id="3070245424257836917">Pühkige kolme sõrmega üles</translation>
 <translation id="3078345202707391975">Järgmine 2. taseme pealkiri</translation>
 <translation id="3078740164268491126">tabel</translation>
 <translation id="3082249673510793544">Tagasikerimine</translation>
@@ -459,6 +467,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="4677535310137735442">Liigu järgmisesse veergu</translation>
 <translation id="4688873778442829762">võrg</translation>
 <translation id="4693675773662933727">Eelmine maamärk</translation>
+<translation id="4710166929009737753">Pühkige ühe sõrmega paremale</translation>
 <translation id="4712898966495541134">Valiku lõpp</translation>
 <translation id="4740661827607246557">Abikäsud</translation>
 <translation id="4755857887974653209">Keela ChromeVox</translation>
@@ -709,9 +718,11 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="6793101435925451627">lndkast</translation>
 <translation id="6815255864998354418">Sidrunkollane</translation>
 <translation id="6816066673340002913">Helekuldne</translation>
+<translation id="6826226459053491773">Pühkige kahe sõrmega alla</translation>
 <translation id="6833103209700200188">Jalus</translation>
 <translation id="6837853484260746864">Valige hääl:</translation>
 <translation id="6858047746862060282">Proloog</translation>
+<translation id="6859876496651143278">Pühkige ühe sõrmega vasakule</translation>
 <translation id="6865519907510167493">Kirjaviga</translation>
 <translation id="6894148351896207544">Esitage praegune kellaaeg ja kuupäev</translation>
 <translation id="6896758677409633944">Kopeeri</translation>
@@ -994,6 +1005,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="923331726185079994">ChromeVox on värskendatud</translation>
 <translation id="93384979447910801">Tume mereroheline</translation>
 <translation id="948171205378458592">Vähenda kõne kiirust</translation>
+<translation id="958854023026327378">Pühkige ühe sõrmega alla</translation>
 <translation id="962913030769097253">Järgmine 1. taseme pealkiri</translation>
 <translation id="966588271015727539">Valige Bluetoothiga Braille' ekraan</translation>
 <translation id="973955474346881951">Luba/keela püsiv režiim</translation>

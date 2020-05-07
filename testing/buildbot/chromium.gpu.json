@@ -2130,7 +2130,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2157,7 +2157,7 @@
           "--test-launcher-jobs=1",
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2181,7 +2181,7 @@
         "args": [
           "--use-gpu-in-tests"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2204,7 +2204,7 @@
         "args": [
           "--use-gpu-in-tests"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2234,8 +2234,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2265,8 +2265,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2296,8 +2296,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2327,8 +2327,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2362,8 +2362,8 @@
           "--expected-device-id",
           "0a2e"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2397,8 +2397,8 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2437,8 +2437,8 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2469,8 +2469,8 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "rendering_representative_perf_tests",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2499,8 +2499,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2530,8 +2530,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -2562,8 +2562,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3498,7 +3498,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3527,7 +3527,7 @@
           "--test-launcher-jobs=1",
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3553,7 +3553,7 @@
         "args": [
           "--use-gpu-in-tests"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3578,7 +3578,7 @@
         "args": [
           "--use-gpu-in-tests"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3610,8 +3610,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3643,8 +3643,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3676,8 +3676,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3709,8 +3709,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3746,8 +3746,8 @@
           "--expected-device-id",
           "6821"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3783,8 +3783,8 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3825,8 +3825,8 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3859,8 +3859,8 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "rendering_representative_perf_tests",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3891,8 +3891,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3924,8 +3924,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -3958,8 +3958,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5161,7 +5161,7 @@
           "--use-gpu-in-tests",
           "--test-launcher-retry-limit=0"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5198,7 +5198,7 @@
           "--test-launcher-jobs=1",
           "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5232,7 +5232,7 @@
         "args": [
           "--use-gpu-in-tests"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5265,7 +5265,7 @@
         "args": [
           "--use-gpu-in-tests"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5298,7 +5298,7 @@
         "args": [
           "--ignore-runtime-requirements=*"
         ],
-        "isolate_coverage_data": true,
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5339,8 +5339,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5380,8 +5380,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5422,8 +5422,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --disable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5463,8 +5463,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5504,8 +5504,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5549,8 +5549,8 @@
           "--expected-device-id",
           "1cb3"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5594,8 +5594,8 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5644,8 +5644,8 @@
           "${buildername}",
           "--git-revision=${got_revision}"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5687,8 +5687,8 @@
           "--benchmarks=rendering.desktop",
           "--browser=release_x64"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "rendering_representative_perf_tests",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5727,8 +5727,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5768,8 +5768,8 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -5810,8 +5810,8 @@
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json"
         ],
-        "isolate_coverage_data": true,
         "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"

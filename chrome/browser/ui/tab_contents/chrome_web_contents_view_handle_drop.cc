@@ -81,8 +81,12 @@ void HandleOnPerformDrop(
   safe_browsing::DeepScanningDialogDelegate::Data data;
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  auto connector =
+      drop_data.filenames.empty()
+          ? enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY
+          : enterprise_connectors::AnalysisConnector::FILE_ATTACHED;
   if (!safe_browsing::DeepScanningDialogDelegate::IsEnabled(
-          profile, web_contents->GetLastCommittedURL(), &data)) {
+          profile, web_contents->GetLastCommittedURL(), &data, connector)) {
     std::move(callback).Run(
         content::WebContentsViewDelegate::DropCompletionResult::kContinue);
     return;

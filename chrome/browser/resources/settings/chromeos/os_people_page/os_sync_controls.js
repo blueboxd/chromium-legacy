@@ -12,7 +12,7 @@
 const SyncPrefsIndividualDataTypes = [
   'osAppsSynced',
   'osPreferencesSynced',
-  'wifiConfigurationsSynced',
+  'osWifiConfigurationsSynced',
 
   // Note: Wallpaper uses a different naming scheme because it's stored as its
   // own separate pref instead of through the sync service.

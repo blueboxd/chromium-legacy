@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">חלון אפליקציה</translation>
 <translation id="1531275250079031713">‏הצגת תיבת הדו-שיח 'הוספת רשת Wi-Fi חדשה'</translation>
 <translation id="1536754031901697553">מתנתק...</translation>
+<translation id="1537254971476575106">מגדיל למסך מלא</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1540605929960647700">הפעלת מצב הדגמה</translation>
 <translation id="1542514202066550870">‏הכרטיסייה הזו מציגה תוכן VR במשקפי VR.</translation>
@@ -1014,7 +1015,7 @@
 <translation id="2317842250900878657">%<ph name="PROGRESS_PERCENT" />הושלמו</translation>
 <translation id="2318143611928805047">גודל נייר</translation>
 <translation id="2318817390901984578">‏כדי להשתמש באפליקציות Android עליך לטעון את ה-<ph name="DEVICE_TYPE" /> ולעדכן אותו.</translation>
-<translation id="2319993584768066746">הצגה של תמונות במסך הכניסה</translation>
+<translation id="2319993584768066746">הצגת תמונות במסך הכניסה</translation>
 <translation id="2322193970951063277">כותרות עליונות ותחתונות</translation>
 <translation id="2322318151094136999">תוצג שאלה כשאתר רוצה לגשת אל יציאות טוריות (מומלץ)</translation>
 <translation id="2325444234681128157">שמירת סיסמה</translation>
@@ -1161,6 +1162,7 @@
 <translation id="2501173422421700905">אישור בהמתנה</translation>
 <translation id="2501278716633472235">חזרה</translation>
 <translation id="2501797496290880632">הקלד קיצור</translation>
+<translation id="2501920221385095727">מקשים דביקים</translation>
 <translation id="2502441965851148920">הופעלו עדכונים אוטומטיים. מנהל המערכת השבית את העדכונים הידניים.</translation>
 <translation id="2502719318159902502">גישה מלאה</translation>
 <translation id="2505127913256479918">החשבון הזה בפיקוח יוסר בקרוב</translation>
@@ -1547,6 +1549,7 @@
 <translation id="2993517869960930405">מידע על היישום</translation>
 <translation id="2996286169319737844">‏הנתונים מוצפנים באמצעות ביטוי הסיסמה שלך לסינכרון. ההצפנה לא כוללת אמצעי תשלום וכתובות מ-Google Pay.</translation>
 <translation id="2996722619877761919">היפוך בצד הארוך</translation>
+<translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3001144475369593262">חשבונות לילדים</translation>
 <translation id="3003144360685731741">רשתות מועדפות</translation>
 <translation id="3003623123441819449">‏מטמון של CSS</translation>
@@ -1591,7 +1594,7 @@
 <translation id="3046910703532196514">דף אינטרנט, שלם</translation>
 <translation id="304747341537320566">מנועי דיבור</translation>
 <translation id="3047644958362961983">‏המידע הזה עוזר לנו להבין בצורה טובה יותר את הבעיה שלך ב-Assistant. הוא נשמר לתקופה של עד 90 ימים והגישה אליו מוגבלת: רק צוותי ההנדסה והמשוב המתאימים רשאים לגשת אליו.</translation>
-<translation id="3051250416341590778">גודל הצגה</translation>
+<translation id="3051250416341590778">גודל תצוגה</translation>
 <translation id="3053013834507634016">שימוש במפתח אישור </translation>
 <translation id="3053273573829329829">הפעלה של קוד אימות משתמש</translation>
 <translation id="3055590424724986000">באמצעות ספק שנבחר על ידך</translation>
@@ -2481,6 +2484,7 @@
 <translation id="4211851069413100178">‏שליחה של נתוני אבחון ונתונים על השימוש. אפשר לעזור בשיפור החוויה ב-Android. לשם כך יש לשלוח אל Google באופן אוטומטי נתוני אבחון ונתונים לגבי השימוש במכשיר ובאפליקציות. נתונים אלה יעזרו לשמור על יציבות המערכת והאפליקציות, כמו גם לביצוע שיפורים אחרים. חלק מהנתונים הנצברים יעזרו גם לאפליקציות ולשותפים של Google, כמו מפתחי Android. ה<ph name="BEGIN_LINK1" />הגדרה<ph name="END_LINK1" /> הזו נאכפת על-ידי הבעלים. ייתכן שהבעלים יבחרו לשלוח אל Google נתוני אבחון ונתונים לגבי אופן השימוש במכשיר הזה. אם הופעלה האפשרות 'פעילות באתרי אינטרנט ובאפליקציות נוספים', ייתכן שהנתונים יישמרו בחשבון Google שלך. <ph name="BEGIN_LINK2" />מידע נוסף<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">יצא</translation>
 <translation id="42137655013211669">הגישה למשאב זה נאסרה על-ידי השרת.</translation>
+<translation id="4217571870635786043">הכתבה</translation>
 <translation id="4218274196133425560">הסרת החריגה של <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">קרתה שגיאה בזמן ההפעלה.</translation>
 <translation id="4222772810963087151">‏פרטי גרסת ה-Build</translation>
@@ -3165,6 +3169,7 @@
 <translation id="5204967432542742771">הזן סיסמה</translation>
 <translation id="5206215183583316675">האם למחוק את "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">שגיאה בייבוא האישור</translation>
+<translation id="5207949376430453814">הדגשה של סמן הטקסט</translation>
 <translation id="5209320130288484488">לא נמצאו מכשירים</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
 <translation id="5213481667492808996">שירות הנתונים של '<ph name="NAME" />' מוכן לשימוש</translation>
@@ -5000,7 +5005,7 @@
 <translation id="7662283695561029522">הקש כדי להגדיר</translation>
 <translation id="7663719505383602579">מקבל: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">‏מכשיר Bluetooth שאינו נתמך: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="7665082356120621510">הקצאת שטח דיסק קבוע</translation>
+<translation id="7665082356120621510">הקצאת שטח קבוע</translation>
 <translation id="7665369617277396874">חשבון חדש</translation>
 <translation id="7665940458857700755">‏הפעולה הזו תגרום למחיקת כל הנתונים וקובצי ה-cookie שאוחסנו על ידי קבוצת האתרים <ph name="SITE_GROUP_NAME" /> ועל ידי כל האתרים שכלולים בקבוצה.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{קוד אימות שגוי. נשאר לך ניסיון אחד.}two{קוד אימות שגוי. נשארו לך # ניסיונות.}many{קוד אימות שגוי. נשארו לך # ניסיונות.}other{קוד אימות שגוי. נשארו לך # ניסיונות.}}</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">הצטרף לסיור</translation>
 <translation id="7766838926148951335">אשר הרשאות</translation>
 <translation id="7768770796815395237">שינוי</translation>
+<translation id="7768784765476638775">הקראה</translation>
 <translation id="7769672763586021400">מזהה דגם</translation>
 <translation id="7770612696274572992">התמונה הועתקה ממכשיר אחר</translation>
 <translation id="7770651108375708429">‏התנתקות מרשת ה-Wi-Fi</translation>
@@ -6123,7 +6129,7 @@
 <translation id="9076523132036239772">מצטערים, לא ניתן לאמת את האימייל או הסיסמה שלך. נסה תחילה להתחבר לרשת.</translation>
 <translation id="9084064520949870008">פתח כחלון</translation>
 <translation id="9085256200913095638">שכפול הכרטיסייה שנבחרה</translation>
-<translation id="9087949559523851360">הוספה של משתמש מוגבל</translation>
+<translation id="9087949559523851360">הוספת משתמש בעל הרשאות מוגבלות</translation>
 <translation id="9088234649737575428"><ph name="PLUGIN_NAME" /> חסום לפי מדיניות הארגון</translation>
 <translation id="9088446193279799727">‏לא ניתן להגדיר את Linux. יש להתחבר לאינטרנט ולנסות שוב.</translation>
 <translation id="9088917181875854783">אשר שסיסמה זו מוצגת ב-"<ph name="DEVICE_NAME" />":</translation>

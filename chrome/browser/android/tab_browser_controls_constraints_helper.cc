@@ -6,7 +6,6 @@
 
 #include "chrome/android/chrome_jni_headers/TabBrowserControlsConstraintsHelper_jni.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
@@ -45,12 +44,6 @@ void TabBrowserControlsConstraintsHelper::UpdateState(
   DCHECK(web_contents);
   web_contents->GetMainFrame()->UpdateBrowserControlsState(
       constraints_state, current_state, animate);
-
-  if (web_contents->ShowingInterstitialPage()) {
-    web_contents->GetInterstitialPage()
-        ->GetMainFrame()
-        ->UpdateBrowserControlsState(constraints_state, current_state, animate);
-  }
 }
 
 static jlong JNI_TabBrowserControlsConstraintsHelper_Init(

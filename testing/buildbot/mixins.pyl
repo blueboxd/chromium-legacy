@@ -28,7 +28,7 @@
 #     },
 #   },
 #   'coverage_data': {
-#     'isolate_coverage_data': True,
+#     'isolate_profile_data': True,
 #   },
 # }
 #
@@ -198,9 +198,6 @@
       'service_account': 'chromium-tester@chops-service-accounts.iam.gserviceaccount.com',
     },
   },
-  'code-coverage': {
-    'isolate_coverage_data': True,
-  },
   'docker': {
     'swarming': {
       'dimensions': {
@@ -266,6 +263,9 @@
         '{"test_args": ["--run-with-custom-webkit"]}'
       ],
     },
+  },
+  'isolate_profile_data': {
+    'isolate_profile_data': True,
   },
   'kitkat': {
     'swarming': {
@@ -442,7 +442,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.13.6',
+        'os': 'Mac-10.15.4',
       },
     },
   },

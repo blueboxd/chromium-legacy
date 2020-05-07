@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
@@ -269,33 +270,22 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
   } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE ||
              result == BinaryUploadService::Result::FILE_ENCRYPTED ||
              result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
-    enterprise_connectors::ConnectorsManager::GetInstance()
-        ->GetAnalysisSettings(
-            item_->GetURL(),
-            enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
-            base::BindOnce(&DeepScanningRequest::OnGotAnalysisSettings,
-                           weak_ptr_factory_.GetWeakPtr(), result));
-    return;
-  }
-
-  FinishRequest(download_result);
-}
-
-void DeepScanningRequest::OnGotAnalysisSettings(
-    BinaryUploadService::Result result,
-    base::Optional<enterprise_connectors::AnalysisSettings> settings) {
-  DCHECK(settings.has_value());
-
-  DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
-  if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-    if (settings.value().block_large_files)
-      download_result = DownloadCheckResult::BLOCKED_TOO_LARGE;
-  } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-    if (settings.value().block_password_protected_files)
-      download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
-  } else if (result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
-    if (settings.value().block_unsupported_file_types)
-      download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
+    auto settings =
+        enterprise_connectors::ConnectorsManager::GetInstance()
+            ->GetAnalysisSettings(
+                item_->GetURL(),
+                enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED)
+            .value_or(enterprise_connectors::AnalysisSettings());
+    if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+      if (settings.block_large_files)
+        download_result = DownloadCheckResult::BLOCKED_TOO_LARGE;
+    } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+      if (settings.block_password_protected_files)
+        download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
+    } else if (result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
+      if (settings.block_unsupported_file_types)
+        download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
+    }
   }
 
   FinishRequest(download_result);

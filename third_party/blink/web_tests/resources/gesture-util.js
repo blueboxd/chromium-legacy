@@ -308,6 +308,9 @@ function pixelsPerTick() {
   return 53;
 }
 
+// Note: unlike other functions in this file, the |direction| parameter here is
+// the "finger direction". This means |y| pixels "up" causes the finger to move
+// up so the page scrolls down (i.e. scrollTop increases).
 function swipe(pixels_to_scroll, start_x, start_y, direction, speed_in_pixels_s, fling_velocity, gesture_source_type) {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
@@ -543,25 +546,35 @@ function approx_equals(actual, expected, epsilon) {
   return actual >= expected - epsilon && actual <= expected + epsilon;
 }
 
-// Returns the given element's client rect center in an object with |x| and |y|
-// properties. Client rect being relative to the layout viewport. i.e. this will
-// not do what you think if the page is pinch-zoomed.
+function clientToViewport(client_point) {
+  const viewport_point = {
+    x: (client_point.x - visualViewport.offsetLeft) * visualViewport.scale,
+    y: (client_point.y - visualViewport.offsetTop) * visualViewport.scale
+  };
+  return viewport_point;
+}
+
+// Returns the center point of the given element's rect in visual viewport
+// coordinates.  Returned object is a point with |x| and |y| properties.
 function elementCenter(element) {
   const rect = element.getBoundingClientRect();
-  return {
+  const center_point = {
     x: rect.x + rect.width / 2,
     y: rect.y + rect.height / 2
   };
+  return clientToViewport(center_point);
 }
 
 // Returns a position in the given element with an offset of |x| and |y| from
-// the element's top-left position.
+// the element's top-left position. Returned object is a point with |x| and |y|
+// properties. The returned coordinate is in visual viewport coordinates.
 function pointInElement(element, x, y) {
   const rect = element.getBoundingClientRect();
-  return {
+  const point = {
     x: rect.x + x,
     y: rect.y + y
   };
+  return clientToViewport(point);
 }
 
 // Waits for 'time' ms before resolving the promise.

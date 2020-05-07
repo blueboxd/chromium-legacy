@@ -10,6 +10,7 @@ import android.os.Debug;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
@@ -53,7 +54,7 @@ public class OmniboxSuggestionsList
     }
 
     @Override
-    public View getView() {
+    public ViewGroup getViewGroup() {
         return this;
     }
 
@@ -81,10 +82,10 @@ public class OmniboxSuggestionsList
 
     @Override
     public void show() {
-        if (getVisibility() != VISIBLE) {
-            setVisibility(VISIBLE);
-            if (getSelectedItemPosition() != 0) setSelection(0);
-        }
+        if (getVisibility() == VISIBLE) return;
+
+        setVisibility(VISIBLE);
+        if (getSelectedItemPosition() != 0) setSelection(0);
     }
 
     @Override
@@ -125,7 +126,7 @@ public class OmniboxSuggestionsList
                 setSelection(0);
                 return result;
             }
-        } else if (KeyNavigationUtil.isGoRight(event)
+        } else if ((KeyNavigationUtil.isGoRight(event) || KeyNavigationUtil.isGoLeft(event))
                 && selectedPosition != ListView.INVALID_POSITION) {
             View selectedView = getSelectedView();
             if (selectedView != null) return selectedView.onKeyDown(keyCode, event);

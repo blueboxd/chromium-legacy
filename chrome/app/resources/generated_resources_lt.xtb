@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Programos langas</translation>
 <translation id="1531275250079031713">Rodyti dialogą „Pridėti naują „Wi-Fi“</translation>
 <translation id="1536754031901697553">Atjungiama...</translation>
+<translation id="1537254971476575106">Viso ekrano didintuvas</translation>
 <translation id="15373452373711364">Didelis pelės žymeklis</translation>
 <translation id="1540605929960647700">Demonstracinio režimo įgalinimas</translation>
 <translation id="1542514202066550870">Šis skirtukas perduoda VR turinį į ausines.</translation>
@@ -1164,6 +1165,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2501173422421700905">Sertifikatas sulaikytas</translation>
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2501797496290880632">Paspauskite sparčiuosius klavišus</translation>
+<translation id="2501920221385095727">Fiksuotos pozicijos klavišai</translation>
 <translation id="2502441965851148920">Įgalinti automatiniai naujiniai. Neautomatinius naujinius išjungė administratorius.</translation>
 <translation id="2502719318159902502">Visateisė prieiga</translation>
 <translation id="2505127913256479918">Ši prižiūrima paskyra netrukus bus pašalinta</translation>
@@ -1549,6 +1551,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2993517869960930405">Programos informacija</translation>
 <translation id="2996286169319737844">Duomenys užšifruoti naudojant sinchronizavimo slaptafrazę. Neįtraukiami mokėjimo metodai ir adresai iš „Google Pay“.</translation>
 <translation id="2996722619877761919">Versti pagal ilgąjį kraštą</translation>
+<translation id="3000461861112256445">Monofoninis garsas</translation>
 <translation id="3001144475369593262">Vaikų paskyros</translation>
 <translation id="3003144360685731741">Pageidaujami tinklai</translation>
 <translation id="3003623123441819449">CSS talpykla</translation>
@@ -2483,6 +2486,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4211851069413100178">Siųskite naudojimo ir diagnostikos duomenis. Padėkite tobulinti „Android“ funkcijas automatiškai siųsdami „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį <ph name="BEGIN_LINK1" />nustatymą<ph name="END_LINK1" /> taiko savininkas. Savininkas gali pasirinkti siųsti šio įrenginio diagnostikos ir naudojimo duomenis „Google“. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas, šie duomenys gali būti išsaugoti „Google“ paskyroje. <ph name="BEGIN_LINK2" />Sužinokite daugiau<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Eksportuoti</translation>
 <translation id="42137655013211669">Prieigą prie šio ištekliaus uždraudė serveris.</translation>
+<translation id="4217571870635786043">Diktavimas</translation>
 <translation id="4218274196133425560">Pašalinti išimtį iš „<ph name="HOST_NAME" />“</translation>
 <translation id="4220648711404560261">Aktyvinant įvyko klaida.</translation>
 <translation id="4222772810963087151">Išsami versijos informacija</translation>
@@ -3167,6 +3171,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5204967432542742771">Įveskite slaptažodį</translation>
 <translation id="5206215183583316675">Ištrinti „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="520621735928254154">Sertifikato importavimo klaida</translation>
+<translation id="5207949376430453814">Paryškinti teksto žymeklį</translation>
 <translation id="5209320130288484488">Įrenginių nerasta</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="5213481667492808996">„<ph name="NAME" />“ duomenų paslauga paruošta naudoti</translation>
@@ -5081,6 +5086,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7766807826975222231">Peržiūrėti apžvalgą</translation>
 <translation id="7766838926148951335">Priimti leidimus</translation>
 <translation id="7768770796815395237">Keisti</translation>
+<translation id="7768784765476638775">Teksto ištarimas</translation>
 <translation id="7769672763586021400">Modelio ID</translation>
 <translation id="7770612696274572992">Vaizdas nukopijuotas iš kito įrenginio</translation>
 <translation id="7770651108375708429">Atsijungti nuo „Wi-Fi“</translation>

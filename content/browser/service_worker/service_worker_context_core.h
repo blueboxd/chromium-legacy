@@ -25,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/service_worker_context.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 class GURL;
@@ -183,17 +184,37 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // thread is UI.
   void HasMainFrameWindowClient(const GURL& origin, BoolCallback callback);
 
-  // Maintains a map from Client UUID to ServiceWorkerContainerHost for service
-  // worker clients. |container_host| should not be for a service worker
-  // execution context.
-  void RegisterContainerHostByClientID(
-      const std::string& client_uuid,
-      std::unique_ptr<ServiceWorkerContainerHost> container_host);
-  void UnregisterContainerHostByClientID(const std::string& client_uuid);
+  // Used to create a ServiceWorkerContainerHost for a window during a
+  // navigation. |are_ancestors_secure| should be true for main frames.
+  // Otherwise it is true iff all ancestor frames of this frame have a secure
+  // origin. |frame_tree_node_id| is FrameTreeNode id.
+  base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      bool are_ancestors_secure,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          container_remote,
+      int frame_tree_node_id);
+
+  // Used for starting a web worker (dedicated worker or shared worker). Returns
+  // a container host for the worker.
+  base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWorker(
+      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+          host_receiver,
+      int process_id,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          container_remote,
+      blink::mojom::ServiceWorkerClientType client_type);
+
+  // Updates the client UUID of an existing container host.
   void UpdateContainerHostClientID(const std::string& current_client_uuid,
                                    const std::string& new_client_uuid);
+
+  // Retrieves a container host given its client UUID.
   ServiceWorkerContainerHost* GetContainerHostByClientID(
       const std::string& client_uuid);
+
+  void OnContainerHostReceiverDisconnected();
 
   void RegisterServiceWorker(
       const GURL& script_url,
@@ -367,7 +388,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // |container_host_by_uuid_| owns container hosts for service worker clients.
   // Container hosts for service worker execution contexts are owned by
   // ServiceWorkerProviderHost.
-  std::unique_ptr<ContainerHostByClientUUIDMap> container_host_by_uuid_;
+  ContainerHostByClientUUIDMap container_host_by_uuid_;
+
+  std::unique_ptr<
+      mojo::AssociatedReceiverSet<blink::mojom::ServiceWorkerContainerHost,
+                                  ServiceWorkerContainerHost*>>
+      container_host_receivers_;
 
   std::unique_ptr<ServiceWorkerRegistry> registry_;
   std::unique_ptr<ServiceWorkerJobCoordinator> job_coordinator_;

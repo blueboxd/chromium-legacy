@@ -53,7 +53,7 @@ VkAccessFlags GetAccessMask(const VkImageLayout layout) {
     case VK_IMAGE_LAYOUT_UNDEFINED:
       return 0;
     case VK_IMAGE_LAYOUT_GENERAL:
-      DLOG(WARNING) << "VK_IMAGE_LAYOUT_GENERAL is used.";
+      LOG(WARNING) << "VK_IMAGE_LAYOUT_GENERAL is used.";
       return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
              VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
              VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT |
@@ -118,7 +118,7 @@ bool VulkanCommandBuffer::Initialize() {
   result =
       vkAllocateCommandBuffers(device, &command_buffer_info, &command_buffer_);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkAllocateCommandBuffers() failed: " << result;
+    LOG(ERROR) << "vkAllocateCommandBuffers() failed: " << result;
     return false;
   }
 
@@ -169,7 +169,7 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
   VkFence fence;
   result = device_queue_->GetFenceHelper()->GetFence(&fence);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "Failed to create fence: " << result;
+    LOG(ERROR) << "Failed to create fence: " << result;
     return false;
   }
 
@@ -185,7 +185,7 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
 
   PostExecution();
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkQueueSubmit() failed: " << result;
+    LOG(ERROR) << "vkQueueSubmit() failed: " << result;
     return false;
   }
 
@@ -283,7 +283,7 @@ void VulkanCommandBuffer::ResetIfDirty() {
     Wait(UINT64_MAX);
     VkResult result = vkResetCommandBuffer(command_buffer_, 0);
     if (VK_SUCCESS != result) {
-      DLOG(ERROR) << "vkResetCommandBuffer() failed: " << result;
+      LOG(ERROR) << "vkResetCommandBuffer() failed: " << result;
     } else {
       record_type_ = RECORD_TYPE_EMPTY;
     }
@@ -293,7 +293,7 @@ void VulkanCommandBuffer::ResetIfDirty() {
 CommandBufferRecorderBase::~CommandBufferRecorderBase() {
   VkResult result = vkEndCommandBuffer(handle_);
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkEndCommandBuffer() failed: " << result;
+    LOG(ERROR) << "vkEndCommandBuffer() failed: " << result;
   }
 }
 
@@ -306,7 +306,7 @@ ScopedMultiUseCommandBufferRecorder::ScopedMultiUseCommandBufferRecorder(
   VkResult result = vkBeginCommandBuffer(handle_, &begin_info);
 
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
+    LOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
   }
 }
 
@@ -320,7 +320,7 @@ ScopedSingleUseCommandBufferRecorder::ScopedSingleUseCommandBufferRecorder(
   VkResult result = vkBeginCommandBuffer(handle_, &begin_info);
 
   if (VK_SUCCESS != result) {
-    DLOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
+    LOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
   }
 }
 

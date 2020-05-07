@@ -21,10 +21,12 @@ CWV_EXPORT
 - (instancetype)init NS_UNAVAILABLE;
 
 // Returns the new metrics that have been collected since the last call to this
-// method. The data are serialized according to the proto definition found at
+// method. The returned data is drained from the underlying storage, so it is up
+// to the caller to ensure its lifetime as needed.
+// The data is serialized according to the proto definition found at
 // third_party/metrics_proto/chrome_user_metrics_extension.proto.
 // This method is thread safe.
-- (NSData*)accumulatedDeltas;
+- (NSData*)consumeMetrics;
 
 @end
 

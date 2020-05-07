@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">imbas lampau</translation>
 <translation id="119944043368869598">Kosongkan semua</translation>
 <translation id="1199716647557067911">Adakah anda pasti mahu mematikan Akses Suis?</translation>
+<translation id="121097972571826261">Maju satu perkataan</translation>
+<translation id="1229194443904279055">Berhenti memilih</translation>
 <translation id="1247372569136754018">Mikrofon (dalaman)</translation>
 <translation id="1252999807265626933">Mengecas daripada <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Bagaimanakah keadaan cuaca?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Penggadang Skrin Penuh didayakan. Tekan Ctrl+Cari+M semula untuk mematikannya.</translation>
 <translation id="2302092602801625023">Akaun ini diurus oleh Family Link</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
+<translation id="2322173485024759474">Undur satu huruf</translation>
 <translation id="2339073806695260576">Ketik butang stilus pada rak untuk mencatat nota, mengambil tangkapan skrin, menggunakan penuding laser atau kanta pembesar.</translation>
 <translation id="2341729377289034582">Dikunci menegak</translation>
 <translation id="2352467521400612932">Tetapan stilus</translation>
@@ -239,6 +242,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="383629559565718788">Tunjukkan tetapan papan kekunci</translation>
 <translation id="3846575436967432996">Tiada maklumat rangkaian tersedia</translation>
 <translation id="385051799172605136">Kembali</translation>
+<translation id="385300504083504382">Permulaan</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3893630138897523026">ChromeVox (maklum balas dituturkan)</translation>
 <translation id="3897533311200664389">Mulakan pertanyaan teks</translation>
@@ -347,6 +351,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5379115545237091094">Terlalu banyak percubaan</translation>
 <translation id="5397578532367286026">Penggunaan dan sejarah pengguna ini boleh disemak oleh pengurus (<ph name="MANAGER_EMAIL" />) di chrome.com.</translation>
 <translation id="5400461572260843123">Tetapan Pantas, Tekan cari + kiri untuk mengakses pusat pemberitahuan.</translation>
+<translation id="5428899915242071344">Mula memilih</translation>
 <translation id="5430931332414098647">Penambatan Segera</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Semua pengguna yang ada telah ditambahkan pada sesi ini.</translation>
@@ -468,6 +473,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6777216307882431711">Membekalkan kuasa kepada peranti USB-C yang disambungkan</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>
+<translation id="6818242057446442178">Undur satu perkataan</translation>
 <translation id="6820676911989879663">Berehatlah!</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Pintasan dimatikan</translation>
@@ -581,6 +587,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Buat nota</translation>
+<translation id="8371779926711439835">Maju satu huruf</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> ini dan telefon anda akan disambungkan secara automatik</translation>
 <translation id="8388750414311082622">Meja terakhir tidak boleh dialih keluar.</translation>
 <translation id="8392451568018454956">Menu pilihan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>

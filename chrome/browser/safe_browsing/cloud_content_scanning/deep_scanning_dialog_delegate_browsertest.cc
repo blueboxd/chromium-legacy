@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_browsertest_base.h"
@@ -235,8 +236,9 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Unauthorized) {
   data.do_malware_scan = true;
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.doc"));
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   // Nothing should be reported for unauthorized users.
   ExpectNoReport();
@@ -295,8 +297,9 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Files) {
   data.do_malware_scan = true;
   CreateFilesForTest({"ok.doc", "bad.exe"},
                      {"ok file content", "bad file content"}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   // The malware verdict means an event should be reported.
   EventReportValidator validator(client());
@@ -394,8 +397,9 @@ IN_PROC_BROWSER_TEST_P(
   data.do_dlp_scan = true;
   data.do_malware_scan = true;
   data.paths.emplace_back(test_zip);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   // The file should be reported as unscanned.
   EventReportValidator validator(client());
@@ -487,8 +491,9 @@ IN_PROC_BROWSER_TEST_P(
   data.do_dlp_scan = true;
   data.do_malware_scan = false;
   CreateFilesForTest({"a.sh"}, {"file content"}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   // The file should be reported as unscanned.
   EventReportValidator validator(client());
@@ -583,8 +588,9 @@ IN_PROC_BROWSER_TEST_P(
   CreateFilesForTest(
       {"large.doc"},
       {std::string(BinaryUploadService::kMaxUploadSizeBytes + 1, 'a')}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   // The file should be reported as unscanned.
   EventReportValidator validator(client());
@@ -688,8 +694,9 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
   data.do_malware_scan = true;
 
   CreateFilesForTest({"foo.doc"}, {"foo content"}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   // The file should be reported as malware and sensitive content.
   EventReportValidator validator(client());
@@ -813,8 +820,9 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Texts) {
   data.do_malware_scan = true;
   data.text.emplace_back(base::UTF8ToUTF16("text1"));
   data.text.emplace_back(base::UTF8ToUTF16("text2"));
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
 
   // Start test.
   DeepScanningDialogDelegate::ShowForWebContents(

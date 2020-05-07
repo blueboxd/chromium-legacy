@@ -218,6 +218,7 @@
 <translation id="1838374766361614909">Обришите претрагу</translation>
 <translation id="1839551713262164453">Валидација вредности смерница није успела уз грешке</translation>
 <translation id="1842969606798536927">Плати</translation>
+<translation id="1852694792039666893">Употребите Google налог за предлагање јаке лозинке</translation>
 <translation id="1871208020102129563">Прокси је подешен да користи фиксне прокси сервере, а не URL адресу .pac скрипте.</translation>
 <translation id="1871284979644508959">Обавезно поље</translation>
 <translation id="1875512691959384712">Google упитници</translation>
@@ -405,6 +406,7 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Најбоља величина</translation>
 <translation id="2691924980723297736">Безбедносно упозорење</translation>
+<translation id="2696268945573510710">Користите лозинке које се чувају на Google налогу</translation>
 <translation id="2699302886720511147">Картице које се прихватају</translation>
 <translation id="2701514975700770343">Са одштампаном страном надоле</translation>
 <translation id="2702801445560668637">Листа за читање</translation>
@@ -452,6 +454,7 @@
 <translation id="2915068235268646559">Извештај о отказивању од <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворите друге програме</translation>
 <translation id="2922350208395188000">Није могуће проверити сертификат сервера.</translation>
+<translation id="2924027812781652774">Пријавите се да бисте користили лозинке сачуване на Google налогу</translation>
 <translation id="2925673989565098301">Начин испоруке</translation>
 <translation id="2928905813689894207">Адреса за обрачун</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -1407,6 +1410,7 @@
 <translation id="7050187094878475250">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер представио сертификат са периодом важења који је предугачак да би био поуздан.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Ова картица тренутно не може да се сачува}one{Ове картице тренутно не могу да се сачувају}few{Ове картице тренутно не могу да се сачувају}other{Ове картице тренутно не могу да се сачувају}}</translation>
 <translation id="7053983685419859001">Блокирај</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> је потврдио да је <ph name="ISSUER" /> издао сертификат овог веб-сајта.</translation>
 <translation id="7062635574500127092">Тиркизна</translation>
 <translation id="7064851114919012435">Контакт информације</translation>
 <translation id="70705239631109039">Веза није потпуно безбедна</translation>

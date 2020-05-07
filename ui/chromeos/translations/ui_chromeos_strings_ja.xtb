@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">ドイツ語のキーボード</translation>
 <translation id="1972984168337863910">ファイルのフィードバック パネルを展開します</translation>
 <translation id="1984603991036629094">アルメニア語表音キーボード</translation>
+<translation id="1995337122023280937">ファイルの場所へ移動</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
 <translation id="2009067268969781306">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが削除されます。この操作は元に戻せません。</translation>
 <translation id="2028997212275086731">RAR アーカイブ</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google ドライブにアクセスできませんでした。<ph name="BEGIN_LINK" />ログアウト<ph name="END_LINK" />してもう一度ログインしてください。</translation>
 <translation id="2649120831653069427">熱帯魚</translation>
 <translation id="2661146741306740526">16×9</translation>
+<translation id="2664412712123763093">ファイルの場所</translation>
 <translation id="2672394958563893062">エラーが発生しました。クリックすると最初から再生します。</translation>
 <translation id="2676946222714718093">再生中:</translation>
 <translation id="2735698359135166290">ルーマニア語標準キーボード</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> 分のファイルが削除されます</translation>
 <translation id="509429900233858213">エラーが発生しました。</translation>
 <translation id="5098629044894065541">ヘブライ語</translation>
+<translation id="5112685521274804841">このフォルダ内のファイルは読み取り専用です。一部の操作は行えません。</translation>
 <translation id="5123433949759960244">バスケットボール</translation>
 <translation id="5129662217315786329">ポーランド語</translation>
 <translation id="5144820558584035333">ハングル（3 ボル式、390）</translation>
@@ -699,6 +702,7 @@
 <translation id="9034924485347205037">Linux ファイル</translation>
 <translation id="9035012421917565900">この操作は元に戻せません（これらのアイテムを「<ph name="DESTINATION_NAME" />」に戻すことはできません）。</translation>
 <translation id="9038620279323455325">「<ph name="FILE_NAME" />」という名前のファイルはすでに存在します。別の名前を選択してください。</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> アプリでファイルを開くには、<ph name="APP_NAME" /> 共有ファイル フォルダにファイルを移動してください。</translation>
 <translation id="9064939804718829769">処理しています...</translation>
 <translation id="9065203028668620118">編集</translation>
 <translation id="9099674669267916096">ページ数</translation>

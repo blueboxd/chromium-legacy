@@ -94,6 +94,9 @@ class ServiceConnectionImpl : public ServiceConnection {
       uint32_t maximum_discharge_percent_allowed,
       mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
           callback) override;
+  void AddBluetoothObserver(
+      mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer)
+      override;
   void AddPowerObserver(mojo::PendingRemote<mojom::CrosHealthdPowerObserver>
                             pending_observer) override;
   void ProbeTelemetryInfo(
@@ -290,6 +293,14 @@ void ServiceConnectionImpl::RunBatteryDischargeRoutine(
   cros_healthd_diagnostics_service_->RunBatteryDischargeRoutine(
       exec_duration.InSeconds(), maximum_discharge_percent_allowed,
       std::move(callback));
+}
+
+void ServiceConnectionImpl::AddBluetoothObserver(
+    mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdEventServiceIfNeeded();
+  mojom::CrosHealthdBluetoothObserverPtr ptr{std::move(pending_observer)};
+  cros_healthd_event_service_->AddBluetoothObserver(std::move(ptr));
 }
 
 void ServiceConnectionImpl::AddPowerObserver(

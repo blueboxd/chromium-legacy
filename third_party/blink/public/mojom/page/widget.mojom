@@ -17,8 +17,13 @@ interface FrameWidget {
   // Makes the Widget background transparent or opaque.
   SetBackgroundOpaque(bool opaque);
 
+  // Only valid for sub frame local roots.
+  //
   // Sets the inherited effective touch action on an out-of-process iframe.
   SetInheritedEffectiveTouchActionForSubFrame(cc.mojom.TouchAction touch_action);
+
+  // Toggles render throttling for an out-of-process iframe.
+  UpdateRenderThrottlingStatusForSubFrame(bool is_throttled, bool subtree_throttled);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that

@@ -471,6 +471,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4913169188695071480">Ustavitev osveževanja</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /> med iskanjem naprav …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stran}one{# stran}two{# strani}few{# strani}other{# strani}}</translation>
+<translation id="49268022542405662">Gesla bodo izvožena in prenesena v obliki besedilne datoteke. Vidna bodo vsem osebam in aplikacijam, ki imajo dostop do ciljne mape.</translation>
 <translation id="4932247056774066048">Ker se odjavljate iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />, bodo podatki v Chromu izbrisani iz te naprave. Ostali bodo v računu Google.</translation>
 <translation id="4943703118917034429">Navidezna resničnost</translation>
 <translation id="4943872375798546930">Ni rezultatov</translation>
@@ -753,6 +754,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7302081693174882195">Podrobnosti: razvrščeno po količini prihranjenih podatkov</translation>
 <translation id="7328017930301109123">Chrome v lahkem načinu naloži strani hitreje in uporabi do 60 odstotkov manj podatkov.</translation>
 <translation id="7333031090786104871">Dodajanje prejšnjega spletnega mesta še vedno poteka</translation>
+<translation id="7340958967809483333">Možnosti za Odkrivanje</translation>
 <translation id="7352939065658542140">VIDEOPOSNETEK</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Delitev 1 izbranega elementa z drugimi}one{Delitev # izbranega elementa z drugimi}two{Delitev # izbranih elementov z drugimi}few{Delitev # izbranih elementov z drugimi}other{Delitev # izbranih elementov z drugimi}}</translation>
 <translation id="7359002509206457351">Dostop do plačilnih sredstev</translation>
@@ -817,6 +819,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Odpiranje z aplikacijo …</translation>
 <translation id="7821588508402923572">Prihranek pri količini prenesenih podatkov bo prikazan tukaj</translation>
+<translation id="7835852323729233924">Predvajanje predstavnosti</translation>
 <translation id="783819812427904514">Vklop videa</translation>
 <translation id="784934925303690534">Časovno obdobje</translation>
 <translation id="7851858861565204677">Druge naprave</translation>

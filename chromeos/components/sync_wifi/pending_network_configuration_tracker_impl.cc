@@ -4,6 +4,7 @@
 
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
 
+#include "base/base64url.h"
 #include "base/guid.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
@@ -34,10 +35,15 @@ PendingNetworkConfigurationUpdate ConvertToPendingUpdate(
     const NetworkIdentifier& id) {
   std::string* change_guid = dict->FindStringKey(kChangeGuidKey);
   base::Optional<sync_pb::WifiConfigurationSpecifics> specifics;
-  std::string* specifics_string = dict->FindStringKey(kSpecificsKey);
-  if (!specifics_string->empty()) {
+  std::string* encoded_specifics_string = dict->FindStringKey(kSpecificsKey);
+  std::string specifics_string;
+  if (encoded_specifics_string &&
+      base::Base64UrlDecode(*encoded_specifics_string,
+                            base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                            &specifics_string) &&
+      !specifics_string.empty()) {
     sync_pb::WifiConfigurationSpecifics data;
-    data.ParseFromString(*specifics_string);
+    data.ParseFromString(specifics_string);
     specifics = data;
   }
   base::Optional<int> completed_attempts =
@@ -76,11 +82,16 @@ std::string PendingNetworkConfigurationTrackerImpl::TrackPendingUpdate(
   else
     CHECK(specifics->SerializeToString(&serialized_specifics));
 
+  // base::Value only allows UTF8 encoded strings.
+  std::string encoded_specifics;
+  base::Base64UrlEncode(serialized_specifics,
+                        base::Base64UrlEncodePolicy::INCLUDE_PADDING,
+                        &encoded_specifics);
   std::string change_guid = base::GenerateGUID();
 
   dict_.SetPath(GeneratePath(id, kChangeGuidKey), base::Value(change_guid));
   dict_.SetPath(GeneratePath(id, kSpecificsKey),
-                base::Value(serialized_specifics));
+                base::Value(encoded_specifics));
   dict_.SetPath(GeneratePath(id, kCompletedAttemptsKey), base::Value(0));
   pref_service_->Set(kPendingNetworkConfigurationsPref, dict_);
 

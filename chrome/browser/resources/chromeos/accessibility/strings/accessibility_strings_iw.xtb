@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">כדי להקליד, מקישים על המקש הרצוי ומרפים ממנו</translation>
 <translation id="1012173283529841972">פריט רשימה</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">החלקה ימינה עם שתי אצבעות</translation>
 <translation id="1022586497894531524">‏האם זה השימוש הראשון שלך בקורא המסך הקולי ChromeVox? המדריך הקצר הזה מסביר את עקרונות הבסיס של ChromeVox למתחילים.</translation>
 <translation id="1025074108959230262">מצב אתר דביק מושבת</translation>
 <translation id="1031961866430398710">לאחר מכן</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">אין פריט קודם ברשימה</translation>
 <translation id="1114836634143403764">הצעה</translation>
 <translation id="1120743664840974483">{"א": "אלף", "ב": "בועז", "ג": "גימל", "ד": "דוד", "ה": "הגר", "ו": "וו", "ז": "זאב", "ח": "חוה", "ט": "טיח", "י": "יונה","כ": "כרמל", "ל": "לאה", "מ": "משה", "נ": "נשר", "ס": "סמך","ע": "עין", "פ": "פסל", "צ": "ציפור", "ק": "קורח", "ר": "רות", "ש": "שמיר", "ת": "תלם"}</translation>
+<translation id="1120938014254001895">החלקה מעלה עם שתי אצבעות</translation>
 <translation id="1126928665165112660">לא נטוי</translation>
 <translation id="113582498867142724">אוסף <ph name="TAG" /> עם <ph name="NUM" /> פריטים</translation>
 <translation id="1161762950103988776">Jump</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">פריט הגרפיקה הבא</translation>
 <translation id="1756785467854861272">מגנטה כהה</translation>
+<translation id="1765245556747822181">החלקה ימינה עם אצבע אחת</translation>
 <translation id="1771761307086386028">גלילה ימינה</translation>
 <translation id="1781173782405573156">מקש דילוג</translation>
 <translation id="1787176709638001873">טקסט לעריכת סיסמה</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">הגבר את קצב הדיבור</translation>
 <translation id="2267538686624070261">יציאה משגיאת איות</translation>
 <translation id="2267945578749931355">התו הבא</translation>
+<translation id="2278490101488436824">החלקה שמאלה עם שלוש אצבעות</translation>
 <translation id="2305942658236913680">אין עוד כותרות</translation>
 <translation id="2311237334957139798">חזרה לפריט הקודם ברמת הפירוט הספציפית</translation>
 <translation id="2314393392395134769">לא כתב תחתי</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">ביבליוגרפיה</translation>
 <translation id="2873259058405069099">עבור לתחילת הטבלה</translation>
 <translation id="287383510823843610">כתום כהה</translation>
+<translation id="2879867157561757640">החלקה מטה עם שלוש אצבעות</translation>
 <translation id="288178314850623291">‏השתמש בפקודות מעבר כדי לדלג אל סוגים ספציפיים של רכיבים. כדי לעבור קדימה בין כותרות, הקש על מקש החיפוש ועל מקש H. כדי לעבור אחורה, הקש יחד על מקש החיפוש, Shift ו-H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{דקה}two{דקות}many{דקות}other{דקות}}</translation>
 <translation id="2894654529758326923">מידע</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{סוגר מסולסל שמאלי}two{# סימני סוגר מסולסל שמאלי}many{# סימני סוגר מסולסל שמאלי}other{# סימני סוגר מסולסל שמאלי}}</translation>
 <translation id="2909584066358367921">אין עוד לחצנים</translation>
 <translation id="2911433807131383493">‏פתח את המדריך של ChromeVox</translation>
+<translation id="2912405967290226587">החלקה ימינה עם שלוש אצבעות</translation>
 <translation id="2937799153569150791">אין עוד כותרות מרמה 3</translation>
 <translation id="2942710183375260152">כחול אפור כהה</translation>
 <translation id="2943596527105977722">מטה-זהב כהה</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">ירוק ים</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{טאב}two{# סימני טאב}many{# סימני טאב}other{# סימני טאב}}</translation>
 <translation id="2972205263822847197">הסבר קצר</translation>
+<translation id="297825089465017871">החלקה שמאלה עם שתי אצבעות</translation>
 <translation id="2998131015536248178">התו הקודם</translation>
 <translation id="2999559350546931576">הורד את גובה הצליל</translation>
 <translation id="3014130421870723208">‏‎@עריכה 8 נק'‎</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">‏אפשרויות של ChromeVox</translation>
 <translation id="3060756054951570867">תפריט <ph name="TITLE" /> נפתח</translation>
 <translation id="3060880924447482063">מחליקים שמאלה או ימינה כדי לעבור פריט אחר פריט</translation>
+<translation id="3070245424257836917">החלקה מעלה עם שלוש אצבעות</translation>
 <translation id="3078345202707391975">הכותרת הבאה של רמה 2</translation>
 <translation id="3078740164268491126">טבלה</translation>
 <translation id="3082249673510793544">גלילה לאחור</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">מעבר לעמודה הבאה</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">ציון הדרך הקודם</translation>
+<translation id="4710166929009737753">החלקה ימינה עם אצבע אחת</translation>
 <translation id="4712898966495541134">סוף בחירה</translation>
 <translation id="4740661827607246557">פקודות עזרה</translation>
 <translation id="4755857887974653209">‏השבת את ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">לימון שיפון</translation>
 <translation id="6816066673340002913">מטה-זהב חיוור</translation>
+<translation id="6826226459053491773">החלקה מטה עם שתי אצבעות</translation>
 <translation id="6833103209700200188">כותרת תחתונה</translation>
 <translation id="6837853484260746864">בחר קול:</translation>
 <translation id="6858047746862060282">פרולוג</translation>
+<translation id="6859876496651143278">החלקה שמאלה עם אצבע אחת</translation>
 <translation id="6865519907510167493">שגיאת איות</translation>
 <translation id="6894148351896207544">אמירת התאריך והשעה הנוכחיים</translation>
 <translation id="6896758677409633944">העתק</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">‏ChromeVox עודכן</translation>
 <translation id="93384979447910801">ירוק ים כהה</translation>
 <translation id="948171205378458592">האט את קצב הדיבור</translation>
+<translation id="958854023026327378">החלקה מטה עם אצבע אחת</translation>
 <translation id="962913030769097253">הכותרת הבאה של רמה 1</translation>
 <translation id="966588271015727539">‏בחירת צג ברייל תואם Bluetooth</translation>
 <translation id="973955474346881951">הפעל/השבת מצב דביק</translation>

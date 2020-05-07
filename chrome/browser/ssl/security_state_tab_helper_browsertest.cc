@@ -63,7 +63,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"

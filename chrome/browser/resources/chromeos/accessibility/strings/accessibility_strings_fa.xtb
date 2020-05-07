@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">کلیدی را پیدا کنید، سپس سراغ تایپ کردن بروید</translation>
 <translation id="1012173283529841972">مورد فهرست</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">تند کشیدن دو انگشت به چپ</translation>
 <translation id="1022586497894531524">‏اولین بار است که از بازخورد گفتاری ChromeVox استفاده می‌کنید؟ این آموزش گام‌به‌گام سریع، اصول اولیه شروع به کار با ChromeVox را توضیح می‌دهد.</translation>
 <translation id="1025074108959230262">حالت چسبان غیرفعال شد</translation>
 <translation id="1031961866430398710">سپس</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">مورد قبلی فهرست وجود ندارد</translation>
 <translation id="1114836634143403764">پیشنهاد</translation>
 <translation id="1120743664840974483">{«ا»: «اسب»، «ب»: «بازی»، «پ»: «پروین»، «ت»: «ترانه»، «ث»: «ثریا»، «ج»: «جوجه»، «چ»: «چرخ»، «ح»: «حریم»، « خ»:«خصوصی »، « د»: «دفترچه»، «ذ»: «ذلیل»، «ر»: «روز»، «ز»: «زمان»، «ژ»: «ژولیت»، «س»: «سیاست»، «ش»: «شنبه»، «ص»: «صفحه»، «ض»: «ضروری»، «ط»: «طراوت»، «ظ»: «ظهر»، «ع»: «عصر»، « غ»: «غروب»، «ف»: «فروش»، «ق»: «قلب»، «ک»: «کودکان»، «گ»: «گوشی»، «ل»: «لوله»، «م»: «مرز»، «ن»: «نامناسب»، «و»: «ویلا»، «ه»: «هیاهو»، «ی»: «یادآور»}</translation>
+<translation id="1120938014254001895">تند کشیدن دو انگشت به بالا</translation>
 <translation id="1126928665165112660">ایتالیک نیست</translation>
 <translation id="113582498867142724">مجموعه <ph name="TAG" /> با <ph name="NUM" /> مورد</translation>
 <translation id="1161762950103988776">پرش</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">گرافیک بعدی</translation>
 <translation id="1756785467854861272">سرخابی تیره</translation>
+<translation id="1765245556747822181">تند کشیدن یک انگشت به بالا</translation>
 <translation id="1771761307086386028">پیمایش به راست</translation>
 <translation id="1781173782405573156">کلید عبور</translation>
 <translation id="1787176709638001873">نوشتار ویرایش گذرواژه</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">افزایش سرعت گفتار</translation>
 <translation id="2267538686624070261">خارج شدن از کلمه با غلط املایی</translation>
 <translation id="2267945578749931355">نویسه بعدی</translation>
+<translation id="2278490101488436824">تند کشیدن سه انگشت به راست</translation>
 <translation id="2305942658236913680">عنوان بعدی وجود ندارد</translation>
 <translation id="2311237334957139798">حرکت به قبلی با جزئیات</translation>
 <translation id="2314393392395134769">بالانویس نیست</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">فهرست منابع</translation>
 <translation id="2873259058405069099">رفتن به ابتدای جدول</translation>
 <translation id="287383510823843610">نارنجی تیره</translation>
+<translation id="2879867157561757640">تند کشیدن سه انگشت به پایین</translation>
 <translation id="288178314850623291">‏برای رد شدن و رفتن به انواع عناصر، از فرمان‌های پرش استفاه کنید. برای پرش به جلو بین عناوین، «جستجو» + H یا برای پرش به عقب «جستجو» + Shift + H را فشار دهید.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{دقیقه}one{دقیقه}other{دقیقه}}</translation>
 <translation id="2894654529758326923">اطلاعات</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{آکولاد چپ}one{# آکولاد چپ}other{# آکولاد چپ}}</translation>
 <translation id="2909584066358367921">دکمه بعدی موجود نیست</translation>
 <translation id="2911433807131383493">‏باز کردن برنامه آموزشی ChromeVox</translation>
+<translation id="2912405967290226587">تند کشیدن سه انگشت به چپ</translation>
 <translation id="2937799153569150791">عنوان سطح ۳ بعدی وجود ندارد</translation>
 <translation id="2942710183375260152">آبی کربنی تیره</translation>
 <translation id="2943596527105977722">ماشی سیر</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">سبز لجنی</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{علامت جهش}one{# علامت جهش}other{# علامت جهش}}</translation>
 <translation id="2972205263822847197">راهنمای ابزار</translation>
+<translation id="297825089465017871">تند کشیدن دو انگشت به راست</translation>
 <translation id="2998131015536248178">نویسه قبلی</translation>
 <translation id="2999559350546931576">کاهش گام</translation>
 <translation id="3014130421870723208">‏‎@ویرایش ۸ نقطه‌ای</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">‏گزینه‌های ChromeVox</translation>
 <translation id="3060756054951570867">منوی <ph name="TITLE" /> باز شد</translation>
 <translation id="3060880924447482063">برای جابه‌جایی بین موارد، تند به راست یا چپ بکشید</translation>
+<translation id="3070245424257836917">تند کشیدن سه انگشت به بالا</translation>
 <translation id="3078345202707391975">عنوان بعدی سطح ۲</translation>
 <translation id="3078740164268491126">جدول</translation>
 <translation id="3082249673510793544">پیمایش به عقب</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">رفتن به ستون بعدی</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">نشانگر مکانی قبلی</translation>
+<translation id="4710166929009737753">تند کشیدن یک انگشت به چپ</translation>
 <translation id="4712898966495541134">پایان بخش انتخاب‌شده</translation>
 <translation id="4740661827607246557">فرمان‌های راهنما</translation>
 <translation id="4755857887974653209">‏غیرفعال کردن ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">شیرشکری</translation>
 <translation id="6816066673340002913">نخودی</translation>
+<translation id="6826226459053491773">تند کشیدن دو انگشت به پایین</translation>
 <translation id="6833103209700200188">پاورقی</translation>
 <translation id="6837853484260746864">انتخاب صدا:</translation>
 <translation id="6858047746862060282">گفتار آغازین</translation>
+<translation id="6859876496651143278">تند کشیدن یک انگشت به راست</translation>
 <translation id="6865519907510167493">غلط املایی</translation>
 <translation id="6894148351896207544">گفتن تاریخ و زمان کنونی</translation>
 <translation id="6896758677409633944">کپی</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">‏ChromeVox به‌روز شد</translation>
 <translation id="93384979447910801">سبز دریایی تیره</translation>
 <translation id="948171205378458592">کاهش سرعت گفتار</translation>
+<translation id="958854023026327378">تند کشیدن یک انگشت به پایین</translation>
 <translation id="962913030769097253">عنوان بعدی سطح ۱</translation>
 <translation id="966588271015727539">نمایشگر بریل انتخاب کنید</translation>
 <translation id="973955474346881951">فعال/غیرفعال کردن حالت چسبنده</translation>

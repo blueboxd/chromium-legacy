@@ -12316,6 +12316,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="HFP_CODEC_ID_MSBC"/>
 </enum>
 
+<enum name="CrashHandler">
+  <int value="0" label="Crashpad"/>
+  <int value="1" label="Breakpad"/>
+</enum>
+
 <enum name="CrashpadExceptionCaptureResult">
   <int value="0" label="kSuccess"/>
   <int value="1" label="kUnexpectedExceptionBehavior"/>
@@ -27192,6 +27197,8 @@ Called by update_use_counter_feature_enum.py.-->
       label="V8HTMLVideoElement_RequestVideoFrameCallback_Method"/>
   <int value="3281" label="V8HTMLVideoElement_CancelVideoFrameCallback_Method"/>
   <int value="3282" label="RubyElementWithDisplayBlock"/>
+  <int value="3283" label="LocationFragmentDirectiveAccessed"/>
+  <int value="3284" label="CanvasRenderingContext"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39278,6 +39285,7 @@ from previous Chrome versions.
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-679500267" label="UseXpsForPrinting:disabled"/>
+  <int value="-678184617" label="TranslateSubFrames:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>
   <int value="-673804828" label="EnablePlayStoreAppSearch:disabled"/>
   <int value="-673149604" label="RelatedSearches:enabled"/>
@@ -41476,6 +41484,7 @@ from previous Chrome versions.
   <int value="1914347357" label="AutofillEnableVirtualCard:disabled"/>
   <int value="1915028326" label="BuiltInModuleKvStorage:disabled"/>
   <int value="1915178511" label="disable-blink-features"/>
+  <int value="1916637435" label="TranslateSubFrames:enabled"/>
   <int value="1918984253"
       label="OmniboxUIExperimentBlueSearchLoopAndSearchQuery:disabled"/>
   <int value="1919917329" label="ImplicitRootScroller:disabled"/>
@@ -43099,6 +43108,7 @@ Called by update_use_counter_css.py.-->
   <int value="661" label="text-underline-offset"/>
   <int value="662" label="content-visibility"/>
   <int value="663" label="text-decoration-thickness"/>
+  <int value="664" label="page-orientation"/>
 </enum>
 
 <enum name="MappedEditingCommands">

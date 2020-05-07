@@ -28,11 +28,9 @@ class ProxyTabsDataTypeController : public syncer::DataTypeController {
                   const ModelLoadCallback& model_load_callback) override;
   RegisterWithBackendResult RegisterWithBackend(
       syncer::ModelTypeConfigurer* configurer) override;
-  void StartAssociating(StartCallback start_callback) override;
   void Stop(syncer::ShutdownReason shutdown_reason,
             StopCallback callback) override;
   State state() const override;
-  void ActivateDataType(syncer::ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(syncer::ModelTypeConfigurer* configurer) override;
   void GetAllNodes(AllNodesCallback callback) override;
   void GetStatusCounters(StatusCountersCallback callback) override;
@@ -41,11 +39,6 @@ class ProxyTabsDataTypeController : public syncer::DataTypeController {
  private:
   const base::RepeatingCallback<void(State)> state_changed_cb_;
   State state_;
-  // This is a hack to prevent reconfigurations from crashing, because USS
-  // activation is not idempotent. RegisterWithBackend only needs to actually do
-  // something the first time after the type is enabled.
-  // TODO(crbug.com/647505): Remove this once the DTM handles things better.
-  bool activated_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyTabsDataTypeController);
 };

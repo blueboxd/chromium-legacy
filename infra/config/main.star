@@ -69,8 +69,6 @@ luci.cq(
 # group
 luci.cq_group(
     name = 'fallback-empty-cq',
-    # TODO(crbug/959436): enable it.
-    cancel_stale_tryjobs = False,
     retry_config = cq.RETRY_ALL_FAILURES,
     watch = cq.refset(
         repo = 'https://chromium.googlesource.com/chromium/src',

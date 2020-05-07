@@ -11,9 +11,13 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "components/cbor/reader.h"
+#include "device/fido/attestation_statement.h"
+#include "device/fido/authenticator_get_assertion_response.h"
+#include "device/fido/device_response_converter.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/test_callback_receiver.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,23 +29,28 @@ using TestCallbackReceiver =
     test::ValueCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
 
 void SendCommand(VirtualCtap2Device* device,
-                 base::span<const uint8_t> command) {
+                 base::span<const uint8_t> command,
+                 FidoDevice::DeviceCallback callback = base::DoNothing()) {
   device->DeviceTransact(fido_parsing_utils::Materialize(command),
-                         base::DoNothing());
+                         std::move(callback));
+}
+
+// DecodeCBOR parses a CBOR structure, ignoring the first byte of |in|, which is
+// assumed to be a CTAP2 status byte.
+base::Optional<cbor::Value> DecodeCBOR(base::span<const uint8_t> in) {
+  CHECK(!in.empty());
+  return cbor::Reader::Read(in.subspan(1));
 }
 
 }  // namespace
 
 class VirtualCtap2DeviceTest : public ::testing::Test {
  protected:
-  void MakeSelfDestructingDevice() {
-    auto state = base::MakeRefCounted<VirtualFidoDevice::State>();
-    state->fingerprints_enrolled = true;
-    VirtualCtap2Device::Config config;
-    config.internal_uv_support = true;
-    device_ = std::make_unique<VirtualCtap2Device>(state, std::move(config));
+  void MakeDevice() { device_ = std::make_unique<VirtualCtap2Device>(); }
 
-    state->simulate_press_callback =
+  void MakeSelfDestructingDevice() {
+    MakeDevice();
+    device_->mutable_state()->simulate_press_callback =
         base::BindLambdaForTesting([&](VirtualFidoDevice* _) {
           device_.reset();
           return true;
@@ -129,12 +138,54 @@ TEST_F(VirtualCtap2DeviceTest, ParseGetAssertionRequestForVirtualCtapKey) {
 // does not crash.
 TEST_F(VirtualCtap2DeviceTest, DestroyInsideSimulatePressCallback) {
   MakeSelfDestructingDevice();
-  SendCommand(device_.get(), test_data::kCtapMakeCredentialRequest);
+  SendCommand(device_.get(), test_data::kCtapSimpleMakeCredentialRequest);
   ASSERT_FALSE(device_);
 
   MakeSelfDestructingDevice();
   SendCommand(device_.get(), test_data::kCtapGetAssertionRequest);
   ASSERT_FALSE(device_);
+}
+
+// Tests that the attestation certificate returned on MakeCredential is valid.
+// See
+// https://w3c.github.io/webauthn/#sctn-packed-attestation-cert-requirements
+TEST_F(VirtualCtap2DeviceTest, AttestationCertificateIsValid) {
+  MakeDevice();
+  TestCallbackReceiver callback_receiver;
+  SendCommand(device_.get(), test_data::kCtapSimpleMakeCredentialRequest,
+              callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  base::Optional<cbor::Value> cbor = DecodeCBOR(*callback_receiver.value());
+  ASSERT_TRUE(cbor);
+  base::Optional<AuthenticatorMakeCredentialResponse> response =
+      ReadCTAPMakeCredentialResponse(
+          FidoTransportProtocol::kUsbHumanInterfaceDevice, std::move(cbor));
+  ASSERT_TRUE(response);
+
+  const AttestationStatement& attestation =
+      response->attestation_object().attestation_statement();
+
+  EXPECT_FALSE(attestation.IsSelfAttestation());
+  EXPECT_FALSE(
+      attestation.IsAttestationCertificateInappropriatelyIdentifying());
+
+  base::span<const uint8_t> cert_bytes = *attestation.GetLeafCertificate();
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromBytes(
+          reinterpret_cast<const char*>(cert_bytes.data()), cert_bytes.size());
+  ASSERT_TRUE(cert);
+
+  const auto& subject = cert->subject();
+  EXPECT_EQ("Batch Certificate", subject.common_name);
+  EXPECT_EQ("US", subject.country_name);
+  EXPECT_THAT(subject.organization_names, testing::ElementsAre("Chromium"));
+  EXPECT_THAT(subject.organization_unit_names,
+              testing::ElementsAre("Authenticator Attestation"));
+
+  base::Time now = base::Time::Now();
+  EXPECT_LT(cert->valid_start(), now);
+  EXPECT_GT(cert->valid_expiry(), now);
 }
 
 }  // namespace device

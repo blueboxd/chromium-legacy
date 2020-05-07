@@ -117,6 +117,7 @@ void SwitchAccessMenuView::SetActions(std::vector<std::string> actions) {
     button_count++;
   }
   layout->AddPaddingRow(0, kUnifiedMenuPadding);
+  InvalidateLayout();
 }
 
 int SwitchAccessMenuView::GetBubbleWidthDip() const {

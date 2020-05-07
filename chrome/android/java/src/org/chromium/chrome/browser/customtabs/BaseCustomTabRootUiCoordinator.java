@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.customtabs;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 
@@ -23,8 +25,10 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             CustomTabToolbarCoordinator customTabToolbarCoordinator,
             CustomTabActivityNavigationController customTabNavigationController,
-            ActivityTabProvider tabProvider) {
-        super(activity, null, shareDelegateSupplier, tabProvider);
+            ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
+        super(activity, null, shareDelegateSupplier, tabProvider, profileSupplier,
+                bookmarkBridgeSupplier);
 
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;

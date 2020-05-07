@@ -8,12 +8,15 @@
 #include "base/time/time.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
@@ -23,7 +26,7 @@ namespace {
 const char kNetworkMetadataPref[] = "network_metadata";
 const char kLastConnectedTimestampPref[] = "last_connected_timestamp";
 const char kIsFromSync[] = "is_from_sync";
-const char kIsCreatedByUser[] = "is_created_by_user";
+const char kOwner[] = "owner";
 
 std::string GetPath(const std::string& guid, const std::string& subkey) {
   return base::StringPrintf("%s.%s", guid.c_str(), subkey.c_str());
@@ -88,7 +91,18 @@ void NetworkMetadataStore::ConnectSucceeded(const std::string& service_path) {
 void NetworkMetadataStore::OnConfigurationCreated(
     const std::string& service_path,
     const std::string& guid) {
-  SetPref(guid, kIsCreatedByUser, base::Value(true));
+  if (!user_manager::UserManager::IsInitialized())
+    return;
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  if (!user) {
+    NET_LOG(EVENT)
+        << "Network added with no active user, owner metadata not recorded.";
+    return;
+  }
+
+  SetPref(guid, kOwner, base::Value(user->username_hash()));
 }
 
 void NetworkMetadataStore::OnConfigurationModified(
@@ -175,13 +189,18 @@ bool NetworkMetadataStore::GetIsConfiguredBySync(
 }
 
 bool NetworkMetadataStore::GetIsCreatedByUser(const std::string& network_guid) {
-  const base::Value* is_created_by_user =
-      GetPref(network_guid, kIsCreatedByUser);
-  if (!is_created_by_user) {
+  const base::Value* owner = GetPref(network_guid, kOwner);
+  if (!owner) {
     return false;
   }
 
-  return is_created_by_user->GetBool();
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  if (!user) {
+    return false;
+  }
+
+  return owner->GetString() == user->username_hash();
 }
 
 void NetworkMetadataStore::SetPref(const std::string& network_guid,

@@ -476,8 +476,9 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
   data.do_dlp_scan = dlp_enabled();
   data.do_malware_scan = malware_enabled();
   CreateFilesForTest({"foo.doc"}, {"content"}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -547,8 +548,9 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
   data.do_malware_scan = false;
   CreateFilesForTest({"foo.doc", "bar.doc", "baz.doc"},
                      {"random", "file", "contents"}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -597,8 +599,9 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.text.emplace_back(base::UTF8ToUTF16("bar"));
   CreateFilesForTest({"foo.doc", "bar.doc"}, {"file", "content"}, &data);
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
@@ -657,8 +660,9 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
     CreateFilesForTest({"foo.doc"}, {"content"}, &data);
   else
     data.text.emplace_back(base::UTF8ToUTF16("foo"));
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(browser()->profile(),
-                                                    GURL(kTestUrl), &data));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 
   DeepScanningDialogDelegate::ShowForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),

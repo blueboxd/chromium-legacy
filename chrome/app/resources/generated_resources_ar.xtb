@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">نافذة التطبيق</translation>
 <translation id="1531275250079031713">‏عرض مربع الحوار "إضافة شبكة Wi-Fi جديدة"</translation>
 <translation id="1536754031901697553">جارٍ قطع الاتصال…</translation>
+<translation id="1537254971476575106">مكبّر بملء الشاشة</translation>
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1540605929960647700">تفعيل الوضع التجريبي</translation>
 <translation id="1542514202066550870">‏تقدم علامة التبويب هذه محتوى VR إلى سماعة رأس.</translation>
@@ -1164,6 +1165,7 @@
 <translation id="2501173422421700905">شهادة معلقة</translation>
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2501797496290880632">اكتب اختصارًا</translation>
+<translation id="2501920221385095727">مفاتيح الثبات</translation>
 <translation id="2502441965851148920">يتم تفعيل التحديثات التلقائية. يتم إيقاف التحديثات اليدوية من قبل المشرف.</translation>
 <translation id="2502719318159902502">الوصول الكامل</translation>
 <translation id="2505127913256479918">ستتم إزالة حسابك الخاضع للإشراف قريبًا</translation>
@@ -1549,6 +1551,7 @@
 <translation id="2993517869960930405">معلومات التطبيق</translation>
 <translation id="2996286169319737844">‏تم ترميز بياناتك باستخدام عبارة مرور المزامنة. لا يتضمّن ذلك طرق الدفع والعناوين من Google Pay.</translation>
 <translation id="2996722619877761919">القلب عند الحافة الطويلة</translation>
+<translation id="3000461861112256445">صوت أحادي</translation>
 <translation id="3001144475369593262">حسابات الطفل</translation>
 <translation id="3003144360685731741">الشبكات المُفضلة</translation>
 <translation id="3003623123441819449">‏ذاكرة التخزين المؤقت للغة CSS</translation>
@@ -2480,6 +2483,7 @@
 <translation id="4211851069413100178">‏يمكنك إرسال بيانات الاستخدام والتشخيص. يمكنك المساعدة في تحسين تجربة نظام التشغيل Android من خلال إرسال بيانات استخدام التطبيق والجهاز والتشخيص تلقائيًا إلى Google. سيساعد ذلك في استقرار عمل النظام والتطبيقات، بالإضافة إلى التحسينات الأخرى. كما ستساعد بعض البيانات المجمّعة تطبيقات Google وشركائها، مثل مطوّري برامج نظام التشغيل Android. ويفرض المالك هذا <ph name="BEGIN_LINK1" />الإعداد<ph name="END_LINK1" />. قد يختار المالك إرسال بيانات الاستخدام والتشخيص لهذا الجهاز إلى Google. في حال تفعيل إعداد "النشاط الإضافي على الويب وفي التطبيقات"، قد يتم حفظ هذه البيانات في حسابك على Google. <ph name="BEGIN_LINK2" />مزيد من المعلومات<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">تصدير</translation>
 <translation id="42137655013211669">الدخول إلى هذا المورد محظور  من الخادم</translation>
+<translation id="4217571870635786043">إملاء</translation>
 <translation id="4218274196133425560">إزالة الاستثناء للمضيف <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">حدث خطأ أثناء التفعيل.</translation>
 <translation id="4222772810963087151">تفاصيل الإصدار</translation>
@@ -3164,6 +3168,7 @@
 <translation id="5204967432542742771">إدخال كلمة المرور</translation>
 <translation id="5206215183583316675">هل تريد حذف "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="520621735928254154">خطأ في استيراد الشهادة</translation>
+<translation id="5207949376430453814">تمييز علامة إقحام النص</translation>
 <translation id="5209320130288484488">لم يتم العثور على أي أجهزة</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5213481667492808996">خدمة بيانات "<ph name="NAME" />" جاهزة للاستخدام</translation>
@@ -5079,6 +5084,7 @@
 <translation id="7766807826975222231">إجراء جولة</translation>
 <translation id="7766838926148951335">قبول الأذونات</translation>
 <translation id="7768770796815395237">تغيير</translation>
+<translation id="7768784765476638775">الاختيار والاستماع</translation>
 <translation id="7769672763586021400">رقم تعريف النموذج</translation>
 <translation id="7770612696274572992">تم نسخ الصورة من جهاز آخر.</translation>
 <translation id="7770651108375708429">‏قطع الاتصال بشبكة Wi-Fi</translation>

@@ -300,8 +300,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // TODO(crbug.com/1026455): Delete this as part of the SplitSettings cleanup.
   html_source->AddBoolean("showOSSettings", false);
 
-  AddSettingsPageUIHandler(
-      base::WrapUnique(AboutHandler::Create(html_source, profile)));
+  AddSettingsPageUIHandler(std::make_unique<AboutHandler>());
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 
   // Add a handler to provide pluralized strings.

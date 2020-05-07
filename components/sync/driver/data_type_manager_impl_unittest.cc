@@ -574,16 +574,14 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureModelLoading) {
   GetController(BOOKMARKS)->model()->SimulateModelStartFinished();
 
   // Step 4.
-  ASSERT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(BOOKMARKS)->state());
+  ASSERT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Step 5.
-  ASSERT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(PREFERENCES)->state());
+  ASSERT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
   FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
 
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
@@ -886,8 +884,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationStop) {
 
   // PREFERENCES controller is running while BOOKMARKS is downloading.
   EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
-  EXPECT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
   dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
@@ -925,8 +922,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationDownloadError) {
 
   // PREFERENCES controller is running while BOOKMARKS is downloading.
   EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
-  EXPECT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
   // Make BOOKMARKS download fail. Preferences is still running.
   FinishDownload(ModelTypeSet(), ModelTypeSet(BOOKMARKS));
@@ -1279,10 +1275,8 @@ TEST_F(SyncDataTypeManagerImplTest, AllTypesReady) {
   Configure(ModelTypeSet(PREFERENCES, BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-  EXPECT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(PREFERENCES)->state());
-  EXPECT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
   // Because Bookmarks are a ready type, it can start associating immediately
   // after the high priority types finish downloading.
@@ -1385,8 +1379,7 @@ TEST_F(SyncDataTypeManagerImplTest, StopWithDisableSync) {
   SetConfigureDoneExpectation(DataTypeManager::ABORTED, DataTypeStatusTable());
 
   Configure(ModelTypeSet(BOOKMARKS));
-  EXPECT_EQ(DataTypeController::MODEL_LOADED,
-            GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
   dtm_->Stop(DISABLE_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());

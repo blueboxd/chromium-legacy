@@ -34,9 +34,11 @@ class DocumentPolicyParserTest : public ::testing::Test {
   ~DocumentPolicyParserTest() override = default;
 
   base::Optional<DocumentPolicy::ParsedDocumentPolicy> Parse(
-      const String& policy_string) {
-    return DocumentPolicyParser::ParseInternal(
-        policy_string, name_feature_map, feature_info_map, available_features);
+      const String& policy_string,
+      PolicyParserMessageBuffer& logger) {
+    return DocumentPolicyParser::ParseInternal(policy_string, name_feature_map,
+                                               feature_info_map,
+                                               available_features, logger);
   }
 
   base::Optional<std::string> Serialize(
@@ -48,42 +50,312 @@ class DocumentPolicyParserTest : public ::testing::Test {
   const DocumentPolicyNameFeatureMap name_feature_map;
   const DocumentPolicyFeatureInfoMap feature_info_map;
   DocumentPolicyFeatureSet available_features;
-};
 
-const char* const kValidPolicies[] = {
-    "",   // An empty policy.
-    " ",  // An empty policy.
-    "f-bool",
-    "no-f-bool",
-    "f-double;value=1.0",
-    "f-double;value=2",
-    "f-double;value=2.0,no-f-bool",
-    "no-f-bool,f-double;value=2.0",
-    "no-f-bool;report-to=default,f-double;value=2.0",
-    "no-f-bool;report-to=default,f-double;value=2.0;report-to=default",
-    "no-f-bool;report-to=default,f-double;report-to=default;value=2.0",
-    "no-f-bool;report-to=default,f-double;report-to=endpoint;value=2.0",
-    "no-f-bool,f-double;value=2.0;report-to=endpoint,*;report-to=default",
-    "*;report-to=default",  // An empty policy.
-    "no-f-bool;report-to=none, f-double;value=2.0, *;report-to=default",
-    "no-f-bool;report-to=none, f-double;value=2.0, *;report-to=none",
-    "f-double;value=2;another_value=4",  // excessive param should be
-                                         // acceptable.
-};
+ protected:
+  struct ParseTestCase {
+    const char* test_name;
+    const char* input_string;
+    DocumentPolicy::ParsedDocumentPolicy parsed_policy;
+    Vector<PolicyParserMessageBuffer::Message> messages;
+  };
 
-const char* const kInvalidPolicies[] = {
-    "bad-feature-name", "no-bad-feature-name",
-    "f-double;value=?0",             // wrong type of param
-    "\"f-bool\"",                    // policy member should be token instead of
-                                     // string
-    "();value=2",                    // empty feature token
-    "(f-bool f-double);value=2",     // too many
-                                     // feature
-                                     // tokens
-    "f-double;report-to=default",    // missing param
-    "f-bool;report-to=\"default\"",  // report-to member should
-                                     // be token instead of
-                                     // string
+  // |kPolicyParseTestCases| is made as a member of
+  // |DocumentPolicyParserTest| because |PolicyParserMessageBuffer::Message| has
+  // a member of type WTF::String which cannot be statically allocated.
+  const std::vector<ParseTestCase> kPolicyParseTestCases = {
+      //
+      // Parse valid policy strings.
+      //
+      {
+          "Parse an empty policy string.",
+          "",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse an empty policy string.",
+          " ",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse bool feature with value true.",
+          "f-bool",
+          /* parsed_policy */
+          {
+              /* feature_state */ {{kBoolFeature, PolicyValue(true)}},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse bool feature with value false.",
+          "no-f-bool",
+          /* parsed_policy */
+          {
+              /* feature_state */ {{kBoolFeature, PolicyValue(false)}},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse double feature with value 1.0.",
+          "f-double;value=1.0",
+          /* parsed_policy */
+          {
+              /* feature_state */ {{kDoubleFeature, PolicyValue(1.0)}},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse double feature with value literal 2.",
+          "f-double;value=2",
+          /* parsed_policy */
+          {
+              /* feature_state */ {{kDoubleFeature, PolicyValue(2.0)}},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse double feature and bool feature.",
+          "f-double;value=1,no-f-bool",
+          /* parsed_policy */
+          {
+              /* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                   {kDoubleFeature, PolicyValue(1.0)}},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "Parse bool feature and double feature.",
+          "no-f-bool,f-double;value=1",
+          /* parsed_policy */
+          {
+              /* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                   {kDoubleFeature, PolicyValue(1.0)}},
+              /* endpoint_map */ {},
+          },
+          /* messages */ {},
+      },
+      {
+          "White-space is allowed in some positions in structured-header.",
+          "no-f-bool,   f-double;value=1",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(1.0)}},
+           /* endpoint_map */ {}},
+          /* messages */ {},
+      },
+      {
+          "Unrecognized parameters are ignored, but the feature entry should "
+          "remain valid.",
+          "no-f-bool,f-double;value=1;unknown_param=xxx",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(1.0)}},
+           /* endpoint_map */ {}},
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Unrecognized parameter name unknown_param for feature f-double."}},
+      },
+      {
+          "Parse policy with report endpoint specified.",
+          "no-f-bool,f-double;value=1;report-to=default",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(1.0)}},
+           /* endpoint_map */ {{kDoubleFeature, "default"}}},
+          /* messages */ {},
+      },
+      {
+          "Parse policy with report endpoint specified.",
+          "no-f-bool;report-to=default,f-double;value=1",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(1.0)}},
+           /* endpoint_map */ {{kBoolFeature, "default"}}},
+          /* messages */ {},
+      },
+      {
+          "Parse policy with default report endpoint specified. 'none' "
+          "keyword should overwrite default value assignment.",
+          "no-f-bool;report-to=none, f-double;value=2.0, *;report-to=default",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(2.0)}},
+           /* endpoint_map */ {{kDoubleFeature, "default"}}},
+          /* messages */ {},
+      },
+      {
+          "Parse policy with default report endpoint specified.",
+          "no-f-bool;report-to=not_none, f-double;value=2.0, "
+          "*;report-to=default",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(2.0)}},
+           /* endpoint_map */ {{kBoolFeature, "not_none"},
+                               {kDoubleFeature, "default"}}},
+          /* messages */ {},
+      },
+      {
+          "Parse policy with default report endpoint 'none'.",
+          "no-f-bool;report-to=not_none, f-double;value=2.0, *;report-to=none",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(2.0)}},
+           /* endpoint_map */ {{kBoolFeature, "not_none"}}},
+          /* messages */ {},
+      },
+      {
+          "Default endpoint can be specified anywhere in the header, not "
+          "necessary at the end.",
+          "no-f-bool;report-to=not_none, *;report-to=default, "
+          "f-double;value=2.0",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(2.0)}},
+           /* endpoint_map */ {{kBoolFeature, "not_none"},
+                               {kDoubleFeature, "default"}}},
+          /* messages */ {},
+      },
+      {
+          "Default endpoint can be specified multiple times in the header. "
+          "According to SH rules, last value wins.",
+          "no-f-bool;report-to=not_none, f-double;value=2.0, "
+          "*;report-to=default, *;report-to=none",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
+                                {kDoubleFeature, PolicyValue(2.0)}},
+           /* endpoint_map */ {{kBoolFeature, "not_none"}}},
+          /* messages */ {},
+      },
+      {
+          "Even if default endpoint is not specified, none still should be "
+          "treated as a reserved keyword for endpoint names.",
+          "no-f-bool;report-to=none",
+          /* parsed_policy */
+          {/* feature_state */ {{kBoolFeature, PolicyValue(false)}},
+           /* endpoint_map */ {}},
+          /* messages */ {},
+      },
+
+      //
+      // Parse invalid policies.
+      //
+      {
+          "Parse policy with unrecognized feature name.",
+          "bad-feature-name",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Unrecognized document policy feature name "
+            "bad-feature-name."}},
+      },
+      {
+          "Parse policy with unrecognized feature name.",
+          "no-bad-feature-name",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Unrecognized document policy feature name "
+            "no-bad-feature-name."}},
+      },
+      {
+          "Parse policy with wrong type of param. Expected double type but get "
+          "boolean type.",
+          "f-double;value=?0",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Parameter value in feature f-double should be Double, but get "
+            "Boolean."}},
+      },
+      {
+          "Policy member should be token instead of string.",
+          "\"f-bool\"",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "The item in directive should be token type."}},
+      },
+      {
+          "Feature token should not be empty.",
+          "();value=2",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Directives must not be inner lists."}},
+      },
+      {
+          "Too many feature tokens.",
+          "(f-bool f-double);value=2",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Directives must not be inner lists."}},
+      },
+      {
+          "Missing mandatory parameter.",
+          "f-double;report-to=default",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "Policy value parameter missing for feature f-double. Expected "
+            "something like \"f-double;value=...\"."}},
+      },
+      {
+          "\"report-to\" parameter value type should be token instead of "
+          "string.",
+          "f-bool;report-to=\"default\"",
+          /* parsed_policy */
+          {
+              /* feature_state */ {},
+              /* endpoint_map */ {},
+          },
+          /* messages */
+          {{mojom::blink::ConsoleMessageLevel::kWarning,
+            "\"report-to\" parameter should be a token in feature f-bool."}},
+      },
+  };
 };
 
 const std::pair<DocumentPolicy::FeatureState, std::string>
@@ -102,67 +374,6 @@ const std::pair<DocumentPolicy::FeatureState, std::string>
           {kDoubleFeature, PolicyValue(1.0)}},
          "f-bool, f-double;value=1.0"}};
 
-const std::pair<const char*, DocumentPolicy::ParsedDocumentPolicy>
-    kPolicyParseTestCases[] = {
-        {"no-f-bool,f-double;value=1",
-         {{{kBoolFeature, PolicyValue(false)},
-           {kDoubleFeature, PolicyValue(1.0)}},
-          {} /* endpoint_map */}},
-        // White-space is allowed in some positions in structured-header.
-        {"no-f-bool,   f-double;value=1",
-         {{{kBoolFeature, PolicyValue(false)},
-           {kDoubleFeature, PolicyValue(1.0)}},
-          {} /* endpoint_map */}},
-        // Unrecognized params are ignored for forwards compatibility.
-        {"no-f-bool,f-double;value=1;unknown_param=xxx",
-         {{{kBoolFeature, PolicyValue(false)},
-           {kDoubleFeature, PolicyValue(1.0)}},
-          {} /* endpoint_map */}},
-        {"no-f-bool,f-double;value=1;report-to=default",
-         {{{kBoolFeature, PolicyValue(false)},
-           {kDoubleFeature, PolicyValue(1.0)}},
-          {{kDoubleFeature, "default"}}}},
-        {"no-f-bool;report-to=default,f-double;value=1",
-         {{{kBoolFeature, PolicyValue(false)},
-           {kDoubleFeature, PolicyValue(1.0)}},
-          {{kBoolFeature, "default"}}}},
-        {"no-f-bool;report-to=none, f-double;value=2.0, *;report-to=default",
-         {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
-                               {kDoubleFeature, PolicyValue(2.0)}},
-          /* endpoint_map */ {{kDoubleFeature, "default"}}}},
-        {"no-f-bool;report-to=not_none, f-double;value=2.0, "
-         "*;report-to=default",
-         {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
-                               {kDoubleFeature, PolicyValue(2.0)}},
-          /* endpoint_map */ {{kBoolFeature, "not_none"},
-                              {kDoubleFeature, "default"}}}},
-        {"no-f-bool;report-to=not_none, f-double;value=2.0, *;report-to=none",
-         {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
-                               {kDoubleFeature, PolicyValue(2.0)}},
-          /* endpoint_map */ {{kBoolFeature, "not_none"}}}},
-        // Default endpoint can be specified anywhere in the header, not
-        // necessary at the end.
-        {"no-f-bool;report-to=not_none, *;report-to=default, "
-         "f-double;value=2.0",
-         {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
-                               {kDoubleFeature, PolicyValue(2.0)}},
-          /* endpoint_map */ {{kBoolFeature, "not_none"},
-                              {kDoubleFeature, "default"}}}},
-        // Default endpoint can be specified multiple times in the header.
-        // According to SH rules, last value wins.
-        {"no-f-bool;report-to=not_none, f-double;value=2.0, "
-         "*;report-to=default, "
-         "*;report-to=none",
-         {/* feature_state */ {{kBoolFeature, PolicyValue(false)},
-                               {kDoubleFeature, PolicyValue(2.0)}},
-          /* endpoint_map */ {{kBoolFeature, "not_none"}}}},
-        // Even if default endpoint is not specified, none still should be
-        // treated as a reserved keyword for endpoint names.
-        {"no-f-bool;report-to=none",
-         {/* feature_state */ {{kBoolFeature, PolicyValue(false)}},
-          /* endpoint_map */ {}}},
-};
-
 const DocumentPolicy::FeatureState kParsedPolicies[] = {
     {},  // An empty policy
     {{kBoolFeature, PolicyValue(false)}},
@@ -180,25 +391,12 @@ TEST_F(DocumentPolicyParserTest, SerializeAndParse) {
   for (const auto& policy : kParsedPolicies) {
     const base::Optional<std::string> policy_string = Serialize(policy);
     ASSERT_TRUE(policy_string.has_value());
+    PolicyParserMessageBuffer logger;
     const base::Optional<DocumentPolicy::ParsedDocumentPolicy> reparsed_policy =
-        Parse(policy_string.value().c_str());
+        Parse(policy_string.value().c_str(), logger);
 
     ASSERT_TRUE(reparsed_policy.has_value());
     EXPECT_EQ(reparsed_policy.value().feature_state, policy);
-  }
-}
-
-TEST_F(DocumentPolicyParserTest, ParseValidPolicy) {
-  for (const char* policy : kValidPolicies) {
-    EXPECT_NE(Parse(policy), base::nullopt) << "Should parse " << policy;
-  }
-}
-
-TEST_F(DocumentPolicyParserTest, ParseInvalidPolicy) {
-  for (const char* policy : kInvalidPolicies) {
-    EXPECT_EQ(Parse(policy),
-              base::make_optional(DocumentPolicy::ParsedDocumentPolicy{}))
-        << "Should fail to parse " << policy;
   }
 }
 
@@ -215,12 +413,31 @@ TEST_F(DocumentPolicyParserTest, SerializeResultShouldMatch) {
 
 TEST_F(DocumentPolicyParserTest, ParseResultShouldMatch) {
   for (const auto& test_case : kPolicyParseTestCases) {
-    const char* input = test_case.first;
-    const DocumentPolicy::ParsedDocumentPolicy& expected = test_case.second;
-    const auto result = Parse(input);
+    const String& test_name = test_case.test_name;
 
+    PolicyParserMessageBuffer logger;
+    const auto result = Parse(test_case.input_string, logger);
+
+    // All tesecases should not return base::nullopt because they all comply to
+    // structured header syntax.
     ASSERT_TRUE(result.has_value());
-    EXPECT_EQ(result.value(), expected);
+
+    EXPECT_EQ(result->endpoint_map, test_case.parsed_policy.endpoint_map)
+        << test_name << "\n endpoint map should match";
+    EXPECT_EQ(result->feature_state, test_case.parsed_policy.feature_state)
+        << test_name << "\n feature state should match";
+    EXPECT_EQ(logger.GetMessages().size(), test_case.messages.size())
+        << test_name << "\n messages length should match";
+    for (auto *it_actual = logger.GetMessages().begin(),
+              *it_expected = test_case.messages.begin();
+         it_actual != logger.GetMessages().end() &&
+         it_expected != test_case.messages.end();
+         it_actual++, it_expected++) {
+      EXPECT_EQ(it_actual->level, it_expected->level)
+          << test_name << "\n message level should match";
+      EXPECT_EQ(it_actual->content, it_expected->content)
+          << test_name << "\n message content should match";
+    }
   }
 }
 

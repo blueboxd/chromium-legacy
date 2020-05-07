@@ -48,7 +48,6 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"

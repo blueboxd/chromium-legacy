@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">ॲप्लिकेशन विंडो</translation>
 <translation id="1531275250079031713">'नवीन वाय-फाय जोडा' डायलॉग दाखवा</translation>
 <translation id="1536754031901697553">डिस्कनेक्ट करत आहे...</translation>
+<translation id="1537254971476575106">क्षेत्रे भिंग</translation>
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1540605929960647700">डेमो मोड सुरू करा</translation>
 <translation id="1542514202066550870">हा टॅब हेडसेटवर VR आशय सादर करत आहे.</translation>
@@ -1163,6 +1164,7 @@
 <translation id="2501173422421700905">राखून ठेवलेले सर्टिफिकेट</translation>
 <translation id="2501278716633472235">परत जा</translation>
 <translation id="2501797496290880632">शॉर्टकट टाइप करा</translation>
+<translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2502441965851148920">स्वयंचलित अपडेट सक्षम केली आहेत. तुमच्या ॲडमिनिस्ट्रेटरने मॅन्युअल अपडेट अक्षम केली आहेत.</translation>
 <translation id="2502719318159902502">पूर्ण अ‍ॅक्सेस</translation>
 <translation id="2505127913256479918">हे पर्यवेक्षित खाते लवकरच काढले जाईल</translation>
@@ -1548,6 +1550,7 @@
 <translation id="2993517869960930405">ॲप माहिती</translation>
 <translation id="2996286169319737844">डेटा तुमच्या सिंक पासफ्रेजसह एंक्रिप्ट केला आहे. यामध्ये Google Pay वरील पेमेंट पद्धतींचा आणि पत्त्यांचा समावेश नसतो.</translation>
 <translation id="2996722619877761919">लांब कडेवर फ्लिप करा</translation>
+<translation id="3000461861112256445">मोनो ऑडिओ</translation>
 <translation id="3001144475369593262">लहान मुलाची खाती</translation>
 <translation id="3003144360685731741">प्राधान्यीकृत नेटवर्क</translation>
 <translation id="3003623123441819449">CSS कॅशे </translation>
@@ -2018,7 +2021,7 @@
 <translation id="3627588569887975815">लिंक गुप्त विंडो मध्ये उघडा</translation>
 <translation id="3627671146180677314">Netscape सर्टिफिकेट रिन्यूअल वेळ</translation>
 <translation id="3627879631695760395"><ph name="APP" /> इंस्टॉल करा...</translation>
-<translation id="3628275722731025472">Bluetooth बंद करा</translation>
+<translation id="3628275722731025472">ब्लूटूथ बंद करा</translation>
 <translation id="3629631988386925734">Smart Lock सुरू करण्यासाठी तुमचा पासवर्ड एंटर करा. पुढील वेळेस तुमचा फोन तुमचे <ph name="DEVICE_TYPE" /> अनलॉक करेल. तुम्ही सेटिंग्जमध्ये Smart Lock बंद करू शकता.</translation>
 <translation id="3630132874740063857">तुमचा फोन</translation>
 <translation id="3630995161997703415">कधीही वापरण्‍यासाठी ही साइट तुमच्या शेल्‍फवर जोडा</translation>
@@ -2480,6 +2483,7 @@
 <translation id="4211851069413100178">वापर आणि निदान डेटा पाठवा. Google ला आपोआप निदान आणि डिव्हाइस आणि अ‍ॅप वापर डेटा पाठवून तुमचा Android अनुभव सुधारण्यात मदत करा. हे सिस्ट्म आणि अ‍ॅप स्थिरता आणि इतर सुधारणा करण्यात मदत करेल. काही एकत्रित केलेला डेटा Google अ‍ॅप्स आणि Android डेव्हलपर सारख्या भागीदारांना देखील मदत करेल. या <ph name="BEGIN_LINK1" />सेटिंगची<ph name="END_LINK1" /> मालकाद्वारे अंमलबजावणी केली जाते. मालक या डिव्हाइससाठी निदान आणि वापर डेटा Google ला पाठवणे निवडू शकतो. जर तुमची अतिरिक्त वेब आणि अ‍ॅप अ‍ॅक्टिव्हिटी सेटिंग सुरू केलेली असल्यास, हा डेटा तुमच्या Google खाते वर सेव्ह केला जाऊ शकतो. <ph name="BEGIN_LINK2" />अधिक जाणून घ्या<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">एक्सपोर्ट</translation>
 <translation id="42137655013211669">सर्व्हरद्वारे या स्त्रोताचा ॲक्सेस निषिद्ध केला होता.</translation>
+<translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> साठी एक्सेप्शन काढा</translation>
 <translation id="4220648711404560261">ॲक्टिव्हेट करताना एरर आली.</translation>
 <translation id="4222772810963087151">तपशील तयार करा</translation>
@@ -3164,6 +3168,7 @@
 <translation id="5204967432542742771">पासवर्ड एंटर करा</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" हटवायचे?</translation>
 <translation id="520621735928254154">सर्टिफिकेट आया‍त एरर</translation>
+<translation id="5207949376430453814">मजकूर कॅरेट हायलाइट करा</translation>
 <translation id="5209320130288484488">कोणतीही डिव्हाइसेस आढळली नाहीत</translation>
 <translation id="5210365745912300556">टॅब बंद करा</translation>
 <translation id="5213481667492808996">तुमची '<ph name="NAME" />' डेटा सेवा वापरण्यासाठी तयार आहे</translation>
@@ -3946,7 +3951,7 @@
 <translation id="6232116551750539448"><ph name="NAME" /> वरील कनेक्शन गमावले गेले आहे</translation>
 <translation id="6233154960150021497">कीबोर्डऐवजी व्हॉइस वापरण्यासाठी डीफॉल्ट</translation>
 <translation id="6234474535228214774">इंस्टॉल करणे प्रलंबित आहे</translation>
-<translation id="6237474966939441970">स्टायलस टिपा घेणे अ‍ॅप</translation>
+<translation id="6237474966939441970">स्टायलस टिपा घेण्याचे अ‍ॅप</translation>
 <translation id="6237816943013845465">तुम्हाला स्क्रीन रिझोल्युशन ॲडजस्ट करण्याची अनुमती देते</translation>
 <translation id="6238624845858322552">ब्लूटूथ डिव्हाइसशी कनेक्ट करा</translation>
 <translation id="6238767809035845642">मजकूर इतर डिव्हाइसवरून शेअर केला आहे</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">एक फेरफटका मारा</translation>
 <translation id="7766838926148951335">परवानग्या स्वीकारा</translation>
 <translation id="7768770796815395237">बदला</translation>
+<translation id="7768784765476638775">बोलण्यासाठी निवडा</translation>
 <translation id="7769672763586021400">मॉडेल आयडी</translation>
 <translation id="7770612696274572992">दुसर्‍या डिव्हाइसवरून कॉपी केलेली इमेज</translation>
 <translation id="7770651108375708429">वाय-फाय डिस्कनेक्ट करा</translation>

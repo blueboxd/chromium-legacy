@@ -4741,7 +4741,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se inhabilita esta configuración, los usuarios no podrán acceder a "Autocompletar".
 
       Si se habilita o no se establece ningún valor, los usuarios podrán controlar "Autocompletar". De esta manera, podrán configurar los perfiles de la función y activarla o desactivarla cuando lo deseen.</translation>
-<translation id="8042971420829376618">Esta política especifica el ID de usuario de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="8044493735196713914">Modo de notificación de inicio de dispositivo</translation>
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8053580360728293758">Anula el modo predeterminado de impresión a color. Si el modo no está disponible, se ignorará esta política.</translation>

@@ -21,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_search_api/stub_url_checker.h"
 #include "components/safe_search_api/url_checker.h"
+#include "content/public/browser/storage_partition.h"
 #include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -243,6 +244,70 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
     return items;
   }
+
+  void CreateCookies(const std::vector<GURL>& urls,
+                     bool domain_cookies = false,
+                     bool expired = false) {
+    const base::Time creation_time = base::Time::Now();
+
+    base::RunLoop run_loop;
+    int tasks = urls.size();
+
+    for (auto& url : urls) {
+      std::vector<std::string> cookie_line;
+      cookie_line.push_back("A=1");
+
+      if (url.SchemeIsCryptographic())
+        cookie_line.push_back("Secure");
+
+      if (domain_cookies)
+        cookie_line.push_back("Domain=" + url.host());
+
+      if (expired)
+        cookie_line.push_back("Expires=Wed, 21 Oct 2015 07:28:00 GMT");
+
+      std::unique_ptr<net::CanonicalCookie> cookie =
+          net::CanonicalCookie::Create(url, base::JoinString(cookie_line, ";"),
+                                       creation_time, creation_time);
+
+      EXPECT_EQ(domain_cookies, cookie->IsDomainCookie());
+      EXPECT_EQ(!domain_cookies, cookie->IsHostCookie());
+
+      net::CookieOptions options;
+      GetCookieManager()->SetCanonicalCookie(
+          *cookie, url, options,
+          base::BindLambdaForTesting(
+              [&](net::CanonicalCookie::CookieInclusionStatus status) {
+                if (--tasks == 0)
+                  run_loop.Quit();
+              }));
+    }
+
+    run_loop.Run();
+  }
+
+  uint32_t DeleteCookies(network::mojom::CookieDeletionFilterPtr filter) {
+    base::RunLoop run_loop;
+    uint32_t result_out = 0u;
+
+    GetCookieManager()->DeleteCookies(
+        std::move(filter),
+        base::BindLambdaForTesting([&run_loop, &result_out](uint32_t result) {
+          result_out = result;
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return result_out;
+  }
+
+  network::mojom::CookieManager* GetCookieManager() {
+    auto* partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile());
+    return partition->GetCookieManagerForBrowserProcess();
+  }
+
+  bool IsCookieObserverEnabled() const { return true; }
 
  private:
   const ::network::ResourceRequest& GetCurrentRequest() {
@@ -1075,6 +1140,556 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
 
     auto items = GetItemsForMediaFeedSync(1);
     EXPECT_FALSE(items.empty());
+  }
+}
+
+TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_ExplicitDeletion_All) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+  }
+
+  EXPECT_EQ(2u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_SingleHostMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+  }
+
+  auto filter = network::mojom::CookieDeletionFilter::New();
+  filter->url = feed_url;
+  EXPECT_EQ(1u, DeleteCookies(std::move(filter)));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_SingleHostMatch_Insecure) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(GURL("http://www.google.com"));
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+  }
+
+  auto filter = network::mojom::CookieDeletionFilter::New();
+  filter->url = feed_url;
+  EXPECT_EQ(1u, DeleteCookies(std::move(filter)));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Expired) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+    CreateCookies(cookie_urls, false, true);
+  }
+
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_AssociatedHostMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+  const GURL alt_url("https://www.example.com");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  std::set<url::Origin> origins;
+  origins.insert(url::Origin::Create(alt_url));
+
+  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
+  result.associated_origins = origins;
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
+                                                      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(alt_url);
+    CreateCookies(cookie_urls);
+  }
+
+  auto filter = network::mojom::CookieDeletionFilter::New();
+  filter->url = alt_url;
+  EXPECT_EQ(1u, DeleteCookies(std::move(filter)));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_SingleHostNoMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+  const GURL alt_url("https://www.example.com");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(alt_url);
+    CreateCookies(cookie_urls);
+  }
+
+  auto filter = network::mojom::CookieDeletionFilter::New();
+  filter->url = alt_url;
+  EXPECT_EQ(1u, DeleteCookies(std::move(filter)));
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Overwrite) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  {
+    // Store some cookies on the feed URL and another URL.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(feed_url);
+    cookie_urls.push_back(GURL("https://www.example.com"));
+    CreateCookies(cookie_urls);
+    CreateCookies(cookie_urls);
+    WaitForDB();
+  }
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_DomainMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some domain cookies.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(GURL("https://google.com"));
+    CreateCookies(cookie_urls, true);
+  }
+
+  EXPECT_EQ(1u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_DomainMatch_FullDomain) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some domain cookies.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(GURL("https://www.google.com"));
+    CreateCookies(cookie_urls, true);
+  }
+
+  EXPECT_EQ(1u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_DomainMatch_Insecure) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some domain cookies.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(GURL("http://google.com"));
+    CreateCookies(cookie_urls, true);
+  }
+
+  EXPECT_EQ(1u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_DomainMatch_AssociatedDomain) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+  const GURL alt_url("https://www.example.com");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  std::set<url::Origin> origins;
+  origins.insert(url::Origin::Create(alt_url));
+
+  auto result = SuccessfulResultWithItems(GetExpectedItems(), 1);
+  result.associated_origins = origins;
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(std::move(result),
+                                                      base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some domain cookies.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(alt_url);
+    CreateCookies(cookie_urls, true);
+  }
+
+  EXPECT_EQ(1u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
+              feeds[0]->reset_reason);
+  }
+}
+
+TEST_F(MediaFeedsServiceTest,
+       ResetOnCookieChange_ExplicitDeletion_DomainMatch_NoMatch) {
+  if (!GetMediaFeedsService()->HasCookieObserverForTest())
+    return;
+
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Store a Media Feed.
+  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Store some media feed items.
+  GetMediaHistoryService()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(GetExpectedItems(), 1), base::DoNothing());
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetCookieChangeCallbackForTest(
+      run_loop.QuitClosure());
+
+  {
+    // Store some domain cookies.
+    std::vector<GURL> cookie_urls;
+    cookie_urls.push_back(GURL("https://example.com"));
+    CreateCookies(cookie_urls, true);
+  }
+
+  EXPECT_EQ(1u, DeleteCookies(network::mojom::CookieDeletionFilter::New()));
+  run_loop.Run();
+  WaitForDB();
+
+  {
+    auto feeds = GetMediaFeedsSync();
+    ASSERT_EQ(1u, feeds.size());
+    EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
   }
 }
 

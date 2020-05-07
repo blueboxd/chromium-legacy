@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "net/http/structured_headers.h"
 #include "services/network/trust_tokens/scoped_boringssl_bytes.h"
+#include "services/network/trust_tokens/signed_redemption_record_serialization.h"
 #include "services/network/trust_tokens/trust_token_client_data_canonicalization.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -16,46 +17,6 @@
 #include "third_party/boringssl/src/include/openssl/trust_token.h"
 
 namespace network {
-
-namespace {
-
-const char kSignedRedemptionRecordBodyKey[] = "body";
-const char kSignedRedemptionRecordSignatureKey[] = "signature";
-
-// The Trust Tokens design doc [1] defines a signed redemption record (SRR) as a
-// Structured Headers Draft 15 dictionary with two "byte sequence"-typed fields,
-// a body and a signature.  This method constructs such a dictionary, given the
-// body and signature's contents as bytestrings.
-//
-// Returns nullopt on internal serialization error in the Structured Headers
-// library.
-//
-// [1]
-// https://docs.google.com/document/d/1TNnya6B8pyomDK2F1R9CL3dY10OAmqWlnCxsWyOBDVQ/edit#heading=h.7mkzvhpqb8l5
-base::Optional<std::string> ConstructSignedRedemptionRecord(
-    base::span<const uint8_t> body,
-    base::span<const uint8_t> signature) {
-  net::structured_headers::Dictionary dictionary;
-
-  // Stunningly, this is the easiest way to add a byte array-typed value to a
-  // net::structured_headers::Dictionary.
-  auto make_value_for_dict = [](base::span<const uint8_t> value) {
-    return net::structured_headers::ParameterizedMember(
-        net::structured_headers::Item(
-            std::string(reinterpret_cast<const char*>(value.data()),
-                        value.size()),
-            net::structured_headers::Item::kByteSequenceType),
-        net::structured_headers::Parameters{});
-  };
-
-  dictionary[kSignedRedemptionRecordBodyKey] = make_value_for_dict(body);
-  dictionary[kSignedRedemptionRecordSignatureKey] =
-      make_value_for_dict(signature);
-
-  return net::structured_headers::SerializeDictionary(dictionary);
-}
-
-}  // namespace
 
 BoringsslTrustTokenRedemptionCryptographer::
     BoringsslTrustTokenRedemptionCryptographer() = default;

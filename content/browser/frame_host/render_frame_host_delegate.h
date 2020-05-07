@@ -82,7 +82,6 @@ class ClipboardFormatType;
 
 namespace content {
 class FrameTreeNode;
-class InterstitialPage;
 class PageState;
 class RenderFrameHostImpl;
 class SessionStorageNamespace;
@@ -250,10 +249,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.
   virtual WebContents* GetAsWebContents();
-
-  // Returns this object cast to an InterstitialPage if it is one. Returns
-  // nullptr otherwise.
-  virtual InterstitialPage* GetAsInterstitialPage();
 
   // The render frame has requested access to media devices listed in
   // |request|, and the client should grant or deny that permission by

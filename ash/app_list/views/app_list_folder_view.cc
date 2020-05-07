@@ -605,13 +605,8 @@ void AppListFolderView::UpdatePreferredBounds() {
   const gfx::Size search_box_size =
       contents_view_->GetSearchBoxSize(AppListState::kStateApps);
   // Adjust for apps container margins.
-  if (app_list_features::IsScalableAppListEnabled()) {
-    container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(
-        container_bounds, search_box_size, true /*for_full_container_bounds*/));
-  } else {
-    container_bounds.Inset(
-        0, GetAppListConfig().search_box_fullscreen_top_padding(), 0, 0);
-  }
+  container_bounds.Inset(container_view_->CalculateMarginsForAvailableBounds(
+      container_bounds, search_box_size));
   // Avoid overlap with the search box widget.
   container_bounds.Inset(
       8, search_box_size.height() + SearchBoxView::GetFocusRingSpacing(), 8, 0);

@@ -468,7 +468,6 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
 
-  properties.is_under_position_sticky = info.is_under_position_sticky;
   properties.nearest_contained_layout_layer =
       info.nearest_contained_layout_layer;
 

@@ -235,6 +235,26 @@ bool ShelfConfig::ShelfControlsForcedShownForAccessibility() const {
              ->tablet_mode_shelf_navigation_buttons_enabled();
 }
 
+int ShelfConfig::GetShelfButtonSize(bool force_dense) const {
+  return (is_dense_ || force_dense) ? shelf_button_size_dense_
+                                    : shelf_button_size_;
+}
+
+int ShelfConfig::GetShelfButtonIconSize(bool force_dense) const {
+  return (is_dense_ || force_dense) ? shelf_button_icon_size_dense_
+                                    : shelf_button_icon_size_;
+}
+
+int ShelfConfig::GetHotseatSize(bool force_dense) const {
+  if (!chromeos::switches::ShouldShowShelfHotseat() ||
+      !Shell::Get()->IsInTabletMode()) {
+    return shelf_size();
+  }
+
+  return (is_dense_ || force_dense) ? shelf_button_size_dense_
+                                    : shelf_button_size_;
+}
+
 int ShelfConfig::shelf_size() const {
   return GetShelfSize(false /*ignore_in_app_state*/);
 }
@@ -245,13 +265,6 @@ int ShelfConfig::in_app_shelf_size() const {
 
 int ShelfConfig::system_shelf_size() const {
   return GetShelfSize(true /*ignore_in_app_state*/);
-}
-
-int ShelfConfig::hotseat_size() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() || !in_tablet_mode_) {
-    return shelf_size();
-  }
-  return is_dense_ ? 48 : 56;
 }
 
 int ShelfConfig::shelf_drag_handle_centering_size() const {
@@ -266,16 +279,8 @@ int ShelfConfig::hotseat_bottom_padding() const {
   return 8;
 }
 
-int ShelfConfig::button_size() const {
-  return is_dense_ ? shelf_button_size_dense_ : shelf_button_size_;
-}
-
 int ShelfConfig::button_spacing() const {
   return shelf_button_spacing_;
-}
-
-int ShelfConfig::button_icon_size() const {
-  return is_dense_ ? shelf_button_icon_size_dense_ : shelf_button_icon_size_;
 }
 
 int ShelfConfig::control_size() const {
@@ -472,14 +477,6 @@ int ShelfConfig::GetShelfControlButtonBlurRadius() const {
 int ShelfConfig::GetAppIconEndPadding() const {
   return chromeos::switches::ShouldShowShelfHotseat() ? app_icon_end_padding_
                                                       : 0;
-}
-
-int ShelfConfig::GetShelfItemRippleSize() const {
-  return button_size() + 2 * scrollable_shelf_ripple_padding();
-}
-
-int ShelfConfig::GetHotseatFullDragAmount() const {
-  return shelf_size() + hotseat_bottom_padding() + hotseat_size();
 }
 
 base::TimeDelta ShelfConfig::DimAnimationDuration() const {

@@ -83,6 +83,8 @@ class FakeCrosHealthdService final
       RunBatteryDischargeRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
+  void AddBluetoothObserver(
+      mojom::CrosHealthdBluetoothObserverPtr observer) override;
   void AddPowerObserver(mojom::CrosHealthdPowerObserverPtr observer) override;
 
   // CrosHealthdProbeService overrides:
@@ -111,6 +113,10 @@ class FakeCrosHealthdService final
   // Calls the power event OnAcInserted for all registered power observers.
   void EmitAcInsertedEventForTesting();
 
+  // Calls the Bluetooth event OnAdapterAdded for all registered Bluetooth
+  // observers.
+  void EmitAdapterAddedEventForTesting();
+
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
@@ -129,6 +135,8 @@ class FakeCrosHealthdService final
       diagnostics_receiver_set_;
   mojo::ReceiverSet<mojom::CrosHealthdEventService> event_receiver_set_;
 
+  // Collection of registered Bluetooth observers.
+  mojo::RemoteSet<mojom::CrosHealthdBluetoothObserver> bluetooth_observers_;
   // Collection of registered power observers.
   mojo::RemoteSet<mojom::CrosHealthdPowerObserver> power_observers_;
 

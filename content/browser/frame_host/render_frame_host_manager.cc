@@ -26,11 +26,12 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
@@ -320,8 +321,6 @@ RenderViewHostImpl* RenderFrameHostManager::current_host() const {
 }
 
 RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
-  if (delegate_->GetInterstitialForRenderManager())
-    return delegate_->GetInterstitialForRenderManager()->GetView();
   if (render_frame_host_)
     return render_frame_host_->GetView();
   return nullptr;

@@ -22,6 +22,12 @@ struct ChromeInfo {
   version_info::Channel channel{};
   base::Version version;
 };
+// Device display metrics.
+struct DisplayMetrics {
+  float density;
+  uint32_t width_pixels;
+  uint32_t height_pixels;
+};
 
 // A unique ID for an ephemeral change.
 using EphemeralChangeId = util::IdTypeU32<class EphemeralChangeIdClass>;

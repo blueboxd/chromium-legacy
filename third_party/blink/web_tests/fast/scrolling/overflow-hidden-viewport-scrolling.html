@@ -3,7 +3,7 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/gesture-util.js"></script>
 <style>
-  #viewport {
+  #layout-viewport {
     position: absolute;
     left: 0;
     top: 0;
@@ -35,14 +35,14 @@
     overflow-y: hidden;
   }
 </style>
-<div id="viewport">
+<div id="layout-viewport">
   To test manually, pinch zoom into the page and scroll around. You should be
   able to pan around within the green area but you should never scroll the
   document (you should never see red).
 </div>
 <div id="spacer"></div>
 <script>
-  const viewport = document.getElementById('viewport');
+  const viewport_center = {x: 400, y: 300};
 
   window.onload = () => {
     if (!window.internals)
@@ -53,14 +53,13 @@
     promise_test (async (test) => {
       await waitForCompositorCommit();
 
-      const delta = 2000;
-      const location = elementCenter(viewport);
-      await smoothScroll(delta,
-                         location.x,
-                         location.y,
-                         GestureSourceType.TOUCH_INPUT,
-                         'down',
-                         SPEED_INSTANT);
+      const delta = {x: 0, y: 2000};
+      await smoothScrollWithXY(delta.x,
+                               delta.y,
+                               viewport_center.x,
+                               viewport_center.y,
+                               GestureSourceType.TOUCH_INPUT,
+                               SPEED_INSTANT);
 
       assert_equals(window.scrollY, 0, "Document doesn't scroll vertically.");
       assert_equals(window.visualViewport.offsetTop, 300, "VisualViewport pans vertically.");
@@ -69,14 +68,13 @@
     promise_test (async (test) => {
       await waitForCompositorCommit();
 
-      const delta = 2000;
-      const location = elementCenter(viewport);
-      await smoothScroll(delta,
-                         location.x,
-                         location.y,
-                         GestureSourceType.TOUCH_INPUT,
-                         'right',
-                         SPEED_INSTANT);
+      const delta = {x: 2000, y: 0};
+      await smoothScrollWithXY(delta.x,
+                               delta.y,
+                               viewport_center.x,
+                               viewport_center.y,
+                               GestureSourceType.TOUCH_INPUT,
+                               SPEED_INSTANT);
 
       assert_equals(window.scrollX, 0, "Document doesn't scroll horizontally.");
       assert_equals(window.visualViewport.offsetLeft, 400, "VisualViewport pans horizontally.");

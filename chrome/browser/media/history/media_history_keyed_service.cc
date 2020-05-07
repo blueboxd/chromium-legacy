@@ -407,13 +407,14 @@ void MediaHistoryKeyedService::MarkMediaFeedItemAsClicked(
 
 void MediaHistoryKeyedService::ResetMediaFeed(
     const url::Origin& origin,
-    media_feeds::mojom::ResetReason reason) {
+    media_feeds::mojom::ResetReason reason,
+    const bool include_subdomains) {
   CHECK_NE(media_feeds::mojom::ResetReason::kNone, reason);
 
   if (auto* store = store_->GetForDelete()) {
     store->db_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaHistoryStore::ResetMediaFeed, store,
-                                  origin, reason));
+                                  origin, reason, include_subdomains));
   }
 }
 

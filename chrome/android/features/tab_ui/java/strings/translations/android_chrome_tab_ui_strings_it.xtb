@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Visualizza</translation>
 <translation id="5073204694187207510">Nascondi la griglia a schermo intero</translation>
 <translation id="5082793167783849073">Confronta rapidamente le pagine creando un gruppo. Innanzitutto, tocca e tieni premuto un link.</translation>
+<translation id="5533021382642990449">Mostra più tardi</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> schede raggruppate</translation>
 <translation id="58326064309361797">Trascina le schede per raggrupparle</translation>
 <translation id="6040143037577758943">Chiudi</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Ignora i suggerimenti.</translation>
 <translation id="814503310257431685">Visualizza tutti</translation>
 <translation id="8205266828577616993">Sposta scheda in alto</translation>
+<translation id="8304833501377495048">Non vuoi più mostrare la tabstrip?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Chiudi <ph name="TABS_COUNT_ONE" /> scheda selezionata}other{Chiudi <ph name="TABS_COUNT_MANY" /> schede selezionate}}</translation>
+<translation id="8749939518995770034">Tabstrip chiusa</translation>
 <translation id="9150694013019234766">Passa da una scheda all'altra del gruppo di schede nella parte inferiore dello schermo</translation>
 <translation id="9169594135889675189">Aggiungi una nuova scheda al gruppo</translation>
 <translation id="959682366969460160">Organizzazione</translation>

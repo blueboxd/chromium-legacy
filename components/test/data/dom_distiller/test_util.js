@@ -12,6 +12,7 @@ function TestReporter(runner) {
     passes++;
   });
 
+  // TODO(crbug.com/1027612): Show diff between actual and expected results.
   runner.on('fail', function(test, err) {
     failures++;
     let message = 'Mocha test failed: ' + test.fullTitle() + '\n';

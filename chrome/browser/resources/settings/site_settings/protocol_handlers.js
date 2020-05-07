@@ -44,14 +44,14 @@ const MenuActions = {
  *            protocol_display_name: string,
  *            spec: string}}
  */
-let HandlerEntry;
+export let HandlerEntry;
 
 /**
  * @typedef {{handlers: !Array<!HandlerEntry>,
  *            protocol: string,
  *            protocol_display_name: string}}
  */
-let ProtocolEntry;
+export let ProtocolEntry;
 
 Polymer({
   is: 'protocol-handlers',

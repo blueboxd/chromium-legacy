@@ -144,9 +144,15 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   //
   // Populates |animation_element_ids| with the CompositorElementId of all
   // animations for which we saw a paint chunk and created a layer.
+  // |scroll_translation_nodes| is the complete set of scroll nodes, including
+  // noncomposited nodes, and is used for Scroll Unification to generate scroll
+  // nodes for noncomposited scrollers to complete the compositor's scroll
+  // property tree.
   void Update(scoped_refptr<const PaintArtifact>,
               const ViewportProperties& viewport_properties,
-              const Settings& settings);
+              const Settings& settings,
+              const Vector<const TransformPaintPropertyNode*>&
+                  scroll_translation_nodes);
 
   bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
   bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);

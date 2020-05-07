@@ -15,7 +15,12 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def AddCommandlineArgs(cls, parser):
     super(InfoCollectionTest, cls).AddCommandlineArgs(parser)
-    parser.add_option('--expected-device-id', help='The expected device id')
+    parser.add_option(
+        '--expected-device-id',
+        action='append',
+        dest='expected_device_ids',
+        default=[],
+        help='The expected device id. Can be specified multiple times.')
     parser.add_option('--expected-vendor-id', help='The expected vendor id')
 
   @classmethod
@@ -23,8 +28,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     yield ('InfoCollection_basic', '_', ('_RunBasicTest', {
         'expected_vendor_id_str':
         options.expected_vendor_id,
-        'expected_device_id_str':
-        options.expected_device_id,
+        'expected_device_id_strs':
+        options.expected_device_ids,
     }))
     yield ('InfoCollection_direct_composition', '_',
            ('_RunDirectCompositionTest', {}))
@@ -56,7 +61,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   ######################################
   # Helper functions for the tests below
 
-  def _RunBasicTest(self, gpu, expected_vendor_id_str, expected_device_id_str,
+  def _RunBasicTest(self, gpu, expected_vendor_id_str, expected_device_id_strs,
                     **kwargs):
     del kwargs  # Any unused extra arguments that got passed in.
     device = gpu.devices[0]
@@ -67,20 +72,22 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     detected_device_id = device.device_id
 
     # Gather the expected IDs passed on the command line
-    if expected_vendor_id_str is None or expected_device_id_str is None:
+    if expected_vendor_id_str is None or expected_device_id_strs is []:
       self.fail("Missing --expected-[vendor|device]-id command line args")
 
     expected_vendor_id = int(expected_vendor_id_str, 16)
-    expected_device_id = int(expected_device_id_str, 16)
+    expected_device_ids = [
+        int(id_str, 16) for id_str in expected_device_id_strs
+    ]
 
     # Check expected and detected GPUs match
     if detected_vendor_id != expected_vendor_id:
       self.fail('Vendor ID mismatch, expected %s but got %s.' %
                 (expected_vendor_id, detected_vendor_id))
 
-    if detected_device_id != expected_device_id:
+    if detected_device_id not in expected_device_ids:
       self.fail('Device ID mismatch, expected %s but got %s.' %
-                (expected_device_id, detected_device_id))
+                (expected_device_ids, detected_device_id))
 
   def _RunDirectCompositionTest(self, gpu, **kwargs):
     del kwargs  # Any unused extra arguments that got passed in.

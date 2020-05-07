@@ -185,7 +185,7 @@ SkPath Checkbox::GetFocusRingPath() const {
 SkColor Checkbox::GetIconImageColor(int icon_state) const {
   const SkColor active_color = GetNativeTheme()->GetSystemColor(
       (icon_state & IconState::CHECKED)
-          ? ui::NativeTheme::kColorId_ButtonEnabledColor
+          ? ui::NativeTheme::kColorId_ButtonCheckedColor
           : ui::NativeTheme::kColorId_ButtonUncheckedColor);
   return (icon_state & IconState::ENABLED)
              ? active_color

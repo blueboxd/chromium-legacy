@@ -38,6 +38,9 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 @Config(manifest = Config.NONE)
 public class ImageFetcherBridgeTest {
     private static long sNativePointer = 100L;
+    private static final int WIDTH_PX = 10;
+    private static final int HEIGHT_PX = 20;
+    private static final int EXPIRATION_INTERVAL_MINS = 60;
 
     @Rule
     public ExpectedException mExpectedException = ExpectedException.none();
@@ -76,9 +79,9 @@ public class ImageFetcherBridgeTest {
         mExpectedException.expectMessage("fetchGif called after destroy");
         mBridge.fetchGif(-1, "", "", null);
         mExpectedException.expectMessage("fetchImage called after destroy");
-        mBridge.fetchImage(-1, "", "", 100, 100, null);
+        mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), null);
         mExpectedException.expectMessage("fetchImage called after destroy");
-        mBridge.fetchImage(-1, "", "", 100, 100, null);
+        mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), null);
         mExpectedException.expectMessage("reportEvent called after destroy");
         mBridge.reportEvent("", -1);
         mExpectedException.expectMessage("reportCacheHitTime called after destroy");
@@ -90,7 +93,7 @@ public class ImageFetcherBridgeTest {
     @Test
     public void testFetchImage() {
         ArgumentCaptor<Callback<Bitmap>> callbackCaptor = ArgumentCaptor.forClass(Callback.class);
-        final Bitmap bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+        final Bitmap bitmap = Bitmap.createBitmap(WIDTH_PX, HEIGHT_PX, Bitmap.Config.ARGB_8888);
         doAnswer((InvocationOnMock invocation) -> {
             callbackCaptor.getValue().onResult(bitmap);
             return null;
@@ -99,7 +102,27 @@ public class ImageFetcherBridgeTest {
                 .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
                         eq(0), callbackCaptor.capture());
 
-        mBridge.fetchImage(-1, "", "", 10, 10, mBitmapCallback);
+        mBridge.fetchImage(
+                -1, ImageFetcher.Params.create("", "", WIDTH_PX, HEIGHT_PX), mBitmapCallback);
+        verify(mBitmapCallback).onResult(bitmap);
+    }
+
+    @Test
+    public void testFetchImageWithExpirationInterval() {
+        ArgumentCaptor<Callback<Bitmap>> callbackCaptor = ArgumentCaptor.forClass(Callback.class);
+        final Bitmap bitmap = Bitmap.createBitmap(WIDTH_PX, HEIGHT_PX, Bitmap.Config.ARGB_8888);
+        doAnswer((InvocationOnMock invocation) -> {
+            callbackCaptor.getValue().onResult(bitmap);
+            return null;
+        })
+                .when(mNatives)
+                .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
+                        eq(EXPIRATION_INTERVAL_MINS), callbackCaptor.capture());
+
+        mBridge.fetchImage(-1,
+                ImageFetcher.Params.createWithExpirationInterval(
+                        "url", "clientname", WIDTH_PX, HEIGHT_PX, EXPIRATION_INTERVAL_MINS),
+                mBitmapCallback);
         verify(mBitmapCallback).onResult(bitmap);
     }
 
@@ -115,7 +138,7 @@ public class ImageFetcherBridgeTest {
                 .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
                         eq(0), callbackCaptor.capture());
 
-        mBridge.fetchImage(-1, "", "", 100, 100, mBitmapCallback);
+        mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), mBitmapCallback);
         ArgumentCaptor<Bitmap> bitmapCaptor = ArgumentCaptor.forClass(Bitmap.class);
         verify(mBitmapCallback).onResult(bitmapCaptor.capture());
 

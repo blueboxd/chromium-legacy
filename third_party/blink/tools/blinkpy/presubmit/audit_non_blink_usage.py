@@ -30,6 +30,7 @@ _CONFIG = [
 
             # //base constructs that are allowed everywhere
             'base::AdoptRef',
+            'base::ApplyMetadataToPastSamples',
             'base::AutoReset',
             'base::Contains',
             'base::CreateSequencedTaskRunner',

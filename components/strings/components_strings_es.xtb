@@ -218,6 +218,7 @@
 <translation id="1838374766361614909">Borrar búsqueda</translation>
 <translation id="1839551713262164453">No se ha podido hacer la validación de los valores de la política porque se han producido errores</translation>
 <translation id="1842969606798536927">Pagar</translation>
+<translation id="1852694792039666893">Utilizar tu cuenta de Google para que te sugiera una contraseña segura</translation>
 <translation id="1871208020102129563">Se ha configurado el proxy de forma que use servidores proxy fijos, en lugar de una URL de secuencia de comandos .pac.</translation>
 <translation id="1871284979644508959">Campo obligatorio</translation>
 <translation id="1875512691959384712">Formularios de Google</translation>
@@ -405,6 +406,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Mejor ajuste</translation>
 <translation id="2691924980723297736">Advertencia de seguridad</translation>
+<translation id="2696268945573510710">Usar contraseñas almacenadas en tu cuenta de Google</translation>
 <translation id="2699302886720511147">Tarjetas aceptadas</translation>
 <translation id="2701514975700770343">Boca abajo</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
@@ -452,6 +454,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2915068235268646559">Fallo registrado el <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Cierra otros programas</translation>
 <translation id="2922350208395188000">No es posible comprobar el certificado del servidor.</translation>
+<translation id="2924027812781652774">Inicia sesión para usar las contraseñas almacenadas en tu cuenta de Google</translation>
 <translation id="2925673989565098301">Método de entrega</translation>
 <translation id="2928905813689894207">Dirección de facturación</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> más}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> más}}</translation>
@@ -1408,6 +1411,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="7050187094878475250">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado cuyo periodo de validez es demasiado largo para que se considere de confianza.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Ahora no se puede guardar esta tarjeta}other{Ahora no se pueden guardar estas tarjetas}}</translation>
 <translation id="7053983685419859001">Bloquear</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web.</translation>
 <translation id="7062635574500127092">Turquesa</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
 <translation id="70705239631109039">Tu conexión no es completamente segura</translation>

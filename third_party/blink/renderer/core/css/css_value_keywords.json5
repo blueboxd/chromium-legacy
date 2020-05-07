@@ -908,6 +908,11 @@
     // image-orientation
     "from-image",
 
+    // page-orientation
+    // upright
+    "rotate-left",
+    "rotate-right",
+
     // shape-outside
     "nonzero",
     "evenodd",

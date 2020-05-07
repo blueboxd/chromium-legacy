@@ -275,9 +275,9 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kOsSyncPrefsMigrated, false);
   registry->RegisterBooleanPref(prefs::kOsSyncFeatureEnabled, false);
   registry->RegisterBooleanPref(prefs::kSyncAllOsTypes, true);
-  for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
-    registry->RegisterBooleanPref(GetPrefNameForOsType(type), false);
-  }
+  registry->RegisterBooleanPref(prefs::kSyncOsApps, false);
+  registry->RegisterBooleanPref(prefs::kSyncOsPreferences, false);
+  // The pref for Wi-Fi configurations is registered in the loop above.
 #endif
 
   // The encryption bootstrap token represents a user-entered passphrase.
@@ -531,7 +531,7 @@ const char* SyncPrefs::GetPrefNameForOsType(UserSelectableOsType type) {
       return prefs::kSyncOsApps;
     case UserSelectableOsType::kOsPreferences:
       return prefs::kSyncOsPreferences;
-    case UserSelectableOsType::kWifiConfigurations:
+    case UserSelectableOsType::kOsWifiConfigurations:
       return prefs::kSyncWifiConfigurations;
   }
   NOTREACHED();
@@ -594,6 +594,8 @@ const char* SyncPrefs::GetPrefNameForType(UserSelectableType type) {
       return prefs::kSyncReadingList;
     case UserSelectableType::kTabs:
       return prefs::kSyncTabs;
+    case UserSelectableType::kWifiConfigurations:
+      return prefs::kSyncWifiConfigurations;
   }
   NOTREACHED();
   return nullptr;

@@ -35,14 +35,6 @@ class IceConfigRequest;
 // TURN configuration.
 class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
  public:
-  // TODO(yuweih): See if we still need this enum.
-  enum RelayMode {
-    TURN,
-
-    LAST_RELAYMODE = TURN
-  };
-  static const int kNumRelayModes = RelayMode::LAST_RELAYMODE + 1;
-
   typedef base::Callback<void(const IceConfig& ice_config)>
       GetIceConfigCallback;
 
@@ -54,12 +46,8 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
                    TransportRole role);
 
   void set_turn_ice_config(const IceConfig& ice_config) {
-    ice_config_[TURN] = ice_config;
+    ice_config_ = ice_config;
   }
-
-  // Sets relay mode for all future calls of GetIceConfig(). Doesn't affect
-  // previous GetIceConfig() requests.
-  void set_relay_mode(RelayMode relay_mode) { relay_mode_ = relay_mode; }
 
   // Sets a reference to the NetworkManager that holds the list of
   // network interfaces. If the NetworkManager is deleted while this
@@ -98,25 +86,20 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   ~TransportContext();
 
   void EnsureFreshIceConfig();
-  void OnIceConfig(RelayMode relay_mode, const IceConfig& ice_config);
+  void OnIceConfig(const IceConfig& ice_config);
 
   std::unique_ptr<PortAllocatorFactory> port_allocator_factory_;
   std::unique_ptr<UrlRequestFactory> url_request_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
 
-  RelayMode relay_mode_ = RelayMode::TURN;
-
   rtc::NetworkManager* network_manager_ = nullptr;
 
-  std::array<std::unique_ptr<IceConfigRequest>, kNumRelayModes>
-      ice_config_request_;
-  std::array<IceConfig, kNumRelayModes> ice_config_;
+  std::unique_ptr<IceConfigRequest> ice_config_request_;
+  IceConfig ice_config_ = {};
 
-  // When there is an active |ice_config_request_| stores list of callbacks to
-  // be called once the request is finished.
-  std::array<std::list<GetIceConfigCallback>, kNumRelayModes>
-      pending_ice_config_callbacks_;
+  // Called once |ice_config_request_| completes.
+  std::list<GetIceConfigCallback> pending_ice_config_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportContext);
 };

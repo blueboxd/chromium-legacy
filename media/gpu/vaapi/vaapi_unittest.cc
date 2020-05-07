@@ -12,15 +12,14 @@
 
 #include <va/va.h>
 
-#include "base/at_exit.h"
-#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 
 namespace media {
@@ -216,17 +215,11 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
 }  // namespace media
 
 int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);
-  base::CommandLine::Init(argc, argv);
-  base::ShadowingAtExitManager at_exit_manager;
-
-  // Needed to enable DVLOG through --vmodule.
-  logging::LoggingSettings settings;
-  settings.logging_dest =
-      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
-  LOG_ASSERT(logging::InitLogging(settings));
+  base::TestSuite test_suite(argc, argv);
 
   media::VaapiWrapper::PreSandboxInitialization();
 
-  return RUN_ALL_TESTS();
+  return base::LaunchUnitTests(
+      argc, argv,
+      base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

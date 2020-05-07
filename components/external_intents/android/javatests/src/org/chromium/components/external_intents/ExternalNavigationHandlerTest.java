@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
@@ -43,6 +44,7 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -70,6 +72,7 @@ public class ExternalNavigationHandlerTest {
     private static final boolean IS_CUSTOM_TAB_INTENT = true;
     private static final boolean SEND_TO_EXTERNAL_APPS = true;
     private static final boolean IS_CCT_EXTERNAL_LINK_HANDLING_ENABLED = true;
+    private static final boolean HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY = true;
 
     private static final String SEARCH_RESULT_URL_FOR_TOM_HANKS =
             "https://www.google.com/search?q=tom+hanks";
@@ -1654,6 +1657,156 @@ public class ExternalNavigationHandlerTest {
                 mUrlHandler.isPdfDownload("http://somesampleurldne.com/image.jpg"));
         Assert.assertFalse("URL is a text file can be viewed in Chrome",
                 mUrlHandler.isPdfDownload("http://somesampleurldne.com/copy.txt"));
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_NoResolveInfo() {
+        String packageName = "";
+        List<ResolveInfo> resolveInfos = new ArrayList<ResolveInfo>();
+        Assert.assertEquals(0,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_NoPathOrAuthority() {
+        String packageName = "";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        Assert.assertEquals(0,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_WithPath() {
+        String packageName = "";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataPath("somepath", 2);
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        Assert.assertEquals(1,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_WithAuthority() {
+        String packageName = "";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataAuthority("http://www.google.com", "80");
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        Assert.assertEquals(1,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_WithAuthority_Wildcard_Host() {
+        String packageName = "";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataAuthority("*", null);
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        Assert.assertEquals(0,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+
+        ResolveInfo infoWildcardSubDomain = new ResolveInfo();
+        infoWildcardSubDomain.filter = new IntentFilter();
+        infoWildcardSubDomain.filter.addDataAuthority("http://*.google.com", "80");
+        List<ResolveInfo> resolveInfosWildcardSubDomain = makeResolveInfos(infoWildcardSubDomain);
+        Assert.assertEquals(1,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(resolveInfosWildcardSubDomain,
+                                packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_WithTargetPackage_Matching() {
+        String packageName = "com.android.chrome";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataAuthority("http://www.google.com", "80");
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.packageName = packageName;
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        Assert.assertEquals(1,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializedHandler_WithTargetPackage_NotMatching() {
+        String packageName = "com.android.chrome";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataAuthority("http://www.google.com", "80");
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.packageName = "com.foo.bar";
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        Assert.assertEquals(0,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    @Test
+    @SmallTest
+    public void testIsPackageSpecializeHandler_withEphemeralResolver() {
+        String packageName = "";
+        ResolveInfo info = new ResolveInfo();
+        info.filter = new IntentFilter();
+        info.filter.addDataPath("somepath", 2);
+        info.activityInfo = new ActivityInfo();
+
+        // See IntentUtils.isInstantAppResolveInfo
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            info.isInstantAppAvailable = true;
+        } else {
+            info.activityInfo.name = IntentUtils.EPHEMERAL_INSTALLER_CLASS;
+        }
+        info.activityInfo.packageName = "com.google.android.gms";
+        List<ResolveInfo> resolveInfos = makeResolveInfos(info);
+        // Whether ephemeral resolver is counted as a specialized handler should be dependent on the
+        // value passed for |handlesInstantAppLaunchingInternally|.
+        Assert.assertEquals(0,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(
+                                resolveInfos, packageName, HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+        Assert.assertEquals(1,
+                ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(resolveInfos, packageName,
+                                !HANDLES_INSTANT_APP_LAUNCHING_INTERNALLY)
+                        .size());
+    }
+
+    private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
+        return Arrays.asList(infos);
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {

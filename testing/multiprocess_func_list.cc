@@ -6,8 +6,6 @@
 
 #include <map>
 
-#include "third_party/googletest/src/googletest/src/gtest-internal-inl.h"
-
 // Helper functions to maintain mapping of "test name"->test func.
 // The information is accessed via a global map.
 namespace multi_process_function_list {
@@ -43,19 +41,14 @@ AppendMultiProcessTest::AppendMultiProcessTest(
 }
 
 int InvokeChildProcessTest(const std::string& test_name) {
-  auto* const impl = ::testing::internal::GetUnitTestImpl();
   MultiProcessTestMap& func_lookup_table = GetMultiprocessFuncMap();
   MultiProcessTestMap::iterator it = func_lookup_table.find(test_name);
   if (it != func_lookup_table.end()) {
     const ProcessFunctions& process_functions = it->second;
-    if (process_functions.setup) {
-      impl->os_stack_trace_getter()->UponLeavingGTest();
+    if (process_functions.setup)
       (*process_functions.setup)();
-    }
-    if (process_functions.main) {
-      impl->os_stack_trace_getter()->UponLeavingGTest();
+    if (process_functions.main)
       return (*process_functions.main)();
-    }
   }
 
   return -1;

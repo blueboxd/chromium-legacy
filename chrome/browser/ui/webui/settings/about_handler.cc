@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/i18n/message_formatter.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -21,8 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -32,13 +29,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -46,9 +41,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
-#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -104,21 +97,6 @@ struct RegulatoryLabel {
   const std::string label_text;
   const std::string image_url;
 };
-
-// Returns the link to the safety info for the device (if it exists).
-std::string GetSafetyInfoLink() {
-  const std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (board[0] == "nocturne") {
-    return chrome::kChromeUISafetyPixelSlateURL;
-  }
-  if (board[0] == "eve" || board[0] == "atlas") {
-    return chrome::kChromeUISafetyPixelbookURL;
-  }
-
-  return std::string();
-}
 
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
@@ -290,86 +268,6 @@ AboutHandler::AboutHandler() : apply_changes_from_upgrade_observer_(false) {
 
 AboutHandler::~AboutHandler() {
   UpgradeDetector::GetInstance()->RemoveObserver(this);
-}
-
-AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
-                                   Profile* profile) {
-  html_source->AddString(
-      "aboutBrowserVersion",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
-          base::UTF8ToUTF16(version_info::GetVersionNumber()),
-          l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
-                                        ? IDS_VERSION_UI_OFFICIAL
-                                        : IDS_VERSION_UI_UNOFFICIAL),
-          base::UTF8ToUTF16(chrome::GetChannelName()),
-          l10n_util::GetStringUTF16(sizeof(void*) == 8
-                                        ? IDS_VERSION_UI_64BIT
-                                        : IDS_VERSION_UI_32BIT)));
-
-  html_source->AddString(
-      "aboutProductCopyright",
-      base::i18n::MessageFormatter::FormatWithNumberedArgs(
-          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
-          base::Time::Now()));
-
-  base::string16 license = l10n_util::GetStringFUTF16(
-      IDS_VERSION_UI_LICENSE, base::ASCIIToUTF16(chrome::kChromiumProjectURL),
-      base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
-  html_source->AddString("aboutProductLicense", license);
-
-  html_source->AddBoolean("aboutObsoleteNowOrSoon",
-                          ObsoleteSystem::IsObsoleteNowOrSoon());
-  html_source->AddBoolean("aboutObsoleteEndOfTheLine",
-                          ObsoleteSystem::IsObsoleteNowOrSoon() &&
-                              ObsoleteSystem::IsEndOfTheLine());
-  html_source->AddString("aboutObsoleteSystem",
-                         ObsoleteSystem::LocalizedObsoleteString());
-  html_source->AddString("aboutObsoleteSystemURL",
-                         ObsoleteSystem::GetLinkURL());
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
-  html_source->AddLocalizedString("aboutProductTos",
-                                  IDS_ABOUT_TERMS_OF_SERVICE);
-#endif
-
-#if defined(OS_CHROMEOS)
-  std::string safetyInfoLink = GetSafetyInfoLink();
-  html_source->AddBoolean("shouldShowSafetyInfo", !safetyInfoLink.empty());
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  html_source->AddString(
-      "aboutProductSafety",
-      l10n_util::GetStringUTF16(IDS_ABOUT_SAFETY_INFORMATION));
-  html_source->AddString("aboutProductSafetyURL",
-                         base::UTF8ToUTF16(safetyInfoLink));
-#endif
-
-  base::string16 os_license = l10n_util::GetStringFUTF16(
-      IDS_ABOUT_CROS_VERSION_LICENSE,
-      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
-  html_source->AddString("aboutProductOsLicense", os_license);
-  base::string16 os_with_linux_license = l10n_util::GetStringFUTF16(
-      IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE,
-      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL),
-      base::ASCIIToUTF16(chrome::kChromeUICrostiniCreditsURL));
-  html_source->AddString("aboutProductOsWithLinuxLicense",
-                         os_with_linux_license);
-  html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
-  html_source->AddBoolean("aboutIsArcEnabled",
-                          arc::IsArcPlayStoreEnabledForProfile(profile));
-  html_source->AddBoolean("aboutIsDeveloperMode",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              chromeos::switches::kSystemDevMode));
-
-  html_source->AddString("endOfLifeMessage",
-                         l10n_util::GetStringFUTF16(
-                             IDS_SETTINGS_ABOUT_PAGE_LAST_UPDATE_MESSAGE,
-                             ui::GetChromeOSDeviceName(),
-                             base::ASCIIToUTF16(chrome::kEolNotificationURL)));
-#endif
-
-  return new AboutHandler();
 }
 
 void AboutHandler::RegisterMessages() {

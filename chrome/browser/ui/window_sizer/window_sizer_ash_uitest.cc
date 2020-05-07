@@ -62,9 +62,11 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
   generator.PressRightButton();
 
   // Move the cursor up to the "New window" menu option - assumes menu content.
+  ash::ShelfView* shelf_view =
+      ash::Shelf::ForWindow(root)->GetShelfViewForTesting();
   const int offset =
       // Top half of the button we just clicked on.
-      ash::ShelfConfig::Get()->button_size() / 2 +
+      shelf_view->GetButtonSize() / 2 +
       // Space between shelf top and menu bottom. Here we get this menu with
       // a right-click but long-pressing yields the same result. All menus
       // here use a touchable layout.

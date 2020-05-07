@@ -15,7 +15,6 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
@@ -1259,7 +1258,7 @@ display::Display AppListView::GetDisplayNearestView() const {
 }
 
 AppsContainerView* AppListView::GetAppsContainerView() {
-  return app_list_main_view_->contents_view()->GetAppsContainerView();
+  return app_list_main_view_->contents_view()->apps_container_view();
 }
 
 AppsGridView* AppListView::GetRootAppsGridView() {
@@ -1520,9 +1519,6 @@ void AppListView::OnTabletModeChanged(bool started) {
   search_box_view_->OnTabletModeChanged(started);
   search_model_->SetTabletMode(started);
   GetAppsContainerView()->OnTabletModeChanged(started);
-  app_list_main_view_->contents_view()
-      ->horizontal_page_container()
-      ->OnTabletModeChanged(started);
 
   if (is_in_drag_) {
     SetIsInDrag(false);
@@ -2095,7 +2091,7 @@ void AppListView::OnBoundsAnimationCompleted() {
 gfx::Rect AppListView::GetItemScreenBoundsInFirstGridPage(
     const std::string& id) const {
   const AppsGridView* apps_grid_view = app_list_main_view_->contents_view()
-                                           ->GetAppsContainerView()
+                                           ->apps_container_view()
                                            ->apps_grid_view();
   gfx::Rect item_bounds = apps_grid_view->GetExpectedItemBoundsInFirstPage(id);
   ConvertRectToScreen(apps_grid_view, &item_bounds);

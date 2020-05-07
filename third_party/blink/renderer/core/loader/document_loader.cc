@@ -186,21 +186,6 @@ DocumentLoader::DocumentLoader(
 
   document_policy_ = CreateDocumentPolicy();
 
-  // If the document is blocked by document policy, there won't be content
-  // in the sub-frametree, thus no need to initialize required_policy for
-  // subtree.
-  if (!was_blocked_by_document_policy_) {
-    // Require-Document-Policy header only affects subtree of current document,
-    // but not the current document.
-    const DocumentPolicy::FeatureState header_required_policy =
-        DocumentPolicyParser::Parse(
-            response_.HttpHeaderField(http_names::kRequireDocumentPolicy))
-            .value_or(DocumentPolicy::ParsedDocumentPolicy{})
-            .feature_state;
-    frame_->SetRequiredDocumentPolicy(DocumentPolicy::MergeFeatureState(
-        frame_policy_.required_document_policy, header_required_policy));
-  }
-
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
     document_load_timing_.SetInputStart(timings.input_start);
@@ -841,21 +826,52 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
       url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem"))
     return {frame_policy_.required_document_policy, {} /* endpoint_map */};
 
-  // Assume Document policy feature is enabled so we can check the
-  // Required- headers. Will re-validate when we install the new Document.
-  const auto parsed_policy =
+  PolicyParserMessageBuffer header_logger("Document-Policy HTTP header: ");
+  PolicyParserMessageBuffer require_header_logger(
+      "Require-Document-Policy HTTP header: ");
+
+  // Filtering out features that are disabled by origin trial is done
+  // in SecurityContextInit when origin trial context is available.
+  auto parsed_policy =
       DocumentPolicyParser::Parse(
-          response_.HttpHeaderField(http_names::kDocumentPolicy))
+          response_.HttpHeaderField(http_names::kDocumentPolicy), header_logger)
           .value_or(DocumentPolicy::ParsedDocumentPolicy{});
 
+  // |parsed_policy| can have policies that are disabled by origin trial,
+  // but |frame_policy_.required_document_policy| cannot.
+  // It is safe to call |IsPolicyCompatible| as long as required policy is
+  // checked against origin trial.
   if (!DocumentPolicy::IsPolicyCompatible(
           frame_policy_.required_document_policy,
           parsed_policy.feature_state)) {
     was_blocked_by_document_policy_ = true;
     // When header policy is less strict than required policy, use required
     // policy to initialize document policy for the document.
-    return {frame_policy_.required_document_policy, {} /* endpoint_map */};
+    parsed_policy = {frame_policy_.required_document_policy,
+                     {} /* endpoint_map */};
   }
+
+  // Initialize required document policy for subtree.
+  //
+  // If the document is blocked by document policy, there won't be content
+  // in the sub-frametree, thus no need to initialize required_policy for
+  // subtree.
+  if (!was_blocked_by_document_policy_) {
+    // Require-Document-Policy header only affects subtree of current document,
+    // but not the current document.
+    const DocumentPolicy::FeatureState header_required_policy =
+        DocumentPolicyParser::Parse(
+            response_.HttpHeaderField(http_names::kRequireDocumentPolicy),
+            require_header_logger)
+            .value_or(DocumentPolicy::ParsedDocumentPolicy{})
+            .feature_state;
+    frame_->SetRequiredDocumentPolicy(DocumentPolicy::MergeFeatureState(
+        frame_policy_.required_document_policy, header_required_policy));
+  }
+
+  document_policy_parsing_messages_.AppendVector(header_logger.GetMessages());
+  document_policy_parsing_messages_.AppendVector(
+      require_header_logger.GetMessages());
 
   return parsed_policy;
 }
@@ -1413,6 +1429,13 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   // header 'Require-Document-Policy'.
   if (!frame_policy_.required_document_policy.empty())
     UseCounter::Count(*document, WebFeature::kRequiredDocumentPolicy);
+
+  for (const auto& message : document_policy_parsing_messages_) {
+    document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther, message.level,
+        message.content));
+  }
+  document_policy_parsing_messages_.clear();
 }
 
 void DocumentLoader::WillCommitNavigation() {

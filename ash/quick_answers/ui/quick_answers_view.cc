@@ -7,10 +7,10 @@
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/quick_answers/quick_answers_ui_controller.h"
+#include "ash/quick_answers/ui/quick_answers_pre_target_handler.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/containers/adapters.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,7 +22,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
-#include "ui/views/event_monitor.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -114,117 +113,6 @@ View* AddHorizontalUiElements(
 
 }  // namespace
 
-// QuickAnswersViewHandler ----------------------------------------------------
-
-// This class handles mouse events, and update background color or
-// dismiss quick answers view.
-// TODO (siabhijeet): Migrate to using two-phased event dispatching.
-class QuickAnswersViewHandler : public ui::EventHandler {
- public:
-  explicit QuickAnswersViewHandler(QuickAnswersView* quick_answers_view)
-      : quick_answers_view_(quick_answers_view) {
-    // QuickAnswersView is a companion view of a menu. Menu host widget sets
-    // mouse capture as well as a pre-target handler, so we need to register one
-    // here as well to intercept events for QuickAnswersView.
-    Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
-  }
-
-  ~QuickAnswersViewHandler() override {
-    Shell::Get()->RemovePreTargetHandler(this);
-  }
-
-  // Disallow copy and assign.
-  QuickAnswersViewHandler(const QuickAnswersViewHandler&) = delete;
-  QuickAnswersViewHandler& operator=(const QuickAnswersViewHandler&) = delete;
-
-  // ui::EventHandler:
-  void OnEvent(ui::Event* event) override {
-    if (!event->IsLocatedEvent())
-      return;
-
-    // Clone event to forward down the view-hierarchy.
-    auto clone = ui::Event::Clone(*event);
-    ui::Event::DispatcherApi(clone.get()).set_target(event->target());
-    auto* to_dispatch = clone->AsLocatedEvent();
-    auto location = to_dispatch->target()->GetScreenLocation(*to_dispatch);
-
-    // `ET_MOUSE_MOVED` events outside the top-view's bounds are also dispatched
-    // to clear any set hover-state.
-    bool dispatch_event =
-        (quick_answers_view_->GetBoundsInScreen().Contains(location) ||
-         to_dispatch->type() == ui::EventType::ET_MOUSE_MOVED);
-    if (dispatch_event) {
-      // Convert to local coordinates and forward to the top-view.
-      views::View::ConvertPointFromScreen(quick_answers_view_, &location);
-      to_dispatch->set_location(location);
-      ui::Event::DispatcherApi(to_dispatch).set_target(quick_answers_view_);
-
-      // Convert touch-event to gesture before dispatching since views do not
-      // process touch-events.
-      std::unique_ptr<ui::GestureEvent> gesture_event;
-      if (to_dispatch->type() == ui::ET_TOUCH_PRESSED) {
-        gesture_event = std::make_unique<ui::GestureEvent>(
-            to_dispatch->x(), to_dispatch->y(), ui::EF_NONE,
-            base::TimeTicks::Now(),
-            ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-        to_dispatch = gesture_event.get();
-      }
-
-      DoDispatchEvent(quick_answers_view_, to_dispatch);
-
-      // Clicks outside menu-bounds (including those inside QuickAnswersView)
-      // can dismiss the menu. Some click-events, like those meant for the
-      // retry-button, should not be propagated to the menu to prevent so.
-      if (quick_answers_view_->preempt_last_click_event())
-        event->StopPropagation();
-    }
-
-    // Show tooltips.
-    auto* tooltip_manager =
-        quick_answers_view_->GetWidget()->GetTooltipManager();
-    if (tooltip_manager)
-      tooltip_manager->UpdateTooltip();
-  }
-
- private:
-  // Returns true if event was consumed by |view| or its children.
-  bool DoDispatchEvent(views::View* view, ui::LocatedEvent* event) {
-    DCHECK(view && event);
-
-    // Out-of-bounds `ET_MOUSE_MOVED` events are allowed to sift through to
-    // clear any set hover-state.
-    // TODO (siabhijeet): Two-phased dispatching via widget should fix this.
-    if (!view->HitTestPoint(event->location()) &&
-        event->type() != ui::ET_MOUSE_MOVED) {
-      return false;
-    }
-
-    // Post-order dispatch the event on child views in reverse Z-order.
-    auto children = view->GetChildrenInZOrder();
-    for (auto* child : base::Reversed(children)) {
-      // Dispatch a fresh event to preserve the |event| for the parent target.
-      std::unique_ptr<ui::Event> to_dispatch;
-      if (event->IsMouseEvent()) {
-        to_dispatch = std::make_unique<ui::MouseEvent>(*event->AsMouseEvent(),
-                                                       view, child);
-      } else if (event->IsGestureEvent()) {
-        to_dispatch = std::make_unique<ui::GestureEvent>(
-            *event->AsGestureEvent(), view, child);
-      } else {
-        return false;
-      }
-      ui::Event::DispatcherApi(to_dispatch.get()).set_target(child);
-      if (DoDispatchEvent(child, to_dispatch.get()->AsLocatedEvent()))
-        return true;
-    }
-
-    view->OnEvent(event);
-    return event->handled();
-  }
-
-  QuickAnswersView* const quick_answers_view_;
-};
-
 // QuickAnswersView -----------------------------------------------------------
 
 QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
@@ -235,7 +123,7 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
       controller_(controller),
       title_(title),
       quick_answers_view_handler_(
-          std::make_unique<QuickAnswersViewHandler>(this)) {
+          std::make_unique<QuickAnswersPreTargetHandler>(this)) {
   InitLayout();
   InitWidget();
 

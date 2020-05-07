@@ -471,6 +471,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4913169188695071480">Frissítés leállítása</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" />, miközben eszközöket keresünk…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# oldal}other{# oldal}}</translation>
+<translation id="49268022542405662">Jelszavainak exportálására és letöltésére szöveges fájl formájában kerül sor. Jelszavai mindenki és minden olyan alkalmazás számára láthatók lesznek, aki és amely hozzáfér a célmappához.</translation>
 <translation id="4932247056774066048">Mivel kijelentkezik a(z) <ph name="DOMAIN_NAME" /> által kezelt fiókból, a rendszer törli az Ön Chrome-adatait erről az eszközről. Google-fiókjában továbbra is megmaradnak ezek az adatok.</translation>
 <translation id="4943703118917034429">Virtuális valóság</translation>
 <translation id="4943872375798546930">Nincs találat</translation>
@@ -753,6 +754,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7302081693174882195">Részletek: Megtakarított adatmennyiség szerinti rendezés</translation>
 <translation id="7328017930301109123">Lite módban a Chrome gyorsabban betölti az oldalakat, és akár 60 százalékkal kisebb adatforgalmat generál.</translation>
 <translation id="7333031090786104871">Az előző webhely hozzáadása még folyamatban van</translation>
+<translation id="7340958967809483333">A Discover beállításai</translation>
 <translation id="7352939065658542140">VIDEÓ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7359002509206457351">Hozzáférés a fizetési módokhoz</translation>
@@ -817,6 +819,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7810647596859435254">Megnyitás ezzel:</translation>
 <translation id="7821588508402923572">Itt látható a megtakarított adatmennyiség</translation>
+<translation id="7835852323729233924">Médiatartalom lejátszása…</translation>
 <translation id="783819812427904514">Videó némításának feloldása</translation>
 <translation id="784934925303690534">Időszak</translation>
 <translation id="7851858861565204677">Egyéb eszközök</translation>

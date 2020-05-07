@@ -20,56 +20,49 @@ namespace {
 // Does sanity check on apps grid item tile dimensions in config. On error, it
 // causes test failure with additional |scoped_trace| message.
 // |error_margin|: Allowed error margin when comparing vertical dimensions. Used
-//     for scaled shared app list config (to account for possible rounding
+//     for scaled app list config (to account for possible rounding
 //     errors).
-void SanityCheckGridTileDimensions(AppListConfig* config,
-                                   int error_margin,
-                                   const std::string& scoped_trace) {
+void SanityCheckGridTileDimensions(AppListConfig* config, int error_margin) {
   const int icon_top =
       (config->grid_tile_height() - config->grid_icon_bottom_padding() -
        config->grid_icon_dimension()) /
       2;
   // The app list item icon top should be within the tile bounds.
-  EXPECT_GE(icon_top, 0) << scoped_trace;
+  EXPECT_GE(icon_top, 0);
 
   const int icon_bottom = icon_top + config->grid_icon_dimension();
   const int title_top = config->grid_tile_height() -
                         config->grid_title_bottom_padding() -
                         config->app_title_font().GetHeight();
   // Icon should not overlap with title.
-  EXPECT_LE(icon_bottom, title_top + error_margin) << scoped_trace;
+  EXPECT_LE(icon_bottom, title_top + error_margin);
 
   // Icon should fit within available height.
   EXPECT_LE(icon_bottom,
-            config->grid_tile_height() - config->grid_icon_bottom_padding())
-      << scoped_trace;
+            config->grid_tile_height() - config->grid_icon_bottom_padding());
 
   // Icon should fit in the tile width.
-  EXPECT_LE(config->grid_icon_dimension(), config->grid_tile_width())
-      << scoped_trace;
+  EXPECT_LE(config->grid_icon_dimension(), config->grid_tile_width());
 
   const int folder_unclipped_icon_top =
       (config->grid_tile_height() - config->grid_icon_bottom_padding() -
        config->folder_unclipped_icon_dimension()) /
       2;
   // The app list folder icon top should be within the tile bounds.
-  EXPECT_GE(folder_unclipped_icon_top, 0) << scoped_trace;
+  EXPECT_GE(folder_unclipped_icon_top, 0);
 
   // Unclipped folder icon should not overlap with title.
   const int folder_unclipped_icon_bottom =
       folder_unclipped_icon_top + config->folder_unclipped_icon_dimension();
-  EXPECT_LE(folder_unclipped_icon_bottom, title_top + error_margin)
-      << scoped_trace;
+  EXPECT_LE(folder_unclipped_icon_bottom, title_top + error_margin);
 
   // Unclipped folder icon should fit within available height.
   EXPECT_LE(folder_unclipped_icon_bottom,
-            config->grid_tile_height() - config->grid_icon_bottom_padding())
-      << scoped_trace;
+            config->grid_tile_height() - config->grid_icon_bottom_padding());
 
   // Unclipped folder icon should fit into tile width.
   EXPECT_LE(config->folder_unclipped_icon_dimension(),
-            config->grid_tile_width())
-      << scoped_trace;
+            config->grid_tile_width());
 }
 
 class TestAppListConfigProviderObserver
@@ -101,10 +94,7 @@ class TestAppListConfigProviderObserver
 
 class AppListConfigProviderTest : public testing::Test {
  public:
-  AppListConfigProviderTest() {
-    scoped_feature_list_.InitWithFeatures({app_list_features::kScalableAppList},
-                                          {});
-  }
+  AppListConfigProviderTest() = default;
   ~AppListConfigProviderTest() override = default;
 
   void SetUp() override {
@@ -120,39 +110,39 @@ class AppListConfigProviderTest : public testing::Test {
     AppListConfigProvider::Get().ResetForTesting();
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestAppListConfigProviderObserver registry_observer_;
-};
+  void VerifyScaledConfig(const AppListConfig& base_config,
+                          AppListConfig* config,
+                          float scale_x,
+                          float scale_y) {
+    ASSERT_TRUE(config);
+    EXPECT_EQ(base_config.type(), config->type());
 
-class SharedConfigAppListConfigProviderTest : public testing::Test {
- public:
-  SharedConfigAppListConfigProviderTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {app_list_features::kScalableAppList});
+    EXPECT_EQ(scale_x, config->scale_x());
+    EXPECT_EQ(scale_y, config->scale_y());
+
+    EXPECT_EQ(std::round(base_config.grid_tile_width() * scale_x),
+              config->grid_tile_width());
+    EXPECT_EQ(std::round(base_config.grid_tile_height() * scale_y),
+              config->grid_tile_height());
+
+    auto get_grid_title_height = [](const AppListConfig* config) {
+      return config->grid_tile_height() - config->grid_title_top_padding() -
+             config->grid_title_bottom_padding();
+    };
+    EXPECT_EQ(get_grid_title_height(&base_config),
+              get_grid_title_height(config));
+
+    SanityCheckGridTileDimensions(config, 1);
   }
-  ~SharedConfigAppListConfigProviderTest() override = default;
 
-  void SetUp() override {
-    // AppListConfigProvider is base::NoDestruct, which means it may not be
-    // cleared between test runs - clear the registry to ensure this test starts
-    // with the clean app list config registry.
-    AppListConfigProvider::Get().ResetForTesting();
-    AppListConfigProvider::Get().AddObserver(&registry_observer_);
-  }
-
-  void TearDown() override {
-    AppListConfigProvider::Get().RemoveObserver(&registry_observer_);
-    AppListConfigProvider::Get().ResetForTesting();
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
+ protected:
   TestAppListConfigProviderObserver registry_observer_;
 };
 
 // Tests that shared AppListConfig type is considered available by default, and
 // that AppListConfig::instance() can be used to access the default, unscaled
 // ash::AppListConfigType::kShared app list config.
-TEST_F(SharedConfigAppListConfigProviderTest, SharedInstance) {
+TEST_F(AppListConfigProviderTest, SharedInstance) {
   AppListConfig* shared_config = AppListConfigProvider::Get().GetConfigForType(
       AppListConfigType::kShared, false);
   ASSERT_TRUE(shared_config);
@@ -167,8 +157,7 @@ TEST_F(SharedConfigAppListConfigProviderTest, SharedInstance) {
   EXPECT_EQ(1., shared_config->scale_y());
 }
 
-// Tests GetConfigForType behavior for app list configs associated with
-// kScalableAppList feature.
+// Tests GetConfigForType behavior for non-shared app list configs.
 TEST_F(AppListConfigProviderTest, NonSharedConfigGetters) {
   std::vector<AppListConfigType> test_cases = {AppListConfigType::kSmall,
                                                AppListConfigType::kMedium,
@@ -236,7 +225,7 @@ TEST_F(AppListConfigProviderTest, CreateConfigByDisplayWorkArea) {
     EXPECT_EQ(test_case.config_type, config->type());
     EXPECT_EQ(1, config->scale_x());
     EXPECT_EQ(1, config->scale_y());
-    SanityCheckGridTileDimensions(config.get(), 0, "");
+    SanityCheckGridTileDimensions(config.get(), 0);
 
     // Verify that AppListConfigProvider now provides the created config type.
     EXPECT_TRUE(AppListConfigProvider::Get().GetConfigForType(
@@ -285,168 +274,288 @@ TEST_F(AppListConfigProviderTest,
   EXPECT_EQ(AppListConfigType::kMedium, updated_config->type());
 }
 
-TEST_F(SharedConfigAppListConfigProviderTest,
-       CreateScaledConfigByDisplayWorkAreaLandscape) {
-  const int kMinGridWidth = 560;   // 112 * 5
-  const int kMinGridHeight = 480;  // 120 * 4;
-
+TEST_F(AppListConfigProviderTest,
+       CreateScaledConfigByDisplayWorkAreaLargeLandscape) {
   // The available grid size fits the grid - created config is not scaled.
-  std::unique_ptr<AppListConfig> config =
+  std::unique_ptr<AppListConfig> base_config =
       AppListConfigProvider::Get().CreateForAppListWidget(
           gfx::Size(1200, 768) /*display_work_area_size*/,
           gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
-  ASSERT_TRUE(config.get());
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(1, config->scale_x());
-  EXPECT_EQ(1, config->scale_y());
-  EXPECT_EQ(112, config->grid_tile_width());
-  EXPECT_EQ(120, config->grid_tile_height());
 
-  auto get_grid_title_height = [](AppListConfig* config) {
-    return config->grid_tile_height() - config->grid_title_top_padding() -
-           config->grid_title_bottom_padding();
-  };
-  const int kDefaultGridTileTitleHeight = get_grid_title_height(config.get());
+  ASSERT_TRUE(base_config.get());
+  ASSERT_EQ(AppListConfigType::kLarge, base_config->type());
+  ASSERT_EQ(1, base_config->scale_x());
+  ASSERT_EQ(1, base_config->scale_y());
 
-  // The available grid size still fits the grid - verify that
-  // CreateForAppListWidget does not create a new config identical to the
-  // previous one.
-  EXPECT_FALSE(AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(1200, 768) /*display_work_area_size*/,
-      gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, config.get()));
+  const int kMinGridWidth =
+      base_config->grid_tile_width() * base_config->preferred_cols();
+  const int kMinGridHeight =
+      base_config->grid_tile_height() * base_config->preferred_rows();
 
-  // The app list has to be scaled down horizontally.
-  config = AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(800, 700) /*display_work_area_size*/,
-      gfx::Insets(0, 102, 56, 102) /*shelf_insets*/, config.get());
-  ASSERT_TRUE(config);
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(500.f / kMinGridWidth, config->scale_x());
-  EXPECT_EQ(1, config->scale_y());
-  // 100 == std::round(scale_x * 112)
-  EXPECT_EQ(100, config->grid_tile_width());
-  EXPECT_EQ(120, config->grid_tile_height());
-  // Grid title height should not be scaled down.
-  EXPECT_EQ(kDefaultGridTileTitleHeight, get_grid_title_height(config.get()));
-  SanityCheckGridTileDimensions(config.get(), 1, "Horizontal scaling");
+  {
+    SCOPED_TRACE("Horizontal scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(1200, 768) /*display_work_area_size*/,
+            gfx::Insets(0, 304, 56, 304) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 480.0f / kMinGridWidth, 1);
+  }
 
-  // The app list has to be scaled down vertically.
-  config = AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(800, 624) /*display_work_area_size*/,
-      gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, config.get());
-  ASSERT_TRUE(config);
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(1, config->scale_x());
-  // Available height includes fadeout zones, which should not be included in
-  // scale calculation.
-  EXPECT_EQ(400.f / kMinGridHeight, config->scale_y());
-  EXPECT_EQ(112, config->grid_tile_width());
-  // 100 == std::round(scale_y * 120)
-  EXPECT_EQ(100, config->grid_tile_height());
-  // Grid title height should not be scaled down.
-  EXPECT_EQ(kDefaultGridTileTitleHeight, get_grid_title_height(config.get()));
-  SanityCheckGridTileDimensions(config.get(), 1, "Vertical scaling");
+  {
+    SCOPED_TRACE("Vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(1200, 600) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 40, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 1, 400.0f / kMinGridHeight);
+  }
 
-  // Both vertical and horizontal scaling required.
-  config = AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(800, 624) /*display_work_area_size*/,
-      gfx::Insets(0, 102, 56, 102) /*shelf_insets*/, config.get());
-  ASSERT_TRUE(config);
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(500.f / kMinGridWidth, config->scale_x());
-  // Available height includes fadeout zones, which should not be included in
-  // scale calculation.
-  EXPECT_EQ(400.f / kMinGridHeight, config->scale_y());
-  // 100 == std::round(scale_x * 112)
-  EXPECT_EQ(100, config->grid_tile_width());
-  // 100 == std::round(scale_y * 120)
-  EXPECT_EQ(100, config->grid_tile_height());
-  // Grid title height should not be scaled down.
-  EXPECT_EQ(kDefaultGridTileTitleHeight, get_grid_title_height(config.get()));
-  SanityCheckGridTileDimensions(config.get(), 1,
-                                "Horizontal and vertical scaling");
+  {
+    SCOPED_TRACE("Horizontal and vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(1200, 600) /*display_work_area_size*/,
+            gfx::Insets(0, 304, 40, 304) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 480.0f / kMinGridWidth,
+                       400.0f / kMinGridHeight);
+  }
 }
 
-TEST_F(SharedConfigAppListConfigProviderTest,
-       CreateScaledConfigByDisplayWorkAreaPortrait) {
-  const int kMinGridWidth = 448;   // 112 * 4
-  const int kMinGridHeight = 600;  // 120 * 5;
-
+TEST_F(AppListConfigProviderTest,
+       CreateScaledConfigByDisplayWorkAreaMediumLandscape) {
   // The available grid size fits the grid - created config is not scaled.
-  std::unique_ptr<AppListConfig> config =
+  std::unique_ptr<AppListConfig> base_config =
+      AppListConfigProvider::Get().CreateForAppListWidget(
+          gfx::Size(960, 600) /*display_work_area_size*/,
+          gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
+
+  ASSERT_TRUE(base_config.get());
+  ASSERT_EQ(AppListConfigType::kMedium, base_config->type());
+  ASSERT_EQ(1, base_config->scale_x());
+  ASSERT_EQ(1, base_config->scale_y());
+
+  const int kMinGridWidth =
+      base_config->grid_tile_width() * base_config->preferred_cols();
+  const int kMinGridHeight =
+      base_config->grid_tile_height() * base_config->preferred_rows();
+
+  {
+    SCOPED_TRACE("Horizontal scaling");
+
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(960, 600) /*display_work_area_size*/,
+            gfx::Insets(0, 224, 56, 224) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 400.0f / kMinGridWidth, 1);
+  }
+
+  {
+    SCOPED_TRACE("Vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(960, 500) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 40, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 1, 300.0f / kMinGridHeight);
+  }
+
+  {
+    SCOPED_TRACE("Horizontal and vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(960, 500) /*display_work_area_size*/,
+            gfx::Insets(0, 224, 40, 224) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 400.0f / kMinGridWidth,
+                       300.0f / kMinGridHeight);
+  }
+}
+
+TEST_F(AppListConfigProviderTest,
+       CreateScaledConfigByDisplayWorkAreaSmallLandscape) {
+  // The available grid size fits the grid - created config is not scaled.
+  std::unique_ptr<AppListConfig> base_config =
+      AppListConfigProvider::Get().CreateForAppListWidget(
+          gfx::Size(900, 500) /*display_work_area_size*/,
+          gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
+
+  ASSERT_TRUE(base_config.get());
+  ASSERT_EQ(AppListConfigType::kSmall, base_config->type());
+  ASSERT_EQ(1, base_config->scale_x());
+  ASSERT_EQ(1, base_config->scale_y());
+
+  const int kMinGridWidth =
+      base_config->grid_tile_width() * base_config->preferred_cols();
+  const int kMinGridHeight =
+      base_config->grid_tile_height() * base_config->preferred_rows();
+
+  {
+    SCOPED_TRACE("Horizontal scaling");
+
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(500, 480) /*display_work_area_size*/,
+            gfx::Insets(0, 24, 0, 24) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 340.0f / kMinGridWidth, 1);
+  }
+
+  {
+    SCOPED_TRACE("Vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(900, 460) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 40, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 1, 260.0f / kMinGridHeight);
+  }
+
+  {
+    SCOPED_TRACE("Horizontal and vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(500, 460) /*display_work_area_size*/,
+            gfx::Insets(0, 24, 40, 24) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 340.0f / kMinGridWidth,
+                       260.0f / kMinGridHeight);
+  }
+}
+
+TEST_F(AppListConfigProviderTest,
+       CreateScaledConfigByDisplayWorkAreaLargePortrait) {
+  // The available grid size fits the grid - created config is not scaled.
+  std::unique_ptr<AppListConfig> base_config =
       AppListConfigProvider::Get().CreateForAppListWidget(
           gfx::Size(768, 1200) /*display_work_area_size*/,
           gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
-  ASSERT_TRUE(config.get());
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(1, config->scale_x());
-  EXPECT_EQ(1, config->scale_y());
-  EXPECT_EQ(112, config->grid_tile_width());
-  EXPECT_EQ(120, config->grid_tile_height());
 
-  auto get_grid_title_height = [](AppListConfig* config) {
-    return config->grid_tile_height() - config->grid_title_top_padding() -
-           config->grid_title_bottom_padding();
-  };
-  const int kDefaultGridTileTitleHeight = get_grid_title_height(config.get());
+  ASSERT_TRUE(base_config.get());
+  ASSERT_EQ(AppListConfigType::kLarge, base_config->type());
+  ASSERT_EQ(1, base_config->scale_x());
+  ASSERT_EQ(1, base_config->scale_y());
 
-  // The available grid size still fits the grid - verify that
-  // CreateForAppListWidget does not create a new config identical to the
-  // previous one.
-  EXPECT_FALSE(AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(768, 1200) /*display_work_area_size*/,
-      gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, config.get()));
+  const int kMinGridWidth =
+      base_config->grid_tile_width() * base_config->preferred_rows();
+  const int kMinGridHeight =
+      base_config->grid_tile_height() * base_config->preferred_cols();
 
-  // The app list has to be scaled down horizontally.
-  config = AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(600, 800) /*display_work_area_size*/,
-      gfx::Insets(0, 52, 56, 52) /*shelf_insets*/, config.get());
-  ASSERT_TRUE(config);
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(400.f / kMinGridWidth, config->scale_x());
-  EXPECT_EQ(1, config->scale_y());
-  // 100 == std::round(scale_x * 112)
-  EXPECT_EQ(100, config->grid_tile_width());
-  EXPECT_EQ(120, config->grid_tile_height());
-  // Grid title height should not be scaled down.
-  EXPECT_EQ(kDefaultGridTileTitleHeight, get_grid_title_height(config.get()));
-  SanityCheckGridTileDimensions(config.get(), 1, "Horizontal scaling");
+  {
+    SCOPED_TRACE("Horizontal scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(768, 1200) /*display_work_area_size*/,
+            gfx::Insets(0, 108, 56, 108) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 440.0f / kMinGridWidth, 1);
+  }
 
-  // The app list has to be scaled down vertically.
-  config = AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(600, 624) /*display_work_area_size*/,
-      gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, config.get());
-  ASSERT_TRUE(config);
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(1, config->scale_x());
-  // Available height includes fadeout zones, which should not be included in
-  // scale calculation.
-  EXPECT_EQ(400.f / kMinGridHeight, config->scale_y());
-  EXPECT_EQ(112, config->grid_tile_width());
-  // 80 == std::round(scale_y * 120)
-  EXPECT_EQ(80, config->grid_tile_height());
-  // Grid title height should not be scaled down.
-  EXPECT_EQ(kDefaultGridTileTitleHeight, get_grid_title_height(config.get()));
-  SanityCheckGridTileDimensions(config.get(), 1, "Vertical scaling");
+  {
+    SCOPED_TRACE("Vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(768, 800) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 100, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 1, 532.0f / kMinGridHeight);
+  }
 
-  // Both vertical and horizontal scaling required.
-  config = AppListConfigProvider::Get().CreateForAppListWidget(
-      gfx::Size(600, 732) /*display_work_area_size*/,
-      gfx::Insets(0, 102, 56, 102) /*shelf_insets*/, config.get());
-  ASSERT_TRUE(config);
-  EXPECT_EQ(AppListConfigType::kShared, config->type());
-  EXPECT_EQ(300.f / kMinGridWidth, config->scale_x());
-  // Available height includes fadeout zones, which should not be included in
-  // scale calculation.
-  EXPECT_EQ(500.f / kMinGridHeight, config->scale_y());
-  // 75 == std::round(scale_x * 112)
-  EXPECT_EQ(75, config->grid_tile_width());
-  // 100 == std::round(scale_y * 120)
-  EXPECT_EQ(100, config->grid_tile_height());
-  // Grid title height should not be scaled down.
-  EXPECT_EQ(kDefaultGridTileTitleHeight, get_grid_title_height(config.get()));
-  SanityCheckGridTileDimensions(config.get(), 1,
-                                "Horizontal and vertical scaling");
+  {
+    SCOPED_TRACE("Horizontal and vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(768, 800) /*display_work_area_size*/,
+            gfx::Insets(0, 108, 100, 108) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 440.0f / kMinGridWidth,
+                       532.0f / kMinGridHeight);
+  }
+}
+
+TEST_F(AppListConfigProviderTest,
+       CreateScaledConfigByDisplayWorkAreaMediumPortrait) {
+  // The available grid size fits the grid - created config is not scaled.
+  std::unique_ptr<AppListConfig> base_config =
+      AppListConfigProvider::Get().CreateForAppListWidget(
+          gfx::Size(600, 960) /*display_work_area_size*/,
+          gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
+
+  ASSERT_TRUE(base_config.get());
+  ASSERT_EQ(AppListConfigType::kMedium, base_config->type());
+  ASSERT_EQ(1, base_config->scale_x());
+  ASSERT_EQ(1, base_config->scale_y());
+
+  const int kMinGridWidth =
+      base_config->grid_tile_width() * base_config->preferred_rows();
+  const int kMinGridHeight =
+      base_config->grid_tile_height() * base_config->preferred_cols();
+
+  {
+    SCOPED_TRACE("Horizontal scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(600, 960) /*display_work_area_size*/,
+            gfx::Insets(0, 94, 0, 94) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 300.0f / kMinGridWidth, 1);
+  }
+
+  {
+    SCOPED_TRACE("Vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(600, 620) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 100, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 1, 360.0f / kMinGridHeight);
+  }
+
+  {
+    SCOPED_TRACE("Horizontal and vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(600, 620) /*display_work_area_size*/,
+            gfx::Insets(0, 94, 100, 94) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 300.0f / kMinGridWidth,
+                       360.0f / kMinGridHeight);
+  }
+}
+
+TEST_F(AppListConfigProviderTest,
+       CreateScaledConfigByDisplayWorkAreaSmallPortrait) {
+  // The available grid size fits the grid - created config is not scaled.
+  std::unique_ptr<AppListConfig> base_config =
+      AppListConfigProvider::Get().CreateForAppListWidget(
+          gfx::Size(500, 900) /*display_work_area_size*/,
+          gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
+
+  ASSERT_TRUE(base_config.get());
+  ASSERT_EQ(AppListConfigType::kSmall, base_config->type());
+  ASSERT_EQ(1, base_config->scale_x());
+  ASSERT_EQ(1, base_config->scale_y());
+
+  const int kMinGridWidth =
+      base_config->grid_tile_width() * base_config->preferred_rows();
+  const int kMinGridHeight =
+      base_config->grid_tile_height() * base_config->preferred_cols();
+
+  {
+    SCOPED_TRACE("Horizontal scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(352, 900) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 240.0f / kMinGridWidth, 1);
+  }
+
+  {
+    SCOPED_TRACE("Vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(480, 500) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 40, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 1, 300.0f / kMinGridHeight);
+  }
+
+  {
+    SCOPED_TRACE("Horizontal and vertical scaling");
+    std::unique_ptr<AppListConfig> config =
+        AppListConfigProvider::Get().CreateForAppListWidget(
+            gfx::Size(352, 500) /*display_work_area_size*/,
+            gfx::Insets(0, 0, 40, 0) /*shelf_insets*/, base_config.get());
+    VerifyScaledConfig(*base_config, config.get(), 240.0f / kMinGridWidth,
+                       300.0f / kMinGridHeight);
+  }
 }
 
 }  // namespace ash

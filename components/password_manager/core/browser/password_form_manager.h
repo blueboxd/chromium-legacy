@@ -144,6 +144,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   metrics_util::CredentialSourceType GetCredentialSource() const override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
+  base::span<const CompromisedCredentials> GetCompromisedCredentials()
+      const override;
   bool IsBlacklisted() const override;
   bool IsMovableToAccountStore() const override;
 

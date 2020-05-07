@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/host/wayland_window.h"
-
 #include <memory>
 
 #include "ui/gfx/native_widget_types.h"
@@ -11,6 +9,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
+#include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
 

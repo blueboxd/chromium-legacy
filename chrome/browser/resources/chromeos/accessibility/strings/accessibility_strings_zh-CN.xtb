@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">找到需要的键后，移开手指即可输入</translation>
 <translation id="1012173283529841972">列表项</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">向右滑动两根手指</translation>
 <translation id="1022586497894531524">您是初次使用 ChromeVox 语音反馈功能吗？此教程将提供基本的操作说明，协助您开始使用 ChromeVox。</translation>
 <translation id="1025074108959230262">已停用粘滞模式</translation>
 <translation id="1031961866430398710">再按</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">没有上一个列表项</translation>
 <translation id="1114836634143403764">建议</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">向上滑动两根手指</translation>
 <translation id="1126928665165112660">非斜体</translation>
 <translation id="113582498867142724">包含<ph name="NUM" />个项的“<ph name="TAG" />”集</translation>
 <translation id="1161762950103988776">跳转</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">页脚标记</translation>
 <translation id="174268867904053074">下一个图形</translation>
 <translation id="1756785467854861272">深洋红色</translation>
+<translation id="1765245556747822181">向上滑动一根手指</translation>
 <translation id="1771761307086386028">向右滚动</translation>
 <translation id="1781173782405573156">忽略按键</translation>
 <translation id="1787176709638001873">密码编辑文本</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">加快语速</translation>
 <translation id="2267538686624070261">退出的区域含有拼写错误</translation>
 <translation id="2267945578749931355">下一个字符</translation>
+<translation id="2278490101488436824">向左滑动三根手指</translation>
 <translation id="2305942658236913680">没有下一个标题</translation>
 <translation id="2311237334957139798">前移一个朗读单位</translation>
 <translation id="2314393392395134769">非下标</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">参考书目</translation>
 <translation id="2873259058405069099">转到表格开头</translation>
 <translation id="287383510823843610">暗橙色</translation>
+<translation id="2879867157561757640">向下滑动三根手指</translation>
 <translation id="288178314850623291">使用跳转命令可跳转到特定类型的元素。要跳转到下一个标题，请按搜索键 + H；要跳转到前一个标题，请按搜索键 + Shift + H。</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{分钟}other{分钟}}</translation>
 <translation id="2894654529758326923">信息</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{1个左大括号}other{#个左大括号}}</translation>
 <translation id="2909584066358367921">没有下一个按钮</translation>
 <translation id="2911433807131383493">打开ChromeVox教程</translation>
+<translation id="2912405967290226587">向右滑动三根手指</translation>
 <translation id="2937799153569150791">没有下一个 3 级标题</translation>
 <translation id="2942710183375260152">暗岩蓝色</translation>
 <translation id="2943596527105977722">暗金菊色</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">海绿色</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{1个制表符}other{#个制表符}}</translation>
 <translation id="2972205263822847197">提示</translation>
+<translation id="297825089465017871">向左滑动两根手指</translation>
 <translation id="2998131015536248178">上一个字符</translation>
 <translation id="2999559350546931576">调低音高</translation>
 <translation id="3014130421870723208">@编辑 8 点式盲文</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">ChromeVox选项</translation>
 <translation id="3060756054951570867">已打开“<ph name="TITLE" />”菜单</translation>
 <translation id="3060880924447482063">用 1 根手指向左或向右滑动即可逐项移动</translation>
+<translation id="3070245424257836917">向上滑动三根手指</translation>
 <translation id="3078345202707391975">下一个2级标题</translation>
 <translation id="3078740164268491126">表格</translation>
 <translation id="3082249673510793544">向后滚动</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">转到下一列</translation>
 <translation id="4688873778442829762">网格</translation>
 <translation id="4693675773662933727">上一个地标</translation>
+<translation id="4710166929009737753">向右滑动一根手指</translation>
 <translation id="4712898966495541134">文本选择区域的末尾</translation>
 <translation id="4740661827607246557">帮助命令</translation>
 <translation id="4755857887974653209">停用 ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">列表框</translation>
 <translation id="6815255864998354418">柠檬绸色</translation>
 <translation id="6816066673340002913">灰金菊色</translation>
+<translation id="6826226459053491773">向下滑动两根手指</translation>
 <translation id="6833103209700200188">页脚标记</translation>
 <translation id="6837853484260746864">请选择一种声音：</translation>
 <translation id="6858047746862060282">序言</translation>
+<translation id="6859876496651143278">向左滑动一根手指</translation>
 <translation id="6865519907510167493">拼写错误</translation>
 <translation id="6894148351896207544">说出当前的日期和时间</translation>
 <translation id="6896758677409633944">复制</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">ChromeVox 已更新</translation>
 <translation id="93384979447910801">暗海绿色</translation>
 <translation id="948171205378458592">减慢语速</translation>
+<translation id="958854023026327378">向下滑动一根手指</translation>
 <translation id="962913030769097253">下一个1级标题</translation>
 <translation id="966588271015727539">选择蓝牙盲文显示屏</translation>
 <translation id="973955474346881951">启用/停用粘滞模式</translation>

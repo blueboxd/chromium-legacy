@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -58,11 +61,13 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/version_info/version_info.h"
 #include "components/zoom/page_zoom_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -246,6 +251,45 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
       ui::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
 #else
       l10n_util::GetStringUTF16(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
+#endif
+
+  html_source->AddString(
+      "aboutBrowserVersion",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
+          base::UTF8ToUTF16(version_info::GetVersionNumber()),
+          l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
+                                        ? IDS_VERSION_UI_OFFICIAL
+                                        : IDS_VERSION_UI_UNOFFICIAL),
+          base::UTF8ToUTF16(chrome::GetChannelName()),
+          l10n_util::GetStringUTF16(sizeof(void*) == 8
+                                        ? IDS_VERSION_UI_64BIT
+                                        : IDS_VERSION_UI_32BIT)));
+  html_source->AddString(
+      "aboutProductCopyright",
+      base::i18n::MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
+          base::Time::Now()));
+
+  base::string16 license = l10n_util::GetStringFUTF16(
+      IDS_VERSION_UI_LICENSE, base::ASCIIToUTF16(chrome::kChromiumProjectURL),
+      base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
+  html_source->AddString("aboutProductLicense", license);
+
+  html_source->AddBoolean("aboutObsoleteNowOrSoon",
+                          ObsoleteSystem::IsObsoleteNowOrSoon());
+  html_source->AddBoolean("aboutObsoleteEndOfTheLine",
+                          ObsoleteSystem::IsObsoleteNowOrSoon() &&
+                              ObsoleteSystem::IsEndOfTheLine());
+  html_source->AddString("aboutObsoleteSystem",
+                         ObsoleteSystem::LocalizedObsoleteString());
+  html_source->AddString("aboutObsoleteSystemURL",
+                         ObsoleteSystem::GetLinkURL());
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
+  html_source->AddLocalizedString("aboutProductTos",
+                                  IDS_ABOUT_TERMS_OF_SERVICE);
 #endif
 }
 

@@ -114,7 +114,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -4479,7 +4478,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
 
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
-  ASSERT_FALSE(tab->GetInterstitialPage());
   EXPECT_FALSE(state->HasAllowException(https_server_host, tab));
 
   // Now check that subresource requests revoke the decision.

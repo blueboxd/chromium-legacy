@@ -16,6 +16,10 @@ namespace features {
 // Used only by webview to disable SurfaceControl.
 const base::Feature kDisableSurfaceControlForWebview{
     "DisableSurfaceControlForWebview", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Used to limit GL version to 2.0 for skia raster on Android.
+const base::Feature kUseGles2ForOopR{"UseGles2ForOopR",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable GPU Rasterization by default. This can still be overridden by

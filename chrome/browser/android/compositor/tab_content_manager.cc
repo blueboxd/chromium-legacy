@@ -25,7 +25,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/thumbnail/cc/thumbnail.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -242,14 +241,6 @@ content::RenderWidgetHostView* TabContentManager::GetRwhvForTab(
   DCHECK(web_contents);
 
   content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
-  if (web_contents->ShowingInterstitialPage()) {
-    if (!web_contents->GetInterstitialPage()->GetMainFrame())
-      return nullptr;
-
-    rvh = web_contents->GetInterstitialPage()
-              ->GetMainFrame()
-              ->GetRenderViewHost();
-  }
   if (!rvh)
     return nullptr;
 

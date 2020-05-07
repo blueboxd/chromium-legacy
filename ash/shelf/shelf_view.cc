@@ -350,13 +350,13 @@ ShelfView::~ShelfView() {
   model_->RemoveObserver(this);
 }
 
-int ShelfView::GetSizeOfAppIcons(int count) {
+int ShelfView::GetSizeOfAppButtons(int count, int button_size) {
   const int button_spacing = ShelfConfig::Get()->button_spacing();
 
   if (count == 0)
     return 0;
 
-  const int app_size = count * ShelfConfig::Get()->button_size();
+  const int app_size = count * button_size;
   int total_padding = button_spacing * (count - 1);
   return app_size + total_padding;
 }
@@ -456,6 +456,21 @@ bool ShelfView::IsShelfViewHandlingDragAndDrop() const {
   return drag_image_ != nullptr;
 }
 
+int ShelfView::GetButtonSize() const {
+  return ShelfConfig::Get()->GetShelfButtonSize(
+      shelf_->hotseat_widget()->is_forced_dense());
+}
+
+int ShelfView::GetButtonIconSize() const {
+  return ShelfConfig::Get()->GetShelfButtonIconSize(
+      shelf_->hotseat_widget()->is_forced_dense());
+}
+
+int ShelfView::GetShelfItemRippleSize() const {
+  return GetButtonSize() +
+         2 * ShelfConfig::Get()->scrollable_shelf_ripple_padding();
+}
+
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
@@ -510,11 +525,11 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
 }
 
 gfx::Size ShelfView::CalculatePreferredSize() const {
+  const int hotseat_size = shelf_->hotseat_widget()->GetHotseatSize();
   if (model_->item_count() == 0) {
     // There are no apps.
-    return shelf_->IsHorizontalAlignment()
-               ? gfx::Size(0, ShelfConfig::Get()->hotseat_size())
-               : gfx::Size(ShelfConfig::Get()->hotseat_size(), 0);
+    return shelf_->IsHorizontalAlignment() ? gfx::Size(0, hotseat_size)
+                                           : gfx::Size(hotseat_size, 0);
   }
 
   int last_button_index = last_visible_index_;
@@ -522,15 +537,12 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   const gfx::Rect last_button_bounds =
       last_button_index >= first_visible_index_
           ? view_model_->ideal_bounds(last_button_index)
-          : gfx::Rect(gfx::Size(ShelfConfig::Get()->hotseat_size(),
-                                ShelfConfig::Get()->hotseat_size()));
+          : gfx::Rect(gfx::Size(hotseat_size, hotseat_size));
 
   if (shelf_->IsHorizontalAlignment())
-    return gfx::Size(last_button_bounds.right(),
-                     ShelfConfig::Get()->hotseat_size());
+    return gfx::Size(last_button_bounds.right(), hotseat_size);
 
-  return gfx::Size(ShelfConfig::Get()->hotseat_size(),
-                   last_button_bounds.bottom());
+  return gfx::Size(hotseat_size, last_button_bounds.bottom());
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -914,6 +926,7 @@ void ShelfView::CalculateIdealBounds() {
 
   const int button_spacing = ShelfConfig::Get()->button_spacing();
   const int separator_index = GetSeparatorIndex();
+  const int hotseat_size = shelf_->hotseat_widget()->GetHotseatSize();
 
   // Don't show the separator if it isn't needed, or would appear after all
   // visible items.
@@ -925,9 +938,8 @@ void ShelfView::CalculateIdealBounds() {
 
   // The padding is handled in ScrollableShelfView.
 
+  const int button_size = GetButtonSize();
   for (int i = 0; i < view_model()->view_size(); ++i) {
-    const int button_size = ShelfConfig::Get()->button_size();
-
     view_model()->set_ideal_bounds(i,
                                    gfx::Rect(x, y, button_size, button_size));
 
@@ -938,8 +950,7 @@ void ShelfView::CalculateIdealBounds() {
       // Place the separator halfway between the two icons it separates,
       // vertically centered.
       int half_space = button_spacing / 2;
-      int secondary_offset =
-          (ShelfConfig::Get()->hotseat_size() - kSeparatorSize) / 2;
+      int secondary_offset = (hotseat_size - kSeparatorSize) / 2;
       x -= shelf()->PrimaryAxisValue(half_space, 0);
       y -= shelf()->PrimaryAxisValue(0, half_space);
       separator_->SetBounds(
@@ -1939,8 +1950,9 @@ void ShelfView::ShelfItemReturnedFromRipOff(int index) {
   // Show the item and prevent it from animating into place from the position
   // where it was sitting with zero opacity.
   views::View* view = view_model_->view_at(index);
-  view->SetBoundsRect(bounds_animator_->GetTargetBounds(view));
+  const gfx::Rect bounds = bounds_animator_->GetTargetBounds(view);
   bounds_animator_->StopAnimatingView(view);
+  view->SetBoundsRect(bounds);
   view->layer()->SetOpacity(1.f);
 }
 

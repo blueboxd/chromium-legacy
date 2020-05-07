@@ -103,6 +103,7 @@ String Location::origin() const {
 }
 
 FragmentDirective* Location::fragmentDirective() const {
+  GetDocument()->CountUse(WebFeature::kLocationFragmentDirectiveAccessed);
   return fragment_directive_;
 }
 

@@ -170,11 +170,11 @@ class AppListMainViewTest : public views::ViewsTestBase {
   ContentsView* GetContentsView() { return main_view_->contents_view(); }
 
   AppsGridView* RootGridView() {
-    return GetContentsView()->GetAppsContainerView()->apps_grid_view();
+    return GetContentsView()->apps_container_view()->apps_grid_view();
   }
 
   AppListFolderView* FolderView() {
-    return GetContentsView()->GetAppsContainerView()->app_list_folder_view();
+    return GetContentsView()->apps_container_view()->app_list_folder_view();
   }
 
   AppsGridView* FolderGridView() { return FolderView()->items_grid_view(); }
@@ -306,7 +306,7 @@ TEST_F(AppListMainViewTest, DISABLED_DragLastItemFromFolderAndDropAtLastSlot) {
   // Ensure keyboard selection works on the root grid view after a reparent.
   // This is a regression test for https://crbug.com/466058.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, ui::EF_NONE);
-  GetContentsView()->GetAppsContainerView()->OnKeyPressed(key_event);
+  GetContentsView()->apps_container_view()->OnKeyPressed(key_event);
 
   EXPECT_TRUE(RootGridView()->has_selected_view());
   EXPECT_FALSE(FolderGridView()->has_selected_view());

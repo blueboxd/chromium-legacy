@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">прескенирање</translation>
 <translation id="119944043368869598">Избриши ги сите</translation>
 <translation id="1199716647557067911">Дали сигурно сакате да го исклучите „Пристапот со прекинувачи“?</translation>
+<translation id="121097972571826261">Напред за еден збор</translation>
+<translation id="1229194443904279055">Сопрете со избирање</translation>
 <translation id="1247372569136754018">Микрофон (внатрешен)</translation>
 <translation id="1252999807265626933">Се полни од <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво е времето?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Овозможена е лупата за цел екран. Притиснете Ctrl+Search+M повторно за да ја исклучите.</translation>
 <translation id="2302092602801625023">Оваа сметка е управувана од Family Link</translation>
 <translation id="2303600792989757991">Префрли преглед во прозорец</translation>
+<translation id="2322173485024759474">Назад за една буква</translation>
 <translation id="2339073806695260576">Допрете го копчето за пенкало на полицата за да напишете белешка, да направите слика од екранот, да го користите ласерскиот покажувач или лупата.</translation>
 <translation id="2341729377289034582">Заклучен вертикално</translation>
 <translation id="2352467521400612932">Поставки за пенкало</translation>
@@ -239,6 +242,7 @@
 <translation id="383629559565718788">Прикажи ги поставките за тастатура</translation>
 <translation id="3846575436967432996">Нема достапни информации за мрежа</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="385300504083504382">Почеток</translation>
 <translation id="3891340733213178823">Притиснете Ctrl+Shift+Q двапати за да се одјавите.</translation>
 <translation id="3893630138897523026">ChromeVox (говорни повратни информации)</translation>
 <translation id="3897533311200664389">Започнете текстуално барање</translation>
@@ -347,6 +351,7 @@
 <translation id="5379115545237091094">Премногу обиди</translation>
 <translation id="5397578532367286026">Користењето и историјата на овој корисник може да ги прегледува управникот (<ph name="MANAGER_EMAIL" />) на chrome.com.</translation>
 <translation id="5400461572260843123">Брзи поставки, Притиснете „Пребарување + лево“ за да пристапите до центарот за известувања.</translation>
+<translation id="5428899915242071344">Започнете со избирање</translation>
 <translation id="5430931332414098647">Инстант врзување</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Сите достапни корисници веќе се додадени на оваа сесија.</translation>
@@ -468,6 +473,7 @@
 <translation id="6777216307882431711">Се напојуваат поврзани USB-C уреди</translation>
 <translation id="6790428901817661496">Репродуцирај</translation>
 <translation id="6803622936009808957">Не можеа да се отсликаат екрани затоа што не се пронајдени поддржани резолуции. Наместо тоа, влеговме во проширен десктоп.</translation>
+<translation id="6818242057446442178">Назад за еден збор</translation>
 <translation id="6820676911989879663">Направете пауза!</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Кратенката е исклучена</translation>
@@ -581,6 +587,7 @@
 <translation id="8308637677604853869">Претходно мени</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Создајте белешка</translation>
+<translation id="8371779926711439835">Напред за една буква</translation>
 <translation id="8375916635258623388">Овој <ph name="DEVICE_NAME" /> и вашиот телефон ќе се поврзат автоматски</translation>
 <translation id="8388750414311082622">Последниот работен простор не може да се отстрани.</translation>
 <translation id="8392451568018454956">Мени со опции за <ph name="USER_EMAIL_ADDRESS" /></translation>

@@ -391,8 +391,6 @@ TEST_F(It2MeHostTest, IceConfig) {
   ASSERT_EQ(It2MeHostState::kReceivedAccessCode, last_host_state_);
 
   protocol::IceConfig ice_config;
-  GetHost()->transport_context_for_tests()->set_relay_mode(
-      protocol::TransportContext::TURN);
   GetHost()->transport_context_for_tests()->GetIceConfig(
       base::Bind(&ReceiveIceConfig, &ice_config));
   EXPECT_EQ(ice_config.stun_servers[0].hostname(), kTestStunServer);

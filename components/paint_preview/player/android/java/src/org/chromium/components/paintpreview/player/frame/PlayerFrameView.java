@@ -82,6 +82,10 @@ class PlayerFrameView extends FrameLayout {
         mBitmapPainter.updateBitmapMatrix(bitmapMatrix);
     }
 
+    void updateTileDimensions(int[] tileDimensions) {
+        mBitmapPainter.updateTileDimensions(tileDimensions);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         mBitmapPainter.onDraw(canvas);

@@ -25,7 +25,6 @@ namespace syncer {
 struct ConfigureContext;
 class ModelTypeConfigurer;
 class SyncError;
-class SyncMergeResult;
 
 // DataTypeControllers are responsible for managing the state of a single data
 // type. They are not thread safe and should only be used on the UI thread.
@@ -34,12 +33,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   enum State {
     NOT_RUNNING,     // The controller has never been started or has previously
                      // been stopped.  Must be in this state to start.
-    MODEL_STARTING,  // The controller is waiting on dependent services
-                     // that need to be available before model
-                     // association.
-    MODEL_LOADED,    // The model has finished loading and can start
-                     // associating now.
-    ASSOCIATING,     // Model association is in progress.
+    MODEL_STARTING,  // The model is loading.
+    MODEL_LOADED,    // The model has finished loading and can start running.
     RUNNING,         // The controller is running and the data type is
                      // in sync with the cloud.
     STOPPING,        // The controller is in the process of stopping
@@ -47,38 +42,16 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
     FAILED           // The controller was started but encountered an error.
   };
 
-  // This enum is used for "Sync.*ConfigureFailre" histograms so the order
-  // of is important. Any changes need to be reflected in histograms.xml.
-  enum ConfigureResult {
-    OK,                   // The data type has started normally.
-    OK_FIRST_RUN,         // Same as OK, but sent on first successful
-                          // start for this type for this user as
-                          // determined by cloud state.
-    ASSOCIATION_FAILED,   // An error occurred during model association.
-    ABORTED,              // Start was aborted by calling Stop().
-    UNRECOVERABLE_ERROR,  // An unrecoverable error occured.
-    NEEDS_CRYPTO,         // The data type cannot be started yet because it
-                          // depends on the cryptographer.
-    RUNTIME_ERROR,        // After starting, a runtime error was encountered.
-    MAX_CONFIGURE_RESULT
-  };
-
   // Returned from RegisterWithBackend.
   enum RegisterWithBackendResult {
-    // Used by non-USS data types which don't use RegisterWithBackend, and by
-    // USS types when RegisterWithBackend is called on an already-registered
-    // type.
-    // TODO(crbug.com/923287): Update the above comment once there are only USS
-    // data types (or get rid of this entry entirely if possible).
+    // Used when RegisterWithBackend is called on an already-registered type.
+    // TODO(crbug.com/647505): Get rid of this entry entirely if possible.
     REGISTRATION_IGNORED,
     // Indicates that the initial download for this type is already complete.
     TYPE_ALREADY_DOWNLOADED,
     // Indicates that the initial download for this type still needs to be done.
     TYPE_NOT_YET_DOWNLOADED,
   };
-
-  using StartCallback = base::OnceCallback<
-      void(ConfigureResult, const SyncMergeResult&, const SyncMergeResult&)>;
 
   // Note: This seems like it should be a OnceCallback, but it can actually be
   // called multiple times in the case of errors.
@@ -97,48 +70,32 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   using TypeMap = std::map<ModelType, std::unique_ptr<DataTypeController>>;
   using TypeVector = std::vector<std::unique_ptr<DataTypeController>>;
 
-  // Returns true if the datatype started successfully.
-  static bool IsSuccessfulResult(ConfigureResult result);
-
   static std::string StateToString(State state);
 
   virtual ~DataTypeController();
 
   // Begins asynchronous operation of loading the model to get it ready for
-  // model association. Once the models are loaded the callback will be invoked
-  // with the result. If the models are already loaded it is safe to call the
+  // activation. Once the models are loaded the callback will be invoked with
+  // the result. If the models are already loaded it is safe to call the
   // callback right away. Else the callback needs to be stored and called when
   // the models are ready.
   virtual void LoadModels(const ConfigureContext& configure_context,
                           const ModelLoadCallback& model_load_callback) = 0;
 
   // Registers with sync backend if needed. This function is called by
-  // DataTypeManager before downloading initial data. For non-blocking (USS)
-  // types, returns whether the initial download for this type is already
-  // complete.
+  // DataTypeManager before downloading initial data. Returns whether the
+  // initial download for this type is already complete.
+  // TODO(crbug.com/647505): Rename this function to ActivateDataType().
   virtual RegisterWithBackendResult RegisterWithBackend(
       ModelTypeConfigurer* configurer) = 0;
-
-  // Will start a potentially asynchronous operation to perform the
-  // model association. Once the model association is done the callback will
-  // be invoked.
-  virtual void StartAssociating(StartCallback start_callback) = 0;
-
-  // Called by DataTypeManager to activate the controlled data type using
-  // one of the implementation specific methods provided by the |configurer|.
-  // This is called (on UI thread) after the data type configuration has
-  // completed successfully.
-  virtual void ActivateDataType(ModelTypeConfigurer* configurer) = 0;
 
   // Called by DataTypeManager to deactivate the controlled data type.
   // See comments for ModelAssociationManager::OnSingleDataTypeWillStop.
   virtual void DeactivateDataType(ModelTypeConfigurer* configurer) = 0;
 
-  // Stops the data type. If StartAssociating has already been called but is not
-  // done yet it will be aborted. Similarly if LoadModels has not completed it
-  // will also be aborted. Implementations may enter STOPPING state
-  // transitionaly but should eventually become STOPPED. At this point,
-  // |callback| will be run. |callback| must not be null.
+  // Stops the data type. If LoadModels() has not completed it will enter
+  // STOPPING state first and eventually STOPPED. Once stopped, |callback| will
+  // be run. |callback| must not be null.
   //
   // NOTE: Stop() should be called after sync backend machinery has stopped
   // routing changes to this data type. Stop() should ensure the data type

@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">애플리케이션 창</translation>
 <translation id="1531275250079031713">'새 Wi-Fi 추가' 대화상자 표시</translation>
 <translation id="1536754031901697553">연결을 해제하는 중...</translation>
+<translation id="1537254971476575106">전체화면 돋보기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1540605929960647700">데모 모드 사용</translation>
 <translation id="1542514202066550870">이 탭에서 헤드셋에 VR 콘텐츠를 전송하는 중입니다.</translation>
@@ -1164,6 +1165,7 @@
 <translation id="2501173422421700905">인증서 보류</translation>
 <translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2501797496290880632">단축키 입력</translation>
+<translation id="2501920221385095727">고정키</translation>
 <translation id="2502441965851148920">자동 업데이트가 사용 설정되었습니다. 관리자가 수동 업데이트를 사용 중지했습니다.</translation>
 <translation id="2502719318159902502">전체 액세스</translation>
 <translation id="2505127913256479918">이 감독 대상 계정이 곧 삭제됩니다</translation>
@@ -1549,6 +1551,7 @@
 <translation id="2993517869960930405">앱 정보</translation>
 <translation id="2996286169319737844">동기화 암호로 데이터가 암호화됩니다. Google Pay의 결제 수단 및 주소는 암호화되지 않습니다.</translation>
 <translation id="2996722619877761919">옆으로 넘김</translation>
+<translation id="3000461861112256445">모노 오디오</translation>
 <translation id="3001144475369593262">어린이 계정</translation>
 <translation id="3003144360685731741">기본 설정된 네트워크</translation>
 <translation id="3003623123441819449">CSS 캐시</translation>
@@ -2481,6 +2484,7 @@
 <translation id="4211851069413100178">사용 및 진단 데이터를 보냅니다. 진단, 기기, 앱 사용 데이터를 Google에 자동으로 보내 Android 사용 환경 개선에 참여합니다. 이 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 <ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />은 소유자가 지정합니다. 소유자가 이 기기의 진단 및 사용 데이터를 Google에 전송할지 선택할 수 있습니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK2" />자세히 알아보기<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">내보내기</translation>
 <translation id="42137655013211669">서버에서 이 리소스에 대한 액세스를 금지했습니다.</translation>
+<translation id="4217571870635786043">음성기록</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> 예외 삭제</translation>
 <translation id="4220648711404560261">활성화 중 오류가 발생했습니다.</translation>
 <translation id="4222772810963087151">빌드 세부정보</translation>
@@ -3165,6 +3169,7 @@
 <translation id="5204967432542742771">비밀번호 입력</translation>
 <translation id="5206215183583316675">'<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="520621735928254154">인증서 가져오기 오류</translation>
+<translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
 <translation id="5209320130288484488">기기를 찾을 수 없음</translation>
 <translation id="5210365745912300556">탭 닫기</translation>
 <translation id="5213481667492808996">'<ph name="NAME" />' 데이터 서비스를 사용할 수 있습니다.</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">둘러보기</translation>
 <translation id="7766838926148951335">권한 수락</translation>
 <translation id="7768770796815395237">변경</translation>
+<translation id="7768784765476638775">텍스트 읽어주기</translation>
 <translation id="7769672763586021400">모델 ID</translation>
 <translation id="7770612696274572992">다른 기기에서 이미지가 복사됨</translation>
 <translation id="7770651108375708429">Wi-Fi 연결 해제</translation>

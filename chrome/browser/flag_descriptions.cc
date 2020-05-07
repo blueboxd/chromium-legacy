@@ -745,6 +745,10 @@ const char kEnablePortalsCrossOriginDescription[] =
     "Allows portals to load cross-origin URLs in addition to same-origin ones."
     " Has no effect if Portals are not enabled.";
 
+const char kEnableTranslateSubFramesName[] = "Translate sub frames";
+const char kEnableTranslateSubFramesDescription[] =
+    "Enable the translation of sub frames (as well as the main frame)";
+
 const char kCorsForContentScriptsName[] = "CORS for content scripts";
 const char kCorsForContentScriptsDescription[] =
     "Prevent content scripts of Chrome Extensions from bypassing CORS.";
@@ -1710,13 +1714,6 @@ const char kSameSiteByDefaultCookiesDescription[] =
     "Treat cookies that don't specify a SameSite attribute as if they were "
     "SameSite=Lax. Sites must specify SameSite=None in order to enable "
     "third-party usage.";
-
-const char kScalableAppListName[] =
-    "App list UI configuration dependant on display size";
-const char kScalableAppListDescription[] =
-    "Adapts app list item sizing and spacing for smaller screen sizes, "
-    "instead of using single app list configuration, that is optionally "
-    "scaled down, for all screens.";
 
 const char kScrollableTabStripName[] = "Scrollable TabStrip";
 const char kScrollableTabStripDescription[] =

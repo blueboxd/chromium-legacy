@@ -410,6 +410,7 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1531004739673299060">Ilova oynasi</translation>
 <translation id="1531275250079031713">“Yangi Wi-Fi kiritish” oynasini ochish</translation>
 <translation id="1536754031901697553">Uzilmoqda…</translation>
+<translation id="1537254971476575106">Butun ekran rejimidagi lupa</translation>
 <translation id="15373452373711364">Sichqonchaning katta kursori</translation>
 <translation id="1540605929960647700">Demo rejimni yoqish</translation>
 <translation id="1542514202066550870">Bu varaq garnituraga VR kontent namoyish qilmoqda.</translation>
@@ -1162,6 +1163,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2501173422421700905">Sertifikat tutib turilibdi</translation>
 <translation id="2501278716633472235">Ortga qaytish</translation>
 <translation id="2501797496290880632">Tezkor tugmalarni ko‘rsating</translation>
+<translation id="2501920221385095727">Yopishqoq tugmalar</translation>
 <translation id="2502441965851148920">Avtomatik yangilanishlar yoqilgan. Qo‘lda yangilash funksiyasi administrator o‘chirib qo‘ygan.</translation>
 <translation id="2502719318159902502">Toʻliq ruxsat</translation>
 <translation id="2505127913256479918">Tez orada bu boshqariluvchi hisob olib tashlanadi</translation>
@@ -1547,6 +1549,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2993517869960930405">Ilova haqida</translation>
 <translation id="2996286169319737844">Ma’lumotlar kodli ibora bilan shifrlangan. Google Pay manzillari va toʻlov usullari esa shifrlanmagan.</translation>
 <translation id="2996722619877761919">Uzun chetidan almashtirish</translation>
+<translation id="3000461861112256445">Mono audio</translation>
 <translation id="3001144475369593262">Farzand hisoblari</translation>
 <translation id="3003144360685731741">Afzal tarmoqlar</translation>
 <translation id="3003623123441819449">CSS Kesh hajmi</translation>
@@ -2481,6 +2484,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4211851069413100178">Foydalanish va diagnostika axborotini yuborish. Diagnostika hamda qurilma va ilovadan foydalanish statistikasini Google kompaniyasiga avtomatik yuborish orqali Androidni yaxshilashga yordam bering. Ular tizim va ilovalar barqarorligi kabilarni yaxshilash uchun ishlatiladi. Ayrim toʻplangan maʼlumotlar Android dasturchilar kabi hamkorlarimizga ham oʻz ilovalari va mahsulotlarini yanada yaxshilashga yordam beradi. Bu <ph name="BEGIN_LINK1" />parametr<ph name="END_LINK1" /> qurilma egasi tomonidan oʻrnatilgan. Qurilma egasi undagi foydalanish haqidagi va diagnostika axborotini Google serverlariga avtomatik yuborilishini tayinlashi mumkin. Agar Kengaytirilgan veb-qidiruv va ilovalar tarixi yoqilgan boʻlsa, bu maʼlumotlar Google hisobingizda saqlanadi. <ph name="BEGIN_LINK2" />Batafsil<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Eksport</translation>
 <translation id="42137655013211669">Server bu manbaga kirishga ruxsat bermagan.</translation>
+<translation id="4217571870635786043">Ovoz bilan yozish</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> hostini istisnolardan olib tashlash</translation>
 <translation id="4220648711404560261">Sozlashda xatolik yuz berdi.</translation>
 <translation id="4222772810963087151">Nashr axboroti</translation>
@@ -3165,6 +3169,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5204967432542742771">Parolni kiriting</translation>
 <translation id="5206215183583316675">“<ph name="CERTIFICATE_NAME" />” o‘chirilsinmi?</translation>
 <translation id="520621735928254154">Sertifikatini import qilishda xatolik yuz berdi</translation>
+<translation id="5207949376430453814">Matn kiritish joyi ajratib ko‘rsatilsin</translation>
 <translation id="5209320130288484488">Qurilmalar topilmadi</translation>
 <translation id="5210365745912300556">Tabni yopish</translation>
 <translation id="5213481667492808996">“<ph name="NAME" />” internet paketingiz faollashtirildi</translation>
@@ -5078,6 +5083,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7766807826975222231">Ko‘proq o‘rganish</translation>
 <translation id="7766838926148951335">Ruxsatlarni qabul qilish</translation>
 <translation id="7768770796815395237">Oʻzgartirish</translation>
+<translation id="7768784765476638775">Teginib tinglash</translation>
 <translation id="7769672763586021400">Model identifikatori</translation>
 <translation id="7770612696274572992">Rasm boshqa qurilmadan nusxalandi</translation>
 <translation id="7770651108375708429">Wi-Fi aloqasini uzish</translation>

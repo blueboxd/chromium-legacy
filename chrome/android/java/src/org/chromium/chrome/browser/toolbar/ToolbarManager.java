@@ -163,9 +163,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private final ActivityTabProvider mActivityTabProvider;
     private MenuDelegatePhone mMenuDelegatePhone;
     private final LocationBarModel mLocationBarModel;
-    private Profile mCurrentProfile;
-    private final ObservableSupplierImpl<BookmarkBridge> mBookmarkBridgeSupplier;
-    private BookmarkBridge mBookmarkBridge;
+    private ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
+    private ObservableSupplier<Profile> mProfileSupplier;
+    private final Callback<BookmarkBridge> mBookmarkBridgeSupplierObserver;
+    private final Callback<Profile> mProfileSupplierObserver;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
@@ -247,6 +248,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @param toolbarActionModeCallback Callback that communicates changes in the conceptual mode
      *                                  of toolbar interaction.
      * @param findToolbarManager The manager for the find in page function.
+     * @param profileSupplier Supplier of the currently applicable profile.
+     * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
      */
     public ToolbarManager(ChromeActivity activity, ChromeFullscreenManager fullscreenManager,
             ToolbarControlContainer controlContainer, Invalidator invalidator,
@@ -257,7 +260,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             IdentityDiscController identityDiscController,
             List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider tabProvider,
             ScrimCoordinator scrimCoordinator, ToolbarActionModeCallback toolbarActionModeCallback,
-            FindToolbarManager findToolbarManager) {
+            FindToolbarManager findToolbarManager, ObservableSupplier<Profile> profileSupplier,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
@@ -271,7 +275,15 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         assert mControlContainer != null;
         mUrlFocusChangedCallback = urlFocusChangedCallback;
 
-        mBookmarkBridgeSupplier = new ObservableSupplierImpl<>();
+        mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
+        // We need to capture a reference to setBookmarkBridge/setCurrentProfile in order to remove
+        // them later; there is no guarantee in the JLS that referencing the same method later will
+        // reference the same object.
+        mBookmarkBridgeSupplierObserver = this::setBookmarkBridge;
+        mBookmarkBridgeSupplier.addObserver(mBookmarkBridgeSupplierObserver);
+        mProfileSupplier = profileSupplier;
+        mProfileSupplierObserver = this::setCurrentProfile;
+        mProfileSupplier.addObserver(mProfileSupplierObserver);
 
         mComponentCallbacks = new ComponentCallbacks() {
             @Override
@@ -387,7 +399,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 // clang-format off
                 this::isBottomToolbarVisible,
                 () -> mShowStartSurfaceSupplier != null && mShowStartSurfaceSupplier.get(),
-                () -> mCurrentProfile, () -> mBottomControlsCoordinator, this::updateButtonStatus);
+                mProfileSupplier, () -> mBottomControlsCoordinator, this::updateButtonStatus);
         // clang-format on
 
         mToolbar = new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar),
@@ -574,15 +586,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             public void onTabStateInitialized() {
                 mTabRestoreCompleted = true;
                 handleTabRestoreCompleted();
-                Profile profile = mTabModelSelector != null
-                        ? mTabModelSelector.getCurrentModel().getProfile()
-                        : null;
-                setCurrentProfile(profile);
             }
 
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                setCurrentProfile(newModel.getProfile());
                 if (mTabModelSelector != null) {
                     refreshSelectedTab(mTabModelSelector.getCurrentTab());
                 }
@@ -920,6 +927,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mOnInitializedRunnable.run();
             mOnInitializedRunnable = null;
         }
+
+        setCurrentProfile(mProfileSupplier.get());
     }
 
     /**
@@ -944,20 +953,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      */
     public boolean isShowingAppMenuUpdateBadge() {
         return mToolbar.isShowingAppMenuUpdateBadge();
-    }
-
-    /**
-     * @return The bookmarks bridge.
-     */
-    public BookmarkBridge getBookmarkBridge() {
-        return mBookmarkBridge;
-    }
-
-    /**
-     * @return An {@link ObservableSupplier} that supplies the {@link BookmarksBridge}.
-     */
-    public ObservableSupplier<BookmarkBridge> getBookmarkBridgeSupplier() {
-        return mBookmarkBridgeSupplier;
     }
 
     /**
@@ -1028,10 +1023,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         if (mTabModelSelector != null) {
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         }
-        if (mBookmarkBridge != null) {
-            mBookmarkBridge.destroy();
-            mBookmarkBridge = null;
-            mBookmarkBridgeSupplier.set(null);
+        if (mBookmarkBridgeSupplier != null) {
+            BookmarkBridge bridge = mBookmarkBridgeSupplier.get();
+            if (bridge != null) bridge.removeObserver(mBookmarksObserver);
+
+            mBookmarkBridgeSupplier.removeObserver(mBookmarkBridgeSupplierObserver);
+            mBookmarkBridgeSupplier = null;
         }
         if (mTemplateUrlObserver != null) {
             TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
@@ -1098,6 +1095,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         if (mFindToolbarManager != null) {
             mFindToolbarManager.removeObserver(mFindToolbarObserver);
             mFindToolbarManager = null;
+        }
+
+        if (mProfileSupplier != null) {
+            mProfileSupplier.removeObserver(mProfileSupplierObserver);
+            mProfileSupplier = null;
         }
 
         mActivity.unregisterComponentCallbacks(mComponentCallbacks);
@@ -1195,7 +1197,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         refreshSelectedTab(mActivityTabProvider.get());
         if (mTabModelSelector.isTabStateInitialized()) mTabRestoreCompleted = true;
         handleTabRestoreCompleted();
-        setCurrentProfile(mTabModelSelector.getCurrentModel().getProfile());
         mTabCountProvider.setTabModelSelector(mTabModelSelector);
         mIncognitoStateProvider.setTabModelSelector(mTabModelSelector);
         mAppThemeColorProvider.setIncognitoStateProvider(mIncognitoStateProvider);
@@ -1543,8 +1544,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private void updateBookmarkButtonStatus() {
         Tab currentTab = mLocationBarModel.getTab();
         boolean isBookmarked = currentTab != null && BookmarkBridge.hasBookmarkIdForTab(currentTab);
-        boolean editingAllowed = currentTab == null || mBookmarkBridge == null
-                || mBookmarkBridge.isEditBookmarksEnabled();
+        BookmarkBridge bridge = mBookmarkBridgeSupplier.get();
+        boolean editingAllowed =
+                currentTab == null || bridge == null || bridge.isEditBookmarksEnabled();
         mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);
     }
 
@@ -1604,27 +1606,20 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         updateButtonStatus();
     }
 
-    // TODO(https://crbug.com/865801): Abstract and encapsulate the "current profile" (really the
-    // current Profile for the current TabModel) into an ObservableSupplier, inject that directly to
-    // mLocationBar, and use it to create an ObservableSupplier<BookmarkBridge> so that we can
-    // remove setCurrentProfile and getBookmarkBridgeSupplier.
+    // TODO(https://crbug.com/865801): Inject a profile supplier directly to mLocationBar and remove
+    // setCurrentProfile.
     private void setCurrentProfile(Profile profile) {
-        if (mCurrentProfile != profile) {
-            if (mBookmarkBridge != null) {
-                mBookmarkBridge.destroy();
-                mBookmarkBridge = null;
-            }
-            if (profile != null) {
-                mBookmarkBridge = new BookmarkBridge(profile);
-                mBookmarkBridge.addObserver(mBookmarksObserver);
-                mLocationBar.setAutocompleteProfile(profile);
-                mLocationBar.setShowIconsWhenUrlFocused(
-                        SearchEngineLogoUtils.shouldShowSearchEngineLogo(
-                                mLocationBarModel.isIncognito()));
-            }
-            mCurrentProfile = profile;
-            mBookmarkBridgeSupplier.set(mBookmarkBridge);
+        if (profile != null && mInitializedWithNative) {
+            mLocationBar.setAutocompleteProfile(profile);
+            mLocationBar.setShowIconsWhenUrlFocused(
+                    SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                            mLocationBarModel.isIncognito()));
         }
+    }
+
+    private void setBookmarkBridge(BookmarkBridge bookmarkBridge) {
+        if (bookmarkBridge == null) return;
+        bookmarkBridge.addObserver(mBookmarksObserver);
     }
 
     private void updateCurrentTabDisplayStatus() {

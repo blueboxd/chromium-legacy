@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">ivično područje ekrana</translation>
 <translation id="119944043368869598">Očisti sve</translation>
 <translation id="1199716647557067911">Jeste li sigurni da želite isključiti prekidač za pristup?</translation>
+<translation id="121097972571826261">Riječ unaprijed</translation>
+<translation id="1229194443904279055">Prekini odabir</translation>
 <translation id="1247372569136754018">Mikrofon (interno)</translation>
 <translation id="1252999807265626933">Izvor punjenja: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kakvo je vrijeme?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Omogućeno je povećalo cijelog ekrana. Ponovo pritisnite Ctrl+Search+M da ga isključite.</translation>
 <translation id="2302092602801625023">Ovim računom upravlja Family Link</translation>
 <translation id="2303600792989757991">Uključivanje/isključivanje pregleda prozora</translation>
+<translation id="2322173485024759474">Slovo unatrag</translation>
 <translation id="2339073806695260576">Dodirnite dugme sa olovkom na polici da napišete bilješku, napravite snimak ekrana, koristite laserski pokazivač ili lupu.</translation>
 <translation id="2341729377289034582">Zaključan vertikalni prikaz</translation>
 <translation id="2352467521400612932">Postavke stilosa</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Prikaži postavke tastature</translation>
 <translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
 <translation id="385051799172605136">Nazad</translation>
+<translation id="385300504083504382">Početak</translation>
 <translation id="3891340733213178823">Dvaput pritisnite Ctrl + Shift + Q da se odjavite.</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
 <translation id="3897533311200664389">Pokrenite tekstualni upit</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Previše pokušaja</translation>
 <translation id="5397578532367286026">Upravitelj (<ph name="MANAGER_EMAIL" />) može pregledavati upotrebu i povijest tog korisnika na web-lokaciji chrome.com.</translation>
 <translation id="5400461572260843123">Brze postavke, pritisnite tipku za pretraživanje i strelicu ulijevo da pristupite centru za obavještenja.</translation>
+<translation id="5428899915242071344">Započni s odabirom</translation>
 <translation id="5430931332414098647">Trenutno povezivanje putem mobitela</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">U ovu sesiju su već dodani svi dostupni korisnici.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Napajanje povezanih uređaja s priključkom USB-C</translation>
 <translation id="6790428901817661496">Pokreni</translation>
 <translation id="6803622936009808957">Preslikavanje ekrana nije moguće jer nisu pronađene podržane rezolucije. Umjesto toga, prikazuje se proširena radna površina.</translation>
+<translation id="6818242057446442178">Riječ unatrag</translation>
 <translation id="6820676911989879663">Odmori se!</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Prečica je isključena</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Prethodni meni</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Napravite bilješku</translation>
+<translation id="8371779926711439835">Slovo unaprijed</translation>
 <translation id="8375916635258623388">Uređaj <ph name="DEVICE_NAME" /> i vaš telefon će se povezati automatski</translation>
 <translation id="8388750414311082622">Nije moguće ukloniti posljednju radnu površinu.</translation>
 <translation id="8392451568018454956">Opcije menija za <ph name="USER_EMAIL_ADDRESS" /></translation>

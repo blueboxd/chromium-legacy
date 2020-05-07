@@ -21,6 +21,9 @@ class PlayerFrameProperties {
     /** A matrix of bitmap tiles that collectively make the entire content. */
     static final PropertyModel.WritableObjectPropertyKey<Bitmap[][]> BITMAP_MATRIX =
             new PropertyModel.WritableObjectPropertyKey<>(true);
+    /** The dimensions of each bitmap tile in the current bitmap matrix. */
+    static final PropertyModel.WritableObjectPropertyKey<int[]> TILE_DIMENSIONS =
+            new PropertyModel.WritableObjectPropertyKey<>();
     /**
      * Contains the current user-visible content window. The view should use this to draw the
      * appropriate bitmap tiles from {@link #BITMAP_MATRIX}.
@@ -34,5 +37,6 @@ class PlayerFrameProperties {
      */
     static final PropertyModel.WritableObjectPropertyKey<List<Pair<View, Rect>>> SUBFRAME_VIEWS =
             new PropertyModel.WritableObjectPropertyKey<>(true);
-    static final PropertyKey[] ALL_KEYS = {BITMAP_MATRIX, VIEWPORT, SUBFRAME_VIEWS};
+    static final PropertyKey[] ALL_KEYS = {
+            BITMAP_MATRIX, TILE_DIMENSIONS, VIEWPORT, SUBFRAME_VIEWS};
 }

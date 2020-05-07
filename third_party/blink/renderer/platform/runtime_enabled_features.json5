@@ -1602,6 +1602,9 @@
       status: "stable",
     },
     {
+      name: "ScrollUnification",
+    },
+    {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "stable",
     },

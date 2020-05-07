@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1199716647557067911">Disattivare Switch Access?</translation>
+<translation id="121097972571826261">Avanti per parola</translation>
+<translation id="1229194443904279055">Interrompi la selezione</translation>
 <translation id="1247372569136754018">Microfono (interno)</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Che tempo fa?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Ingrandimento a schermo intero attivato. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarlo.</translation>
 <translation id="2302092602801625023">Questo account è gestito da Family Link</translation>
 <translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
+<translation id="2322173485024759474">Indietro per lettera</translation>
 <translation id="2339073806695260576">Tocca il pulsante dello stilo nello shelf per creare note, acquisire screenshot, usare il puntatore laser o la lente d'ingrandimento.</translation>
 <translation id="2341729377289034582">Bloccata in verticale</translation>
 <translation id="2352467521400612932">Impostazioni di stilo</translation>
@@ -239,6 +242,7 @@
 <translation id="383629559565718788">Mostra impostazioni tastiera</translation>
 <translation id="3846575436967432996">Nessuna informazione di rete disponibile</translation>
 <translation id="385051799172605136">Indietro</translation>
+<translation id="385300504083504382">Inizio</translation>
 <translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
 <translation id="3893630138897523026">ChromeVox (lettura vocale)</translation>
 <translation id="3897533311200664389">Avvia una query di testo</translation>
@@ -347,6 +351,7 @@
 <translation id="5379115545237091094">Troppi tentativi</translation>
 <translation id="5397578532367286026">L'utilizzo e la cronologia di questo utente possono essere esaminati dal gestore (<ph name="MANAGER_EMAIL" />) su chrome.com.</translation>
 <translation id="5400461572260843123">Impostazioni rapide; premi il tasto per la ricerca + freccia sinistra per accedere al centro notifiche.</translation>
+<translation id="5428899915242071344">Inizia la selezione</translation>
 <translation id="5430931332414098647">Tethering istantaneo</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">A questa sessione sono già stati aggiunti tutti gli utenti disponibili.</translation>
@@ -468,6 +473,7 @@
 <translation id="6777216307882431711">Alimentazione dei dispositivi USB-C collegati</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
+<translation id="6818242057446442178">Indietro per parola</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
 <translation id="6857811139397017780">Attiva <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Scorciatoia disattivata</translation>
@@ -581,6 +587,7 @@
 <translation id="8308637677604853869">Menu precedente</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crea nota</translation>
+<translation id="8371779926711439835">Avanti per lettera</translation>
 <translation id="8375916635258623388">Questo dispositivo <ph name="DEVICE_NAME" /> e il telefono si connetteranno automaticamente</translation>
 <translation id="8388750414311082622">Impossibile rimuovere l'ultimo desktop.</translation>
 <translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>

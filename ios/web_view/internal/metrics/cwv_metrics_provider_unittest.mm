@@ -28,15 +28,13 @@ class CWVMetricsProviderTest : public PlatformTest {
   CWVMetricsProvider* metrics_recorder_;
 };
 
-// Tests that no deltas are returned when nothing has been recorded.
-TEST_F(CWVMetricsProviderTest, NoDeltas) {
-  EXPECT_NSEQ([NSData data], [metrics_recorder_ accumulatedDeltas]);
-}
+// Tests that -[CWVMetricsProvider consumeMetrics] consumes the histograms.
+TEST_F(CWVMetricsProviderTest, ConsumeMetrics) {
+  // Consume all existing metrics that may have been logged before this test.
+  [metrics_recorder_ consumeMetrics];
 
-// Tests that -[CWVMetricsProvider accumulatedDeltas] consumes the events.
-TEST_F(CWVMetricsProviderTest, AccumulatedDeltas) {
   UMA_HISTOGRAM_ENUMERATION("CWVMetricsProviderTest", 1, 2);
-  NSData* deltas = [metrics_recorder_ accumulatedDeltas];
+  NSData* deltas = [metrics_recorder_ consumeMetrics];
   EXPECT_LT(0U, deltas.length);
 
   // Using C++ proto because there's no gn rule for generating ObjC protos yet.
@@ -54,7 +52,7 @@ TEST_F(CWVMetricsProviderTest, AccumulatedDeltas) {
   EXPECT_EQ(1, bucket.count());
 
   // The second call should result in no deltas.
-  EXPECT_NSEQ([NSData data], [metrics_recorder_ accumulatedDeltas]);
+  EXPECT_NSEQ([NSData data], [metrics_recorder_ consumeMetrics]);
 }
 
 }  // namespace ios_web_view

@@ -67,6 +67,8 @@ const User* FakeUserManager::AddUserWithAffiliation(const AccountId& account_id,
                                                     bool is_affiliated) {
   User* user = User::CreateRegularUser(account_id, USER_TYPE_REGULAR);
   user->SetAffiliation(is_affiliated);
+  // TODO: Merge with ProfileHelper::GetUserIdHashByUserIdForTesting.
+  user->set_username_hash(account_id.GetUserEmail() + "-hash");
   users_.push_back(user);
   return user;
 }
@@ -165,7 +167,15 @@ User* FakeUserManager::GetActiveUser() {
   return GetActiveUserInternal();
 }
 
-void FakeUserManager::SwitchActiveUser(const AccountId& account_id) {}
+void FakeUserManager::SwitchActiveUser(const AccountId& account_id) {
+  for (UserList::const_iterator it = logged_in_users_.begin();
+       it != logged_in_users_.end(); ++it) {
+    if ((*it)->GetAccountId() == account_id) {
+      active_user_ = *it;
+      break;
+    }
+  }
+}
 
 void FakeUserManager::SaveUserDisplayName(const AccountId& account_id,
                                           const base::string16& display_name) {

@@ -28,7 +28,8 @@ ScrollNode::ScrollNode()
       user_scrollable_horizontal(false),
       user_scrollable_vertical(false),
       transform_id(0),
-      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto) {}
+      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto),
+      is_composited(false) {}
 
 ScrollNode::ScrollNode(const ScrollNode& other) = default;
 
@@ -51,7 +52,8 @@ bool ScrollNode::operator==(const ScrollNode& other) const {
          user_scrollable_vertical == other.user_scrollable_vertical &&
          element_id == other.element_id && transform_id == other.transform_id &&
          overscroll_behavior == other.overscroll_behavior &&
-         snap_container_data == other.snap_container_data;
+         snap_container_data == other.snap_container_data &&
+         is_composited == other.is_composited;
 }
 
 void ScrollNode::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -87,6 +89,8 @@ void ScrollNode::AsValueInto(base::trace_event::TracedValue* value) const {
       value->EndArray();
     }
   }
+
+  value->SetBoolean("is_composited", is_composited);
 }
 
 }  // namespace cc

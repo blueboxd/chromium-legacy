@@ -5020,8 +5020,8 @@ Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
       << "Document::Clone() doesn't support importNode mode.";
   Document* clone = CloneDocumentWithoutChildren();
   clone->CloneDataFromDocument(*this);
-  if (flag == CloneChildrenFlag::kClone)
-    clone->CloneChildNodesFrom(*this);
+  if (flag != CloneChildrenFlag::kSkip)
+    clone->CloneChildNodesFrom(*this, flag);
   return clone;
 }
 

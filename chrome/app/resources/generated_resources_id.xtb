@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Jendela Aplikasi</translation>
 <translation id="1531275250079031713">Tampilkan dialog 'Tambahkan Wi-Fi baru'</translation>
 <translation id="1536754031901697553">Memutuskan sambungan...</translation>
+<translation id="1537254971476575106">Kaca pembesar layar penuh</translation>
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1540605929960647700">Aktifkan mode demo</translation>
 <translation id="1542514202066550870">Tab ini menyajikan konten VR ke headset.</translation>
@@ -1164,6 +1165,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2501173422421700905">Sertifikat Ditahan</translation>
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2501797496290880632">Ketik pintasan</translation>
+<translation id="2501920221385095727">Tombol sticky</translation>
 <translation id="2502441965851148920">Update otomatis diaktifkan. Update manual dinonaktifkan oleh administrator.</translation>
 <translation id="2502719318159902502">Akses penuh</translation>
 <translation id="2505127913256479918">Akun yang diawasi ini akan segera dihapus</translation>
@@ -1549,6 +1551,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2993517869960930405">Info Aplikasi</translation>
 <translation id="2996286169319737844">Data dienkripsi dengan frasa sandi sinkronisasi Anda. Data ini tidak mencakup alamat dan metode pembayaran dari Google Pay.</translation>
 <translation id="2996722619877761919">Balik di sisi panjang</translation>
+<translation id="3000461861112256445">Audio mono</translation>
 <translation id="3001144475369593262">Akun anak</translation>
 <translation id="3003144360685731741">Jaringan pilihan</translation>
 <translation id="3003623123441819449">Cache CSS</translation>
@@ -2481,6 +2484,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4211851069413100178">Kirim data penggunaan dan diagnostik. Bantuan sempurnakan pengalaman Android Anda dengan otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. <ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> ini diterapkan oleh pemilik. Pemilik dapat memilih untuk mengirim data diagnostik dan penggunaan untuk perangkat ini ke Google. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan, data ini mungkin akan disimpan ke Akun Google Anda. <ph name="BEGIN_LINK2" />Pelajari Lebih Lanjut<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Ekspor</translation>
 <translation id="42137655013211669">Akses ke sumber daya ini tidak diizinkan oleh server.</translation>
+<translation id="4217571870635786043">Dikte</translation>
 <translation id="4218274196133425560">Hapus pengecualian untuk <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Terjadi error selama aktivasi.</translation>
 <translation id="4222772810963087151">Detail Build</translation>
@@ -3165,6 +3169,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5204967432542742771">Masukkan sandi</translation>
 <translation id="5206215183583316675">Hapus "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Kesalahan Impor Sertifikat</translation>
+<translation id="5207949376430453814">Sorot tempat penyisipan teks</translation>
 <translation id="5209320130288484488">Perangkat tidak ditemukan</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5213481667492808996">Layanan data '<ph name="NAME" />' Anda sudah siap digunakan</translation>
@@ -5078,6 +5083,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7766807826975222231">Ikuti tur</translation>
 <translation id="7766838926148951335">Terima izin</translation>
 <translation id="7768770796815395237">Ubah</translation>
+<translation id="7768784765476638775">Klik untuk diucapkan</translation>
 <translation id="7769672763586021400">ID Model</translation>
 <translation id="7770612696274572992">Gambar disalin dari perangkat lain</translation>
 <translation id="7770651108375708429">Putuskan sambungan Wi-Fi</translation>

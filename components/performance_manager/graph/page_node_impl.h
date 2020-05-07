@@ -109,9 +109,10 @@ class PageNodeImpl
 
  private:
   friend class FrameNodeImpl;
-  friend class PageAggregatorAccess;
   friend class FrozenFrameAggregatorAccess;
+  friend class PageAggregatorAccess;
   friend class PageLoadTrackerAccess;
+  friend class PageNodeImplDescriber;
 
   // PageNode implementation.
   const std::string& GetBrowserContextID() const override;

@@ -333,7 +333,7 @@ public class OmniboxTestUtils {
                     updateFailureReason("suggestionList is null");
                     return false;
                 }
-                if (!suggestionsDropdown.getView().isShown()) {
+                if (!suggestionsDropdown.getViewGroup().isShown()) {
                     updateFailureReason("suggestionList is not shown");
                     return false;
                 }
@@ -359,7 +359,7 @@ public class OmniboxTestUtils {
                 OmniboxSuggestionsDropdown suggestionsDropdown =
                         AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
                                 locationBar.getAutocompleteCoordinator());
-                return suggestionsDropdown != null && suggestionsDropdown.getView().isShown()
+                return suggestionsDropdown != null && suggestionsDropdown.getViewGroup().isShown()
                         && suggestionsDropdown.getItemCount() == expectedCount;
             }
         });

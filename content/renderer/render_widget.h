@@ -655,8 +655,6 @@ class CONTENT_EXPORT RenderWidget
   void OnSetViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state);
   void OnSetIsInert(bool);
-  void OnUpdateRenderThrottlingStatus(bool is_throttled,
-                                      bool subtree_throttled);
   void OnDragTargetDragEnter(
       const std::vector<DropData::Metadata>& drop_meta_data,
       const gfx::PointF& client_pt,

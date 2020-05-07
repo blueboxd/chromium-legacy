@@ -4,8 +4,12 @@
 
 #include "content/browser/service_worker/service_worker_test_utils.h"
 
+#include <algorithm>
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/run_loop.h"
@@ -102,7 +106,8 @@ class FakeNavigationClient : public mojom::NavigationClient {
   using ReceivedProviderInfoCallback = base::OnceCallback<void(
       blink::mojom::ServiceWorkerProviderInfoForClientPtr)>;
 
-  FakeNavigationClient(ReceivedProviderInfoCallback on_received_callback)
+  explicit FakeNavigationClient(
+      ReceivedProviderInfoCallback on_received_callback)
       : on_received_callback_(std::move(on_received_callback)) {}
   ~FakeNavigationClient() override = default;
 
@@ -344,10 +349,9 @@ CreateContainerHostAndInfoForWindow(
   info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
   host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
   return std::make_unique<ServiceWorkerContainerHostAndInfo>(
-      ServiceWorkerContainerHost::CreateForWindow(
-          are_ancestors_secure, FrameTreeNode::kFrameTreeNodeInvalidId,
-          std::move(host_receiver), std::move(client_remote),
-          std::move(context)),
+      context->CreateContainerHostForWindow(
+          std::move(host_receiver), are_ancestors_secure,
+          std::move(client_remote), FrameTreeNode::kFrameTreeNodeInvalidId),
       std::move(info));
 }
 

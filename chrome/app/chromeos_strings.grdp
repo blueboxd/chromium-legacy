@@ -823,8 +823,11 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Your apps, settings, and other customizations will sync across all Chrome OS devices signed in with your Google Account.
   </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME" desc="Title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome browser sync
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_NAME" desc="Title of the 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+    Chrome sync
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION" desc="The description of 'Chrome sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Your bookmarks, history, passwords, and other settings will be synced to your Google Account so you can use them on all your devices.

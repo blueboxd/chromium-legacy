@@ -27,6 +27,7 @@ component("media_message_center") {
 
   deps = [
     "//base",
+    "//components/media_message_center/vector_icons",
     "//components/strings:components_strings_grit",
     "//components/vector_icons",
     "//services/media_session/public/cpp",

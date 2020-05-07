@@ -32,11 +32,6 @@ extern const base::Feature kEnterpriseConnectorsEnabled;
 // provide a simple interface to them.
 class ConnectorsManager {
  public:
-  // Callback used to retrieve AnalysisSettings objects from the manager
-  // asynchronously. base::nullopt means no analysis should take place.
-  using AnalysisSettingsCallback =
-      base::OnceCallback<void(base::Optional<AnalysisSettings>)>;
-
   // Map used to cache analysis connectors settings.
   using AnalysisConnectorsSettings =
       std::map<AnalysisConnector, std::vector<AnalysisServiceSettings>>;
@@ -46,9 +41,12 @@ class ConnectorsManager {
   // Validates which settings should be applied to an analysis connector event
   // against cached policies. This function will prioritize new connector
   // policies over legacy ones if they are set.
-  void GetAnalysisSettings(const GURL& url,
-                           AnalysisConnector connector,
-                           AnalysisSettingsCallback callback);
+  base::Optional<AnalysisSettings> GetAnalysisSettings(
+      const GURL& url,
+      AnalysisConnector connector);
+
+  // Checks if the corresponding connector is enabled.
+  bool IsConnectorEnabled(AnalysisConnector connector);
 
   bool DelayUntilVerdict(AnalysisConnector connector) const;
 
@@ -78,17 +76,12 @@ class ConnectorsManager {
   ConnectorsManager();
   ~ConnectorsManager();
 
-  // Checks if the corresponding connector is enabled and to be used with the
-  // given URL.
-  bool IsConnectorEnabled(AnalysisConnector connector);
-
   // Validates which settings should be applied to an analysis connector event
   // against connector policies. Cache the policy value the first time this is
   // called for every different connector.
-  void GetAnalysisSettingsFromConnectorPolicy(
+  base::Optional<AnalysisSettings> GetAnalysisSettingsFromConnectorPolicy(
       const GURL& url,
-      AnalysisConnector connector,
-      AnalysisSettingsCallback callback);
+      AnalysisConnector connector);
 
   // Read and cache the policy corresponding to |connector|.
   void CacheConnectorPolicy(AnalysisConnector connector);

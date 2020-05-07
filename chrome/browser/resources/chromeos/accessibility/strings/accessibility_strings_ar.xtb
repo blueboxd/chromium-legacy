@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">اعثر على لوحة المفاتيح المراد استخدامها، ثم انقر عليها للكتابة.</translation>
 <translation id="1012173283529841972">عنصر قائمة</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">التمرير السريع بإصبعين إلى يسار الشاشة</translation>
 <translation id="1022586497894531524">‏هل تستخدم التعليقات والملاحظات المنطوقة في ChromeVox لأول مرة؟ يشرح هذا البرنامج التعليمي السريع أساسيات بدء استخدام ChromeVox.</translation>
 <translation id="1025074108959230262">تم إيقاف الوضع الثابت</translation>
 <translation id="1031961866430398710">ثم</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">ليس هناك عنصر قائمة سابق.</translation>
 <translation id="1114836634143403764">اقتراح</translation>
 <translation id="1120743664840974483">{"أ": "أرنب"، "ب": "بيت"، "ت": "تفاحة"، "ث": "ثعلب"، "ج": "جزر"، "ح": "حصان"، "خ": "خوخ"، "د": "دراجة"، "ذ": "ذهب"، "ر": "ريشة"، "ز": "زرافة"، "س": "سمكة"، "ش": "شمس"، "ص": "صوص"، "ض"، "ضوء"، "ط": "طائرة"، "ظ": "ظرف"، "ع": "عصفور"، "غ": "غيمة"، "ف": "فراشة"، "ق": "قمر"، "ك": "كرة"، "ل": "ليمون"، "م": "موز"، "ن": "نجمة"، "ه": "هدية"، "و": "وردة"، "ي": "يد"}</translation>
+<translation id="1120938014254001895">التمرير السريع بإصبعين إلى الأعلى</translation>
 <translation id="1126928665165112660">غير مائل</translation>
 <translation id="113582498867142724">مجموعة من <ph name="TAG" /> تشتمل على <ph name="NUM" /> من العناصر</translation>
 <translation id="1161762950103988776">الانتقال السريع</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">الرسم التالي</translation>
 <translation id="1756785467854861272">أحمر أرجواني داكن</translation>
+<translation id="1765245556747822181">التمرير السريع بإصبع واحد إلى الأعلى</translation>
 <translation id="1771761307086386028">التمرير لليمين</translation>
 <translation id="1781173782405573156">مفتاح التمرير</translation>
 <translation id="1787176709638001873">نص تعديل كلمة المرور</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">زيادة تقييم النطق</translation>
 <translation id="2267538686624070261">جارٍ تجاهل الخطأ الإملائي</translation>
 <translation id="2267945578749931355">الحرف التالي</translation>
+<translation id="2278490101488436824">التمرير السريع بثلاثة أصابع إلى يمين الشاشة</translation>
 <translation id="2305942658236913680">ليس هناك عنوان تالٍ.</translation>
 <translation id="2311237334957139798">الانتقال إلى السابق بدقة</translation>
 <translation id="2314393392395134769">خط منخفض</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">قائمة مراجع</translation>
 <translation id="2873259058405069099">الانتقال إلى بداية الجدول</translation>
 <translation id="287383510823843610">برتقالي داكن</translation>
+<translation id="2879867157561757640">التمرير السريع بثلاثة أصابع إلى الأسفل</translation>
 <translation id="288178314850623291">‏استخدم أوامر الانتقال السريع للتخطي إلى أنواع محددة من العناصر. للانتقال السريع للأمام بين العناوين، اضغط على بحث + H، أو للانتقال السريع للخلف، اضغط على بحث + Shift + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{دقيقة واحدة}zero{دقائق}two{دقيقتان}few{دقائق}many{دقيقةً}other{دقيقة}}</translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{قوس كبير أيسر واحد}zero{# left braces}two{قوسان كبيران أيسران (#)}few{# أقواس كبيرة يسرى}many{# قوسًا كبيرًا أيسرًا}other{# من الأقواس الكبيرة اليسرى}}</translation>
 <translation id="2909584066358367921">ليس هناك زر تالٍ.</translation>
 <translation id="2911433807131383493">‏فتح برنامج ChromeVox التعليمي</translation>
+<translation id="2912405967290226587">التمرير السريع بثلاثة أصابع إلى يسار الشاشة</translation>
 <translation id="2937799153569150791">ليس هناك عنوان تالٍ من المستوى الثالث.</translation>
 <translation id="2942710183375260152">أزرق داكن مائل إلى الرمادي</translation>
 <translation id="2943596527105977722">أصفر ذهبي داكن</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">أخضر بحري</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{علامة جدولة واحدة}zero{# tabs}two{علامتا جدولة}few{# علامات جدولة}many{# علامة جدولة}other{# من علامات الجدولة}}</translation>
 <translation id="2972205263822847197">تلميح</translation>
+<translation id="297825089465017871">التمرير السريع بإصبعين إلى يمين الشاشة</translation>
 <translation id="2998131015536248178">الحرف السابق</translation>
 <translation id="2999559350546931576">خفض درجة الصوت</translation>
 <translation id="3014130421870723208">@ ببرايل 8 نقاط</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">‏خيارات ChromeVox</translation>
 <translation id="3060756054951570867">تم فتح القائمة <ph name="TITLE" /></translation>
 <translation id="3060880924447482063">التمرير سريعًا جهة اليمين أو اليسار للانتقال حسب العنصر</translation>
+<translation id="3070245424257836917">التمرير السريع بثلاثة أصابع إلى الأعلى</translation>
 <translation id="3078345202707391975">عنوان المستوى الثاني التالي</translation>
 <translation id="3078740164268491126">جدول</translation>
 <translation id="3082249673510793544">التمرير للخلف</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">انتقِل إلى العمود التالي.</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">المَعلم السابق</translation>
+<translation id="4710166929009737753">التمرير السريع بإصبع واحد إلى يسار الشاشة</translation>
 <translation id="4712898966495541134">إنهاء الاختيار</translation>
 <translation id="4740661827607246557">أوامر المساعدة</translation>
 <translation id="4755857887974653209">‏إيقاف ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">شيفون ليموني</translation>
 <translation id="6816066673340002913">أصفر ذهبي باهت</translation>
+<translation id="6826226459053491773">التمرير السريع بإصبعين إلى الأسفل</translation>
 <translation id="6833103209700200188">تذييل</translation>
 <translation id="6837853484260746864">تحديد صوت:</translation>
 <translation id="6858047746862060282">فاتحة</translation>
+<translation id="6859876496651143278">التمرير السريع بإصبع واحد إلى يمين الشاشة</translation>
 <translation id="6865519907510167493">خطأ إملائي</translation>
 <translation id="6894148351896207544">قول الوقت والتاريخ الحاليين</translation>
 <translation id="6896758677409633944">نسخ</translation>
@@ -993,6 +1004,7 @@
 <translation id="923331726185079994">‏تم تحديث ChromeVox</translation>
 <translation id="93384979447910801">أخضر بحري داكن</translation>
 <translation id="948171205378458592">خفض تقييم النطق</translation>
+<translation id="958854023026327378">التمرير السريع بإصبع واحد إلى الأسفل</translation>
 <translation id="962913030769097253">عنوان المستوى الأول التالي</translation>
 <translation id="966588271015727539">اختيار عرض البلوتوث بلغة برايل</translation>
 <translation id="973955474346881951">تفعيل/إيقاف الوضع الثابت</translation>

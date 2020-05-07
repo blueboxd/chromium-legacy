@@ -471,6 +471,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4913169188695071480">Interrompi aggiornamento</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /> durante la ricerca di dispositivi…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# pagina}other{# pagine}}</translation>
+<translation id="49268022542405662">Le tue password verranno esportate e scaricate in un file di testo. Saranno visibili a qualsiasi persona e app con accesso alla cartella di destinazione.</translation>
 <translation id="4932247056774066048">Poiché stai uscendo da un account gestito da <ph name="DOMAIN_NAME" />, i tuoi dati di Chrome verranno eliminati da questo dispositivo. Rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="4943703118917034429">Realtà virtuale</translation>
 <translation id="4943872375798546930">Nessun risultato</translation>
@@ -753,6 +754,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7302081693174882195">Dettagli: ordinati per quantità di dati risparmiati</translation>
 <translation id="7328017930301109123">Nella modalità Lite, Chrome carica le pagine più rapidamente e utilizza fino al 60 percento di dati in meno.</translation>
 <translation id="7333031090786104871">Aggiunta del sito precedente ancora in corso</translation>
+<translation id="7340958967809483333">Opzioni per Discover</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Condividi 1 elemento selezionato}other{Condividi # elementi selezionati}}</translation>
 <translation id="7359002509206457351">Accedi ai metodi di pagamento</translation>
@@ -817,6 +819,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7810647596859435254">Apri con…</translation>
 <translation id="7821588508402923572">La quantità di dati risparmiata sarà visualizzata qui</translation>
+<translation id="7835852323729233924">Riproduzione media</translation>
 <translation id="783819812427904514">Riattiva audio video</translation>
 <translation id="784934925303690534">Intervallo di tempo</translation>
 <translation id="7851858861565204677">Altri dispositivi</translation>

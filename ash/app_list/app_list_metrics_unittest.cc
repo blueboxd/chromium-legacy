@@ -169,7 +169,7 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
             ->GetView()
             ->app_list_main_view()
             ->contents_view()
-            ->GetAppsContainerView()
+            ->apps_container_view()
             ->suggestion_chip_container_view_for_test();
 
     // Get focus on the first chip.

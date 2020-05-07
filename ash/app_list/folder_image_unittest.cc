@@ -12,9 +12,7 @@
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -67,12 +65,6 @@ class FolderImageTest
   ~FolderImageTest() override = default;
 
   void SetUp() override {
-    if (GetParam() == AppListConfigType::kShared) {
-      feature_list_.InitWithFeatures({}, {app_list_features::kScalableAppList});
-    } else {
-      feature_list_.InitWithFeatures({app_list_features::kScalableAppList}, {});
-    }
-
     folder_image_ = std::make_unique<FolderImage>(
         AppListConfigProvider::Get().GetConfigForType(GetParam(), true),
         app_list_model_.top_level_item_list());
@@ -104,7 +96,6 @@ class FolderImageTest
 
   AppListModel app_list_model_;
 
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<FolderImage> folder_image_;
 
   TestFolderImageObserver observer_;
@@ -114,8 +105,7 @@ class FolderImageTest
 };
 INSTANTIATE_TEST_SUITE_P(All,
                          FolderImageTest,
-                         ::testing::Values(AppListConfigType::kShared,
-                                           AppListConfigType::kLarge,
+                         ::testing::Values(AppListConfigType::kLarge,
                                            AppListConfigType::kMedium,
                                            AppListConfigType::kSmall));
 

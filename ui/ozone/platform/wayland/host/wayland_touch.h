@@ -5,45 +5,30 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOUCH_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOUCH_H_
 
-#include "base/containers/flat_map.h"
-#include "ui/events/ozone/evdev/event_dispatch_callback.h"
-#include "ui/gfx/geometry/point.h"
+#include "base/macros.h"
+#include "base/time/time.h"
+#include "ui/events/pointer_details.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
+
+namespace gfx {
+class PointF;
+}  // namespace gfx
 
 namespace ui {
 
 class WaylandConnection;
 class WaylandWindow;
 
-class WaylandTouch : public WaylandWindowObserver {
+class WaylandTouch {
  public:
+  class Delegate;
+
   WaylandTouch(wl_touch* touch,
                WaylandConnection* connection,
-               const EventDispatchCallback& callback);
-  ~WaylandTouch() override;
-
-  void RemoveTouchPoints(const WaylandWindow* window);
+               Delegate* delegate);
+  ~WaylandTouch();
 
  private:
-  struct TouchPoint {
-    TouchPoint();
-    TouchPoint(gfx::Point location, wl_surface* current_surface);
-    ~TouchPoint();
-
-    wl_surface* surface = nullptr;
-    gfx::Point last_known_location;
-  };
-
-  using TouchPoints = base::flat_map<int32_t, TouchPoint>;
-
-  void MaybeUnsetFocus(const TouchPoints& points,
-                       int32_t id,
-                       wl_surface* surface);
-
-  // WaylandWindowObserver implements:
-  void OnWindowRemoved(WaylandWindow* window) override;
-
   // wl_touch_listener
   static void Down(void* data,
                    wl_touch* obj,
@@ -64,15 +49,29 @@ class WaylandTouch : public WaylandWindowObserver {
                      int32_t id,
                      wl_fixed_t x,
                      wl_fixed_t y);
-  static void Frame(void* data, wl_touch* obj);
   static void Cancel(void* data, wl_touch* obj);
+  static void Frame(void* data, wl_touch* obj);
 
   wl::Object<wl_touch> obj_;
   WaylandConnection* const connection_;
-  EventDispatchCallback callback_;
-  TouchPoints current_points_;
+  Delegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandTouch);
+};
+
+class WaylandTouch::Delegate {
+ public:
+  virtual void OnTouchCreated(WaylandTouch* touch) = 0;
+  virtual void OnTouchDestroyed(WaylandTouch* touch) = 0;
+  virtual void OnTouchPressEvent(WaylandWindow* window,
+                                 const gfx::PointF& location,
+                                 base::TimeTicks timestamp,
+                                 PointerId id) = 0;
+  virtual void OnTouchReleaseEvent(base::TimeTicks timestamp, PointerId id) = 0;
+  virtual void OnTouchMotionEvent(const gfx::PointF& location,
+                                  base::TimeTicks timestamp,
+                                  PointerId id) = 0;
+  virtual void OnTouchCancelEvent() = 0;
 };
 
 }  // namespace ui

@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Lietojumprogrammas logs</translation>
 <translation id="1531275250079031713">Rādīt dialoglodziņu “Jauna Wi-Fi tīkla pievienošana”</translation>
 <translation id="1536754031901697553">Notiek atvienošana...</translation>
+<translation id="1537254971476575106">Pilnekrāna lupa</translation>
 <translation id="15373452373711364">Liels peles kursors</translation>
 <translation id="1540605929960647700">Demonstrācijas režīma iespējošana</translation>
 <translation id="1542514202066550870">Šajā cilnē skatītājam tiek nodrošināts VR saturs.</translation>
@@ -1164,6 +1165,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2501173422421700905">Sertifikāts ir aizturēts</translation>
 <translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="2501797496290880632">Ierakstiet saīsnes</translation>
+<translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2502441965851148920">Automātiski atjauninājumi ir iespējoti. Administrators ir atspējojis manuālus atjauninājumus.</translation>
 <translation id="2502719318159902502">Pilna piekļuve</translation>
 <translation id="2505127913256479918">Drīzumā tiks noņemts šis uzraudzītais konts</translation>
@@ -1549,6 +1551,7 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="2993517869960930405">Informācija par lietotni</translation>
 <translation id="2996286169319737844">Dati tika šifrēti, izmantojot sinhronizācijas ieejas frāzi. Tajā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.</translation>
 <translation id="2996722619877761919">Apvērst ap garo malu</translation>
+<translation id="3000461861112256445">Mono audio</translation>
 <translation id="3001144475369593262">Bērnu konti</translation>
 <translation id="3003144360685731741">Vēlamie tīkli</translation>
 <translation id="3003623123441819449">CSS kešatmiņa</translation>
@@ -2483,6 +2486,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4211851069413100178">Lietojuma un diagnostikas datu sūtīšana. Palīdziet uzlabot Android lietošanas pieredzi, automātiski nosūtot diagnostikas, ierīces un lietotņu lietojuma datus uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo <ph name="BEGIN_LINK1" />iestatījumu<ph name="END_LINK1" /> ir noteicis īpašnieks. Īpašnieks var izvēlēties nosūtīt šīs ierīces diagnostikas un lietojuma datus uz Google serveriem. Ja ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā. <ph name="BEGIN_LINK2" />Uzzināt vairāk<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Eksportēt</translation>
 <translation id="42137655013211669">Serveris neatļāva piekļūt šim resursam.</translation>
+<translation id="4217571870635786043">Diktēšana</translation>
 <translation id="4218274196133425560">Noņemt izņēmumu, kas paredzēts <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Aktivizēšanas laikā radās kļūda.</translation>
 <translation id="4222772810963087151">Detalizēta informācija par versiju</translation>
@@ -3167,6 +3171,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5204967432542742771">Ievadiet paroli</translation>
 <translation id="5206215183583316675">Vai dzēst “<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="520621735928254154">Sertifikāta importēšanas kļūda</translation>
+<translation id="5207949376430453814">Izcelt teksta ievietošanas punktu</translation>
 <translation id="5209320130288484488">Ierīces nav atrastas</translation>
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="5213481667492808996">Jūsu <ph name="NAME" /> datu pakalpojums ir gatavs lietošanai</translation>
@@ -5080,6 +5085,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7766807826975222231">Skatīt ceļvedi</translation>
 <translation id="7766838926148951335">Piekrist atļaujām</translation>
 <translation id="7768770796815395237">Mainīt</translation>
+<translation id="7768784765476638775">Atlasīt, lai izrunātu</translation>
 <translation id="7769672763586021400">Modeļa ID</translation>
 <translation id="7770612696274572992">Attēls nokopēts no citas ierīces</translation>
 <translation id="7770651108375708429">Pārtraukt Wi-Fi savienojumu</translation>

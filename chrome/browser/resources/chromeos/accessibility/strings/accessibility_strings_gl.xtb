@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Busca unha tecla e levanta o dedo para escribir</translation>
 <translation id="1012173283529841972">Elemento da lista</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Pasa dous dedos cara á dereita</translation>
 <translation id="1022586497894531524">Estás utilizando os comentarios de voz de ChromeVox por primeira vez? Este rápido titorial explica os conceptos básicos para empezar con ChromeVox.</translation>
 <translation id="1025074108959230262">Modo de teclas presas desactivado</translation>
 <translation id="1031961866430398710">e, a continuación,</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Non hai ningún elemento de lista anterior</translation>
 <translation id="1114836634143403764">Suxestión</translation>
 <translation id="1120743664840974483">{"a": "asa", "b": "bravo", "c": "chuvia", "d": "delta", "e": "eco", "f": "flor", "g": "golf", "h": "hotel", "i": "india", "j": "jazz","k": "karaoke", "l": "lima", "m": "moto", "n": "novembro", "o": "óscar","p": "papa", "q": "queixo", "r": "romeo", "s": "serra", "t": "tango", "u": "uniforme", "v": "víctor", "w": "web","x": "xabaril", "y": "yin", "z": "zapato"}</translation>
+<translation id="1120938014254001895">Pasa dous dedos cara arriba</translation>
 <translation id="1126928665165112660">Texto sen cursiva</translation>
 <translation id="113582498867142724">Colección <ph name="TAG" /> con <ph name="NUM" /> elementos</translation>
 <translation id="1161762950103988776">Saltar</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Seguinte gráfico</translation>
 <translation id="1756785467854861272">Maxenta escuro</translation>
+<translation id="1765245556747822181">Pasa o dedo cara arriba</translation>
 <translation id="1771761307086386028">Desprazarse á dereita</translation>
 <translation id="1781173782405573156">Tecla de acceso directo</translation>
 <translation id="1787176709638001873">Texto de edición de contrasinal</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">Fala máis rápido</translation>
 <translation id="2267538686624070261">Saíndo da palabra con erros de ortografía</translation>
 <translation id="2267945578749931355">Seguinte carácter</translation>
+<translation id="2278490101488436824">Pasa tres dedos cara á esquerda</translation>
 <translation id="2305942658236913680">Non hai ningunha cabeceira posterior</translation>
 <translation id="2311237334957139798">Cambia á granularidade anterior</translation>
 <translation id="2314393392395134769">Non é unha subscrición</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">Bibliografía</translation>
 <translation id="2873259058405069099">Vai ao inicio da táboa</translation>
 <translation id="287383510823843610">Laranxa escuro</translation>
+<translation id="2879867157561757640">Pasa tres dedos cara abaixo</translation>
 <translation id="288178314850623291">Algúns comandos permiten saltar a determinados tipos de elementos. Por exemplo, para saltar cara adiante entre distintos títulos, preme a tecla de busca + H. Para saltar cara atrás, preme a tecla de busca + Maiúsculas + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minuto}other{minutos}}</translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{chave de apertura}other{# chaves de apertura}}</translation>
 <translation id="2909584066358367921">Non hai ningún botón posterior</translation>
 <translation id="2911433807131383493">Abrir titorial de ChromeVox</translation>
+<translation id="2912405967290226587">Pasa tres dedos cara á dereita</translation>
 <translation id="2937799153569150791">Non hai ningunha cabeceira posterior de nivel 3</translation>
 <translation id="2942710183375260152">Azul lousa escuro</translation>
 <translation id="2943596527105977722">Amarelo dourado escuro</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">Verde mariño</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{pestana}other{# pestanas}}</translation>
 <translation id="2972205263822847197">Suxestión</translation>
+<translation id="297825089465017871">Pasa dous dedos cara á esquerda</translation>
 <translation id="2998131015536248178">Carácter anterior</translation>
 <translation id="2999559350546931576">Reducir ton</translation>
 <translation id="3014130421870723208">@ed 8pun</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">Opcións de ChromeVox</translation>
 <translation id="3060756054951570867"><ph name="TITLE" />, menú aberto</translation>
 <translation id="3060880924447482063">Pasa o dedo cara á esquerda ou á dereita para moverte dun elemento a outro</translation>
+<translation id="3070245424257836917">Pasa tres dedos cara arriba</translation>
 <translation id="3078345202707391975">Seguinte título de nivel 2</translation>
 <translation id="3078740164268491126">táboa</translation>
 <translation id="3082249673510793544">Desprazarse cara atrás</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">Ir á columna seguinte</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Punto de referencia anterior</translation>
+<translation id="4710166929009737753">Pasa o dedo cara á dereita</translation>
 <translation id="4712898966495541134">Fin de selección</translation>
 <translation id="4740661827607246557">Comandos de axuda</translation>
 <translation id="4755857887974653209">Desactivar ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">Limón crema</translation>
 <translation id="6816066673340002913">Amarelo dourado pálido</translation>
+<translation id="6826226459053491773">Pasa dous dedos cara abaixo</translation>
 <translation id="6833103209700200188">Pé de páxina</translation>
 <translation id="6837853484260746864">Selecciona unha voz:</translation>
 <translation id="6858047746862060282">Prólogo</translation>
+<translation id="6859876496651143278">Pasa o dedo cara á esquerda</translation>
 <translation id="6865519907510167493">Palabra con erros de ortografía</translation>
 <translation id="6894148351896207544">Di a data e a hora actuais</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">Actualizouse ChromeVox</translation>
 <translation id="93384979447910801">Verde mariño escuro</translation>
 <translation id="948171205378458592">Reduce a velocidade da fala</translation>
+<translation id="958854023026327378">Pasa o dedo cara abaixo</translation>
 <translation id="962913030769097253">Título de nivel 1 seguinte</translation>
 <translation id="966588271015727539">Selecciona una liña braille por Bluetooth</translation>
 <translation id="973955474346881951">Activa/desactiva o modo de teclas presas</translation>

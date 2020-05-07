@@ -22,6 +22,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -67,6 +68,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.CompositeTouchDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -140,14 +142,15 @@ public class LocationBarLayout extends FrameLayout
     private final class UrlBarKeyListener implements OnKeyListener {
         @Override
         public boolean onKey(View v, int keyCode, KeyEvent event) {
+            boolean isRtl = v.getLayoutDirection() == LAYOUT_DIRECTION_RTL;
             if (mAutocompleteCoordinator.handleKeyEvent(keyCode, event)) {
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_BACK) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                if (KeyNavigationUtil.isActionDown(event) && event.getRepeatCount() == 0) {
                     // Tell the framework to start tracking this event.
                     getKeyDispatcherState().startTracking(event, this);
                     return true;
-                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                } else if (KeyNavigationUtil.isActionUp(event)) {
                     getKeyDispatcherState().handleUpEvent(event);
                     if (event.isTracking() && !event.isCanceled()) {
                         backKeyPressed();
@@ -155,10 +158,17 @@ public class LocationBarLayout extends FrameLayout
                     }
                 }
             } else if (keyCode == KeyEvent.KEYCODE_ESCAPE) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                if (KeyNavigationUtil.isActionDown(event) && event.getRepeatCount() == 0) {
                     revertChanges();
                     return true;
                 }
+            } else if ((!isRtl && KeyNavigationUtil.isGoRight(event))
+                    || (isRtl && KeyNavigationUtil.isGoLeft(event))) {
+                // Ensures URL bar doesn't lose focus, when RIGHT or LEFT (RTL) key is pressed while
+                // the cursor is positioned at the end of the text.
+                TextView tv = (TextView) v;
+                return tv.getSelectionStart() == tv.getSelectionEnd()
+                        && tv.getSelectionEnd() == tv.getText().length();
             }
             return false;
         }

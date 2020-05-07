@@ -81,17 +81,15 @@ base::span<const UiCredential> OriginCredentialStore::GetCredentials() const {
   return credentials_;
 }
 
-void OriginCredentialStore::InitializeBlacklistedStatus(bool is_blacklisted) {
-  blacklisted_status_ = is_blacklisted ? BlacklistedStatus::kIsBlacklisted
-                                       : BlacklistedStatus::kNeverBlacklisted;
-}
+void OriginCredentialStore::SetBlacklistedStatus(bool is_blacklisted) {
+  if (is_blacklisted) {
+    blacklisted_status_ = BlacklistedStatus::kIsBlacklisted;
+    return;
+  }
 
-void OriginCredentialStore::UpdateBlacklistedStatus(bool is_blacklisted) {
-  // If the origin was not blacklisted when the store was created, there should
-  // be no possibility to change the blacklisted status in flight.
-  DCHECK_NE(blacklisted_status_, BlacklistedStatus::kNeverBlacklisted);
-  blacklisted_status_ = is_blacklisted ? BlacklistedStatus::kIsBlacklisted
-                                       : BlacklistedStatus::kWasBlacklisted;
+  if (blacklisted_status_ == BlacklistedStatus::kIsBlacklisted) {
+    blacklisted_status_ = BlacklistedStatus::kWasBlacklisted;
+  }
 }
 
 BlacklistedStatus OriginCredentialStore::GetBlacklistedStatus() const {

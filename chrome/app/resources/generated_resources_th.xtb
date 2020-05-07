@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">หน้าต่างแอปพลิเคชัน</translation>
 <translation id="1531275250079031713">แสดงกล่องโต้ตอบ "เพิ่ม Wi-Fi ใหม่"</translation>
 <translation id="1536754031901697553">กำลังยกเลิกการเชื่อมต่อ...</translation>
+<translation id="1537254971476575106">แว่นขยายทั้งหน้าจอ</translation>
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="1540605929960647700">เปิดใช้โหมดสาธิต</translation>
 <translation id="1542514202066550870">แท็บนี้กำลังนำเสนอเนื้อหา VR ไปยังชุดหูฟัง</translation>
@@ -1097,7 +1098,7 @@
 <translation id="2428510569851653187">อธิบายว่าคุณกำลังทำอะไรเมื่อแท็บขัดข้อง</translation>
 <translation id="2428939361789119025">ปิด Wi-Fi</translation>
 <translation id="2431027948063157455">โหลด Google Assistant ไม่ได้ โปรดตรวจสอบการเชื่อมต่อเครือข่ายและลองอีกครั้ง</translation>
-<translation id="2431846145771260397">แน่ใจไหมว่าต้องการจองดิสก์ขนาดคงที่สำหรับ Linux (เบต้า)</translation>
+<translation id="2431846145771260397">คุณแน่ใจไหมว่าต้องการสำรองพื้นที่ดิสก์ขนาดคงที่สำหรับ Linux (เบต้า)</translation>
 <translation id="2432753757290432042">ต้องอัปเดต Linux (เบต้า)</translation>
 <translation id="2433452467737464329">เพิ่มพารามิเตอร์ข้อความค้นหาใน URL เพื่อรีเฟรชหน้าอัตโนมัติ: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433490881840073798"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" /> <ph name="RECENT_PERMISSIONS_CHANGE" /></translation>
@@ -1164,6 +1165,7 @@
 <translation id="2501173422421700905">ใบรับรองถูกระงับไว้</translation>
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2501797496290880632">พิมพ์แป้นพิมพ์ลัด</translation>
+<translation id="2501920221385095727">คีย์ติดหนึบ</translation>
 <translation id="2502441965851148920">เปิดใช้การอัปเดตอัตโนมัติอยู่ ผู้ดูแลระบบได้ปิดใช้การอัปเดตด้วยตนเอง</translation>
 <translation id="2502719318159902502">สิทธิ์เข้าถึงแบบเต็มรูปแบบ</translation>
 <translation id="2505127913256479918">ระบบจะนำบัญชีที่มีการควบคุมดูแลนี้ออกในเร็วๆ นี้</translation>
@@ -1549,6 +1551,7 @@
 <translation id="2993517869960930405">ข้อมูลแอป</translation>
 <translation id="2996286169319737844">มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่านการซิงค์ ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
 <translation id="2996722619877761919">กลับด้านตามแนวยาว</translation>
+<translation id="3000461861112256445">เสียงแบบโมโน</translation>
 <translation id="3001144475369593262">บัญชีของบุตรหลาน</translation>
 <translation id="3003144360685731741">เครือข่ายที่ต้องการ</translation>
 <translation id="3003623123441819449">แคช CSS</translation>
@@ -1600,7 +1603,7 @@
 <translation id="3058498974290601450">คุณเปิดการซิงค์ได้ทุกเมื่อในการตั้งค่า</translation>
 <translation id="3060379269883947824">เปิดใช้การเลือกเพื่อให้อ่าน</translation>
 <translation id="3065041951436100775">แตะความคิดเห็นที่ปิดไป</translation>
-<translation id="3065522099314259755">เวลาในการตอบสนองของการทำซ้ำของแป้นพิมพ์</translation>
+<translation id="3065522099314259755">เวลาในการตอบสนองต่อการทำซ้ำของแป้นพิมพ์</translation>
 <translation id="3067198179881736288">ติดตั้งแอปไหม</translation>
 <translation id="3067198360141518313">เรียกใช้ปลั๊กอินนี้</translation>
 <translation id="3071624960923923138">คุณสามารถคลิกที่นี่เพื่อเปิดแท็บใหม่</translation>
@@ -2108,7 +2111,7 @@
 <translation id="372722114124766626">เพียงแค่ครั้งเดียว</translation>
 <translation id="3729303374699765035">ถามเมื่อเว็บไซต์ต้องการค้นหาอุปกรณ์บลูทูธใกล้เคียง</translation>
 <translation id="3729506734996624908">เว็บไซต์ที่อนุญาต</translation>
-<translation id="3730076362938942381">แอปที่เขียนด้วยสไตลัส</translation>
+<translation id="3730076362938942381">แอปการเขียนด้วยสไตลัส</translation>
 <translation id="3732078975418297900">เกิดข้อผิดพลาดในบรรทัดที่ <ph name="ERROR_LINE" /></translation>
 <translation id="3732530910372558017">PIN ต้องมีอักขระไม่เกิน 63 ตัว</translation>
 <translation id="3733127536501031542">เซิร์ฟเวอร์ SSL ที่มีการยกระดับความปลอดภัย</translation>
@@ -2483,6 +2486,7 @@
 <translation id="4211851069413100178">ส่งข้อมูลการใช้งานและการวินิจฉัย ช่วยปรับปรุงประสบการณ์การใช้งาน Android ของคุณให้ดีขึ้นด้วยการส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ ซึ่งจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android เจ้าของเป็นผู้บังคับใช้<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" />นี้ เจ้าของอาจเลือกที่จะส่งข้อมูลการวินิจฉัยและการใช้งานสำหรับอุปกรณ์นี้ไปยัง Google หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปไว้ ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของคุณ <ph name="BEGIN_LINK2" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">ส่งออก</translation>
 <translation id="42137655013211669">เซิร์ฟเวอร์ได้ห้ามการเข้าถึงทรัพยากรนี้</translation>
+<translation id="4217571870635786043">การพิมพ์ตามคำบอก</translation>
 <translation id="4218274196133425560">นำข้อยกเว้นออกสำหรับ <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">เกิดข้อผิดพลาดขณะเปิดใช้งาน</translation>
 <translation id="4222772810963087151">รายละเอียดบิลด์</translation>
@@ -2839,7 +2843,7 @@
 <translation id="4726710629007580002">มีคำเตือนเมื่อพยายามติดตั้งส่วนขยายนี้</translation>
 <translation id="4727847987444062305">เซสชันผู้เยี่ยมชมที่มีการจัดการ</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
-<translation id="4730492586225682674">บันทึกล่าสุดด้วยสไตลัสในหน้าจอล็อก</translation>
+<translation id="4730492586225682674">บันทึกชิ้นล่าสุดที่ใช้สไตลัสในหน้าจอล็อก</translation>
 <translation id="4733793249294335256">ตำแหน่ง</translation>
 <translation id="473546211690256853">บัญชีนี้จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">ระบบระบุตัวบ่งชี้อุปกรณ์ของอุปกรณ์นี้ไม่สำเร็จ</translation>
@@ -3117,7 +3121,7 @@
 <translation id="5127805178023152808">การซิงค์ปิดอยู่</translation>
 <translation id="5127881134400491887">จัดการการเชื่อมต่อเครือข่าย</translation>
 <translation id="512903556749061217">ที่แนบมา</translation>
-<translation id="5131591206283983824">การลากแท็บทัชแพด</translation>
+<translation id="5131591206283983824">การแตะแล้วลากบนทัชแพด</translation>
 <translation id="5133483819862530305">อาทิตย์ตกจนอาทิตย์ขึ้น</translation>
 <translation id="5135085122826131075">เข้าถึง Assistant ได้เพียงพูดว่า "Ok Google"</translation>
 <translation id="5135533361271311778">ไม่สามารถสร้างรายการบุ๊กมาร์ก</translation>
@@ -3141,7 +3145,7 @@
 <translation id="5158983316805876233">ใช้พร็อกซีเดียวกันสำหรับโปรโตคอลทั้งหมด</translation>
 <translation id="5160857336552977725">ลงชื่อเข้าใช้ <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> ถูกบล็อกเนื่องจากล้าสมัย</translation>
-<translation id="5169131225159279624">กำลังเพิ่ม</translation>
+<translation id="5169131225159279624">การเพิ่ม</translation>
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5171045022955879922">ค้นหาหรือพิมพ์ URL</translation>
 <translation id="5171343362375269016">หน่วยความจำสว็อป</translation>
@@ -3167,6 +3171,7 @@
 <translation id="5204967432542742771">ป้อนรหัสผ่าน</translation>
 <translation id="5206215183583316675">ลบ " <ph name="CERTIFICATE_NAME" /> " ไหม</translation>
 <translation id="520621735928254154">เกิดข้อผิดพลาดในการนำเข้าใบรับรอง</translation>
+<translation id="5207949376430453814">ไฮไลต์เครื่องหมาย Caret ของข้อความ</translation>
 <translation id="5209320130288484488">ไม่พบอุปกรณ์</translation>
 <translation id="5210365745912300556">ปิดแท็บ</translation>
 <translation id="5213481667492808996">บริการอินเทอร์เน็ต "<ph name="NAME" />" พร้อมใช้งานแล้ว</translation>
@@ -3191,7 +3196,7 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">แทนที่หน้าที่คุณจะเห็นเมื่อเปิดแท็บใหม่</translation>
 <translation id="5238278114306905396">แอปพลิเคชัน "<ph name="EXTENSION_NAME" />" ถูกลบโดยอัตโนมัติ</translation>
-<translation id="5238435043462632060">ผู้ปกครองได้ปิด "สิทธิ์สำหรับเว็บไซต์ แอป และส่วนขยาย" ใน Chrome ไม่อนุญาต<ph name="ACTION_PARAMETER" /><ph name="EXTENSION_TYPE_PARAMETER" />นี้</translation>
+<translation id="5238435043462632060">ผู้ปกครองได้ปิด "สิทธิ์สำหรับเว็บไซต์ แอป และส่วนขยาย" ใน Chrome ไม่อนุญาตให้<ph name="ACTION_PARAMETER" /><ph name="EXTENSION_TYPE_PARAMETER" />นี้</translation>
 <translation id="5239730228370806996">ข้อมูลที่ลากมาวางนี้ละเมิดนโยบายความปลอดภัยขององค์กร คุณแน่ใจไหมว่าต้องการดำเนินการต่อ</translation>
 <translation id="5241128660650683457">อ่านข้อมูลทั้งหมดของคุณบนเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="5242724311594467048">เปิดใช้งาน "<ph name="EXTENSION_NAME" />" ไหม</translation>
@@ -4783,7 +4788,7 @@
 <translation id="7363117941401515667">อัปเดตเมื่อ <ph name="HOURS" /> ชม. ที่ผ่านมา</translation>
 <translation id="7364591875953874521">ขอสิทธิ์เข้าถึงแล้ว</translation>
 <translation id="7364796246159120393">เลือกไฟล์</translation>
-<translation id="7365076891350562061">ขนาดหน้าจอ</translation>
+<translation id="7365076891350562061">ขนาดจอภาพ</translation>
 <translation id="7366415735885268578">เพิ่มเว็บไซต์</translation>
 <translation id="7366909168761621528">ข้อมูลการท่องเว็บ</translation>
 <translation id="7367714965999718019">เครื่องมือสร้างคิวอาร์โค้ด</translation>
@@ -4799,7 +4804,7 @@
 <translation id="7378812711085314936">ขอเชื่อมต่อข้อมูล</translation>
 <translation id="7378962964415201590">จับคู่โทรศัพท์ใหม่</translation>
 <translation id="7380768571499464492">อัปเดต <ph name="PRINTER_NAME" /> แล้ว</translation>
-<translation id="7384687527486377545">การทำซ้ำของแป้นพิมพ์</translation>
+<translation id="7384687527486377545">การทำซ้ำอัตโนมัติของแป้นพิมพ์</translation>
 <translation id="7385854874724088939">พบปัญหาขณะสั่งพิมพ์ กรุณาตรวจสอบเครื่องพิมพ์และลองใหม่อีกครั้ง</translation>
 <translation id="7385896526023870365">ส่วนขยายนี้ไม่มีการเข้าถึงเว็บไซต์เพิ่มเติม</translation>
 <translation id="7388044238629873883">ใกล้จะเสร็จเรียบร้อยแล้ว!</translation>
@@ -5002,7 +5007,7 @@
 <translation id="7662283695561029522">แตะเพื่อกำหนดค่า</translation>
 <translation id="7663719505383602579">เครื่องรับ: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">อุปกรณ์บลูทูธที่ไม่สนับสนุน: "<ph name="DEVICE_NAME" />"</translation>
-<translation id="7665082356120621510">จองพื้นที่</translation>
+<translation id="7665082356120621510">สำรองพื้นที่</translation>
 <translation id="7665369617277396874">เพิ่มบัญชี</translation>
 <translation id="7665940458857700755">การดำเนินการนี้จะล้างข้อมูลและคุกกี้ทั้งหมดที่กลุ่ม <ph name="SITE_GROUP_NAME" /> จัดเก็บไว้และเว็บไซต์ใดก็ตามที่อยู่ภายใต้กลุ่มนี้</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN ไม่ถูกต้อง คุณป้อน PIN ได้อีก 1 ครั้ง}other{PIN ไม่ถูกต้อง คุณป้อน PIN ได้อีก # ครั้ง}}</translation>
@@ -5080,6 +5085,7 @@
 <translation id="7766807826975222231">ทัวร์ชม</translation>
 <translation id="7766838926148951335">ยอมรับสิทธิ์</translation>
 <translation id="7768770796815395237">เปลี่ยน</translation>
+<translation id="7768784765476638775">เลือกเพื่อให้อ่าน</translation>
 <translation id="7769672763586021400">รหัสรุ่น</translation>
 <translation id="7770612696274572992">รูปภาพคัดลอกมาจากอุปกรณ์อื่น</translation>
 <translation id="7770651108375708429">ยกเลิกการเชื่อมต่อ Wi-Fi</translation>
@@ -6052,7 +6058,7 @@
 <translation id="8986494364107987395">ส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="8987927404178983737">เดือน</translation>
 <translation id="8991520179165052608">เว็บไซต์ใช้ไมโครโฟนของคุณได้</translation>
-<translation id="899384117894244799">นำผู้ใช้ที่ถูกจำกัดออกไหม</translation>
+<translation id="899384117894244799">นำผู้ใช้ที่ถูกจำกัดออก</translation>
 <translation id="899403249577094719">URL ที่อ้างอิงใบรับรองของ Netscape</translation>
 <translation id="8995603266996330174">จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">เพิ่มบัญชี...</translation>
@@ -6095,7 +6101,7 @@
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">อัปเดตรหัสผ่านสำหรับ <ph name="ORIGIN" /> ไหม</translation>
 <translation id="9041692268811217999">ผู้ดูแลระบบปิดการเข้าถึงไฟล์ในเครื่องของคุณ</translation>
-<translation id="904224458472510106">การดำเนินการนี้ยกเลิกไม่ได้</translation>
+<translation id="904224458472510106">การดำเนินการนี้เลิกทำไม่ได้</translation>
 <translation id="9042893549633094279">ข้อมูลส่วนบุคคลและความปลอดภัย</translation>
 <translation id="904451693890288097">โปรดป้อนรหัสผ่านสำหรับ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS" /></translation>
@@ -6189,7 +6195,7 @@
 <translation id="917510707618656279">ถามเมื่อเว็บไซต์ต้องการเข้าถึงอุปกรณ์บลูทูธ</translation>
 <translation id="9176476835295860688">ส่งข้อมูลการใช้งานและการวินิจฉัย ปัจจุบันอุปกรณ์นี้ส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ ซึ่งจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android เจ้าของเป็นผู้บังคับใช้<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" />นี้ หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปไว้ ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของคุณ <ph name="BEGIN_LINK2" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK2" /></translation>
 <translation id="9176611096776448349"><ph name="WINDOW_TITLE" /> - เชื่อมต่ออุปกรณ์บลูทูธแล้ว</translation>
-<translation id="9179524979050048593">ชื่อผู้ใช้หน้าจอลงชื่อเข้าใช้</translation>
+<translation id="9179524979050048593">ชื่อผู้ใช้บนหน้าจอลงชื่อเข้าใช้</translation>
 <translation id="9179734824669616955">ตั้งค่า Linux (เบต้า) ใน <ph name="DEVICE_TYPE" /></translation>
 <translation id="9180281769944411366">ขั้นตอนนี้อาจใช้เวลาสักครู่ กำลังเริ่มคอนเทนเนอร์ Linux</translation>
 <translation id="9180380851667544951">เว็บไซต์แชร์หน้าจอของคุณได้</translation>

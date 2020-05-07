@@ -36,7 +36,7 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
   });
 
   test('No recent permissions', async function() {
-    browserProxy.setResultFor('getRecentSitePermissions', Promise.resolve([]));
+    browserProxy.setRecentSitePermissions([]);
     testElement.currentRouteChanged(routes.SITE_SETTINGS);
     await browserProxy.whenCalled('getRecentSitePermissions');
     flush();
@@ -67,7 +67,7 @@ suite('CrSettingsRecentSitePermissionsTest', function() {
         ]
       },
     ]);
-    browserProxy.setResultFor('getRecentSitePermissions', mockData);
+    browserProxy.setRecentSitePermissions(mockData);
     testElement.currentRouteChanged(routes.SITE_SETTINGS);
     await browserProxy.whenCalled('getRecentSitePermissions');
     flush();

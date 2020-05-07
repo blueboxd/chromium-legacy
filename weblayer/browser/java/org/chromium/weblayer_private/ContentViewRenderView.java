@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.IntDef;
 
@@ -41,7 +42,7 @@ import java.util.ArrayList;
  * visually seamless.
  */
 @JNINamespace("weblayer")
-public class ContentViewRenderView extends FrameLayout {
+public class ContentViewRenderView extends RelativeLayout {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({MODE_SURFACE_VIEW, MODE_SURFACE_VIEW})
     public @interface Mode {}

@@ -125,6 +125,12 @@ def RecursiveMatchFilename(folder, filename):
 
 
 def FindMatchingTestFile(target):
+  if sys.platform.startswith('win32') and os.path.altsep in target:
+    # Use backslash as the path separator on Windows to match os.scandir().
+    if DEBUG:
+      print('Replacing ' + os.path.altsep + ' with ' + os.path.sep + ' in: '
+            + target)
+    target = target.replace(os.path.altsep, os.path.sep)
   if DEBUG:
     print('Finding files with full path containing: ' + target)
   results = RecursiveMatchFilename(SRC_DIR, target)

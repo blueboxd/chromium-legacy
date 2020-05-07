@@ -471,6 +471,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4913169188695071480">Zaustavi osvježavanje</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /> tijekom traženja uređaja…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stranica}one{# stranica}few{# stranice}other{# stranica}}</translation>
+<translation id="49268022542405662">Vaše će se zaporke izvesti i preuzeti kao tekstne datoteke. Bit će vidljive svim korisnicima i aplikacijama s pristupom odredišnoj mapi.</translation>
 <translation id="4932247056774066048">Budući da se odjavljujete s računa kojim upravlja <ph name="DOMAIN_NAME" />, vaši podaci iz Chromea izbrisat će se s ovog uređaja. Ostat će na vašem Google računu.</translation>
 <translation id="4943703118917034429">Virtualna stvarnost</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
@@ -753,6 +754,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7302081693174882195">Pojedinosti: poredano prema količini ušteđenih podataka</translation>
 <translation id="7328017930301109123">U Jednostavnom načinu Chrome učitava stranice brže i smanjuje podatkovni promet do 60 posto.</translation>
 <translation id="7333031090786104871">I dalje se dodaje prethodna web-lokacija</translation>
+<translation id="7340958967809483333">Opcije za Discover</translation>
 <translation id="7352939065658542140">VIDEOZAPIS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dijeljenje 1 odabrane stavke}one{Dijeljenje # odabrane stavke}few{Dijeljenje # odabrane stavke}other{Dijeljenje # odabranih stavki}}</translation>
 <translation id="7359002509206457351">Pristup načinima plaćanja</translation>
@@ -817,6 +819,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Otvori aplikacijom…</translation>
 <translation id="7821588508402923572">Ovdje će se prikazati vaša ušteda podataka</translation>
+<translation id="7835852323729233924">Reprodukcija medija</translation>
 <translation id="783819812427904514">Uključi kameru</translation>
 <translation id="784934925303690534">Vremenski raspon</translation>
 <translation id="7851858861565204677">Ostali uređaji</translation>

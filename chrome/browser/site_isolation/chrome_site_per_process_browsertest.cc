@@ -35,7 +35,6 @@
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_types.h"

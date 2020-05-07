@@ -103,7 +103,7 @@ void LoadStreamTask::LoadFromStoreComplete(
 
   stream_->GetNetwork()->SendQueryRequest(
       CreateFeedQueryRefreshRequest(GetRequestReason(load_type_),
-                                    stream_->GetChromeInfo(),
+                                    stream_->GetRequestMetadata(),
                                     result.consistency_token),
       base::BindOnce(&LoadStreamTask::QueryRequestComplete, GetWeakPtr()));
 }

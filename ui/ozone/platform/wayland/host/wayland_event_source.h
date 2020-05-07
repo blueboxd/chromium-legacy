@@ -5,30 +5,52 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_EVENT_SOURCE_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_EVENT_SOURCE_H_
 
-#include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_pump_for_ui.h"
-#include "base/message_loop/watchable_io_message_pump_posix.h"
-#include "ui/events/ozone/evdev/event_dispatch_callback.h"
+#include <memory>
+
+#include "base/containers/flat_map.h"
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/events/pointer_details.h"
+#include "ui/events/types/event_type.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_watcher.h"
+#include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
+#include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
+#include "ui/ozone/platform/wayland/host/wayland_pointer.h"
+#include "ui/ozone/platform/wayland/host/wayland_touch.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 
 struct wl_display;
 
+namespace gfx {
+class Vector2d;
+}
+
 namespace ui {
 
-// Wayland implementation of PlatformEventSource. Responsible for polling for
-// events from wayland connection file descriptor, which triggers input device
-// objects' callbacks so that they can translate raw input events into
-// |ui::Event| instances and injeting them into PlatformEvent system.
-//
-// TODO(crbug.com/1072009): For now, each input device object integrate with
-// this component through a |EventDispatchCallback| instances which as created
-// via |GetDispatchCallback| function and injected at construction time. In the
-// next iteration of this refactoring, this will be modified in order to have an
-// cleaner and more centralized approach.
+class WaylandWindow;
+class WaylandWindowManager;
+
+// Wayland implementation of ui::PlatformEventSource. It polls for events
+// through WaylandEventWatcher and centralizes the input and focus handling
+// logic within Ozone Wayland backend. In order to do so, it also implements the
+// input objects' delegate interfaces, which are the entry point of event data
+// coming from input devices, e.g: wl_{keyboard,pointer,touch}, which are then
+// pre-processed, translated into ui::Event instances and dispatched to the
+// PlatformEvent system.
 class WaylandEventSource : public PlatformEventSource,
-                           public base::MessagePumpForUI::FdWatcher {
+                           public WaylandWindowObserver,
+                           public WaylandKeyboard::Delegate,
+                           public WaylandPointer::Delegate,
+                           public WaylandTouch::Delegate {
  public:
-  explicit WaylandEventSource(wl_display* display);
+  WaylandEventSource(wl_display* display, WaylandWindowManager* window_manager);
   WaylandEventSource(const WaylandEventSource&) = delete;
   WaylandEventSource& operator=(const WaylandEventSource&) = delete;
   ~WaylandEventSource() override;
@@ -37,34 +59,95 @@ class WaylandEventSource : public PlatformEventSource,
   // This method assumes connection is already estabilished and input objects
   // are already bound and properly initialized.
   bool StartProcessingEvents();
-
   // Stops polling for events from input devices.
   bool StopProcessingEvents();
 
-  // Creates a new |EventDispatchCallback| callback that can be passed to input
-  // devices so that they can inject events into PlatformEvent system.
-  EventDispatchCallback GetDispatchCallback();
+  // Tells if pointer |button| is currently pressed.
+  bool IsPointerButtonPressed(EventFlags button) const;
+
+  // Allow to explicitly reset pointer flags. Required in cases where the
+  // pointer state is modified by a button pressed event, but the respective
+  // button released event is not delivered (e.g: window moving, drag and drop).
+  void ResetPointerFlags();
+
+ protected:
+  // WaylandKeyboard::Delegate
+  void OnKeyboardCreated(WaylandKeyboard* keyboard) override;
+  void OnKeyboardDestroyed(WaylandKeyboard* keyboard) override;
+  void OnKeyboardFocusChanged(WaylandWindow* window, bool focused) override;
+  void OnKeyboardModifiersChanged(int modifiers) override;
+  void OnKeyboardKeyEvent(EventType type,
+                          DomCode dom_code,
+                          DomKey dom_key,
+                          KeyboardCode key_code,
+                          bool repeat,
+                          base::TimeTicks timestamp) override;
+
+  // WaylandPointer::Delegate
+  void OnPointerCreated(WaylandPointer* pointer) override;
+  void OnPointerDestroyed(WaylandPointer* pointer) override;
+  void OnPointerFocusChanged(WaylandWindow* window,
+                             bool focused,
+                             const gfx::PointF& location) override;
+  void OnPointerButtonEvent(EventType evtype, int changed_button) override;
+  void OnPointerMotionEvent(const gfx::PointF& location) override;
+  void OnPointerAxisEvent(const gfx::Vector2d& offset) override;
+
+  // WaylandTouch::Delegate
+  void OnTouchCreated(WaylandTouch* touch) override;
+  void OnTouchDestroyed(WaylandTouch* touch) override;
+  void OnTouchPressEvent(WaylandWindow* window,
+                         const gfx::PointF& location,
+                         base::TimeTicks timestamp,
+                         PointerId id) override;
+  void OnTouchReleaseEvent(base::TimeTicks timestamp, PointerId id) override;
+  void OnTouchMotionEvent(const gfx::PointF& location,
+                          base::TimeTicks timestamp,
+                          PointerId id) override;
+  void OnTouchCancelEvent() override;
 
  private:
-  // base::MessagePumpForUI::FdWatcher
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
+  struct TouchPoint;
 
-  // PlatformEventSource
+  // PlatformEventSource:
   void OnDispatcherListChanged() override;
 
-  bool StartWatchingFd(base::WatchableIOMessagePumpPosix::Mode mode);
-  void MaybePrepareReadQueue();
-  void ProcessEvent(Event* event);
+  // WaylandWindowObserver
+  void OnWindowRemoved(WaylandWindow* window) override;
 
-  base::MessagePumpForUI::FdWatchController controller_;
+  void UpdateImplicitGrab();
+  void UpdateKeyboardModifiers(int modifier, bool down);
+  void HandleKeyboardFocusChange(WaylandWindow* window, bool focused);
+  void HandlePointerFocusChange(WaylandWindow* window, bool focused);
+  void HandleTouchFocusChange(WaylandWindow* window,
+                              bool focused,
+                              base::Optional<PointerId> id = base::nullopt);
+  bool ShouldUnsetTouchFocus(WaylandWindow* window, PointerId id);
 
-  wl_display* const display_;  // Owned by WaylandConnection.
+  WaylandWindowManager* const window_manager_;
 
-  bool watching_ = false;
-  bool prepared_ = false;
+  // Input device objects. Owned by WaylandConnection.
+  WaylandKeyboard* keyboard_ = nullptr;
+  WaylandPointer* pointer_ = nullptr;
+  WaylandTouch* touch_ = nullptr;
 
-  base::WeakPtrFactory<WaylandEventSource> weak_ptr_factory_{this};
+  // Bitmask of EventFlags used to keep track of the the pointer state.
+  int pointer_flags_ = 0;
+
+  // Bitmask of EventFlags used to keep track of the the keyboard state.
+  int keyboard_modifiers_ = 0;
+
+  // Last known pointer location.
+  gfx::PointF pointer_location_;
+
+  // The window the pointer is over.
+  WaylandWindow* window_with_pointer_focus_ = nullptr;
+
+  // Map that keeps track of the current touch points, associating touch IDs to
+  // to the surface/location where they happened.
+  base::flat_map<PointerId, std::unique_ptr<TouchPoint>> touch_points_;
+
+  std::unique_ptr<WaylandEventWatcher> event_watcher_;
 };
 
 }  // namespace ui

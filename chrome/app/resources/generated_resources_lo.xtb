@@ -329,7 +329,7 @@
 <translation id="143027896309062157">ອ່ານ​ ແລະ​ປ່ຽນ​ແປງ​ຂໍ້​ມູນ​ຂອງ​ທ່ານ​ທັງ​ຫມົດ​ຢູ່ໃນ​ຄອມພິວເຕີຂອງທ່ານ ແລະເວັບ​ໄຊ​ທ​໌​ທີ່​ທ່ານເຂົ້າເບິ່ງ</translation>
 <translation id="1430915738399379752">ພິມ</translation>
 <translation id="1431188203598586230">ການອັບເດດຊອບແວສຸດທ້າຍ</translation>
-<translation id="1431432486300429272">Google ອາດຈະໃຊ້ປະຫວັດການທ່ອງເວັບຂອງທ່ານເພື່ອປັບແຕ່ງການຄົ້ນຫາ ແລະ ການບໍລິການອື່ນຂອງ Google. ທ່ານ ຫຼື ພໍ່ແມ່ຂອງທ່າສາມາດປ່ຽນສິ່ງນີ້ໄດ້ທຸກເວລາທີ່ myaccount.google.com/activitycontrols/search</translation>
+<translation id="1431432486300429272">Google ອາດຈະໃຊ້ປະຫວັດການທ່ອງເວັບຂອງທ່ານເພື່ອປັບແຕ່ງຊອກຫາ ແລະ ການບໍລິການອື່ນຂອງ Google. ທ່ານ ຫຼື ພໍ່ແມ່ຂອງທ່ານສາມາດປ່ຽນສິ່ງນີ້ໄດ້ທຸກເວລາທີ່ myaccount.google.com/activitycontrols/search</translation>
 <translation id="1432581352905426595">ຈັດການໂປຣແກຣມຊອກຫາ</translation>
 <translation id="1433811987160647649">ຖາມກ່ອນການເຂົ້າເຖິງ</translation>
 <translation id="1434696352799406980">ນີ້ຈະຕັ້ງໜ້າການເລີ່ມຕົ້ນ, ໜ້າແຖບໃໝ່, ລະບົບຊອກຫາ ແລະແຖບປັກໝຸດຂອງທ່ານຄືນໃໝ່. ມັນຈະຍັງປິດນຳໃຊ້ສ່ວນຂະຫຍາຍທັງໝົດ ແລະລ້າງຂໍ້ມູນຊົ່ວຄາວ ເຊັ່ນ: ຄຸກກີ້. ສ່ວນ ບຸກມາກ, ປະຫວັດ ແລະລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ຂອງທ່ານຈະບໍ່ຖືກລຶບລ້າງ.</translation>
@@ -410,6 +410,7 @@
 <translation id="1531004739673299060">ໜ້າຈໍແອັບພລິເຄຊັນ</translation>
 <translation id="1531275250079031713">ສະແດງກ່ອງໂຕ້ຕອບ 'ເພີ່ມ Wi-Fi ໃໝ່'</translation>
 <translation id="1536754031901697553">ກຳລັງຕັດການເຊື່ອມຕໍ່...</translation>
+<translation id="1537254971476575106">ແວ່ນຂະຫຍາຍເຕັມຈໍ</translation>
 <translation id="15373452373711364">ເຄີເຊີເມົາສ໌ໃຫຍ່</translation>
 <translation id="1540605929960647700">ເປີດນຳໃຊ້ໂໝດສາທິດ</translation>
 <translation id="1542514202066550870">ແຖບນີ້ກຳລັງນໍາສະເໜີເນື້ອຫາ VR ໄປຍັງຊຸດຫູຟັງ.</translation>
@@ -924,7 +925,7 @@
 <translation id="2199719347983604670">ຂໍ້ມູນຈາກ Chrome sync</translation>
 <translation id="2200094388063410062">ອີເມວ</translation>
 <translation id="2200356397587687044">Chrome ຕ້ອງການມີການອະນຸຍາດເພື່ອສືບຕໍ່</translation>
-<translation id="2200729650590440847">ການຕັ້ງຄ່າໜ້າຈໍການປົດລັອກດ້ວຍPIN</translation>
+<translation id="2200729650590440847">ການຕັ້ງຄ່າໜ້າຈໍການປົດລັອກດ້ວຍ PIN</translation>
 <translation id="220138918934036434">ເຊື່ອງປຸ່ມ​</translation>
 <translation id="2202898655984161076">ມີບັນຫາການເຮັດລາຍຊື່ເຄື່ອງພິມ. ບາງເຄື່ອງພິມອາດຈະບໍ່ໄດ້ລົງທະບຽນຢ່າງສໍາເລັດກັບ <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">ໂປຣແກຣມຊອກຫາທີ່ໃຊ້ໃນ <ph name="BEGIN_LINK" />ແຖບທີ່ຢູ່<ph name="END_LINK" /></translation>
@@ -1162,6 +1163,7 @@
 <translation id="2501173422421700905">ພັກໃບຢັ້ງຢືນຢູ່</translation>
 <translation id="2501278716633472235">ກັບ​ຄືນ​ໄປ</translation>
 <translation id="2501797496290880632">ພິມທາງລັດ</translation>
+<translation id="2501920221385095727">ປຸ່ມສະຕິກກີ້</translation>
 <translation id="2502441965851148920">ການອັບ​ເດດ​ອັດ​ຕະ​ໂນ​ມັດ​ເປີດ​ໃຊ້​ງານ​ແລ້ວ. ການ​ອັບ​ເດດ​ເອົາ​ເອງຖືກປິດໃຊ້ງານໂດຍຜູ້​ດູແລລະ​ບົບ​ຂອງ​ທ່ານ.</translation>
 <translation id="2502719318159902502">ສິດເຂົ້າເຖິງເຕັມຮູບແບບ</translation>
 <translation id="2505127913256479918">ລະບົບຈະລຶບບັນຊີທີ່ມີການຄວບຄຸມເບິ່ງແຍງນີ້ອອກໃນໄວໆນີ້</translation>
@@ -1173,7 +1175,7 @@
 <translation id="2508428939232952663">ບັນຊີ Google Play Store</translation>
 <translation id="2509495747794740764">ຈຳນວນຂະໜາດຕ້ອງແມ່ນຕົວເລກລະຫວ່າງ 10 ຫາ 200.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2510988373360790637">ລືມລະຫັດຜ່ານອຸປະກອນ Bluetooth</translation>
+<translation id="2510988373360790637">ລືມອຸປະກອນ Bluetooth</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">ສະແກນ</translation>
 <translation id="2518024842978892609">ໃຊ້​ໃບ​ຢັ້ງ​ຢືນ​ລູກ​ຂ່າຍ​ຂອງ​ທ່ານ</translation>
@@ -1547,6 +1549,7 @@
 <translation id="2993517869960930405">ຂໍ້​ມູນ​ແອັບ</translation>
 <translation id="2996286169319737844">ເຂົ້າລະຫັດຂໍ້ມູນໂດຍໃຊ້ລະຫັດຜ່ານການຊິ້ງຂໍ້ມູນຂອງທ່ານ. ນີ້ບໍ່ຮວມເອົາວິທີການຈ່າຍເງິນ ແລະ ທີ່ຢູ່ຈາກ Google Pay.</translation>
 <translation id="2996722619877761919">ກັບດ້ານຕາມແນວຍາວ</translation>
+<translation id="3000461861112256445">ສຽງໂມໂນ</translation>
 <translation id="3001144475369593262">ບັນຊີເດັກ</translation>
 <translation id="3003144360685731741">ເຄືອ​ຂ່າຍ​ທີ່ມັກ</translation>
 <translation id="3003623123441819449">ແຄຊ໌ CSS</translation>
@@ -1685,7 +1688,7 @@
 <translation id="3181954750937456830">Safe Browsing (ປົກປ້ອງທ່ານ ແລະ ອຸປະກອນຂອງທ່ານຈາກເວັບໄຊອັນຕະລາຍ)</translation>
 <translation id="3182749001423093222">ກວດການສະກົດຄຳ</translation>
 <translation id="3183139917765991655">ຕົວ​ນຳ​ເຂົ້າ​ໂປ​ຣ​ໄຟ​ລ໌</translation>
-<translation id="3183944777708523606">ຕິດຕາມການຈັດວາງ</translation>
+<translation id="3183944777708523606">ການຈັດວາງໜ້າຈໍ</translation>
 <translation id="3184536091884214176">ຕັ້ງຄ່າ ຫຼື ຈັດການເຄື່ອງພິມ CUPS. <ph name="LINK_BEGIN" />ສຶກສາເພີ່ມເຕີມ<ph name="LINK_END" /></translation>
 <translation id="3188257591659621405">ໄຟລ໌ຂອງຂ້ອຍ</translation>
 <translation id="3188465121994729530">ການ​​ຍ້າຍ​ໂດຍ​ສະ​ເລ່ຍ</translation>
@@ -2481,6 +2484,7 @@
 <translation id="4211851069413100178">ສົ່ງຂໍ້ມູນການນຳໃຊ້ ແລະ ການວິເຄາະ. ຊ່ວຍປັບປຸງປະສົບການ Android ຂອງທ່ານໂດຍການສົ່ງຂໍ້ມູນການວິເຄາະ, ຂໍ້ມູນອຸປະກອນ ແລະ ການໃຊ້ແອັບໃຫ້ Google ໂດຍອັດຕະໂນມັດ. ນີ້ຈະຊ່ວຍປັບປຸງຄວາມສະຖຽນຂອງລະບົບ ແລະ ແອັບ ແລະ ການປັບປຸງອື່ນໆ. ບາງຂໍ້ມູນແບບຮວມກັນຍັງຈະຊ່ວຍແອັບ ແລະ ຮຸ້ນສ່ວນຂອງ Google ນຳອີກ ເຊັ່ນ: ຜູ້ພັດທະນາ Android. ເຈົ້າຂອງບັງຄັບໃຊ້ <ph name="BEGIN_LINK1" />ການຕັ້ງຄ່າ<ph name="END_LINK1" /> ນີ້. ເຈົ້າຂອງອາດຈະເລືອກສົ່ງຂໍ້ມູນການວິເຄາະ ແລະ ການໃຊ້ສຳລັບອຸປະກອນນີ້ໃຫ້ Google ກໍໄດ້. ຖ້າເປີດການຕັ້ງຄ່າການເຄື່ອນໄຫວເວັບ ແລະ ແອັບເພີ່ມເຕີມຂອງທ່ານ, ລະບົບອາດຈະບັນທຶກຂໍ້ມູນນີ້ໄວ້ໃນບັນຊີ Google ຂອງທ່ານ. <ph name="BEGIN_LINK2" />ສຶກສາ​ເພີ່ມ​ເຕີມ<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">​ສົ່ງ​ອອກ</translation>
 <translation id="42137655013211669">ເຊີບເວີຫ້າມການເຂົ້າເຖິງຊັບພະຍາກອນນີ້.</translation>
+<translation id="4217571870635786043">ການພິມຕາມຄຳບອກ</translation>
 <translation id="4218274196133425560">ລຶບຂໍ້ຍົກເວັ້ນສຳລັບ <ph name="HOST_NAME" /> ອອກ</translation>
 <translation id="4220648711404560261">ເກີດຄວາມຜິດພາດໃນລະຫວ່າງການເປີດນຳໃຊ້.</translation>
 <translation id="4222772810963087151">ລາຍລະອຽດຮຸ່ນ</translation>
@@ -3115,7 +3119,7 @@
 <translation id="5127805178023152808">ຊິງ​ຄ໌​ປິດ</translation>
 <translation id="5127881134400491887">ຈັດການເລື່ອງການ​ເຊື່ອມ​ຕໍ່​ເຄືອ​ຂ່າຍ</translation>
 <translation id="512903556749061217">ຄັດຕິດແລ້ວ</translation>
-<translation id="5131591206283983824">ການລາກແຖບແຜ່ນສຳຜັດ</translation>
+<translation id="5131591206283983824">ການແຕະແລ້ວລາກແຜ່ນສຳຜັດ</translation>
 <translation id="5133483819862530305">ຕາເວັນຕົກຮອດຕາເວັນຂຶ້ນ</translation>
 <translation id="5135085122826131075">ເຂົ້າເຖິງຜູ້ຊ່ວຍຂອງທ່ານເມື່ອທ່ານເວົ້າ "Ok Google."</translation>
 <translation id="5135533361271311778">ບໍ່​ສາ​ມາດ​ສ້າງ​ລາຍການບຸກມາກຄ໌ໄດ້.</translation>
@@ -3165,6 +3169,7 @@
 <translation id="5204967432542742771">ໃສ່​ລະ​ຫັດ​ຜ່ານ</translation>
 <translation id="5206215183583316675">ລຶບ "<ph name="CERTIFICATE_NAME" />" ບໍ?</translation>
 <translation id="520621735928254154">ການນຳເຂົ້າໃບຢັ້ງຢືນຜິດພາດ</translation>
+<translation id="5207949376430453814">ໝາຍເຄື່ອງໝາຍກຸບຂໍ້ຄວາມ</translation>
 <translation id="5209320130288484488">ບໍ່ພົບອຸ​ປະ​ກອນ​</translation>
 <translation id="5210365745912300556">ປິດແຖບ</translation>
 <translation id="5213481667492808996">ການບໍລິການອິນເຕີເນັດ '<ph name="NAME" />' ຂອງທ່ານພ້ອມນຳໃຊ້ແລ້ວ</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">ທ່ອງເບິ່ງ</translation>
 <translation id="7766838926148951335">ຍອມຮັບການອະນຸຍາດ</translation>
 <translation id="7768770796815395237">ປ່ຽນ</translation>
+<translation id="7768784765476638775">ເລືອກເພື່ອເວົ້າ</translation>
 <translation id="7769672763586021400">ID ຮຸ່ນ</translation>
 <translation id="7770612696274572992">ສຳເນົາຮູບຈາກອຸປະກອນອື່ນແລ້ວ</translation>
 <translation id="7770651108375708429">ຕັດການເຊື່ອມຕໍ່ Wi-Fi</translation>

@@ -90,20 +90,18 @@ public class ImageFetcherBridge {
      * Fetch the image from native, then resize it to the given dimensions.
      *
      * @param config The configuration of the image fetcher.
-     * @param url The url to fetch.
-     * @param width The desired width of the image.
-     * @param height The desired height of the image.
-     * @param clientName The UMA client name to report the metrics to.
+     * @param params The parameters to specify image fetching details.
      * @param callback The callback to call when the image is ready. The callback will be invoked on
      *      the same thread that it was called on.
      */
-    public void fetchImage(@ImageFetcherConfig int config, String url, String clientName, int width,
-            int height, Callback<Bitmap> callback) {
+    public void fetchImage(@ImageFetcherConfig int config, final ImageFetcher.Params params,
+            Callback<Bitmap> callback) {
         assert mNativeImageFetcherBridge != 0 : "fetchImage called after destroy";
         ImageFetcherBridgeJni.get().fetchImage(mNativeImageFetcherBridge, ImageFetcherBridge.this,
-                config, url, clientName, ImageFetcher.Params.INVALID_EXPIRATION_INTERVAL,
+                config, params.url, params.clientName, params.expirationIntervalMinutes,
                 (bitmap) -> {
-                    callback.onResult(ImageFetcher.resizeImage(bitmap, width, height));
+                    callback.onResult(
+                            ImageFetcher.resizeImage(bitmap, params.width, params.height));
                 });
     }
 

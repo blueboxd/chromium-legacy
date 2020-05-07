@@ -224,9 +224,12 @@ class MediaHistoryKeyedService : public KeyedService,
   // item in the UI.
   void MarkMediaFeedItemAsClicked(const int64_t& feed_item_id);
 
-  // Resets a Media Feed by deleting any items and resetting it to defaults.
+  // Resets a Media Feed by deleting any items and resetting it to defaults. If
+  // |include_subdomains| is true then this will reset any feeds on any
+  // subdomain of |origin|.
   void ResetMediaFeed(const url::Origin& origin,
-                      media_feeds::mojom::ResetReason reason);
+                      media_feeds::mojom::ResetReason reason,
+                      const bool include_subdomains = false);
 
   // Resets any Media Feeds that were fetched between |start_time| and
   // |end_time|. This will delete any items and reset them to defaults. The

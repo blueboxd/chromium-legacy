@@ -801,8 +801,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     IntRect unclipped_absolute_bounding_box;
 
     const LayoutBoxModelObject* clipping_container = nullptr;
-
-    bool is_under_position_sticky = false;
   };
   bool NeedsVisualOverflowRecalc() const {
     return needs_visual_overflow_recalc_;

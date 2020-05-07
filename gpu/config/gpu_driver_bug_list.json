@@ -2868,17 +2868,6 @@
       ]
     },
     {
-      "id":273,
-      "cr_bugs": [866613, 860021],
-      "description": "Frequent crashes on Adreno (TM) on L and below",
-      "os": {
-        "type": "android"
-      },
-      "features": [
-        "use_es2_for_oopr"
-      ]
-    },
-    {
       "id": 274,
       "description": "glTexStorage* are buggy when base mipmap level is not 0",
       "cr_bugs": [877874],

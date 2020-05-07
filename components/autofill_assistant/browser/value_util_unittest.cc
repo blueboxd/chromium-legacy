@@ -217,46 +217,6 @@ TEST_F(ValueUtilTest, AreAllValuesOfSize) {
   EXPECT_TRUE(AreAllValuesOfSize({value_a, value_b, value_c}, 2));
 }
 
-TEST_F(ValueUtilTest, CombineValues) {
-  ValueProto value_a;
-  ValueProto value_b;
-  ValueProto value_c;
-  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), ValueProto());
-
-  value_a = SimpleValue(1);
-  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), base::nullopt);
-
-  value_a.mutable_strings()->add_values("First");
-  value_a.mutable_strings()->add_values("Second");
-  value_b.mutable_strings();
-  value_c.mutable_strings()->add_values("Third");
-  ValueProto expected;
-  expected.mutable_strings()->add_values("First");
-  expected.mutable_strings()->add_values("Second");
-  expected.mutable_strings()->add_values("Third");
-  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
-
-  value_a = ValueProto();
-  value_a.mutable_ints();
-  value_b = SimpleValue(1);
-  value_c = SimpleValue(2);
-  value_c.mutable_ints()->add_values(3);
-  expected.mutable_ints()->add_values(1);
-  expected.mutable_ints()->add_values(2);
-  expected.mutable_ints()->add_values(3);
-  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
-
-  value_a = SimpleValue(false);
-  value_b = SimpleValue(true);
-  value_b.mutable_booleans()->add_values(false);
-  value_c = ValueProto();
-  value_c.mutable_booleans();
-  expected.mutable_booleans()->add_values(false);
-  expected.mutable_booleans()->add_values(true);
-  expected.mutable_booleans()->add_values(false);
-  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
-}
-
 TEST_F(ValueUtilTest, SmallerOperatorForValueProto) {
   EXPECT_TRUE(SimpleValue(1) < SimpleValue(2));
   EXPECT_TRUE(SimpleValue(std::string("a")) < SimpleValue(std::string("b")));
@@ -362,6 +322,22 @@ TEST_F(ValueUtilTest, TestGetNthValue) {
 
   EXPECT_EQ(GetNthValue(value, -1), base::nullopt);
   EXPECT_EQ(GetNthValue(value, 3), base::nullopt);
+
+  value.set_is_client_side_only(true);
+  EXPECT_EQ(GetNthValue(value, 0),
+            SimpleValue(std::string("a"), /* is_client_side_only = */ true));
+}
+
+TEST_F(ValueUtilTest, TestContainsClientOnlyValues) {
+  ValueProto value_a = SimpleValue(std::string("test"));
+  ValueProto value_b = value_a;
+  ValueProto value_c = value_a;
+  EXPECT_FALSE(ContainsClientOnlyValue({}));
+  EXPECT_FALSE(ContainsClientOnlyValue({value_a, value_b, value_c}));
+
+  value_b.set_is_client_side_only(true);
+  EXPECT_TRUE(ContainsClientOnlyValue({value_a, value_b, value_c}));
+  EXPECT_FALSE(ContainsClientOnlyValue({value_a, value_c}));
 }
 
 }  // namespace value_util

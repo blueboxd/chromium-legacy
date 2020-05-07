@@ -93,8 +93,6 @@ class CC_EXPORT PictureLayer : public Layer {
 
   bool ShouldUseTransformedRasterization() const;
 
-  bool QualifiesForDirectlyCompositedImage() const;
-
   std::unique_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;

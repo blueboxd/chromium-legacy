@@ -24,7 +24,6 @@
 #include "components/viz/common/features.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/download/drag_download_util.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -714,8 +713,6 @@ WebContentsViewAura::~WebContentsViewAura() {
 }
 
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
-  if (web_contents_->GetInterstitialPage())
-    web_contents_->GetInterstitialPage()->SetSize(size);
   RenderWidgetHostView* rwhv =
       web_contents_->GetRenderWidgetHostView();
   if (rwhv)
@@ -838,11 +835,6 @@ void WebContentsViewAura::Focus() {
   if (delegate_)
     delegate_->ResetStoredFocus();
 
-  if (web_contents_->GetInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->Focus();
-    return;
-  }
-
   if (delegate_ && delegate_->Focus())
     return;
 
@@ -879,10 +871,6 @@ void WebContentsViewAura::FocusThroughTabTraversal(bool reverse) {
   if (delegate_)
     delegate_->ResetStoredFocus();
 
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-    return;
-  }
   content::RenderWidgetHostView* fullscreen_view =
       web_contents_->GetFullscreenRenderWidgetHostView();
   if (fullscreen_view) {

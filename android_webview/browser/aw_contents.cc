@@ -76,7 +76,6 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/favicon_status.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1473,19 +1472,6 @@ void AwContents::DidFinishNavigation(
                                net::HttpRequestHeaders());
   request.is_renderer_initiated = navigation_handle->IsRendererInitiated();
   client->OnReceivedError(request, error_code, false, false);
-}
-
-void AwContents::DidAttachInterstitialPage() {
-  RenderFrameHost* rfh = web_contents_->GetInterstitialPage()->GetMainFrame();
-  browser_view_renderer_.SetActiveFrameSinkId(
-      rfh->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
-}
-
-void AwContents::DidDetachInterstitialPage() {
-  if (!web_contents_)
-    return;
-  browser_view_renderer_.SetActiveFrameSinkId(
-      web_contents_->GetRenderViewHost()->GetWidget()->GetFrameSinkId());
 }
 
 bool AwContents::CanShowInterstitial() {

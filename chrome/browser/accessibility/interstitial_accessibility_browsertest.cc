@@ -9,7 +9,6 @@
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"

@@ -93,6 +93,13 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
 
+  // Returns the hotseat height (or width for side shelf).
+  int GetHotseatSize() const;
+
+  // Returns the drag distance required to fully show the hotseat widget from
+  // the hidden state.
+  int GetHotseatFullDragAmount() const;
+
   // Returns the background blur of the |translucent_background_|, for tests.
   int GetHotseatBackgroundBlurForTest() const;
 
@@ -119,6 +126,8 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   bool is_manually_extended() { return is_manually_extended_; }
 
   void set_manually_extended(bool value) { is_manually_extended_ = value; }
+
+  bool is_forced_dense() const { return is_forced_dense_; }
 
  private:
   class DelegateView;
@@ -158,6 +167,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // Whether the widget is currently extended because the user has manually
   // dragged it. This will be reset with any visible shelf configuration change.
   bool is_manually_extended_ = false;
+
+  // Indicates whether app scaling is triggered, which scales shelf app icons
+  // from the normal size to the dense size in tablet mode if hotseat does not
+  // have enough space to show all app icons without scrolling.
+  bool is_forced_dense_ = false;
 
   // The window targeter installed on the hotseat. Filters out events which land
   // on the non visible portion of the hotseat, or events that reach the hotseat

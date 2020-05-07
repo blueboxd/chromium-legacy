@@ -63,6 +63,24 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // reasons.
   bool ShelfControlsForcedShownForAccessibility() const;
 
+  // Returns the shelf button size. If |force_dense| is true, returns the
+  // shelf button size for dense shelf layout; otherwise, returns the optimal
+  // shelf button size for the current state.
+  int GetShelfButtonSize(bool force_dense) const;
+
+  // Returns the icon size of shelf button. If |force_dense| is true, returns
+  // the icon size for dense shelf layout; otherwise, returns the optimal
+  // icon size for the current state.
+  int GetShelfButtonIconSize(bool force_dense) const;
+
+  // Returns the hotseat height. If |force_dense| is true, returns the hotseat
+  // height for dense shelf layout; otherwise, returns the optimal hotseat
+  // height for the current state.
+  // NOTE: This may not match the actual hotseat size, as hotseat may get scaled
+  // down if it does not fit in available bounds within the shelf. Use
+  // HotseatWidget::GetHotseatSize() to get the actual widget size.
+  int GetHotseatSize(bool force_dense) const;
+
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
   int shelf_size() const;
@@ -73,9 +91,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Size of the shelf when not in tablet mode, or when no apps are visible.
   int system_shelf_size() const;
 
-  // Size of the hotseat, which contains the scrollable shelf in tablet mode.
-  int hotseat_size() const;
-
   // The shelf size within which the drag handle should be centered.
   int shelf_drag_handle_centering_size() const;
 
@@ -83,14 +98,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // extended.
   int hotseat_bottom_padding() const;
 
-  // Size allocated for each app button on the shelf.
-  int button_size() const;
-
   // Size of the space between buttons on the shelf.
   int button_spacing() const;
-
-  // Size of the icons within shelf buttons.
-  int button_icon_size() const;
 
   // Size for controls like the home button, back button, etc.
   int control_size() const;
@@ -196,13 +205,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // The padding between the app icon and the end of the scrollable shelf.
   int GetAppIconEndPadding() const;
-
-  // Return the size of the shelf item's ripple.
-  int GetShelfItemRippleSize() const;
-
-  // Return the drag distance to fully show the hotseat widget from the state
-  // being hidden.
-  int GetHotseatFullDragAmount() const;
 
   // The animation time for dimming shelf icons, widgets, and buttons.
   base::TimeDelta DimAnimationDuration() const;

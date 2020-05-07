@@ -7624,7 +7624,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 
 void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
                                         bool url_is_unreachable) {
-  if (url_is_unreachable || delegate_->GetAsInterstitialPage()) {
+  if (url_is_unreachable) {
     SetLastCommittedSiteUrl(GURL());
   } else {
     SetLastCommittedSiteUrl(url);
@@ -7660,18 +7660,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // same-document navigations.
     is_commit_allowed_to_proceed |= is_same_document_navigation;
 
-    // 3) Transient interstitial page commits will not have a matching
-    // NavigationRequest.
-    // TODO(clamy): Enforce having a NavigationRequest for data URLs when
-    // committed interstitials have launched or interstitials create
-    // NavigationRequests.
-    is_commit_allowed_to_proceed |= !!delegate_->GetAsInterstitialPage();
-
-    // 4) Error pages implementations in Chrome can commit twice.
+    // 3) Error pages implementations in Chrome can commit twice.
     // TODO(clamy): Fix this.
     is_commit_allowed_to_proceed |= params->url_is_unreachable;
 
-    // 5) Special case for DOMSerializerBrowsertests which are implemented
+    // 4) Special case for DOMSerializerBrowsertests which are implemented
     // entirely renderer-side and unlike normal RenderView based tests load
     // file URLs instead of data URLs.
     // TODO(clamy): Rework the tests to remove this exception.

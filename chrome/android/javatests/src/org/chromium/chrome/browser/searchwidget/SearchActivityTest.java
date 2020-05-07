@@ -29,12 +29,16 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog;
@@ -50,10 +54,11 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -63,6 +68,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -78,10 +84,16 @@ import java.util.concurrent.TimeoutException;
  *
  *                    + Add microphone tests somehow (vague query + confident query).
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SearchActivityTest {
     private static final long OMNIBOX_SHOW_TIMEOUT_MS = 5000L;
+
+    @ParameterAnnotations.ClassParameter
+    private static List<ParameterSet> sClassParams =
+            Arrays.asList(new ParameterSet().value(false).name("DisableRecyclerView"),
+                    new ParameterSet().value(true).name("EnableRecyclerView"));
 
     private static class TestDelegate
             extends SearchActivityDelegate implements DefaultSearchEnginePromoDialogObserver {
@@ -152,9 +164,21 @@ public class SearchActivityTest {
     VoiceRecognitionHandler mHandler;
 
     private TestDelegate mTestDelegate;
+    private boolean mEnableRecyclerView;
+
+    public SearchActivityTest(boolean enableRecyclerView) {
+        mEnableRecyclerView = enableRecyclerView;
+    }
 
     @Before
     public void setUp() {
+        if (mEnableRecyclerView) {
+            Features.getInstance().enable(ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.OMNIBOX_SUGGESTIONS_RECYCLER_VIEW);
+        }
+        Features.ensureCommandLineIsUpToDate();
+
         MockitoAnnotations.initMocks(this);
         doReturn(true).when(mHandler).isVoiceSearchEnabled();
 
@@ -342,16 +366,14 @@ public class SearchActivityTest {
         // Cache some mock results to show.
         List<MatchClassification> classifications = new ArrayList<>();
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
-        OmniboxSuggestion mockSuggestion =
-                new OmniboxSuggestion(0, true, 0, 0, "https://google.com", classifications,
-                        "https://google.com", classifications, null, "",
-                        new GURL("https://google.com"), GURL.emptyGURL(), null, false, false, null,
-                        null, OmniboxSuggestion.INVALID_GROUP);
-        OmniboxSuggestion mockSuggestion2 =
-                new OmniboxSuggestion(0, true, 0, 0, "https://android.com", classifications,
-                        "https://android.com", classifications, null, "",
-                        new GURL("https://android.com"), GURL.emptyGURL(), null, false, false, null,
-                        null, OmniboxSuggestion.INVALID_GROUP);
+        OmniboxSuggestion mockSuggestion = new OmniboxSuggestion(0, true, 0, 0,
+                "https://google.com", classifications, "https://google.com", classifications, null,
+                "", new GURL("https://google.com"), GURL.emptyGURL(), null, false, false, null,
+                null, OmniboxSuggestion.INVALID_GROUP);
+        OmniboxSuggestion mockSuggestion2 = new OmniboxSuggestion(0, true, 0, 0,
+                "https://android.com", classifications, "https://android.com", classifications,
+                null, "", new GURL("https://android.com"), GURL.emptyGURL(), null, false, false,
+                null, null, OmniboxSuggestion.INVALID_GROUP);
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

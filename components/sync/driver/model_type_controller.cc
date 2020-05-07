@@ -12,7 +12,6 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/configure_context.h"
-#include "components/sync/driver/sync_merge_result.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -125,50 +124,29 @@ void ModelTypeController::LoadModels(
 DataTypeController::RegisterWithBackendResult
 ModelTypeController::RegisterWithBackend(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
-  if (activated_)
-    return REGISTRATION_IGNORED;
   DCHECK(configurer);
   DCHECK(activation_response_);
   DCHECK_EQ(MODEL_LOADED, state_);
+
   bool initial_sync_done =
       activation_response_->model_type_state.initial_sync_done();
   // Pass activation context to ModelTypeRegistry, where ModelTypeWorker gets
   // created and connected with the delegate (processor).
   configurer->ActivateNonBlockingDataType(type(),
                                           std::move(activation_response_));
-  activated_ = true;
-  return initial_sync_done ? TYPE_ALREADY_DOWNLOADED : TYPE_NOT_YET_DOWNLOADED;
-}
-
-void ModelTypeController::StartAssociating(StartCallback start_callback) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(start_callback);
-  DCHECK_EQ(MODEL_LOADED, state_);
 
   state_ = RUNNING;
   DVLOG(1) << "Sync running for " << ModelTypeToString(type());
 
-  // There is no association, just call back promptly.
-  SyncMergeResult merge_result(type());
-  std::move(start_callback).Run(OK, merge_result, merge_result);
-}
-
-void ModelTypeController::ActivateDataType(ModelTypeConfigurer* configurer) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(configurer);
-  DCHECK_EQ(RUNNING, state_);
-  // In contrast with directory datatypes, non-blocking data types should be
-  // activated in RegisterWithBackend. activation_response_ should be
-  // passed to backend before call to ActivateDataType.
-  DCHECK(!activation_response_);
+  return initial_sync_done ? TYPE_ALREADY_DOWNLOADED : TYPE_NOT_YET_DOWNLOADED;
 }
 
 void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
   DCHECK(CalledOnValidThread());
   DCHECK(configurer);
-  if (activated_) {
+  if (state_ == RUNNING) {
     configurer->DeactivateNonBlockingDataType(type());
-    activated_ = false;
+    state_ = MODEL_LOADED;
   }
 }
 
@@ -189,11 +167,6 @@ void ModelTypeController::Stop(ShutdownReason shutdown_reason,
   }
 
   switch (state()) {
-    case ASSOCIATING:
-      // We don't really use this state in this class.
-      NOTREACHED();
-      break;
-
     case NOT_RUNNING:
     case FAILED:
       // Nothing to stop. |metadata_fate| might require CLEAR_METADATA,
@@ -287,9 +260,6 @@ void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
     case FAILED:
       // Do not record for the second time and exit early.
       return;
-    case ASSOCIATING:
-      // Not possible, we do not use associating in this class.
-      NOTREACHED();
   }
 
   state_ = FAILED;
@@ -337,7 +307,6 @@ void ModelTypeController::OnDelegateStarted(
     case MODEL_LOADED:
     case RUNNING:
     case NOT_RUNNING:
-    case ASSOCIATING:
       NOTREACHED() << " type " << ModelTypeToString(type()) << " state "
                    << StateToString(state_);
   }

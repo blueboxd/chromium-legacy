@@ -2890,6 +2890,17 @@
       runtime_flag: "NamedPages"
     },
     {
+      name: "page-orientation",
+      is_descriptor: true,
+      field_template: "primitive",
+      field_group: "*",
+      type_name: "PageOrientation",
+      field_size: 2,
+      default_value: "PageOrientation::kUpright",
+      include_paths: ["third_party/blink/public/common/css/page_orientation.h"],
+      runtime_flag: "NamedPages"
+    },
+    {
       name: "paint-order",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,

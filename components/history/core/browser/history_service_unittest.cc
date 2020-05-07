@@ -43,7 +43,6 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/test_history_database.h"
-#include "components/sync/driver/sync_merge_result.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_change_processor.h"

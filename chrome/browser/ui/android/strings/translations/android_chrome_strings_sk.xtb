@@ -471,6 +471,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4913169188695071480">Zastaviť obnovovanie</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Získajte pomoc<ph name="END_LINK" /> s vyhľadávaním zariadení…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stránka}few{# stránky}many{# Pages}other{# stránok}}</translation>
+<translation id="49268022542405662">Vaše heslá budú exportované a stiahnuté ako textový súbor. Budú viditeľné pre všetkých používateľov aj aplikácie s prístupom k cieľovému priečinku.</translation>
 <translation id="4932247056774066048">Keďže sa odhlasujete z účtu spravovaného doménou <ph name="DOMAIN_NAME" />, budú údaje Chromu z tohto zariadenia odstránené. Zostanú vo vašom účte Google.</translation>
 <translation id="4943703118917034429">Virtuálna realita</translation>
 <translation id="4943872375798546930">Žiadne výsledky</translation>
@@ -753,6 +754,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7302081693174882195">Podrobnosti: zoradené podľa množstva ušetrených dát</translation>
 <translation id="7328017930301109123">V zjednodušenom režime načítava Chrome stránky rýchlejšie a využíva až o 60 percent menej dát.</translation>
 <translation id="7333031090786104871">Pridávanie predchádzajúceho webu stále prebieha</translation>
+<translation id="7340958967809483333">Možnosti kanála Objaviť</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Zdieľať 1 vybranú položku}few{Zdieľať # vybrané položky}many{Zdieľať # vybranej položky}other{Zdieľať # vybraných položiek}}</translation>
 <translation id="7359002509206457351">Poskytnúť prístup k spôsobom platby</translation>
@@ -817,6 +819,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7810647596859435254">Otvoriť pomocou…</translation>
 <translation id="7821588508402923572">Tu sa zobrazí úspora dát</translation>
+<translation id="7835852323729233924">Prehrávanie médií</translation>
 <translation id="783819812427904514">Zapnúť zvuk videa</translation>
 <translation id="784934925303690534">Obdobie</translation>
 <translation id="7851858861565204677">Ďalšie zariadenia</translation>

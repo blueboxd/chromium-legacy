@@ -8,6 +8,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -29,6 +30,10 @@
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "gpu/config/gpu_finch_features.h"
 #endif
 
 #if defined(OS_FUCHSIA)
@@ -206,9 +211,12 @@ void SharedContextState::InitializeGrContext(
 
   if (GrContextIsGL()) {
     DCHECK(context_->IsCurrent(nullptr));
+    bool use_version_es2 = false;
+#if defined(OS_ANDROID)
+    use_version_es2 = base::FeatureList::IsEnabled(features::kUseGles2ForOopR);
+#endif
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
-        *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
-        progress_reporter));
+        *context_->GetVersionInfo(), use_version_es2, progress_reporter));
     if (!interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                     "failed.";

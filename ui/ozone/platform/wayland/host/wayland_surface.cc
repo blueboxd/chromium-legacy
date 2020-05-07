@@ -12,6 +12,7 @@
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 
 namespace ui {
@@ -66,7 +67,7 @@ void WaylandSurface::DispatchHostWindowDragMovement(
     const gfx::Point& pointer_location_in_px) {
   DCHECK(shell_surface_);
 
-  connection()->ResetPointerFlags();
+  connection()->event_source()->ResetPointerFlags();
   if (hittest == HTCAPTION)
     shell_surface_->SurfaceMove(connection());
   else
@@ -286,7 +287,7 @@ void WaylandSurface::OnDragLeave() {
 
 void WaylandSurface::OnDragSessionClose(uint32_t dnd_action) {
   std::move(drag_closed_callback_).Run(dnd_action);
-  connection()->ResetPointerFlags();
+  connection()->event_source()->ResetPointerFlags();
 }
 
 bool WaylandSurface::OnInitialize(PlatformWindowInitProperties properties) {

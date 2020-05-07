@@ -184,15 +184,15 @@
       </div>
 
       <div class="list-item"
-           hidden="[[!osSyncPrefs.wifiConfigurationsRegistered]]">
-        <div id="wifiConfigurationsCheckboxLabel"
+           hidden="[[!osSyncPrefs.osWifiConfigurationsRegistered]]">
+        <div id="osWifiConfigurationsCheckboxLabel"
             label-disabled$="[[areDataTypeTogglesDisabled_]]">
-          $i18n{wifiConfigurationsCheckboxLabel}
+          $i18n{osSyncWifiConfigurationsCheckboxLabel}
         </div>
-        <cr-toggle checked="{{osSyncPrefs.wifiConfigurationsSynced}}"
+        <cr-toggle checked="{{osSyncPrefs.osWifiConfigurationsSynced}}"
             on-change="onSingleSyncDataTypeChanged_"
             disabled="[[areDataTypeTogglesDisabled_]]"
-            aria-labelledby="wifiConfigurationsCheckboxLabel">
+            aria-labelledby="osWifiConfigurationsCheckboxLabel">
         </cr-toggle>
       </div>
 

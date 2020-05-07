@@ -65,9 +65,34 @@ js_type_check("closure_compile") {
     ":settings_page_test_util",
     ":test_about_page_browser_proxy",
     ":test_lifetime_browser_proxy.m",
+    ":test_local_data_browser_proxy",
     ":test_search_engines_browser_proxy.m",
+    ":test_site_settings_prefs_browser_proxy",
+    ":test_util",
 
     # TODO(crbug.com/1000989): Add targets for more files here.
+  ]
+}
+
+js_library("test_local_data_browser_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:lazy_load",
+  ]
+}
+
+js_library("test_site_settings_prefs_browser_proxy") {
+  deps = [
+    ":test_util",
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:lazy_load",
+  ]
+}
+
+js_library("test_util") {
+  deps = [
+    "//chrome/browser/resources/settings:lazy_load",
+    "//chrome/browser/resources/settings:settings",
   ]
 }
 

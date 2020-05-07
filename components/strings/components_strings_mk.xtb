@@ -218,6 +218,7 @@
 <translation id="1838374766361614909">Исчисти го пребарувањето</translation>
 <translation id="1839551713262164453">Проверката на вредностите на правилото не успеа поради грешки</translation>
 <translation id="1842969606798536927">Плати</translation>
+<translation id="1852694792039666893">Користете ја сметката на Google за да се предложи силна лозинка</translation>
 <translation id="1871208020102129563">Прокси е поставен да користи фиксни прокси-сервери, а не ПАК-скрипта на URL.</translation>
 <translation id="1871284979644508959">Задолжително поле</translation>
 <translation id="1875512691959384712">Формулари на Google</translation>
@@ -405,6 +406,7 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Најдобро вклопување</translation>
 <translation id="2691924980723297736">Безбедносно предупредување</translation>
+<translation id="2696268945573510710">Користете лозинки складирани во вашата сметка на Google</translation>
 <translation id="2699302886720511147">Прифатени картички</translation>
 <translation id="2701514975700770343">Со лицето надолу</translation>
 <translation id="2702801445560668637">Список за читање</translation>
@@ -452,6 +454,7 @@
 <translation id="2915068235268646559">Пад од <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворете ги другите програми</translation>
 <translation id="2922350208395188000">Не може да се провери сертификатот на серверот.</translation>
+<translation id="2924027812781652774">Најавете се за да користите лозинки складирани во вашата сметка на Google</translation>
 <translation id="2925673989565098301">Начин на испорака</translation>
 <translation id="2928905813689894207">Адреса за наплата</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -1408,6 +1411,7 @@
 <translation id="7050187094878475250">Се обидовте да стигнете до <ph name="DOMAIN" />, но серверот прикажа сертификат со период на важност што е премногу долг за да му се верува.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Картичкава не може да се зачува во моментов}one{Картичкиве не може да се зачуваат во моментов}other{Картичкиве не може да се зачуваат во моментов}}</translation>
 <translation id="7053983685419859001">Блокирај</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> потврди дека <ph name="ISSUER" /> го издал сертификатот за веб-сајтов.</translation>
 <translation id="7062635574500127092">Синозелена</translation>
 <translation id="7064851114919012435">Информации за контакт</translation>
 <translation id="70705239631109039">Вашата врска не е потполно безбедна</translation>

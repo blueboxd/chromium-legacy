@@ -8,9 +8,7 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.services.service_manager.InterfaceFactory;
-import org.chromium.url.URI;
-
-import java.net.URISyntaxException;
+import org.chromium.url.GURL;
 
 /** Factory to create instances of the InstalledAppProvider Mojo service. */
 public class InstalledAppProviderFactory implements InterfaceFactory<InstalledAppProvider> {
@@ -25,15 +23,10 @@ public class InstalledAppProviderFactory implements InterfaceFactory<InstalledAp
         }
 
         @Override
-        public URI getUrl() {
+        public GURL getUrl() {
             String url = mRenderFrameHost.getLastCommittedURL();
-            if (url == null) return null;
-
-            try {
-                return new URI(url);
-            } catch (URISyntaxException e) {
-                throw new AssertionError(e);
-            }
+            if (url == null) return GURL.emptyGURL();
+            return new GURL(url);
         }
 
         @Override

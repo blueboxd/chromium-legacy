@@ -5,7 +5,9 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
 #include <memory>
+#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -992,11 +994,11 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
         client_remote.InitWithNewEndpointAndPassReceiver();
     host_receiver =
         provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
+
     base::WeakPtr<ServiceWorkerContainerHost> container_host =
-        ServiceWorkerContainerHost::CreateForWebWorker(
-            client_type, helper_->mock_render_process_id(),
-            std::move(host_receiver), std::move(client_remote),
-            context_->AsWeakPtr());
+        context_->CreateContainerHostForWorker(
+            std::move(host_receiver), helper_->mock_render_process_id(),
+            std::move(client_remote), client_type);
     container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
                                url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientContainerHost(container_host.get()));
@@ -1078,11 +1080,11 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
       client_remote.InitWithNewEndpointAndPassReceiver();
   host_receiver =
       provider_info->host_remote.InitWithNewEndpointAndPassReceiver();
+
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
-      ServiceWorkerContainerHost::CreateForWebWorker(
-          client_type, helper_->mock_render_process_id(),
-          std::move(host_receiver), std::move(client_remote),
-          helper_->context()->AsWeakPtr());
+      helper_->context()->CreateContainerHostForWorker(
+          std::move(host_receiver), helper_->mock_render_process_id(),
+          std::move(client_remote), client_type);
   EXPECT_FALSE(container_host->is_response_committed());
   EXPECT_FALSE(container_host->is_execution_ready());
 

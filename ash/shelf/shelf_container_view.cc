@@ -53,13 +53,14 @@ void ShelfContainerView::TranslateShelfView(const gfx::Vector2dF& offset) {
 }
 
 gfx::Size ShelfContainerView::CalculateIdealSize() const {
+  const int button_size = shelf_view_->GetButtonSize();
   const int width =
-      ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
-                                   shelf_view_->first_visible_index() + 1);
-  const int height = ShelfConfig::Get()->button_size();
+      ShelfView::GetSizeOfAppButtons(shelf_view_->last_visible_index() -
+                                         shelf_view_->first_visible_index() + 1,
+                                     button_size);
   return shelf_view_->shelf()->IsHorizontalAlignment()
-             ? gfx::Size(width, height)
-             : gfx::Size(height, width);
+             ? gfx::Size(width, button_size)
+             : gfx::Size(button_size, width);
 }
 
 }  // namespace ash

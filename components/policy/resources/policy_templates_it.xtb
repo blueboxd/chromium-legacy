@@ -292,6 +292,15 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="1474273443907024088">Disattiva TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Segnala informazioni sulla retroilluminazione</translation>
+<translation id="1488406778491620405">La funzione di accessibilità <ph name="PRODUCT_NAME" /> consente agli utenti di screen reader con disabilità visiva di recuperare le descrizioni delle immagini senza etichetta sul Web. Gli utenti che decidono di attivarla avranno la possibilità di usare un servizio Google anonimo per avere descrizioni automatiche delle immagini senza etichetta che trovano sul Web.
+
+          Se questa funzione viene attivata, i contenuti delle immagini vengono inviati ai server di Google per generare una descrizione. Non vengono inviati cookie o altri dati utente e Google non salva né registra i contenuti delle immagini.
+
+          Se questo criterio viene impostato su true, la funzione <ph name="PRODUCT_NAME" /> viene attivata, ma sarà disponibile soltanto per gli utenti che usano uno screen reader o altre tecnologie per la disabilità simili.
+
+          Se questo criterio viene impostato su false, gli utenti non avranno la possibilità di attivare la funzione.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o eseguirne l'override.</translation>
 <translation id="1497640071678474358">Consente di impostare un elenco di pattern URL che specificano i siti nei quali non è consentita l'apertura di popup.
 
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultPopupsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
@@ -1573,6 +1582,7 @@ Se questo criterio viene impostato su False, <ph name="PRODUCT_NAME" /> non util
 
       Questa norma può essere impostata solo come consigliata. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore, ma gli utenti possono sempre scegliere una qualsiasi impostazione internazionale supportata da <ph name="PRODUCT_OS_NAME" /> per la sessione.
       </translation>
+<translation id="3373381043600809954">Attiva <ph name="PRODUCT_NAME" /></translation>
 <translation id="3378482432905539452">Questo criterio è obsoleto. Usa <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> per controllare la disponibilità del plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> per controllare se si deve utilizzare il visualizzatore PDF integrato per aprire i file PDF.
 
       Specifica un elenco di plug-in che l'utente può attivare o disattivare in <ph name="PRODUCT_NAME" />.
@@ -2963,6 +2973,10 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       audio sarà disponibile solo per gli URL configurati in AudioCaptureAllowedUrls.
 
       Questa norma si applica a tutti i tipi di ingressi audio e non solo al microfono integrato.</translation>
+<translation id="5417906792459853336">Consente di segnalare informazioni sull'inventario delle applicazioni di un dispositivo e sul relativo utilizzo.
+
+      Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
+      Se viene impostato su true, le informazioni sulle applicazioni del dispositivo e sul relativo utilizzo vengono segnalate.</translation>
 <translation id="5422643441807528365">Codice licenza <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
@@ -3010,6 +3024,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5457065417344056871">Attiva modalità ospite nel browser</translation>
 <translation id="5457924070961220141">Consente di configurare il renderer HTML predefinito se <ph name="PRODUCT_FRAME_NAME" /> è installato. Se questa norma non viene impostata, per impostazione predefinita il rendering viene eseguito dal browser host; tuttavia, in alternativa, puoi sostituire tale impostazione e consentire che l'esecuzione del rendering delle pagine HTML venga eseguita, per impostazione predefinita, da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="5464816904705580310">Configurazione delle impostazioni per gli utenti gestiti.</translation>
+<translation id="5466596281866046569">Segnala informazioni sulle applicazioni</translation>
 <translation id="546726650689747237">Ritardo oscuramento schermo in caso di utilizzo di CA</translation>
 <translation id="5469143988693423708">L'utente è abilitato a eseguire Crostini</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
@@ -4707,7 +4722,6 @@ Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NA
 Se disattivi questa impostazione, gli utenti non potranno utilizzare la funzione Compilazione automatica.
 
 Se attivi questa impostazione o non imposti un valore, la funzione Compilazione automatica potrà essere gestita dagli utenti, che potranno quindi configurare i profili di Compilazione automatica e attivare o disattivare a propria scelta questa funzione.</translation>
-<translation id="8042971420829376618">Questo criterio consente di specificare l'ID utente <ph name="PLUGIN_VM_NAME" /> di questo dispositivo.</translation>
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
 <translation id="8050080920415773384">Stampa nativa</translation>
 <translation id="8053580360728293758">Consente di eseguire l'override della modalità di stampa a colori predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>

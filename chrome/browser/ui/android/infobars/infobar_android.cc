@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/messages/android/jni_headers/InfoBar_jni.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"

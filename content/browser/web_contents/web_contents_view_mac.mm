@@ -28,7 +28,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #import "content/browser/web_contents/web_drag_dest_mac.h"
 #include "content/common/web_contents_ns_view_bridge.mojom-shared.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -223,10 +222,6 @@ void WebContentsViewMac::FocusThroughTabTraversal(bool reverse) {
   if (delegate())
     delegate()->ResetStoredFocus();
 
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-    return;
-  }
   content::RenderWidgetHostView* fullscreen_view =
       web_contents_->GetFullscreenRenderWidgetHostView();
   if (fullscreen_view) {

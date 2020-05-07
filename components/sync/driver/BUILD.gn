@@ -56,8 +56,6 @@ jumbo_static_library("driver") {
     "sync_client.h",
     "sync_driver_switches.cc",
     "sync_driver_switches.h",
-    "sync_merge_result.cc",
-    "sync_merge_result.h",
     "sync_service.cc",
     "sync_service.h",
     "sync_service_crypto.cc",
@@ -149,8 +147,6 @@ grit("resources") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "data_type_controller_mock.cc",
-    "data_type_controller_mock.h",
     "data_type_manager_mock.cc",
     "data_type_manager_mock.h",
     "fake_data_type_controller.cc",

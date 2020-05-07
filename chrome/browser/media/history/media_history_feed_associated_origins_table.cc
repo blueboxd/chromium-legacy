@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 
+#include "base/strings/strcat.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/updateable_sequenced_task_runner.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_store.h"
@@ -114,18 +117,57 @@ std::vector<url::Origin> MediaHistoryFeedAssociatedOriginsTable::Get(
 }
 
 std::set<int64_t> MediaHistoryFeedAssociatedOriginsTable::GetFeeds(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    const bool include_subdomains) {
   std::set<int64_t> feeds;
   if (!CanAccessDatabase())
     return feeds;
 
-  sql::Statement statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT feed_id FROM mediaFeedAssociatedOrigin WHERE origin = ?"));
-  statement.BindString(0, MediaHistoryOriginTable::GetOriginForStorage(origin));
+  std::vector<std::string> sql;
+  sql.push_back("SELECT feed_id, origin FROM mediaFeedAssociatedOrigin");
 
-  while (statement.Step())
+  sql::Statement statement;
+  if (include_subdomains) {
+    sql.push_back("WHERE origin LIKE ? OR origin = ?");
+
+    // The origin will be in the format https://example.com.
+    std::vector<std::string> wildcard_parts = base::SplitString(
+        MediaHistoryOriginTable::GetOriginForStorage(origin),
+        url::kStandardSchemeSeparator,
+        base::WhitespaceHandling::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+    if (wildcard_parts.size() != 2)
+      return feeds;
+
+    statement.Assign(DB()->GetCachedStatement(
+        SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
+
+    statement.BindString(
+        0, base::StrCat({wildcard_parts[0], url::kStandardSchemeSeparator, "%.",
+                         wildcard_parts[1]}));
+    statement.BindString(1,
+                         MediaHistoryOriginTable::GetOriginForStorage(origin));
+  } else {
+    sql.push_back("WHERE origin = ?");
+
+    statement.Assign(DB()->GetCachedStatement(
+        SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
+
+    statement.BindString(0,
+                         MediaHistoryOriginTable::GetOriginForStorage(origin));
+  }
+
+  while (statement.Step()) {
+    if (include_subdomains) {
+      // This shouldn't happen but is a backup so we don't accidentally reset
+      // feeds that we should not.
+      auto url = GURL(statement.ColumnString(1));
+      if (!url.DomainIs(origin.host()))
+        continue;
+    }
+
     feeds.insert(statement.ColumnInt64(0));
+  }
 
   return feeds;
 }

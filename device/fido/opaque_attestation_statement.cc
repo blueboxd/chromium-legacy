@@ -32,7 +32,7 @@ Value OpaqueAttestationStatement::AsCBOR() const {
   return cbor::Value(std::move(new_map));
 }
 
-bool OpaqueAttestationStatement::IsSelfAttestation() {
+bool OpaqueAttestationStatement::IsSelfAttestation() const {
   DCHECK(attestation_statement_map_.is_map());
   const Value::MapValue& m(attestation_statement_map_.GetMap());
   const Value alg("alg");
@@ -43,7 +43,7 @@ bool OpaqueAttestationStatement::IsSelfAttestation() {
 }
 
 bool OpaqueAttestationStatement::
-    IsAttestationCertificateInappropriatelyIdentifying() {
+    IsAttestationCertificateInappropriatelyIdentifying() const {
   return false;
 }
 

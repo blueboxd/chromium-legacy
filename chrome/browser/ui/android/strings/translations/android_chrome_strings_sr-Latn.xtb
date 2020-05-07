@@ -471,6 +471,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="4913169188695071480">Zaustavi osvežavanje</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /> dok skenirate uređaje…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stranica}one{# stranica}few{# stranice}other{# stranica}}</translation>
+<translation id="49268022542405662">Lozinke se izvoze i preuzimaju kao tekstualne datoteke. Vidljive su svim korisnicima i aplikacijama sa pristupom odredišnom direktorijumu.</translation>
 <translation id="4932247056774066048">Pošto se odjavljujete sa naloga kojim upravlja <ph name="DOMAIN_NAME" />, Chrome podaci biće izbrisani sa ovog uređaja. Ostaće na vašem Google nalogu.</translation>
 <translation id="4943703118917034429">Virtuelna realnost</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
@@ -731,7 +732,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="7071521146534760487">Upravljajte nalogom</translation>
 <translation id="7077143737582773186">SD kartica</translation>
 <translation id="7121362699166175603">Briše istoriju i automatska dovršavanja u traci za adresu. Google nalog može da ima druge oblike istorije pregledanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="7128355412245153445">Gledajte najpopularnije sajtove i nedavne vesti kad god dodirnete dugme Početna</translation>
+<translation id="7128355412245153445">Vidite sajtove koje najčešće posećujete i nedavne vesti kad god dodirnete dugme Početna</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7146622961999026732">Izgleda da su vam ovi sajtovi i aplikacije važni:</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Učitaj originalnu stranicu<ph name="END_LINK" /> sa <ph name="DOMAIN_NAME" /></translation>
@@ -753,6 +754,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="7302081693174882195">Detalji: sortirano prema količini ušteđenih podataka</translation>
 <translation id="7328017930301109123">U Lite režimu Chrome učitava stranice brže i koristi i do 60 procenata manje podataka.</translation>
 <translation id="7333031090786104871">Još uvek dodajemo prethodni sajt</translation>
+<translation id="7340958967809483333">Opcije za Discover</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deli 1 izabranu stavku}one{Deli # izabranu stavku}few{Deli # izabrane stavke}other{Deli # izabranih stavki}}</translation>
 <translation id="7359002509206457351">Pristup načinima plaćanja</translation>
@@ -817,6 +819,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7810647596859435254">Otvori pomoću…</translation>
 <translation id="7821588508402923572">Ušteda podataka se prikazuje ovde</translation>
+<translation id="7835852323729233924">Reprodukcija medija</translation>
 <translation id="783819812427904514">Uključite zvuk videa</translation>
 <translation id="784934925303690534">Vremenski opseg</translation>
 <translation id="7851858861565204677">Drugi uređaji</translation>

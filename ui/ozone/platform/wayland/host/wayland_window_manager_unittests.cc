@@ -20,6 +20,8 @@ constexpr gfx::Rect kDefaultBounds(0, 0, 100, 100);
 class WaylandWindowManagerTest : public WaylandTest {
  public:
   WaylandWindowManagerTest() {}
+  WaylandWindowManagerTest(const WaylandWindowManagerTest&) = delete;
+  WaylandWindowManagerTest& operator=(const WaylandWindowManagerTest&) = delete;
 
   void SetUp() override {
     WaylandTest::SetUp();
@@ -44,9 +46,6 @@ class WaylandWindowManagerTest : public WaylandTest {
   }
 
   WaylandWindowManager* manager_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandWindowManagerTest);
 };
 
 TEST_P(WaylandWindowManagerTest, GetWindow) {

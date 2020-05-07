@@ -1389,10 +1389,7 @@ public class ExternalNavigationHandler {
         return !canSelfOpen || allowSelfOpen || hasPdfViewer;
     }
 
-    // TODO(crbug.com/1071390): Make this method private once its consumers have been moved into
-    // this class.
-    public static boolean matchResolveInfoExceptWildCardHost(
-            ResolveInfo info, String filterPackageName) {
+    static boolean matchResolveInfoExceptWildCardHost(ResolveInfo info, String filterPackageName) {
         IntentFilter intentFilter = info.filter;
         if (intentFilter == null) {
             // Error on the side of classifying ResolveInfo as generic.
@@ -1420,6 +1417,35 @@ public class ExternalNavigationHandler {
             return false;
         }
         return true;
+    }
+
+    @VisibleForTesting
+    public static ArrayList<String> getSpecializedHandlersWithFilter(List<ResolveInfo> infos,
+            String filterPackageName, boolean handlesInstantAppLaunchingInternally) {
+        ArrayList<String> result = new ArrayList<>();
+        if (infos == null) {
+            return result;
+        }
+
+        for (ResolveInfo info : infos) {
+            if (!matchResolveInfoExceptWildCardHost(info, filterPackageName)) {
+                continue;
+            }
+
+            if (info.activityInfo != null) {
+                if (handlesInstantAppLaunchingInternally
+                        && IntentUtils.isInstantAppResolveInfo(info)) {
+                    // Don't add the Instant Apps launcher as a specialized handler if the embedder
+                    // handles launching of Instant Apps itself.
+                    continue;
+                }
+
+                result.add(info.activityInfo.packageName);
+            } else {
+                result.add("");
+            }
+        }
+        return result;
     }
 
     /**

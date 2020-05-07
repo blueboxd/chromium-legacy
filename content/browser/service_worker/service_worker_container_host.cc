@@ -83,103 +83,53 @@ class ServiceWorkerContainerHost::PendingUpdateVersion {
   DISALLOW_COPY_AND_ASSIGN(PendingUpdateVersion);
 };
 
-// static
-base::WeakPtr<ServiceWorkerContainerHost>
-ServiceWorkerContainerHost::CreateForWindow(
-    bool are_ancestors_secure,
-    int frame_tree_node_id,
-    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-        host_receiver,
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote,
-    base::WeakPtr<ServiceWorkerContextCore> context) {
-  DCHECK(context);
-  auto container_host = std::make_unique<ServiceWorkerContainerHost>(
-      context, are_ancestors_secure,
-      blink::mojom::ServiceWorkerClientType::kWindow, frame_tree_node_id,
-      std::move(host_receiver), std::move(container_remote));
-
-  std::string client_uuid = container_host->client_uuid();
-  base::WeakPtr<ServiceWorkerContainerHost> weak_ptr =
-      container_host->GetWeakPtr();
-  context->RegisterContainerHostByClientID(client_uuid,
-                                           std::move(container_host));
-  DCHECK(weak_ptr->receiver_.is_bound());
-  weak_ptr->receiver_.set_disconnect_handler(base::BindOnce(
-      &ServiceWorkerContextCore::UnregisterContainerHostByClientID, context,
-      client_uuid));
-  return weak_ptr;
-}
-
-// static
-base::WeakPtr<ServiceWorkerContainerHost>
-ServiceWorkerContainerHost::CreateForWebWorker(
-    blink::mojom::ServiceWorkerClientType client_type,
-    int process_id,
-    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-        host_receiver,
-    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote,
-    base::WeakPtr<ServiceWorkerContextCore> context) {
-  DCHECK(context);
-  using blink::mojom::ServiceWorkerClientType;
-  DCHECK(client_type == ServiceWorkerClientType::kDedicatedWorker ||
-         client_type == ServiceWorkerClientType::kSharedWorker);
-  if (client_type == ServiceWorkerClientType::kDedicatedWorker)
-    DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
-
-  auto container_host = std::make_unique<ServiceWorkerContainerHost>(
-      context, /*is_parent_frame_secure=*/true, client_type,
-      FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
-      std::move(container_remote));
-  container_host->SetContainerProcessId(process_id);
-
-  std::string client_uuid = container_host->client_uuid();
-  base::WeakPtr<ServiceWorkerContainerHost> weak_ptr =
-      container_host->GetWeakPtr();
-  context->RegisterContainerHostByClientID(client_uuid,
-                                           std::move(container_host));
-  DCHECK(weak_ptr->receiver_.is_bound());
-  weak_ptr->receiver_.set_disconnect_handler(base::BindOnce(
-      &ServiceWorkerContextCore::UnregisterContainerHostByClientID, context,
-      client_uuid));
-  return weak_ptr;
+ServiceWorkerContainerHost::ServiceWorkerContainerHost(
+    base::WeakPtr<ServiceWorkerContextCore> context)
+    : context_(std::move(context)), create_time_(base::TimeTicks::Now()) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForServiceWorker());
+  DCHECK(context_);
 }
 
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool is_parent_frame_secure,
-    base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
-    int frame_tree_node_id,
-    mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-        host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote)
+        container_remote,
+    int frame_tree_node_id)
     : context_(std::move(context)),
       create_time_(base::TimeTicks::Now()),
-      client_uuid_(client_type ? base::GenerateGUID() : std::string()),
+      client_uuid_(base::GenerateGUID()),
       is_parent_frame_secure_(is_parent_frame_secure),
-      client_type_(client_type),
+      container_(std::move(container_remote)),
+      client_type_(blink::mojom::ServiceWorkerClientType::kWindow),
       frame_tree_node_id_(frame_tree_node_id),
       web_contents_getter_(
-          frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
-              ? base::NullCallback()
-              : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                    frame_tree_node_id)) {
+          base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                              frame_tree_node_id_)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(!client_type_ ||
-         *client_type_ != blink::mojom::ServiceWorkerClientType::kAll);
+  DCHECK(IsContainerForWindowClient());
   DCHECK(context_);
+  DCHECK(container_.is_bound());
+}
 
-  DCHECK(host_receiver.is_valid());
-  receiver_.Bind(std::move(host_receiver));
-
-  if (IsContainerForClient()) {
-    DCHECK(container_remote);
-    container_.Bind(std::move(container_remote));
-  } else {
-    DCHECK(IsContainerForServiceWorker());
-  }
+ServiceWorkerContainerHost::ServiceWorkerContainerHost(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    int process_id,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        container_remote,
+    blink::mojom::ServiceWorkerClientType client_type)
+    : context_(std::move(context)),
+      create_time_(base::TimeTicks::Now()),
+      client_uuid_(base::GenerateGUID()),
+      process_id_(process_id),
+      container_(std::move(container_remote)),
+      client_type_(client_type) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForWorkerClient());
+  DCHECK(context_);
+  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+  DCHECK(container_.is_bound());
 }
 
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
@@ -209,7 +159,8 @@ ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
   controller_registration_.reset();
 
   // Ensure callbacks awaiting execution ready are notified.
-  RunExecutionReadyCallbacks();
+  if (IsContainerForClient())
+    RunExecutionReadyCallbacks();
 
   RemoveAllMatchingRegistrations();
 }
@@ -773,7 +724,11 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForWindowClient());
 
-  SetContainerProcessId(container_process_id);
+  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, process_id_);
+  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, container_process_id);
+  process_id_ = container_process_id;
+  if (controller_)
+    controller_->UpdateForegroundPriority();
 
   DCHECK_EQ(MSG_ROUTING_NONE, frame_id_);
   DCHECK_NE(MSG_ROUTING_NONE, container_frame_id);
@@ -884,14 +839,8 @@ void ServiceWorkerContainerHost::UpdateUrls(
     // Set UUID to the new one.
     std::string previous_client_uuid = client_uuid_;
     client_uuid_ = base::GenerateGUID();
-    if (context_) {
+    if (context_)
       context_->UpdateContainerHostClientID(previous_client_uuid, client_uuid_);
-      // Update the disconnect handler, too.
-      DCHECK(receiver_.is_bound());
-      receiver_.set_disconnect_handler(base::BindOnce(
-          &ServiceWorkerContextCore::UnregisterContainerHostByClientID,
-          context_, client_uuid_));
-    }
   }
 
   SyncMatchingRegistrations();
@@ -918,6 +867,8 @@ void ServiceWorkerContainerHost::SetControllerRegistration(
 mojo::Remote<blink::mojom::ControllerServiceWorker>
 ServiceWorkerContainerHost::GetRemoteControllerServiceWorker() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForClient());
+
   DCHECK(controller_);
   if (controller_->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
@@ -1025,6 +976,8 @@ bool ServiceWorkerContainerHost::is_response_committed() const {
 void ServiceWorkerContainerHost::AddExecutionReadyCallback(
     ExecutionReadyCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForClient());
+
   DCHECK(!is_execution_ready());
   execution_ready_callbacks_.push_back(std::move(callback));
 }
@@ -1032,17 +985,8 @@ void ServiceWorkerContainerHost::AddExecutionReadyCallback(
 bool ServiceWorkerContainerHost::is_execution_ready() const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForClient());
-  return client_phase_ == ClientPhase::kExecutionReady;
-}
 
-void ServiceWorkerContainerHost::SetContainerProcessId(
-    int container_process_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, process_id_);
-  DCHECK_NE(ChildProcessHost::kInvalidUniqueID, container_process_id);
-  process_id_ = container_process_id;
-  if (controller_)
-    controller_->UpdateForegroundPriority();
+  return client_phase_ == ClientPhase::kExecutionReady;
 }
 
 const std::string& ServiceWorkerContainerHost::client_uuid() const {
@@ -1224,6 +1168,8 @@ void ServiceWorkerContainerHost::SetExecutionReady() {
 
 void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForClient());
+
   std::vector<ExecutionReadyCallback> callbacks;
   execution_ready_callbacks_.swap(callbacks);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1323,6 +1269,8 @@ void ServiceWorkerContainerHost::StartControllerComplete(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForClient());
+
   if (status == blink::ServiceWorkerStatusCode::kOk) {
     DCHECK(is_response_committed());
 

@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">ivično područje ekrana</translation>
 <translation id="119944043368869598">Obriši sve</translation>
 <translation id="1199716647557067911">Želite li stvarno da isključite pristup pomoću prekidača?</translation>
+<translation id="121097972571826261">Reč unapred</translation>
+<translation id="1229194443904279055">Izađi iz režima biranja</translation>
 <translation id="1247372569136754018">Mikrofon (interni)</translation>
 <translation id="1252999807265626933">Punjenje iz uređaja <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kakvo je vreme?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Lupa za ceo ekran je omogućena. Ponovo pritisnite Ctrl + taster za pretragu + M da biste je isključili.</translation>
 <translation id="2302092602801625023">Ovim nalogom upravlja Family Link</translation>
 <translation id="2303600792989757991">Uključi/isključi pregled prozora</translation>
+<translation id="2322173485024759474">Slovo unazad</translation>
 <translation id="2339073806695260576">Dodirnite dugme pisaljke na polici da biste napravili belešku i snimak ekrana i da biste koristili laserski pokazivač ili lupu.</translation>
 <translation id="2341729377289034582">Vertikalni prikaz je zaključan</translation>
 <translation id="2352467521400612932">Podešavanja pisaljke</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Pregledajte podešavanja tastature</translation>
 <translation id="3846575436967432996">Nisu dostupne informacije o mreži</translation>
 <translation id="385051799172605136">Nazad</translation>
+<translation id="385300504083504382">Početak</translation>
 <translation id="3891340733213178823">Dvaput pritisnite Ctrl+Shift+Q da biste se odjavili.</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
 <translation id="3897533311200664389">Unesite upit za pretragu</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Previše pokušaja</translation>
 <translation id="5397578532367286026">Menadžer (<ph name="MANAGER_EMAIL" />) može da pregleda korišćenje i istoriju ovog korisnika na chrome.com.</translation>
 <translation id="5400461572260843123">Brza podešavanja, pritisnite taster za pretragu i strelicu ulevo da biste pristupili centru za obaveštenja.</translation>
+<translation id="5428899915242071344">Pokreni biranje</translation>
 <translation id="5430931332414098647">Trenutno privezivanje</translation>
 <translation id="5431825016875453137">Otvoreni VPN/L2TP</translation>
 <translation id="544691375626129091">Svi dostupni korisnici su već dodati u ovu sesiju.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Napaja povezane uređaje sa USB priključkom tipa C</translation>
 <translation id="6790428901817661496">Pusti</translation>
 <translation id="6803622936009808957">Nije moguće preslikati ekrane zato što nije pronađena nijedna podržana rezolucija. Umesto toga, prikazuje se proširena radna površina.</translation>
+<translation id="6818242057446442178">Reč unazad</translation>
 <translation id="6820676911989879663">Napravite pauzu!</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Prečica je isključena</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Prethodni meni</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Napravite belešku</translation>
+<translation id="8371779926711439835">Slovo unapred</translation>
 <translation id="8375916635258623388">Ovaj <ph name="DEVICE_NAME" /> i telefon će se automatski povezati</translation>
 <translation id="8388750414311082622">Ne možemo da uklonimo poslednju radnu površinu.</translation>
 <translation id="8392451568018454956">Meni sa opcijama za <ph name="USER_EMAIL_ADDRESS" /></translation>

@@ -215,12 +215,6 @@ class PasswordManagerClient {
       const std::vector<const autofill::PasswordForm*>& best_matches,
       bool is_blacklisted);
 
-  // Update the CredentialCache with information on whether the origin is
-  // blacklisted for passwords saving. This change is user-iniated from UI
-  // provided for this purpose. Currently only implemented on Android.
-  virtual void UpdateCacheWithBlacklistedForOrigin(const url::Origin& origin,
-                                                   bool is_blacklisted);
-
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occurred.
   virtual void AutomaticPasswordSave(

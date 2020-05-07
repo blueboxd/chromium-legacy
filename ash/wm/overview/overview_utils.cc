@@ -337,9 +337,12 @@ gfx::Rect GetGridBoundsInScreen(
             OverviewEnterExitType::kImmediateEnter &&
         !split_view_controller->InSplitViewMode();
     if (hotseat_extended || hotseat_will_extend) {
+      // Use the default hotseat size here to avoid the possible re-layout
+      // due to the update in HotseatWidget::is_forced_dense_.
       const int hotseat_bottom_inset =
-          ShelfConfig::Get()->hotseat_size() +
+          ShelfConfig::Get()->GetHotseatSize(/*force_dense=*/false) +
           ShelfConfig::Get()->hotseat_bottom_padding();
+
       bounds.Inset(0, 0, 0, hotseat_bottom_inset);
     }
   }

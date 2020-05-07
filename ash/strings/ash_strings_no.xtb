@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Fjern alle</translation>
 <translation id="1199716647557067911">Er du sikker på at du vil slå av brytertilgang?</translation>
+<translation id="121097972571826261">Ett ord frem</translation>
+<translation id="1229194443904279055">Slutt å merke</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Lader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er været?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Lupe for hele skjermen er slått på. Trykk på Ctrl + Søk + M igjen for å slå det av.</translation>
 <translation id="2302092602801625023">Denne kontoen er administrert av Family Link</translation>
 <translation id="2303600792989757991">Vis eller skjul vindusoversikten</translation>
+<translation id="2322173485024759474">Én bokstav tilbake</translation>
 <translation id="2339073806695260576">Trykk på pekepennknappen på hyllen for å ta et notat, ta en skjermdump, bruke laserpekeren eller bruke forstørrelsesglasset.</translation>
 <translation id="2341729377289034582">Låst til vertikal</translation>
 <translation id="2352467521400612932">Innstillinger for pekepenn</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Vis tastaturinnstillinger</translation>
 <translation id="3846575436967432996">Ingen nettverksinformasjon tilgjengelig</translation>
 <translation id="385051799172605136">Tilbake</translation>
+<translation id="385300504083504382">Begynnelsen</translation>
 <translation id="3891340733213178823">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
 <translation id="3897533311200664389">Start et tekstsøk</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">For mange forsøk</translation>
 <translation id="5397578532367286026">Bruken og loggen for denne brukeren kan gjennomgås av administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com</translation>
 <translation id="5400461572260843123">Hurtiginnstillinger – trykk på søk + venstre for å åpne varselsenteret.</translation>
+<translation id="5428899915242071344">Begynn å merke</translation>
 <translation id="5430931332414098647">Umiddelbar internettdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle tilgjengelige brukere er allerede lagt til i denne økten.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Gir strøm til tilkoblede USB-C-enheter</translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
+<translation id="6818242057446442178">Ett ord tilbake</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Snarveien er avslått</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Forrige meny</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /><ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
+<translation id="8371779926711439835">Én bokstav frem</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> og telefonen din kobles sammen automatisk</translation>
 <translation id="8388750414311082622">Det siste skrivebordet kan ikke fjernes.</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>

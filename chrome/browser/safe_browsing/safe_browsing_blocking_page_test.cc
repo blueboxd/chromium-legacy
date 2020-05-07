@@ -65,7 +65,6 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_types.h"
@@ -90,7 +89,6 @@
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::BrowserThread;
-using content::InterstitialPage;
 using content::NavigationController;
 using content::RenderFrameHost;
 using content::WebContents;
@@ -614,11 +612,6 @@ class SafeBrowsingBlockingPageBrowserTest
       security_interstitials::SecurityInterstitialCommand command) {
     WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    // We use InterstitialPage::GetInterstitialPage(tab) instead of
-    // tab->GetInterstitialPage() because the tab doesn't have a pointer
-    // to its interstitial page until it gets a command from the renderer
-    // that it has indeed displayed it -- and this sometimes happens after
-    // NavigateToURL returns.
     SafeBrowsingBlockingPage* interstitial_page;
     security_interstitials::SecurityInterstitialTabHelper* helper =
         security_interstitials::SecurityInterstitialTabHelper::FromWebContents(

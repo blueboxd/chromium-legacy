@@ -94,15 +94,20 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
     @Override
     public void fetchImage(
             String url, String clientName, int width, int height, Callback<Bitmap> callback) {
+        fetchImage(ImageFetcher.Params.create(url, clientName, width, height), callback);
+    }
+
+    @Override
+    public void fetchImage(final Params params, Callback<Bitmap> callback) {
         assert mBitmapCache != null && mImageFetcher != null : "fetchImage called after destroy";
-        Bitmap cachedBitmap = tryToGetBitmap(url, width, height);
+        Bitmap cachedBitmap = tryToGetBitmap(params.url, params.width, params.height);
         if (cachedBitmap == null) {
-            mImageFetcher.fetchImage(url, clientName, width, height, (@Nullable Bitmap bitmap) -> {
-                storeBitmap(bitmap, url, width, height);
+            mImageFetcher.fetchImage(params, (@Nullable Bitmap bitmap) -> {
+                storeBitmap(bitmap, params.url, params.width, params.height);
                 callback.onResult(bitmap);
             });
         } else {
-            reportEvent(clientName, ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
+            reportEvent(params.clientName, ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
             callback.onResult(cachedBitmap);
         }
     }

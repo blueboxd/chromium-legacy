@@ -271,6 +271,13 @@ interface CrosHealthdDiagnosticsService {
 
 // Event interface exposed by the cros_healthd daemon.
 interface CrosHealthdEventService {
+  // Adds an observer to be notified on Bluetooth events. The caller can remove
+  // the observer created by this call by closing their end of the message pipe.
+  //
+  // The request:
+  // * |observer| - Bluetooth observer to be added to cros_healthd.
+  AddBluetoothObserver(CrosHealthdBluetoothObserver observer);
+
   // Adds an observer to be notified on power events. The caller can remove the
   // observer created by this call by closing their end of the message pipe.
   //

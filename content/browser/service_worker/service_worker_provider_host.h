@@ -100,6 +100,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
 
   std::unique_ptr<ServiceWorkerContainerHost> container_host_;
 
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
+      host_receiver_;
+
   base::WeakPtrFactory<ServiceWorkerProviderHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);

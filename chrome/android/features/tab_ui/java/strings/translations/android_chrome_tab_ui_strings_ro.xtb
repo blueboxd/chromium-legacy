@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Examinează</translation>
 <translation id="5073204694187207510">Ascunde grila pe ecran complet</translation>
 <translation id="5082793167783849073">Compară rapid paginile făcând un grup. Pentru a începe, atinge lung un link.</translation>
+<translation id="5533021382642990449">Afișează mai târziu</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> file au fost grupate</translation>
 <translation id="58326064309361797">Trage filele pentru a le grupa</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Închide sugestiile.</translation>
 <translation id="814503310257431685">Vedeți toate</translation>
 <translation id="8205266828577616993">Mută fila mai sus</translation>
+<translation id="8304833501377495048">Nu mai vrei să afișezi bara de file?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Închide <ph name="TABS_COUNT_ONE" /> filă selectată}few{Închide <ph name="TABS_COUNT_MANY" /> file selectate}other{Închide <ph name="TABS_COUNT_MANY" /> de file selectate}}</translation>
+<translation id="8749939518995770034">Bara de file s-a închis</translation>
 <translation id="9150694013019234766">Comută între filele din grupul de file în partea de jos a ecranului</translation>
 <translation id="9169594135889675189">Adaugă o filă nouă în grup</translation>
 <translation id="959682366969460160">Organizează-te</translation>

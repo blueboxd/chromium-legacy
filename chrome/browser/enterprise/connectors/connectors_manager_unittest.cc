@@ -123,21 +123,6 @@ class ConnectorsManagerTest : public testing::Test {
     ASSERT_EQ(settings.tags, expected_tags_);
   }
 
-  base::Optional<AnalysisSettings> GetAnalysisSettingsSync(
-      const GURL& url,
-      AnalysisConnector connector) {
-    // This helper only works when the result is known to be available
-    // synchronously. Do not use it for async tests.
-    base::Optional<AnalysisSettings> settings(base::nullopt);
-    auto callback = base::BindLambdaForTesting(
-        [&settings](base::Optional<AnalysisSettings> tmp_settings) {
-          settings = std::move(tmp_settings);
-        });
-    ConnectorsManager::GetInstance()->GetAnalysisSettings(url, connector,
-                                                          callback);
-    return settings;
-  }
-
   class ScopedConnectorPref {
    public:
     ScopedConnectorPref(const char* pref, const char* pref_value)
@@ -203,7 +188,9 @@ class ConnectorsManagerLegacyPoliciesTest
     // DLP only checks uploads by default and malware only checks downloads by
     // default. Overriding the appropriate policies subsequently will change the
     // tags matching the pattern.
-    auto default_settings = GetAnalysisSettingsSync(url_, connector());
+    auto default_settings =
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(default_settings.has_value());
     expected_tags_ = {"malware"};
     ValidateSettings(default_settings.value());
@@ -213,7 +200,8 @@ class ConnectorsManagerLegacyPoliciesTest
                    prefs::kURLsToCheckComplianceOfDownloadedContent)
         ->Append(kTestUrlNotMatchingPattern);
     auto exempt_pattern_dlp_settings =
-        GetAnalysisSettingsSync(url_, connector());
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(exempt_pattern_dlp_settings.has_value());
     ValidateSettings(exempt_pattern_dlp_settings.value());
 
@@ -221,7 +209,9 @@ class ConnectorsManagerLegacyPoliciesTest
     ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
                    prefs::kURLsToCheckComplianceOfDownloadedContent)
         ->Append(kTestUrlMatchingPattern);
-    auto scan_pattern_dlp_settings = GetAnalysisSettingsSync(url_, connector());
+    auto scan_pattern_dlp_settings =
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(scan_pattern_dlp_settings.has_value());
     expected_tags_ = {"dlp", "malware"};
     ValidateSettings(scan_pattern_dlp_settings.value());
@@ -231,7 +221,8 @@ class ConnectorsManagerLegacyPoliciesTest
                    prefs::kURLsToNotCheckForMalwareOfDownloadedContent)
         ->Append(kTestUrlMatchingPattern);
     auto exempt_pattern_malware_settings =
-        GetAnalysisSettingsSync(url_, connector());
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(exempt_pattern_malware_settings.has_value());
     expected_tags_ = {"dlp"};
     ValidateSettings(exempt_pattern_malware_settings.value());
@@ -241,7 +232,8 @@ class ConnectorsManagerLegacyPoliciesTest
     ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
                    prefs::kURLsToCheckComplianceOfDownloadedContent)
         ->Remove(1, nullptr);
-    auto no_settings = GetAnalysisSettingsSync(url_, connector());
+    auto no_settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
+        url_, connector());
     ASSERT_FALSE(no_settings.has_value());
   }
 
@@ -249,7 +241,9 @@ class ConnectorsManagerLegacyPoliciesTest
     // DLP only checks uploads by default and malware only checks downloads by
     // default. Overriding the appropriate policies subsequently will change the
     // tags matching the pattern.
-    auto default_settings = GetAnalysisSettingsSync(url_, connector());
+    auto default_settings =
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(default_settings.has_value());
     expected_tags_ = {"dlp"};
     ValidateSettings(default_settings.value());
@@ -259,7 +253,8 @@ class ConnectorsManagerLegacyPoliciesTest
                    prefs::kURLsToCheckForMalwareOfUploadedContent)
         ->Append(kTestUrlNotMatchingPattern);
     auto exempt_pattern_malware_settings =
-        GetAnalysisSettingsSync(url_, connector());
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(exempt_pattern_malware_settings.has_value());
     ValidateSettings(exempt_pattern_malware_settings.value());
 
@@ -268,7 +263,8 @@ class ConnectorsManagerLegacyPoliciesTest
                    prefs::kURLsToCheckForMalwareOfUploadedContent)
         ->Append(kTestUrlMatchingPattern);
     auto scan_pattern_malware_settings =
-        GetAnalysisSettingsSync(url_, connector());
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(scan_pattern_malware_settings.has_value());
     expected_tags_ = {"dlp", "malware"};
     ValidateSettings(scan_pattern_malware_settings.value());
@@ -278,7 +274,8 @@ class ConnectorsManagerLegacyPoliciesTest
                    prefs::kURLsToNotCheckComplianceOfUploadedContent)
         ->Append(kTestUrlMatchingPattern);
     auto exempt_pattern_dlp_settings =
-        GetAnalysisSettingsSync(url_, connector());
+        ConnectorsManager::GetInstance()->GetAnalysisSettings(url_,
+                                                              connector());
     ASSERT_TRUE(exempt_pattern_dlp_settings.has_value());
     expected_tags_ = {"malware"};
     ValidateSettings(exempt_pattern_dlp_settings.value());
@@ -288,7 +285,8 @@ class ConnectorsManagerLegacyPoliciesTest
     ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(),
                    prefs::kURLsToCheckForMalwareOfUploadedContent)
         ->Remove(1, nullptr);
-    auto no_settings = GetAnalysisSettingsSync(url_, connector());
+    auto no_settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
+        url_, connector());
     ASSERT_FALSE(no_settings.has_value());
   }
 };
@@ -476,18 +474,12 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
   SetUpExpectedSettings(kNormalSettingsPref);
 
   // Verify that the expected settings are returned normally.
-  bool called = false;
-  ConnectorsManager::GetInstance()->GetAnalysisSettings(
-      GURL(url()), connector(),
-      base::BindLambdaForTesting(
-          [this, &called](base::Optional<AnalysisSettings> settings) {
-            ASSERT_EQ(expect_settings_, settings.has_value());
-            if (settings.has_value())
-              ValidateSettings(settings.value());
-            called = true;
-          }));
-
-  ASSERT_TRUE(called);
+  auto settings_from_manager =
+      ConnectorsManager::GetInstance()->GetAnalysisSettings(GURL(url()),
+                                                            connector());
+  ASSERT_EQ(expect_settings_, settings_from_manager.has_value());
+  if (settings_from_manager.has_value())
+    ValidateSettings(settings_from_manager.value());
 
   // Verify that the expected settings are also returned by the cached settings.
   const auto& cached_settings = ConnectorsManager::GetInstance()
@@ -496,11 +488,11 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
   ASSERT_EQ(1u, cached_settings.count(connector()));
   ASSERT_EQ(1u, cached_settings.at(connector()).size());
 
-  auto settings =
+  auto settings_from_cache =
       cached_settings.at(connector()).at(0).GetAnalysisSettings(GURL(url()));
-  ASSERT_EQ(expect_settings_, settings.has_value());
-  if (settings.has_value())
-    ValidateSettings(settings.value());
+  ASSERT_EQ(expect_settings_, settings_from_cache.has_value());
+  if (settings_from_cache.has_value())
+    ValidateSettings(settings_from_cache.value());
 }
 
 TEST_P(ConnectorsManagerConnectorPoliciesTest, EmptyPref) {
@@ -511,16 +503,10 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, EmptyPref) {
                   .empty());
   ScopedConnectorPref scoped_pref(pref(), kEmptySettingsPref);
 
-  bool called = false;
-  ConnectorsManager::GetInstance()->GetAnalysisSettings(
-      GURL(url()), connector(),
-      base::BindLambdaForTesting(
-          [&called](base::Optional<AnalysisSettings> settings) {
-            ASSERT_FALSE(settings.has_value());
-            called = true;
-          }));
+  ASSERT_FALSE(ConnectorsManager::GetInstance()
+                   ->GetAnalysisSettings(GURL(url()), connector())
+                   .has_value());
 
-  ASSERT_TRUE(called);
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
@@ -595,24 +581,18 @@ class ConnectorsManagerNoFeatureTest
 TEST_P(ConnectorsManagerNoFeatureTest, Test) {
   ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
 
-  // Ensure that the default legacy settings are read synchronously.
-  int i = 0;
   if (connector() == AnalysisConnector::FILE_DOWNLOADED)
     expected_tags_ = {"malware"};
   else
     expected_tags_ = {"dlp"};
+
   for (const char* url :
        {kDlpAndMalwareUrl, kOnlyDlpUrl, kOnlyMalwareUrl, kNoTagsUrl}) {
-    ConnectorsManager::GetInstance()->GetAnalysisSettings(
-        GURL(url), connector(),
-        base::BindLambdaForTesting(
-            [this, &i](base::Optional<AnalysisSettings> settings) {
-              ASSERT_TRUE(settings.has_value());
-              ValidateSettings(settings.value());
-              ++i;
-            }));
+    auto settings = ConnectorsManager::GetInstance()->GetAnalysisSettings(
+        GURL(url), connector());
+    ASSERT_TRUE(settings.has_value());
+    ValidateSettings(settings.value());
   }
-  ASSERT_EQ(i, 4);
 
   // No cached settings imply the connector value was never read.
   ASSERT_TRUE(ConnectorsManager::GetInstance()

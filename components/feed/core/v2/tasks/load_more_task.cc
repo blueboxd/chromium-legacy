@@ -43,7 +43,7 @@ void LoadMoreTask::Run() {
   // Send network request.
   fetch_start_time_ = stream_->GetTickClock()->NowTicks();
   stream_->GetNetwork()->SendQueryRequest(
-      CreateFeedQueryLoadMoreRequest(stream_->GetChromeInfo(),
+      CreateFeedQueryLoadMoreRequest(stream_->GetRequestMetadata(),
                                      model->GetConsistencyToken(),
                                      model->GetNextPageToken()),
       base::BindOnce(&LoadMoreTask::QueryRequestComplete, GetWeakPtr()));

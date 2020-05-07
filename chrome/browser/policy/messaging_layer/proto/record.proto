@@ -8,6 +8,8 @@ option optimize_for = LITE_RUNTIME;
 
 package reporting_messaging_layer;
 
+import "components/policy/proto/record_constants.proto";
+
 // Record represents the data sent from the Reporting Client.
 message Record {
   // Record data as enqueued with an ReportingQueue::Enqueue call (required).
@@ -18,11 +20,11 @@ message Record {
   //
   // Current expected formats (destination : type):
   // Destination::UPLOAD_EVENTS : UploadEventsRequest
-  optional bytes data = 1 [ctype = CORD];
+  optional string data = 1;
 
   // The destination associated with this request as set with the
   // ReportingQueueConfiguration (required).
-  optional string destination = 2;
+  optional Destination destination = 2;
 
   // The DMToken associated with this request as set with the
   // ReportingQueueConfiuguration (required).

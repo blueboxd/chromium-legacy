@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.Callback;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -41,7 +41,7 @@ import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
-import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
+import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         Context context = parent.getContext();
 
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
-        ModelList listItems = new ModelList();
+        MVCListAdapter.ModelList listItems = new MVCListAdapter.ModelList();
         mMediator = new AutocompleteMediator(context, delegate, urlBarEditingTextProvider,
                 new AutocompleteController(), listModel, new Handler());
         mMediator.initDefaultProcessors();
@@ -96,7 +96,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     }
 
     private ViewProvider<SuggestionListViewHolder> createViewProvider(
-            Context context, ModelList modelList) {
+            Context context, MVCListAdapter.ModelList modelList) {
         return new ViewProvider<SuggestionListViewHolder>() {
             private List<Callback<SuggestionListViewHolder>> mCallbacks = new ArrayList<>();
             private SuggestionListViewHolder mHolder;
@@ -106,18 +106,17 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                 ViewGroup container = (ViewGroup) ((ViewStub) mParent.getRootView().findViewById(
                                                            R.id.omnibox_results_container_stub))
                                               .inflate();
-                OmniboxSuggestionsList list;
-                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                    list = new OmniboxSuggestionsList(context);
-                }
+                Pair<OmniboxSuggestionsDropdown, MVCListAdapter> dropdownAndAdapter =
+                        OmniboxSuggestionsDropdownFactory.provideDropdownAndAdapter(
+                                context, modelList);
+
+                OmniboxSuggestionsDropdown dropdown = dropdownAndAdapter.first;
+                MVCListAdapter adapter = dropdownAndAdapter.second;
 
                 // Start with visibility GONE to ensure that show() is called.
                 // http://crbug.com/517438
-                list.setVisibility(View.GONE);
-                OmniboxSuggestionsListAdapter adapter =
-                        new OmniboxSuggestionsListAdapter(modelList);
-                list.setAdapter(adapter);
-                list.setClipToPadding(false);
+                dropdown.getViewGroup().setVisibility(View.GONE);
+                dropdown.getViewGroup().setClipToPadding(false);
 
                 // Register a view type for a default omnibox suggestion.
                 // Note: clang-format does a bad job formatting lambdas so we turn it off here.
@@ -159,7 +158,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                         new BaseSuggestionViewBinder<View>(SuggestionViewViewBinder::bind));
                 // clang-format on
 
-                mHolder = new SuggestionListViewHolder(container, list);
+                mHolder = new SuggestionListViewHolder(container, dropdown);
 
                 for (int i = 0; i < mCallbacks.size(); i++) {
                     mCallbacks.get(i).onResult(mHolder);
@@ -265,15 +264,15 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
     @Override
     public boolean handleKeyEvent(int keyCode, KeyEvent event) {
-        boolean isShowingList = mDropdown != null && mDropdown.getView().isShown();
+        boolean isShowingList = mDropdown != null && mDropdown.getViewGroup().isShown();
 
         boolean isUpOrDown = KeyNavigationUtil.isGoUpOrDown(event);
         if (isShowingList && mMediator.getSuggestionCount() > 0 && isUpOrDown) {
             mMediator.allowPendingItemSelection();
         }
         boolean isValidListKey = isUpOrDown || KeyNavigationUtil.isGoRight(event)
-                || KeyNavigationUtil.isEnter(event);
-        if (isShowingList && isValidListKey && mDropdown.getView().onKeyDown(keyCode, event)) {
+                || KeyNavigationUtil.isGoLeft(event) || KeyNavigationUtil.isEnter(event);
+        if (isShowingList && isValidListKey && mDropdown.getViewGroup().onKeyDown(keyCode, event)) {
             return true;
         }
         if (KeyNavigationUtil.isEnter(event) && mParent.getVisibility() == View.VISIBLE) {

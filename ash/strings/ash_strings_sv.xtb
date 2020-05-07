@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">överskanning</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1199716647557067911">Vill du inaktivera brytarstyrning?</translation>
+<translation id="121097972571826261">Framåt ord för ord</translation>
+<translation id="1229194443904279055">Sluta markera</translation>
 <translation id="1247372569136754018">Mikrofon (inbyggd)</translation>
 <translation id="1252999807265626933">Laddar från <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Vad är det för väder?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Helskärmsförstoring har aktiverats. Tryck på Ctrl + Sök + M igen om du vill inaktivera funktionen.</translation>
 <translation id="2302092602801625023">Det här kontot hanteras av Family Link</translation>
 <translation id="2303600792989757991">Växla fönsteröversikt</translation>
+<translation id="2322173485024759474">Bakåt tecken för tecken</translation>
 <translation id="2339073806695260576">När du har tryckt på e-pennan på hyllan kan du anteckna, ta en skärmdump eller använda laserpekaren eller förstoringsglaset.</translation>
 <translation id="2341729377289034582">Låst i stående läge</translation>
 <translation id="2352467521400612932">Inställningar för e-penna</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Visa tangentbordsinställningar</translation>
 <translation id="3846575436967432996">Det finns ingen nätverksinformation</translation>
 <translation id="385051799172605136">Bakåt</translation>
+<translation id="385300504083504382">Början</translation>
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
 <translation id="3897533311200664389">Skriv en sökfråga</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">För många försök</translation>
 <translation id="5397578532367286026">Användning och historik för den här användaren kan granskas av den ansvarige (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
 <translation id="5400461572260843123">Snabbinställningar, tryck på sök + vänster för att komma åt aviseringscentret.</translation>
+<translation id="5428899915242071344">Börja markera</translation>
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Laddar anslutna USB-C-enheter</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
+<translation id="6818242057446442178">Bakåt ord för ord</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Kortkommandot har inaktiverats.</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Föregående meny</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Skapa anteckning</translation>
+<translation id="8371779926711439835">Framåt tecken för tecken</translation>
 <translation id="8375916635258623388">Denna <ph name="DEVICE_NAME" /> ansluts automatiskt till din mobil</translation>
 <translation id="8388750414311082622">Det sista skrivbordet går inte att ta bort.</translation>
 <translation id="8392451568018454956">Alternativmenyn för <ph name="USER_EMAIL_ADDRESS" /></translation>

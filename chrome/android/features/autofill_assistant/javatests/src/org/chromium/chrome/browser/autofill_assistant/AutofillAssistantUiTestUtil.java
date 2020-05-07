@@ -96,6 +96,11 @@ class AutofillAssistantUiTestUtil {
         }
 
         @Override
+        public void fetchImage(Params params, Callback<Bitmap> callback) {
+            callback.onResult(mBitmapToFetch);
+        }
+
+        @Override
         public void clear() {}
 
         @Override

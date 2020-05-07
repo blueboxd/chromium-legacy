@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
@@ -196,7 +197,10 @@ class DeepScanningDialogDelegate {
   // The |do_dlp_scan| and |do_malware_scan| members of |data| are filled in
   // as needed.  If either is true, the function returns true, otherwise it
   // returns false.
-  static bool IsEnabled(Profile* profile, GURL url, Data* data);
+  static bool IsEnabled(Profile* profile,
+                        GURL url,
+                        Data* data,
+                        enterprise_connectors::AnalysisConnector connector);
 
   // Entry point for starting a deep scan, with the callback being called once
   // all results are available.  When the UI is enabled, a tab-modal dialog
@@ -244,14 +248,6 @@ class DeepScanningDialogDelegate {
   }
 
  private:
-  // Callback used to obtain analysis settings from the Connectors manager.
-  static void OnGotAnalysisSettings(
-      content::WebContents* web_contents,
-      Data data,
-      CompletionCallback callback,
-      DeepScanAccessPoint access_point,
-      base::Optional<enterprise_connectors::AnalysisSettings> settings);
-
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.
   bool UploadData();

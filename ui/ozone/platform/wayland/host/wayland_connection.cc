@@ -26,6 +26,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
+#include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_shm.h"
@@ -72,9 +73,10 @@ bool WaylandConnection::Initialize() {
   }
 
   // Now that the connection with the display server has been properly
-  // estabilished, initialize the wayland event source.
+  // estabilished, initialize the event source and input objects.
   DCHECK(!event_source_);
-  event_source_ = std::make_unique<WaylandEventSource>(display_.get());
+  event_source_ =
+      std::make_unique<WaylandEventSource>(display(), wayland_window_manager());
 
   wl_registry_add_listener(registry_.get(), &registry_listener, this);
   while (!wayland_output_manager_ ||
@@ -126,13 +128,6 @@ void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
   cursor_->UpdateBitmap(bitmaps, location, serial_);
 }
 
-int WaylandConnection::GetKeyboardModifiers() const {
-  int modifiers = 0;
-  if (keyboard_)
-    modifiers = keyboard_->modifiers();
-  return modifiers;
-}
-
 void WaylandConnection::StartDrag(const ui::OSExchangeData& data,
                                   int operation) {
   if (!dragdrop_data_source_)
@@ -168,11 +163,6 @@ bool WaylandConnection::IsDragInProgress() {
   return data_device_->IsDragEntered() || drag_data_source();
 }
 
-void WaylandConnection::ResetPointerFlags() {
-  if (pointer_)
-    pointer_->ResetFlags();
-}
-
 void WaylandConnection::Flush() {
   wl_display_flush(display_.get());
   scheduled_flush_ = false;
@@ -191,8 +181,7 @@ void WaylandConnection::UpdateInputDevices(wl_seat* seat,
     cursor_.reset();
     wayland_cursor_position_.reset();
   } else if (wl_pointer* pointer = wl_seat_get_pointer(seat)) {
-    pointer_ = std::make_unique<WaylandPointer>(
-        pointer, this, event_source_->GetDispatchCallback());
+    pointer_ = std::make_unique<WaylandPointer>(pointer, this, event_source());
     cursor_ = std::make_unique<WaylandCursor>(pointer_.get(), this);
     wayland_cursor_position_ = std::make_unique<WaylandCursorPosition>();
   } else {
@@ -204,8 +193,8 @@ void WaylandConnection::UpdateInputDevices(wl_seat* seat,
   } else if (wl_keyboard* keyboard = wl_seat_get_keyboard(seat)) {
     auto* layout_engine =
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
-    keyboard_ = std::make_unique<WaylandKeyboard>(
-        keyboard, this, layout_engine, event_source_->GetDispatchCallback());
+    keyboard_ = std::make_unique<WaylandKeyboard>(keyboard, this, layout_engine,
+                                                  event_source());
   } else {
     LOG(ERROR) << "Failed to get wl_keyboard from seat";
   }
@@ -213,8 +202,7 @@ void WaylandConnection::UpdateInputDevices(wl_seat* seat,
   if (!has_touch) {
     touch_.reset();
   } else if (wl_touch* touch = wl_seat_get_touch(seat)) {
-    touch_ = std::make_unique<WaylandTouch>(
-        touch, this, event_source_->GetDispatchCallback());
+    touch_ = std::make_unique<WaylandTouch>(touch, this, event_source());
   } else {
     LOG(ERROR) << "Failed to get wl_touch from seat";
   }

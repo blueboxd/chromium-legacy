@@ -560,7 +560,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesPrefsToCacheFile) {
   EXPECT_FALSE(base::PathExists(sitelist_cache_file_path()));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
+                       DISABLED_WritesSitelistsToCacheFile) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::ScopedTempDir dir;

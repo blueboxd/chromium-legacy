@@ -325,8 +325,7 @@ suite('CrSettingsCookiesPageTest', function() {
               source: SiteSettingSource.POLICY
             }))],
         []);
-    siteSettingsBrowserProxy.setResultFor(
-        'getCookieControlsManagedState', Promise.resolve(managedControlState));
+    siteSettingsBrowserProxy.setCookieControlsManagedState(managedControlState);
     siteSettingsBrowserProxy.setPrefs(managedPrefs);
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     await siteSettingsBrowserProxy.whenCalled('getCookieControlsManagedState');
@@ -365,9 +364,8 @@ suite('CrSettingsCookiesPageTest', function() {
             }))],
         []);
     siteSettingsBrowserProxy.reset();
-    siteSettingsBrowserProxy.setResultFor(
-        'getCookieControlsManagedState',
-        Promise.resolve(unmanagedControlState));
+    siteSettingsBrowserProxy.setCookieControlsManagedState(
+        unmanagedControlState);
     siteSettingsBrowserProxy.setPrefs(unmanagedPrefs);
     await siteSettingsBrowserProxy.whenCalled('getDefaultValueForContentType');
     await siteSettingsBrowserProxy.whenCalled('getCookieControlsManagedState');

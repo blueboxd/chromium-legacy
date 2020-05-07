@@ -31,7 +31,6 @@
 #include "content/browser/frame_host/file_chooser_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -100,7 +99,6 @@ class BrowserPluginGuest;
 class ConversionHost;
 class DisplayCutoutHostImpl;
 class FindRequestManager;
-class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class JavaScriptDialogNavigationDeferrer;
 class ManifestManagerHost;
@@ -459,7 +457,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RestoreFocus() override;
   void FocusThroughTabTraversal(bool reverse) override;
   bool ShowingInterstitialPage() override;
-  InterstitialPageImpl* GetInterstitialPage() override;
   bool IsSavable() override;
   void OnSavePage() override;
   bool SavePage(const base::FilePath& main_file,
@@ -971,7 +968,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* old_host,
       RenderFrameHost* new_host) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
-  InterstitialPageImpl* GetInterstitialForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar() override;
   bool IsHidden() override;
@@ -1022,23 +1018,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetHistoryOffsetAndLength(int history_offset,
                                  int history_length) override;
 
-  // Called by InterstitialPageImpl when it creates a RenderFrameHost.
-  void RenderFrameForInterstitialPageCreated(
-      RenderFrameHost* render_frame_host) override;
-
-  // Sets the passed interstitial as the currently showing interstitial.
-  // No interstitial page should already be attached.
-  void AttachInterstitialPage(InterstitialPageImpl* interstitial_page) override;
-
   void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted);
 
-  // Unsets the currently showing interstitial.
-  void DetachInterstitialPage(bool has_focus) override;
-
   void UpdateOverridingUserAgent() override;
-
-  // Unpause the throbber if it was paused.
-  void DidProceedOnInterstitial() override;
 
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
@@ -1755,12 +1737,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Tracks that this WebContents needs to unblock requests to the renderer.
   // See ResumeLoadingCreatedWebContents.
   bool is_resume_pending_;
-
-  // The interstitial page currently shown, if any. Not owned by this class: the
-  // InterstitialPage is self-owned and deletes itself asynchronously when
-  // hidden. Because it may outlive this WebContents, it enters a disabled state
-  // when hidden or preparing for destruction.
-  InterstitialPageImpl* interstitial_page_;
 
   // Data for current page -----------------------------------------------------
 

@@ -13,6 +13,8 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support =
       blink::BlinkFuzzerTestSupport();
-  blink::DocumentPolicyParser::Parse(WTF::String(data, size));
+
+  blink::PolicyParserMessageBuffer logger;
+  blink::DocumentPolicyParser::Parse(WTF::String(data, size), logger);
   return 0;
 }

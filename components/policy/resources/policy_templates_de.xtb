@@ -4730,7 +4730,6 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
       Wenn Sie diese Einstellung deaktivieren, können Nutzer die AutoFill-Funktion nicht verwenden.
 
       Ist diese Einstellung aktiviert oder nicht konfiguriert, kann der Nutzer selbst entscheiden, ob er AutoFill nutzen möchte. Er kann dann AutoFill-Profile konfigurieren und AutoFill nach eigenem Ermessen aktivieren und deaktivieren.</translation>
-<translation id="8042971420829376618">Mit dieser Richtlinie wird die <ph name="PLUGIN_VM_NAME" />-Nutzer-ID für dieses Gerät angegeben.</translation>
 <translation id="8044493735196713914">Startmodus von Geräten melden</translation>
 <translation id="8050080920415773384">Natives Drucken</translation>
 <translation id="8053580360728293758">Dadurch wird der standardmäßige Farbdruckmodus überschrieben. Wenn der Modus nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>

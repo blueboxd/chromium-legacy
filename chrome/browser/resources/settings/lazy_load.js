@@ -20,7 +20,6 @@ import './site_settings/category_setting_exceptions.js';
 import './site_settings/chooser_exception_list.js';
 import './site_settings/media_picker.js';
 import './site_settings/pdf_documents.js';
-import './site_settings/protocol_handlers.js';
 import './site_settings/site_data.js';
 import './site_settings/site_details.js';
 import './site_settings/zoom_levels.js';
@@ -47,6 +46,7 @@ import './system_page/system_page.js';
 
 // <if expr="not is_macosx">
 import './languages_page/edit_dictionary_page.js';
+
 // </if>
 
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
@@ -84,11 +84,13 @@ export {AndroidInfoBrowserProxyImpl} from './site_settings/android_info_browser_
 // </if>
 export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
 export {cookieInfo} from './site_settings/cookie_info.js';
-export {LocalDataBrowserProxyImpl} from './site_settings/local_data_browser_proxy.js';
+export {CookieList, LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './site_settings/local_data_browser_proxy.js';
+export {HandlerEntry, ProtocolEntry} from './site_settings/protocol_handlers.js';
 export {kControlledByLookup} from './site_settings/site_settings_behavior.js';
-export {ContentSettingProvider, SiteSettingsPrefsBrowserProxyImpl} from './site_settings/site_settings_prefs_browser_proxy.js';
+export {ContentSettingProvider, CookieControlsManagedState, DefaultContentSetting, RawChooserException, RawSiteException, RecentSitePermissions, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';
 // <if expr="not chromeos">
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.js';
+
 // </if>

@@ -471,6 +471,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4913169188695071480">Deixa d'actualitzar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtén ajuda<ph name="END_LINK" /> mentre se cerquen dispositius…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# pàgina}other{# pàgines}}</translation>
+<translation id="49268022542405662">Les teves contrasenyes s'exportaran i es baixaran com a fitxer de text. Qualsevol persona o aplicació que tingui accés a la carpeta de destinació podrà veure també les teves contrasenyes.</translation>
 <translation id="4932247056774066048">Com que estàs tancant la sessió d'un compte gestionat per <ph name="DOMAIN_NAME" />, les teves dades de Chrome se suprimiran d'aquest dispositiu. Tanmateix, es conservaran al teu Compte de Google.</translation>
 <translation id="4943703118917034429">Realitat virtual</translation>
 <translation id="4943872375798546930">No hi ha cap resultat</translation>
@@ -753,6 +754,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7302081693174882195">Detalls: files ordenades per quantitat de dades estalviades</translation>
 <translation id="7328017930301109123">En el mode bàsic, Chrome carrega les pàgines més ràpidament i utilitza fins a un 60 per cent menys de dades.</translation>
 <translation id="7333031090786104871">Encara s'hi està afegint el lloc anterior</translation>
+<translation id="7340958967809483333">Opcions per a Discover</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparteix 1 element seleccionat}other{Comparteix # elements seleccionats}}</translation>
 <translation id="7359002509206457351">Accedeix a les formes de pagament</translation>
@@ -817,6 +819,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7810647596859435254">Obre amb…</translation>
 <translation id="7821588508402923572">Les dades que estalviïs es mostraran aquí</translation>
+<translation id="7835852323729233924">Reproduint contingut multimèdia</translation>
 <translation id="783819812427904514">Deixa de silenciar el vídeo</translation>
 <translation id="784934925303690534">Interval de temps</translation>
 <translation id="7851858861565204677">Altres dispositius</translation>

@@ -232,6 +232,7 @@ base::Optional<SkColor> SkColorFromColorId(
     //   return GetBgColor("GtkButton#button:hover");
 
     // ProminentButton
+    case ui::NativeTheme::kColorId_ButtonCheckedColor:
     case ui::NativeTheme::kColorId_ProminentButtonColor:
     case ui::NativeTheme::kColorId_ProminentButtonFocusedColor:
       return GetBgColor(

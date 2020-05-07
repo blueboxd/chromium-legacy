@@ -321,6 +321,14 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more) {
   return LoadStreamStatus::kNoStatus;
 }
 
+RequestMetadata FeedStream::GetRequestMetadata() const {
+  RequestMetadata result;
+  result.chrome_info = chrome_info_;
+  result.display_metrics = delegate_->GetDisplayMetrics();
+  result.language_tag = delegate_->GetLanguageTag();
+  return result;
+}
+
 void FeedStream::OnEulaAccepted() {
   if (surface_updater_->HasSurfaceAttached())
     TriggerStreamLoad();

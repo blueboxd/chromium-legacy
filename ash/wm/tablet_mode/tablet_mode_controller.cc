@@ -31,6 +31,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -255,6 +256,37 @@ constexpr TabletModeController::TabletModeBehavior kOnForDev{
     /*always_show_overview_button=*/true,
     /*force_physical_tablet_state=*/true,
 };
+
+using LidState = chromeos::PowerManagerClient::LidState;
+using TabletMode = chromeos::PowerManagerClient::TabletMode;
+
+const char* ToString(LidState lid_state) {
+  switch (lid_state) {
+    case LidState::OPEN:
+      return "Open";
+    case LidState::CLOSED:
+      return "Closed";
+    case LidState::NOT_PRESENT:
+      return "Not present";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
+const char* ToString(TabletMode tablet_mode) {
+  switch (tablet_mode) {
+    case TabletMode::ON:
+      return "On";
+    case TabletMode::OFF:
+      return "Off";
+    case TabletMode::UNSUPPORTED:
+      return "Unsupported";
+  }
+
+  NOTREACHED();
+  return "";
+}
 
 }  // namespace
 
@@ -595,7 +627,7 @@ void TabletModeController::OnAccelerometerUpdated(
 void TabletModeController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& time) {
-  VLOG(1) << "Lid event received: " << static_cast<int>(state);
+  VLOG(1) << "Lid event received: " << ToString(state);
   lid_is_closed_ = state != chromeos::PowerManagerClient::LidState::OPEN;
   if (lid_is_closed_) {
     // Reset |lid_angle_| to 0.f when lid is closed. The accelerometer readings
@@ -616,7 +648,7 @@ void TabletModeController::TabletModeEventReceived(
   if (!tablet_mode_behavior_.use_sensor)
     return;
 
-  VLOG(1) << "Tablet mode event received: " << static_cast<int>(mode);
+  VLOG(1) << "Tablet mode event received: " << ToString(mode);
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
 
   tablet_mode_switch_is_on_ = on;

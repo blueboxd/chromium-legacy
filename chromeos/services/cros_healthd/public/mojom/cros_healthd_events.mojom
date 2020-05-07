@@ -10,6 +10,22 @@
 
 module chromeos.cros_healthd.mojom;
 
+// Implemented by clients who desire Bluetooth notifications.
+interface CrosHealthdBluetoothObserver {
+  // Fired when a Bluetooth adapter is added.
+  OnAdapterAdded();
+  // Fired when a Bluetooth adapter is removed.
+  OnAdapterRemoved();
+  // Fired when a property of a Bluetooth adapter is changed.
+  OnAdapterPropertyChanged();
+  // Fired when a Bluetooth device is added.
+  OnDeviceAdded();
+  // Fired when a Bluetooth device is removed.
+  OnDeviceRemoved();
+  // Fired when a property of a Bluetooth device is changed.
+  OnDevicePropertyChanged();
+};
+
 // Implemented by clients who desire power notifications.
 interface CrosHealthdPowerObserver {
   // Fired when the device begins consuming from an external power source.

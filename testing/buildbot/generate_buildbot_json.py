@@ -12,6 +12,7 @@ import ast
 import collections
 import copy
 import difflib
+import glob
 import itertools
 import json
 import os
@@ -1291,19 +1292,12 @@ class BBJSONGenerator(object):
     # their presubmit to run `generate_buildbot_json.py -c`, so that the tree
     # never ends up in an invalid state.
     bot_names = set()
-    infra_config_dir = os.path.abspath(
-        os.path.join(os.path.dirname(__file__),
-                     '..', '..', 'infra', 'config'))
-    milo_configs = [
-        os.path.join(infra_config_dir, 'generated', 'luci-milo.cfg'),
-        os.path.join(infra_config_dir, 'generated', 'luci-milo-dev.cfg'),
-    ]
+    milo_configs = glob.glob(
+        os.path.join(self.args.infra_config_dir, 'generated', 'luci-milo*.cfg'))
     for c in milo_configs:
       for l in self.read_file(c).splitlines():
         if (not 'name: "buildbucket/luci.chromium.' in l and
-            not 'name: "buildbucket/luci.chrome.' in l and
-            not 'name: "buildbot/chromium.' in l and
-            not 'name: "buildbot/tryserver.chromium.' in l):
+            not 'name: "buildbucket/luci.chrome.' in l):
           continue
         # l looks like
         # `name: "buildbucket/luci.chromium.try/win_chromium_dbg_ng"`
@@ -1342,6 +1336,7 @@ class BBJSONGenerator(object):
       'mac10.13_retina-blink-rel-dummy',
       'mac10.13-blink-rel-dummy',
       'mac10.14-blink-rel-dummy',
+      'mac10.15-blink-rel-dummy',
       'win7-blink-rel-dummy',
       'win10-blink-rel-dummy',
       'Dummy WebKit Mac10.13',
@@ -1824,9 +1819,16 @@ class BBJSONGenerator(object):
       "Examples:\n" +
       "  Outputs file into specified json file: \n" +
       "    --json <file-name-here.json>"))
+    parser.add_argument(
+      '--infra-config-dir',
+      help='Path to the LUCI services configuration directory',
+      default=os.path.abspath(
+          os.path.join(os.path.dirname(__file__),
+                       '..', '..', 'infra', 'config')))
     self.args = parser.parse_args(argv)
     if self.args.json and not self.args.query:
       parser.error("The --json flag can only be used with --query.")
+    self.args.infra_config_dir = os.path.abspath(self.args.infra_config_dir)
 
   def does_test_match(self, test_info, params_dict):
     """Checks to see if the test matches the parameters given.

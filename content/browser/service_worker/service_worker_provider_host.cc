@@ -62,14 +62,11 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     : provider_id_(NextProviderId()),
       running_hosted_version_(running_hosted_version),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
-          std::move(context),
-          /*is_parent_frame_secure=*/true,
-          /*client_type=*/base::nullopt,
-          FrameTreeNode::kFrameTreeNodeInvalidId,
-          std::move(host_receiver),
-          mojo::NullAssociatedRemote())) {
+          std::move(context))),
+      host_receiver_(container_host_.get(), std::move(host_receiver)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(running_hosted_version_);
+
   container_host_->set_service_worker_host(this);
   container_host_->UpdateUrls(
       running_hosted_version_->script_url(),

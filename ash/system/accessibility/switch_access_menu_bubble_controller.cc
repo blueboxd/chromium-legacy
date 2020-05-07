@@ -25,8 +25,7 @@ SwitchAccessMenuBubbleController::~SwitchAccessMenuBubbleController() {
 }
 
 void SwitchAccessMenuBubbleController::ShowBackButton(const gfx::Rect& anchor) {
-  HideMenuBubble();
-  back_button_controller_->ShowBackButton(anchor);
+  back_button_controller_->ShowBackButton(anchor, /*showFocusRing=*/true);
 }
 
 void SwitchAccessMenuBubbleController::ShowMenu(
@@ -80,11 +79,15 @@ void SwitchAccessMenuBubbleController::ShowMenu(
 
   widget_->SetBounds(resting_bounds);
   widget_->Show();
-  back_button_controller_->ShowBackButton(resting_bounds);
+  back_button_controller_->ShowBackButton(resting_bounds,
+                                          /*showFocusRing=*/false);
 }
 
 void SwitchAccessMenuBubbleController::HideBackButton() {
-  back_button_controller_->Hide();
+  if (menu_view_ && menu_view_->IsDrawn())
+    back_button_controller_->HideFocusRing();
+  else
+    back_button_controller_->Hide();
 }
 
 void SwitchAccessMenuBubbleController::HideMenuBubble() {

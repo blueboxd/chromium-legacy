@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Fenêtre de l'application</translation>
 <translation id="1531275250079031713">Afficher la boîte de dialogue "Ajouter un réseau Wi-Fi"</translation>
 <translation id="1536754031901697553">Déconnexion…</translation>
+<translation id="1537254971476575106">Loupe plein écran</translation>
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1540605929960647700">Activer le mode de démonstration</translation>
 <translation id="1542514202066550870">Du contenu RV est diffusé sur un casque à partir de cet onglet.</translation>
@@ -1164,6 +1165,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2501173422421700905">Certificat en attente</translation>
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2501797496290880632">Tapez un raccourci</translation>
+<translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2502441965851148920">Les mises à jour automatiques sont activées. L'administrateur a désactivé les mises à jour manuelles.</translation>
 <translation id="2502719318159902502">Accès total</translation>
 <translation id="2505127913256479918">Ce compte supervisé sera supprimé prochainement</translation>
@@ -1361,7 +1363,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2749881179542288782">Vérifier la grammaire et l'orthographe</translation>
 <translation id="2751739896257479635">Authentification EAP phase 2</translation>
 <translation id="2753677631968972007">Contrôler manuellement les autorisations liées aux sites.</translation>
-<translation id="2753984311895843016">Alimentation inactive</translation>
+<translation id="2753984311895843016">Mode veille</translation>
 <translation id="2755367719610958252">Gérer les fonctionnalités d'accessibilité</translation>
 <translation id="275662540872599901">écran désactivé</translation>
 <translation id="2757338480560142065">Assurez-vous que le mot de passe que vous enregistrez correspond bien à votre mot de passe <ph name="WEBSITE" /></translation>
@@ -1549,6 +1551,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2993517869960930405">Infos sur l'appli</translation>
 <translation id="2996286169319737844">Les données ont été chiffrées avec votre phrase secrète de synchronisation. Ceci ne s'applique pas aux modes de paiement et adresses Google Pay.</translation>
 <translation id="2996722619877761919">Retourner sur les bords longs</translation>
+<translation id="3000461861112256445">Audio mono</translation>
 <translation id="3001144475369593262">Comptes enfants</translation>
 <translation id="3003144360685731741">Réseaux préférés</translation>
 <translation id="3003623123441819449">Cache CSS</translation>
@@ -2483,6 +2486,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4211851069413100178">Envoyer des données d'utilisation et de diagnostic. Contribuez à l'amélioration de votre expérience sur Android en envoyant automatiquement à Google des données relatives aux diagnostics et à l'utilisation de l'appareil et des applications. Ce processus permettra d'améliorer, entre autres, la stabilité du système et des applications. Certaines données globales seront également utiles aux développeurs des applications Google et à nos partenaires, tels que les développeurs Android. Ce <ph name="BEGIN_LINK1" />paramètre<ph name="END_LINK1" /> est appliqué par le propriétaire. Le propriétaire de cet appareil peut choisir d'envoyer à Google des données de diagnostic et d'utilisation. Si vous activez le paramètre relatif à l'activité supplémentaire sur le Web et les applications, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Exporter</translation>
 <translation id="42137655013211669">L'accès à cette ressource est interdit sur ce serveur.</translation>
+<translation id="4217571870635786043">Dictée</translation>
 <translation id="4218274196133425560">Supprimer l'exception pour <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Une erreur s'est produite lors de l'activation.</translation>
 <translation id="4222772810963087151">Informations sur le build</translation>
@@ -3167,6 +3171,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5204967432542742771">Mot de passe</translation>
 <translation id="5206215183583316675">Supprimer "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="520621735928254154">Erreur d'importation du certificat</translation>
+<translation id="5207949376430453814">Mettre le curseur de texte en surbrillance</translation>
 <translation id="5209320130288484488">Aucun appareil trouvé.</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5213481667492808996">Votre service de données "<ph name="NAME" />" est disponible</translation>
@@ -5081,6 +5086,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7766807826975222231">Visite guidée</translation>
 <translation id="7766838926148951335">Accepter les autorisations</translation>
 <translation id="7768770796815395237">Modifier</translation>
+<translation id="7768784765476638775">Sélectionner pour prononcer</translation>
 <translation id="7769672763586021400">ID du modèle</translation>
 <translation id="7770612696274572992">Image copiée depuis un autre appareil</translation>
 <translation id="7770651108375708429">Se déconnecter du Wi-Fi</translation>

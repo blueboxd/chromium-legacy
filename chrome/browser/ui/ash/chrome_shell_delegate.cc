@@ -73,26 +73,26 @@ bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return contents->GetController().CanGoBack();
 }
 
-bool ChromeShellDelegate::CreateBrowserForTabDrop(
-    gfx::NativeWindow source_window,
+aura::Window* ChromeShellDelegate::CreateBrowserForTabDrop(
+    aura::Window* source_window,
     const ui::OSExchangeData& drop_data) {
   CHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
 
   BrowserView* source_view = BrowserView::GetBrowserViewForNativeWindow(
       source_window->GetToplevelWindow());
   if (!source_view)
-    return false;
+    return nullptr;
 
   Browser::CreateParams params = source_view->browser()->create_params();
   params.user_gesture = true;
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = Browser::Create(params);
   if (!browser)
-    return false;
+    return nullptr;
 
   if (!tab_strip_ui::DropTabsInNewBrowser(browser, drop_data)) {
     browser->window()->Close();
-    return false;
+    return nullptr;
   }
 
   // TODO(https://crbug.com/1069869): evaluate whether the above
@@ -100,7 +100,7 @@ bool ChromeShellDelegate::CreateBrowserForTabDrop(
   // reflect failure in UX.
 
   browser->window()->Show();
-  return true;
+  return browser->window()->GetNativeWindow();
 }
 
 void ChromeShellDelegate::BindBluetoothSystemFactory(

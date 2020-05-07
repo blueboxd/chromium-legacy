@@ -238,6 +238,7 @@ if (use_system_harfbuzz) {
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
       "HAVE_ROUNDF",
       "HB_NO_MMAP",
+      "HB_NO_RESOURCE_FORK",
 
       # Size reductions by disabling parts that we do not currently require:
 

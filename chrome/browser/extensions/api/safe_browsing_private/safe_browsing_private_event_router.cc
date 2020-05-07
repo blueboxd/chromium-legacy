@@ -679,13 +679,11 @@ bool SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient() {
 
 void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
     policy::CloudPolicyClient* client) {
-  DCHECK_EQ(nullptr, client_);
   client_ = client;
 }
 
 void SafeBrowsingPrivateEventRouter::SetBinaryUploadServiceForTesting(
     safe_browsing::BinaryUploadService* binary_upload_service) {
-  DCHECK_EQ(nullptr, binary_upload_service_);
   binary_upload_service_ = binary_upload_service;
 }
 

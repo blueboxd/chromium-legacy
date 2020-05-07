@@ -617,13 +617,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void SetTouchModifier(const std::string& key_name, bool set_mask);
   void SetTouchCancelable(bool cancelable);
   void DumpFilenameBeingDragged();
-  void GestureFlingCancel();
-  void GestureFlingStart(float x,
-                         float y,
-                         float velocity_x,
-                         float velocity_y,
-                         gin::Arguments* args);
-  bool IsFlinging();
   void GestureScrollFirstPoint(float x, float y);
   void TouchStart(gin::Arguments* args);
   void TouchMove(gin::Arguments* args);
@@ -2403,9 +2396,13 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
       event.SetPositionInWidget(current_gesture_location_);
       break;
     case WebInputEvent::Type::kGestureScrollEnd:
-    case WebInputEvent::Type::kGestureFlingStart:
       event.SetPositionInWidget(current_gesture_location_);
       break;
+    case WebInputEvent::Type::kGestureFlingStart:
+    case WebInputEvent::Type::kGestureFlingCancel:
+      // Flings are no longer handled on the main thread.
+      NOTREACHED();
+      return;
     case WebInputEvent::Type::kGestureTap: {
       float tap_count = 1;
       float width = 30;

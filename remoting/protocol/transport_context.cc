@@ -88,20 +88,20 @@ void TransportContext::Prepare() {
 void TransportContext::GetIceConfig(const GetIceConfigCallback& callback) {
   EnsureFreshIceConfig();
 
-  // If there is a pending |ice_config_request_| for the current |relay_mode_|
-  // then delay the callback until the request is finished.
-  if (ice_config_request_[relay_mode_]) {
-    pending_ice_config_callbacks_[relay_mode_].push_back(callback);
+  // If there is a pending |ice_config_request_| then delay the callback until
+  // the request is finished.
+  if (ice_config_request_) {
+    pending_ice_config_callbacks_.push_back(callback);
   } else {
     HOST_LOG << "Using cached ICE Config.";
-    PrintIceConfig(ice_config_[relay_mode_]);
-    callback.Run(ice_config_[relay_mode_]);
+    PrintIceConfig(ice_config_);
+    callback.Run(ice_config_);
   }
 }
 
 void TransportContext::EnsureFreshIceConfig() {
   // Check if request is already pending.
-  if (ice_config_request_[relay_mode_]) {
+  if (ice_config_request_) {
     HOST_LOG << "ICE Config request is already pending.";
     return;
   }
@@ -113,34 +113,26 @@ void TransportContext::EnsureFreshIceConfig() {
     return;
   }
 
-  if (ice_config_[relay_mode_].is_null() ||
-      base::Time::Now() + kMinimumIceConfigLifetime >
-          ice_config_[relay_mode_].expiration_time) {
-    std::unique_ptr<IceConfigRequest> request;
-    switch (relay_mode_) {
-      case RelayMode::TURN:
+  if ((base::Time::Now() + kMinimumIceConfigLifetime) >
+      ice_config_.expiration_time) {
 #if defined(OS_NACL)
-        NOTREACHED() << "TURN is not supported on NACL";
+    NOTREACHED() << "TURN is not supported on NACL";
 #else
-        request = std::make_unique<RemotingIceConfigRequest>();
+    ice_config_request_ = std::make_unique<RemotingIceConfigRequest>();
+    ice_config_request_->Send(
+        base::BindOnce(&TransportContext::OnIceConfig, base::Unretained(this)));
 #endif
-        break;
-    }
-    ice_config_request_[relay_mode_] = std::move(request);
-    ice_config_request_[relay_mode_]->Send(base::BindOnce(
-        &TransportContext::OnIceConfig, base::Unretained(this), relay_mode_));
   }
 }
 
-void TransportContext::OnIceConfig(RelayMode relay_mode,
-                                   const IceConfig& ice_config) {
-  ice_config_[relay_mode] = ice_config;
-  ice_config_request_[relay_mode].reset();
+void TransportContext::OnIceConfig(const IceConfig& ice_config) {
+  ice_config_ = ice_config;
+  ice_config_request_.reset();
 
   HOST_LOG << "Using newly requested ICE Config:";
   PrintIceConfig(ice_config);
 
-  auto& callback_list = pending_ice_config_callbacks_[relay_mode];
+  auto& callback_list = pending_ice_config_callbacks_;
   while (!callback_list.empty()) {
     callback_list.begin()->Run(ice_config);
     callback_list.pop_front();
@@ -148,8 +140,7 @@ void TransportContext::OnIceConfig(RelayMode relay_mode,
 }
 
 int TransportContext::GetTurnMaxRateKbps() const {
-  DCHECK_EQ(relay_mode_, RelayMode::TURN);
-  return ice_config_[RelayMode::TURN].max_bitrate_kbps;
+  return ice_config_.max_bitrate_kbps;
 }
 
 }  // namespace protocol

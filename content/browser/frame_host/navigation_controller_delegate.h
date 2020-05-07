@@ -17,9 +17,6 @@ namespace content {
 
 struct LoadCommittedDetails;
 class FrameTree;
-class InterstitialPage;
-class InterstitialPageImpl;
-class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 
@@ -33,7 +30,6 @@ class NavigationControllerDelegate {
 
   // Duplicates of WebContents methods.
   virtual RenderViewHost* GetRenderViewHost() = 0;
-  virtual InterstitialPage* GetInterstitialPage() = 0;
   virtual const std::string& GetContentsMimeType() = 0;
   virtual void NotifyNavigationStateChanged(InvalidateTypes changed_flags) = 0;
   virtual void Stop() = 0;
@@ -64,14 +60,7 @@ class NavigationControllerDelegate {
   // embedder for NavigationController will be a WebContents object.
   virtual WebContents* GetWebContents() = 0;
 
-  // Methods needed by InterstitialPageImpl.
   virtual bool IsHidden() = 0;
-  virtual void RenderFrameForInterstitialPageCreated(
-      RenderFrameHost* render_frame_host) = 0;
-  virtual void AttachInterstitialPage(
-      InterstitialPageImpl* interstitial_page) = 0;
-  virtual void DidProceedOnInterstitial() = 0;
-  virtual void DetachInterstitialPage(bool has_focus) = 0;
 
   virtual void UpdateOverridingUserAgent() = 0;
 };

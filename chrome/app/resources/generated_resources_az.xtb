@@ -410,6 +410,7 @@
 <translation id="1531004739673299060">Tətbiq Pəncərəsi</translation>
 <translation id="1531275250079031713">"Yeni Wi-Fi əlavə edin" dialoqunu göstərin</translation>
 <translation id="1536754031901697553">Ayrılır...</translation>
+<translation id="1537254971476575106">Tam ekran miqyası</translation>
 <translation id="15373452373711364">Böyük maus kursoru</translation>
 <translation id="1540605929960647700">Demo rejimini aktiv edin</translation>
 <translation id="1542514202066550870">Bu tabel qulaqlıq üçün VR kontenti göstərir.</translation>
@@ -1159,6 +1160,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2501173422421700905">Sertifikat Saxlanır</translation>
 <translation id="2501278716633472235">Geri qayıdın</translation>
 <translation id="2501797496290880632">Qısayolu daxil edin</translation>
+<translation id="2501920221385095727">Əvəzedici açarlar</translation>
 <translation id="2502441965851148920">Avtomatik güncəlləmələr aktiv edildi. Mexaniki güncəlləmələr administratorunuz tərəfindən deaktiv edildi.</translation>
 <translation id="2502719318159902502">Tam giriş imkanı</translation>
 <translation id="2505127913256479918">Bu nəzarət edilən hesab tezliklə silinəcək</translation>
@@ -1544,6 +1546,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2993517869960930405">Tətbiq məlumatı</translation>
 <translation id="2996286169319737844">Data sinxronizasiya parolunuz ilə şifrələndi. Google Pay'dəki ödəniş metodları və ünvanlar bura daxil deyil.</translation>
 <translation id="2996722619877761919">Uzun kənardan çevirin</translation>
+<translation id="3000461861112256445">Mono audio</translation>
 <translation id="3001144475369593262">Uşaq hesabları</translation>
 <translation id="3003144360685731741">Üstünlük verilən şəbəkələr</translation>
 <translation id="3003623123441819449">CSS Keşi</translation>
@@ -2476,6 +2479,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4211851069413100178">İstifadə və diaqnostika datasını göndərin. Google'a diaqnostika, cihaz və tətbiq istifadə datasını avtomatik göndərməklə Android təcrübəsini təkmilləşdirin. Bu, sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Ümumi data, həmçinin, Google tətbiqləri və Android developerləri kimi partnyorlara kömək edəcək. Bu <ph name="BEGIN_LINK1" />ayar<ph name="END_LINK1" /> sahibi tərəfindən tətbiq edilir. Sahibi bu cihaz üçün diaqnostika və istifadə datasını Google'a göndərməyi seçə bilər. Əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data Google hesabında yadda saxlana bilər. <ph name="BEGIN_LINK2" />Ətraflı Məlumat<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Eksport</translation>
 <translation id="42137655013211669">Bu resursa giriş server tərəfindən qadağan edilib.</translation>
+<translation id="4217571870635786043">İmla</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> üçün istisnanı silin</translation>
 <translation id="4220648711404560261">Aktivasiya zamanı xəta baş verdi.</translation>
 <translation id="4222772810963087151">Məlumatları Yaradın</translation>
@@ -3160,6 +3164,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5204967432542742771">Şifrəni daxil edin</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" silinsin?</translation>
 <translation id="520621735928254154">Sertifikat İmport Xətası</translation>
+<translation id="5207949376430453814">Mətn karetini vurğulayın</translation>
 <translation id="5209320130288484488">Heç bir cihaz tapılmadı</translation>
 <translation id="5210365745912300556">Paneli qapadın</translation>
 <translation id="5213481667492808996">"<ph name="NAME" />" data xidmətiniz istifadəyə hazırdır</translation>
@@ -5071,6 +5076,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7766807826975222231">Tanış olun</translation>
 <translation id="7766838926148951335">İcazələri qəbul edin</translation>
 <translation id="7768770796815395237">Dəyişin</translation>
+<translation id="7768784765476638775">Seç və Dinlə</translation>
 <translation id="7769672763586021400">Model ID</translation>
 <translation id="7770612696274572992">Şəkil başqa cihazdan kopyalanıb</translation>
 <translation id="7770651108375708429">Wi-Fi şəbəkəsini ayırın</translation>

@@ -48,10 +48,12 @@ std::ostream& operator<<(std::ostream& out, const UserActionProto& value);
 std::ostream& operator<<(std::ostream& out, const DateProto& value);
 
 // Convenience constructors.
-ValueProto SimpleValue(bool value);
-ValueProto SimpleValue(const std::string& value);
-ValueProto SimpleValue(int value);
-ValueProto SimpleValue(const DateProto& value);
+ValueProto SimpleValue(bool value, bool is_client_side_only = false);
+ValueProto SimpleValue(const std::string& value,
+                       bool is_client_side_only = false);
+ValueProto SimpleValue(int value, bool is_client_side_only = false);
+ValueProto SimpleValue(const DateProto& value,
+                       bool is_client_side_only = false);
 ModelProto::ModelValue SimpleModelValue(const std::string& identifier,
                                         const ValueProto& value);
 
@@ -62,17 +64,15 @@ bool AreAllValuesOfType(const std::vector<ValueProto>& values,
 // Returns true if all |values| share the specified |target_size|.
 bool AreAllValuesOfSize(const std::vector<ValueProto>& values, int target_size);
 
+// Returns if any of the provided |values| has |is_client_side_only| = true.
+bool ContainsClientOnlyValue(const std::vector<ValueProto>& values);
+
 // Returns the number of elements in |value|.
 int GetValueSize(const ValueProto& value);
 
 // Returns the |index|'th item of |value| or nullopt if |index| is
 // out-of-bounds.
 base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index);
-
-// Combines all specified |values| in a single ValueProto where the individual
-// value lists are appended after each other. Returns nullopt if |values| do not
-// share the same type.
-base::Optional<ValueProto> CombineValues(const std::vector<ValueProto>& values);
 
 }  //  namespace autofill_assistant
 

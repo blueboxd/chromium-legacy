@@ -22,7 +22,31 @@ them from non-java targets (or [other variations](https://cs.chromium.org/chromi
 
 ## From Source to Final Dex
 
-### Step 1a: Compile with javac
+### Step 1: Create interface .jar with turbine or ijar
+
+For prebuilt `.jar` files, use [//third_party/ijar] to create interface `.jar`
+from prebuilt `.jar`.
+
+For non-prebuilt targets, use [//third_party/turbine] to create interface `.jar`
+from `.java` source files. Turbine is much faster than javac, and so enables
+full compilation to happen more concurrently.
+
+What are interface jars?:
+
+* The contain `.class` files with all non-public symbols and function bodies
+  removed.
+* Dependant targets use interface `.jar` files to skip having to be rebuilt
+  when only private implementation details change.
+  * To accomplish this behavior, library targets list only their
+    interface `.jar` files as outputs. Ninja's `restat=1` feature then causes
+    dependent targets to be rebuilt only when the interface `.jar` changes.
+    Final dex targets are always rebuilt because they depend on the
+    non-interface `.jar` through a `depfile`.
+
+[//third_party/ijar]: /third_party/ijar/README.chromium
+[//third_party/turbine]: /third_party/turbine/README.chromium
+
+### Step 2a: Compile with javac
 
 This step is the only step that does not apply to prebuilt targets.
 
@@ -41,7 +65,7 @@ This step is the only step that does not apply to prebuilt targets.
     recompiled.
   * Prefer smaller targets to avoid slow compiles.
 
-### Step 1b: Compile with ErrorProne
+### Step 2b: Compile with ErrorProne
 
 This step can be disabled via GN arg: `use_errorprone_java_compiler = false`
 
@@ -52,20 +76,6 @@ This step can be disabled via GN arg: `use_errorprone_java_compiler = false`
 
 [ErrorProne]: https://errorprone.info/
 [ep_plugins]: /tools/android/errorprone_plugin/
-
-### Step 2: Creating an .interface.jar
-
-This step happens in parallel with subsequent steps.
-
-* `//third_party/ijar` converts the `.jar` into an `.interface.jar`, which is a
-  copy of the input with all non-public symbols and function bodies removed.
-* Dependant targets use `.interface.jar` files to skip having to be rebuilt
-  when only private implementation details change.
-  * To accomplish this behavior, library targets list only their
-    `.interface.jar` as outputs. Ninja's `restat=1` feature then causes
-    dependent targets to be rebuilt only when the `.interface.jar` changes.
-    Final dex targets are always rebuilt because they depend on the
-    non-`.interface.jar` through a `depfile`.
 
 ### Step 3: Bytecode Processing
 

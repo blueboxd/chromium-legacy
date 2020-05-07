@@ -42,6 +42,10 @@ class IdentifiableSurface {
     // Input is a mojom::WebFeature
     kWebFeature = 1,
 
+    // Represents a readback of a canvas. Input is the
+    // CanvasRenderingContextType.
+    kCanvasReadback = 2,
+
     // We can use values up to and including |kMax|.
     kMax = 0xff
   };

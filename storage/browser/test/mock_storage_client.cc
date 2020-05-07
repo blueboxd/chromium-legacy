@@ -5,6 +5,7 @@
 #include "storage/browser/test/mock_storage_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -17,8 +18,6 @@
 #include "url/gurl.h"
 
 namespace storage {
-
-using std::make_pair;
 
 MockStorageClient::MockStorageClient(
     scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
@@ -36,8 +35,8 @@ void MockStorageClient::Populate(
     size_t mock_data_size) {
   for (size_t i = 0; i < mock_data_size; ++i) {
     // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
-    origin_data_[make_pair(url::Origin::Create(GURL(mock_data[i].origin)),
-                           mock_data[i].type)] = mock_data[i].usage;
+    origin_data_[std::make_pair(url::Origin::Create(GURL(mock_data[i].origin)),
+                                mock_data[i].type)] = mock_data[i].usage;
   }
 }
 
@@ -46,9 +45,9 @@ MockStorageClient::~MockStorageClient() = default;
 void MockStorageClient::AddOriginAndNotify(const url::Origin& origin,
                                            blink::mojom::StorageType type,
                                            int64_t size) {
-  DCHECK(origin_data_.find(make_pair(origin, type)) == origin_data_.end());
+  DCHECK(origin_data_.count(std::make_pair(origin, type)) == 0);
   DCHECK_GE(size, 0);
-  origin_data_[make_pair(origin, type)] = size;
+  origin_data_[std::make_pair(origin, type)] = size;
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
       id(), origin, type, size, IncrementMockTime());
 }
@@ -56,10 +55,10 @@ void MockStorageClient::AddOriginAndNotify(const url::Origin& origin,
 void MockStorageClient::ModifyOriginAndNotify(const url::Origin& origin,
                                               blink::mojom::StorageType type,
                                               int64_t delta) {
-  auto find = origin_data_.find(make_pair(origin, type));
-  DCHECK(find != origin_data_.end());
-  find->second += delta;
-  DCHECK_GE(find->second, 0);
+  auto it = origin_data_.find(std::make_pair(origin, type));
+  DCHECK(it != origin_data_.end());
+  it->second += delta;
+  DCHECK_GE(it->second, 0);
 
   // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
@@ -76,7 +75,7 @@ void MockStorageClient::TouchAllOriginsAndNotify() {
 
 void MockStorageClient::AddOriginToErrorSet(const url::Origin& origin,
                                             blink::mojom::StorageType type) {
-  error_origins_.insert(make_pair(origin, type));
+  error_origins_.insert(std::make_pair(origin, type));
 }
 
 base::Time MockStorageClient::IncrementMockTime() {
@@ -137,11 +136,11 @@ bool MockStorageClient::DoesSupport(blink::mojom::StorageType type) const {
 void MockStorageClient::RunGetOriginUsage(const url::Origin& origin,
                                           blink::mojom::StorageType type,
                                           GetUsageCallback callback) {
-  auto find = origin_data_.find(make_pair(origin, type));
-  if (find == origin_data_.end()) {
+  auto it = origin_data_.find(std::make_pair(origin, type));
+  if (it == origin_data_.end()) {
     std::move(callback).Run(0);
   } else {
-    std::move(callback).Run(find->second);
+    std::move(callback).Run(it->second);
   }
 }
 
@@ -171,18 +170,18 @@ void MockStorageClient::RunGetOriginsForHost(blink::mojom::StorageType type,
 void MockStorageClient::RunDeleteOriginData(const url::Origin& origin,
                                             blink::mojom::StorageType type,
                                             DeletionCallback callback) {
-  auto itr_error = error_origins_.find(make_pair(origin, type));
-  if (itr_error != error_origins_.end()) {
+  auto error_it = error_origins_.find(std::make_pair(origin, type));
+  if (error_it != error_origins_.end()) {
     std::move(callback).Run(
         blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     return;
   }
 
-  auto itr = origin_data_.find(make_pair(origin, type));
-  if (itr != origin_data_.end()) {
-    int64_t delta = itr->second;
+  auto it = origin_data_.find(std::make_pair(origin, type));
+  if (it != origin_data_.end()) {
+    int64_t delta = it->second;
     quota_manager_proxy_->NotifyStorageModified(id(), origin, type, -delta);
-    origin_data_.erase(itr);
+    origin_data_.erase(it);
   }
 
   std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);

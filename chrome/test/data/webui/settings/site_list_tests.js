@@ -1016,12 +1016,13 @@ suite('EditExceptionDialog', function() {
     input.value = expectedPattern;
     input.fire('input');
 
-    return browserProxy.whenCalled('isPatternValidForType')
-        .then(function(pattern, category) {
-          assertEquals(expectedPattern, pattern);
-          assertTrue(actionButton.disabled);
-          assertTrue(input.invalid);
-        });
+    return browserProxy.whenCalled('isPatternValidForType').then(function([
+      pattern, category
+    ]) {
+      assertEquals(expectedPattern, pattern);
+      assertTrue(actionButton.disabled);
+      assertTrue(input.invalid);
+    });
   });
 
   test('action button calls proxy', function() {
@@ -1108,11 +1109,12 @@ suite('AddExceptionDialog', function() {
     input.value = expectedPattern;
     input.fire('input');
 
-    return browserProxy.whenCalled('isPatternValidForType')
-        .then(function(pattern) {
-          assertEquals(expectedPattern, pattern);
-          assertTrue(actionButton.disabled);
-          assertTrue(input.invalid);
-        });
+    return browserProxy.whenCalled('isPatternValidForType').then(function([
+      pattern, category
+    ]) {
+      assertEquals(expectedPattern, pattern);
+      assertTrue(actionButton.disabled);
+      assertTrue(input.invalid);
+    });
   });
 });

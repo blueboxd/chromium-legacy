@@ -14,7 +14,7 @@
   std::unique_ptr<metrics::HistogramManager> _histogramManager;
 }
 
-+ (instancetype)sharedInstance {
++ (CWVMetricsProvider*)sharedInstance {
   static CWVMetricsProvider* provider;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
@@ -36,7 +36,7 @@
 
 #pragma mark - Public
 
-- (NSData*)accumulatedDeltas {
+- (NSData*)consumeMetrics {
   std::vector<uint8_t> deltas;
   _histogramManager->GetDeltas(&deltas);
   return [NSData dataWithBytes:deltas.data() length:deltas.size()];

@@ -50,8 +50,6 @@ const base::Feature kEnableAggregatedMlAppRanking{
     "EnableAggregatedMlAppRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLauncherSettingsSearch{"LauncherSettingsSearch",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kScalableAppList{"ScalableAppList",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableExactMatchForNonLatinLocale{
@@ -127,10 +125,6 @@ bool IsAggregatedMlAppRankingEnabled() {
 
 bool IsLauncherSettingsSearchEnabled() {
   return base::FeatureList::IsEnabled(kLauncherSettingsSearch);
-}
-
-bool IsScalableAppListEnabled() {
-  return base::FeatureList::IsEnabled(kScalableAppList);
 }
 
 bool IsFuzzyAppSearchEnabled() {

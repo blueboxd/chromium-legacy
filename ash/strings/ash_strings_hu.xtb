@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">túlpásztázás</translation>
 <translation id="119944043368869598">Összes törlése</translation>
 <translation id="1199716647557067911">Biztosan kikapcsolja a Kapcsolóalapú hozzáférést?</translation>
+<translation id="121097972571826261">Előrelépés szavanként</translation>
+<translation id="1229194443904279055">Kijelölés leállítása</translation>
 <translation id="1247372569136754018">Mikrofon (belső)</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Milyen idő van?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Teljes képernyős nagyító bekapcsolva. A kikapcsoláshoz nyomja le ismét a Ctrl + Keresés + M billentyűparancsot.</translation>
 <translation id="2302092602801625023">Ezt a fiókot a Family Linkkel kezelik</translation>
 <translation id="2303600792989757991">Ablakáttekintési mód váltása</translation>
+<translation id="2322173485024759474">Visszalépés betűnként</translation>
 <translation id="2339073806695260576">Koppintson a polcon az érintőceruza gombra, ha jegyzetet vagy képernyőképet szeretne készíteni, illetve ha a lézermutatót vagy a nagyítót kívánja használni.</translation>
 <translation id="2341729377289034582">Függőleges helyzetben zárolva</translation>
 <translation id="2352467521400612932">Az érintőceruza beállításai</translation>
@@ -239,6 +242,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="383629559565718788">Billentyűzetbeállítások megjelenítése</translation>
 <translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
 <translation id="385051799172605136">Vissza</translation>
+<translation id="385300504083504382">A legelejére</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
 <translation id="3897533311200664389">Szöveges lekérdezés indítása</translation>
@@ -347,6 +351,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5379115545237091094">Túl sok próbálkozás</translation>
 <translation id="5397578532367286026">A felhasználó használati adatait és előzményeit a kezelő (<ph name="MANAGER_EMAIL" />) a chrome.com webhelyen tekintheti meg.</translation>
 <translation id="5400461572260843123">Gyorsbeállítások, az értesítési központ megnyitásához nyomja meg a Keresés + balra nyíl billentyűkombinációt.</translation>
+<translation id="5428899915242071344">Kijelölés indítása</translation>
 <translation id="5430931332414098647">Azonnali internetmegosztás</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Minden elérhető felhasználót hozzáadott a munkamenethez.</translation>
@@ -468,6 +473,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6777216307882431711">Csatlakoztatott USB-C-eszközök töltése…</translation>
 <translation id="6790428901817661496">Játék</translation>
 <translation id="6803622936009808957">A kijelzők tükrözése sikertelen, mivel nem található támogatott felbontás. Ehelyett kiterjesztett asztal módba váltott a rendszer.</translation>
+<translation id="6818242057446442178">Visszalépés szavanként</translation>
 <translation id="6820676911989879663">Tartson egy kis szünetet!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> aktiválása</translation>
 <translation id="6878400149835617132">A billentyűparancs ki van kapcsolva</translation>
@@ -581,6 +587,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8308637677604853869">Előző menü</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
+<translation id="8371779926711439835">Előrelépés betűnként</translation>
 <translation id="8375916635258623388">A(z) <ph name="DEVICE_NAME" /> eszköz és a telefon automatikusan csatlakozik majd egymáshoz</translation>
 <translation id="8388750414311082622">Nem lehetséges a legutóbbi asztal eltávolítása.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> beállításainak menüje</translation>

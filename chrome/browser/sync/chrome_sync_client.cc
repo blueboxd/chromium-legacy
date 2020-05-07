@@ -507,6 +507,17 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
           std::make_unique<ForwardingModelTypeControllerDelegate>(delegate),
           profile_->GetPrefs(), sync_service));
     }
+  } else {
+    // SplitSettingsSync is disabled.
+    if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
+        base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations) &&
+        WifiConfigurationSyncServiceFactory::ShouldRunInProfile(profile_)) {
+      syncer::ModelTypeControllerDelegate* delegate =
+          GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS).get();
+      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+          syncer::WIFI_CONFIGURATIONS,
+          std::make_unique<ForwardingModelTypeControllerDelegate>(delegate)));
+    }
   }
 #endif  // defined(OS_CHROMEOS)
 

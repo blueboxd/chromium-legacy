@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/file_util_service.h"
@@ -264,9 +265,11 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
 }
 
 // static
-bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
-                                           GURL url,
-                                           Data* data) {
+bool DeepScanningDialogDelegate::IsEnabled(
+    Profile* profile,
+    GURL url,
+    Data* data,
+    enterprise_connectors::AnalysisConnector connector) {
   // If this is an incognitio profile, don't perform scans.
   if (profile->IsOffTheRecord())
     return false;
@@ -275,37 +278,48 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   if (!GetDMToken(profile).is_valid())
     return false;
 
-  // See if content compliance checks are needed.
-  int state = g_browser_process->local_state()->GetInteger(
-      prefs::kCheckContentCompliance);
-  data->do_dlp_scan =
-      base::FeatureList::IsEnabled(kContentComplianceEnabled) &&
-      (state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS);
+  data->do_dlp_scan = base::FeatureList::IsEnabled(kContentComplianceEnabled);
+  data->do_malware_scan = base::FeatureList::IsEnabled(kMalwareScanEnabled);
+
+  // If neither DLP or malware scanning is enabled by features, don't perform
+  // scans.
+  if (!data->do_dlp_scan && !data->do_malware_scan)
+    return false;
+
+  // If the settings arent't obtained by the corresponding connector, check
+  // the legacy DLP and Malware policies.
+  if (!enterprise_connectors::ConnectorsManager::GetInstance()
+           ->IsConnectorEnabled(connector)) {
+    int state = g_browser_process->local_state()->GetInteger(
+        prefs::kCheckContentCompliance);
+    data->do_dlp_scan &=
+        (state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS);
+
+    state = profile->GetPrefs()->GetInteger(
+        prefs::kSafeBrowsingSendFilesForMalwareCheck);
+    data->do_malware_scan &=
+        (state == SEND_UPLOADS || state == SEND_UPLOADS_AND_DOWNLOADS);
+
+    if (!data->do_dlp_scan && !data->do_malware_scan)
+      return false;
+  }
+
+  // Check that |url| matches the appropriate URL patterns by getting settings.
+  // No settings means no matches were found.
+  auto settings = enterprise_connectors::ConnectorsManager::GetInstance()
+                      ->GetAnalysisSettings(url, connector);
+  if (!settings.has_value()) {
+    data->do_dlp_scan = false;
+    data->do_malware_scan = false;
+    return false;
+  }
+
+  data->settings = std::move(settings.value());
+  data->do_dlp_scan &= (data->settings.tags.count("dlp") == 1);
+  data->do_malware_scan &= (data->settings.tags.count("malware") == 1);
 
   if (url.is_valid())
     data->url = url;
-  if (data->do_dlp_scan) {
-    // TODO(domfc): Instantiate the manager somewhere that can be accessed by
-    // both the upload and download paths instead. This is fine for now since
-    // the manager isn't caching anything.
-    data->do_dlp_scan =
-        enterprise_connectors::ConnectorsManager::GetInstance()
-            ->MatchURLAgainstLegacyDlpPolicies(url, /*upload*/ true);
-  }
-
-  // See if malware checks are needed.
-
-  state = profile->GetPrefs()->GetInteger(
-      prefs::kSafeBrowsingSendFilesForMalwareCheck);
-  data->do_malware_scan =
-      base::FeatureList::IsEnabled(kMalwareScanEnabled) &&
-      (state == SEND_UPLOADS || state == SEND_UPLOADS_AND_DOWNLOADS);
-
-  if (data->do_malware_scan) {
-    data->do_malware_scan =
-        enterprise_connectors::ConnectorsManager::GetInstance()
-            ->MatchURLAgainstLegacyMalwarePolicies(url, /*upload*/ true);
-  }
 
   return data->do_dlp_scan || data->do_malware_scan;
 }
@@ -316,32 +330,6 @@ void DeepScanningDialogDelegate::ShowForWebContents(
     Data data,
     CompletionCallback callback,
     DeepScanAccessPoint access_point) {
-  enterprise_connectors::ConnectorsManager::GetInstance()->GetAnalysisSettings(
-      data.url, enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
-      base::BindOnce(&DeepScanningDialogDelegate::OnGotAnalysisSettings,
-                     web_contents, std::move(data), std::move(callback),
-                     access_point));
-}
-
-// static
-void DeepScanningDialogDelegate::OnGotAnalysisSettings(
-    content::WebContents* web_contents,
-    Data data,
-    CompletionCallback callback,
-    DeepScanAccessPoint access_point,
-    base::Optional<enterprise_connectors::AnalysisSettings> settings) {
-  // Proceed with a scan after obtaining settings, otherwise complete with a
-  // positive result.
-  if (!settings.has_value()) {
-    Result result;
-    result.text_results = std::vector<bool>(data.text.size(), true);
-    result.paths_results = std::vector<bool>(data.paths.size(), true);
-    std::move(callback).Run(std::move(data), std::move(result));
-    return;
-  }
-
-  data.settings = std::move(settings.value());
-
   Factory* testing_factory = GetFactoryStorage();
   bool wait_for_verdict = data.settings.block_until_verdict ==
                           enterprise_connectors::BlockUntilVerdict::BLOCK;

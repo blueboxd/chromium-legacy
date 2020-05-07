@@ -12,10 +12,12 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/services/network_config/in_process_instance.h"
+#include "components/account_id/account_id.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 
 namespace chromeos {
 
@@ -53,11 +55,13 @@ NetworkTestHelper::NetworkTestHelper()
       /*global_network_config=*/base::DictionaryValue());
 
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+  auto primary_account_id = AccountId::FromUserEmail("primary@test.com");
+  auto secondary_account_id = AccountId::FromUserEmail("secondary@test.com");
+  primary_user_ = fake_user_manager->AddUser(primary_account_id);
+  secondary_user_ = fake_user_manager->AddUser(secondary_account_id);
   scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
       std::move(fake_user_manager));
-
-  LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
-                                      LoginState::LOGGED_IN_USER_REGULAR);
+  LoginUser(primary_user_);
 
   Initialize(managed_network_configuration_handler_.get());
 }
@@ -75,6 +79,14 @@ void NetworkTestHelper::SetUp() {
       network_state_helper_->UserHash(), std::string());
 
   base::RunLoop().RunUntilIdle();
+}
+
+void NetworkTestHelper::LoginUser(const user_manager::User* user) {
+  auto* user_manager = static_cast<user_manager::FakeUserManager*>(
+      user_manager::UserManager::Get());
+  user_manager->UserLoggedIn(user->GetAccountId(), user->username_hash(),
+                             true /* browser_restart */, false /* is_child */);
+  user_manager->SwitchActiveUser(user->GetAccountId());
 }
 
 std::string NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
@@ -100,9 +112,16 @@ std::string NetworkTestHelper::ConfigureWiFiNetwork(const std::string& ssid,
 
   base::RunLoop().RunUntilIdle();
 
-  if (owned_by_user) {
-    NetworkHandler::Get()->network_metadata_store()->OnConfigurationCreated(
-        service_path, guid);
+  if (!in_profile) {
+    if (owned_by_user) {
+      NetworkHandler::Get()->network_metadata_store()->OnConfigurationCreated(
+          service_path, guid);
+    } else {
+      LoginUser(secondary_user_);
+      NetworkHandler::Get()->network_metadata_store()->OnConfigurationCreated(
+          service_path, guid);
+      LoginUser(primary_user_);
+    }
   }
 
   if (has_connected) {

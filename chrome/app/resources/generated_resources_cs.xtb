@@ -329,7 +329,7 @@
 <translation id="143027896309062157">Číst a upravovat všechna data v počítači a na navštívených webech</translation>
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1431188203598586230">Poslední aktualizace softwaru</translation>
-<translation id="1431432486300429272">Google vaši historii procházení může používat k personalizaci Vyhledávání a dalších služeb Google. Toto chování můžeš ty nebo tvoji rodiče kdykoliv změnit na stránce myaccount.google.com/activitycontrols/search</translation>
+<translation id="1431432486300429272">Google může tvoji historii procházení používat k personalizaci Vyhledávání a dalších služeb Google. Toto chování můžeš ty nebo tvoji rodiče kdykoliv změnit na stránce myaccount.google.com/activitycontrols/search</translation>
 <translation id="1432581352905426595">Spravovat vyhledávače</translation>
 <translation id="1433811987160647649">Před přístupem se zeptat</translation>
 <translation id="1434696352799406980">Bude resetována vaše počáteční stránka, stránka Nová karta, vyhledávač a připnuté karty. Budou také zakázána všechna rozšíření a vymazána dočasná data, jako jsou soubory cookie. Uložené záložky, historie ani hesla vymazána nebudou.</translation>
@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Okno aplikace</translation>
 <translation id="1531275250079031713">Zobrazit dialogové okno k přidání nové Wi-Fi</translation>
 <translation id="1536754031901697553">Odpojování...</translation>
+<translation id="1537254971476575106">Zvětšení obrazovky</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1540605929960647700">Zapnout ukázkový režim</translation>
 <translation id="1542514202066550870">Tato karta odesílá VR obsah do náhlavní soupravy.</translation>
@@ -1163,6 +1164,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2501173422421700905">Přidržený certifikát</translation>
 <translation id="2501278716633472235">Zpět</translation>
 <translation id="2501797496290880632">Zadejte zkratku</translation>
+<translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2502441965851148920">Automatické aktualizace jsou aktivní. Ruční aktualizace byly administrátorem deaktivovány.</translation>
 <translation id="2502719318159902502">Plný přístup</translation>
 <translation id="2505127913256479918">Tento dozorovaný účet bude brzy odstraněn</translation>
@@ -1548,6 +1550,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="2993517869960930405">O aplikaci</translation>
 <translation id="2996286169319737844">Data jsou šifrována pomocí heslové fráze pro synchronizaci. Toto šifrování se nevztahuje na platební metody a adresy z Google Pay.</translation>
 <translation id="2996722619877761919">Otáčení na dlouhém okraji</translation>
+<translation id="3000461861112256445">Zvuk mono</translation>
 <translation id="3001144475369593262">Dětské účty</translation>
 <translation id="3003144360685731741">Preferované sítě</translation>
 <translation id="3003623123441819449">Mezipaměť CSS</translation>
@@ -2481,6 +2484,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4211851069413100178">Odesílat údaje o využití a diagnostice. Pomozte se zlepšením prostředí Android tím, že budete do Googlu automaticky odesílat diagnostická data a údaje o využití zařízení a aplikací. Tyto údaje nám pomohou se zvyšováním stability systému a aplikací a dalšími vylepšeními. Některá souhrnná data budou moci využít také naši partneři, např. vývojáři aplikací pro Android. Toto nastavení je <ph name="BEGIN_LINK1" />vyžadováno<ph name="END_LINK1" /> vlastníkem. Vlastník může zvolit, že se diagnostické údaje a údaje o využití z tohoto zařízení mají odesílat do Googlu. Pokud máte zapnuté dodatečné nastavení Aktivita na webu a v aplikacích, mohou se tato data ukládat do vašeho účtu Google. <ph name="BEGIN_LINK2" />Další informace<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Exportovat</translation>
 <translation id="42137655013211669">Server zakázal přístup k tomuto zdroji.</translation>
+<translation id="4217571870635786043">Diktování</translation>
 <translation id="4218274196133425560">Odstranit výjimku pro web <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Při aktivaci došlo k chybě.</translation>
 <translation id="4222772810963087151">Podrobnosti o sestavení</translation>
@@ -3165,6 +3169,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5204967432542742771">Zadejte heslo</translation>
 <translation id="5206215183583316675">Smazat certifikát <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Chyba při importu certifikátu</translation>
+<translation id="5207949376430453814">Zvýraznit textový kurzor</translation>
 <translation id="5209320130288484488">Nebyla nalezena žádná zařízení</translation>
 <translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="5213481667492808996">Datová služba <ph name="NAME" /> je připravena k použití</translation>
@@ -5078,6 +5083,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7766807826975222231">Spustit prohlídku</translation>
 <translation id="7766838926148951335">Přijmout oprávnění</translation>
 <translation id="7768770796815395237">Změnit</translation>
+<translation id="7768784765476638775">Poslech vybraného textu</translation>
 <translation id="7769672763586021400">ID modelu</translation>
 <translation id="7770612696274572992">Obrázek zkopírovaný z jiného zařízení</translation>
 <translation id="7770651108375708429">Odpojit od Wi-Fi</translation>

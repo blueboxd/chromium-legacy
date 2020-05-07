@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Recherchez une touche, puis levez le doigt pour la sélectionner</translation>
 <translation id="1012173283529841972">Élément de liste</translation>
 <translation id="1013742170491673792">recherche</translation>
+<translation id="1014370462248694370">Faites glisser deux doigts vers la droite</translation>
 <translation id="1022586497894531524">Utilisez-vous la rétroaction vocale de ChromeVox pour la première fois? Ce didacticiel rapide explique les notions essentielles pour faire vos premiers pas avec ChromeVox.</translation>
 <translation id="1025074108959230262">Mode rémanent désactivé</translation>
 <translation id="1031961866430398710">puis</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Aucun élément de liste précédent</translation>
 <translation id="1114836634143403764">Suggestion</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "Charlie", "d": "delta", "e": "écho", "f": "foxtrot", "g": "golf", "h": "hôtel", "i": "Inde", "j": "Juliette","k": "kilo", "l": "Lima", "m": "Mike", "n": "novembre", "o": "Oscar","p": "papa", "q": "Québec", "r": "Roméo", "s": "sierra", "t": "tango", "u": "uniforme", "v": "Victor", "w": "whiskey","x": "Xavier", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">Faites glisser deux doigts vers le haut</translation>
 <translation id="1126928665165112660">Pas en italique</translation>
 <translation id="113582498867142724">Collection de <ph name="TAG" /> comprenant <ph name="NUM" /> éléments</translation>
 <translation id="1161762950103988776">Sauter</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">bas de page</translation>
 <translation id="174268867904053074">Élément graphique suivant</translation>
 <translation id="1756785467854861272">Magenta foncé</translation>
+<translation id="1765245556747822181">Faites glisser un doigt vers le haut</translation>
 <translation id="1771761307086386028">Faire défiler vers la droite</translation>
 <translation id="1781173782405573156">Touche d'intercommunication</translation>
 <translation id="1787176709638001873">Modifier le texte du mot de passe</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">Augmenter le débit de la parole</translation>
 <translation id="2267538686624070261">Abandon de la faute d'orthographe</translation>
 <translation id="2267945578749931355">Caractère suivant</translation>
+<translation id="2278490101488436824">Faites glisser trois doigts vers la gauche</translation>
 <translation id="2305942658236913680">Aucun en-tête suivant</translation>
 <translation id="2311237334957139798">Accéder au niveau précédent de granularité</translation>
 <translation id="2314393392395134769">Pas en indice</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">Bibliographie</translation>
 <translation id="2873259058405069099">Aller au début du tableau</translation>
 <translation id="287383510823843610">Orange foncé</translation>
+<translation id="2879867157561757640">Faites glisser trois doigts vers le bas</translation>
 <translation id="288178314850623291">Utilisez les commandes de renvoi pour passer à des types d'éléments spécifiques. Pour avancer parmi les en-têtes, appuyez sur Recherche + H, ou, pour retourner en arrière, appuyez sur Recherche + Maj + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minute}one{minute}other{minutes}}</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{accolade ouvrante}one{# accolade ouvrante}other{# accolades ouvrantes}}</translation>
 <translation id="2909584066358367921">Aucun bouton suivant</translation>
 <translation id="2911433807131383493">Ouvrir le didacticiel de ChromeVox</translation>
+<translation id="2912405967290226587">Faites glisser trois doigts vers la droite</translation>
 <translation id="2937799153569150791">Aucun en-tête de niveau 3 suivant</translation>
 <translation id="2942710183375260152">Bleu ardoise foncé</translation>
 <translation id="2943596527105977722">Or foncé</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">Vert mer</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulation}one{# tabulation}other{# tabulations}}</translation>
 <translation id="2972205263822847197">Infobulle</translation>
+<translation id="297825089465017871">Faites glisser deux doigts vers la gauche</translation>
 <translation id="2998131015536248178">Caractère précédent</translation>
 <translation id="2999559350546931576">Diminuer la hauteur de la voix</translation>
 <translation id="3014130421870723208">@modif. braille 8 pts</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">Options de ChromeVox</translation>
 <translation id="3060756054951570867">Menu <ph name="TITLE" /> ouvert</translation>
 <translation id="3060880924447482063">Balayez l'écran vers la gauche ou la droite pour passer d'un élément à l'autre</translation>
+<translation id="3070245424257836917">Faites glisser trois doigts vers le haut</translation>
 <translation id="3078345202707391975">En-tête de niveau 2 suivant</translation>
 <translation id="3078740164268491126">Tableau</translation>
 <translation id="3082249673510793544">Faire défiler vers l'arrière</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">Accéder à la colonne suivante</translation>
 <translation id="4688873778442829762">grille</translation>
 <translation id="4693675773662933727">Repère précédent</translation>
+<translation id="4710166929009737753">Faites glisser un doigt vers la droite</translation>
 <translation id="4712898966495541134">Fin de la sélection</translation>
 <translation id="4740661827607246557">Commandes d'aide</translation>
 <translation id="4755857887974653209">Désactiver ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">zone de liste</translation>
 <translation id="6815255864998354418">Mousseline au citron</translation>
 <translation id="6816066673340002913">Or pâle</translation>
+<translation id="6826226459053491773">Faites glisser deux doigts vers le bas</translation>
 <translation id="6833103209700200188">Bas de page</translation>
 <translation id="6837853484260746864">Sélectionner une voix :</translation>
 <translation id="6858047746862060282">Prologue</translation>
+<translation id="6859876496651143278">Faites glisser un doigt vers la gauche</translation>
 <translation id="6865519907510167493">Faute d'orthographe</translation>
 <translation id="6894148351896207544">Dire l'heure et la date actuelles</translation>
 <translation id="6896758677409633944">Copier</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">ChromeVox a été mis à jour</translation>
 <translation id="93384979447910801">Vert mer foncé</translation>
 <translation id="948171205378458592">Diminuer le débit de la parole</translation>
+<translation id="958854023026327378">Faites glisser un doigt vers le bas</translation>
 <translation id="962913030769097253">En-tête de niveau 1 suivant</translation>
 <translation id="966588271015727539">Sélectionnez un afficheur braille Bluetooth</translation>
 <translation id="973955474346881951">Activer ou désactiver les touches rémanentes</translation>

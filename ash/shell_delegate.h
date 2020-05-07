@@ -58,8 +58,9 @@ class ASH_EXPORT ShellDelegate {
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
 
-  virtual bool CreateBrowserForTabDrop(gfx::NativeWindow source_window,
-                                       const ui::OSExchangeData& drop_data);
+  virtual aura::Window* CreateBrowserForTabDrop(
+      aura::Window* source_window,
+      const ui::OSExchangeData& drop_data);
 
   // Binds a BluetoothSystemFactory receiver if possible.
   virtual void BindBluetoothSystemFactory(

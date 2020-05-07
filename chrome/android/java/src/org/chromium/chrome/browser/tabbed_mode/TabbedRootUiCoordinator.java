@@ -16,6 +16,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorContro
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
@@ -73,13 +75,18 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      *         intent to open a single tab.
      * @param shareDelegateSupplier
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
+     * @param profileSupplier Supplier of the currently applicable profile.
+     * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
      */
     public TabbedRootUiCoordinator(ChromeActivity activity,
             Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ActivityTabProvider tabProvider,
-            ObservableSupplierImpl<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier) {
-        super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider);
+            ObservableSupplierImpl<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
+            ObservableSupplier<Profile> profileSupplier,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
+        super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
+                profileSupplier, bookmarkBridgeSupplier);
         mIntentWithEffect = intentWithEffect;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
     }

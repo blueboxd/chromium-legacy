@@ -32,6 +32,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -289,6 +290,10 @@ class CORE_EXPORT HTMLCanvasElement final
     context_creation_was_blocked_ = true;
   }
 
+  ScriptPromise convertToBlob(ScriptState*,
+                              const ImageEncodeOptions*,
+                              ExceptionState&) override;
+
   bool NeedsUnbufferedInputEvents() const { return needs_unbuffered_input_; }
 
   void SetNeedsUnbufferedInputEvents(bool value) {
@@ -313,6 +318,9 @@ class CORE_EXPORT HTMLCanvasElement final
 
  private:
   void Dispose();
+
+  void RecordIdentifiabilityMetric(const blink::IdentifiableSurface& surface,
+                                   int64_t value) const;
 
   void PaintInternal(GraphicsContext&, const PhysicalRect&);
 

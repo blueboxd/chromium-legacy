@@ -471,6 +471,7 @@
 <translation id="4913169188695071480">නැවුම් කිරීම නවත්වන්න</translation>
 <translation id="4915549754973153784">උපාංග සඳහා ස්කෑන් කරන අතරතුර <ph name="BEGIN_LINK" />උදවු ලබා ගන්න<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# පිටුවක්}one{පිටු #ක්}other{පිටු #ක්}}</translation>
+<translation id="49268022542405662">ඔබේ මුරපද පාඨ ගොනුවක් ලෙස නිර්යාත කිරීම සහ බාගැනීම සිදු වේ. ඒවා ගමනාන්ත ෆෝල්ඩරයට ප්‍රවේශය ඇති ඕනෑම කෙනෙකුට සහ ඕනෑම යෙදුමකට දෘශ්‍යමාන වෙයි.</translation>
 <translation id="4932247056774066048">ඔබ <ph name="DOMAIN_NAME" /> විසින් කළමනා කරනු ලබන ගිණුමකින් වැරෙන බැවින්, ඔබේ Chrome දත්ත මෙම උපාංගයෙන් මකනු ලැබේ. එය ඔබේ Google ගිණුම තුළ පවතියි.</translation>
 <translation id="4943703118917034429">අතථ්‍ය යථාර්ථය</translation>
 <translation id="4943872375798546930">ප්‍රතිඵල නැත</translation>
@@ -753,6 +754,7 @@
 <translation id="7302081693174882195">විස්තර: සුරකින ලද දත්ත ප්‍රමාණය අනුව අනුපිළිවෙළට සකසා ඇත</translation>
 <translation id="7328017930301109123">සැහැල්ලු ප්‍රකාරය තුළ, Chrome වේගයෙන් පිටු පූරණ කර ප්‍රතිශතය 60 ක් දක්වා අඩුවෙන් දත්ත භාවිත කරයි.</translation>
 <translation id="7333031090786104871">තවමත් කලින් අඩවියට එක් කරමින්</translation>
+<translation id="7340958967809483333">Discover සඳහා විකල්ප</translation>
 <translation id="7352939065658542140">වීඩියෝ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{තෝරාගත් අයිතම 1ක් බෙදාගන්න}one{තෝරාගත් අයිතම #ක් බෙදාගන්න}other{තෝරාගත් අයිතම #ක් බෙදාගන්න}}</translation>
 <translation id="7359002509206457351">ගෙවීමේ ක්‍රමවලට ප්‍රවේශය</translation>
@@ -817,6 +819,7 @@
 <translation id="780301667611848630">එපා, ස්තූතියි</translation>
 <translation id="7810647596859435254">විවෘත කරන්න...</translation>
 <translation id="7821588508402923572">ඔබගේ දත්ත සුරැකුම් මෙහි දිස් වනු ඇත</translation>
+<translation id="7835852323729233924">මාධ්‍ය ධාවනය</translation>
 <translation id="783819812427904514">වීඩියෝව නිහඬ නොකරන්න</translation>
 <translation id="784934925303690534">කාල පරාසය</translation>
 <translation id="7851858861565204677">වෙනත් උපාංග</translation>

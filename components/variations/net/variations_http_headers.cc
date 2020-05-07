@@ -10,11 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/google/core/common/google_util.h"
+#include "components/variations/net/omnibox_http_headers.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
@@ -87,6 +89,8 @@ class VariationsHeaderHelper {
   }
 
   bool AppendHeaderIfNeeded(const GURL& url, InIncognito incognito) {
+    AppendOmniboxOnDeviceSuggestionsHeaderIfNeeded(url, resource_request_);
+
     // Note the criteria for attaching client experiment headers:
     // 1. We only transmit to Google owned domains which can evaluate
     // experiments.
@@ -180,10 +184,13 @@ CreateSimpleURLLoaderWithVariationsHeaderUnknownSignedIn(
 }
 
 bool IsVariationsHeader(const std::string& header_name) {
-  return header_name == kClientDataHeader;
+  return header_name == kClientDataHeader ||
+         header_name == kOmniboxOnDeviceSuggestionsHeader;
 }
 
 bool HasVariationsHeader(const network::ResourceRequest& request) {
+  // Note: kOmniboxOnDeviceSuggestionsHeader is not listed because this function
+  // is only used for testing.
   return request.cors_exempt_headers.HasHeader(kClientDataHeader);
 }
 
@@ -194,6 +201,11 @@ bool ShouldAppendVariationsHeaderForTesting(const GURL& url) {
 void UpdateCorsExemptHeaderForVariations(
     network::mojom::NetworkContextParams* params) {
   params->cors_exempt_header_list.push_back(kClientDataHeader);
+
+  if (base::FeatureList::IsEnabled(kReportOmniboxOnDeviceSuggestionsHeader)) {
+    params->cors_exempt_header_list.push_back(
+        kOmniboxOnDeviceSuggestionsHeader);
+  }
 }
 
 }  // namespace variations

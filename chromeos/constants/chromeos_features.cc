@@ -125,10 +125,6 @@ const base::Feature kCryptAuthV2DeviceSync{"CryptAuthV2DeviceSync",
 const base::Feature kCryptAuthV2Enrollment{"CryptAuthV2Enrollment",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables shelf app scaling.
-const base::Feature kShelfAppScaling{"ShelfAppScaling",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Disables the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
 // is needed to disable the v1 service during the second phase of the rollout.
@@ -357,7 +353,7 @@ const base::Feature kSmartDimModelV3{"SmartDimModelV3",
 // For example, the user could choose to sync OS settings but not browser
 // settings.
 const base::Feature kSplitSettingsSync{"SplitSettingsSync",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Introduces a new OOBE dialog for the OS sync feature. Uses the same browser
 // sync consent dialog as Windows/Mac/Linux. Allows the user to fully opt-out of

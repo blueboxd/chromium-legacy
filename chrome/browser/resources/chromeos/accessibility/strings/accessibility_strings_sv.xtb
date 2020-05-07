@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Leta upp en tangent och lyft sedan fingret för att skriva tecknet</translation>
 <translation id="1012173283529841972">Post i lista</translation>
 <translation id="1013742170491673792">sökfält</translation>
+<translation id="1014370462248694370">Svep åt höger med två fingrar</translation>
 <translation id="1022586497894531524">Är det första gången du använder talad feedback med ChromeVox? I dessa korta självstudier förklaras de grundläggande stegen för att komma igång med ChromeVox.</translation>
 <translation id="1025074108959230262">Låsta knappar har inaktiverats</translation>
 <translation id="1031961866430398710">sedan</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Det finns ingen föregående post i listan</translation>
 <translation id="1114836634143403764">Förslag</translation>
 <translation id="1120743664840974483">{"a": "Adam", "b": "Bertil", "c": "Cesar", "d": "David", "e": "Erik", "f": "Filip", "g": "Gustav", "h": "Helge", "i": "Ivar", "j": "Johan","k": "Kalle", "l": "Ludvig", "m": "Martin", "n": "Niklas", "o": "Olof","p": "Petter", "q": "Quintus", "r": "Rudolf", "s": "Sigurd", "t": "Tore", "u": "Urban", "v": "Viktor", "w": "Wilhelm","x": "Xerxes", "y": "Yngve", "z": "Zäta", "å": "Åke", "ä": "Ärlig", "ö": "Östen"}</translation>
+<translation id="1120938014254001895">Svep uppåt med två fingrar</translation>
 <translation id="1126928665165112660">Inte kursiv</translation>
 <translation id="113582498867142724"><ph name="TAG" />-samling med <ph name="NUM" /> objekt</translation>
 <translation id="1161762950103988776">Hoppa</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">sidfot</translation>
 <translation id="174268867904053074">Nästa bild</translation>
 <translation id="1756785467854861272">Mörk magenta</translation>
+<translation id="1765245556747822181">Svep uppåt med ett finger</translation>
 <translation id="1771761307086386028">Rulla åt höger</translation>
 <translation id="1781173782405573156">Pass through-tangent</translation>
 <translation id="1787176709638001873">Lösenordsinmatning</translation>
@@ -133,6 +136,7 @@
 <translation id="2010555995361223825">ChromeVox-menyer</translation>
 <translation id="203030071582665758">Det finns ingen föregående rubrik på nivå 4</translation>
 <translation id="2045055672832940894">Det finns ingen föregående kontroll</translation>
+<translation id="2045606329038304310">Formulärfältskontroll</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="2086961585857038472">Nästa ord</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
@@ -159,6 +163,7 @@
 <translation id="225732394367814946">Öka talhastigheten</translation>
 <translation id="2267538686624070261">Felstavning lämnas</translation>
 <translation id="2267945578749931355">Nästa tecken</translation>
+<translation id="2278490101488436824">Svep åt vänster med tre fingrar</translation>
 <translation id="2305942658236913680">Det finns inga fler rubriker</translation>
 <translation id="2311237334957139798">Flytta till föregående på detaljnivå</translation>
 <translation id="2314393392395134769">Inte nedsänkt</translation>
@@ -232,12 +237,14 @@
 <translation id="2867808975387772810">Bibliografi</translation>
 <translation id="2873259058405069099">Till början av tabellen</translation>
 <translation id="287383510823843610">Mörkorange</translation>
+<translation id="2879867157561757640">Svep nedåt med tre fingrar</translation>
 <translation id="288178314850623291">Använd hoppkommandon om du vill hoppa till specifika typer av element. Om du vill hoppa framåt mellan rubriker trycker du på söktangenten + H, och på söktangenten + Skift + H om du vill hoppa bakåt.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minut}other{minuter}}</translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{vänster klammerparentes}other{# vänster-klammerparenteser}}</translation>
 <translation id="2909584066358367921">Det finns inga fler knappar</translation>
 <translation id="2911433807131383493">Öppna självstudierna för ChromeVox</translation>
+<translation id="2912405967290226587">Svep åt höger med tre fingrar</translation>
 <translation id="2937799153569150791">Det finns inga fler rubriker på nivå 3</translation>
 <translation id="2942710183375260152">Mörkt skifferblå</translation>
 <translation id="2943596527105977722">Mörkt gullrisgul</translation>
@@ -245,6 +252,7 @@
 <translation id="2968634799764242930">Havsgrön</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabbtecken}other{# tabbtecken}}</translation>
 <translation id="2972205263822847197">Beskrivning</translation>
+<translation id="297825089465017871">Svep åt vänster med två fingrar</translation>
 <translation id="2998131015536248178">Föregående tecken</translation>
 <translation id="2999559350546931576">Minska tonhöjden</translation>
 <translation id="3014130421870723208">@red 8punkt</translation>
@@ -254,6 +262,7 @@
 <translation id="3046838483509668188">Alternativ för ChromeVox</translation>
 <translation id="3060756054951570867">Menyn <ph name="TITLE" /> har öppnats</translation>
 <translation id="3060880924447482063">Flytta ett objekt i taget genom att svepa åt vänster eller höger</translation>
+<translation id="3070245424257836917">Svep uppåt med tre fingrar</translation>
 <translation id="3078345202707391975">Nästa rubrik på nivå 2</translation>
 <translation id="3078740164268491126">tabell</translation>
 <translation id="3082249673510793544">Rulla bakåt</translation>
@@ -435,6 +444,7 @@
 <translation id="4391478986194775161">innehållsinformation</translation>
 <translation id="4402014469255336455">Djupt himmelsblå</translation>
 <translation id="4432457053224379116">Brunröd</translation>
+<translation id="4437615272777527928">Skriv det du vill söka efter i menyerna. Bläddra bland resultat med upp- och nedpilarna. Justera textmarkören och navigera mellan menyer med vänster- och högerpilarna.</translation>
 <translation id="4457472090507035117">Välj den aktuella rösten:</translation>
 <translation id="4476183483923481720">ny rad</translation>
 <translation id="4479068155583208887">Tegelröd</translation>
@@ -459,6 +469,7 @@
 <translation id="4677535310137735442">Fortsätt till nästa kolumn</translation>
 <translation id="4688873778442829762">rutnät</translation>
 <translation id="4693675773662933727">Föregående landmärke</translation>
+<translation id="4710166929009737753">Svep åt höger med ett finger</translation>
 <translation id="4712898966495541134">Textmarkeringens slut</translation>
 <translation id="4740661827607246557">Hjälpkommandon</translation>
 <translation id="4755857887974653209">Inaktivera ChromeVox</translation>
@@ -709,9 +720,11 @@
 <translation id="6793101435925451627">listruta</translation>
 <translation id="6815255864998354418">Gulbrun</translation>
 <translation id="6816066673340002913">Blekt gullrisgul</translation>
+<translation id="6826226459053491773">Svep nedåt med två fingrar</translation>
 <translation id="6833103209700200188">Sidfot</translation>
 <translation id="6837853484260746864">Välj en röst:</translation>
 <translation id="6858047746862060282">Prolog</translation>
+<translation id="6859876496651143278">Svep åt vänster med ett finger</translation>
 <translation id="6865519907510167493">Felstavning</translation>
 <translation id="6894148351896207544">Säg aktuell tid och aktuellt datum</translation>
 <translation id="6896758677409633944">Kopiera</translation>
@@ -994,6 +1007,7 @@
 <translation id="923331726185079994">ChromeVox har uppdaterats</translation>
 <translation id="93384979447910801">Mörkt havsgrön</translation>
 <translation id="948171205378458592">Sänk talhastigheten</translation>
+<translation id="958854023026327378">Svep nedåt med ett finger</translation>
 <translation id="962913030769097253">Nästa rubrik på nivå 1</translation>
 <translation id="966588271015727539">Välj en punktskriftsskärm med Bluetooth</translation>
 <translation id="973955474346881951">Aktivera/inaktivera låsta knappar</translation>

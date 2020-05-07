@@ -100,7 +100,7 @@
 <translation id="1810845389119482123">Erste Einrichtung der Synchronisierung nicht abgeschlossen</translation>
 <translation id="1821253160463689938">Zum Speichern Ihrer Einstellungen werden Cookies verwendet, auch wenn Sie diese Seiten nicht besuchen</translation>
 <translation id="1829244130665387512">Auf Seite suchen</translation>
-<translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
+<translation id="1853692000353488670">Neuer Inkognitotab</translation>
 <translation id="1856325424225101786">Lite-Modus zurücksetzen?</translation>
 <translation id="1868024384445905608">In Chrome sind Downloads jetzt noch schneller</translation>
 <translation id="1883903952484604915">Meine Dateien</translation>
@@ -239,7 +239,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1" /> und <ph name="PARENT_NAME_2" /> verwaltet.</translation>
 <translation id="2962095958535813455">Zu Inkognito-Tabs gewechselt</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
-<translation id="2979025552038692506">Ausgewählter Inkognito-Tab</translation>
+<translation id="2979025552038692506">Ausgewählter Inkognitotab</translation>
 <translation id="2987620471460279764">Text, der über ein anderes Gerät geteilt wurde</translation>
 <translation id="2989523299700148168">Kürzlich besucht</translation>
 <translation id="2996291259634659425">Passphrase erstellen</translation>
@@ -250,7 +250,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="305593374596241526">Die Standortermittlung ist deaktiviert. Sie können sie in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="3058498974290601450">Sie können die Synchronisierung jederzeit in den Einstellungen aktivieren</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> Lesezeichen}other{<ph name="BOOKMARKS_COUNT_MANY" /> Lesezeichen}}</translation>
-<translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
+<translation id="3089395242580810162">In Inkognitotab öffnen</translation>
 <translation id="3114012059975132928">Videoplayer</translation>
 <translation id="3123734510202723619">Ankündigungen</translation>
 <translation id="3137521801621304719">Inkognitomodus deaktivieren</translation>
@@ -296,7 +296,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3443221991560634068">Aktuelle Seite neu laden</translation>
 <translation id="3445014427084483498">Gerade eben</translation>
 <translation id="3478363558367712427">Sie können Ihre Suchmaschine auswählen</translation>
-<translation id="3492207499832628349">Neuer Inkognito-Tab</translation>
+<translation id="3492207499832628349">Neuer Inkognitotab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu vorgeschlagenen Inhalten</translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
@@ -490,7 +490,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5040262127954254034">Datenschutz</translation>
 <translation id="5087580092889165836">Karte hinzufügen</translation>
 <translation id="510275257476243843">1 Stunde übrig</translation>
-<translation id="5123685120097942451">Inkognito-Tab</translation>
+<translation id="5123685120097942451">Inkognitotab</translation>
 <translation id="5127805178023152808">Synchronisierung ist deaktiviert</translation>
 <translation id="5129038482087801250">Web-App installieren</translation>
 <translation id="5132942445612118989">Passwörter, Verlauf und mehr auf allen Geräten synchronisieren</translation>
@@ -854,7 +854,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="8076492880354921740">Tabs</translation>
 <translation id="8084114998886531721">Gespeichertes Passwort</translation>
-<translation id="8103578431304235997">Inkognito-Tab</translation>
+<translation id="8103578431304235997">Inkognitotab</translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">Aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen</translation>
 <translation id="8110087112193408731">Ihre Chrome-Aktivitäten in Digital Wellbeing anzeigen?</translation>

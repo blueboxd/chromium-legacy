@@ -5470,8 +5470,9 @@ void ChromeContentBrowserClient::IsClipboardPasteAllowed(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   safe_browsing::DeepScanningDialogDelegate::Data dialog_data;
-  if (safe_browsing::DeepScanningDialogDelegate::IsEnabled(profile, url,
-                                                           &dialog_data)) {
+  if (safe_browsing::DeepScanningDialogDelegate::IsEnabled(
+          profile, url, &dialog_data,
+          enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY)) {
     dialog_data.text.push_back(base::UTF8ToUTF16(data));
     safe_browsing::DeepScanningDialogDelegate::ShowForWebContents(
         web_contents, std::move(dialog_data),

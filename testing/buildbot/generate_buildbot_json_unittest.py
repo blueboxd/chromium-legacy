@@ -29,6 +29,10 @@ def dump_on_failure(fbb, dump=True):
         print l
     raise
 
+def override_args(fbb, **kwargs):
+  for k, v in kwargs.iteritems():
+    setattr(fbb.args, k, v)
+
 class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
   def __init__(self, waterfalls, test_suites, luci_milo_cfg,
                exceptions=EMPTY_PYL_FILE,
@@ -2887,8 +2891,7 @@ class UnitTest(unittest.TestCase):
                     REUSING_TEST_WITH_DIFFERENT_NAME,
                     LUCI_MILO_CFG,
                     gn_isolate_map=GN_ISOLATE_MAP)
-    fbb.args = argparse.Namespace(
-        pyl_files_dir='relative/path/', waterfall_filters=[])
+    override_args(fbb, pyl_files_dir='relative/path/', waterfall_filters=[])
     for file_name in list(fbb.files):
       if not 'luci-milo.cfg' in file_name:
         fbb.files[os.path.join('relative/path/', file_name)] = (
@@ -4278,9 +4281,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bots', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bots',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_BOTS_OUTPUT)
@@ -4290,9 +4293,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bots/blah/blah', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bots/blah/blah',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4303,9 +4306,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bots', check=False,
-                                  pyl_files_dir=None, json='result.json',
-                                  waterfall_filters = [])
+    override_args(fbb, query='bots',
+                  check=False, pyl_files_dir=None,
+                  json='result.json', waterfall_filters=[])
     fbb.query(fbb.args)
     self.assertFalse(fbb.printed_lines)
 
@@ -4314,9 +4317,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bots/tests', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bots/tests',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_BOTS_TESTS_OUTPUT)
@@ -4326,9 +4329,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bots/tdfjdk', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bots/tdfjdk',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4339,9 +4342,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bot/Fake Android K Tester',
-                                  check=False, pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bot/Fake Android K Tester',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.maxDiff = None
@@ -4352,9 +4355,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bot/bot1', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bot/bot1',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4365,9 +4368,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bot/Fake Android K Tester/blah/blah',
-                                  check=False, pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bot/Fake Android K Tester/blah/blah',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4378,9 +4381,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bot/Fake Android K Tester/blahs',
-                                  check=False, pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bot/Fake Android K Tester/blahs',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4391,9 +4394,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='bot/Fake Android L Tester/tests',
-                                  check=False, pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='bot/Fake Android L Tester/tests',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_BOT_TESTS_OUTPUT)
@@ -4403,9 +4406,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='tests',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TESTS_OUTPUT)
@@ -4415,9 +4418,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/blah/blah', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='tests/blah/blah',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4428,9 +4431,9 @@ class QueryTests(unittest.TestCase):
                     TEST_SUITE_WITH_PARAMS,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/--jobs=1&--verbose', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='tests/--jobs=1&--verbose',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TESTS_MULTIPLE_PARAMS_OUTPUT)
@@ -4440,9 +4443,9 @@ class QueryTests(unittest.TestCase):
                     TEST_SUITE_WITH_PARAMS,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/device_os?', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='tests/device_os?',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4453,9 +4456,9 @@ class QueryTests(unittest.TestCase):
                     TEST_SUITE_WITH_PARAMS,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/device_os:NMF26U',
-                                  check=False, pyl_files_dir=None,
-                                  json=None, waterfall_filters = [])
+    override_args(fbb, query='tests/device_os:NMF26U',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TESTS_DIMENSION_PARAMS_OUTPUT)
@@ -4465,9 +4468,9 @@ class QueryTests(unittest.TestCase):
                     TEST_SUITE_WITH_PARAMS,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/hard_timeout:1000',
-                                  check=False, pyl_files_dir=None,
-                                  json=None, waterfall_filters = [])
+    override_args(fbb, query='tests/hard_timeout:1000',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TESTS_SWARMING_PARAMS_OUTPUT)
@@ -4477,9 +4480,9 @@ class QueryTests(unittest.TestCase):
                     TEST_SUITE_WITH_PARAMS,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/should_retry_with_patch:true',
-                                  check=False, pyl_files_dir=None,
-                                  json=None, waterfall_filters = [])
+    override_args(fbb, query='tests/should_retry_with_patch:true',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TESTS_PARAMS_OUTPUT)
@@ -4489,9 +4492,9 @@ class QueryTests(unittest.TestCase):
                     TEST_SUITE_WITH_PARAMS,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='tests/should_retry_with_patch:false',
-                                  check=False, pyl_files_dir=None,
-                                  json=None, waterfall_filters = [])
+    override_args(fbb, query='tests/should_retry_with_patch:false',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TESTS_PARAMS_FALSE_OUTPUT)
@@ -4501,9 +4504,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/foo_test', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/foo_test',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TEST_OUTPUT)
@@ -4513,9 +4516,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/foo_foo', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/foo_foo',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4526,9 +4529,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/foo_tests/foo/foo', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/foo_tests/foo/foo',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4539,9 +4542,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/foo_test/bots', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/foo_test/bots',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TEST_BOTS_OUTPUT)
@@ -4551,9 +4554,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/foo_test/bots', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/foo_test/bots',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TEST_BOTS_ISOLATED_SCRIPTS_OUTPUT)
@@ -4563,9 +4566,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/foo_tests/foo', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/foo_tests/foo',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)
@@ -4576,9 +4579,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='test/bar_tests/bots', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='test/bar_tests/bots',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     fbb.query(fbb.args)
     query_json = json.loads("".join(fbb.printed_lines))
     self.assertEqual(query_json, TEST_QUERY_TEST_BOTS_NO_BOTS_OUTPUT)
@@ -4588,9 +4591,9 @@ class QueryTests(unittest.TestCase):
                     GOOD_COMPOSITION_TEST_SUITES,
                     LUCI_MILO_CFG,
                     mixins=SWARMING_MIXINS_SORTED)
-    fbb.args = argparse.Namespace(query='foo', check=False,
-                                  pyl_files_dir=None, json=None,
-                                  waterfall_filters = [])
+    override_args(fbb, query='foo',
+                  check=False, pyl_files_dir=None,
+                  json=None, waterfall_filters=[])
     with self.assertRaises(SystemExit) as cm:
       fbb.query(fbb.args)
       self.assertEqual(cm.exception.code, 1)

@@ -129,9 +129,14 @@ WebDataServiceWrapper::WebDataServiceWrapper(
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
+    base::FilePath account_storage_path;
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    account_storage_path = context_path.Append(kAccountWebDataFilename);
+#else
+    account_storage_path = base::FilePath(WebDatabase::kInMemoryPath);
+#endif  // OS_ANDROID || defined(OS_IOS)
     account_database_ = base::MakeRefCounted<WebDatabaseService>(
-        base::FilePath(WebDatabase::kInMemoryPath), ui_task_runner,
-        db_task_runner);
+        account_storage_path, ui_task_runner, db_task_runner);
     account_database_->AddTable(std::make_unique<autofill::AutofillTable>());
     account_database_->LoadDatabase();
 

@@ -411,6 +411,7 @@
 <translation id="1531004739673299060">Ventá da aplicación</translation>
 <translation id="1531275250079031713">Mostrar cadro de diálogo Engadir nova wifi</translation>
 <translation id="1536754031901697553">Desconectando…</translation>
+<translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1540605929960647700">Activar o modo de demostración</translation>
 <translation id="1542514202066550870">Esta pestana envía contido de RV a un visor.</translation>
@@ -1163,6 +1164,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2501173422421700905">Certificado en espera</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2501797496290880632">Escribe un atallo</translation>
+<translation id="2501920221385095727">Teclas presas</translation>
 <translation id="2502441965851148920">Activáronse as actualizacións automáticas. O teu administrador desactivou as actualizacións manuais.</translation>
 <translation id="2502719318159902502">Acceso total</translation>
 <translation id="2505127913256479918">Esta conta supervisada eliminarase en breve</translation>
@@ -1548,6 +1550,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2993517869960930405">Información da aplicación</translation>
 <translation id="2996286169319737844">Os datos encríptanse coa túa frase de acceso de sincronización. Non se inclúen os métodos de pago nin os enderezos de Google Pay.</translation>
 <translation id="2996722619877761919">Voltear no bordo longo</translation>
+<translation id="3000461861112256445">Audio mono</translation>
 <translation id="3001144475369593262">Contas infantís</translation>
 <translation id="3003144360685731741">Redes preferidas</translation>
 <translation id="3003623123441819449">Caché CSS</translation>
@@ -2482,6 +2485,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4211851069413100178">Enviar datos de uso e de diagnóstico. Envía automaticamente datos de diagnóstico e de uso do dispositivo e das aplicacións a Google para axudar a mellorar a túa experiencia en Android. Esta información permitirá aumentar a estabilidade do sistema e das aplicacións, e realizar outras melloras. Algúns datos agregados tamén serán útiles para as aplicacións e os socios de Google, como os programadores de Android. Esta <ph name="BEGIN_LINK1" />opción de configuración<ph name="END_LINK1" /> contrólaa o propietario. O cal pode optar por enviar datos de diagnóstico e uso deste dispositivo a Google. Se está activada a opción Actividade web e das aplicacións adicional, estes datos pódense gardar na túa conta de Google. <ph name="BEGIN_LINK2" />Máis información<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">O servidor non permitiu acceder a este recurso.</translation>
+<translation id="4217571870635786043">Ditado</translation>
 <translation id="4218274196133425560">Quitar excepción para <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Produciuse un erro durante a activación.</translation>
 <translation id="4222772810963087151">Detalles da compilación</translation>
@@ -3166,6 +3170,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5204967432542742771">Introduce o contrasinal</translation>
 <translation id="5206215183583316675">Queres eliminar "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Produciuse un erro ao importar o certificado</translation>
+<translation id="5207949376430453814">Destacar o cursor de texto</translation>
 <translation id="5209320130288484488">Non se atopou ningún dispositivo</translation>
 <translation id="5210365745912300556">Pechar pestana</translation>
 <translation id="5213481667492808996">Xa podes usar o servizo de datos <ph name="NAME" /></translation>
@@ -5079,6 +5084,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7766807826975222231">Realizar un percorrido</translation>
 <translation id="7766838926148951335">Aceptar permisos</translation>
 <translation id="7768770796815395237">Cambiar</translation>
+<translation id="7768784765476638775">Escoitar selección</translation>
 <translation id="7769672763586021400">ID do modelo</translation>
 <translation id="7770612696274572992">Copiouse a imaxe desde outro dispositivo</translation>
 <translation id="7770651108375708429">Desconectarse dunha rede wifi</translation>

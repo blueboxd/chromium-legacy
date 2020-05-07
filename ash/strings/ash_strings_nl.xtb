@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Alles wissen</translation>
 <translation id="1199716647557067911">Weet je zeker dat je 'Toegang via schakelaar' wilt uitschakelen?</translation>
+<translation id="121097972571826261">Vooruit per woord</translation>
+<translation id="1229194443904279055">Selecteren stoppen</translation>
 <translation id="1247372569136754018">Microfoon (intern)</translation>
 <translation id="1252999807265626933">Opladen via <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Wat voor weer is het?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">'Vergrootglas voor volledig scherm' is ingeschakeld. Druk nog een keer op Ctrl+Zoeken+M om dit uit te schakelen.</translation>
 <translation id="2302092602801625023">Dit account wordt beheerd door Family Link</translation>
 <translation id="2303600792989757991">Overzicht venster in-/uitschakelen</translation>
+<translation id="2322173485024759474">Terug per letter</translation>
 <translation id="2339073806695260576">Tik op de stylusknop op de plank om een notitie of screenshot te maken, of om de Assistent, de laserpen of het vergrootglas te gebruiken.</translation>
 <translation id="2341729377289034582">Vergrendeld in verticale stand</translation>
 <translation id="2352467521400612932">Stylusinstellingen</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Toetsenbordinstellingen weergeven</translation>
 <translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
 <translation id="385051799172605136">Vorige</translation>
+<translation id="385300504083504382">Begin</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
 <translation id="3897533311200664389">Een zoekopdracht met tekst starten</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Te veel pogingen</translation>
 <translation id="5397578532367286026">Het gebruik en de geschiedenis van deze gebruiker kunnen worden bekeken door de beheerder (<ph name="MANAGER_EMAIL" />) op chrome.com.</translation>
 <translation id="5400461572260843123">Snelle instellingen, druk op Zoeken + pijl-links om het meldingscentrum te openen.</translation>
+<translation id="5428899915242071344">Selecteren starten</translation>
 <translation id="5430931332414098647">Instant-tethering</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle beschikbare gebruikers zijn al aan deze sessie toegevoegd.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">De aangesloten USB-C-apparaten worden van stroom voorzien</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
+<translation id="6818242057446442178">Terug per woord</translation>
 <translation id="6820676911989879663">Neem een pauze</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> activeren</translation>
 <translation id="6878400149835617132">Snelkoppeling uitgeschakeld</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Vorig menu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Notitie maken</translation>
+<translation id="8371779926711439835">Vooruit per letter</translation>
 <translation id="8375916635258623388">Deze <ph name="DEVICE_NAME" /> en je telefoon maken automatisch verbinding</translation>
 <translation id="8388750414311082622">Het laatste bureaublad kan niet worden verwijderd.</translation>
 <translation id="8392451568018454956">Optiemenu voor <ph name="USER_EMAIL_ADDRESS" /></translation>

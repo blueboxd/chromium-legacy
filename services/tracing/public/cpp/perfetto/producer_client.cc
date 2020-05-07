@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
@@ -23,6 +24,34 @@
 #include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/common/track_event_descriptor.pbzero.h"
+
+#if defined(OS_LINUX)
+#include "components/crash/core/app/crashpad.h"  // nogncheck
+#endif
+
+namespace {
+#if defined(OS_LINUX)
+constexpr char kCrashHandlerMetricName[] =
+    "CrashReport.DumpWithoutCrashingHandler.FromInitSharedMemoryIfNeeded";
+// Crash handler that might handle base::debug::DumpWithoutCrashing.
+// TODO(crbug.com/1074115): Remove once crbug.com/1074115 is resolved.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CrashHandler {
+  kCrashpad = 0,
+  kBreakpad = 1,
+  kMaxValue = kBreakpad,
+};
+#endif
+
+// UMA that records the return value of base::debug::DumpWithoutCrashing.
+// TODO(crbug.com/1074115): Remove once crbug.com/1074115 is resolved.
+constexpr char kDumpWithoutCrashingResultMetricName[] =
+    "CrashReport.DumpWithoutCrashingResult.FromInitSharedMemoryIfNeeded";
+
+// Result for getting the shared buffer in InitSharedMemoryIfNeeded.
+constexpr char kSharedBufferIsValidMetricName[] = "Tracing.SharedBufferIsValid";
+}  // namespace
 
 namespace tracing {
 
@@ -385,10 +414,26 @@ bool ProducerClient::InitSharedMemoryIfNeeded() {
   // created upon the first tracing request.
   shared_memory_ = std::make_unique<MojoSharedMemory>(kSMBSizeBytes);
 
-  if (!shared_memory_->shared_buffer().is_valid()) {
-    // TODO(crbug/1057614): We see shared memory buffer creation fail on windows
-    // in the field. Investigate why this can happen.
-    base::debug::DumpWithoutCrashing();
+  // TODO(crbug/1057614): We see shared memory buffer creation fail on windows
+  // in the field. Investigate why this can happen. Gather statistics on
+  // failure rates.
+  bool valid = shared_memory_->shared_buffer().is_valid();
+  base::UmaHistogramBoolean(kSharedBufferIsValidMetricName, valid);
+
+  if (!valid) {
+#if defined(OS_LINUX)
+    // TODO(crbug.com/1074115): Investigate why Breakpad doesn't seem to
+    // generate reports on some ChromeOS boards.
+    CrashHandler handler = crash_reporter::IsCrashpadEnabled()
+                               ? CrashHandler::kCrashpad
+                               : CrashHandler::kBreakpad;
+    base::UmaHistogramEnumeration(kCrashHandlerMetricName, handler);
+#endif
+
+    bool dump_with_crashing_result = base::debug::DumpWithoutCrashing();
+    base::UmaHistogramBoolean(kDumpWithoutCrashingResultMetricName,
+                              dump_with_crashing_result);
+
     LOG(ERROR) << "Failed to create tracing SMB";
     shared_memory_.reset();
     return false;

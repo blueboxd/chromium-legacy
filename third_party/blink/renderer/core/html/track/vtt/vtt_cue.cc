@@ -815,7 +815,8 @@ VTTCueBox* VTTCue::GetDisplayTree() {
   CreateVTTNodeTree();
 
   cue_background_box_->RemoveChildren();
-  cue_background_box_->CloneChildNodesFrom(*vtt_node_tree_);
+  cue_background_box_->CloneChildNodesFrom(*vtt_node_tree_,
+                                           CloneChildrenFlag::kClone);
 
   if (!region()) {
     VTTDisplayParameters display_parameters = CalculateDisplayParameters();

@@ -78,8 +78,8 @@ TEST_F(SwitchAccessMenuBubbleControllerTest, ShowBackButton) {
   GetBubbleController()->ShowBackButton(anchor_rect);
 
   gfx::Rect bounds = GetBackButtonBounds();
-  EXPECT_EQ(bounds.width(), 36);
-  EXPECT_EQ(bounds.height(), 36);
+  EXPECT_GT(bounds.width(), 36);
+  EXPECT_GT(bounds.height(), 36);
 }
 
 TEST_F(SwitchAccessMenuBubbleControllerTest, ShowMenu) {

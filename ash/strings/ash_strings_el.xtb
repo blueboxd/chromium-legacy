@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">υπερσάρωση</translation>
 <translation id="119944043368869598">Διαγραφή όλων</translation>
 <translation id="1199716647557067911">Είστε βέβαιοι ότι θέλετε να απενεργοποιήσετε την πρόσβαση με διακόπτη;</translation>
+<translation id="121097972571826261">Προώθηση ανά λέξη</translation>
+<translation id="1229194443904279055">Διακοπή επιλογής</translation>
 <translation id="1247372569136754018">Μικρόφωνο (εσωτερικό)</translation>
 <translation id="1252999807265626933">Φόρτιση από <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Τι καιρό κάνει;</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Η Μεγέθυνση πλήρους οθόνης ενεργοποιήθηκε. Πατήστε Ctrl+Search+M ξανά για να τον απενεργοποιήσετε.</translation>
 <translation id="2302092602801625023">Αυτός ο λογαριασμός είναι διαχειριζόμενος από το Family Link</translation>
 <translation id="2303600792989757991">Επισκόπηση εναλλαγής παραθύρων</translation>
+<translation id="2322173485024759474">Πίσω ανά γράμμα</translation>
 <translation id="2339073806695260576">Πατήστε το κουμπί με τη γραφίδα στο ράφι, για να δημιουργήσετε μια σημείωση, ένα στιγμιότυπο οθόνης και να χρησιμοποιήσετε τον δείκτη λέιζερ ή τον μεγεθυντικό φακό.</translation>
 <translation id="2341729377289034582">Κλειδωμένη σε κάθετη</translation>
 <translation id="2352467521400612932">Ρυθμίσεις γραφίδας</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Εμφάνιση ρυθμίσεων πληκτρολογίου</translation>
 <translation id="3846575436967432996">Δεν υπάρχουν διαθέσιμες πληροφορίες δικτύου</translation>
 <translation id="385051799172605136">Πίσω</translation>
+<translation id="385300504083504382">Αρχή</translation>
 <translation id="3891340733213178823">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="3893630138897523026">ChromeVox (προφορικά σχόλια)</translation>
 <translation id="3897533311200664389">Έναρξη ερωτήματος κειμένου</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Πάρα πολλές προσπάθειες</translation>
 <translation id="5397578532367286026">Ο διαχειριστής (<ph name="MANAGER_EMAIL" />) μπορεί να ελέγξει τη χρήση και το ιστορικό αυτού του χρήστη στη διεύθυνση chrome.com.</translation>
 <translation id="5400461572260843123">Γρήγορες ρυθμίσεις, πατήστε Αναζήτηση και αριστερά για πρόσβαση στο κέντρο ειδοποιήσεων.</translation>
+<translation id="5428899915242071344">Έναρξη επιλογής</translation>
 <translation id="5430931332414098647">Άμεση σύνδεση</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Όλοι οι διαθέσιμοι χρήστες έχουν ήδη προστεθεί σε αυτήν την περίοδο σύνδεσης.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Ενεργοποίηση συνδεδεμένων συσκευών USB-C</translation>
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
 <translation id="6803622936009808957">Δεν ήταν δυνατός ο αντικατοπτρισμός των οθονών καθώς δεν βρέθηκαν υποστηριζόμενες αναλύσεις. Έχει ενεργοποιηθεί εναλλακτικά η εκτεταμένη επιφάνεια εργασίας.</translation>
+<translation id="6818242057446442178">Πίσω ανά λέξη</translation>
 <translation id="6820676911989879663">Κάντε ένα διάλειμμα!</translation>
 <translation id="6857811139397017780">Ενεργοποίηση <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Η συντόμευση απενεργοποιήθηκε</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Προηγούμενο μενού</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Δημιουργία σημείωσης</translation>
+<translation id="8371779926711439835">Προώθηση ανά γράμμα</translation>
 <translation id="8375916635258623388">Η συσκευή <ph name="DEVICE_NAME" /> και το τηλέφωνό σας θα συνδεθούν αυτόματα</translation>
 <translation id="8388750414311082622">Δεν είναι δυνατή η κατάργηση του τελευταίου γραφείου.</translation>
 <translation id="8392451568018454956">Μενού επιλογών για τη διεύθυνση <ph name="USER_EMAIL_ADDRESS" /></translation>

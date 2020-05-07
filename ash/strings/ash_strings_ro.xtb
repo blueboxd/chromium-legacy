@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">suprascanare</translation>
 <translation id="119944043368869598">Șterge-le pe toate</translation>
 <translation id="1199716647557067911">Sigur vrei să dezactivezi accesul prin comutare?</translation>
+<translation id="121097972571826261">Înainte cu un cuvânt</translation>
+<translation id="1229194443904279055">Nu mai selecta</translation>
 <translation id="1247372569136754018">Microfon (intern)</translation>
 <translation id="1252999807265626933">Se încarcă de la <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Cum este vremea?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Lupa de ecran complet este activată. Apasă din nou pe Ctrl + tasta de căutare + M pentru a o dezactiva.</translation>
 <translation id="2302092602801625023">Acest cont este gestionat de Family Link</translation>
 <translation id="2303600792989757991">Activați/Dezactivați prezentarea ferestrei</translation>
+<translation id="2322173485024759474">Înapoi cu o literă</translation>
 <translation id="2339073806695260576">Atinge butonul creion de pe raft ca să creezi note și capturi de ecran, să folosești indicatorul laser sau lupa.</translation>
 <translation id="2341729377289034582">Blocată pe verticală</translation>
 <translation id="2352467521400612932">Setările creionului</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Afișează setările pentru tastatură</translation>
 <translation id="3846575436967432996">Nu sunt disponibile informații despre rețele</translation>
 <translation id="385051799172605136">Înapoi</translation>
+<translation id="385300504083504382">Început</translation>
 <translation id="3891340733213178823">Apăsați de două ori Ctrl+Shift+Q pentru a vă deconecta.</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
 <translation id="3897533311200664389">Începe o interogare text</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Prea multe încercări</translation>
 <translation id="5397578532367286026">Datele privind utilizarea și istoricul ale acestui utilizator pot fi examinate de administrator (<ph name="MANAGER_EMAIL" />) pe chrome.com.</translation>
 <translation id="5400461572260843123">Setări rapide, Apasă pe tasta de căutare + stânga pentru a accesa centrul de notificări.</translation>
+<translation id="5428899915242071344">Începe selectarea</translation>
 <translation id="5430931332414098647">Tethering instantaneu</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Se încarcă dispozitivele USB-C conectate</translation>
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
+<translation id="6818242057446442178">Înapoi cu un cuvânt</translation>
 <translation id="6820676911989879663">Fă o pauză!</translation>
 <translation id="6857811139397017780">Activează <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Comanda rapidă a fost dezactivată</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Meniul anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Creează o notă</translation>
+<translation id="8371779926711439835">Înainte cu o literă</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> și telefonul se vor conecta automat</translation>
 <translation id="8388750414311082622">Ultimul desktop nu poate fi eliminat.</translation>
 <translation id="8392451568018454956">Meniu cu opțiuni pentru <ph name="USER_EMAIL_ADDRESS" /></translation>

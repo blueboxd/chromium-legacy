@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.image_fetcher;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -45,7 +44,6 @@ public class CachedImageFetcherTest {
     private static final String PATH = "test/path/cache/test.png";
     private static final int WIDTH_PX = 10;
     private static final int HEIGHT_PX = 20;
-    private static final long START_TIME = 274127;
 
     @Mock
     ImageFetcherBridge mBridge;
@@ -57,9 +55,6 @@ public class CachedImageFetcherTest {
     Callback<Bitmap> mBitmapCallback;
     @Mock
     Callback<BaseGifImage> mGifCallback;
-
-    @Captor
-    ArgumentCaptor<Callback<Bitmap>> mCallbackCaptor;
 
     CachedImageFetcher mCachedImageFetcher;
     Bitmap mBitmap;
@@ -86,8 +81,7 @@ public class CachedImageFetcherTest {
             return null;
         })
                 .when(mBridge)
-                .fetchImage(anyInt(), eq(URL), eq(UMA_CLIENT_NAME), anyInt(), anyInt(),
-                        bitmapCallbackCaptor.capture());
+                .fetchImage(anyInt(), any(), bitmapCallbackCaptor.capture());
 
         ArgumentCaptor<Callback<BaseGifImage>> gifCallbackCaptor =
                 ArgumentCaptor.forClass(Callback.class);
@@ -103,21 +97,23 @@ public class CachedImageFetcherTest {
     public void testFetchImage_fileNotFoundOnDisk() {
         doReturn(null).when(mImageLoader).tryToLoadImageFromDisk(PATH);
 
-        mCachedImageFetcher.fetchImage(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mBitmapCallback);
+        ImageFetcher.Params params =
+                ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+        mCachedImageFetcher.fetchImage(params, mBitmapCallback);
         verify(mBitmapCallback).onResult(mBitmap);
-        verify(mBridge).fetchImage(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL),
-                eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), anyObject());
+        verify(mBridge).fetchImage(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(params), any());
     }
 
     @Test
     public void testFetchImage_fileFoundOnDisk() {
         doReturn(mBitmap).when(mImageLoader).tryToLoadImageFromDisk(PATH);
 
-        mCachedImageFetcher.fetchImage(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mBitmapCallback);
+        ImageFetcher.Params params =
+                ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+        mCachedImageFetcher.fetchImage(params, mBitmapCallback);
         verify(mBitmapCallback).onResult(mBitmap);
         verify(mBridge, never())
-                .fetchImage(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME),
-                        eq(WIDTH_PX), eq(HEIGHT_PX), anyObject());
+                .fetchImage(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(params), any());
         verify(mBridge).reportEvent(UMA_CLIENT_NAME, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
         verify(mBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
     }
@@ -126,8 +122,9 @@ public class CachedImageFetcherTest {
     public void testFetchImage_fileFoundOnDisk_imageResized() {
         doReturn(mBitmap).when(mImageLoader).tryToLoadImageFromDisk(PATH);
 
-        mCachedImageFetcher.fetchImage(
-                URL, UMA_CLIENT_NAME, WIDTH_PX + 1, HEIGHT_PX + 1, mBitmapCallback);
+        ImageFetcher.Params params =
+                ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX + 1, HEIGHT_PX + 1);
+        mCachedImageFetcher.fetchImage(params, mBitmapCallback);
 
         ArgumentCaptor<Bitmap> bitmapCaptor = ArgumentCaptor.forClass(Bitmap.class);
         verify(mBitmapCallback).onResult(bitmapCaptor.capture());
@@ -137,8 +134,9 @@ public class CachedImageFetcherTest {
         Assert.assertEquals(HEIGHT_PX + 1, actual.getHeight());
 
         verify(mBridge, never())
-                .fetchImage(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME),
-                        eq(WIDTH_PX), eq(HEIGHT_PX), anyObject());
+                .fetchImage(eq(ImageFetcherConfig.DISK_CACHE_ONLY),
+                        eq(ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX)),
+                        any());
         verify(mBridge).reportEvent(UMA_CLIENT_NAME, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
         verify(mBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
     }
@@ -154,7 +152,7 @@ public class CachedImageFetcherTest {
         Assert.assertEquals(mGif, gifCaptor.getValue());
 
         verify(mBridge).fetchGif(
-                eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME), anyObject());
+                eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME), any());
     }
 
     @Test
@@ -169,7 +167,7 @@ public class CachedImageFetcherTest {
 
         verify(mBridge, never())
                 .fetchGif(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME),
-                        anyObject());
+                        any());
         verify(mBridge).reportEvent(UMA_CLIENT_NAME, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
         verify(mBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
     }

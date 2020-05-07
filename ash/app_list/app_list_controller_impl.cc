@@ -846,7 +846,7 @@ AppListControllerImpl::DisableHomeScreenBackgroundBlur() {
     return base::ScopedClosureRunner(base::DoNothing());
   return app_list_view->app_list_main_view()
       ->contents_view()
-      ->GetAppsContainerView()
+      ->apps_container_view()
       ->DisableSuggestionChipsBlur();
 }
 

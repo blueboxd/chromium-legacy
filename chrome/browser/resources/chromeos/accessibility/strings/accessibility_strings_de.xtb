@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Um auf die gewählte Taste zu tippen, heben Sie den Finger an</translation>
 <translation id="1012173283529841972">Listenelement</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Mit zwei Fingern nach rechts wischen</translation>
 <translation id="1022586497894531524">Verwenden Sie gesprochenes Feedback von ChromeVox zum ersten Mal? In dieser kurzen Anleitung erfahren Sie die Grundlagen für die Nutzung von ChromeVox.</translation>
 <translation id="1025074108959230262">Fixierter Modus deaktiviert</translation>
 <translation id="1031961866430398710">und</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Kein vorheriges Listenelement</translation>
 <translation id="1114836634143403764">Vorschlag</translation>
 <translation id="1120743664840974483">{"a": "Anton", "ä": "Ärger", "b": "Berta", "c": "Cäsar", "d": "Dora", "e": "Emil", "f": "Friedrich", "g": "Gustav", "h": "Heinrich", "i": "Ida", "j": "Julius", "k": "Kaufmann", "l": "Ludwig", "m": "Martha", "n": "Nordpol", "o": "Otto", "ö": "Ökonom", "p": "Paula", "q": "Quelle", "r": "Richard", "s": "Samuel", "ß": "Eszett", "t": "Theodor", "u": "Ulrich", "ü": "Übermut", "v": "Viktor", "w": "Wilhelm", "x": "Xanthippe", "y": "Ypsilon", "z": "Zacharias"}</translation>
+<translation id="1120938014254001895">Mit zwei Fingern nach oben wischen</translation>
 <translation id="1126928665165112660">Nicht kursiv</translation>
 <translation id="113582498867142724"><ph name="TAG" />-Sammlung mit <ph name="NUM" /> Elementen</translation>
 <translation id="1161762950103988776">Sprung</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Nächste Grafik</translation>
 <translation id="1756785467854861272">Dunkles Magentarot</translation>
+<translation id="1765245556747822181">Mit einem Finger nach oben wischen</translation>
 <translation id="1771761307086386028">Nach rechts scrollen</translation>
 <translation id="1781173782405573156">Taste ignorieren</translation>
 <translation id="1787176709638001873">Text für Passwort bearbeiten</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">Sprechgeschwindigkeit erhöhen</translation>
 <translation id="2267538686624070261">Rechtschreibfehler wird verlassen</translation>
 <translation id="2267945578749931355">Nächstes Zeichen</translation>
+<translation id="2278490101488436824">Mit drei Fingern nach links wischen</translation>
 <translation id="2305942658236913680">Keine nächste Überschrift</translation>
 <translation id="2311237334957139798">Zum vorherigen Detaillierungsgrad wechseln</translation>
 <translation id="2314393392395134769">Nicht tiefgestellt</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">Bibliografie</translation>
 <translation id="2873259058405069099">Zum Anfang der Tabelle gehen</translation>
 <translation id="287383510823843610">Dunkelorange</translation>
+<translation id="2879867157561757640">Mit drei Fingern nach unten wischen</translation>
 <translation id="288178314850623291">Mit bestimmten Befehlen können Sie verschiedene Elementtypen überspringen. Um zwischen Überschriften vorwärts zu springen, drücken Sie Suche + H, und um rückwärts zu springen Suche + Umschalttaste + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{Minute}other{Minuten}}</translation>
 <translation id="2894654529758326923">Informationen</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{geschweifte Klammer links}other{# geschweifte Klammern links}}</translation>
 <translation id="2909584066358367921">Keine nächste Schaltfläche</translation>
 <translation id="2911433807131383493">ChromeVox-Anleitung öffnen</translation>
+<translation id="2912405967290226587">Mit drei Fingern nach rechts wischen</translation>
 <translation id="2937799153569150791">Keine nächste Überschrift der Ebene 3</translation>
 <translation id="2942710183375260152">Dunkles Schieferblau</translation>
 <translation id="2943596527105977722">Dunkle Goldrutenfarbe</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">Seegrün</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{Tabulatorzeichen}other{# Tabulatorzeichen}}</translation>
 <translation id="2972205263822847197">Kurzinfo</translation>
+<translation id="297825089465017871">Mit zwei Fingern nach links wischen</translation>
 <translation id="2998131015536248178">Vorheriges Zeichen</translation>
 <translation id="2999559350546931576">Tonhöhe verringern</translation>
 <translation id="3014130421870723208">@bea 8pkt</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">ChromeVox-Optionen</translation>
 <translation id="3060756054951570867">Menü "<ph name="TITLE" />" geöffnet</translation>
 <translation id="3060880924447482063">Wischen Sie nach links oder rechts, um sich von Element zu Element zu bewegen</translation>
+<translation id="3070245424257836917">Mit drei Fingern nach oben wischen</translation>
 <translation id="3078345202707391975">Nächste Überschrift der Ebene 2</translation>
 <translation id="3078740164268491126">Tabelle</translation>
 <translation id="3082249673510793544">Zurückscrollen</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">Zur nächsten Spalte</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Vorherige Markierung</translation>
+<translation id="4710166929009737753">Mit einem Finger nach rechts wischen</translation>
 <translation id="4712898966495541134">Ende der Auswahl</translation>
 <translation id="4740661827607246557">Hilfebefehle</translation>
 <translation id="4755857887974653209">ChromeVox deaktivieren</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">Chiffongelb</translation>
 <translation id="6816066673340002913">Blasse Goldrutenfarbe</translation>
+<translation id="6826226459053491773">Mit zwei Fingern nach unten wischen</translation>
 <translation id="6833103209700200188">Footer-Element</translation>
 <translation id="6837853484260746864">Stimme auswählen:</translation>
 <translation id="6858047746862060282">Prolog</translation>
+<translation id="6859876496651143278">Mit einem Finger nach links wischen</translation>
 <translation id="6865519907510167493">Rechtschreibfehler</translation>
 <translation id="6894148351896207544">Uhrzeit und Datum ansagen</translation>
 <translation id="6896758677409633944">Kopieren</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">ChromeVox aktualisiert</translation>
 <translation id="93384979447910801">Dunkles Seegrün</translation>
 <translation id="948171205378458592">Sprechgeschwindigkeit verringern</translation>
+<translation id="958854023026327378">Mit einem Finger nach unten wischen</translation>
 <translation id="962913030769097253">Nächste Überschrift der Ebene 1</translation>
 <translation id="966588271015727539">Wählen Sie eine Bluetooth-Braillezeile aus</translation>
 <translation id="973955474346881951">Fixierten Modus aktivieren/deaktivieren</translation>

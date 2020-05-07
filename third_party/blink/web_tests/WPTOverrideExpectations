@@ -672,9 +672,6 @@ external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import
 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure ]
 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
-external/wpt/html/user-activation/activation-transfer-cross-origin-with-click-two-child-frames.sub.tentative.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Failure Pass ] # wpt_subtest_failure
-external/wpt/html/user-activation/activation-transfer-with-click.tentative.html [ Failure Pass ] # wpt_subtest_failure
 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/location-set-and-document-open.html [ Timeout ] # wpt_subtest_failure
 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/reload.window.html [ Timeout ] # wpt_subtest_failure
 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ] # wpt_subtest_failure

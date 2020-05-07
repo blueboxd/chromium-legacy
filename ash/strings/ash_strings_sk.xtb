@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">presah obsahu</translation>
 <translation id="119944043368869598">Vymazať všetko</translation>
 <translation id="1199716647557067911">Naozaj chcete vypnúť ovládanie prepínačmi?</translation>
+<translation id="121097972571826261">Dopredu o slovo</translation>
+<translation id="1229194443904279055">Ukončiť výber</translation>
 <translation id="1247372569136754018">Mikrofón (vnútorný)</translation>
 <translation id="1252999807265626933">Nabíja sa zo <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Aké je počasie?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Bola zapnutá lupa na celú obrazovku. Vypnete ju opätovným stlačením kombinácie klávesov Ctrl+Hľadať+M.</translation>
 <translation id="2302092602801625023">Tento účet spravuje aplikácia Family Link</translation>
 <translation id="2303600792989757991">Prepnúť prehľad okien</translation>
+<translation id="2322173485024759474">Dozadu o písmeno</translation>
 <translation id="2339073806695260576">Klepnite na tlačidlo dotykového pera na poličke a vytvorte poznámku, snímku obrazovky alebo použite laserový ukazovateľ či lupu.</translation>
 <translation id="2341729377289034582">Uzamknuté zvisle</translation>
 <translation id="2352467521400612932">Nastavenia dotykového pera</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Zobraziť nastavenia klávesnice</translation>
 <translation id="3846575436967432996">Informácie o sieti nie sú k dispozícii</translation>
 <translation id="385051799172605136">Naspäť</translation>
+<translation id="385300504083504382">Začiatok</translation>
 <translation id="3891340733213178823">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="3897533311200664389">Spustiť textový dopyt</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Príliš veľa pokusov</translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
 <translation id="5400461572260843123">Rýchle nastavenia, do centra upozornení prejdete stlačením klávesa vyhľadávania + šípky doľava</translation>
+<translation id="5428899915242071344">Začať výber</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Napájajú sa pripojené zariadenia USB-C</translation>
 <translation id="6790428901817661496">Prehrať</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
+<translation id="6818242057446442178">Dozadu o slovo</translation>
 <translation id="6820676911989879663">Urobte si prestávku.</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Skratka je vypnutá</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Predchádzajúca ponuka</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Vytvoriť poznámku</translation>
+<translation id="8371779926711439835">Dopredu o písmeno</translation>
 <translation id="8375916635258623388">Toto zariadenie <ph name="DEVICE_NAME" /> a váš telefón sa automaticky pripoja</translation>
 <translation id="8388750414311082622">Posledná plocha sa nedá odstrániť.</translation>
 <translation id="8392451568018454956">Ponuka možností pre používateľa <ph name="USER_EMAIL_ADDRESS" /></translation>

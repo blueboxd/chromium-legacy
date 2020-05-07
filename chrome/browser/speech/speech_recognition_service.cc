@@ -5,6 +5,7 @@
 #include "chrome/browser/speech/speech_recognition_service.h"
 
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/speech/buildflags.h"
 #include "content/public/browser/service_process_host.h"
 
 namespace speech {
@@ -28,7 +29,13 @@ void SpeechRecognitionService::LaunchIfNotRunning() {
       speech_recognition_service_.BindNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_UTILITY_PROCESS_SPEECH_RECOGNITION_SERVICE_NAME)
+  // Use the custom speech recognition sandbox type if the Speech On-Device API
+  // is enabled. Otherwise, use the utility sandbox type.
+#if BUILDFLAG(ENABLE_SODA)
           .WithSandboxType(service_manager::SandboxType::kSpeechRecognition)
+#else
+          .WithSandboxType(service_manager::SandboxType::kUtility)
+#endif  // BUILDFLAG(ENABLE_SODA)
           .Pass());
 
   // Ensure that if the interface is ever disconnected (e.g. the service

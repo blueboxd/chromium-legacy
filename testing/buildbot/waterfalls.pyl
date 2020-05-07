@@ -668,9 +668,9 @@
       },
       'android-marshmallow-arm64-rel': {
         'mixins': [
-          'code-coverage',
-          'marshmallow',
           'bullhead',
+          'isolate_profile_data',
+          'marshmallow',
         ],
         'additional_compile_targets': [
           'monochrome_static_initializers',
@@ -888,8 +888,8 @@
       },
       'linux-chromeos-rel': {
         'mixins': [
+          'isolate_profile_data',
           'linux-xenial',
-          'code-coverage',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1764,9 +1764,9 @@
       },
       'android-code-coverage': {
         'mixins': [
-          'code-coverage',
-          'marshmallow',
           'bullhead',
+          'isolate_profile_data',
+          'marshmallow',
         ],
         'test_suites': {
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
@@ -1776,7 +1776,7 @@
       },
       'android-code-coverage-native': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'pie_fleet',
           'walleye',
         ],
@@ -1902,7 +1902,7 @@
       },
       'ios-simulator-code-coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
@@ -2033,7 +2033,7 @@
       },
       'linux-chromeos-code-coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
         ],
         'additional_compile_targets': [
@@ -2062,7 +2062,7 @@
       },
       'linux-code-coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
         ],
         'test_suites': {
@@ -2105,7 +2105,7 @@
       },
       'mac-code-coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'mac_10.13',
           'no_gpu',
         ],
@@ -2231,6 +2231,23 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'mac10.15-blink-rel-dummy': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # This matches the dimensions for "Chromium Mac10.15" in
+              # chromium_fyi.py.
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+              'os': 'Mac-10.15',
+            },
+          ],
+          'hard_timeout': 900,
+        },
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'win-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
@@ -2270,7 +2287,7 @@
       },
       'win10-code-coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -2676,7 +2693,7 @@
         'browser_config': 'release',
         'os_type': 'mac',
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'mac_mini_intel_gpu_stable',
         ],
         'test_suites': {
@@ -2712,7 +2729,7 @@
         'browser_config': 'release',
         'os_type': 'mac',
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'mac_retina_amd_gpu_stable',
         ],
         'test_suites': {
@@ -2752,8 +2769,8 @@
         'browser_config': 'release_x64',
         'os_type': 'win',
         'mixins': [
+          'isolate_profile_data',
           'win10_nvidia_quadro_p400_stable',
-          'code-coverage',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
@@ -3284,11 +3301,10 @@
           'limited_capacity_bot',
           'mac_mini_intel_gpu_experimental',
         ],
-        # Currently the experimental driver is identical to the stable
-        # driver. If it's upgraded, change these test_suites to be the same as
-        # 'Mac FYI Release (Intel)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
       'Mac FYI Experimental Retina Release (AMD)': {
@@ -3908,7 +3924,7 @@
       },
       'Linux Builder': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
         ],
         'additional_compile_targets': [
           'all'
@@ -3954,7 +3970,7 @@
       },
       'Linux Tests': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
         ],
         'test_suites': {
@@ -4042,7 +4058,7 @@
       },
       'Mac Builder Code Coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
         ],
         'additional_compile_targets': [
           'pdf_fuzzers',
@@ -4099,9 +4115,9 @@
       },
       'Mac10.13 Tests Code Coverage': {
         'mixins': [
+            'isolate_profile_data',
             'mac_10.13',
             'no_gpu',
-            'code-coverage',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -4330,7 +4346,7 @@
       'linux-swangle-chromium-x64' : {},
       'linux-swangle-tot-angle-x64' : {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
           'timeout_15m',
         ],
@@ -4340,7 +4356,7 @@
       },
       'linux-swangle-tot-angle-x86' : {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
           'timeout_15m',
         ],
@@ -4350,7 +4366,7 @@
       },
       'linux-swangle-tot-swiftshader-x64' : {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
           'timeout_15m',
         ],
@@ -4360,7 +4376,7 @@
       },
       'linux-swangle-tot-swiftshader-x86' : {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
           'timeout_15m',
         ],
@@ -4370,7 +4386,7 @@
       },
       'linux-swangle-x64' : {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
           'timeout_15m',
         ],
@@ -4380,7 +4396,7 @@
       },
       'linux-swangle-x86' : {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
           'linux-xenial',
           'timeout_15m',
         ],
@@ -4670,7 +4686,7 @@
       # coverage is turned on in 'Win x64 Builder' by default.
       'Win x64 Builder Code Coverage': {
         'mixins': [
-          'code-coverage',
+          'isolate_profile_data',
         ],
         'additional_compile_targets': [
           'pdf_fuzzers'
@@ -4707,9 +4723,9 @@
       # coverage is turned on in 'Win10 Tests x64' by default.
       'Win10 Tests x64 Code Coverage': {
         'mixins': [
+          'isolate_profile_data',
           'x86-64',
           'win10',
-          'code-coverage',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',

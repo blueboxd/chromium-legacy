@@ -418,8 +418,13 @@ void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
         // referenced by later composited layers. This can't be done by ensuring
         // parent transform node in EnsureCompositorTransformNode() if the
         // transform tree and the scroll tree have different topologies.
-        DCHECK(property_tree_manager);
-        property_tree_manager->EnsureCompositorScrollNode(*scroll_translation);
+        // This is not necessary with ScrollUnification which ensures the
+        // complete scroll tree.
+        if (!RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+          DCHECK(property_tree_manager);
+          property_tree_manager->EnsureCompositorScrollNode(
+              *scroll_translation);
+        }
       }
     }
 
@@ -1219,7 +1224,8 @@ void PaintArtifactCompositor::DecompositeTransforms(
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const ViewportProperties& viewport_properties,
-    const Settings& settings) {
+    const Settings& settings,
+    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
   DCHECK(NeedsUpdate());
   DCHECK(root_layer_);
   // The tree will be null after detaching and this update can be ignored.
@@ -1242,6 +1248,12 @@ void PaintArtifactCompositor::Update(
 
   UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
                                      host);
+
+  // With ScrollUnification, we ensure a cc::ScrollNode for all
+  // |scroll_translation_nodes|.
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    property_tree_manager.EnsureCompositorScrollNodes(scroll_translation_nodes);
+  }
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers_.size());
@@ -1306,6 +1318,8 @@ void PaintArtifactCompositor::Update(
         NearestScrollTranslationForLayer(*paint_artifact, pending_layer);
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
+    if (RuntimeEnabledFeatures::ScrollUnificationEnabled())
+      property_tree_manager.SetCcScrollNodeIsComposited(scroll_id);
 
     layer_list_builder.Add(layer);
 

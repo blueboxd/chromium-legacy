@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Window ng Application</translation>
 <translation id="1531275250079031713">Ipakita ang dialog na 'Magdagdag ng bagong Wi-Fi'</translation>
 <translation id="1536754031901697553">Nagdidiskonekta...</translation>
+<translation id="1537254971476575106">Fullscreen magnifier</translation>
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1540605929960647700">I-enable ang demo mode</translation>
 <translation id="1542514202066550870">Nagpapakita ang tab na ito ng VR content sa isang headset.</translation>
@@ -1164,6 +1165,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2501173422421700905">Naka-hold na Certificate</translation>
 <translation id="2501278716633472235">Bumalik</translation>
 <translation id="2501797496290880632">Mag-type ng shortcut</translation>
+<translation id="2501920221385095727">Mga sticky key</translation>
 <translation id="2502441965851148920">Naka-enable ang mga awtomatikong update. Na-disable ng iyong administrator ang mga manu-manong update.</translation>
 <translation id="2502719318159902502">Ganap na access</translation>
 <translation id="2505127913256479918">Malapit nang alisin ang sinusubaybayang account na ito</translation>
@@ -1549,6 +1551,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2993517869960930405">Impormasyon ng App</translation>
 <translation id="2996286169319737844">Ine-encrypt ang data gamit ang iyong passphrase sa pag-sync. Hindi kasama rito ang mga paraan ng pagbabayad at address mula sa Google Pay.</translation>
 <translation id="2996722619877761919">I-flip sa mahabang dulo</translation>
+<translation id="3000461861112256445">Mono audio</translation>
 <translation id="3001144475369593262">Mga pambatang account</translation>
 <translation id="3003144360685731741">Mga gustong network</translation>
 <translation id="3003623123441819449">Cache ng CSS</translation>
@@ -2483,6 +2486,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4211851069413100178">Magpadala ng data ng paggamit at diagnostic na data. Tumulong sa pagpapaganda ng iyong karanasan sa Android sa pamamagitan ng awtomatikong pagpapadala ng diagnostic na data, data ng device, at data ng paggamit sa app sa Google. Makakatulong ito sa stability ng system at ng app, at sa iba pang pagpapahusay. Makakatulong din ang ilang pinagsama-samang data sa mga app at partner ng Google, gaya ng mga developer ng Android. Ipinapatupad ng may-ari ang <ph name="BEGIN_LINK1" />setting<ph name="END_LINK1" /> na ito. Maaaring piliin ng may-aring magpadala ng diagnostic na data at data ng paggamit para sa device na ito sa Google. Kung naka-on ang iyong karagdagang setting ng Aktibidad sa Web at App, maaaring ma-save ang data na ito sa Google account mo. <ph name="BEGIN_LINK2" />Matuto Pa<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">I-export</translation>
 <translation id="42137655013211669">Ipinagbabawal ng server ang access sa mapagkukunang ito.</translation>
+<translation id="4217571870635786043">Pagdidikta</translation>
 <translation id="4218274196133425560">Alisin ang exception para sa <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Nagkaroon ng error habang ina-activate.</translation>
 <translation id="4222772810963087151">Mga Detalye ng Build</translation>
@@ -3167,6 +3171,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5204967432542742771">Ipasok ang password</translation>
 <translation id="5206215183583316675">I-delete ang "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Error sa Pag-import ng Certificate</translation>
+<translation id="5207949376430453814">I-highlight ang text caret</translation>
 <translation id="5209320130288484488">Walang nahanap na mga device</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
 <translation id="5213481667492808996">Magagamit na ang iyong serbisyo ng data ng '<ph name="NAME" />'</translation>
@@ -5080,6 +5085,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7766807826975222231">Maglibot</translation>
 <translation id="7766838926148951335">Tanggapin ang mga pahintulot</translation>
 <translation id="7768770796815395237">Baguhin</translation>
+<translation id="7768784765476638775">Select to Speak</translation>
 <translation id="7769672763586021400">Model ID</translation>
 <translation id="7770612696274572992">Nakopya ang larawan mula sa isa pang device</translation>
 <translation id="7770651108375708429">Magdiskonekta sa Wi-Fi</translation>

@@ -1017,6 +1017,38 @@ CanvasResourceProvider::CreateSharedImageProvider(
   return nullptr;
 }
 
+std::unique_ptr<CanvasResourceProvider>
+CanvasResourceProvider::CreatePassThroughProvider(
+    const IntSize& size,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    SkFilterQuality filter_quality,
+    const CanvasColorParams& color_params,
+    bool is_origin_top_left,
+    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
+  if (!SharedGpuContext::IsGpuCompositingEnabled() || !context_provider_wrapper)
+    return nullptr;
+
+  const auto& capabilities =
+      context_provider_wrapper->ContextProvider()->GetCapabilities();
+  if (size.Width() > capabilities.max_texture_size ||
+      size.Height() > capabilities.max_texture_size ||
+      !capabilities.shared_image_swap_chain) {
+    return nullptr;
+  }
+
+  if (!IsGMBAllowed(size, color_params, capabilities) ||
+      !Platform::Current()->GetGpuMemoryBufferManager())
+    return nullptr;
+
+  auto provider = std::make_unique<CanvasResourceProviderPassThrough>(
+      size, filter_quality, color_params, context_provider_wrapper,
+      resource_dispatcher, is_origin_top_left);
+  if (provider->IsValid())
+    return provider;
+
+  return nullptr;
+}
+
 CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_n32,
     cc::ImageDecodeCache* cache_f16,

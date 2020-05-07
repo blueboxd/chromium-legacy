@@ -80,7 +80,6 @@ namespace content {
 
 class BrowserContext;
 class BrowserPluginGuestDelegate;
-class InterstitialPage;
 class RenderFrameHost;
 class RenderViewHost;
 class RenderWidgetHost;
@@ -774,14 +773,6 @@ class WebContents : public PageNavigator,
 
   // Various other systems need to know about our interstitials.
   virtual bool ShowingInterstitialPage() = 0;
-
-  // Returns the currently visible interstitial, nullptr if no interstitial is
-  // visible. Note: This returns nullptr from the time the interstitial page has
-  // Show() called on it until the interstitial content is ready and the
-  // interstitial is displayed.
-  //
-  // Compare to InterstitialPage::GetInterstitialPage.
-  virtual InterstitialPage* GetInterstitialPage() = 0;
 
   // Misc state & callbacks ----------------------------------------------------
 

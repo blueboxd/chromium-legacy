@@ -4850,7 +4850,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 설정을 사용 중지하면 사용자가 자동 완성을 사용할 수 없습니다.
 
       이 설정을 사용 설정하거나 값을 지정하지 않으면 사용자가 자동 완성을 제어할 수 있게 됩니다. 따라서 사용자가 자동 완성 프로필을 설정하고 원하는 대로 자동완성을 사용하거나 사용 중지할 수 있습니다.</translation>
-<translation id="8042971420829376618">이 정책은 이 기기의 <ph name="PLUGIN_VM_NAME" /> 사용자 ID를 지정합니다.</translation>
 <translation id="8044493735196713914">기기 부팅 모드 보고</translation>
 <translation id="8050080920415773384">기본 인쇄</translation>
 <translation id="8053580360728293758">기본 컬러 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>

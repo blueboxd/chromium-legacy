@@ -31,13 +31,6 @@ ContentUiEventHandler::ContentUiEventHandler(JNIEnv* env,
 
 RenderWidgetHostViewAndroid* ContentUiEventHandler::GetRenderWidgetHostView() {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = web_contents_->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-  }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 

@@ -1529,7 +1529,8 @@ public class ChromeTabbedActivity
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged, mIntentWithEffect,
                 getShareDelegateSupplier(), getActivityTabProvider(),
-                mEphemeralTabCoordinatorSupplier);
+                mEphemeralTabCoordinatorSupplier, mTabModelProfileSupplier,
+                mBookmarkBridgeSupplier);
     }
 
     @Override
@@ -1650,8 +1651,7 @@ public class ChromeTabbedActivity
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), this,
-                mOverviewModeController.mOverviewModeBehaviorSupplier,
-                getToolbarManager().getBookmarkBridgeSupplier());
+                mOverviewModeController.mOverviewModeBehaviorSupplier, mBookmarkBridgeSupplier);
     }
 
     @Override

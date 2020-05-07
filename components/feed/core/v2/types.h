@@ -27,6 +27,13 @@ using LocalActionId = util::IdType32<class LocalActionIdClass>;
 std::string ToString(ContentRevision c);
 ContentRevision ToContentRevision(const std::string& str);
 
+// Metadata sent with Feed requests.
+struct RequestMetadata {
+  ChromeInfo chrome_info;
+  std::string language_tag;
+  DisplayMetrics display_metrics;
+};
+
 }  // namespace feed
 
 #endif  // COMPONENTS_FEED_CORE_V2_TYPES_H_

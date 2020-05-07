@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Prezrieť</translation>
 <translation id="5073204694187207510">Skryť mriežku na celú obrazovku</translation>
 <translation id="5082793167783849073">Ak chcete rýchlo porovnať stránky, vytvorte skupinu. Začnite pridržaním ľubovoľného odkazu.</translation>
+<translation id="5533021382642990449">Zobraziť neskôr</translation>
 <translation id="5580090775658607195">Počet zoskupených kariet: <ph name="TAB_COUNT" /></translation>
 <translation id="58326064309361797">Karty zoskupíte presunutím</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Zavrieť návrhy.</translation>
 <translation id="814503310257431685">Zobraziť všetko</translation>
 <translation id="8205266828577616993">Presunúť kartu nahor</translation>
+<translation id="8304833501377495048">Už nechcete zobrazovať panel kariet?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Zavrieť <ph name="TABS_COUNT_ONE" /> vybranú kartu}few{Zavrieť <ph name="TABS_COUNT_MANY" /> vybrané karty}many{Close <ph name="TABS_COUNT_MANY" /> selected tabs}other{Zavrieť <ph name="TABS_COUNT_MANY" /> vybraných kariet}}</translation>
+<translation id="8749939518995770034">Zavretý panel kariet</translation>
 <translation id="9150694013019234766">Prepínajte karty v skupine kariet v dolnej časti obrazovky</translation>
 <translation id="9169594135889675189">Pridať novú kartu do skupiny</translation>
 <translation id="959682366969460160">Usporiadanie položiek</translation>

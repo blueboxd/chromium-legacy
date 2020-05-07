@@ -130,6 +130,11 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
 
   ServiceWorkerContextCore* context() const { return helper_->context(); }
 
+  void CloseRemotes() {
+    for (auto& remote_endpoint : remote_endpoints_)
+      remote_endpoint.host_remote()->reset();
+  }
+
  protected:
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -383,9 +388,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedContainerHost) {
 
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
-  context()->UnregisterContainerHostByClientID(container_host_->client_uuid());
-  EXPECT_FALSE(container_host_);
+  CloseRemotes();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(container_host_);
   EXPECT_FALSE(test_resources.loader());
 }
 

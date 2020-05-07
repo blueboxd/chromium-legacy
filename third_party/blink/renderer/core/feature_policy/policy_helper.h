@@ -6,14 +6,57 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_POLICY_HELPER_H_
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+class PolicyParserMessageBuffer {
+ public:
+  struct Message {
+    mojom::blink::ConsoleMessageLevel level;
+    String content;
+
+    Message(mojom::blink::ConsoleMessageLevel level, const String& content)
+        : level(level), content(content) {}
+  };
+
+  PolicyParserMessageBuffer() = default;
+  explicit PolicyParserMessageBuffer(const String& prefix,
+                                     bool discard_message = false)
+      : prefix_(prefix), discard_message_(discard_message) {}
+
+  ~PolicyParserMessageBuffer() = default;
+
+  void Warn(const String& message) {
+    if (!discard_message_) {
+      message_buffer_.emplace_back(mojom::blink::ConsoleMessageLevel::kWarning,
+                                   prefix_ + message);
+    }
+  }
+
+  void Error(const String& message) {
+    if (!discard_message_) {
+      message_buffer_.emplace_back(mojom::blink::ConsoleMessageLevel::kError,
+                                   prefix_ + message);
+    }
+  }
+
+  const Vector<Message>& GetMessages() { return message_buffer_; }
+
+ private:
+  String prefix_;
+  Vector<Message> message_buffer_;
+  // If a dummy message buffer is desired, i.e. messages are not needed for
+  // the caller, this flag can be set to true and the message buffer will
+  // discard any incoming messages.
+  bool discard_message_ = false;
+};
 
 using FeatureNameMap = HashMap<String, mojom::blink::FeaturePolicyFeature>;
 

@@ -4841,7 +4841,6 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
       Si vous désactivez ce paramètre, la fonctionnalité de saisie automatique n'est pas accessible aux utilisateurs.
 
       Si vous activez ce paramètre ou ne configurez pas de valeur, la fonctionnalité de saisie automatique peut être contrôlée par les utilisateurs. Ces derniers peuvent ainsi configurer des profils de saisie automatique, et activer ou désactiver la fonctionnalité de saisie automatique à leur guise.</translation>
-<translation id="8042971420829376618">Cette règle définit l'ID utilisateur <ph name="PLUGIN_VM_NAME" /> pour cet appareil.</translation>
 <translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="8050080920415773384">Impression en mode natif</translation>
 <translation id="8053580360728293758">Remplace le mode d'impression couleur par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>

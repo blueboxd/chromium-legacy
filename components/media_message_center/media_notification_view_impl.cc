@@ -11,6 +11,7 @@
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
+#include "components/media_message_center/vector_icons/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -74,9 +75,9 @@ const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
     case MediaSessionAction::kNextTrack:
       return &vector_icons::kMediaNextTrackIcon;
     case MediaSessionAction::kEnterPictureInPicture:
-      return &vector_icons::kMediaEnterPipIcon;
+      return &kMediaEnterPipIcon;
     case MediaSessionAction::kExitPictureInPicture:
-      return &vector_icons::kMediaExitPipIcon;
+      return &kMediaExitPipIcon;
     case MediaSessionAction::kStop:
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:

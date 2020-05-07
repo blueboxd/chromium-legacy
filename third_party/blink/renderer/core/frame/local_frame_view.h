@@ -849,6 +849,8 @@ class CORE_EXPORT LocalFrameView final
   // necessary.
   OverlayInterstitialAdDetector& EnsureOverlayInterstitialAdDetector();
 
+  WTF::Vector<const TransformPaintPropertyNode*> GetScrollTranslationNodes();
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;

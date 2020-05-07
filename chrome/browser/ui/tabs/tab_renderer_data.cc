@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 // static
 TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
@@ -29,6 +30,11 @@ TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
   data.network_state = TabNetworkStateForWebContents(contents);
   data.title = tab_ui_helper->GetTitle();
   data.visible_url = contents->GetVisibleURL();
+  // Allow empty title for chrome-untrusted:// URLs.
+  if (data.title.empty() &&
+      data.visible_url.SchemeIs(content::kChromeUIUntrustedScheme)) {
+    data.should_render_empty_title = true;
+  }
   data.last_committed_url = contents->GetLastCommittedURL();
   data.crashed_status = contents->GetCrashedStatus();
   data.incognito = contents->GetBrowserContext()->IsOffTheRecord();

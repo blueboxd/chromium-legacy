@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">জার্মান কীবোর্ড</translation>
 <translation id="1972984168337863910">ফাইল ফিডব্যাক প্যানেল বড় করুন</translation>
 <translation id="1984603991036629094">আর্মেনিয় ফোনেটিক কীবোর্ড</translation>
+<translation id="1995337122023280937">ফাইল লোকেশনে যান</translation>
 <translation id="2001796770603320721">ড্রাইভে পরিচালনা করুন</translation>
 <translation id="2009067268969781306">ড্রাইভ ফরম্যাট করা হলে, সেটিতে সেভ করা সব ডেটা মুছে যাবে। সেটিকে আর আগের অবস্থায় ফেরানো যাবে না।</translation>
 <translation id="2028997212275086731">RAR আর্কাইভ</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google ড্রাইভে পৌঁছানো যাবে না৷ অনুগ্রহ করে <ph name="BEGIN_LINK" />লগ-আউট<ph name="END_LINK" /> করুন এবং আবার লগ-ইন করুন৷</translation>
 <translation id="2649120831653069427">রেনবোফিশ</translation>
 <translation id="2661146741306740526">১৬x৯</translation>
+<translation id="2664412712123763093">ফাইলের লোকেশন</translation>
 <translation id="2672394958563893062">একটি ত্রুটি ঘটেছে৷ শুরু থেকে পুনরায় আরম্ভ করতে ক্লিক করুন৷</translation>
 <translation id="2676946222714718093">এতে প্লে হচ্ছে</translation>
 <translation id="2735698359135166290">রোমানিয়ান আদর্শ কীবোর্ড</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ফাইল মুছে ফেলা হবে</translation>
 <translation id="509429900233858213">একটি ত্রুটি ঘটেছে৷</translation>
 <translation id="5098629044894065541">হিব্রু</translation>
+<translation id="5112685521274804841">এই ফোল্ডারের ফাইলগুলি শুধু দেখতে পারবেন। কিছু অ্যাক্টিভিটি এখানে কাজ করবে না।</translation>
 <translation id="5123433949759960244">বাস্কেটবল</translation>
 <translation id="5129662217315786329">পোলিশ</translation>
 <translation id="5144820558584035333">হাঙ্গুল ৩ সেট (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Linux ফাইল</translation>
 <translation id="9035012421917565900">আইটেমগুলিকে '<ph name="DESTINATION_NAME" />'-এ ফিরিয়ে নেওয়া যাবে না, তাই আপনি এই কাজটি আর আগের অবস্থায় ফেরাতে পারবেন না।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" নামের ফাইল আগে থেকেই আছে। অন্য একটি নাম লিখুন।</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" />-এর সাহায্যে ফাইল খুলতে, আগে <ph name="APP_NAME" />-এ শেয়ার করা ফাইলের ফোল্ডারে সরান।</translation>
 <translation id="9064939804718829769">হস্তান্তর হচ্ছে...</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>
 <translation id="9099674669267916096">পৃষ্ঠার সংখ্যা</translation>

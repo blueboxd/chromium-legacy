@@ -68,8 +68,6 @@ public abstract class ImageFetcher {
 
         private Params(String url, String clientName, int width, int height,
                 int expirationIntervalMinutes) {
-            assert width >= DEFAULT_IMAGE_SIZE : "Invalid width specified.";
-            assert height >= DEFAULT_IMAGE_SIZE : "Invalid height specified.";
             assert expirationIntervalMinutes >= INVALID_EXPIRATION_INTERVAL
                 : "Expiration interval should be non negative.";
 
@@ -78,6 +76,27 @@ public abstract class ImageFetcher {
             this.width = width;
             this.height = height;
             this.expirationIntervalMinutes = expirationIntervalMinutes;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) return true;
+            if (!(other instanceof ImageFetcher.Params)) return false;
+
+            ImageFetcher.Params otherParams = (ImageFetcher.Params) other;
+            return url.equals(otherParams.url) && clientName.equals(otherParams.clientName)
+                    && width == otherParams.width && height == otherParams.height
+                    && expirationIntervalMinutes == otherParams.expirationIntervalMinutes;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (url != null) ? url.hashCode() : 0;
+            result = 31 * result + ((clientName != null) ? clientName.hashCode() : 0);
+            result = 31 * result + width;
+            result = 31 * result + height;
+            result = 31 * result + expirationIntervalMinutes;
+            return result;
         }
 
         /**
@@ -91,14 +110,14 @@ public abstract class ImageFetcher {
         public final String clientName;
 
         /**
-         * The new bitmap's desired width (in pixels). Image won't be scaled if set to {@link
-         * #DEFAULT_IMAGE_SIZE}.
+         * The new bitmap's desired width (in pixels). If the given value is <= 0, the image won't
+         * be scaled.
          */
         public final int width;
 
         /**
-         * The new bitmap's desired height (in pixels). Image won't be scaled if set to {@link
-         * #DEFAULT_IMAGE_SIZE}.
+         * The new bitmap's desired height (in pixels). If the given value is <= 0, the image won't
+         * be scaled.
          */
         public final int height;
 
@@ -205,8 +224,17 @@ public abstract class ImageFetcher {
      *         with null result if fetching fails;
      */
     public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
-        fetchImage(url, clientName, 0, 0, callback);
+        fetchImage(ImageFetcher.Params.create(url, clientName), callback);
     }
+
+    /**
+     * Fetches the image based on customized parameters specified.
+     *
+     * @param params The parameters to specify image fetching details.
+     * @param callback The function which will be called when the image is ready; will be called
+     *         with null result if fetching fails;
+     */
+    public abstract void fetchImage(final Params params, Callback<Bitmap> callback);
 
     /**
      * Clear the cache of any bitmaps that may be in-memory.

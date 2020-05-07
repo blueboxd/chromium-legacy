@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Se gjennom</translation>
 <translation id="5073204694187207510">Skjul fullskjermrutenett</translation>
 <translation id="5082793167783849073">Sammenlign sider raskt ved å lage en gruppe. For å begynne, trykk og hold på en link.</translation>
+<translation id="5533021382642990449">Vis senere</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> faner er gruppert.</translation>
 <translation id="58326064309361797">Dra faner for å gruppere dem</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Avvis forslagene.</translation>
 <translation id="814503310257431685">Vis alle</translation>
 <translation id="8205266828577616993">Flytt fanen oppover</translation>
+<translation id="8304833501377495048">Vil du at faneraden ikke skal vises igjen?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Lukk <ph name="TABS_COUNT_ONE" /> valgt fane}other{Lukk <ph name="TABS_COUNT_MANY" /> valgte faner}}</translation>
+<translation id="8749939518995770034">Lukket faneraden</translation>
 <translation id="9150694013019234766">Bytt mellom faner i fanegruppen på nedre del av skjermen</translation>
 <translation id="9169594135889675189">Legg til ny fane i gruppen</translation>
 <translation id="959682366969460160">Få orden på ting</translation>

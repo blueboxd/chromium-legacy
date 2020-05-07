@@ -134,8 +134,7 @@ ShellContentBrowserClient* ShellContentBrowserClient::Get() {
   return g_browser_client;
 }
 
-ShellContentBrowserClient::ShellContentBrowserClient()
-    : shell_browser_main_parts_(nullptr) {
+ShellContentBrowserClient::ShellContentBrowserClient() {
   DCHECK(!g_browser_client);
   g_browser_client = this;
 }

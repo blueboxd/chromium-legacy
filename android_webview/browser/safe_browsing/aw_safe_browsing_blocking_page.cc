@@ -24,13 +24,11 @@
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
-using content::InterstitialPage;
 using content::WebContents;
 using security_interstitials::BaseSafeBrowsingErrorUI;
 using security_interstitials::SafeBrowsingQuietErrorUI;

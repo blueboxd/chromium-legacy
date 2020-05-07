@@ -50,8 +50,6 @@ class ModelTypeController : public DataTypeController {
                   const ModelLoadCallback& model_load_callback) override;
   RegisterWithBackendResult RegisterWithBackend(
       ModelTypeConfigurer* configurer) override;
-  void StartAssociating(StartCallback start_callback) override;
-  void ActivateDataType(ModelTypeConfigurer* configurer) override;
   void DeactivateDataType(ModelTypeConfigurer* configurer) override;
   void Stop(ShutdownReason shutdown_reason, StopCallback callback) override;
   State state() const override;

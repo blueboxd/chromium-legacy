@@ -47,8 +47,10 @@ class MediaHistoryFeedAssociatedOriginsTable : public MediaHistoryTableBase {
   // Gets all the associated origins associated with a feed.
   std::vector<url::Origin> Get(const int64_t feed_id);
 
-  // Gets all the feeds associated with an origin.
-  std::set<int64_t> GetFeeds(const url::Origin& origin);
+  // Gets all the feeds associated with an origin. If |include_subdomains| then
+  // this will include subdomains.
+  std::set<int64_t> GetFeeds(const url::Origin& origin,
+                             const bool include_subdomains);
 };
 
 }  // namespace media_history

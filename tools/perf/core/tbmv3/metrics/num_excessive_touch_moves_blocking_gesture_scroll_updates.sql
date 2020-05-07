@@ -1,3 +1,4 @@
+
 -- This metric outputs how many times a blocking TouchMove caused a back log of
 -- GestureScrollUpdates. When a TouchMove is blocking GestureScrollUpdates can't
 -- be responded to until the TouchMove is handled, this can include having to
@@ -5,23 +6,20 @@
 -- happens.
 --
 -- See b/153323740 for original investigation.
+DROP VIEW IF EXISTS ScrollBeginsAndEnds;
 
-DROP TABLE IF EXISTS ScrollBeginsAndEnds;
-
-CREATE TABLE ScrollBeginsAndEnds AS
+CREATE VIEW ScrollBeginsAndEnds AS
   SELECT
-    ROW_NUMBER() OVER (
-      ORDER BY process_track.upid ASC, slice.ts ASC) AS rowNumber,
     slice.name,
     slice.id,
     slice.ts,
     slice.dur,
     slice.track_id,
-    process_track.upid
+    EXTRACT_ARG(arg_set_id, 'chrome_latency_info.gesture_scroll_id')
+        AS gestureScrollId,
+    EXTRACT_ARG(arg_set_id, "chrome_latency_info.trace_id") AS traceId
   FROM
-    slice JOIN
-    process_track ON
-    slice.track_id = process_track.id
+    slice
   WHERE
     slice.name IN (
       'InputLatency::GestureScrollBegin',
@@ -37,15 +35,25 @@ CREATE VIEW JoinedScrollBeginsAndEnds AS
   SELECT
     begin.id AS beginId,
     begin.ts AS scrollBegin,
-    begin.dur as scrollBeginDur,
-    begin.track_id as scrollBeginTrackId,
-    begin.upid as beginUpid,
+    begin.dur AS scrollBeginDur,
+    begin.track_id AS scrollBeginTrackId,
+    begin.traceId AS scrollBeginTraceId,
+    begin.gestureScrollId as gestureScrollId,
     end.ts AS scrollEndTs,
-    end.ts + end.dur AS maybeScrollEnd
+    end.ts + end.dur AS maybeScrollEnd,
+    end.traceId AS scrollEndTraceId
   FROM ScrollBeginsAndEnds begin JOIN ScrollBeginsAndEnds end ON
-    begin.rowNumber + 1 = end.rowNumber AND
+    begin.traceId < end.traceId AND
     begin.name = 'InputLatency::GestureScrollBegin' AND
-    end.name = 'InputLatency::GestureScrollEnd';
+    end.name = 'InputLatency::GestureScrollEnd' AND
+    end.ts = (
+      SELECT MIN(ts)
+      FROM ScrollBeginsAndEnds in_query
+      WHERE
+        name = 'InputLatency::GestureScrollEnd' AND
+      in_query.ts > begin.ts
+    ) AND
+    end.gestureScrollId = begin.gestureScrollId;
 
 -- This table grabs each TouchMove and counts how many TouchMoves and
 -- GestureScrollUpdates queued after the TouchMove and overlaps with it. Its
@@ -75,16 +83,18 @@ CREATE VIEW OverlappingTouchAndGestures AS
           touch.ts <= overlapGesture.ts AND
           touch.ts + touch.dur >= overlapGesture.ts
       ) AS numOverlappingGestureScrollUpdates
-  FROM  JoinedScrollBeginsAndEnds beginAndEnd LEFT JOIN (
+  FROM  JoinedScrollBeginsAndEnds beginAndEnd JOIN (
     SELECT
-      *
-    FROM slice JOIN process_track ON slice.track_id = process_track.id
+      *,
+      EXTRACT_ARG(arg_set_id, "chrome_latency_info.trace_id") as traceId
+    FROM slice
     WHERE
       slice.name = "InputLatency::TouchMove"
   ) touch ON
     touch.ts <= beginAndEnd.scrollEndTs AND
     touch.ts > beginAndEnd.scrollBegin + beginAndEnd.scrollBeginDur AND
-    touch.upid = beginAndEnd.beginUpid;
+    touch.traceId > beginAndEnd.scrollBeginTraceId AND
+    touch.traceId < beginAndEnd.scrollEndTraceId;
 
 -- To prevent sqlite weirdness we create a table to hold the row number, and we
 -- also define excessive by the constants chossen. These values were chosen by

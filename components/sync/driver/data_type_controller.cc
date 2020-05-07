@@ -13,11 +13,6 @@ DataTypeController::DataTypeController(ModelType type) : type_(type) {}
 DataTypeController::~DataTypeController() {}
 
 // static
-bool DataTypeController::IsSuccessfulResult(ConfigureResult result) {
-  return (result == OK || result == OK_FIRST_RUN);
-}
-
-// static
 std::string DataTypeController::StateToString(State state) {
   switch (state) {
     case NOT_RUNNING:
@@ -26,8 +21,6 @@ std::string DataTypeController::StateToString(State state) {
       return "Model Starting";
     case MODEL_LOADED:
       return "Model Loaded";
-    case ASSOCIATING:
-      return "Associating";
     case RUNNING:
       return "Running";
     case STOPPING:

@@ -368,6 +368,11 @@
           'shards': 20,
         },
       },
+      'mac10.15-blink-rel-dummy': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
     },
   },
   'boringssl_crypto_tests': {
@@ -1206,6 +1211,13 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
     'modifications': {
+      'Win10 FYI x64 Exp Release (Intel HD 630)': {
+        'args': [
+          # TODO(https://crbug.com/1053803): Add this to all tests once UHD
+          # 630 machines are used alongside HD 630 machines.
+          '--expected-device-id', '3e92',
+        ],
+      },
       'Win10 x64 Debug (NVIDIA)': {
         'args': [
           # TODO(https://crbug.com/1007013): Remove this flag when it's no
@@ -2012,6 +2024,14 @@
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
+    'replacements': {
+      # TODO(crbug.com/1078982): Remove once the test is fixed on 10.15.4.
+      'Mac FYI Experimental Release (Intel)': {
+        'args': {
+          '--gtest_filter': '*Detection*:-FaceDetectionImplMacTest.ScanOneFace*',
+        },
+      },
+    },
   },
   'skia_renderer_gl_blink_web_tests': {
     'modifications': {

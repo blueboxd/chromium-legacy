@@ -32,10 +32,8 @@ std::unique_ptr<WaylandInputMethodContext>
 WaylandInputMethodContextFactory::CreateWaylandInputMethodContext(
     LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
-  DCHECK(connection_->event_source());
   return std::make_unique<WaylandInputMethodContext>(
-      connection_, delegate, is_simple,
-      connection_->event_source()->GetDispatchCallback());
+      connection_, connection_->event_source(), delegate, is_simple);
 }
 
 }  // namespace ui

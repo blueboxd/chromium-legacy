@@ -69,5 +69,12 @@ void FakeCrosHealthdClient::EmitAcInsertedEventForTesting() {
   fake_service_.EmitAcInsertedEventForTesting();
 }
 
+void FakeCrosHealthdClient::EmitAdapterAddedEventForTesting() {
+  // Flush the receiver, so any pending observers are registered before the
+  // event is emitted.
+  receiver_.FlushForTesting();
+  fake_service_.EmitAdapterAddedEventForTesting();
+}
+
 }  // namespace cros_healthd
 }  // namespace chromeos

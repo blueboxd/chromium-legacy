@@ -284,6 +284,7 @@ test("vaapi_unittest") {
     ":common",
     ":vaapi_utils_unittest",
     "//base",
+    "//base/test:test_support",
     "//media/gpu/test:helpers",
     "//testing/gtest",
   ]

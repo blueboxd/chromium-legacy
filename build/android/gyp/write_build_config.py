@@ -878,8 +878,9 @@ def main(argv):
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
   parser.add_option('--unprocessed-jar-path',
       help='Path to the .jar to use for javac classpath purposes.')
-  parser.add_option('--interface-jar-path',
-      help='Path to the .interface.jar to use for javac classpath purposes.')
+  parser.add_option(
+      '--interface-jar-path',
+      help='Path to the interface .jar to use for javac classpath purposes.')
   parser.add_option(
       '--jetified-jar-path',
       help='Path to the jetified.jar to use for javac classpath purposes.')

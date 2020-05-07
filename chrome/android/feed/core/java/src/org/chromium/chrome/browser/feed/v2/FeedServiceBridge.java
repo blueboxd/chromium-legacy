@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.util.DisplayMetrics;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.feed.library.common.locale.LocaleUtils;
@@ -13,5 +15,12 @@ final class FeedServiceBridge {
     @CalledByNative
     public static String getLanguageTag() {
         return LocaleUtils.getLanguageTag(ContextUtils.getApplicationContext());
+    }
+    @CalledByNative
+    public static double[] getDisplayMetrics() {
+        DisplayMetrics metrics =
+                ContextUtils.getApplicationContext().getResources().getDisplayMetrics();
+        double[] result = {metrics.density, metrics.widthPixels, metrics.heightPixels};
+        return result;
     }
 }

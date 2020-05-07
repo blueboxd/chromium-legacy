@@ -132,6 +132,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSupervisedUserDeprecationNotice;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kSwapSideVolumeButtonsForOrientation;
 
+// Enables shelf app scaling.
+ASH_PUBLIC_EXPORT extern const base::Feature kShelfAppScaling;
+
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
 // may have choppier app list animations while in this mode. crbug.com/765292.
@@ -227,6 +230,8 @@ ASH_PUBLIC_EXPORT bool IsWebUITabStripTabDragIntegrationEnabled();
 ASH_PUBLIC_EXPORT bool IsDisplayAlignmentAssistanceEnabled();
 
 ASH_PUBLIC_EXPORT bool IsMovablePartialScreenshotEnabled();
+
+ASH_PUBLIC_EXPORT bool IsAppScalingEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

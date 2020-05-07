@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Прегледајте</translation>
 <translation id="5073204694187207510">Сокриј ја табелата на цел екран</translation>
 <translation id="5082793167783849073">Набрзина споредете ги страниците со правење група. За да започнете, допрете и задржете го линкот.</translation>
+<translation id="5533021382642990449">Прикажи подоцна</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> картички се групирани</translation>
 <translation id="58326064309361797">Повлечете ги картичките за ги групирате</translation>
 <translation id="6040143037577758943">Затвори</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Отфрли ги предлозите.</translation>
 <translation id="814503310257431685">Прикажи ги сите</translation>
 <translation id="8205266828577616993">Помести картичка нагоре</translation>
+<translation id="8304833501377495048">Да не се прикажува лентата за картички повторно?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Затвори <ph name="TABS_COUNT_ONE" /> избрана картичка}one{Затвори <ph name="TABS_COUNT_MANY" /> избрана картичка}other{Затвори <ph name="TABS_COUNT_MANY" /> избрани картички}}</translation>
+<translation id="8749939518995770034">Лентата за картички е затворена</translation>
 <translation id="9150694013019234766">Префрлајте се од една на друга картичка во групата со картички најдолу на екранот</translation>
 <translation id="9169594135889675189">Додај нова картичка во групата</translation>
 <translation id="959682366969460160">Организирајте се</translation>

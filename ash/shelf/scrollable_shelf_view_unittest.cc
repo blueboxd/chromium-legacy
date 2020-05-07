@@ -183,7 +183,7 @@ TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotationShortToLong) {
 
   // Adds enough app icons so that after display rotation the scrollable
   // shelf is still in overflow mode.
-  const int num = display.bounds().height() / ShelfConfig::Get()->button_size();
+  const int num = display.bounds().height() / shelf_view_->GetButtonSize();
   for (int i = 0; i < num; i++)
     AddAppShortcut();
 
@@ -340,7 +340,7 @@ TEST_F(ScrollableShelfViewTest, ScrollAfterTappingNearScrollArrow) {
   // area.
   const int horizontalPadding = (32 - right_arrow.width()) / 2;
   const int verticalPadding =
-      (ShelfConfig::Get()->button_size() - right_arrow.height()) / 2;
+      (shelf_view_->GetButtonSize() - right_arrow.height()) / 2;
 
   // Tap near the right arrow and check that the scrollable shelf now shows the
   // left arrow only. Then do the same for the left arrow.

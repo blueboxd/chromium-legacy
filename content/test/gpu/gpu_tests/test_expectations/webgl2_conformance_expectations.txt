@@ -1,4 +1,4 @@
-# tags: [ android chromeos highsierra linux mac mojave sierra win win7 ]
+# tags: [ android chromeos highsierra linux mac mojave sierra catalina win win7 ]
 # tags: [ d3d11 no-angle vulkan opengl opengles no-use-gl ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0xa2e
@@ -155,6 +155,7 @@ crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/ge
 crbug.com/angleproject/1465 [ win no-use-gl ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 
 # Win / NVidia
+crbug.com/1079245 [ win nvidia ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ RetryOnFailure ]
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]
 crbug.com/679639 [ d3d11 win nvidia ] conformance2/rendering/draw-with-integer-texture-base-level.html [ Failure ]
 # Flake seen once.
@@ -594,6 +595,11 @@ crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance2/textures/video/* [ RetryOnFailure ]
+
+# Mac Validating / Intel
+crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/fbocolorbuffer/tex2d_00.html [ Failure ]
+crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/fboinvalidate/format_00.html [ Failure ]
+crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/framebufferblit/default_framebuffer_05.html [ Failure ]
 
 ####################
 # Linux failures   #

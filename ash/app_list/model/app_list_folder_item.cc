@@ -17,16 +17,11 @@ AppListFolderItem::AppListFolderItem(const std::string& id)
     : AppListItem(id),
       folder_type_(id == kOemFolderId ? FOLDER_TYPE_OEM : FOLDER_TYPE_NORMAL),
       item_list_(new AppListItemList) {
-  if (app_list_features::IsScalableAppListEnabled()) {
-    EnsureIconsForAvailableConfigTypes(
-        {AppListConfigType::kLarge, AppListConfigType::kMedium,
-         AppListConfigType::kSmall},
-        false /*request_icon_update*/);
-    config_provider_observer_.Add(&AppListConfigProvider::Get());
-  } else {
-    EnsureIconsForAvailableConfigTypes({AppListConfigType::kShared},
-                                       false /*reqest_icon_update*/);
-  }
+  EnsureIconsForAvailableConfigTypes(
+      {AppListConfigType::kLarge, AppListConfigType::kMedium,
+       AppListConfigType::kSmall},
+      false /*request_icon_update*/);
+  config_provider_observer_.Add(&AppListConfigProvider::Get());
   set_is_folder(true);
 }
 

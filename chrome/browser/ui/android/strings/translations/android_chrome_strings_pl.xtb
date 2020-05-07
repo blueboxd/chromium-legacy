@@ -471,6 +471,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4913169188695071480">Zatrzymaj odświeżanie</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /> w trakcie wyszukiwania urządzeń…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# strona}few{# strony}many{# stron}other{# strony}}</translation>
+<translation id="49268022542405662">Twoje hasła zostaną wyeksportowane i pobrane jako plik tekstowy. Twoje hasła będą widoczne dla każdej osoby i aplikacji, która ma dostęp do folderu docelowego.</translation>
 <translation id="4932247056774066048">Wylogowujesz się z konta zarządzanego w domenie <ph name="DOMAIN_NAME" />, więc Twoje dane w Chrome zostaną usunięte z tego urządzenia. Pozostaną one na Twoim koncie Google.</translation>
 <translation id="4943703118917034429">Rzeczywistość wirtualna</translation>
 <translation id="4943872375798546930">Brak wyników</translation>
@@ -753,6 +754,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7302081693174882195">Szczegóły: posortowane według zaoszczędzonych danych</translation>
 <translation id="7328017930301109123">Chrome szybciej ładuje strony w wersji uproszczonej, przesyłając nawet o 60 procent mniej danych.</translation>
 <translation id="7333031090786104871">Nadal dodaję poprzednią stronę</translation>
+<translation id="7340958967809483333">Opcje kart Discover</translation>
 <translation id="7352939065658542140">FILM</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Udostępnij 1 wybrany element}few{Udostępnij # wybrane elementy}many{Udostępnij # wybranych elementów}other{Udostępnij # wybranego elementu}}</translation>
 <translation id="7359002509206457351">Dostęp do form płatności</translation>
@@ -817,6 +819,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7810647596859435254">Otwórz za pomocą…</translation>
 <translation id="7821588508402923572">Tutaj będą widoczne informacje o zaoszczędzonych danych</translation>
+<translation id="7835852323729233924">Odtwarzanie multimediów</translation>
 <translation id="783819812427904514">Wyłącz wyciszenie filmu</translation>
 <translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>

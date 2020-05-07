@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Cari tombol, lalu angkat untuk mengetik</translation>
 <translation id="1012173283529841972">Item daftar</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Geser dua jari ke kanan</translation>
 <translation id="1022586497894531524">Baru pertama kali menggunakan masukan lisan ChromeVox? Tutorial singkat ini akan menjelaskan dasar-dasar memulai ChromeVox.</translation>
 <translation id="1025074108959230262">Mode lekat dinonaktifkan</translation>
 <translation id="1031961866430398710">kemudian</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Tidak ada item daftar sebelumnya</translation>
 <translation id="1114836634143403764">Saran</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "eko", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oskar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "yuniform", "v": "viktor", "w": "wiski","x": "eksray", "y": "yangki", "z": "zulu"}</translation>
+<translation id="1120938014254001895">Geser dua jari ke atas</translation>
 <translation id="1126928665165112660">Tidak miring</translation>
 <translation id="113582498867142724">Koleksi <ph name="TAG" /> dengan <ph name="NUM" /> item</translation>
 <translation id="1161762950103988776">Lompat</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Grafik berikutnya</translation>
 <translation id="1756785467854861272">Dark Magenta</translation>
+<translation id="1765245556747822181">Geser satu jari ke atas</translation>
 <translation id="1771761307086386028">Scroll ke kanan</translation>
 <translation id="1781173782405573156">Tombol pengabaian</translation>
 <translation id="1787176709638001873">Sandi edit teks</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">Meningkatkan laju ucapan</translation>
 <translation id="2267538686624070261">Salah eja diabaikan</translation>
 <translation id="2267945578749931355">Karakter Berikutnya</translation>
+<translation id="2278490101488436824">Geser tiga jari ke kiri</translation>
 <translation id="2305942658236913680">Tidak ada judul berikutnya</translation>
 <translation id="2311237334957139798">Pindah ke level perincian sebelumnya</translation>
 <translation id="2314393392395134769">Tidak subskrip</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">Bibliografi</translation>
 <translation id="2873259058405069099">Berpindah ke awal tabel</translation>
 <translation id="287383510823843610">Dark Orange</translation>
+<translation id="2879867157561757640">Geser tiga jari ke bawah</translation>
 <translation id="288178314850623291">Gunakan perintah melompat untuk melewati ke jenis elemen tertentu. Untuk melompat ke depan antar-judul, tekan Search + H, atau untuk melompat ke belakang, tekan Search + Shift + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{menit}other{menit}}</translation>
 <translation id="2894654529758326923">Informasi</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{kurung kurawal buka}other{# kurung kurawal buka}}</translation>
 <translation id="2909584066358367921">Tidak ada tombol berikutnya</translation>
 <translation id="2911433807131383493">Membuka tutorial ChromeVox</translation>
+<translation id="2912405967290226587">Geser tiga jari ke kanan</translation>
 <translation id="2937799153569150791">Tidak ada judul level 3 berikutnya</translation>
 <translation id="2942710183375260152">Dark Slate Blue</translation>
 <translation id="2943596527105977722">Dark Golden Rod</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">Sea Green</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tab}}</translation>
 <translation id="2972205263822847197">Kiat alat</translation>
+<translation id="297825089465017871">Geser dua jari ke kiri</translation>
 <translation id="2998131015536248178">Karakter Sebelumnya</translation>
 <translation id="2999559350546931576">Menurunkan tinggi nada</translation>
 <translation id="3014130421870723208">@ed 8titik</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">Opsi ChromeVox</translation>
 <translation id="3060756054951570867">menu <ph name="TITLE" /> dibuka</translation>
 <translation id="3060880924447482063">Geser ke kiri atau ke kanan untuk berpindah per item</translation>
+<translation id="3070245424257836917">Geser tiga jari ke atas</translation>
 <translation id="3078345202707391975">Judul tingkat 2 berikutnya</translation>
 <translation id="3078740164268491126">tabel</translation>
 <translation id="3082249673510793544">Scrolling mundur</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">Buka kolom berikutnya</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Bangunan terkenal sebelumnya</translation>
+<translation id="4710166929009737753">Geser satu jari ke kanan</translation>
 <translation id="4712898966495541134">Akhir pemilihan</translation>
 <translation id="4740661827607246557">Perintah Bantuan</translation>
 <translation id="4755857887974653209">Nonaktifkan ChromeVox</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">Lemon Chiffon</translation>
 <translation id="6816066673340002913">Pale Golden Rod</translation>
+<translation id="6826226459053491773">Geser dua jari ke bawah</translation>
 <translation id="6833103209700200188">Footer</translation>
 <translation id="6837853484260746864">Pilih suara:</translation>
 <translation id="6858047746862060282">Prolog</translation>
+<translation id="6859876496651143278">Geser satu jari ke kiri</translation>
 <translation id="6865519907510167493">Salah eja</translation>
 <translation id="6894148351896207544">Ucapkan waktu dan tanggal saat ini</translation>
 <translation id="6896758677409633944">Salin</translation>
@@ -993,6 +1004,7 @@
 <translation id="923331726185079994">ChromeVox Telah Diperbarui</translation>
 <translation id="93384979447910801">Dark Sea Green</translation>
 <translation id="948171205378458592">Mengurangi laju ucapan</translation>
+<translation id="958854023026327378">Geser satu jari ke bawah</translation>
 <translation id="962913030769097253">Judul tingkat 1 berikutnya</translation>
 <translation id="966588271015727539">Pilih penampil braille bluetooth</translation>
 <translation id="973955474346881951">Mengaktifkan/Menonaktifkan mode lekat</translation>

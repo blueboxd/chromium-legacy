@@ -123,7 +123,6 @@ public class WebLayerShellActivity extends FragmentActivity {
     private ImageButton mMenuButton;
     private ViewSwitcher mUrlViewContainer;
     private EditText mEditUrlView;
-    // private View mNonEditUrlView;
     private ProgressBar mLoadProgressBar;
     private View mMainView;
     private int mMainViewId;
@@ -266,8 +265,11 @@ public class WebLayerShellActivity extends FragmentActivity {
                         .setTextColor(android.R.color.black)
                         .setIconColor(android.R.color.black)
                         .build());
-        nonEditUrlView.setOnClickListener(
-                v -> { mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW); });
+        nonEditUrlView.setOnClickListener(v -> {
+            mEditUrlView.setText("");
+            mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW);
+            mEditUrlView.requestFocus();
+        });
         mUrlViewContainer.removeViewAt(NONEDITABLE_URL_TEXT_VIEW);
         mUrlViewContainer.addView(nonEditUrlView, NONEDITABLE_URL_TEXT_VIEW);
         mUrlViewContainer.setDisplayedChild(NONEDITABLE_URL_TEXT_VIEW);

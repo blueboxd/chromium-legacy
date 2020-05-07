@@ -471,6 +471,7 @@
 <translation id="4913169188695071480">Сопри го освежувањето</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Побарајте помош<ph name="END_LINK" /> додека се скенира за уреди…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# страница}one{# страница}other{# страници}}</translation>
+<translation id="49268022542405662">Вашите лозинки ќе се извезат и преземат како текстуална датотека. Тие ќе бидат видливи за секого и за секоја апликација со пристап до дестинациската папка.</translation>
 <translation id="4932247056774066048">Бидејќи се одјавувате од сметка управувана од <ph name="DOMAIN_NAME" />, вашите податоци на Chrome ќе се избришат од уредов. Тие ќе останат во вашата сметка на Google.</translation>
 <translation id="4943703118917034429">Виртуелна реалност</translation>
 <translation id="4943872375798546930">Нема резултати</translation>
@@ -753,6 +754,7 @@
 <translation id="7302081693174882195">Детали: подредени по количината на зачувани податоци</translation>
 <translation id="7328017930301109123">Во Lite-режим, Chrome побрзо ги вчитува страниците и користи до 60 проценти помалку интернет.</translation>
 <translation id="7333031090786104871">Сè уште се додава претходниот сајт</translation>
+<translation id="7340958967809483333">Опции за Discover</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделете 1 избрана ставка}one{Споделете # избрана ставка}other{Споделете # избрани ставки}}</translation>
 <translation id="7359002509206457351">Пристап до начините на плаќање</translation>
@@ -817,6 +819,7 @@
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7810647596859435254">Отвори со…</translation>
 <translation id="7821588508402923572">Заштедата на сообраќајот ќе се појави тука</translation>
+<translation id="7835852323729233924">Пуштање аудиовизуелни содржини</translation>
 <translation id="783819812427904514">Вклучете звук на видео</translation>
 <translation id="784934925303690534">Временски период</translation>
 <translation id="7851858861565204677">Други уреди</translation>

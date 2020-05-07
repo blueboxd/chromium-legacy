@@ -191,6 +191,7 @@ js_type_check("closure_compile_local_module") {
     ":global_scroll_target_behavior.m",
     ":hats_browser_proxy",
     ":i18n_setup",
+    ":lazy_load",
     ":lifetime_browser_proxy.m",
     ":metrics_browser_proxy",
     ":open_window_proxy",
@@ -236,6 +237,14 @@ js_library("global_scroll_target_behavior.m") {
 
 js_library("hats_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
+}
+
+js_library("lazy_load") {
+  deps = [
+    "site_settings:local_data_browser_proxy",
+    "site_settings:protocol_handlers",
+    "site_settings:site_settings_prefs_browser_proxy",
+  ]
 }
 
 js_library("lifetime_browser_proxy.m") {

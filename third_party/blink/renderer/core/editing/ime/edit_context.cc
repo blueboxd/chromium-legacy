@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -198,14 +199,15 @@ void EditContext::updateSelection(uint32_t start,
 
 void EditContext::updateLayout(DOMRect* control_bounds,
                                DOMRect* selection_bounds) {
-  control_bounds_.x = control_bounds->x();
-  control_bounds_.y = control_bounds->y();
-  control_bounds_.width = control_bounds->width();
-  control_bounds_.height = control_bounds->height();
-  selection_bounds_.x = selection_bounds->x();
-  selection_bounds_.y = selection_bounds->y();
-  selection_bounds_.width = selection_bounds->width();
-  selection_bounds_.height = selection_bounds->height();
+  // Return the IntRect containing the given DOMRect.
+  const DoubleRect control_bounds_double_rect(
+      control_bounds->x(), control_bounds->y(), control_bounds->width(),
+      control_bounds->height());
+  control_bounds_ = EnclosingIntRect(control_bounds_double_rect);
+  const DoubleRect selection_bounds_double_rect(
+      selection_bounds->x(), selection_bounds->y(), selection_bounds->width(),
+      selection_bounds->height());
+  selection_bounds_ = EnclosingIntRect(selection_bounds_double_rect);
 }
 
 void EditContext::updateText(uint32_t start,

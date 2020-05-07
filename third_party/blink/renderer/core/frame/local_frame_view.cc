@@ -2983,9 +2983,16 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     paint_controller_->CommitNewDisplayItems();
   }
 
+  WTF::Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
+  ForAllNonThrottledLocalFrameViews(
+      [&scroll_translation_nodes](LocalFrameView& frame_view) {
+        scroll_translation_nodes.AppendVector(
+            frame_view.GetScrollTranslationNodes());
+      });
+
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,
-      settings);
+      settings, scroll_translation_nodes);
 
   probe::LayerTreePainted(&GetFrame());
 }
@@ -4565,6 +4572,19 @@ LocalFrameView::EnsureOverlayInterstitialAdDetector() {
         std::make_unique<OverlayInterstitialAdDetector>();
   }
   return *overlay_interstitial_ad_detector_.get();
+}
+
+WTF::Vector<const TransformPaintPropertyNode*>
+LocalFrameView::GetScrollTranslationNodes() {
+  WTF::Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
+  for (auto area : *ScrollableAreas()) {
+    const auto* paint_properties =
+        area->GetLayoutBox()->FirstFragment().PaintProperties();
+    if (paint_properties && paint_properties->Scroll()) {
+      scroll_translation_nodes.push_back(paint_properties->ScrollTranslation());
+    }
+  }
+  return scroll_translation_nodes;
 }
 
 }  // namespace blink

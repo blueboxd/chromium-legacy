@@ -36,6 +36,9 @@
 // to update the data on disk.
 - (void)removeCredential:(id<Credential>)credential;
 
+// Returns the credential with matching |identifier| or nil if none.
+- (id<Credential>)credentialWithIdentifier:(NSString*)identifier;
+
 @end
 
 #endif  // IOS_CHROME_COMMON_CREDENTIAL_PROVIDER_CREDENTIAL_STORE_H_

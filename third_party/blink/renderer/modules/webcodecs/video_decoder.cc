@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -12,6 +13,8 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
 #include "media/base/video_decoder.h"
+#include "media/filters/ffmpeg_video_decoder.h"
+#include "media/media_buildflags.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_config.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -27,6 +30,50 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {
+
+namespace {
+
+media::VideoDecoderConfig ToVideoDecoderConfig(
+    const EncodedVideoConfig* config) {
+  std::vector<uint8_t> extra_data;
+  if (config->hasDescription()) {
+    DOMArrayBuffer* buffer;
+    if (config->description().IsArrayBuffer()) {
+      buffer = config->description().GetAsArrayBuffer();
+    } else {
+      // TODO(sandersd): Can IsNull() be true?
+      DCHECK(config->description().IsArrayBufferView());
+      buffer = config->description().GetAsArrayBufferView()->buffer();
+    }
+    // TODO(sandersd): Is it possible to not have Data()?
+    uint8_t* start = static_cast<uint8_t*>(buffer->Data());
+    size_t size = buffer->ByteLengthAsSizeT();
+    extra_data.assign(start, start + size);
+  }
+
+  // TODO(sandersd): Parse |codec| to produce a VideoCodecProfile.
+  media::VideoCodec codec = media::kCodecH264;
+  media::VideoCodecProfile profile = media::H264PROFILE_BASELINE;
+  // TODO(sandersd): Either remove sizes from VideoDecoderConfig (replace with
+  // sample aspect) or parse the AvcC here to get the actual size.
+  gfx::Size size = gfx::Size(1280, 720);
+  return media::VideoDecoderConfig(
+      codec, profile, media::VideoDecoderConfig::AlphaMode::kIsOpaque,
+      media::VideoColorSpace::REC709(), media::kNoTransformation, size,
+      gfx::Rect(gfx::Point(), size), size, extra_data,
+      media::EncryptionScheme::kUnencrypted);
+}
+
+std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
+    media::MediaLog* media_log) {
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+  return std::make_unique<media::FFmpegVideoDecoder>(media_log);
+#else
+  return nullptr;
+#endif  // BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+}
+
+}  // namespace
 
 // static
 VideoDecoder* VideoDecoder::Create(ScriptState* script_state,
@@ -104,7 +151,6 @@ ScriptPromise VideoDecoder::EnqueueRequest(Request* request) {
 void VideoDecoder::ProcessRequests() {
   DVLOG(3) << __func__;
   // TODO(sandersd): Re-entrancy checker.
-  // TODO(sandersd): Requests should probably be using virtual dispatch.
   while (!pending_request_ && !requests_.IsEmpty()) {
     Request* request = requests_.front();
     switch (request->type) {
@@ -142,10 +188,27 @@ bool VideoDecoder::ProcessConfigureRequest(Request* request) {
   // TODO(sandersd): Elide this request if the configuration is unchanged.
 
   if (!decoder_) {
-    // TODO(sandersd): Create and initialize a decoder.
+    media_log_ = std::make_unique<media::NullMediaLog>();
+    decoder_ = CreateVideoDecoder(media_log_.get());
+    if (!decoder_) {
+      request->resolver.Release()->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Codec initialization failed."));
+      // TODO(sandersd): This is a bit awkward because |request| is still in the
+      // queue.
+      HandleError();
+      return false;
+    }
 
     // Processing continues in OnInitializeDone().
+    // TODO(sandersd): OnInitializeDone() may be called reentrantly, in which
+    // case it must not call ProcessRequests().
     pending_request_ = request;
+    decoder_->Initialize(
+        ToVideoDecoderConfig(pending_request_->config), false, nullptr,
+        WTF::Bind(&VideoDecoder::OnInitializeDone, WrapWeakPersistent(this)),
+        WTF::BindRepeating(&VideoDecoder::OnOutput, WrapWeakPersistent(this)),
+        media::WaitingCB());
     return true;
   }
 
@@ -259,6 +322,24 @@ void VideoDecoder::HandleError() {
   NOTIMPLEMENTED();
 }
 
+void VideoDecoder::OnConfigureFlushDone(media::DecodeStatus status) {
+  DVLOG(3) << __func__;
+  DCHECK(pending_request_);
+  DCHECK_EQ(pending_request_->type, Request::Type::kConfigure);
+
+  if (status != media::DecodeStatus::OK) {
+    HandleError();
+    return;
+  }
+
+  // Processing continues in OnInitializeDone().
+  decoder_->Initialize(
+      ToVideoDecoderConfig(pending_request_->config), false, nullptr,
+      WTF::Bind(&VideoDecoder::OnInitializeDone, WrapWeakPersistent(this)),
+      WTF::BindRepeating(&VideoDecoder::OnOutput, WrapWeakPersistent(this)),
+      media::WaitingCB());
+}
+
 void VideoDecoder::OnInitializeDone(media::Status status) {
   DVLOG(3) << __func__;
   DCHECK(pending_request_);
@@ -305,23 +386,6 @@ void VideoDecoder::OnFlushDone(media::DecodeStatus status) {
   }
 
   pending_request_.Release()->resolver.Release()->Resolve();
-  ProcessRequests();
-}
-
-void VideoDecoder::OnConfigureFlushDone(media::DecodeStatus status) {
-  DVLOG(3) << __func__;
-  DCHECK(pending_request_);
-  DCHECK_EQ(pending_request_->type, Request::Type::kConfigure);
-
-  if (status != media::DecodeStatus::OK) {
-    HandleError();
-    return;
-  }
-
-  // TODO(sandersd): Actually reconfigure the decoder.
-  // Processing continues in OnInitializeDone().
-  NOTIMPLEMENTED();
-
   ProcessRequests();
 }
 

@@ -16,7 +16,6 @@
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
 #include "content/browser/android/selection/selection_popup_controller.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -118,18 +117,6 @@ void WebContentsViewAndroid::SetOverscrollRefreshHandler(
     static_cast<RenderWidgetHostViewAndroid*>(rwhv)
         ->OnOverscrollRefreshHandlerAvailable();
   }
-
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = web_contents_->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-    if (rwhv) {
-      static_cast<RenderWidgetHostViewAndroid*>(rwhv)
-          ->OnOverscrollRefreshHandlerAvailable();
-    }
-  }
 }
 
 ui::OverscrollRefreshHandler*
@@ -154,13 +141,6 @@ RenderWidgetHostViewAndroid*
 WebContentsViewAndroid::GetRenderWidgetHostViewAndroid() {
   RenderWidgetHostView* rwhv = nullptr;
   rwhv = web_contents_->GetRenderWidgetHostView();
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = web_contents_->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-  }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
@@ -184,13 +164,9 @@ void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
 }
 
 void WebContentsViewAndroid::Focus() {
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->Focus();
-  } else {
-    auto* rwhv = web_contents_->GetRenderWidgetHostView();
-    if (rwhv)
-      static_cast<RenderWidgetHostViewAndroid*>(rwhv)->Focus();
-  }
+  auto* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    static_cast<RenderWidgetHostViewAndroid*>(rwhv)->Focus();
 }
 
 void WebContentsViewAndroid::SetInitialFocus() {
@@ -209,10 +185,6 @@ void WebContentsViewAndroid::RestoreFocus() {
 }
 
 void WebContentsViewAndroid::FocusThroughTabTraversal(bool reverse) {
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()->FocusThroughTabTraversal(reverse);
-    return;
-  }
   content::RenderWidgetHostView* fullscreen_view =
       web_contents_->GetFullscreenRenderWidgetHostView();
   if (fullscreen_view) {
@@ -248,8 +220,7 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
   // Note that while this instructs the render widget host to reference
   // |native_view_|, this has no effect without also instructing the
   // native view (i.e. ContentView) how to obtain a reference to this widget in
-  // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
-  // example of how this is achieved for InterstitialPages.
+  // order to paint it.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
   auto* rwhv = new RenderWidgetHostViewAndroid(rwhi, &view_);
   rwhv->SetSynchronousCompositorClient(synchronous_compositor_client_);

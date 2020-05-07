@@ -182,7 +182,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), getToolbarManager().getBookmarkBridgeSupplier(),
+                getWindow().getDecorView(), mBookmarkBridgeSupplier,
                 mIntentDataProvider.getUiType(), mIntentDataProvider.getMenuTitles(),
                 mIntentDataProvider.isOpenedByChrome(),
                 mIntentDataProvider.shouldShowShareMenuItem(),

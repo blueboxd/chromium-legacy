@@ -30,6 +30,10 @@ class PrefRegistrySyncable;
 
 namespace media_feeds {
 
+namespace {
+class CookieChangeListener;
+}  // namespace
+
 class MediaFeedsService : public KeyedService {
  public:
   static const char kSafeSearchResultHistogramName[];
@@ -65,6 +69,11 @@ class MediaFeedsService : public KeyedService {
   void FetchMediaFeed(int64_t feed_id,
                       base::OnceClosure callback);
 
+  // Stores a callback to be called once we have completed all inflight checks.
+  void SetCookieChangeCallbackForTest(base::OnceClosure callback);
+
+  bool HasCookieObserverForTest() const;
+
  private:
   friend class MediaFeedsServiceTest;
 
@@ -97,6 +106,9 @@ class MediaFeedsService : public KeyedService {
   void OnCompleteFetch(const int64_t feed_id, const bool has_items);
 
   void OnSafeSearchPrefChanged();
+
+  void OnResetOriginFromCookie(const url::Origin& origin,
+                               const bool include_subdomains);
 
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
 
@@ -136,10 +148,14 @@ class MediaFeedsService : public KeyedService {
   std::map<int64_t, std::unique_ptr<InflightSafeSearchCheck>>
       inflight_safe_search_checks_;
 
-  base::Optional<base::OnceClosure> safe_search_completion_callback_;
+  base::OnceClosure safe_search_completion_callback_;
 
   scoped_refptr<::network::SharedURLLoaderFactory>
       test_url_loader_factory_for_fetcher_;
+
+  std::unique_ptr<CookieChangeListener> cookie_change_listener_;
+
+  base::OnceClosure cookie_change_callback_;
 
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
   Profile* const profile_;

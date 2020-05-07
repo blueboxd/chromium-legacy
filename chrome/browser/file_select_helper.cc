@@ -18,6 +18,7 @@
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -334,7 +335,8 @@ void FileSelectHelper::PerformSafeBrowsingDeepScanIfNeeded(
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::DeepScanningDialogDelegate::Data data;
   if (safe_browsing::DeepScanningDialogDelegate::IsEnabled(
-          profile_, render_frame_host_->GetLastCommittedURL(), &data)) {
+          profile_, render_frame_host_->GetLastCommittedURL(), &data,
+          enterprise_connectors::AnalysisConnector::FILE_ATTACHED)) {
     data.paths.reserve(list.size());
     for (const auto& file : list)
       data.paths.push_back(file->get_native_file()->file_path);

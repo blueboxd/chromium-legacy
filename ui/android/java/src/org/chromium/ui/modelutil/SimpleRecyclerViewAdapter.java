@@ -117,10 +117,20 @@ public class SimpleRecyclerViewAdapter
         return mListData.get(position).type;
     }
 
+    /**
+     * Create a new view of the desired type.
+     *
+     * @param parent Parent view.
+     * @param typeId Type of the view to create.
+     * @return Created view.
+     */
+    protected View createView(ViewGroup parent, int typeId) {
+        return mViewBuilderMap.get(typeId).first.buildView(parent);
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ViewHolder(mViewBuilderMap.get(viewType).first.buildView(parent),
-                mViewBuilderMap.get(viewType).second);
+        return new ViewHolder(createView(parent, viewType), mViewBuilderMap.get(viewType).second);
     }
 
     @Override

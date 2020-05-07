@@ -26,7 +26,8 @@ enum class UserSelectableType {
   kApps,
   kReadingList,
   kTabs,
-  kLastType = kTabs
+  kWifiConfigurations,
+  kLastType = kWifiConfigurations
 };
 
 using UserSelectableTypeSet = EnumSet<UserSelectableType,
@@ -57,8 +58,8 @@ enum class UserSelectableOsType {
   kFirstType = kOsApps,
 
   kOsPreferences,
-  kWifiConfigurations,
-  kLastType = kWifiConfigurations
+  kOsWifiConfigurations,
+  kLastType = kOsWifiConfigurations
 };
 
 using UserSelectableOsTypeSet = EnumSet<UserSelectableOsType,

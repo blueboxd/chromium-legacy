@@ -115,7 +115,7 @@
               src="../../../internal/resources/chromeos/animations/oobe-welcome/tablet_loop_2x.webm">
           </video>
         </if>
-        <div hidden="[[!debuggingLinkVisible]]">
+        <div id="enableDebuggingDiv" hidden="[[!debuggingLinkVisible]]">
           <a href="#" on-tap="onDebuggingLinkClicked_" id="enableDebuggingLink"
              class="oobe-local-link">
             [[i18nDynamic(locale, 'debuggingFeaturesLink')]]

@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Áttekintés</translation>
 <translation id="5073204694187207510">Teljes képernyős rács elrejtése</translation>
 <translation id="5082793167783849073">Csoport kialakításával gyorsan összehasonlíthat oldalakat. A kezdéshez tartsa lenyomva ujját a kívánt linken.</translation>
+<translation id="5533021382642990449">Máskor megjelenhet</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> lap csoportosítva</translation>
 <translation id="58326064309361797">A lapokat húzással csoportosíthatja</translation>
 <translation id="6040143037577758943">Bezárás</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Javaslatok elvetése.</translation>
 <translation id="814503310257431685">Összes megtekintése</translation>
 <translation id="8205266828577616993">Lap mozgatása felfelé</translation>
+<translation id="8304833501377495048">Ne jelenjen meg újra ez a lapsor?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> kijelölt lap bezárása}other{<ph name="TABS_COUNT_MANY" /> kijelölt lap bezárása}}</translation>
+<translation id="8749939518995770034">Lapsor bezárva</translation>
 <translation id="9150694013019234766">Válthat a képernyő aljánál lévő lapcsoport lapjai között</translation>
 <translation id="9169594135889675189">Új lap hozzáadása a csoporthoz</translation>
 <translation id="959682366969460160">Könnyebb rendszerezés</translation>

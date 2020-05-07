@@ -9,8 +9,9 @@
 
 #include <vector>
 
+#include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_folder_item.h"
-#include "ash/app_list/views/horizontal_page.h"
+#include "ash/app_list/views/app_list_page.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -30,7 +31,7 @@ class SuggestionChipContainerView;
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder.
-class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
+class APP_LIST_EXPORT AppsContainerView : public AppListPage {
  public:
   AppsContainerView(ContentsView* contents_view, AppListModel* model);
   ~AppsContainerView() override;
@@ -69,43 +70,11 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   void UpdateControlVisibility(AppListViewState app_list_state,
                                bool is_in_drag);
 
-  // Animates the container opacity from the opacity for the current app list
-  // transition progress to the opacity for |target_view_state|.
-  // |current_progress| - the current app list transition progress.
-  // |animator| - callback that when run starts the opacity animation.
-  using OpacityAnimator =
-      base::RepeatingCallback<void(views::View* view, bool target_visibility)>;
-  void AnimateOpacity(float current_progress,
-                      AppListViewState target_view_state,
-                      const OpacityAnimator& animator);
-
-  // Sets the expected y position for apps container children, and runs
-  // |animator| for each of them to run transform animation from current bounds.
-  // (This assumes that animator knows the offset between current apps container
-  // bounds and target apps container bounds).
-  using TransformAnimator =
-      base::RepeatingCallback<void(ui::Layer*, views::View*)>;
-  void AnimateYPosition(AppListViewState target_view_state,
-                        const TransformAnimator& animator);
-
-  // Updates the opacity of the apps container elements for the current app list
-  // view position.
-  // |progress| - The current app list view drag progress.
-  // |restore_opacity| - Whether the opacity should be restored to the non-drag
-  //     state.
-  void UpdateOpacity(float progress, bool restore_opacity);
-
-  // Updates the y position of the apps container elements for the current app
-  // list view position.
-  // |progress| - The current app list view drag progress.
-  void UpdateYPosition(float progress);
-
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
   // Calculates the apps container or apps grid margin depending on the
-  // available content bounds, and search box size (the later is not used
-  // if |for_full_container_bounds| is false).
+  // available content bounds, and search box size.
   // |available_bounds| - The bounds available to lay out either full apps
   //      container or apps grid (depending on |for_full_contaier_bounds|).
   // |search_box_size| - The expected search box size. Used to determine the
@@ -113,17 +82,13 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   //      (if calaulating margins for apps grid, |available_bounds| should
   //      not contain the search box, so this value will not be used in that
   //      case).
-  // |for_full_container_bounds| - Whether the bounds are being calculated
-  //      for the whole apps container, or just the apps grid. It should be true
-  //      iff app_list_features::IsScalableAppListEnabled().
   //
   // NOTE: This should not call into ContentsView::GetSearchBoxBounds*()
   // methods, as CalculateMarginsForAvailableBounds is used to calculate the
   // search box bounds.
   const gfx::Insets& CalculateMarginsForAvailableBounds(
       const gfx::Rect& available_bounds,
-      const gfx::Size& search_box_size,
-      bool for_full_container_bounds);
+      const gfx::Size& search_box_size);
 
   // views::View overrides:
   void Layout() override;
@@ -131,10 +96,27 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // HorizontalPage overrides:
+  // AppListPage overrides:
   void OnWillBeHidden() override;
+  void OnAnimationStarted(AppListState from_state,
+                          AppListState to_state) override;
+  void UpdatePageOpacityForState(AppListState state,
+                                 float search_box_opacity,
+                                 bool restore_opacity) override;
+  void UpdatePageBoundsForState(AppListState state,
+                                const gfx::Rect& contents_bounds,
+                                const gfx::Rect& search_box_bounds) override;
+  gfx::Rect GetPageBoundsForState(
+      AppListState state,
+      const gfx::Rect& contents_bounds,
+      const gfx::Rect& search_box_bounds) const override;
   views::View* GetFirstFocusableView() override;
-  gfx::Rect GetPageBoundsForState(AppListState state) const override;
+  views::View* GetLastFocusableView() override;
+  void AnimateOpacity(float current_progress,
+                      AppListViewState target_view_state,
+                      const OpacityAnimator& animator) override;
+  void AnimateYPosition(AppListViewState target_view_state,
+                        const TransformAnimator& animator) override;
 
   SuggestionChipContainerView* suggestion_chip_container_view_for_test() {
     return suggestion_chip_container_view_;
@@ -170,13 +152,24 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
+  // Updates the whole container opacity to match the app list state.
+  void UpdateContainerOpacityForState(AppListState state);
+
+  // Updates the opacity of the apps container elements for the current app list
+  // view position.
+  // |progress| - The current app list view drag progress.
+  // |restore_opacity| - Whether the opacity should be restored to the non-drag
+  //     state.
+  void UpdateContentsOpacity(float progress, bool restore_opacity);
+
+  // Updates the y position of the apps container elements for the current app
+  // list view position.
+  // |progress| - The current app list view drag progress.
+  void UpdateContentsYPosition(float progress);
+
   // Suggestion chips and apps grid view become unfocusable if |disabled| is
   // true. This is used to trap focus within the folder when it is opened.
   void DisableFocusForShowingActiveFolder(bool disabled);
-
-  // Gets the suggestion chips container top margin for the app list transition
-  // progress.
-  int GetSuggestionChipContainerTopMargin(float progress) const;
 
   // Returns expected suggestion chip container's y position based on the app
   // list transition progress.
@@ -193,10 +186,10 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Callback returned by DisableBlur().
   void OnSuggestionChipsBlurDisablerReleased();
 
+  ContentsView* contents_view_;  // Not owned.
+
   // The number of active requests to disable blur.
   size_t suggestion_chips_blur_disabler_count_ = 0;
-
-  ContentsView* contents_view_;  // Not owned.
 
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;

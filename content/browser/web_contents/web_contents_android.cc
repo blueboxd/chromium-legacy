@@ -24,7 +24,6 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -385,13 +384,6 @@ RenderWidgetHostViewAndroid*
     WebContentsAndroid::GetRenderWidgetHostViewAndroid() {
   RenderWidgetHostView* rwhv = NULL;
   rwhv = web_contents_->GetRenderWidgetHostView();
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = web_contents_->GetInterstitialPage()
-               ->GetMainFrame()
-               ->GetRenderViewHost()
-               ->GetWidget()
-               ->GetView();
-  }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 

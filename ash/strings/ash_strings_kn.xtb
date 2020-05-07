@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">ಓವರ್‌ಸ್ಕ್ಯಾನ್</translation>
 <translation id="119944043368869598">ಎಲ್ಲವನ್ನೂ ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1199716647557067911">ನೀವು ಖಂಡಿತವಾಗಿಯೂ ಪ್ರವೇಶ ಬದಲಾಯಿಸಿ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಆಫ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
+<translation id="121097972571826261">ಪದದ ಮೂಲಕ ಫಾರ್ವರ್ಡ್ ಮಾಡಿ</translation>
+<translation id="1229194443904279055">ಆಯ್ಕೆಮಾಡುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="1247372569136754018">ಮೈಕ್ರೊಫೋನ್ (ಆಂತರಿಕ)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> ನಿಂದ ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ</translation>
 <translation id="1255033239764210633">ಹವಾಮಾನ ಹೇಗಿದೆ?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು Ctrl+Search+M ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="2302092602801625023">ಈ ಖಾತೆಯನ್ನು Family Link ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="2303600792989757991">ಟಾಗಲ್ ವಿಂಡೋ ಅವಲೋಕನ</translation>
+<translation id="2322173485024759474">ಅಕ್ಷರದ ಮೂಲಕ ಹಿಂತಿರುಗಿ</translation>
 <translation id="2339073806695260576">ಟಿಪ್ಪಣಿ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲು, ಲೇಸರ್‌ ಪಾಯಿಂಟರ್ ಬಳಸಲು ಅಥವಾ ಭೂತಗನ್ನಡಿ ಬಳಸಲು ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಸ್ಟೈಲಸ್ ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.</translation>
 <translation id="2341729377289034582">ಪರದೆಯು ಲಂಬವಾಗಿ ತೋರುವಂತೆ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2352467521400612932">ಸ್ಟೈಲಸ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">ಕೀಬೋರ್ಡ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3846575436967432996">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
+<translation id="385300504083504382">ಪ್ರಾರಂಭ</translation>
 <translation id="3891340733213178823">ಸೈನ್ ಔಟ್ ಮಾಡಲು Ctrl+Shift+Q ಅನ್ನು ಎರಡುಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="3893630138897523026">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ)</translation>
 <translation id="3897533311200664389">ಪಠ್ಯ ಪ್ರಶ್ನೆಯನ್ನು ತೋರಿಸಲು ಪ್ರಾರಂಭಿಸಿ</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ</translation>
 <translation id="5397578532367286026">ಈ ಬಳಕೆದಾರರ ಬಳಕೆ ಮತ್ತು ಇತಿಹಾಸವನ್ನು chrome.com ನಲ್ಲಿ ನಿರ್ವಾಹಕರು (<ph name="MANAGER_EMAIL" />) ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="5400461572260843123">ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳು, ಅಧಿಸೂಚನೆ ಕೇಂದ್ರಕ್ಕೆ ಪ್ರವೇಶಿಸಲು ಹುಡುಕಾಟ + ಎಡಕ್ಕೆ ಬಾಣದ ಗುರುತನ್ನು ಒತ್ತಿರಿ.</translation>
+<translation id="5428899915242071344">ಆಯ್ಕೆಮಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5430931332414098647">ತತ್‌ಕ್ಷಣದ ಟೆಥರಿಂಗ್‌</translation>
 <translation id="5431825016875453137">VPN / L2TP ತೆರೆಯಿರಿ</translation>
 <translation id="544691375626129091">ಈ ಸೆಷನ್‌ಗೆ ಎಲ್ಲಾ ಲಭ್ಯವಿರುವ ಬಳಕೆದಾರರನ್ನು ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ.</translation>
@@ -468,6 +473,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6777216307882431711">ಸಂಪರ್ಕಿತ USB-C ಸಾಧನಗಳನ್ನು ಚಾರ್ಜ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
+<translation id="6818242057446442178">ಪದದ ಮೂಲಕ ಹಿಂತಿರುಗಿ</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">ಶಾರ್ಟ್‌ಕಟ್ ಆಫ್ ಆಗಿದೆ</translation>
@@ -581,6 +587,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">ಟಿಪ್ಪಣಿ ರಚಿಸಿ</translation>
+<translation id="8371779926711439835">ಅಕ್ಷರದ ಮೂಲಕ ಫಾರ್ವರ್ಡ್ ಮಾಡಿ</translation>
 <translation id="8375916635258623388">ಈ <ph name="DEVICE_NAME" /> ಸಾಧನ ಮತ್ತು ನಿಮ್ಮ ಫೋನ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಂಪರ್ಕಗೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="8388750414311082622">ಕೊನೆಯ ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕುವಂತಿಲ್ಲ.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> ಅವರಿಗಾಗಿ ಆಯ್ಕೆಗಳ ಮೆನು</translation>

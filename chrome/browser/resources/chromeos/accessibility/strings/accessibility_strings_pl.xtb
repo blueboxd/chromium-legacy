@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Znajdź klawisz, a potem unieś palec, by wpisać znak</translation>
 <translation id="1012173283529841972">Element listy</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Przesuń dwoma palcami w prawo</translation>
 <translation id="1022586497894531524">Korzystasz z czytnika ChromeVox po raz pierwszy? Pomoże Ci ten krótki samouczek.</translation>
 <translation id="1025074108959230262">Tryb klawiszy trwałych wyłączony</translation>
 <translation id="1031961866430398710">następnie</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Nie ma poprzedniego elementu listy</translation>
 <translation id="1114836634143403764">Sugestia</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "brawo", "c": "czarli", "d": "delta", "e": "eko", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "india", "j": "dżuliet","k": "kilo", "l": "lima", "m": "majk", "n": "nowember", "o": "oskar","p": "papa", "q": "kebek", "r": "romeo", "s": "sjera", "t": "tango", "u": "juniform", "v": "wiktor", "w": "łyski","x": "eks-rej", "y": "janki", "z": "zulu"}</translation>
+<translation id="1120938014254001895">Przesuń dwoma palcami w górę</translation>
 <translation id="1126928665165112660">Bez kursywy</translation>
 <translation id="113582498867142724">Kolekcja elementów <ph name="TAG" />. Liczba elementów: <ph name="NUM" /></translation>
 <translation id="1161762950103988776">Przejdź</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Następna grafika</translation>
 <translation id="1756785467854861272">Ciemnopurpurowy</translation>
+<translation id="1765245556747822181">Przesuń jednym palcem w górę</translation>
 <translation id="1771761307086386028">Przewiń w prawo</translation>
 <translation id="1781173782405573156">Klawisz przejścia</translation>
 <translation id="1787176709638001873">Edytowanie tekstu, hasło</translation>
@@ -133,6 +136,7 @@
 <translation id="2010555995361223825">Menu ChromeVox</translation>
 <translation id="203030071582665758">Nie ma poprzedniego nagłówka poziomu 4</translation>
 <translation id="2045055672832940894">Nie ma poprzedniego elementu sterującego</translation>
+<translation id="2045606329038304310">Sterowanie na poziomie pola formularza</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="2086961585857038472">Następne słowo</translation>
 <translation id="2087981446621639008">szczeg listyopisu</translation>
@@ -159,6 +163,7 @@
 <translation id="225732394367814946">Zwiększ tempo mowy</translation>
 <translation id="2267538686624070261">Pozostał błąd pisowni</translation>
 <translation id="2267945578749931355">Następny znak</translation>
+<translation id="2278490101488436824">Przesuń trzema palcami w lewo</translation>
 <translation id="2305942658236913680">Nie ma następnego nagłówka</translation>
 <translation id="2311237334957139798">Przejdź do poprzedniego elementu na tym poziomie szczegółowości</translation>
 <translation id="2314393392395134769">Nie jest indeksem dolnym</translation>
@@ -232,12 +237,14 @@
 <translation id="2867808975387772810">Bibliografia</translation>
 <translation id="2873259058405069099">Przejdź na początek tabeli.</translation>
 <translation id="287383510823843610">Ciemnopomarańczowy</translation>
+<translation id="2879867157561757640">Przesuń trzema palcami w dół</translation>
 <translation id="288178314850623291">Użyj poleceń nawigacji, by przejść do elementu określonego typu. Aby przejść do następnego nagłówka, naciśnij Wyszukaj + H. Aby przejść do poprzedniego nagłówka, naciśnij Wyszukaj + Shift + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minuta}few{minuty}many{minut}other{minuty}}</translation>
 <translation id="2894654529758326923">Informacje</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{lewy nawias klamrowy}few{# lewe nawiasy klamrowe}many{# lewych nawiasów klamrowych}other{# left braces}}</translation>
 <translation id="2909584066358367921">Nie ma następnego przycisku</translation>
 <translation id="2911433807131383493">Otwórz samouczek ChromeVox</translation>
+<translation id="2912405967290226587">Przesuń trzema palcami w prawo</translation>
 <translation id="2937799153569150791">Nie ma następnego nagłówka poziomu 3</translation>
 <translation id="2942710183375260152">Ciemnoniebieski łupkowy</translation>
 <translation id="2943596527105977722">Ciemnozłoty</translation>
@@ -245,6 +252,7 @@
 <translation id="2968634799764242930">Zielony morski</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulator}few{# tabulatory}many{# tabulatorów}other{# tabs}}</translation>
 <translation id="2972205263822847197">Wskazówka do elementu</translation>
+<translation id="297825089465017871">Przesuń dwoma palcami w lewo</translation>
 <translation id="2998131015536248178">Poprzedni znak</translation>
 <translation id="2999559350546931576">Obniż tonację.</translation>
 <translation id="3014130421870723208">@ed 8pt</translation>
@@ -254,6 +262,7 @@
 <translation id="3046838483509668188">Opcje ChromeVox</translation>
 <translation id="3060756054951570867">otwarte menu <ph name="TITLE" /></translation>
 <translation id="3060880924447482063">Przesuwaj palcem w lewo lub w prawo, by przechodzić między elementami</translation>
+<translation id="3070245424257836917">Przesuń trzema palcami w górę</translation>
 <translation id="3078345202707391975">Następny nagłówek poziomu 2</translation>
 <translation id="3078740164268491126">tabela</translation>
 <translation id="3082249673510793544">Przewiń do tyłu</translation>
@@ -435,6 +444,7 @@
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="4402014469255336455">Głęboki błękit nieba</translation>
 <translation id="4432457053224379116">Indiański czerwony</translation>
+<translation id="4437615272777527928">Zacznij pisać, by wyszukiwać w menu. Użyj strzałek w górę i w dół, by przeglądać wyniki. Używaj strzałek w lewo i w prawo, by ustawić kursor tekstu i poruszać się między różnymi menu.</translation>
 <translation id="4457472090507035117">Wybierz bieżący głos:</translation>
 <translation id="4476183483923481720">nowy wiersz</translation>
 <translation id="4479068155583208887">Ceglasty</translation>
@@ -459,6 +469,7 @@
 <translation id="4677535310137735442">Przejdź do następnej kolumny</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Poprzedni punkt orientacyjny</translation>
+<translation id="4710166929009737753">Przesuń jednym palcem w prawo</translation>
 <translation id="4712898966495541134">Koniec zaznaczenia</translation>
 <translation id="4740661827607246557">Polecenia pomocy</translation>
 <translation id="4755857887974653209">Wyłącz ChromeVox</translation>
@@ -709,9 +720,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">Szyfonowy cytrynowy</translation>
 <translation id="6816066673340002913">Bladozłoty</translation>
+<translation id="6826226459053491773">Przesuń dwoma palcami w dół</translation>
 <translation id="6833103209700200188">Stopka</translation>
 <translation id="6837853484260746864">Wybierz głos:</translation>
 <translation id="6858047746862060282">Prolog</translation>
+<translation id="6859876496651143278">Przesuń jednym palcem w lewo</translation>
 <translation id="6865519907510167493">Błędny zapis</translation>
 <translation id="6894148351896207544">Powiedz bieżącą godzinę i datę</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
@@ -993,6 +1006,7 @@
 <translation id="923331726185079994">ChromeVox został zaktualizowany</translation>
 <translation id="93384979447910801">Ciemny zielony morski</translation>
 <translation id="948171205378458592">Zmniejsz tempo mowy</translation>
+<translation id="958854023026327378">Przesuń jednym palcem w dół</translation>
 <translation id="962913030769097253">Następny nagłówek poziomu 1</translation>
 <translation id="966588271015727539">Wybierz monitor brajlowski Bluetooth</translation>
 <translation id="973955474346881951">Włącz/wyłącz tryb klawiszy trwałych</translation>

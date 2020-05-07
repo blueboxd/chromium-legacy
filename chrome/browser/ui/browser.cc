@@ -193,7 +193,6 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/file_select_listener.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1093,10 +1092,6 @@ void Browser::MoveTabsToExistingWindow(const std::vector<int> tab_indices,
 }
 
 bool Browser::ShouldDisplayFavicon(content::WebContents* web_contents) const {
-  // No favicon on interstitials.
-  if (web_contents->ShowingInterstitialPage())
-    return false;
-
   // Suppress the icon for the new-tab page, even if a navigation to it is
   // not committed yet. Note that we're looking at the visible URL, so
   // navigations from NTP generally don't hit this case and still show an icon.

@@ -6,4 +6,7 @@ per-file *tts_*=dmazzoni@chromium.org
 per-file *tts_*=dtseng@chromium.org
 per-file *tts_*=katie@chromium.org
 
+# Speech recognition service
+per-file *speech_recognition_service*=evliu@google.com
+
 # COMPONENT: Blink>Speech

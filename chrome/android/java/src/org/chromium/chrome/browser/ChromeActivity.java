@@ -136,6 +136,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorProfileSupplier;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
@@ -215,6 +216,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private C mComponent;
 
     protected ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier =
+            new ObservableSupplierImpl<>();
+    protected ObservableSupplier<Profile> mTabModelProfileSupplier =
+            new TabModelSelectorProfileSupplier(mTabModelSelectorSupplier);
+    protected ObservableSupplierImpl<BookmarkBridge> mBookmarkBridgeSupplier =
             new ObservableSupplierImpl<>();
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -322,6 +327,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // onPreInflationStartup event.
         mComponent = createComponent();
 
+        // There's no corresponding call to removeObserver() for this addObserver() because
+        // mTabModelProfileSupplier has the same lifecycle as this activity.
+        mTabModelProfileSupplier.addObserver((profile) -> {
+            BookmarkBridge oldBridge = mBookmarkBridgeSupplier.get();
+            if (oldBridge != null) oldBridge.destroy();
+            mBookmarkBridgeSupplier.set(profile == null ? null : new BookmarkBridge(profile));
+        });
         // Make sure the root coordinator is created prior to calling super to ensure all the
         // activity lifecycle events are called.
         mRootUiCoordinator = createRootUiCoordinator();
@@ -355,8 +367,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        return new RootUiCoordinator(
-                this, null, getShareDelegateSupplier(), getActivityTabProvider());
+        return new RootUiCoordinator(this, null, getShareDelegateSupplier(),
+                getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier);
     }
 
     private C createComponent() {
@@ -682,7 +694,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegateImpl(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), null, getToolbarManager().getBookmarkBridgeSupplier());
+                getWindow().getDecorView(), null, mBookmarkBridgeSupplier);
     }
 
     /**
@@ -1440,7 +1452,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         // Defense in depth against the UI being erroneously enabled.
-        if (!getToolbarManager().getBookmarkBridge().isEditBookmarksEnabled()) {
+        BookmarkBridge bridge = mBookmarkBridgeSupplier.get();
+        if (bridge == null || !bridge.isEditBookmarksEnabled()) {
             assert false;
             return;
         }

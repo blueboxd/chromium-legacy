@@ -240,12 +240,10 @@ crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translat
 # With removing fling handling logic from renderer Layouttests that are using event sender to send fling events are failing.
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
-crbug.com/857490 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
 crbug.com/857490 fast/events/wheel/wheel-fling-cancel.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
-crbug.com/857490 virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Skip ]
 crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Skip ]
 
 crbug.com/980969 http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
@@ -879,6 +877,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-clip-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-columns-003.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-columns-004.xht [ Failure ]
+crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-contained-absolute.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-containing-002.xht [ Crash Failure ]
 crbug.com/776051 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-count-computed-005.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-fill-auto-002.xht [ Crash Failure ]
@@ -2744,17 +2743,12 @@ crbug.com/1072928 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.http
 
 crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 
+crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
+crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failure ]
+crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Retina ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/workers/Worker-replace-self.any.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/workers/Worker-replace-self.any.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/workers/Worker-replace-self.any.html [ Timeout ]

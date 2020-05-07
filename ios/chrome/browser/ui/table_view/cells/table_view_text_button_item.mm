@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 
+#include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -148,6 +150,24 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
     self.button.contentEdgeInsets = UIEdgeInsetsMake(
         kButtonTitleVerticalContentInset, kButtonTitleHorizontalContentInset,
         kButtonTitleVerticalContentInset, kButtonTitleHorizontalContentInset);
+
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        self.button.pointerInteractionEnabled = YES;
+        // UIKit seems to dynamically adjust the default pointer interaction
+        // behavior based on the size of the button relative to the size of its
+        // container. This produces inconsistent and undesired behavior in some
+        // uses of this table view cell. Removing the pointer shape seems to
+        // produce more consistent and acceptable behavior.
+        self.button.pointerStyleProvider =
+            ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                             UIPointerShape* proposedShape) {
+          return [UIPointerStyle styleWithEffect:proposedEffect shape:nil];
+        };
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
 
     // Vertical stackView to hold label and button.
     self.verticalStackView = [[UIStackView alloc]

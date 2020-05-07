@@ -109,7 +109,7 @@ HotseatInfo ShelfTestApi::GetHotseatInfo() {
   info.swipe_up.swipe_start_location = shelf_widget_bounds.CenterPoint();
 
   // The swipe distance is small enough to avoid the window drag from shelf.
-  const int swipe_distance = ShelfConfig::Get()->GetHotseatFullDragAmount() / 2;
+  const int swipe_distance = hotseat_widget->GetHotseatFullDragAmount() / 2;
 
   gfx::Point swipe_end_location = info.swipe_up.swipe_start_location;
   swipe_end_location.set_y(swipe_end_location.y() - swipe_distance);

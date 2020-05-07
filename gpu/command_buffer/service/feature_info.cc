@@ -244,13 +244,16 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   feature_flags_.enable_shader_name_hashing =
       !command_line->HasSwitch(switches::kDisableShaderNameHashing);
 
+  const auto useGL = command_line->GetSwitchValueASCII(switches::kUseGL);
+  const auto useANGLE = command_line->GetSwitchValueASCII(switches::kUseANGLE);
+
   feature_flags_.is_swiftshader_for_webgl =
-      (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-       gl::kGLImplementationSwiftShaderForWebGLName);
+      (useGL == gl::kGLImplementationSwiftShaderForWebGLName);
 
   feature_flags_.is_swiftshader =
-      (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-       gl::kGLImplementationSwiftShaderName);
+      (useGL == gl::kGLImplementationSwiftShaderName) ||
+      ((useGL == gl::kGLImplementationANGLEName) &&
+       (useANGLE == gl::kANGLEImplementationSwiftShaderName));
 
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to

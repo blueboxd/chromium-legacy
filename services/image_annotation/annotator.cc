@@ -29,7 +29,8 @@ namespace image_annotation {
 
 namespace {
 
-constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
+constexpr size_t kImageAnnotationMaxResponseSize = 1024 * 1024;  // 1MB.
+constexpr size_t kServerLangsMaxResponseSize = 1024;             // 1KB.
 
 // For a given source ID and requested description language, returns the unique
 // image ID string that can be used to look up results from a server response.
@@ -378,7 +379,8 @@ Annotator::ServerRequestInfo& Annotator::ServerRequestInfo::operator=(
 Annotator::ServerRequestInfo::~ServerRequestInfo() = default;
 
 Annotator::Annotator(
-    GURL server_url,
+    GURL pixels_server_url,
+    GURL langs_server_url,
     std::string api_key,
     const base::TimeDelta throttle,
     const int batch_size,
@@ -387,16 +389,17 @@ Annotator::Annotator(
     std::unique_ptr<Client> client)
     : client_(std::move(client)),
       url_loader_factory_(std::move(url_loader_factory)),
-      server_url_(std::move(server_url)),
+      pixels_server_url_(std::move(pixels_server_url)),
+      langs_server_url_(std::move(langs_server_url)),
       api_key_(std::move(api_key)),
       batch_size_(batch_size),
       min_ocr_confidence_(min_ocr_confidence),
       server_languages_({"de", "en", "es", "fr", "hi", "it"}) {
-  // TODO(crbug.com/1070505): Fetch the server languages from the server.
   server_request_timer_ = std::make_unique<base::RepeatingTimer>(
       FROM_HERE, throttle,
       base::BindRepeating(&Annotator::SendRequestBatchToServer,
                           weak_factory_.GetWeakPtr()));
+  FetchServerLanguages();
 }
 
 Annotator::~Annotator() {
@@ -537,9 +540,7 @@ std::string Annotator::FormatJsonRequest(
 // static
 std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
     const GURL& server_url,
-    const std::string& api_key,
-    const std::deque<ServerRequestInfo>::iterator begin,
-    const std::deque<ServerRequestInfo>::iterator end) {
+    const std::string& api_key) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->method = "POST";
 
@@ -554,12 +555,10 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
     resource_request->headers.SetHeader(kGoogApiKeyHeader, api_key);
   }
 
-  // TODO(crbug.com/916420): update this annotation to be more general and to
-  //                         reflect specfics of the UI when it is implemented.
   const net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("image_annotation", R"(
         semantics {
-          sender: "Image Annotation"
+          sender: "Get Image Descriptions from Google"
           description:
             "Chrome can provide image labels (which include detected objects, "
             "extracted text and generated captions) to screen readers (for "
@@ -568,9 +567,13 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
             "URLs and pixels of all images on the page to Google's servers, "
             "which will return labels for content identified inside the "
             "images. This content is made accessible to screen reading "
-            "software."
+            "software. Chrome fetches the list of supported languages from "
+            "the servers and uses that to determine what language to request "
+            "descriptions in."
           trigger: "A page containing images is loaded for a user who has "
-                   "automatic image labeling enabled."
+                   "automatic image labeling enabled. At most once per day, "
+                   "Chrome fetches the list of supported languages as a "
+                   "separate network request."
           data: "Image pixels and URLs. No user identifier is sent along with "
                 "the data."
           destination: GOOGLE_OWNED_SERVICE
@@ -579,8 +582,8 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
           cookies_allowed: NO
           setting:
             "You can enable or disable this feature via the context menu "
-            "for images, or via 'Image Labeling' in Chrome's settings under "
-            "Accessibility. This feature is disabled by default."
+            "for images, or via 'Get Image Descriptions' in Chrome's "
+            "settings under Accessibility. This feature is disabled by default."
           chrome_policy {
             AccessibilityImageLabelsEnabled {
               AccessibilityImageLabelsEnabled: false
@@ -588,13 +591,8 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
           }
         })");
 
-  auto url_loader = network::SimpleURLLoader::Create(
-      std::move(resource_request), traffic_annotation);
-
-  url_loader->AttachStringForUpload(FormatJsonRequest(begin, end),
-                                    "application/json");
-
-  return url_loader;
+  return network::SimpleURLLoader::Create(std::move(resource_request),
+                                          traffic_annotation);
 }
 
 void Annotator::OnJpgImageDataReceived(
@@ -655,14 +653,17 @@ void Annotator::SendRequestBatchToServer() {
   }
 
   // Kick off server communication.
-  ongoing_server_requests_.push_back(
-      MakeRequestLoader(server_url_, api_key_, begin, end));
+  std::unique_ptr<network::SimpleURLLoader> url_loader =
+      MakeRequestLoader(pixels_server_url_, api_key_);
+  url_loader->AttachStringForUpload(FormatJsonRequest(begin, end),
+                                    "application/json");
+  ongoing_server_requests_.push_back(std::move(url_loader));
   ongoing_server_requests_.back()->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&Annotator::OnServerResponseReceived,
                      weak_factory_.GetWeakPtr(), request_keys,
                      --ongoing_server_requests_.end()),
-      kMaxResponseSize);
+      kImageAnnotationMaxResponseSize);
 
   server_request_queue_.erase(begin, end);
 }
@@ -860,6 +861,66 @@ std::string Annotator::ComputePreferredLanguage(
   // If that fails, return the page language. The server can
   // still do OCR and it can log this language request.
   return page_language;
+}
+
+void Annotator::FetchServerLanguages() {
+  if (langs_server_url_.is_empty())
+    return;
+
+  langs_url_loader_ = MakeRequestLoader(langs_server_url_, api_key_);
+  langs_url_loader_->AttachStringForUpload("", "application/json");
+  langs_url_loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&Annotator::OnServerLangsResponseReceived,
+                     weak_factory_.GetWeakPtr()),
+      kServerLangsMaxResponseSize);
+}
+
+void Annotator::OnServerLangsResponseReceived(
+    const std::unique_ptr<std::string> json_response) {
+  if (!json_response) {
+    DVLOG(1) << "Failed to get languages from the server.";
+    return;
+  }
+
+  GetJsonParser()->Parse(
+      *json_response,
+      base::BindOnce(&Annotator::OnServerLangsResponseJsonParsed,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void Annotator::OnServerLangsResponseJsonParsed(
+    base::Optional<base::Value> json_data,
+    const base::Optional<std::string>& error) {
+  if (!json_data.has_value() || error.has_value()) {
+    DVLOG(1) << "Parsing server langs response JSON failed with error: "
+             << error.value_or("No reason reported.");
+    return;
+  }
+
+  const base::Value* const langs = json_data->FindKey("langs");
+  if (!langs || !langs->is_list()) {
+    DVLOG(1) << "No langs in response JSON";
+    return;
+  }
+
+  std::vector<std::string> new_server_languages;
+  for (const base::Value& lang : langs->GetList()) {
+    if (!lang.is_string()) {
+      DVLOG(1) << "Lang in response JSON is not a string";
+      return;
+    }
+    new_server_languages.push_back(lang.GetString());
+  }
+
+  if (!base::Contains(new_server_languages, "en")) {
+    DVLOG(1) << "Server langs don't even include 'en', rejecting";
+    return;
+  }
+
+  // Only swap in the new languages at the end, if all of the other
+  // checks passed.
+  server_languages_.swap(new_server_languages);
 }
 
 }  // namespace image_annotation

@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-FAIL Simulcast getStats contains as many outbound-rtp reports as spatial layers promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
-FAIL Simulcast getStats contains rid stats matching the rids provided promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
+FAIL Simulcast getStats results promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 Harness: the test ran to completion.
 

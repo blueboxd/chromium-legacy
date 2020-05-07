@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">klipptur rammi</translation>
 <translation id="119944043368869598">Hreinsa allt</translation>
 <translation id="1199716647557067911">Ertu viss um að þú viljir slökkva á rofaaðgangi?</translation>
+<translation id="121097972571826261">Áfram um orð</translation>
+<translation id="1229194443904279055">Hætta að velja</translation>
 <translation id="1247372569136754018">Hljóðnemi (innbyggður)</translation>
 <translation id="1252999807265626933">Verið er að hlaða með <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvernig er veðrið?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Kveikt er á stækkunargleri á öllum skjánum. Ýttu aftur á Ctrl+leitarhnappinn+M til að loka því.</translation>
 <translation id="2302092602801625023">Þessum reikningi er stjórnað með Family Link</translation>
 <translation id="2303600792989757991">Víxla gluggayfirliti</translation>
+<translation id="2322173485024759474">Til baka um staf</translation>
 <translation id="2339073806695260576">Ýttu á pennahnappinn á hillunni til að skrifa niður glósu, taka skjámynd, nota leysigeislabendilinn eða stækkunarglerið.</translation>
 <translation id="2341729377289034582">Læst á lóðrétt</translation>
 <translation id="2352467521400612932">Stillingar penna</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Sýna lyklaborðsstillingar</translation>
 <translation id="3846575436967432996">Engar netupplýsingar tiltækar</translation>
 <translation id="385051799172605136">Til baka</translation>
+<translation id="385300504083504382">Byrjun</translation>
 <translation id="3891340733213178823">Ýttu tvisvar á Ctrl+Shift+Q til að skrá þig út.</translation>
 <translation id="3893630138897523026">ChromeVox (raddsvörun)</translation>
 <translation id="3897533311200664389">Hefja textafyrirspurn</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Of margar tilraunir</translation>
 <translation id="5397578532367286026">Stjórnandinn (<ph name="MANAGER_EMAIL" />) getur farið yfir notkun og feril þessa notanda á chrome.com.</translation>
 <translation id="5400461572260843123">Flýtistillingar, ýttu á leit + vinstri til að opna tilkynningamiðstöðina.</translation>
+<translation id="5428899915242071344">Byrja að velja</translation>
 <translation id="5430931332414098647">Skynditjóðrun</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Öllum tiltækum notendum hefur þegar verið bætt við þessa lotu.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Knýr tengd USB-C tæki</translation>
 <translation id="6790428901817661496">Spila</translation>
 <translation id="6803622936009808957">Ekki var hægt að spegla skjái vegna þess að engin studd upplausn fannst. Skjáborð hefur verið framlengt í staðinn.</translation>
+<translation id="6818242057446442178">Til baka um orð</translation>
 <translation id="6820676911989879663">Taktu pásu!</translation>
 <translation id="6857811139397017780">Virkja <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Slökkt á flýtileið</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Fyrri valmynd</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Búa til glósu</translation>
+<translation id="8371779926711439835">Áfram um staf</translation>
 <translation id="8375916635258623388">Þetta <ph name="DEVICE_NAME" /> og síminn þinn tengjast sjálfkrafa</translation>
 <translation id="8388750414311082622">Ekki er hægt að fjarlægja fyrra skjáborð.</translation>
 <translation id="8392451568018454956">Valmynd valkosta fyrir <ph name="USER_EMAIL_ADDRESS" /></translation>

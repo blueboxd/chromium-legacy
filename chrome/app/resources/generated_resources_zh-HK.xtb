@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">應用程式視窗</translation>
 <translation id="1531275250079031713">顯示「新增 Wi-Fi」對話框</translation>
 <translation id="1536754031901697553">正在解除連結…</translation>
+<translation id="1537254971476575106">全螢幕放大鏡</translation>
 <translation id="15373452373711364">大型滑鼠游標</translation>
 <translation id="1540605929960647700">啟用示範模式</translation>
 <translation id="1542514202066550870">此分頁正在將 VR 內容投放至眼罩。</translation>
@@ -1163,6 +1164,7 @@
 <translation id="2501173422421700905">憑證暫時保留</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2501797496290880632">按下快速鍵</translation>
+<translation id="2501920221385095727">相黏鍵</translation>
 <translation id="2502441965851148920">已啟用自動更新功能。您的管理員已停用手動更新功能。</translation>
 <translation id="2502719318159902502">完整存取權</translation>
 <translation id="2505127913256479918">此受監管帳戶即將被移除</translation>
@@ -1548,6 +1550,7 @@
 <translation id="2993517869960930405">應用程式資料</translation>
 <translation id="2996286169319737844">系統已使用您的同步密碼短語加密資料。Google Pay 的付款方法和地址不會包括在內。</translation>
 <translation id="2996722619877761919">長邊翻頁</translation>
+<translation id="3000461861112256445">單聲道音效</translation>
 <translation id="3001144475369593262">兒童帳戶</translation>
 <translation id="3003144360685731741">慣用網絡</translation>
 <translation id="3003623123441819449">CSS 快取</translation>
@@ -1685,7 +1688,7 @@
 <translation id="3181954750937456830">安全瀏覽 (保護您和裝置免受危險網站攻擊)</translation>
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">個人檔案匯入工具</translation>
-<translation id="3183944777708523606">顯示器安排</translation>
+<translation id="3183944777708523606">顯示器排列</translation>
 <translation id="3184536091884214176">設定或管理 CUPS 打印機。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="3188257591659621405">我的檔案</translation>
 <translation id="3188465121994729530">移動平均</translation>
@@ -2481,6 +2484,7 @@
 <translation id="4211851069413100178">傳送使用情況和診斷資料。自動將診斷、裝置及應用程式的使用情況資料傳送至 Google，協助改善您的 Android 使用體驗。這些資料將有助改善系統和應用程式的穩定性和其他效能。部分彙整資料也會用於協助 Google 應用程式與合作夥伴 (例如 Android 開發人員)。擁有者可強制執行此<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。擁有者可選擇是否將此裝置的診斷和使用情況資料傳送給 Google。如果已開啟其他「網絡及應用程式活動記錄」設定，系統可能會將此資料儲存至您的 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">匯出</translation>
 <translation id="42137655013211669">伺服器已禁止存取此資源。</translation>
+<translation id="4217571870635786043">語音輸入</translation>
 <translation id="4218274196133425560">移除 <ph name="HOST_NAME" /> 的例外情況</translation>
 <translation id="4220648711404560261">啟用時發生錯誤。</translation>
 <translation id="4222772810963087151">版本詳細資料</translation>
@@ -3165,6 +3169,7 @@
 <translation id="5204967432542742771">輸入密碼</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="520621735928254154">憑證匯入錯誤</translation>
+<translation id="5207949376430453814">突顯文字插入符號</translation>
 <translation id="5209320130288484488">找不到裝置</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
 <translation id="5213481667492808996">「<ph name="NAME" />」的數據服務現可使用</translation>
@@ -5000,7 +5005,7 @@
 <translation id="7662283695561029522">輕觸即可設定</translation>
 <translation id="7663719505383602579">接收端：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7664620655576155379">不支援的藍牙裝置：「<ph name="DEVICE_NAME" />」。</translation>
-<translation id="7665082356120621510">預留大小</translation>
+<translation id="7665082356120621510">預留空間大小</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
 <translation id="7665940458857700755">此操作會清除 <ph name="SITE_GROUP_NAME" /> 儲存的所有資料和 Cookie，以及當中包含的網站。</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN 不正確。您還可再試 1 次。}other{PIN 不正確。您還可再試 # 次。}}</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">觀看導覽介紹</translation>
 <translation id="7766838926148951335">接受權限</translation>
 <translation id="7768770796815395237">變更</translation>
+<translation id="7768784765476638775">選取以朗讀</translation>
 <translation id="7769672763586021400">型號識別碼</translation>
 <translation id="7770612696274572992">從其他裝置複製的圖片</translation>
 <translation id="7770651108375708429">中斷 Wi-Fi 連線</translation>

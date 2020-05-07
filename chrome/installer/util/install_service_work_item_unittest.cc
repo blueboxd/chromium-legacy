@@ -161,6 +161,8 @@ TEST_F(InstallServiceWorkItemTest, DISABLED_Do_FreshInstall) {
             key.Open(HKEY_LOCAL_MACHINE, kIidTLBRegPath, KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
   EXPECT_EQ(base::win::String16FromGUID(kIid), value);
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"Version", &value));
+  EXPECT_EQ(L"1.0", value);
 
   // Check TypeLib registration.
   EXPECT_EQ(ERROR_SUCCESS,

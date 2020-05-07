@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">की शोधा, नंतर टाइप करण्यासाठी उचला</translation>
 <translation id="1012173283529841972">सूची आयटम</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">दोन बोटांनी उजवीकडे स्वाइप करा</translation>
 <translation id="1022586497894531524">तुम्ही ChromeVox वाचिक फीडबॅक पहिल्या वेळी वापरत आहात का? हे जलद ट्युटोरियल ChromeVox सोबत सुरुवात करण्यासाठी आवश्यक गोष्टी समजावून सांगते.</translation>
 <translation id="1025074108959230262">रोचक मोड अक्षम</translation>
 <translation id="1031961866430398710">नंतर</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">मागील सूची आयटम नाही</translation>
 <translation id="1114836634143403764">सूचना</translation>
 <translation id="1120743664840974483">{"a": "अल्फा", "b": "ब्रेव्हो", "c": "चार्ली", "d": "डेल्टा", "e": "इको", "f": "फॉक्सट्रॉट", "g": "गोल्फ", "h": "हॉटेल", "i": "इंडिया", "j": "जुलिएट","k": "किलो", "l": "लिमा", "m": "माइक", "n": "नोव्हेंबर", "o": "ऑस्कर","p": "पापा", "q": "क्वेबेक", "r": "रोमिओ", "s": "सीएरा", "t": "टँगो", "u": "युनिफॉर्म", "v": "व्हिक्टर", "w": "व्हिस्की","x": "एक्सरे", "y": "यंकी", "z": "झुलू"}</translation>
+<translation id="1120938014254001895">दोन बोटांनी वरच्या दिशेला स्वाइप करा</translation>
 <translation id="1126928665165112660">तिर्यक नाही</translation>
 <translation id="113582498867142724"><ph name="NUM" /> आयटमसह <ph name="TAG" /> संकलन</translation>
 <translation id="1161762950103988776">यावर जा</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">पुढील ग्राफिक</translation>
 <translation id="1756785467854861272">गडद किरमिजी तांबडा</translation>
+<translation id="1765245556747822181">एका बोटाने वरच्या दिशेला स्वाइप करा</translation>
 <translation id="1771761307086386028">उजवीकडे स्क्रोल करा</translation>
 <translation id="1781173782405573156">की द्वारे पास करा</translation>
 <translation id="1787176709638001873">पासवर्ड संपादन मजकूर</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">बोलण्‍याचा दर वाढवा</translation>
 <translation id="2267538686624070261">शब्दलेखनाची चूक सुधारली नाही</translation>
 <translation id="2267945578749931355">पुढील वर्ण</translation>
+<translation id="2278490101488436824">तीन बोटांनी डावीकडे स्वाइप करा</translation>
 <translation id="2305942658236913680">पुढील शीर्षक नाही</translation>
 <translation id="2311237334957139798">ग्रॅन्युलॅरिटीवर मागीलवर हलवा</translation>
 <translation id="2314393392395134769">सबस्क्रिप्ट नाही</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">ग्रंथसूची</translation>
 <translation id="2873259058405069099">सारणीच्या सुरूवातीस जा</translation>
 <translation id="287383510823843610">गडद नारिंगी</translation>
+<translation id="2879867157561757640">तीन बोटांनी खालच्या दिशेला स्वाइप करा</translation>
 <translation id="288178314850623291">विशिष्ट प्रकारच्या घटकांवर जाण्यासाठी यावर जा आदेशांचा वापर करा. शीर्षलेखांमध्ये पुढे जाण्यासाठी, Search + H किंवा मागे जाण्यासाठी Search + Shift + H दाबा.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{मिनिट}other{मिनिटे}}</translation>
 <translation id="2894654529758326923">माहिती</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{डावा महिरपी कंस}other{# डावे महिरपी कंस}}</translation>
 <translation id="2909584066358367921">पुढील बटण नाही</translation>
 <translation id="2911433807131383493">ChromeVox ट्यूटोरियल उघडा</translation>
+<translation id="2912405967290226587">तीन बोटांनी उजवीकडे स्वाइप करा</translation>
 <translation id="2937799153569150791">पुढील पातळी तीन शीर्षक नाही</translation>
 <translation id="2942710183375260152">गडद राखाडी निळा</translation>
 <translation id="2943596527105977722">गडद सोनेरी</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">निळसर हिरवा</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{1 टॅब}other{# टॅब}}</translation>
 <translation id="2972205263822847197">टूल टीप</translation>
+<translation id="297825089465017871">दोन बोटांनी डावीकडे स्वाइप करा</translation>
 <translation id="2998131015536248178">मागील वर्ण</translation>
 <translation id="2999559350546931576">पीच कमी करा</translation>
 <translation id="3014130421870723208">@ed 8dot</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">ChromeVox पर्याय</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> मेनू उघडला</translation>
 <translation id="3060880924447482063">आयटमनुसार हलवण्यासाठी डावीकडे किंवा उजवीकडे स्वाइप करा</translation>
+<translation id="3070245424257836917">तीन बोटांनी वरच्या दिशेला स्वाइप करा</translation>
 <translation id="3078345202707391975">पुढील स्तर 2 शीर्षक</translation>
 <translation id="3078740164268491126">सारणी</translation>
 <translation id="3082249673510793544">मागे स्क्रोल करा</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">पुढील स्तंभावर जा</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">मागील महत्त्वाची खूण</translation>
+<translation id="4710166929009737753">एका बोटाने उजवीकडे स्वाइप करा</translation>
 <translation id="4712898966495541134">निवडीचा शेवट</translation>
 <translation id="4740661827607246557">मदत आदेश</translation>
 <translation id="4755857887974653209">ChromeVox अक्षम करा</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">लिंबासारखा पिवळा</translation>
 <translation id="6816066673340002913">फिकट सोनेरी</translation>
+<translation id="6826226459053491773">दोन बोटांनी खालच्या दिशेला स्वाइप करा</translation>
 <translation id="6833103209700200188">तळटीप</translation>
 <translation id="6837853484260746864">आवाज निवडा:</translation>
 <translation id="6858047746862060282">उपोद्घात</translation>
+<translation id="6859876496651143278">एका बोटाने डावीकडे स्वाइप करा</translation>
 <translation id="6865519907510167493">शब्दलेखनाची चूक आहे</translation>
 <translation id="6894148351896207544">सध्याची वेळ आणि तारीख बोला</translation>
 <translation id="6896758677409633944">कॉपी करा</translation>
@@ -994,6 +1005,7 @@
 <translation id="923331726185079994">ChromeVox अपडेट केला</translation>
 <translation id="93384979447910801">गडद निळसर हिरवा</translation>
 <translation id="948171205378458592">बोलण्याचा दर कमी करा</translation>
+<translation id="958854023026327378">एका बोटाने खालच्या दिशेला स्वाइप करा</translation>
 <translation id="962913030769097253">पुढील स्तर 1 मथळा</translation>
 <translation id="966588271015727539">ब्लूटूथ ब्रेल डिस्प्ले निवडा</translation>
 <translation id="973955474346881951">स्‍टिकी मोड सक्षम/अक्षम करा</translation>

@@ -329,7 +329,7 @@
 <translation id="143027896309062157">તમે મુલાકાત લો છો તે વેબસાઇટ્સ અને તમારા કમ્પ્યુટર પરના તમારા ડેટાને વાંચો અને બદલો</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
 <translation id="1431188203598586230">ફાયનલ સૉફ્ટવેર અપડેટ</translation>
-<translation id="1431432486300429272">Google, Search અને અન્ય Googleની સેવાઓને મનગમતી બનાવવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે. તમે કે તમારા ભાગીદાર કોઈપણ સમયે myaccount.google.com/activitycontrols/search પર જઈને આમાં ફેરફાર કરી શકો છો</translation>
+<translation id="1431432486300429272">Google, Search અને અન્ય Googleની સેવાઓને મનગમતી બનાવવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે. તમે કે તમારા માતાપિતા કોઈપણ સમયે myaccount.google.com/activitycontrols/search પર જઈને આમાં ફેરફાર કરી શકે છે</translation>
 <translation id="1432581352905426595">શોધ એંજિન્સ સંચાલિત કરો</translation>
 <translation id="1433811987160647649">ઍક્સેસ કરતાં પહેલાં પૂછો</translation>
 <translation id="1434696352799406980">આ તમારા સ્ટાર્ટઅપ પેજ, નવું ટેબ પેજ, શોધ એંજિન અને પિન કરેલ ટેબને રીસેટ કરશે. તે તમામ એક્સટેન્શનને પણ બંધ કરશે અને કુકી જેવો અસ્થાયી ડેટા પણ કાઢી નાંખશે. તમારા બુકમાર્ક, ઇતિહાસ અને સાચવેલાં પાસવર્ડ કાઢી નાંખવામાં આવશે નહિ.</translation>
@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">ઍપ્લિકેશન વિંડો</translation>
 <translation id="1531275250079031713">'નવું વાઇ-ફાઇ કનેક્શન ઉમેરો' સંવાદ બતાવો</translation>
 <translation id="1536754031901697553">ડિસ્કનેક્ટ થઈ રહ્યું છે…</translation>
+<translation id="1537254971476575106">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
 <translation id="1540605929960647700">ડેમો મોડ ચાલુ કરો</translation>
 <translation id="1542514202066550870">આ ટૅબ હૅડસેટ પર VR કન્ટેન્ટ પ્રસ્તુત કરી રહ્યું છે.</translation>
@@ -1160,6 +1161,7 @@
 <translation id="2501173422421700905">પ્રમાણપત્ર હોલ્ડ પર છે</translation>
 <translation id="2501278716633472235">પાછા જાઓ</translation>
 <translation id="2501797496290880632">એક શૉર્ટકટ લખો</translation>
+<translation id="2501920221385095727">સ્ટિકી કી</translation>
 <translation id="2502441965851148920">સ્વચલિત અપડેટ્સ સક્ષમ કરેલ છે. તમારા વ્યવસ્થાપક દ્વારા મેન્યુઅલ અપડેટ્સ અક્ષમ કરવામાં આવ્યાં છે.</translation>
 <translation id="2502719318159902502">સંપૂર્ણ ઍક્સેસ</translation>
 <translation id="2505127913256479918">આ નિરીક્ષિત એકાઉન્ટને ટૂંક સમયમાં કાઢી નાખવામાં આવશે</translation>
@@ -1545,6 +1547,7 @@
 <translation id="2993517869960930405">ઍપ્લિકેશન માહિતી</translation>
 <translation id="2996286169319737844">ડેટા તમારા સિંક પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કર્યો હતો. આમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી.</translation>
 <translation id="2996722619877761919">લાંબી કિનારી પર ફ્લિપ કરો</translation>
+<translation id="3000461861112256445">મૉનો ઑડિઓ</translation>
 <translation id="3001144475369593262">બાળકના એકાઉન્ટ</translation>
 <translation id="3003144360685731741">પસંદગીના નેટવર્ક્સ</translation>
 <translation id="3003623123441819449">CSS કૅશ મેમરી</translation>
@@ -2479,6 +2482,7 @@
 <translation id="4211851069413100178">વપરાશ અને નિદાનનો ડેટા મોકલો. Googleને નિદાન, ડિવાઇસ અને ઍપ વપરાશનો ડેટા ઑટોમૅટિક રીતે મોકલીને તમારા Android અનુભવને બહેતર બનાવવામાં સહાય કરો. આ સિસ્ટમ અને ઍપની સ્થિરતા અને અન્ય સુધારણાઓમાં સહાય કરશે. એકત્રીકરણ કરેલો કેટલોક ડેટા Google ઍપ અને ભાગીદારોને પણ મદદ કરશે, જેમ કે Android ડેવલપર. આ <ph name="BEGIN_LINK1" />સેટિંગ<ph name="END_LINK1" /> માલિક દ્વારા લાગુ કરવામાં આવેલ છે. માલિક, Googleને આ ડિવાઇસ માટે નિદાન અને વપરાશ ડેટા મોકલવાનું પસંદ કરી શકે છે. જો તમારી વધારાની વેબ અને ઍપ પ્રવૃત્તિ સેટિંગ ચાલુ હોય, તો આ ડેટા તમારા Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે. <ph name="BEGIN_LINK2" />વધુ જાણો<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">નિકાસ કરો</translation>
 <translation id="42137655013211669">સર્વર દ્વારા આ સંસાધનની અ‍ૅક્સેસ નિષિદ્ધ હતી.</translation>
+<translation id="4217571870635786043">ડિક્ટેશન</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> માટે અપવાદ કાઢી નાખો</translation>
 <translation id="4220648711404560261">સક્રિયકરણ દરમ્યાન એક ભૂલ આવી.</translation>
 <translation id="4222772810963087151">બિલ્ડની વિગતો</translation>
@@ -2844,7 +2848,7 @@
 <translation id="4739639199548674512">ટિકિટ</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ઍપ્લિકેશનો કેવી રીતે અપલોડ કરવી તે જાણો<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{સાઇટને અનમ્યૂટ કરો}one{સાઇટને અનમ્યૂટ કરો}other{સાઇટને અનમ્યૂટ કરો}}</translation>
-<translation id="4746351372139058112">સંદેશા</translation>
+<translation id="4746351372139058112">Messages</translation>
 <translation id="4750394297954878236">સૂચનો</translation>
 <translation id="475088594373173692">પ્રથમ વપરાશકર્તા</translation>
 <translation id="4751476147751820511">મોશન અથવા લાઇટ સેન્સર</translation>
@@ -3163,6 +3167,7 @@
 <translation id="5204967432542742771">પાસવર્ડ દાખલ કરો</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />"ને ડિલીટ કરી દઈએ?</translation>
 <translation id="520621735928254154">પ્રમાણપત્ર આયાત કરવામાં ભૂલ</translation>
+<translation id="5207949376430453814">ટેક્સ્ટ કૅરેટને હાઇલાઇટ કરો</translation>
 <translation id="5209320130288484488">કોઈ ઉપકરણો મળ્યાં નથી</translation>
 <translation id="5210365745912300556">ટૅબ બંધ કરો</translation>
 <translation id="5213481667492808996">તમારી '<ph name="NAME" />' ડેટા સેવા ઉપયોગમાં લેવા માટે તૈયાર છે</translation>
@@ -5078,6 +5083,7 @@ USB ડિવાઇસ</translation>
 <translation id="7766807826975222231">એક મુલાકાત લો</translation>
 <translation id="7766838926148951335">પરવાનગીઓ સ્વીકારો</translation>
 <translation id="7768770796815395237">બદલો</translation>
+<translation id="7768784765476638775">સાંભળવા માટે પસંદ કરો</translation>
 <translation id="7769672763586021400">મોડલ ID</translation>
 <translation id="7770612696274572992">અન્ય ડિવાઇસમાંથી કૉપિ કરવામાં આવેલી છબી</translation>
 <translation id="7770651108375708429">વાઇ-ફાઇ ડિસ્કનેક્ટ થયું</translation>

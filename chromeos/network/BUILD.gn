@@ -227,6 +227,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/proxy_config",
     "//components/sync_preferences:test_support",
+    "//components/user_manager:test_support",
     "//crypto",
     "//crypto:test_support",
     "//dbus",

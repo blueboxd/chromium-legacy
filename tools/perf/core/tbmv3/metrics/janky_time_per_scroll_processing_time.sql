@@ -46,23 +46,60 @@
 -- IDs to group them together into scrolls later and the timestamp and duration
 -- to compute the duration of the scroll.
 
+-- Get all processes which are related to Chrome to the best of our current
+-- ability.
+DROP VIEW IF EXISTS ChromeProcessesInfo;
+
+CREATE VIEW ChromeProcessesInfo AS
+  SELECT
+    *
+  FROM process
+  WHERE name IS NOT NULL AND (
+    name = "Browser" OR
+    name = "Renderer" OR
+    name = "Gpu" OR
+    name = "GPU Process" OR
+    name LIKE "com%chrome%"
+  );
+
+-- When working on GestureScrollUpdate events we need to ensure we have all the
+-- events from the browser, renderer, and GPU processes. This query isn't quite
+-- perfect. In system tracing we could have 3 browser processes all in the
+-- background and this would match, but for now its the best we can do, and
+-- should filter 99% (citation needed) of what we want.
+--
+-- See b/151077536 for historical context.
+DROP VIEW IF EXISTS SufficientChromeProcesses;
+
+CREATE VIEW SufficientChromeProcesses AS
+  SELECT
+    CASE WHEN (
+      SELECT COUNT(*) FROM ChromeProcessesInfo
+    ) = 0 THEN
+    FALSE ELSE (
+      SELECT COUNT(*) >= 3 FROM (
+        SELECT name FROM ChromeProcessesInfo GROUP BY name
+    )) END AS haveEnoughProcesses;
+
 DROP VIEW IF EXISTS ScrollBeginsAndEnds;
 
 CREATE VIEW ScrollBeginsAndEnds AS
   SELECT
-    ROW_NUMBER() OVER (ORDER BY ts ASC) AS rowNumber,
-    name,
-    id AS scrollId,
-    ts AS scrollTs,
-    dur AS scrollDur
+    slice.name,
+    slice.id,
+    slice.ts,
+    slice.dur,
+    slice.track_id,
+    EXTRACT_ARG(arg_set_id, 'chrome_latency_info.gesture_scroll_id')
+        AS gestureScrollId,
+    EXTRACT_ARG(arg_set_id, "chrome_latency_info.trace_id") AS traceId
   FROM
     slice
   WHERE
-    name IN (
+    slice.name IN (
       'InputLatency::GestureScrollBegin',
       'InputLatency::GestureScrollEnd'
-    )
-  ORDER BY ts ASC;
+    );
 
 -- Now we take the Begin and the End events and join the information into a
 -- single row per scroll.
@@ -71,13 +108,27 @@ DROP VIEW IF EXISTS JoinedScrollBeginsAndEnds;
 
 CREATE VIEW JoinedScrollBeginsAndEnds AS
   SELECT
-    begin.scrollId AS beginId,
-    begin.scrollTs AS scrollBegin,
-    end.scrollTs + end.scrollDur AS maybeScrollEnd
+    begin.id AS beginId,
+    begin.ts AS scrollBegin,
+    begin.dur AS scrollBeginDur,
+    begin.track_id AS scrollBeginTrackId,
+    begin.traceId AS scrollBeginTraceId,
+    begin.gestureScrollId as gestureScrollId,
+    end.ts AS scrollEndTs,
+    end.ts + end.dur AS maybeScrollEnd,
+    end.traceId AS scrollEndTraceId
   FROM ScrollBeginsAndEnds begin JOIN ScrollBeginsAndEnds end ON
-    begin.rowNumber + 1 = end.rowNumber AND
+    begin.traceId < end.traceId AND
     begin.name = 'InputLatency::GestureScrollBegin' AND
-    end.name = 'InputLatency::GestureScrollEnd';
+    end.name = 'InputLatency::GestureScrollEnd' AND
+    end.ts = (
+      SELECT MIN(ts)
+      FROM ScrollBeginsAndEnds in_query
+      WHERE
+        name = 'InputLatency::GestureScrollEnd' AND
+      in_query.ts > begin.ts
+    ) AND
+    end.gestureScrollId = begin.gestureScrollId;
 
 -- Get the GestureScrollUpdate events by name ordered by timestamp, compute
 -- the number of frames (relative to 60 fps) that each event took. 1.6e+7 is
@@ -87,45 +138,57 @@ CREATE VIEW JoinedScrollBeginsAndEnds AS
 -- We remove updates with |dur| == -1 because this means we have no end event
 -- and can't reasonably determine what it should be. We have separate tracking
 -- to ensure this only happens at the end of the trace.
-
-DROP VIEW IF EXISTS GestureScrollUpdates;
-
-CREATE VIEW GestureScrollUpdates AS
-SELECT
-  ROW_NUMBER() OVER (ORDER BY ts ASC) AS rowNumber,
-  beginId,
-  scrollBegin,
-  CASE WHEN
-    maybeScrollEnd > ts + dur THEN
-      maybeScrollEnd ELSE
-      ts + dur
-    END as scrollEnd,
-  ts as scrollTs,
-  dur as updateDur,
-  id AS scrollId,
-  arg_set_id AS scrollArgSetId,
-  dur AS scrollDur,
--- TODO(nuskos): Replace 1.6e.7 with a sub query that computes the vsync
---               interval for this scroll.
-  dur/1.6e+7 AS scrollFramesExact
-FROM JoinedScrollBeginsAndEnds beginAndEnd LEFT JOIN (
-  SELECT
-    *
-  FROM
-    slice
-  WHERE
-    name = 'InputLatency::GestureScrollUpdate' AND
-    dur != -1 AND
+--
 -- TODO(nuskos): Currently removing updates with dur < 1.5e+7 (15 ms i.e. less
 --               then a vsync interval at 60 fps) is a hack to work around the
 --               fact we don't have typed async events yet. Once we can tell if
 --               an update is coalesced or not we should remove this and instead
 --               check that directly.
-    dur >= 1.5e+7
-) scrollUpdate ON
-  scrollUpdate.ts < beginAndEnd.MaybeScrollEnd AND
-  scrollUpdate.ts >= beginAndEnd.ScrollBegin
-ORDER BY ts ASC;
+
+DROP TABLE IF EXISTS GestureScrollUpdates;
+
+CREATE TABLE GestureScrollUpdates AS
+  SELECT
+    ROW_NUMBER() OVER (
+      ORDER BY scrollGestureScrollId ASC, ts ASC) AS rowNumber,
+    beginId,
+    scrollBegin,
+    scrollBeginDur,
+    scrollBeginTrackId,
+    scrollBeginTraceId,
+    scrollGestureScrollId,
+    CASE WHEN
+      maybeScrollEnd > ts + dur THEN
+        maybeScrollEnd ELSE
+        ts + dur
+      END AS scrollEnd,
+    id,
+    ts,
+    dur,
+    track_id,
+    traceId,
+    isCoalesced,
+    dur/1.6e+7 AS scrollFramesExact
+  FROM JoinedScrollBeginsAndEnds beginAndEnd JOIN (
+    SELECT
+      EXTRACT_ARG(arg_set_id, "chrome_latency_info.trace_id") AS traceId,
+      EXTRACT_ARG(arg_set_id, "chrome_latency_info.is_coalesced")
+        AS isCoalesced,
+      EXTRACT_ARG(arg_set_id, 'chrome_latency_info.gesture_scroll_id')
+        AS scrollGestureScrollId,
+      *
+    FROM
+      slice slice JOIN track ON slice.track_id = track.id
+    WHERE
+      slice.name = 'InputLatency::GestureScrollUpdate' AND
+      slice.dur != -1 AND
+      slice.dur >= 1.5e+7
+  ) scrollUpdate ON
+  scrollUpdate.ts <= beginAndEnd.scrollEndTs AND
+  scrollUpdate.ts >= beginAndEnd.scrollBegin AND
+  scrollUpdate.traceId > beginAndEnd.scrollBeginTraceId AND
+  scrollUpdate.traceId < beginAndEnd.scrollEndTraceId AND
+  scrollUpdate.scrollGestureScrollId = beginAndEnd.gestureScrollId;
 
 -- This takes the GestureScrollUpdate and joins it to the previous row (NULL
 -- if there isn't one) and the next row (NULL if there isn't one). And then
@@ -137,22 +200,33 @@ ORDER BY ts ASC;
 -- (currBeginId == prev/next BeginId). This controls somewhat for variability
 -- of scrolls.
 
-DROP VIEW IF EXISTS ScrollJanksMaybeNull;
+DROP TABLE IF EXISTS ScrollJanksMaybeNull;
 
-CREATE VIEW ScrollJanksMaybeNull AS
+CREATE TABLE ScrollJanksMaybeNull AS
   SELECT
-    ROW_NUMBER() OVER (ORDER BY currScrollTs ASC) AS rowNumber,
-    currBeginId,
-    currUpdateDur,
+    ROW_NUMBER() OVER (
+      ORDER BY currGestureScrollId ASC, currprev.ts ASC) AS rowNumber,
     currScrollDur,
-    currScrollId,
-    currScrollTs,
-    CASE WHEN currBeginId != prevBeginId
+    currprev.id,
+    currprev.ts,
+    currprev.dur,
+    currprev.track_id,
+    currprev.traceId,
+    currGestureScrollId,
+    CASE WHEN
+      currGestureScrollId != prevGestureScrollId OR
+      prevTs IS NULL OR
+      prevTs < currScrollBeginTs OR
+      prevTs > currScrollEndTs
     THEN
       0 ELSE
       currScrollFramesExact > prevScrollFramesExact + 0.5
     END AS prevJank,
-    CASE WHEN currBeginId != next.BeginId
+    CASE WHEN
+      currGestureScrollId != next.scrollGestureScrollId OR
+      next.ts IS NULL OR
+      next.ts < currScrollBeginTs OR
+      next.ts > currScrollEndTs
     THEN
       0 ELSE
       currScrollFramesExact > next.ScrollFramesExact + 0.5
@@ -161,22 +235,28 @@ CREATE VIEW ScrollJanksMaybeNull AS
     currScrollFramesExact,
     next.ScrollFramesExact as nextScrollFramesExact
   FROM (
-   SELECT
-     curr.beginId as currBeginId,
-     curr.updateDur as currUpdateDur,
-     curr.scrollEnd - curr.ScrollBegin as currScrollDur,
-     curr.rowNumber AS currRowNumber,
-     curr.scrollId AS currScrollId,
-     curr.scrollTs as currScrollTs,
-     curr.scrollFramesExact AS currScrollFramesExact,
-     prev.beginId as prevBeginId,
-     prev.scrollFramesExact AS prevScrollFramesExact
-   FROM
-     GestureScrollUpdates curr LEFT JOIN
-     GestureScrollUpdates prev ON prev.rowNumber + 1 = curr.rowNumber
-   ) currprev JOIN
-   GestureScrollUpdates next ON currprev.currRowNumber + 1 = next.rowNumber
-ORDER BY currprev.currScrollTs ASC;
+    SELECT
+      curr.id,
+      curr.ts,
+      curr.dur,
+      curr.track_id,
+      curr.traceId AS traceId,
+      curr.scrollEnd AS currScrollEndTs,
+      curr.ScrollBegin AS currScrollBeginTs,
+      curr.scrollEnd - curr.ScrollBegin as currScrollDur,
+      curr.rowNumber AS currRowNumber,
+      curr.scrollFramesExact AS currScrollFramesExact,
+      curr.scrollGestureScrollId AS currGestureScrollId,
+      prev.ts AS prevTs,
+      prev.beginId AS prevBeginId,
+      prev.scrollGestureScrollId as prevGestureScrollId,
+      prev.scrollFramesExact AS prevScrollFramesExact
+    FROM
+      GestureScrollUpdates curr LEFT JOIN
+      GestureScrollUpdates prev ON prev.rowNumber + 1 = curr.rowNumber
+  ) currprev LEFT JOIN
+  GestureScrollUpdates next ON currprev.currRowNumber + 1 = next.rowNumber
+  ORDER BY currprev.currGestureScrollId ASC, currprev.ts ASC;
 
 -- This just lists outs the rowNumber (which is ordered by timestamp), its jank
 -- status and information about the update and scroll overall. Basically
@@ -187,9 +267,13 @@ DROP VIEW IF EXISTS ScrollJanks;
 CREATE VIEW ScrollJanks AS
   SELECT
     rowNumber,
-    currBeginId,
-    currUpdateDur as currUpdateDur,
+    id,
+    ts,
+    dur,
+    track_id,
+    traceId,
     currScrollDur,
+    currGestureScrollId,
     (nextJank IS NOT NULL AND nextJank) OR
     (prevJank IS NOT NULL AND prevJank)
     AS jank
@@ -214,16 +298,16 @@ CREATE VIEW JankyNanosPerScrollNanosMaybeNull AS
   SELECT
     SUM(jank) as numJankyUpdates,
     SUM(CASE WHEN jank = 1 THEN
-      currUpdateDur ELSE
-      0 END) as jankyNanos,
-    SUM(currUpdateDur) AS totalProcessingNanos,
+      dur ELSE
+      0 END) AS jankyNanos,
+    SUM(dur) AS totalProcessingNanos,
     (
       SELECT sum(scrollDur)
       FROM (
         SELECT
           MAX(currScrollDur) AS scrollDur
         FROM ScrollJanks
-        GROUP BY currBeginId
+        GROUP BY currGestureScrollId
       )
     ) AS scrollNanos
   FROM ScrollJanks;
@@ -237,8 +321,10 @@ CREATE VIEW janky_time_per_scroll_processing_time AS
         totalProcessingNanos IS NULL OR jankyNanos IS NULL OR
         totalProcessingNanos = 0 THEN
           0.0 ELSE
-          (CAST(jankyNanos AS FLOAT) / CAST(totalProcessingNanos AS FLOAT)) * 100.0
-        END
+          (
+          CAST(jankyNanos AS FLOAT) /
+          CAST(totalProcessingNanos AS FLOAT)
+          ) * 100.0 END
     FROM JankyNanosPerScrollNanosMaybeNull) AS jankyPercentage,
     (SELECT
       COALESCE(scrollNanos, 0) / 1000000

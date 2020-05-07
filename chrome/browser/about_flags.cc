@@ -127,6 +127,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/ui_devtools/switches.h"
 #include "components/version_info/version_info.h"
 #include "components/viz/common/features.h"
@@ -2283,7 +2284,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kHideShelfControlsInTabletMode)},
     {"shelf-app-scaling", flag_descriptions::kShelfAppScalingName,
      flag_descriptions::kShelfAppScalingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kShelfAppScaling)},
+     FEATURE_VALUE_TYPE(ash::features::kShelfAppScaling)},
     {"shelf-hotseat", flag_descriptions::kShelfHotseatName,
      flag_descriptions::kShelfHotseatDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShelfHotseat)},
@@ -5032,10 +5033,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAggregatedMlAppRankingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAggregatedMlAppRanking)},
 
-    {"scalable-app-list", flag_descriptions::kScalableAppListName,
-     flag_descriptions::kScalableAppListDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kScalableAppList)},
-
     {"fuzzy-app-search", flag_descriptions::kFuzzyAppSearchName,
      flag_descriptions::kFuzzyAppSearchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableFuzzyAppSearch)},
@@ -5495,6 +5492,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kDiceWebSigninInterceptionFeature)},
 #endif  // ENABLE_DICE_SUPPORT
 
+    {"enable-translate-sub-frames",
+     flag_descriptions::kEnableTranslateSubFramesName,
+     flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(translate::kTranslateSubFrames)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -5538,12 +5540,6 @@ bool ShouldSkipNonDeprecatedFeatureEntry(const FeatureEntry& entry) {
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
 #if defined(OS_CHROMEOS)
-  // Don't expose mash on stable channel.
-  if (!strcmp("mash", entry.internal_name) &&
-      channel == version_info::Channel::STABLE) {
-    return true;
-  }
-
   // enable-ui-devtools is only available on for non Stable channels.
   if (!strcmp(ui_devtools::switches::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {

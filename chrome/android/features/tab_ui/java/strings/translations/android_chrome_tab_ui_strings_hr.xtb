@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Pregled</translation>
 <translation id="5073204694187207510">Sakrij rešetku na cijelom zaslonu</translation>
 <translation id="5082793167783849073">Izradom grupe možete brzo usporediti stranice. Da biste započeli, dodirnite i držite vezu.</translation>
+<translation id="5533021382642990449">Prikaži kasnije</translation>
 <translation id="5580090775658607195">Kartice su grupirane (njih <ph name="TAB_COUNT" />)</translation>
 <translation id="58326064309361797">Povucite kartice da biste ih grupirali</translation>
 <translation id="6040143037577758943">Zatvori</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Odbacite prijedloge.</translation>
 <translation id="814503310257431685">Pogledaj sve</translation>
 <translation id="8205266828577616993">Premjestite karticu gore</translation>
+<translation id="8304833501377495048">Želite li da se vrpca kartica više ne prikazuje?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Zatvori <ph name="TABS_COUNT_ONE" /> odabranu karticu}one{Zatvori <ph name="TABS_COUNT_MANY" /> odabranu karticu}few{Zatvori <ph name="TABS_COUNT_MANY" /> odabrane kartice}other{Zatvori <ph name="TABS_COUNT_MANY" /> odabranih kartica}}</translation>
+<translation id="8749939518995770034">Zatvorena vrpca kartica</translation>
 <translation id="9150694013019234766">Prebacujte se između kartica u grupi kartica pri dnu zaslona</translation>
 <translation id="9169594135889675189">Dodaj novu karticu grupi</translation>
 <translation id="959682366969460160">Organizirajte se</translation>

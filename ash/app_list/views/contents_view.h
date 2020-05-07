@@ -42,7 +42,6 @@ class AppsContainerView;
 class AppsGridView;
 class AssistantPageView;
 class ExpandArrowView;
-class HorizontalPageContainer;
 class SearchBoxView;
 class SearchResultAnswerCardView;
 class SearchResultListView;
@@ -142,8 +141,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   int NumLauncherPages() const;
 
-  AppsContainerView* GetAppsContainerView();
-
   SearchResultPageView* search_results_page_view() const {
     return search_results_page_view_;
   }
@@ -157,8 +154,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   SearchResultListView* search_result_list_view_for_test() const {
     return search_result_list_view_;
   }
-  HorizontalPageContainer* horizontal_page_container() const {
-    return horizontal_page_container_;
+  AppsContainerView* apps_container_view() const {
+    return apps_container_view_;
   }
   AppListPage* GetPageView(int index) const;
 
@@ -291,7 +288,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Sub-views of the ContentsView. All owned by the views hierarchy.
   AssistantPageView* assistant_page_view_ = nullptr;
-  HorizontalPageContainer* horizontal_page_container_ = nullptr;
+  AppsContainerView* apps_container_view_ = nullptr;
   SearchResultPageView* search_results_page_view_ = nullptr;
   SearchResultAnswerCardView* search_result_answer_card_view_ = nullptr;
   SearchResultTileItemListView* search_result_tile_item_list_view_ = nullptr;

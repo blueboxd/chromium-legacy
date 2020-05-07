@@ -29,7 +29,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -530,12 +529,6 @@ void TabImpl::UpdateBrowserControlsState(JNIEnv* env, jint constraint) {
 
   web_contents_->GetMainFrame()->UpdateBrowserControlsState(
       state_constraint, current_state, animate);
-
-  if (web_contents_->ShowingInterstitialPage()) {
-    web_contents_->GetInterstitialPage()
-        ->GetMainFrame()
-        ->UpdateBrowserControlsState(state_constraint, current_state, animate);
-  }
 }
 
 ScopedJavaLocalRef<jstring> TabImpl::GetGuid(JNIEnv* env) {

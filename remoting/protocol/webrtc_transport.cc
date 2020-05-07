@@ -404,8 +404,6 @@ WebrtcTransport::WebrtcTransport(
     : transport_context_(transport_context),
       event_handler_(event_handler),
       handshake_hmac_(crypto::HMAC::SHA256) {
-  transport_context_->set_relay_mode(TransportContext::RelayMode::TURN);
-
   video_encoder_factory_ = new WebrtcDummyVideoEncoderFactory();
   std::unique_ptr<cricket::PortAllocator> port_allocator =
       transport_context_->port_allocator_factory()->CreatePortAllocator(

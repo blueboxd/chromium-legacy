@@ -23,10 +23,9 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 import org.chromium.url.mojom.Url;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -269,24 +268,24 @@ public class InstalledAppProviderTest {
 
     private static final class FakeFrameUrlDelegate
             implements InstalledAppProviderImpl.FrameUrlDelegate {
-        private URI mFrameUrl;
+        private GURL mFrameUrl;
         private boolean mIncognito;
 
-        public FakeFrameUrlDelegate(String frameUrl) throws URISyntaxException {
+        public FakeFrameUrlDelegate(String frameUrl) {
             setFrameUrl(frameUrl);
         }
 
-        public void setFrameUrl(String frameUrl) throws URISyntaxException {
+        public void setFrameUrl(String frameUrl) {
             if (frameUrl == null) {
-                mFrameUrl = null;
+                mFrameUrl = GURL.emptyGURL();
                 return;
             }
 
-            mFrameUrl = new URI(frameUrl);
+            mFrameUrl = new GURL(frameUrl);
         }
 
         @Override
-        public URI getUrl() {
+        public GURL getUrl() {
             return mFrameUrl;
         }
 
@@ -405,11 +404,7 @@ public class InstalledAppProviderTest {
         setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
         RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
 
-        try {
-            mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_SCHEME);
-        } catch (URISyntaxException e) {
-            mFrameUrlDelegate.setFrameUrl(null);
-        }
+        mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_SCHEME);
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
 
         mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_HOST);

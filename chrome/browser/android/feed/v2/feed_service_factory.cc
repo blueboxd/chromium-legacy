@@ -38,6 +38,9 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
   std::string GetLanguageTag() override {
     return FeedServiceBridge::GetLanguageTag();
   }
+  DisplayMetrics GetDisplayMetrics() override {
+    return FeedServiceBridge::GetDisplayMetrics();
+  }
 };
 
 }  // namespace

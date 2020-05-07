@@ -7,15 +7,11 @@ package org.chromium.weblayer_private;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.StrictMode;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
-import org.chromium.base.PackageManagerUtils;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -63,49 +59,13 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public int countSpecializedHandlers(List<ResolveInfo> infos) {
-        return getSpecializedHandlersWithFilter(infos, null).size();
+        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, false)
+                .size();
     }
 
     @Override
     public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
-        return getSpecializedHandlersWithFilter(infos, null);
-    }
-
-    @VisibleForTesting
-    public static ArrayList<String> getSpecializedHandlersWithFilter(
-            List<ResolveInfo> infos, String filterPackageName) {
-        ArrayList<String> result = new ArrayList<>();
-        if (infos == null) {
-            return result;
-        }
-
-        for (ResolveInfo info : infos) {
-            if (!ExternalNavigationHandler.matchResolveInfoExceptWildCardHost(
-                        info, filterPackageName)) {
-                continue;
-            }
-
-            if (info.activityInfo != null) {
-                result.add(info.activityInfo.packageName);
-            } else {
-                result.add("");
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Check whether the given package is a specialized handler for the given intent
-     *
-     * @param packageName Package name to check against. Can be null or empty.
-     * @param intent The intent to resolve for.
-     * @return Whether the given package is a specialized handler for the given intent. If there is
-     *         no package name given checks whether there is any specialized handler.
-     */
-    public static boolean isPackageSpecializedHandler(String packageName, Intent intent) {
-        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
-                intent, PackageManager.GET_RESOLVED_FILTER);
-        return !getSpecializedHandlersWithFilter(handlers, packageName).isEmpty();
+        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, false);
     }
 
     @Override

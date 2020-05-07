@@ -10,7 +10,6 @@
 #include "url/gurl.h"
 
 namespace content {
-  class InterstitialPage;
   class WebContents;
 }
 
@@ -32,9 +31,6 @@ class SecurityInterstitialControllerClient
 
   ~SecurityInterstitialControllerClient() override;
 
-  void set_interstitial_page(content::InterstitialPage* interstitial_page);
-  content::InterstitialPage* interstitial_page();
-
   // security_interstitials::ControllerClient overrides.
   void GoBack() override;
   bool CanGoBack() override;
@@ -55,7 +51,6 @@ class SecurityInterstitialControllerClient
   content::WebContents* web_contents_;
 
  private:
-  content::InterstitialPage* interstitial_page_;
   PrefService* prefs_;
   const std::string app_locale_;
   // The default safe page we should go to if there is no previous page to go

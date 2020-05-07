@@ -34,8 +34,12 @@ features in Chromium is tracked in the separate
 ## Test-only Code
 
   * Functions used only for testing should be restricted to test-only usages
-    with the `ForTesting` suffix. This is checked at presubmit time to ensure
-    these functions are only called by test files.
+    with the testing suffixes supported by
+    [PRESUMBIT.py](https://chromium.googlesource.com/chromium/src/+/master/
+    PRESUBMIT.py).
+    `ForTesting` is the conventional suffix although similar patterns, such as
+    `ForTest`, are also accepted. These suffixes are checked at presubmit time
+    to ensure the functions are called only by test files.
 
 ## Code formatting
 

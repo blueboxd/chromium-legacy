@@ -706,6 +706,7 @@ enum CSSSampleId {
     kTextUnderlineOffset = 661,
     kContentVisibility = 662,
     kTextDecorationThickness = 663,
+    kPageOrientation = 664,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

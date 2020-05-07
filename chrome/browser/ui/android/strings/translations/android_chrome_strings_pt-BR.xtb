@@ -472,6 +472,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4913169188695071480">Parar de atualizar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /> ao procurar dispositivos…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# página}one{# página}other{# páginas}}</translation>
+<translation id="49268022542405662">Suas senhas serão exportadas e transferidas por download como um arquivo de texto. Elas ficarão visíveis para qualquer pessoa e app que tiver acesso à pasta de destino.</translation>
 <translation id="4932247056774066048">Você está saindo de uma conta gerenciada por <ph name="DOMAIN_NAME" />, por isso seus dados do Chrome serão excluídos deste dispositivo. No entanto, eles permanecerão na sua Conta do Google.</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
@@ -754,6 +755,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7302081693174882195">Detalhes: classificados pela quantidade de dados economizados</translation>
 <translation id="7328017930301109123">Com o Modo Lite, as páginas são carregadas mais rapidamente no Chrome, e há uma economia de dados de até 60 por cento.</translation>
 <translation id="7333031090786104871">Ainda adicionando o site anterior</translation>
+<translation id="7340958967809483333">Opções do Discover</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartilhar 1 item selecionado}one{Compartilhar # item selecionado}other{Compartilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Acessar formas de pagamento</translation>
@@ -818,6 +820,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="780301667611848630">Não</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">Sua economia de dados será exibida aqui</translation>
+<translation id="7835852323729233924">Tocando mídia</translation>
 <translation id="783819812427904514">Ativar som do vídeo</translation>
 <translation id="784934925303690534">Período</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>

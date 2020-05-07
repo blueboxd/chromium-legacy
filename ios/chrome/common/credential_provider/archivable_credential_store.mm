@@ -128,6 +128,14 @@
   });
 }
 
+- (id<Credential>)credentialWithIdentifier:(NSString*)identifier {
+  __block id<Credential> credential;
+  dispatch_sync(self.workingQueue, ^{
+    credential = self.memoryStorage[identifier];
+  });
+  return credential;
+}
+
 #pragma mark - Getters
 
 - (NSMutableDictionary<NSString*, ArchivableCredential*>*)memoryStorage {

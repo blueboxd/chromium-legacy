@@ -9,7 +9,9 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
+#import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_coordinator.h"
@@ -44,6 +46,8 @@
 
 @implementation CredentialProviderViewController
 
+#pragma mark - ASCredentialProviderViewController
+
 - (void)prepareCredentialListForServiceIdentifiers:
     (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
   [self reauthenticateIfNeededWithCompletionHandler:^(
@@ -64,6 +68,40 @@
                                          code:ASExtensionErrorCode::
                                                   ASExtensionErrorCodeFailed
                                      userInfo:nil]];
+    }
+  }];
+}
+
+- (void)provideCredentialWithoutUserInteractionForIdentity:
+    (ASPasswordCredentialIdentity*)credentialIdentity {
+  // reauthenticationModule can't attempt reauth when no password is set. This
+  // means a password shouldn't be retrieved.
+  if (!self.reauthenticationModule.canAttemptReauth) {
+    NSError* error = [[NSError alloc]
+        initWithDomain:ASExtensionErrorDomain
+                  code:ASExtensionErrorCodeUserInteractionRequired
+              userInfo:nil];
+    [self.extensionContext cancelRequestWithError:error];
+    return;
+  }
+  // iOS already gates the password with device auth for
+  // -provideCredentialWithoutUserInteractionForIdentity:. Not using
+  // reauthenticationModule here to avoid a double authentication request.
+  [self provideCredentialForIdentity:credentialIdentity];
+}
+
+- (void)prepareInterfaceToProvideCredentialForIdentity:
+    (ASPasswordCredentialIdentity*)credentialIdentity {
+  [self reauthenticateIfNeededWithCompletionHandler:^(
+            ReauthenticationResult result) {
+    if (result != ReauthenticationResult::kFailure) {
+      [self provideCredentialForIdentity:credentialIdentity];
+    } else {
+      NSError* error =
+          [[NSError alloc] initWithDomain:ASExtensionErrorDomain
+                                     code:ASExtensionErrorCodeUserCanceled
+                                 userInfo:nil];
+      [self.extensionContext cancelRequestWithError:error];
     }
   }];
 }
@@ -114,6 +152,31 @@
   [self.reauthenticationHandler
       verifyUserWithCompletionHandler:completionHandler
       presentReminderOnViewController:self];
+}
+
+// Completes the extension request providing |ASPasswordCredential| that matches
+// the |credentialIdentity| or an error if not found.
+- (void)provideCredentialForIdentity:
+    (ASPasswordCredentialIdentity*)credentialIdentity {
+  NSString* identifier = credentialIdentity.recordIdentifier;
+  id<Credential> credential =
+      [self.credentialStore credentialWithIdentifier:identifier];
+  if (credential) {
+    NSString* password =
+        PasswordWithKeychainIdentifier(credential.keychainIdentifier);
+    if (password) {
+      ASPasswordCredential* ASCredential =
+          [ASPasswordCredential credentialWithUser:credential.user
+                                          password:password];
+      [self.extensionContext completeRequestWithSelectedCredential:ASCredential
+                                                 completionHandler:nil];
+      return;
+    }
+  }
+  NSError* error = [[NSError alloc] initWithDomain:ASExtensionErrorDomain
+                                              code:ASExtensionErrorCodeFailed
+                                          userInfo:nil];
+  [self.extensionContext cancelRequestWithError:error];
 }
 
 #pragma mark - SuccessfulReauthTimeAccessor

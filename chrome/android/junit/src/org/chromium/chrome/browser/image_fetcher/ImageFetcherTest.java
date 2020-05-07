@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.image_fetcher;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -31,6 +33,8 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ImageFetcherTest {
+    private static final String URL = "https://www.example.com/image";
+    private static final String CLIENT_NAME = "client";
     private static final int WIDTH_PX = 100;
     private static final int HEIGHT_PX = 200;
     private static final int EXPIRATION_INTERVAL = 60;
@@ -49,6 +53,9 @@ public class ImageFetcherTest {
         @Override
         public void fetchImage(
                 String url, String clientName, int width, int height, Callback<Bitmap> callback) {}
+
+        @Override
+        public void fetchImage(Params params, Callback<Bitmap> callback) {}
 
         @Override
         public void clear() {}
@@ -105,31 +112,27 @@ public class ImageFetcherTest {
 
     @Test
     public void testFetchImageNoDimensionsAlias() {
-        String url = "url";
-        String client = "client";
-        mImageFetcher.fetchImage(url, client, result -> {});
+        mImageFetcher.fetchImage(URL, CLIENT_NAME, result -> {});
 
         // No arguments should alias to 0, 0.
-        verify(mImageFetcher).fetchImage(eq(url), eq(client), eq(0), eq(0), any());
+        verify(mImageFetcher)
+                .fetchImage(eq(ImageFetcher.Params.create(URL, CLIENT_NAME, 0, 0)), any());
     }
 
     @Test
     public void testCreateParams() {
-        String url = "https://www.example.com/image";
-        String client = "client";
-
         // Verifies params without size specified.
-        ImageFetcher.Params params = ImageFetcher.Params.create(url, client);
-        assertEquals(url, params.url);
-        assertEquals(client, params.clientName);
+        ImageFetcher.Params params = ImageFetcher.Params.create(URL, CLIENT_NAME);
+        assertEquals(URL, params.url);
+        assertEquals(CLIENT_NAME, params.clientName);
         assertEquals(0, params.width);
         assertEquals(0, params.height);
         assertEquals(0, params.expirationIntervalMinutes);
 
         // Verifies params with size.
-        params = ImageFetcher.Params.create(url, client, WIDTH_PX, HEIGHT_PX);
-        assertEquals(url, params.url);
-        assertEquals(client, params.clientName);
+        params = ImageFetcher.Params.create(URL, CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+        assertEquals(URL, params.url);
+        assertEquals(CLIENT_NAME, params.clientName);
         assertEquals(WIDTH_PX, params.width);
         assertEquals(HEIGHT_PX, params.height);
         assertEquals(0, params.expirationIntervalMinutes);
@@ -137,16 +140,48 @@ public class ImageFetcherTest {
 
     @Test
     public void testCreateParamsWithExpirationInterval() {
-        String url = "https://www.example.com/image";
-        String client = "client";
-
         // Verifies params with expiration interval.
         ImageFetcher.Params params = ImageFetcher.Params.createWithExpirationInterval(
-                url, client, WIDTH_PX, HEIGHT_PX, EXPIRATION_INTERVAL);
-        assertEquals(url, params.url);
-        assertEquals(client, params.clientName);
+                URL, CLIENT_NAME, WIDTH_PX, HEIGHT_PX, EXPIRATION_INTERVAL);
+        assertEquals(URL, params.url);
+        assertEquals(CLIENT_NAME, params.clientName);
         assertEquals(WIDTH_PX, params.width);
         assertEquals(HEIGHT_PX, params.height);
         assertEquals(EXPIRATION_INTERVAL, params.expirationIntervalMinutes);
+    }
+
+    @Test
+    public void testParamsEqual() {
+        // Different URLs.
+        ImageFetcher.Params params1 = ImageFetcher.Params.create(URL, CLIENT_NAME);
+        ImageFetcher.Params params2 = ImageFetcher.Params.create("Not the same URL", CLIENT_NAME);
+        assertFalse(params1.equals(params2));
+        assertFalse(params2.equals(params1));
+        assertNotEquals(params1.hashCode(), params2.hashCode());
+
+        // Different width and height.
+        params2 = ImageFetcher.Params.create(URL, CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+        assertFalse(params1.equals(params2));
+        assertFalse(params2.equals(params1));
+        assertNotEquals(params1.hashCode(), params2.hashCode());
+
+        // Different expiration intervals.
+        params1 = ImageFetcher.Params.createWithExpirationInterval(
+                URL, CLIENT_NAME, WIDTH_PX, HEIGHT_PX, EXPIRATION_INTERVAL);
+        assertFalse(params1.equals(params2));
+        assertFalse(params2.equals(params1));
+        assertNotEquals(params1.hashCode(), params2.hashCode());
+
+        // Same parameters comparison.
+        params2 = ImageFetcher.Params.createWithExpirationInterval(
+                URL, CLIENT_NAME, WIDTH_PX, HEIGHT_PX, EXPIRATION_INTERVAL);
+        assertTrue(params1.equals(params2));
+        assertTrue(params2.equals(params1));
+        assertEquals(params1.hashCode(), params2.hashCode());
+
+        // Edge cases.
+        assertFalse(params1.equals(null));
+        assertFalse(params1.equals(new String("Params is not a string.")));
+        assertTrue(params1.equals(params1));
     }
 }

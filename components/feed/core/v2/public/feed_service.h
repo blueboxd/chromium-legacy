@@ -52,6 +52,8 @@ class FeedService : public KeyedService {
     // Returns a string which represents the top locale and region of the
     // device.
     virtual std::string GetLanguageTag() = 0;
+    // Returns display metrics for the device.
+    virtual DisplayMetrics GetDisplayMetrics() = 0;
   };
 
   // Construct a FeedService given an already constructed FeedStream.

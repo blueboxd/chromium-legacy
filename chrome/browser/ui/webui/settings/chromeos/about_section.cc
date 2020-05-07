@@ -4,18 +4,28 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/about_section.h"
 
+#include "base/i18n/message_formatter.h"
 #include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/webui/management_ui.h"
+#include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
+#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
+#include "components/version_info/version_info.h"
 #include "components/version_ui/version_ui_constants.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,9 +38,56 @@ namespace {
 
 const std::vector<SearchConcept>& GetAboutSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "About" search concepts.
+      {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_DETAILED_BUILD,
+       mojom::kDetailedBuildInfoSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kDetailedBuildInfo},
+       {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_DETAILED_BUILD_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAboutChromeOsDetails}},
+      {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_VERSION,
+       mojom::kAboutChromeOsDetailsSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAboutChromeOsDetails}},
+      {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_CHANNEL,
+       mojom::kDetailedBuildInfoSubpagePath,
+       mojom::SearchResultIcon::kChrome,
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kChangeChromeChannel}},
   });
   return *tags;
+}
+
+// Returns the link to the safety info for the device (if it exists).
+std::string GetSafetyInfoLink() {
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (board[0] == "nocturne") {
+    return chrome::kChromeUISafetyPixelSlateURL;
+  }
+  if (board[0] == "eve" || board[0] == "atlas") {
+    return chrome::kChromeUISafetyPixelbookURL;
+  }
+
+  return std::string();
+}
+
+// Returns true if the device is enterprise managed, false otherwise.
+bool IsEnterpriseManaged() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->IsEnterpriseManaged();
 }
 
 bool IsDeviceManaged() {
@@ -145,6 +202,70 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                              user_manager->GetOwnerAccountId().GetUserEmail());
     }
   }
+
+  html_source->AddString(
+      "aboutBrowserVersion",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
+          base::UTF8ToUTF16(version_info::GetVersionNumber()),
+          l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
+                                        ? IDS_VERSION_UI_OFFICIAL
+                                        : IDS_VERSION_UI_UNOFFICIAL),
+          base::UTF8ToUTF16(chrome::GetChannelName()),
+          l10n_util::GetStringUTF16(sizeof(void*) == 8
+                                        ? IDS_VERSION_UI_64BIT
+                                        : IDS_VERSION_UI_32BIT)));
+  html_source->AddString(
+      "aboutProductCopyright",
+      base::i18n::MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
+          base::Time::Now()));
+
+  base::string16 license = l10n_util::GetStringFUTF16(
+      IDS_VERSION_UI_LICENSE, base::ASCIIToUTF16(chrome::kChromiumProjectURL),
+      base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
+  html_source->AddString("aboutProductLicense", license);
+
+  base::string16 os_license = l10n_util::GetStringFUTF16(
+      IDS_ABOUT_CROS_VERSION_LICENSE,
+      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
+  html_source->AddString("aboutProductOsLicense", os_license);
+  base::string16 os_with_linux_license = l10n_util::GetStringFUTF16(
+      IDS_ABOUT_CROS_WITH_LINUX_VERSION_LICENSE,
+      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL),
+      base::ASCIIToUTF16(chrome::kChromeUICrostiniCreditsURL));
+  html_source->AddString("aboutProductOsWithLinuxLicense",
+                         os_with_linux_license);
+  html_source->AddBoolean("aboutEnterpriseManaged", IsEnterpriseManaged());
+  html_source->AddBoolean("aboutIsArcEnabled",
+                          arc::IsArcPlayStoreEnabledForProfile(profile()));
+  html_source->AddBoolean("aboutIsDeveloperMode",
+                          base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              chromeos::switches::kSystemDevMode));
+
+  html_source->AddString("endOfLifeMessage",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_ABOUT_PAGE_LAST_UPDATE_MESSAGE,
+                             ui::GetChromeOSDeviceName(),
+                             base::ASCIIToUTF16(chrome::kEolNotificationURL)));
+
+  std::string safetyInfoLink = GetSafetyInfoLink();
+  html_source->AddBoolean("shouldShowSafetyInfo", !safetyInfoLink.empty());
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  html_source->AddString("aboutTermsURL", chrome::kChromeUITermsURL);
+  html_source->AddLocalizedString("aboutProductTos",
+                                  IDS_ABOUT_TERMS_OF_SERVICE);
+  html_source->AddString(
+      "aboutProductSafety",
+      l10n_util::GetStringUTF16(IDS_ABOUT_SAFETY_INFORMATION));
+  html_source->AddString("aboutProductSafetyURL",
+                         base::UTF8ToUTF16(safetyInfoLink));
+#endif
+}
+
+void AboutSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(std::make_unique<::settings::AboutHandler>());
 }
 
 }  // namespace settings

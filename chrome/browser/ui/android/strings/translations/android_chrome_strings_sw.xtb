@@ -471,6 +471,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="4913169188695071480">Acha kuonyesha upya</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /> huku ukitafuta vifaa...</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{Ukurasa #}other{Kurasa #}}</translation>
+<translation id="49268022542405662">Manenosiri yako yatatumwa na kupakuliwa katika muundo wa faili ya maandishi. Programu na mtu yeyote aliye na uwezo wa kufikia folda atayaona.</translation>
 <translation id="4932247056774066048">Kwa sababu unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME" />, data yako ya Chrome itafutwa kwenye kifaa hiki. Itabaki katika Akaunti yako ya Google.</translation>
 <translation id="4943703118917034429">Uhalisia Pepe</translation>
 <translation id="4943872375798546930">Hakuna matokeo yoyote yaliyopatikana</translation>
@@ -753,6 +754,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7302081693174882195">Maelezo: Imepangwa kulingana na kiasi cha data kilichookolewa</translation>
 <translation id="7328017930301109123">Katika Hali nyepesi, Chrome hupakia kurasa haraka zaidi na huokoa data kwa hadi asilimia 60.</translation>
 <translation id="7333031090786104871">Bado inaongeza tovuti ya awali</translation>
+<translation id="7340958967809483333">Chaguo za Dokezo</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Shiriki kipengee 1 kilichochaguliwa}other{Shiriki vipengee # vilivyochaguliwa}}</translation>
 <translation id="7359002509206457351">Ufikiaji wa njia za kulipa</translation>
@@ -817,6 +819,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="780301667611848630">Hapana</translation>
 <translation id="7810647596859435254">Fungua ukitumia...</translation>
 <translation id="7821588508402923572">Data unayookoa itaonekana hapa</translation>
+<translation id="7835852323729233924">Kucheza maudhui</translation>
 <translation id="783819812427904514">Rejesha sauti ya video</translation>
 <translation id="784934925303690534">Muda</translation>
 <translation id="7851858861565204677">Vifaa vingine</translation>

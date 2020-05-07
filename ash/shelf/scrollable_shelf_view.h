@@ -172,6 +172,13 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
     kNotInScroll
   };
 
+  // Sum of the shelf button size and the gap between shelf buttons.
+  int GetSumOfButtonSizeAndSpacing() const;
+
+  // Decides whether the current first visible shelf icon of the scrollable
+  // shelf should be hidden or fully shown when gesture scroll ends.
+  int GetGestureDragThreshold() const;
+
   // Returns the maximum scroll distance based on the given space for icons.
   float CalculateScrollUpperBound(int available_space_for_icons) const;
 

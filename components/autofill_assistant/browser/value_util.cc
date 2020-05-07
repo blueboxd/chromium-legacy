@@ -203,6 +203,9 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
     case ValueProto::KIND_NOT_SET:
       break;
   }
+  if (value.is_client_side_only()) {
+    out << " (client-side-only)";
+  }
   return out;
 }
 
@@ -226,30 +229,38 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 // Convenience constructors.
-ValueProto SimpleValue(bool b) {
+ValueProto SimpleValue(bool b, bool is_client_side_only) {
   ValueProto value;
   value.mutable_booleans()->add_values(b);
+  if (is_client_side_only)
+    value.set_is_client_side_only(is_client_side_only);
   return value;
 }
 
-ValueProto SimpleValue(const std::string& s) {
+ValueProto SimpleValue(const std::string& s, bool is_client_side_only) {
   ValueProto value;
   value.mutable_strings()->add_values(s);
+  if (is_client_side_only)
+    value.set_is_client_side_only(is_client_side_only);
   return value;
 }
 
-ValueProto SimpleValue(int i) {
+ValueProto SimpleValue(int i, bool is_client_side_only) {
   ValueProto value;
   value.mutable_ints()->add_values(i);
+  if (is_client_side_only)
+    value.set_is_client_side_only(is_client_side_only);
   return value;
 }
 
-ValueProto SimpleValue(const DateProto& proto) {
+ValueProto SimpleValue(const DateProto& proto, bool is_client_side_only) {
   ValueProto value;
   auto* date = value.mutable_dates()->add_values();
   date->set_year(proto.year());
   date->set_month(proto.month());
   date->set_day(proto.day());
+  if (is_client_side_only)
+    value.set_is_client_side_only(is_client_side_only);
   return value;
 }
 
@@ -287,6 +298,15 @@ bool AreAllValuesOfSize(const std::vector<ValueProto>& values,
   return true;
 }
 
+bool ContainsClientOnlyValue(const std::vector<ValueProto>& values) {
+  for (const auto& value : values) {
+    if (value.is_client_side_only()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 int GetValueSize(const ValueProto& value) {
   switch (value.kind_case()) {
     case ValueProto::kStrings:
@@ -312,6 +332,8 @@ base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index) {
     return base::nullopt;
   }
   ValueProto nth_value;
+  if (value.is_client_side_only())
+    nth_value.set_is_client_side_only(value.is_client_side_only());
   switch (value.kind_case()) {
     case ValueProto::kStrings:
       nth_value.mutable_strings()->add_values(
@@ -335,58 +357,6 @@ base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index) {
     case ValueProto::KIND_NOT_SET:
       return base::nullopt;
   }
-}
-
-base::Optional<ValueProto> CombineValues(
-    const std::vector<ValueProto>& values) {
-  if (values.empty()) {
-    return base::nullopt;
-  }
-  auto shared_type = values[0].kind_case();
-  if (!AreAllValuesOfType(values, shared_type)) {
-    return base::nullopt;
-  }
-  if (shared_type == ValueProto::KIND_NOT_SET) {
-    return ValueProto();
-  }
-
-  ValueProto result;
-  for (const auto& value : values) {
-    switch (shared_type) {
-      case ValueProto::kStrings:
-        std::for_each(
-            value.strings().values().begin(), value.strings().values().end(),
-            [&](auto& s) { result.mutable_strings()->add_values(s); });
-        break;
-      case ValueProto::kBooleans:
-        std::for_each(
-            value.booleans().values().begin(), value.booleans().values().end(),
-            [&](auto& b) { result.mutable_booleans()->add_values(b); });
-        break;
-      case ValueProto::kInts:
-        std::for_each(
-            value.ints().values().begin(), value.ints().values().end(),
-            [&](const auto& i) { result.mutable_ints()->add_values(i); });
-        break;
-      case ValueProto::kUserActions:
-        std::for_each(value.user_actions().values().begin(),
-                      value.user_actions().values().end(),
-                      [&](const auto& action) {
-                        *result.mutable_user_actions()->add_values() = action;
-                      });
-        break;
-      case ValueProto::kDates:
-        std::for_each(value.dates().values().begin(),
-                      value.dates().values().end(), [&](const auto& date) {
-                        *result.mutable_dates()->add_values() = date;
-                      });
-        break;
-      case ValueProto::KIND_NOT_SET:
-        NOTREACHED();
-        return base::nullopt;
-    }
-  }
-  return result;
 }
 
 }  // namespace autofill_assistant

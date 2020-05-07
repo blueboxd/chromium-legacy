@@ -86,10 +86,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   Shelf* shelf() const { return shelf_; }
   ShelfModel* model() const { return model_; }
 
-  // Returns the size occupied by |count| app icons. If |with_overflow| is
-  // true, returns the size of |count| app icons followed by an overflow
-  // button.
-  static int GetSizeOfAppIcons(int count);
+  // Returns the size occupied by |count| app buttons. |button_size| indicates
+  // the size of each app button.
+  static int GetSizeOfAppButtons(int count, int button_size);
 
   // Initializes shelf view elements.
   void Init();
@@ -241,6 +240,15 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Whether ShelfView is handling a drag and drop.
   bool IsShelfViewHandlingDragAndDrop() const;
+
+  // Returns the the shelf button size.
+  int GetButtonSize() const;
+
+  // Returns the size of a shelf button icon.
+  int GetButtonIconSize() const;
+
+  // Returns the size of the shelf item ripple ring.
+  int GetShelfItemRippleSize() const;
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {

@@ -78,11 +78,6 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   void OnScanComplete(BinaryUploadService::Result result,
                       DeepScanningClientResponse response);
 
-  // Callback for when analysis settings are required.
-  void OnGotAnalysisSettings(
-      BinaryUploadService::Result result,
-      base::Optional<enterprise_connectors::AnalysisSettings> settings);
-
   // Finishes the request, providing the result through |callback_| and
   // notifying |download_service_|.
   void FinishRequest(DownloadCheckResult result);

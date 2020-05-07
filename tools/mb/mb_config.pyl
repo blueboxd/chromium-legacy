@@ -629,6 +629,7 @@
     },
 
     'internal.chrome.fyi': {
+      'chromeos-amd64-generic-lacros-internal-rel': 'chromeos_amd64-generic_lacros_rel',
       'win-celab-rel': 'official_celab_release_bot',
     },
 

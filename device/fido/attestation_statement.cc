@@ -22,11 +22,11 @@ NoneAttestationStatement::NoneAttestationStatement()
 NoneAttestationStatement::~NoneAttestationStatement() = default;
 
 bool NoneAttestationStatement::
-    IsAttestationCertificateInappropriatelyIdentifying() {
+    IsAttestationCertificateInappropriatelyIdentifying() const {
   return false;
 }
 
-bool NoneAttestationStatement::IsSelfAttestation() {
+bool NoneAttestationStatement::IsSelfAttestation() const {
   return false;
 }
 

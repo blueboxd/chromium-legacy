@@ -58,7 +58,6 @@ def declare_bucket(milestone_vars):
 
   luci.cq_group(
       name = milestone_vars.cq_group,
-      cancel_stale_tryjobs = True,
       retry_config = cq.RETRY_ALL_FAILURES,
       tree_status_host = milestone_vars.tree_status_host,
       watch = cq.refset(

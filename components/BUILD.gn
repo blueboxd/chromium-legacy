@@ -562,6 +562,7 @@ if (!is_ios && !is_fuchsia) {
       "dom_distiller/core/javascript/",
       "security_state/content/testdata/",
       "//content/test/data/",
+      "//third_party/chaijs",
       "//third_party/dom_distiller_js/dist/test/data/",
       "//third_party/mocha",
     ]

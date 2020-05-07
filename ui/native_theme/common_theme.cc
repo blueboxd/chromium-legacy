@@ -33,6 +33,7 @@ base::Optional<SkColor> GetHighContrastColor(
     case NativeTheme::kColorId_TabBottomBorder:
       return color_scheme == NativeTheme::ColorScheme::kDark ? SK_ColorWHITE
                                                              : SK_ColorBLACK;
+    case NativeTheme::kColorId_ButtonCheckedColor:
     case NativeTheme::kColorId_ButtonEnabledColor:
     case NativeTheme::kColorId_FocusedBorderColor:
     case NativeTheme::kColorId_ProminentButtonColor:
@@ -68,6 +69,7 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
     // Button
     case NativeTheme::kColorId_ButtonBorderColor:
       return gfx::kGoogleGrey800;
+    case NativeTheme::kColorId_ButtonCheckedColor:
     case NativeTheme::kColorId_ButtonEnabledColor:
     case NativeTheme::kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue300;
@@ -226,6 +228,7 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return gfx::kGoogleGrey050;
 
     // Buttons
+    case NativeTheme::kColorId_ButtonCheckedColor:
     case NativeTheme::kColorId_ButtonEnabledColor:
       return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_ButtonInkDropShadowColor:

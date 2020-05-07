@@ -109,7 +109,7 @@ enum class SlotChangeType {
   kSuppressSlotChangeEvent,
 };
 
-enum class CloneChildrenFlag { kClone, kSkip };
+enum class CloneChildrenFlag { kSkip, kClone, kCloneWithShadows };
 
 // Whether or not to force creation of a legacy layout object (i.e. disallow
 // LayoutNG).

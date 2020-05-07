@@ -11,7 +11,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -160,28 +159,7 @@ ExtensionMessagePort::ExtensionMessagePort(
       background_host_ptr_(nullptr),
       frame_tracker_(new FrameTracker(this)) {
   content::WebContents* tab = content::WebContents::FromRenderFrameHost(rfh);
-  if (!tab) {
-    content::InterstitialPage* interstitial =
-        content::InterstitialPage::FromRenderFrameHost(rfh);
-    // A RenderFrameHost must be hosted in a WebContents or InterstitialPage.
-    CHECK(interstitial);
-
-    // Only the main frame of an interstitial is supported, because frames in
-    // the interstitial do not trigger RenderFrameCreated / RenderFrameDeleted
-    // on WebContentObservers. Consequently, (1) we cannot detect removal of
-    // RenderFrameHosts, and (2) even if the RenderFrameDeleted is propagated,
-    // then WebContentsObserverSanityChecker triggers a CHECK when it detects
-    // frame notifications without a corresponding RenderFrameCreated.
-    if (!rfh->GetParent()) {
-      // It is safe to pass the interstitial's WebContents here because we only
-      // use it to observe DidDetachInterstitialPage.
-      frame_tracker_->TrackInterstitialFrame(interstitial->GetWebContents(),
-                                             rfh);
-      RegisterFrame(rfh);
-    }
-    return;
-  }
-
+  CHECK(tab);
   frame_tracker_->TrackTabFrames(tab);
   if (include_child_frames) {
     tab->ForEachFrame(base::BindRepeating(&ExtensionMessagePort::RegisterFrame,

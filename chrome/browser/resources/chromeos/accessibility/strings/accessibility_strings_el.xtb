@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Εντοπίστε ένα πλήκτρο και έπειτα σηκώστε το δάκτυλό σας για να πληκτρολογήσετε</translation>
 <translation id="1012173283529841972">Στοιχείο λίστας</translation>
 <translation id="1013742170491673792">αναζήτηση ρόλου</translation>
+<translation id="1014370462248694370">Σύρετε δύο δάκτυλα προς τα δεξιά</translation>
 <translation id="1022586497894531524">Χρησιμοποιείτε τα εκφωνημένα σχόλια του ChromeVox για πρώτη φορά; Αυτός ο γρήγορος οδηγός εξηγεί τα βασικά για να ξεκινήσετε τη χρήση του ChromeVox.</translation>
 <translation id="1025074108959230262">Η λειτουργία διατήρησης ενδιαφέροντος (Sticky) απενεργοποιήθηκε</translation>
 <translation id="1031961866430398710">τότε</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Δεν υπάρχει προηγούμενο στοιχείο στη λίστα.</translation>
 <translation id="1114836634143403764">Πρόταση</translation>
 <translation id="1120743664840974483">{"α": "Αστέρι", "β": "Βάτραχος", "γ": "Γάτα", "δ": "Δέντρο", "ε": "Ελέφαντας", "ζ": "Ζάρι", "η": "Ήλιος", "θ": "Θησαυρός", "ι": "Ιππότης", "κ": "Κότα","λ": "Λαγός", "μ": "Μήλο", "ν": "Νάνος", "ξ": "Ξιφίας", "ο": "Ομπρέλα","π": "Πάπια", "ρ": "Ρόδι", "σ": "Σαλιγκάρι", "τ": "Τρένο", "υ": "Υποβρύχιο", "φ": "Φεγγάρι", "χ": "Χελιδόνι", "ψ": "Ψάρι","ω": "Ώρα"}</translation>
+<translation id="1120938014254001895">Σύρετε δύο δάκτυλα προς τα πάνω</translation>
 <translation id="1126928665165112660">Δεν είναι πλάγια γραφή</translation>
 <translation id="113582498867142724">Συλλογή <ph name="TAG" /> με <ph name="NUM" /> στοιχεία</translation>
 <translation id="1161762950103988776">Μετάβαση</translation>
@@ -106,6 +108,7 @@
 <translation id="1727806147743597030">υποσέλιδο</translation>
 <translation id="174268867904053074">Επόμενο γραφικό</translation>
 <translation id="1756785467854861272">Σκούρο ματζέντα</translation>
+<translation id="1765245556747822181">Σύρετε ένα δάκτυλο προς τα πάνω</translation>
 <translation id="1771761307086386028">Κύλιση δεξιά</translation>
 <translation id="1781173782405573156">Κλειδί διαβίβασης</translation>
 <translation id="1787176709638001873">Επεξεργασία κειμένου κωδικού πρόσβασης</translation>
@@ -134,6 +137,7 @@
 <translation id="2010555995361223825">Μενού ChromeVox</translation>
 <translation id="203030071582665758">Δεν υπάρχει προηγούμενη κεφαλίδα επιπέδου 4.</translation>
 <translation id="2045055672832940894">Δεν υπάρχει προηγούμενο στοιχείο ελέγχου.</translation>
+<translation id="2045606329038304310">Στοιχείο ελέγχου πεδίου φόρμας</translation>
 <translation id="2063539687800151747">Επιγραφή</translation>
 <translation id="2086961585857038472">Επόμενη λέξη</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
@@ -160,6 +164,7 @@
 <translation id="225732394367814946">Αύξηση ταχύτητας ομιλίας</translation>
 <translation id="2267538686624070261">Αποχώρηση από σφάλμα ορθογραφίας</translation>
 <translation id="2267945578749931355">Επόμενος χαρακτήρας</translation>
+<translation id="2278490101488436824">Σύρετε τρία δάκτυλα προς τα αριστερά</translation>
 <translation id="2305942658236913680">Δεν υπάρχει επόμενη κεφαλίδα.</translation>
 <translation id="2311237334957139798">Μετακίνηση στο προηγούμενο επίπεδο ευαισθησίας</translation>
 <translation id="2314393392395134769">Δεν είναι δείκτης</translation>
@@ -233,12 +238,14 @@
 <translation id="2867808975387772810">Βιβλιογραφία</translation>
 <translation id="2873259058405069099">Μετάβαση στην αρχή του πίνακα</translation>
 <translation id="287383510823843610">Σκούρο πορτοκαλί</translation>
+<translation id="2879867157561757640">Σύρετε τρία δάκτυλα προς τα κάτω</translation>
 <translation id="288178314850623291">Χρησιμοποιήστε εντολές μετάβασης για μετάβαση σε συγκεκριμένους τύπους στοιχείων. Για μετάβαση προς τα εμπρός μεταξύ των επικεφαλίδων, πατήστε Αναζήτηση + H ή για μετάβαση προς τα πίσω, πατήστε Αναζήτηση + Shift + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{λεπτό}other{λεπτά}}</translation>
 <translation id="2894654529758326923">Πληροφορίες</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{αριστερό άγκιστρο}other{# αριστερά άγκιστρα}}</translation>
 <translation id="2909584066358367921">Δεν υπάρχει επόμενο κουμπί.</translation>
 <translation id="2911433807131383493">Άνοιγμα εκπαιδευτικού οδηγού ChromeVox</translation>
+<translation id="2912405967290226587">Σύρετε τρία δάκτυλα προς τα δεξιά</translation>
 <translation id="2937799153569150791">Δεν υπάρχει επόμενη κεφαλίδα επιπέδου 3.</translation>
 <translation id="2942710183375260152">Σκούρο μπλε γκρι</translation>
 <translation id="2943596527105977722">Σκούρα χρυσαφί ράβδος</translation>
@@ -246,6 +253,7 @@
 <translation id="2968634799764242930">Πράσινο μαρέν</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{χαρακτήρας "tab"}other{# χαρακτήρες "tab"}}</translation>
 <translation id="2972205263822847197">Επεξήγηση εργαλείου</translation>
+<translation id="297825089465017871">Σύρετε δύο δάκτυλα προς τα αριστερά</translation>
 <translation id="2998131015536248178">Προηγούμενος χαρακτήρας</translation>
 <translation id="2999559350546931576">Μείωση προώθησης</translation>
 <translation id="3014130421870723208">@ed 8dot</translation>
@@ -255,6 +263,7 @@
 <translation id="3046838483509668188">Επιλογές ChromeVox</translation>
 <translation id="3060756054951570867">Το μενού <ph name="TITLE" /> άνοιξε</translation>
 <translation id="3060880924447482063">Σύρετε προς τα αριστερά ή προς τα δεξιά για μετακίνηση ανά στοιχείο</translation>
+<translation id="3070245424257836917">Σύρετε τρία δάκτυλα προς τα πάνω</translation>
 <translation id="3078345202707391975">Επικεφαλίδα επόμενου επιπέδου 2</translation>
 <translation id="3078740164268491126">πίνακας</translation>
 <translation id="3082249673510793544">Κάντε κύλιση προς τα πίσω</translation>
@@ -436,6 +445,7 @@
 <translation id="4391478986194775161">πληροφορίες περιεχομένου</translation>
 <translation id="4402014469255336455">Βαθύ μπλε του ουρανού</translation>
 <translation id="4432457053224379116">Ινδικό κόκκινο</translation>
+<translation id="4437615272777527928">Πληκτρολογήστε για αναζήτηση στα μενού. Χρησιμοποιήστε το επάνω και το κάτω βέλος για περιήγηση μεταξύ των αποτελεσμάτων. Χρησιμοποιήστε το αριστερό και το δεξί βέλος, για να προσαρμόσετε τον δρομέα κειμένου και για να μετακινηθείτε μεταξύ των μενού.</translation>
 <translation id="4457472090507035117">Επιλογή τρέχουσας φωνής:</translation>
 <translation id="4476183483923481720">νέα γραμμή</translation>
 <translation id="4479068155583208887">Πυρότουβλο</translation>
@@ -460,6 +470,7 @@
 <translation id="4677535310137735442">Μετάβαση στην επόμενη στήλη</translation>
 <translation id="4688873778442829762">πλέγμα</translation>
 <translation id="4693675773662933727">Προηγούμενο ορόσημο</translation>
+<translation id="4710166929009737753">Σύρετε ένα δάκτυλο προς τα δεξιά</translation>
 <translation id="4712898966495541134">Τέλος επιλογής</translation>
 <translation id="4740661827607246557">Εντολές βοήθειας</translation>
 <translation id="4755857887974653209">Απενεργοποίηση ChromeVox</translation>
@@ -710,9 +721,11 @@
 <translation id="6793101435925451627">πλαίσιο λίστας</translation>
 <translation id="6815255864998354418">Σιφόν λεμόνι</translation>
 <translation id="6816066673340002913">Παλ χρυσαφί ράβδος</translation>
+<translation id="6826226459053491773">Σύρετε δύο δάκτυλα προς τα κάτω</translation>
 <translation id="6833103209700200188">Υποσέλιδο</translation>
 <translation id="6837853484260746864">Επιλογή φωνής:</translation>
 <translation id="6858047746862060282">Πρόλογος</translation>
+<translation id="6859876496651143278">Σύρετε ένα δάκτυλο προς τα αριστερά</translation>
 <translation id="6865519907510167493">Σφάλμα ορθογραφίας</translation>
 <translation id="6894148351896207544">Εκφώνηση της τρέχουσας ώρας και ημερομηνίας.</translation>
 <translation id="6896758677409633944">Αντιγραφή</translation>
@@ -995,6 +1008,7 @@
 <translation id="923331726185079994">Έγινε ενημέρωση του ChromeVox</translation>
 <translation id="93384979447910801">Σκούρο πράσινο μαρέν</translation>
 <translation id="948171205378458592">Μείωση ταχύτητας ομιλίας</translation>
+<translation id="958854023026327378">Σύρετε ένα δάκτυλο προς τα κάτω</translation>
 <translation id="962913030769097253">Επικεφαλίδα επόμενου επιπέδου 1</translation>
 <translation id="966588271015727539">Επιλέξτε μια συσκευή μπράιγ Bluetooth</translation>
 <translation id="973955474346881951">Ενεργοποίηση/απενεργοποίηση λειτουργίας σταθεροποίησης</translation>

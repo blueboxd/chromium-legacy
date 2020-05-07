@@ -20,6 +20,7 @@ include_rules = [
   "+media/base",
   "+media/video/video_encode_accelerator.h",
   "+mojo",
+  "+printing",
   "+storage/browser/file_system",
   "+third_party/re2",
   "+third_party/skia",

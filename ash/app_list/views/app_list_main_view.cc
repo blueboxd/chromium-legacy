@@ -116,7 +116,7 @@ void AppListMainView::SetDragAndDropHostOfCurrentAppList(
 }
 
 PaginationModel* AppListMainView::GetAppsPaginationModel() {
-  return contents_view_->GetAppsContainerView()
+  return contents_view_->apps_container_view()
       ->apps_grid_view()
       ->pagination_model();
 }
@@ -159,7 +159,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
 }
 
 void AppListMainView::CancelDragInActiveFolder() {
-  contents_view_->GetAppsContainerView()
+  contents_view_->apps_container_view()
       ->app_list_folder_view()
       ->items_grid_view()
       ->EndDrag(true);

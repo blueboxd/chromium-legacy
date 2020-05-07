@@ -415,7 +415,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/shadows-core-3.2.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric-shadows/shadows-core/src/main/java"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_support_test_runner/rules_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/blink/public/blink_headers_java.jar"/>
-    <classpathentry kind="lib" path="../src/out/Debug/lib.java/ui/android/ui_full_java.interface.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/ui/android/ui_full_java.ijar.jar"/>
 
     <!-- {% block additional_entries %} -->
     <!-- When this file is processed as a jinja2 template, additional

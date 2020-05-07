@@ -471,6 +471,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4913169188695071480">Hætta að endurnýja</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Fáðu aðstoð<ph name="END_LINK" /> á meðan leitað er að tækjum…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# síða}one{# síða}other{# síður}}</translation>
+<translation id="49268022542405662">Aðgangsorðin þín verða flutt út og þeim hlaðið niður í textaskrá. Þau verða sýnileg öllum, þar á meðal öllum forritum, sem hafa aðgang að möppunni sem hún er vistuð í.</translation>
 <translation id="4932247056774066048">Þar sem þú ert að skrá þig út af reikningi sem er stjórnað af <ph name="DOMAIN_NAME" /> verður Chrome gögnum þínum eytt úr þessu tæki. Þau verða áfram á Google reikningnum þínum.</translation>
 <translation id="4943703118917034429">Sýndarveruleiki</translation>
 <translation id="4943872375798546930">Engar niðurstöður</translation>
@@ -753,6 +754,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7302081693174882195">Upplýsingar: Raðað eftir gagnasparnaði</translation>
 <translation id="7328017930301109123">Í léttútgáfu hleður Chrome síðum hraðar og notar allt að 60 prósentum minna gagnamagn.</translation>
 <translation id="7333031090786104871">Er enn að bæta fyrra vefsvæði við</translation>
+<translation id="7340958967809483333">Valkostir fyrir Tillögur</translation>
 <translation id="7352939065658542140">MYNDSKEIÐ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deila 1 völdu atriði}one{Deila # völdu atriði}other{Deila # völdum atriðum}}</translation>
 <translation id="7359002509206457351">Fá aðgang að greiðslumátum</translation>
@@ -817,6 +819,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7810647596859435254">Opna með…</translation>
 <translation id="7821588508402923572">Gagnasparnaður birtist hér</translation>
+<translation id="7835852323729233924">Spilar efni</translation>
 <translation id="783819812427904514">Kveikja á mynd</translation>
 <translation id="784934925303690534">Tímabil</translation>
 <translation id="7851858861565204677">Önnur tæki</translation>

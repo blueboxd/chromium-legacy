@@ -99,6 +99,7 @@ public class PlayerFrameBitmapPainterTest {
         PlayerFrameBitmapPainter painter =
                 new PlayerFrameBitmapPainter(Mockito.mock(Runnable.class));
         painter.updateBitmapMatrix(generateMockBitmapMatrix(2, 3));
+        painter.updateTileDimensions(new int[] {10, -5});
         painter.updateViewPort(0, 5, 10, -10);
 
         MockCanvas canvas = new MockCanvas();
@@ -106,6 +107,7 @@ public class PlayerFrameBitmapPainterTest {
         canvas.assertNumberOfBitmapDraws(0);
 
         // Update the view port so it is covered by 2 bitmap tiles.
+        painter.updateTileDimensions(new int[] {10, 10});
         painter.updateViewPort(0, 5, 10, 15);
         painter.onDraw(canvas);
         canvas.assertNumberOfBitmapDraws(2);
@@ -121,6 +123,7 @@ public class PlayerFrameBitmapPainterTest {
         painter.updateBitmapMatrix(new Bitmap[0][0]);
         // This view port is covered by 2 bitmap tiles, so there should be 2 draw operations on
         // the canvas.
+        painter.updateTileDimensions(new int[] {10, 10});
         painter.updateViewPort(0, 5, 10, 15);
 
         MockCanvas canvas = new MockCanvas();
@@ -153,6 +156,7 @@ public class PlayerFrameBitmapPainterTest {
         bitmaps[1][1] = bitmap11;
 
         painter.updateBitmapMatrix(bitmaps);
+        painter.updateTileDimensions(new int[] {10, 15});
         painter.updateViewPort(5, 10, 15, 25);
 
         // Make sure the invalidator was called after updating the bitmap matrix and the view port.

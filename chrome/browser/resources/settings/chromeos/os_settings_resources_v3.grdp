@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <!--TODO(crbug.com/1045266): Add Polymer 3 files here-->
+ <include name="IDR_OS_SETTINGS_SEARCH_HANDLER_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/chromeos/search_handler.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_SETTINGS_V3_HTML"
+           file="chromeos/os_settings_v3.html"
+           type="BINDATA" />
+  <include name="IDR_OS_SETTINGS_SETTINGS_V3_JS"
+           file="chromeos/os_settings.js"
+           type="BINDATA" />
 </grit-part>

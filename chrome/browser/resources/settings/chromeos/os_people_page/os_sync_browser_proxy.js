@@ -18,8 +18,8 @@ cr.define('settings', function() {
    *   osPreferencesSynced: boolean,
    *   syncAllOsDataTypes: boolean,
    *   wallpaperEnabled: boolean,
-   *   wifiConfigurationsRegistered: boolean,
-   *   wifiConfigurationsSynced: boolean,
+   *   osWifiConfigurationsRegistered: boolean,
+   *   osWifiConfigurationsSynced: boolean,
    * }}
    */
   let OsSyncPrefs;

@@ -2148,6 +2148,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-translate-sub-frames",
+    "owners": [ "dougarnett", "chrome-language@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "enable-ui-devtools",
     "owners": [ "//components/ui_devtools/OWNERS" ],
     // Convenience debugging flag for non-stable ChromeOS Builds.
@@ -3376,7 +3381,7 @@
   {
     "name": "password-check",
     "owners": [ "jdoerrie", "vasilii" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "password-editing-android",
@@ -3635,11 +3640,6 @@
     "name": "same-site-by-default-cookies",
     "owners": [ "chlily", "morlovich" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "scalable-app-list",
-    "owners": [ "tbarzic" ],
-    "expiry_milestone": 82
   },
   {
     "name": "scanning-ui",

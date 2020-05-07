@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -16,6 +17,10 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
+
+#if defined(OS_ANDROID)
+#include "gpu/config/gpu_finch_features.h"
+#endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -90,9 +95,13 @@ GLuint GetGrGLBackendTextureFormat(const gles2::FeatureInfo* feature_info,
   GLuint internal_format = gl::GetInternalFormat(
       version_info, viz::TextureStorageFormat(resource_format));
 
+  bool use_version_es2 = false;
+#if defined(OS_ANDROID)
+  use_version_es2 = base::FeatureList::IsEnabled(features::kUseGles2ForOopR);
+#endif
+
   // We tell Skia to use es2 which does not have GL_R8_EXT
-  if (feature_info->gl_version_info().is_es3 &&
-      feature_info->workarounds().use_es2_for_oopr) {
+  if (feature_info->gl_version_info().is_es3 && use_version_es2) {
     if (internal_format == GL_R8_EXT)
       internal_format = GL_LUMINANCE8;
   }

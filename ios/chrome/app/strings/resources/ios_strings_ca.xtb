@@ -261,7 +261,7 @@
 <translation id="4263576668337963058">Mostra les accions de pàgina disponibles</translation>
 <translation id="4272631900155121838">Per poder escanejar un codi QR, activa la càmera a la configuració</translation>
 <translation id="4276041135170112053">Corregeix ara.</translation>
-<translation id="4281844954008187215">Termes i condicions</translation>
+<translation id="4281844954008187215">Condicions del servei</translation>
 <translation id="430793432425771671">Sincronitza-ho tot</translation>
 <translation id="430967081421617822">Tot el període</translation>
 <translation id="4334428914252001502">Un article no llegit.</translation>
@@ -441,6 +441,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6638511529934826365">Amplia el text…</translation>
 <translation id="6642362222295953972">Canvia a la pestanya existent</translation>
 <translation id="6643016212128521049">Esborra</translation>
+<translation id="6645899968535965230">Codi QR: <ph name="PAGE_TITLE" /></translation>
 <translation id="6656103420185847513">Edició de la carpeta</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6668619169535738264">Edita l'adreça d'interès</translation>

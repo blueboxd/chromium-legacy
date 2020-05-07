@@ -11,7 +11,6 @@ group("wpt_tests_isolate") {
 
     # Include blinkpy tools for setting up expectations.
     "//third_party/blink/tools/build_wpt_metadata.py",
-    "//third_party/blink/tools/update_wpt_output.py",
     "//third_party/blink/tools/blinkpy/",
     "//third_party/catapult/third_party/typ/",
 

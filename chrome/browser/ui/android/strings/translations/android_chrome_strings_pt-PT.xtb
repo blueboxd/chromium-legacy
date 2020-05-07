@@ -471,6 +471,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4913169188695071480">Parar a atualização</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /> enquanto procura dispositivos…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# página}other{# páginas}}</translation>
+<translation id="49268022542405662">As suas palavras-passe serão exportadas e transferidas como um ficheiro de texto. Serão visíveis para qualquer pessoa e qualquer app com acesso à pasta de destino.</translation>
 <translation id="4932247056774066048">Uma vez que está a terminar sessão numa conta gerida pelo domínio <ph name="DOMAIN_NAME" />, os dados do Chrome serão eliminados deste dispositivo. Estes irão permanecer na sua Conta Google.</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
@@ -753,6 +754,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7302081693174882195">Detalhes: ordenado por quantidade de dados guardados</translation>
 <translation id="7328017930301109123">No Modo Lite, o Chrome carrega páginas mais rapidamente e utiliza até menos 60 por cento de dados.</translation>
 <translation id="7333031090786104871">Ainda a adicionar o site anterior…</translation>
+<translation id="7340958967809483333">Opções para o Discover</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partilhar 1 item selecionado}other{Partilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Aceder aos métodos de pagamento</translation>
@@ -817,6 +819,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7810647596859435254">Abrir com…</translation>
 <translation id="7821588508402923572">A sua poupança de dados é apresentada aqui</translation>
+<translation id="7835852323729233924">Multimédia em reprodução</translation>
 <translation id="783819812427904514">Reativar o som do vídeo</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros aparelhos</translation>

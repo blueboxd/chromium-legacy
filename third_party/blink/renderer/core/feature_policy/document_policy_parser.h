@@ -9,9 +9,9 @@
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
-#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
+
 class CORE_EXPORT DocumentPolicyParser {
   STATIC_ONLY(DocumentPolicyParser);
 
@@ -19,14 +19,16 @@ class CORE_EXPORT DocumentPolicyParser {
   // Parse document policy header and 'policy' attribute on iframe to
   // DocumentPolicy::FeatureState.
   static base::Optional<DocumentPolicy::ParsedDocumentPolicy> Parse(
-      const String& policy_string);
+      const String& policy_string,
+      PolicyParserMessageBuffer&);
 
   // Internal parsing method for testing.
   static base::Optional<DocumentPolicy::ParsedDocumentPolicy> ParseInternal(
       const String& policy_string,
       const DocumentPolicyNameFeatureMap& name_feature_map,
       const DocumentPolicyFeatureInfoMap& feature_info_map,
-      const DocumentPolicyFeatureSet& available_features);
+      const DocumentPolicyFeatureSet& available_features,
+      PolicyParserMessageBuffer&);
 };
 }  // namespace blink
 

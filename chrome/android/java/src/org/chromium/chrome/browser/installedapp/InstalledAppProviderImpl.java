@@ -32,11 +32,10 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.url.URI;
+import org.chromium.url.GURL;
 import org.chromium.url.mojom.Url;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -81,7 +80,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         /**
          * Gets the URL of the current frame. Can return null (if the frame has disappeared).
          */
-        public URI getUrl();
+        public GURL getUrl();
 
         /**
          * Checks if we're in incognito. If the frame has disappeared this returns true.
@@ -144,7 +143,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     @UiThread
     public void filterInstalledApps(final RelatedApplication[] relatedApps, final Url manifestUrl,
             final FilterInstalledAppsResponse callback) {
-        final URI frameUrl = mFrameUrlDelegate.getUrl();
+        final GURL frameUrl = mFrameUrlDelegate.getUrl();
         int delayMillis = 0;
         int numTasks = Math.min(relatedApps.length, MAX_ALLOWED_RELATED_APPS);
         ResultHolder resultHolder = new ResultHolder(numTasks, (resultPair) -> {
@@ -207,10 +206,10 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
     @WorkerThread
     private void checkInstantApp(
-            ResultHolder resultHolder, int taskIdx, RelatedApplication app, URI frameUrl) {
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, GURL frameUrl) {
         int delayMs = calculateDelayForPackageMs(app.id);
 
-        if (!mInstantAppsHandler.isInstantAppAvailable(frameUrl.toString(),
+        if (!mInstantAppsHandler.isInstantAppAvailable(frameUrl.getSpec(),
                     INSTANT_APP_HOLDBACK_ID_STRING.equals(app.id),
                     true /* includeUserPrefersBrowser */)) {
             delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
@@ -223,7 +222,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
     @WorkerThread
     private void checkPlayApp(
-            ResultHolder resultHolder, int taskIdx, RelatedApplication app, URI frameUrl) {
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, GURL frameUrl) {
         int delayMs = calculateDelayForPackageMs(app.id);
 
         if (!isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, mPackageManagerDelegate)) {
@@ -352,7 +351,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      */
     @WorkerThread
     public static boolean isAppInstalledAndAssociatedWithOrigin(
-            String packageName, URI frameUrl, PackageManagerDelegate pm) {
+            String packageName, GURL frameUrl, PackageManagerDelegate pm) {
         // TODO(yusufo): Move this to a better/shared location before crbug.com/749876 is closed.
 
         if (frameUrl == null) return false;
@@ -376,7 +375,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                 continue;
             }
 
-            URI site = getSiteForWebAsset(statement);
+            GURL site = getSiteForWebAsset(statement);
 
             // The URI is considered equivalent if the scheme, host, and port match, according
             // to the DigitalAssetLinks v1 spec.
@@ -448,7 +447,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      *         could be because: the JSON string was invalid, there was no "target" field, this was
      *         not a web asset, there was no "site" field, or the "site" field was invalid.
      */
-    private static URI getSiteForWebAsset(JSONObject statement) {
+    private static GURL getSiteForWebAsset(JSONObject statement) {
         JSONObject target;
         try {
             // Ignore the "relation" field and allow an asset with any relation to this origin.
@@ -465,8 +464,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         }
 
         try {
-            return new URI(target.getString(ASSET_STATEMENT_FIELD_SITE));
-        } catch (JSONException | URISyntaxException e) {
+            return new GURL(target.getString(ASSET_STATEMENT_FIELD_SITE));
+        } catch (JSONException e) {
             return null;
         }
     }
@@ -487,7 +486,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         return namespace.equals(ASSET_STATEMENT_NAMESPACE_WEB);
     }
 
-    private static boolean statementTargetMatches(URI frameUrl, URI assetUrl) {
+    private static boolean statementTargetMatches(GURL frameUrl, GURL assetUrl) {
         if (assetUrl.getScheme() == null || assetUrl.getHost() == null) return false;
 
         return assetUrl.getScheme().equals(frameUrl.getScheme())

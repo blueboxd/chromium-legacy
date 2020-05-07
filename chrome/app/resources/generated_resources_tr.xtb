@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Uygulama Penceresi</translation>
 <translation id="1531275250079031713">"Yeni kablosuz ağ ekle" iletişim kutusunu göster</translation>
 <translation id="1536754031901697553">Bağlantı kesiliyor...</translation>
+<translation id="1537254971476575106">Tam ekran büyüteci</translation>
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1540605929960647700">Demo modunu etkinleştir</translation>
 <translation id="1542514202066550870">Bu sekme bir başlığa VR içeriği sunuyor.</translation>
@@ -1164,6 +1165,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2501173422421700905">Sertifika Beklemede</translation>
 <translation id="2501278716633472235">Geri dön</translation>
 <translation id="2501797496290880632">Bir kısayol yazın</translation>
+<translation id="2501920221385095727">Yapışkan tuşlar</translation>
 <translation id="2502441965851148920">Otomatik güncellemeler etkin. Manuel güncellemeler yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="2502719318159902502">Tam erişim</translation>
 <translation id="2505127913256479918">Gözetim altındaki bu hesap yakında kaldırılacak</translation>
@@ -1549,6 +1551,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2993517869960930405">Uygulama Bilgisi</translation>
 <translation id="2996286169319737844">Veriler senkronizasyon parolanızla şifrelendi. Google Pay'deki adresler ve ödeme yöntemleri bu kapsamda değildir.</translation>
 <translation id="2996722619877761919">Uzun kenardan çevir</translation>
+<translation id="3000461861112256445">Mono ses</translation>
 <translation id="3001144475369593262">Alt hesaplar</translation>
 <translation id="3003144360685731741">Tercih edilen ağlar</translation>
 <translation id="3003623123441819449">CSS Önbelleği</translation>
@@ -2483,6 +2486,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4211851069413100178">Kullanım ve teşhis verilerini gönder. Teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a göndererek Android deneyiminizin iyileştirilmesine yardımcı olun. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu <ph name="BEGIN_LINK1" />ayar<ph name="END_LINK1" />, cihazın sahibi tarafından zorunlu kılınmıştır. Cihazın sahibi bu cihazın teşhis ve kullanım verilerini Google'a göndermeyi seçebilir. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google hesabınıza kaydedilebilir. <ph name="BEGIN_LINK2" />Daha Fazla Bilgi<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Dışa Aktar</translation>
 <translation id="42137655013211669">Bu kaynağa erişim sunucu tarafından yasaklandı.</translation>
+<translation id="4217571870635786043">Dikte</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> için istisnayı kaldır</translation>
 <translation id="4220648711404560261">Etkinleştirme sırasında bir hata oluştu.</translation>
 <translation id="4222772810963087151">Derleme Ayrıntıları</translation>
@@ -3167,6 +3171,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5204967432542742771">Şifre girin</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" adlı sertifika silinsin mi?</translation>
 <translation id="520621735928254154">Sertifika İçe Aktarma Hatası</translation>
+<translation id="5207949376430453814">Metin imlecini vurgula</translation>
 <translation id="5209320130288484488">Cihaz bulunamadı</translation>
 <translation id="5210365745912300556">Sekmeyi kapat</translation>
 <translation id="5213481667492808996">"<ph name="NAME" />" veri hizmetiniz kullanıma hazır</translation>
@@ -5081,6 +5086,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7766807826975222231">Tura katılın</translation>
 <translation id="7766838926148951335">İzinleri kabul et</translation>
 <translation id="7768770796815395237">Değiştir</translation>
+<translation id="7768784765476638775">Seç ve Dinle</translation>
 <translation id="7769672763586021400">Model kimliği</translation>
 <translation id="7770612696274572992">Resim diğer cihazdan kopyalandı</translation>
 <translation id="7770651108375708429">Kablosuz ağ bağlantısını kes</translation>

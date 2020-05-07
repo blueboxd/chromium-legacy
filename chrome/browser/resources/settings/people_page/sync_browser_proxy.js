@@ -87,6 +87,8 @@ cr.define('settings', function() {
    *   trustedVaultKeysRequired: boolean,
    *   typedUrlsRegistered: boolean,
    *   typedUrlsSynced: boolean,
+   *   wifiConfigurationsRegistered: boolean,
+   *   wifiConfigurationsSynced: boolean,
    * }}
    */
   /* #export */ let SyncPrefs;

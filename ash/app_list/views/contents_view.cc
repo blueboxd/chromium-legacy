@@ -15,7 +15,6 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
-#include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_answer_card_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
@@ -42,6 +41,10 @@ namespace ash {
 
 namespace {
 
+// The contents view height threshold under which search box should be shown in
+// dense layout.
+constexpr int kDenseLayoutHeightThreshold = 600;
+
 // The range of app list transition progress in which the expand arrow'
 // opacity changes from 0 to 1.
 constexpr float kExpandArrowOpacityStartProgress = 0.61;
@@ -65,14 +68,6 @@ float GetOpacityForProgress(float progress,
   return base::ClampToRange(
       (progress - transition_start) / (transition_end - transition_start), 0.0f,
       1.0f);
-}
-
-bool ShouldShowDenseLayout(int height,
-                           ash::AppListViewState target_view_state) {
-  return (height < 600 &&
-          (app_list_features::IsScalableAppListEnabled() ||
-           target_view_state == ash::AppListViewState::kFullscreenAllApps ||
-           target_view_state == ash::AppListViewState::kFullscreenSearch));
 }
 
 // Notifies assistive technology that all schedules animations have completed on
@@ -116,9 +111,9 @@ void ContentsView::Init(AppListModel* model) {
 
   AppListViewDelegate* view_delegate = GetAppListMainView()->view_delegate();
 
-  horizontal_page_container_ = new HorizontalPageContainer(this, model);
+  apps_container_view_ = new AppsContainerView(this, model);
 
-  AddLauncherPage(horizontal_page_container_, AppListState::kStateApps);
+  AddLauncherPage(apps_container_view_, AppListState::kStateApps);
 
   // Search results UI.
   search_results_page_view_ =
@@ -168,7 +163,7 @@ void ContentsView::Init(AppListModel* model) {
 
   // Update suggestion chips after valid page is selected to prevent the update
   // from being ignored.
-  GetAppsContainerView()->UpdateSuggestionChips();
+  apps_container_view_->UpdateSuggestionChips();
 
   ActivePageChanged();
 
@@ -178,7 +173,7 @@ void ContentsView::Init(AppListModel* model) {
 
 void ContentsView::ResetForShow() {
   target_page_for_last_view_state_update_ = base::nullopt;
-  GetAppsContainerView()->ResetForShowApps();
+  apps_container_view_->ResetForShowApps();
   // SearchBoxView::ResetForShow() before SetActiveState(). It clears the search
   // query internally, which can show the search results page through
   // QueryChanged(). Since it wants to reset to kStateApps, first reset the
@@ -186,7 +181,7 @@ void ContentsView::ResetForShow() {
   GetSearchBoxView()->ResetForShow();
   // Make sure the default visibilities of the pages. This should be done before
   // SetActiveState() since it checks the visibility of the pages.
-  horizontal_page_container_->SetVisible(true);
+  apps_container_view_->SetVisible(true);
   search_results_page_view_->SetVisible(false);
   if (assistant_page_view_)
     assistant_page_view_->SetVisible(false);
@@ -204,21 +199,19 @@ void ContentsView::ResetForShow() {
 }
 
 void ContentsView::CancelDrag() {
-  if (GetAppsContainerView()->apps_grid_view()->has_dragged_view())
-    GetAppsContainerView()->apps_grid_view()->EndDrag(true);
-  if (GetAppsContainerView()
-          ->app_list_folder_view()
+  if (apps_container_view_->apps_grid_view()->has_dragged_view())
+    apps_container_view_->apps_grid_view()->EndDrag(true);
+  if (apps_container_view_->app_list_folder_view()
           ->items_grid_view()
           ->has_dragged_view()) {
-    GetAppsContainerView()->app_list_folder_view()->items_grid_view()->EndDrag(
+    apps_container_view_->app_list_folder_view()->items_grid_view()->EndDrag(
         true);
   }
 }
 
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
-  GetAppsContainerView()->SetDragAndDropHostOfCurrentAppList(
-      drag_and_drop_host);
+  apps_container_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
 void ContentsView::OnAppListViewTargetStateChanged(
@@ -286,14 +279,8 @@ int ContentsView::NumLauncherPages() const {
   return pagination_model_.total_pages();
 }
 
-AppsContainerView* ContentsView::GetAppsContainerView() {
-  return horizontal_page_container_->apps_container_view();
-}
-
 gfx::Size ContentsView::AdjustSearchBoxSizeToFitMargins(
     const gfx::Size& preferred_size) const {
-  if (!app_list_features::IsScalableAppListEnabled())
-    return preferred_size;
   const int padded_width =
       GetContentsBounds().width() -
       2 * app_list_view_->GetAppListConfig().GetIdealHorizontalMargin(
@@ -393,7 +380,7 @@ void ContentsView::ShowEmbeddedAssistantUI(bool show) {
   if (next_page == GetPageIndexForState(AppListState::kStateApps)) {
     GetSearchBoxView()->ClearSearch();
     GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_UNKNOWN);
-    GetAppsContainerView()->Layout();
+    apps_container_view_->Layout();
   }
 }
 
@@ -483,11 +470,11 @@ void ContentsView::UpdateSearchBoxVisibility(AppListState current_state) {
 }
 
 PaginationModel* ContentsView::GetAppsPaginationModel() {
-  return GetAppsContainerView()->apps_grid_view()->pagination_model();
+  return apps_container_view_->apps_grid_view()->pagination_model();
 }
 
 void ContentsView::ShowFolderContent(AppListFolderItem* item) {
-  GetAppsContainerView()->ShowActiveFolder(item);
+  apps_container_view_->ShowActiveFolder(item);
 }
 
 AppListPage* ContentsView::GetPageView(int index) const {
@@ -544,7 +531,7 @@ gfx::Size ContentsView::GetSearchBoxSize(AppListState state) const {
   // Reduce the search box size in fullscreen view state when the work area
   // height is less than 600 dip - the goal is to increase the amount of space
   // available to the apps grid.
-  if (ShouldShowDenseLayout(GetContentsBounds().height(), target_view_state_)) {
+  if (GetContentsBounds().height() < kDenseLayoutHeightThreshold) {
     preferred_size.set_height(
         AppListConfig::instance().search_box_height_for_dense_layout());
   } else {
@@ -594,9 +581,9 @@ bool ContentsView::Back() {
   switch (state) {
     case AppListState::kStateApps: {
       PaginationModel* pagination_model =
-          GetAppsContainerView()->apps_grid_view()->pagination_model();
-      if (GetAppsContainerView()->IsInFolderView()) {
-        GetAppsContainerView()->app_list_folder_view()->CloseFolderPage();
+          apps_container_view_->apps_grid_view()->pagination_model();
+      if (apps_container_view_->IsInFolderView()) {
+        apps_container_view_->app_list_folder_view()->CloseFolderPage();
       } else if (app_list_view_->is_tablet_mode() &&
                  pagination_model->total_pages() > 0 &&
                  pagination_model->selected_page() > 0) {
@@ -947,18 +934,11 @@ void ContentsView::RemoveSearchBoxUpdateObserver(
 bool ContentsView::ShouldLayoutPage(AppListPage* page,
                                     AppListState current_state,
                                     AppListState target_state) const {
-  if ((page == horizontal_page_container_ &&
-       app_list_features::IsScalableAppListEnabled()) ||
-      page == search_results_page_view_) {
+  if (page == apps_container_view_ || page == search_results_page_view_) {
     return ((current_state == AppListState::kStateSearchResults &&
              target_state == AppListState::kStateApps) ||
             (current_state == AppListState::kStateApps &&
              target_state == AppListState::kStateSearchResults));
-  }
-
-  if (page == horizontal_page_container_) {
-    return (current_state == AppListState::kStateSearchResults &&
-            target_state == AppListState::kStateApps);
   }
 
   if (page == assistant_page_view_) {
@@ -991,14 +971,10 @@ int ContentsView::GetSearchBoxTopForViewState(
       return AppListConfig::instance().search_box_closed_top_padding();
     case AppListViewState::kFullscreenAllApps:
     case AppListViewState::kFullscreenSearch:
-      if (app_list_features::IsScalableAppListEnabled()) {
-        return horizontal_page_container_->apps_container_view()
-            ->CalculateMarginsForAvailableBounds(
-                GetContentsBounds(), GetSearchBoxSize(AppListState::kStateApps),
-                true /*for_full_container_bounds*/)
-            .top();
-      }
-      return AppListConfig::instance().search_box_fullscreen_top_padding();
+      return apps_container_view_
+          ->CalculateMarginsForAvailableBounds(
+              GetContentsBounds(), GetSearchBoxSize(AppListState::kStateApps))
+          .top();
     case AppListViewState::kPeeking:
     case AppListViewState::kHalf:
       return AppListConfig::instance().search_box_peeking_top_padding();

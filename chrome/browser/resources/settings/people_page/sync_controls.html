@@ -181,7 +181,22 @@
             aria-label="$i18n{enablePaymentsIntegrationCheckboxLabel}">
         </cr-toggle>
       </div>
+
+<if expr="chromeos">
+      <div class="list-item"
+           hidden="[[!syncPrefs.wifiConfigurationsRegistered]]">
+        <div id="wifiConfigurationsCheckboxLabel">
+          $i18n{wifiConfigurationsCheckboxLabel}
+        </div>
+        <cr-toggle checked="{{syncPrefs.wifiConfigurationsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[syncPrefs.syncAllDataTypes]]"
+            aria-labelledby="wifiConfigurationsCheckboxLabel">
+        </cr-toggle>
+      </div>
     </div>
+</if>
+
   </template>
   <script src="sync_controls.js"></script>
 </dom-module>

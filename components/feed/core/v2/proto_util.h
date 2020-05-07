@@ -24,7 +24,6 @@ class StreamData;
 
 namespace feed {
 using ContentId = feedwire::ContentId;
-struct ChromeInfo;
 
 std::string ContentIdString(const feedwire::ContentId&);
 bool Equal(const feedwire::ContentId& a, const feedwire::ContentId& b);
@@ -39,15 +38,15 @@ class ContentIdCompareFunctor {
   }
 };
 
-feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info);
+feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata);
 
 feedwire::Request CreateFeedQueryRefreshRequest(
     feedwire::FeedQuery::RequestReason request_reason,
-    const ChromeInfo& chrome_info,
+    const RequestMetadata& request_metadata,
     const std::string& consistency_token);
 
 feedwire::Request CreateFeedQueryLoadMoreRequest(
-    const ChromeInfo& chrome_info,
+    const RequestMetadata& request_metadata,
     const std::string& consistency_token,
     const std::string& next_page_token);
 

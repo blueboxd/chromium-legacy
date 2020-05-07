@@ -331,18 +331,16 @@ void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
       password_manager::GetSignonRealm(origin_as_gurl), origin_as_gurl);
   password_manager::PasswordStore* store =
       password_client_->GetProfilePasswordStore();
-  password_client_->UpdateCacheWithBlacklistedForOrigin(origin,
-                                                        !saving_enabled);
   if (saving_enabled) {
     store->Unblacklist(form_digest, base::NullCallback());
-    return;
+  } else {
+    autofill::PasswordForm form =
+        password_manager_util::MakeNormalizedBlacklistedForm(
+            std::move(form_digest));
+    form.date_created = base::Time::Now();
+    store->AddLogin(form);
   }
-
-  autofill::PasswordForm form =
-      password_manager_util::MakeNormalizedBlacklistedForm(
-          std::move(form_digest));
-  form.date_created = base::Time::Now();
-  store->AddLogin(form);
+  password_client_->UpdateFormManagers();
 }
 
 bool PasswordAccessoryControllerImpl::AppearsInSuggestions(

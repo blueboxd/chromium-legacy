@@ -3308,9 +3308,11 @@ MULTIPROCESS_TEST_MAIN(ChildMain) {
                               PIPE_WAIT, 1, 0, 0, 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
-  ::SetLastError(0);
-  EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
-  EXPECT_EQ(::GetLastError(), 0U);
+  if (!::ConnectNamedPipe(ph, /*lpOverlapped=*/nullptr)) {
+    // ERROR_PIPE_CONNECTED means that the other side has already connected.
+    auto error = ::GetLastError();
+    EXPECT_EQ(error, DWORD{ERROR_PIPE_CONNECTED});
+  }
 
   DWORD written;
   EXPECT_TRUE(::WriteFile(ph, kTestData, strlen(kTestData), &written, NULL));
@@ -3337,7 +3339,11 @@ MULTIPROCESS_TEST_MAIN(MoreThanBufferSizeChildMain) {
                               PIPE_WAIT, 1, data.size(), data.size(), 0, NULL);
   EXPECT_NE(ph, INVALID_HANDLE_VALUE);
   EXPECT_TRUE(SetEvent(sync_event.Get()));
-  EXPECT_TRUE(ConnectNamedPipe(ph, NULL));
+  if (!::ConnectNamedPipe(ph, /*lpOverlapped=*/nullptr)) {
+    // ERROR_PIPE_CONNECTED means that the other side has already connected.
+    auto error = ::GetLastError();
+    EXPECT_EQ(error, DWORD{ERROR_PIPE_CONNECTED});
+  }
 
   DWORD written;
   EXPECT_TRUE(::WriteFile(ph, data.c_str(), data.size(), &written, NULL));

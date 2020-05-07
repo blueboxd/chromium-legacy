@@ -641,6 +641,45 @@ TEST_P(TextFragmentRelatedMetricTest, NewDelimiterUseCounter) {
   }
 }
 
+// Test use counting the location.fragmentDirective API
+TEST_P(TextFragmentRelatedMetricTest, TextFragmentAPIUseCounter) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <script>
+      var textFragmentsSupported = typeof(location.fragmentDirective) == "object";
+    </script>
+    <p>This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  bool text_fragments_enabled = GetParam();
+
+  EXPECT_EQ(text_fragments_enabled,
+            GetDocument().IsUseCounted(
+                WebFeature::kLocationFragmentDirectiveAccessed));
+}
+
+// Test that simply activating a text fragment does not use count the API
+TEST_P(TextFragmentRelatedMetricTest, TextFragmentActivationDoesNotCountAPI) {
+  SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <p>This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  bool text_fragments_enabled = GetParam();
+  EXPECT_EQ(text_fragments_enabled,
+            GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchor));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kLocationFragmentDirectiveAccessed));
+}
+
 }  // namespace
 
 }  // namespace blink

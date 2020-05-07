@@ -151,6 +151,13 @@ class ServiceConnection {
       mojom::CrosHealthdDiagnosticsService::RunBatteryDischargeRoutineCallback
           callback) = 0;
 
+  // Subscribes to cros_healthd's Bluetooth-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddBluetoothObserver(
+      mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver>
+          pending_observer) = 0;
+
   // Subscribes to cros_healthd's power-related events. See
   // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

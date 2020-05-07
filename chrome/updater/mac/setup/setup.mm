@@ -226,12 +226,8 @@ bool DeleteInstallFolder() {
 void CleanUpOldUpdater(const InfoPlist& old_updater_info_plist) {
   RemoveUpdateCheckFromLaunchd(
       old_updater_info_plist.GoogleUpdateCheckLaunchdNameVersioned());
-  if (Launchd::GetInstance()->PlistExists(
-          LaunchdDomain(), ServiceLaunchdType(),
-          old_updater_info_plist.GoogleUpdateServiceLaunchdNameVersioned())) {
-    RemoveServiceFromLaunchd(
-        old_updater_info_plist.GoogleUpdateServiceLaunchdNameVersioned());
-  }
+  RemoveServiceFromLaunchd(
+      old_updater_info_plist.GoogleUpdateServiceLaunchdNameVersioned());
   DeleteInstallFolder(old_updater_info_plist.UpdaterVersionedFolderPath(
       GetUpdaterFolderPath()));
 }
@@ -329,9 +325,6 @@ int SwapToUpgradedUpdater() {
   if (!StartLaunchdServiceTask())
     return -2;
 
-  RemoveServiceFromLaunchd(
-      info_plist->GoogleUpdateServiceLaunchdNameVersioned());
-
   if (old_updater_exists) {
     if (old_updater_bundle_path.get()) {
       const base::FilePath old_info_plist_path =
@@ -369,11 +362,16 @@ int Uninstall(bool is_machine) {
     return -1;
   }
 
-  if (!RemoveServiceFromLaunchd())
+  if (!RemoveServiceFromLaunchd(
+          info_plist->GoogleUpdateServiceLaunchdNameVersioned())) {
     return -2;
+  }
+
+  if (!RemoveServiceFromLaunchd())
+    return -3;
 
   if (!DeleteInstallFolder())
-    return -3;
+    return -4;
 
   return 0;
 }

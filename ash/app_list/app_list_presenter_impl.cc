@@ -300,7 +300,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     base::ScopedClosureRunner blur_disabler =
         view_->app_list_main_view()
             ->contents_view()
-            ->GetAppsContainerView()
+            ->apps_container_view()
             ->DisableSuggestionChipsBlur();
     // The observer will delete itself when the animations are completed.
     settings->AddObserver(
@@ -357,7 +357,7 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
     base::ScopedClosureRunner blur_disabler =
         view_->app_list_main_view()
             ->contents_view()
-            ->GetAppsContainerView()
+            ->apps_container_view()
             ->DisableSuggestionChipsBlur();
     // The observer will delete itself when the animations are completed.
     settings->AddObserver(

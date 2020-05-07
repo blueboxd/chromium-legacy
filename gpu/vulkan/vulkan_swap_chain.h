@@ -123,6 +123,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
     VkSemaphore present_begin_semaphore = VK_NULL_HANDLE;
     // Semaphore signaled when present engine is done with the image.
     VkSemaphore present_end_semaphore = VK_NULL_HANDLE;
+    // True indicates the image is acquired from swapchain and haven't sent back
+    // to swapchain for presenting.
+    bool is_acquired = false;
   };
   std::vector<ImageData> images_;
 

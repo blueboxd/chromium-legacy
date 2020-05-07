@@ -471,6 +471,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4913169188695071480">Vernieuwen stopzetten</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hulp<ph name="END_LINK" /> bij het zoeken naar apparaten…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# pagina}other{# pagina's}}</translation>
+<translation id="49268022542405662">Je wachtwoorden worden geëxporteerd en gedownload als tekstbestand. Ze zijn zichtbaar voor iedereen en elke app met toegang tot de bestemmingsmap.</translation>
 <translation id="4932247056774066048">Omdat je uitlogt van een account dat wordt beheerd door <ph name="DOMAIN_NAME" />, worden je Chrome-gegevens verwijderd. De gegevens blijven in je Google-account staan.</translation>
 <translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4943872375798546930">Geen resultaten</translation>
@@ -753,6 +754,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7302081693174882195">Details: gesorteerd op de hoeveelheid bespaarde data</translation>
 <translation id="7328017930301109123">In de Lite-versie van Chrome worden pagina's sneller geladen en wordt tot wel 60 procent minder data verbruikt.</translation>
 <translation id="7333031090786104871">Nog steeds bezig met toevoegen van vorige site</translation>
+<translation id="7340958967809483333">Opties voor Discover</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 geselecteerd item delen}other{# geselecteerde items delen}}</translation>
 <translation id="7359002509206457351">Toegang tot betaalmethoden</translation>
@@ -817,6 +819,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7810647596859435254">Openen met…</translation>
 <translation id="7821588508402923572">Hier wordt getoond hoeveel data je bespaart</translation>
+<translation id="7835852323729233924">Media afspelen</translation>
 <translation id="783819812427904514">Dempen van video opheffen</translation>
 <translation id="784934925303690534">Periode</translation>
 <translation id="7851858861565204677">Andere apparaten</translation>

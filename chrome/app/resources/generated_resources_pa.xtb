@@ -339,7 +339,7 @@
 <translation id="1436784010935106834">ਹਟਾਈਆਂ ਗਈਆਂ</translation>
 <translation id="1442392616396121389">ਰਾਊਟਿੰਗ ਅਗੇਤਰ</translation>
 <translation id="144283815522798837"><ph name="NUMBER_OF_ITEMS_SELECTED" /> ਚੁਣੀਆਂ ਗਈਆਂ</translation>
-<translation id="1442851588227551435">ਕਿਰਿਆਸ਼ੀਲ Kerberos ਟਿਕਟ ਸੈੱਟ ਕਰੋ</translation>
+<translation id="1442851588227551435">Kerberos ਟਿਕਟ ਨੂੰ ਕਿਰਿਆਸ਼ੀਲ 'ਤੇ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="1444628761356461360">ਇਹ ਸੈਟਿੰਗ ਡੀਵਾਈਸ ਮਾਲਕ <ph name="OWNER_EMAIL" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
 <translation id="144518587530125858">ਥੀਮ ਲਈ '<ph name="IMAGE_PATH" />' ਨੂੰ ਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।</translation>
 <translation id="1445693676523799095">ਇਸ ਵਿੱਚ ਕੁਝ ਸਮਾਂ ਲੱਗ ਸਕਦਾ ਹੈ</translation>
@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">ਐਪਲੀਕੇਸ਼ਨ ਵਿੰਡੋ</translation>
 <translation id="1531275250079031713">'ਨਵਾਂ ਵਾਈ-ਫਾਈ ਸ਼ਾਮਲ ਕਰੋ' ਵਿੰਡੋ ਦਿਖਾਓ</translation>
 <translation id="1536754031901697553">ਡਿਸਕਨੈਕਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…</translation>
+<translation id="1537254971476575106">ਪੂਰੀ-ਸਕ੍ਰੀਨ ਵਿਸਤਾਰਕ</translation>
 <translation id="15373452373711364">ਵੱਡਾ ਮਾਊਸ ਕਰਸਰ</translation>
 <translation id="1540605929960647700">ਡੈਮੋ ਮੋਡ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="1542514202066550870">ਇਹ ਟੈਬ ਇੱਕ ਹੈੱਡਸੈੱਟ ਵਿੱਚ VR ਸਮੱਗਰੀ ਨੂੰ ਪੇਸ਼ ਕਰ ਰਹੀ ਹੈ।</translation>
@@ -1163,6 +1164,7 @@
 <translation id="2501173422421700905">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਹੋਲਡ ਤੇ</translation>
 <translation id="2501278716633472235">ਪਿੱਛੇ ਜਾਓ</translation>
 <translation id="2501797496290880632">ਇੱਕ ਸ਼ਾਰਟਕੱਟ ਟਾਈਪ ਕਰੋ</translation>
+<translation id="2501920221385095727">ਸਟਿਕੀ ਕੁੰਜੀਆਂ</translation>
 <translation id="2502441965851148920">ਆਟੋਮੈਟਿਕ ਅੱਪਡੇਟਾਂ ਯੋਗ ਬਣਾਈਆਂ ਗਈਆਂ ਹਨ। ਮੈਨੁਅਲ ਅੱਪਡੇਟਾਂ ਤੁਹਾਡੇ ਪ੍ਰਬੰਧਕ ਵੱਲੋਂ ਅਯੋਗ  ਬਣਾਈਆਂ ਗਈਆਂ ਹਨ।</translation>
 <translation id="2502719318159902502">ਪੂਰੀ ਪਹੁੰਚ</translation>
 <translation id="2505127913256479918">ਇਹ ਨਿਗਰਾਨੀ ਕੀਤਾ ਖਾਤਾ ਜਲਦੀ ਹੀ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ</translation>
@@ -1547,6 +1549,7 @@
 <translation id="2993517869960930405">ਐਪ ਜਾਣਕਾਰੀ</translation>
 <translation id="2996286169319737844">ਡਾਟੇ ਨੂੰ ਤੁਹਾਡੇ ਸਮਕਾਲੀਕਰਨ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਇਨਕ੍ਰਿਪਟ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਇਸ ਵਿੱਚ Google Pay ਦੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਅਤੇ ਪਤੇ ਸ਼ਾਮਲ ਨਹੀਂ ਹਨ।</translation>
 <translation id="2996722619877761919">ਕਿਤਾਬ ਵਾਂਗ ਪਲਟਣ ਲਈ</translation>
+<translation id="3000461861112256445">ਮੋਨੋ ਆਡੀਓ</translation>
 <translation id="3001144475369593262">ਬੱਚਿਆਂ ਦੇ ਖਾਤੇ</translation>
 <translation id="3003144360685731741">ਤਰਜੀਹੀ ਨੈੱਟਵਰਕ</translation>
 <translation id="3003623123441819449">CSS ਕੈਸ਼ੇ</translation>
@@ -2481,6 +2484,7 @@
 <translation id="4211851069413100178">ਵਰਤੋਂ ਅਤੇ ਤਸ਼ਖੀਸ ਡਾਟਾ ਭੇਜੋ। Google ਨੂੰ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਤਸ਼ਖੀਸ, ਡੀਵਾਈਸ ਅਤੇ ਐਪ ਵਰਤੋਂ ਡਾਟਾ ਭੇਜ ਕੇ ਆਪਣੇ Android ਅਨੁਭਵ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਕਰੋ। ਇਸ ਨਾਲ ਸਿਸਟਮ ਅਤੇ ਐਪ ਸਥਿਰਤਾ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਿੱਚ ਮਦਦ ਮਿਲੇਗੀ। ਕੁਝ ਏਕੀਕ੍ਰਿਤ ਜਾਣਕਾਰੀ Google ਐਪਾਂ ਅਤੇ ਪਾਰਟਨਰਾਂ, ਜਿਵੇਂ ਕਿ Android ਵਿਕਾਸਕਾਰਾਂ, ਦੀ ਵੀ ਮਦਦ ਕਰੇਗੀ। ਇਹ <ph name="BEGIN_LINK1" />ਸੈਟਿੰਗ<ph name="END_LINK1" /> ਮਾਲਕ ਵੱਲੋਂ ਲਾਗੂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ। ਮਾਲਕ ਇਸ ਡੀਵਾਈਸ ਦੇ ਤਸ਼ਖੀਸ ਅਤੇ ਵਰਤੋਂ ਡਾਟੇ ਨੂੰ Google ਨੂੰ ਭੇਜਣਾ ਚੁਣ ਸਕਦਾ ਹੈ। ਜੇ ਤੁਹਾਡੀ ਵਧੀਕ 'ਵੈੱਬ ਅਤੇ ਐਪ ਸਰਗਰਮੀ' ਸੈਟਿੰਗ ਚਾਲੂ ਹੋਵੇ, ਤਾਂ ਇਹ ਡਾਟਾ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। <ph name="BEGIN_LINK2" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">ਨਿਰਯਾਤ ਕਰੋ</translation>
 <translation id="42137655013211669">ਇਸ ਸਾਧਨ ਤੱਕ ਪਹੁੰਚ ਸਰਵਰ ਵੱਲੋਂ ਵਰਜਿਤ ਸੀ।</translation>
+<translation id="4217571870635786043">ਬੋਲ ਅਨੁਸਾਰ ਲਿਖਤ</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" /> ਲਈ ਅਪਵਾਦ ਨੂੰ ਹਟਾਓ</translation>
 <translation id="4220648711404560261">ਕਿਰਿਆਸ਼ੀਲ ਕਰਨ ਦੌਰਾਨ ਗੜਬੜ ਹੋ ਗਈ।</translation>
 <translation id="4222772810963087151">ਬਿਲਡ ਦੇ ਵੇਰਵੇ</translation>
@@ -3139,7 +3143,7 @@
 <translation id="5158983316805876233">ਸਾਰੇ ਪ੍ਰੋਟੋਕੋਲਾਂ ਲਈ ਇੱਕੋ ਪ੍ਰੌਕਸੀ ਵਰਤੋ</translation>
 <translation id="5160857336552977725">ਆਪਣੇ <ph name="DEVICE_TYPE" /> 'ਤੇ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="5166596762332123936">ਪੁਰਾਣਾ ਹੋਣ ਦੇ ਕਾਰਨ <ph name="PLUGIN_NAME" /> ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
-<translation id="5169131225159279624">ਸ਼ਾਮਲ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
+<translation id="5169131225159279624">ਸ਼ਾਮਲ ਕਰਨਾ</translation>
 <translation id="5170568018924773124">ਫੋਲਡਰ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="5171045022955879922">ਖੋਜੋ ਜਾਂ URL ਟਾਈਪ ਕਰੋ</translation>
 <translation id="5171343362375269016">ਬਦਲੀ ਗਈ ਮੈਮਰੀ</translation>
@@ -3165,6 +3169,7 @@
 <translation id="5204967432542742771">ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ</translation>
 <translation id="5206215183583316675">ਕੀ "<ph name="CERTIFICATE_NAME" />" ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="520621735928254154">ਪ੍ਰਮਾਣ-ਪੱਤਰ ਆਯਾਤ ਗੜਬੜ</translation>
+<translation id="5207949376430453814">ਲਿਖਤ ਕੈਰੇਟ ਨੂੰ ਉਜਾਗਰ ਕਰੋ</translation>
 <translation id="5209320130288484488">ਕੋਈ ਡਿਵਾਈਸਾਂ ਨਹੀਂ ਮਿਲੀਆਂ</translation>
 <translation id="5210365745912300556">ਟੈਬ ਬੰਦ ਕਰੋ</translation>
 <translation id="5213481667492808996">ਤੁਹਾਡੀ '<ph name="NAME" />' ਡਾਟਾ ਸੇਵਾ ਵਰਤਣ ਲਈ ਤਿਆਰ ਹੈ</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">ਇੱਕ ਟੂਅਰ ਲਓ</translation>
 <translation id="7766838926148951335">ਇਜਾਜ਼ਤਾਂ ਸਵੀਕਾਰ ਕਰੋ</translation>
 <translation id="7768770796815395237">ਬਦਲੋ</translation>
+<translation id="7768784765476638775">ਚੁਣੋ ਅਤੇ ਸੁਣੋ</translation>
 <translation id="7769672763586021400">ਮਾਡਲ ਆਈ.ਡੀ.</translation>
 <translation id="7770612696274572992">ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ ਤੋਂ ਚਿੱਤਰ ਕਾਪੀ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7770651108375708429">ਵਾਈ-ਫਾਈ ਡਿਸਕਨੈਕਟ ਕਰੋ</translation>

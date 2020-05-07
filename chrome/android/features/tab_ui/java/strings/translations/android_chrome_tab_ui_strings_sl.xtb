@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Pregled</translation>
 <translation id="5073204694187207510">Skrij celozaslonsko mrežo</translation>
 <translation id="5082793167783849073">Hitro primerjate strani tako, da ustvarite skupino. Če želite začeti, se dotaknite povezave in jo pridržite.</translation>
+<translation id="5533021382642990449">Pokaži pozneje</translation>
 <translation id="5580090775658607195">Št. združenih zavihkov: <ph name="TAB_COUNT" /></translation>
 <translation id="58326064309361797">Povlecite zavihke, če jih želite združiti v skupino</translation>
 <translation id="6040143037577758943">Zapri</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Opustitev predlogov.</translation>
 <translation id="814503310257431685">Prikaži vse</translation>
 <translation id="8205266828577616993">Premakni zavihek navzgor</translation>
+<translation id="8304833501377495048">Ne želite več prikazati traku z zavihki?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Zapiranje <ph name="TABS_COUNT_ONE" /> izbranega zavihka}one{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranega zavihka}two{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranih zavihkov}few{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranih zavihkov}other{Zapiranje <ph name="TABS_COUNT_MANY" /> izbranih zavihkov}}</translation>
+<translation id="8749939518995770034">Zaprt trak z zavihki</translation>
 <translation id="9150694013019234766">Preklapljanje med zavihki v skupini zavihkov pri dnu zaslona</translation>
 <translation id="9169594135889675189">Skupini dodaj nov zavihek</translation>
 <translation id="959682366969460160">Postanite bolj organizirani</translation>

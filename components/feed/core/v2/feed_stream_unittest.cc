@@ -381,6 +381,14 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   // FeedStream::Delegate.
   bool IsEulaAccepted() override { return is_eula_accepted_; }
   bool IsOffline() override { return is_offline_; }
+  DisplayMetrics GetDisplayMetrics() override {
+    DisplayMetrics result;
+    result.density = 200;
+    result.height_pixels = 800;
+    result.width_pixels = 350;
+    return result;
+  }
+  std::string GetLanguageTag() override { return "en-US"; }
 
   // For tests.
 

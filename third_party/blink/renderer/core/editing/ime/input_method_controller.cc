@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
 
 namespace blink {
 
@@ -1375,11 +1376,12 @@ void InputMethodController::GetLayoutBounds(WebRect* control_bounds,
   // Selection bounds are currently populated only for EditContext.
   // For editable elements we use GetCompositionCharacterBounds to fetch the
   // selection bounds.
-  DOMRect* editable_rect = element->getBoundingClientRect();
-  control_bounds->x = editable_rect->x();
-  control_bounds->y = editable_rect->y();
-  control_bounds->width = editable_rect->width();
-  control_bounds->height = editable_rect->height();
+  const DOMRect* editable_rect = element->getBoundingClientRect();
+  const DoubleRect editable_rect_double(editable_rect->x(), editable_rect->y(),
+                                        editable_rect->width(),
+                                        editable_rect->height());
+  // Return the IntRect containing the given DOMRect.
+  *control_bounds = EnclosingIntRect(editable_rect_double);
 }
 
 WebTextInputInfo InputMethodController::TextInputInfo() const {

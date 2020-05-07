@@ -72,7 +72,10 @@ void Clean() {
       info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
       Launchd::User, Launchd::Agent,
-      updater::CopyGoogleUpdateCheckLaunchDName()));
+      info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
+  EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
+      Launchd::User, Launchd::Agent,
+      updater::CopyGoogleUpdateServiceLaunchDName()));
 }
 
 void ExpectClean() {
@@ -132,7 +135,7 @@ void ExpectSwapped() {
       info_plist->GoogleUpdateCheckLaunchdNameVersioned()));
   EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent, CopyGoogleUpdateServiceLaunchDName()));
-  EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
+  EXPECT_TRUE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent,
       info_plist->GoogleUpdateServiceLaunchdNameVersioned()));
 }

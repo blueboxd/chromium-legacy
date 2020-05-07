@@ -108,11 +108,28 @@ void TabDragDropDelegate::DragUpdate(const gfx::Point& location_in_screen) {
 
 void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
                                const ui::OSExchangeData& drop_data) {
-  Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(source_window_,
-                                                          drop_data);
+  aura::Window* const new_window =
+      Shell::Get()->shell_delegate()->CreateBrowserForTabDrop(source_window_,
+                                                              drop_data);
 
-  // TODO(https://crbug.com/1069869): snap the created browser if
-  // necessary.
+  const gfx::Rect area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          root_window_);
+
+  SplitViewController::SnapPosition snap_position = ash::GetSnapPosition(
+      root_window_, new_window, location_in_screen, start_location_in_screen_,
+      /*snap_distance_from_edge=*/kDistanceFromEdgeDp,
+      /*minimum_drag_distance=*/kMinimumDragToSnapDistanceDp,
+      /*horizontal_edge_inset=*/area.width() *
+              kHighlightScreenPrimaryAxisRatio +
+          kHighlightScreenEdgePaddingDp,
+      /*vertical_edge_inset=*/area.height() * kHighlightScreenPrimaryAxisRatio +
+          kHighlightScreenEdgePaddingDp);
+
+  if (snap_position == SplitViewController::SnapPosition::NONE)
+    return;
+
+  SplitViewController::Get(new_window)->SnapWindow(new_window, snap_position);
 }
 
 }  // namespace ash

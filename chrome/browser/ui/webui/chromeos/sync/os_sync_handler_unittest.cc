@@ -49,8 +49,8 @@ DictionaryValue CreateOsSyncPrefs(SyncAllConfig sync_all,
   result.SetBoolean("osAppsSynced", types.Has(UserSelectableOsType::kOsApps));
   result.SetBoolean("osPreferencesSynced",
                     types.Has(UserSelectableOsType::kOsPreferences));
-  result.SetBoolean("wifiConfigurationsSynced",
-                    types.Has(UserSelectableOsType::kWifiConfigurations));
+  result.SetBoolean("osWifiConfigurationsSynced",
+                    types.Has(UserSelectableOsType::kOsWifiConfigurations));
   result.SetBoolean("wallpaperEnabled",
                     sync_all == SYNC_ALL_OS_TYPES || wallpaper_enabled);
   return result;
@@ -78,8 +78,8 @@ void CheckConfigDataTypeArguments(const DictionaryValue* dictionary,
             types.Has(UserSelectableOsType::kOsApps));
   CheckBool(dictionary, "osPreferencesSynced",
             types.Has(UserSelectableOsType::kOsPreferences));
-  CheckBool(dictionary, "wifiConfigurationsSynced",
-            types.Has(UserSelectableOsType::kWifiConfigurations));
+  CheckBool(dictionary, "osWifiConfigurationsSynced",
+            types.Has(UserSelectableOsType::kOsWifiConfigurations));
   CheckBool(dictionary, "wallpaperEnabled",
             config == SYNC_ALL_OS_TYPES || wallpaper_enabled);
 }
@@ -314,7 +314,7 @@ TEST_F(OsSyncHandlerTest, ShowSetupSyncEverything) {
   CheckBool(dictionary, "syncAllOsTypes", true);
   CheckBool(dictionary, "osAppsRegistered", true);
   CheckBool(dictionary, "osPreferencesRegistered", true);
-  CheckBool(dictionary, "wifiConfigurationsRegistered", true);
+  CheckBool(dictionary, "osWifiConfigurationsRegistered", true);
   CheckConfigDataTypeArguments(dictionary, SYNC_ALL_OS_TYPES,
                                UserSelectableOsTypeSet::All(),
                                /*wallpaper_enabled=*/true);

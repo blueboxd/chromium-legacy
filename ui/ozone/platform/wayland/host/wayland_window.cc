@@ -35,13 +35,12 @@ WaylandWindow::~WaylandWindow() {
 
   if (parent_window_)
     parent_window_->set_child_window(nullptr);
-
-  if (has_pointer_focus_)
-    connection_->pointer()->reset_window_with_pointer_focus();
 }
 
 // static
 WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
+  if (!surface)
+    return nullptr;
   return static_cast<WaylandWindow*>(
       wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
 }
@@ -253,26 +252,27 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
     // physical pixels.
     event->AsLocatedEvent()->set_location_f(gfx::ScalePoint(
         event->AsLocatedEvent()->location_f(), buffer_scale_, buffer_scale_));
+
+    // If the window does not have a pointer focus, but received this event, it
+    // means the window is a menu window with a child menu window. In this case,
+    // the location of the event must be converted from the nested menu to the
+    // main menu, which the menu controller needs to properly handle events.
+    if (wl::IsMenuType(type())) {
+      // Parent window of the main menu window is not a menu, but rather an
+      // xdg surface.
+      DCHECK(!wl::IsMenuType(parent_window_->type()) ||
+             parent_window_->type() != PlatformWindowType::kTooltip);
+      auto* window =
+          connection_->wayland_window_manager()->GetCurrentFocusedWindow();
+      if (window) {
+        ConvertEventLocationToTargetWindowLocation(GetBounds().origin(),
+                                                   window->GetBounds().origin(),
+                                                   event->AsLocatedEvent());
+      }
+    }
+
     auto copied_event = Event::Clone(*event);
     UpdateCursorPositionFromEvent(std::move(copied_event));
-  }
-
-  // If the window does not have a pointer focus, but received this event, it
-  // means the window is a menu window with a child menu window. In this case,
-  // the location of the event must be converted from the nested menu to the
-  // main menu, which the menu controller needs to properly handle events.
-  if (event->IsLocatedEvent() && wl::IsMenuType(type())) {
-    // Parent window of the main menu window is not a menu, but rather an
-    // xdg surface.
-    DCHECK(!wl::IsMenuType(parent_window_->type()) ||
-           parent_window_->type() != PlatformWindowType::kTooltip);
-    auto* window =
-        connection_->wayland_window_manager()->GetCurrentFocusedWindow();
-    if (window) {
-      ConvertEventLocationToTargetWindowLocation(GetBounds().origin(),
-                                                 window->GetBounds().origin(),
-                                                 event->AsLocatedEvent());
-    }
   }
 
   DispatchEventFromNativeUiEvent(
@@ -442,37 +442,25 @@ void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
 void WaylandWindow::UpdateCursorPositionFromEvent(
     std::unique_ptr<Event> event) {
   DCHECK(event->IsLocatedEvent());
-  auto* window =
-      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
+
   // This is a tricky part. Initially, Wayland sends events to surfaces the
   // events are targeted for. But, in order to fulfill Chromium's assumptions
   // about event targets, some of the events are rerouted and their locations
-  // are converted.
+  // are converted. The event we got here is rerouted and it has had its
+  // location fixed.
   //
-  // The event we got here is rerouted, but it hasn't had its location fixed
-  // yet. Passing an event with fixed location won't help as well - its location
-  // is converted in a different way: if mouse is moved outside a menu window
-  // to the left, the location of such event includes negative values.
-  //
-  // In contrast, this method must translate coordinates of all events
+  // Basically, this method must translate coordinates of all events
   // in regards to top-level windows' coordinates as it's always located at
   // origin (0,0) from Chromium point of view (remember that Wayland doesn't
   // provide global coordinates to its clients). And it's totally fine to use it
   // as the target. Thus, the location of the |event| is always converted using
   // the top-level window's bounds as the target excluding cases, when the
   // mouse/touch is over a top-level window.
-  if (parent_window_ && parent_window_ != window) {
-    const gfx::Rect target_bounds = parent_window_->GetBounds();
-    gfx::Rect own_bounds = GetBounds();
-    // This is a bit trickier, and concerns nested menu windows. Whenever an
-    // event is sent to the nested menu window, it's rerouted to a parent menu
-    // window. Thus, in order to correctly translate its location, we must
-    // choose correct values for the |own_bounds|. In this case, it must the
-    // nested menu window, because |this| is the parent of that window.
-    if (window == child_window_)
-      own_bounds = child_window_->GetBounds();
+  auto* toplevel_window = GetRootParentWindow();
+  if (toplevel_window != this) {
     ConvertEventLocationToTargetWindowLocation(
-        target_bounds.origin(), own_bounds.origin(), event->AsLocatedEvent());
+        toplevel_window->GetBounds().origin(), GetBounds().origin(),
+        event->AsLocatedEvent());
   }
   auto* cursor_position = connection_->wayland_cursor_position();
   if (cursor_position) {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {ChooserType, ContentSetting, ContentSettingsTypes, SiteSettingSource} from 'chrome://settings/lazy_load.js';
+import {ChooserType, ContentSetting, ContentSettingsTypes, DefaultContentSetting, RawChooserException, RawSiteException, SiteGroup, SiteSettingSource} from 'chrome://settings/lazy_load.js';
 import {Route, Router} from 'chrome://settings/settings.js';
 // clang-format on
 
@@ -15,7 +15,7 @@ import {Route, Router} from 'chrome://settings/settings.js';
  * @param {ContentSettingsTypes} contentType The ContentSettingsType
  *     to use as the key.
  * @param {Object} value The value to map to |contentType|.
- * @return {Object<setting: ContentSettingsTypes, value: Object>}
+ * @return {Object<ContentSettingsTypes, Object>}
  */
 export function createContentSettingTypeToValuePair(contentType, value) {
   return {setting: contentType, value: value};
@@ -26,18 +26,18 @@ export function createContentSettingTypeToValuePair(contentType, value) {
  * @param {!Object=} override An object with a subset of the properties of
  *     DefaultContentSetting. Properties defined in |override| will
  * overwrite the defaults in this function's return value.
- * @return {DefaultContentSetting}
+ * @return {!DefaultContentSetting}
  */
 export function createDefaultContentSetting(override) {
   if (override === undefined) {
     override = {};
   }
-  return Object.assign(
+  return /** @type {!DefaultContentSetting} */ (Object.assign(
       {
         setting: ContentSetting.ASK,
         source: SiteSettingSource.PREFERENCE,
       },
-      override);
+      override));
 }
 
 /**
@@ -46,13 +46,13 @@ export function createDefaultContentSetting(override) {
  * @param {!Object=} override An object with a subset of the properties of
  *     RawSiteException. Properties defined in |override| will overwrite the
  *     defaults in this function's return value.
- * @return {RawSiteException}
+ * @return {!RawSiteException}
  */
 export function createRawSiteException(origin, override) {
   if (override === undefined) {
     override = {};
   }
-  return Object.assign(
+  return /** @type {!RawSiteException} */ (Object.assign(
       {
         embeddingOrigin: origin,
         incognito: false,
@@ -61,7 +61,7 @@ export function createRawSiteException(origin, override) {
         setting: ContentSetting.ALLOW,
         source: SiteSettingSource.PREFERENCE,
       },
-      override);
+      override));
 }
 
 /**
@@ -72,13 +72,30 @@ export function createRawSiteException(origin, override) {
  * @param {!Object=} override An object with a subset of the properties of
  *     RawChooserException. Properties defined in |override| will overwrite
  *     the defaults in this function's return value.
- * @return {RawChooserException}
+ * @return {!RawChooserException}
  */
 export function createRawChooserException(chooserType, sites, override) {
-  return Object.assign(
-      {chooserType: chooserType, displayName: '', object: {}, sites: sites},
-      override || {});
+  return /** @type {!RawChooserException} */ (Object.assign(
+      {
+        chooserType: chooserType,
+        displayName: '',
+        object: {},
+        sites: sites,
+      },
+      override));
 }
+
+/**
+ * In the real (non-test) code, this data comes from the C++ handler.
+ * Only used for tests.
+ * @typedef {{
+ *   defaults: !Object<ContentSettingsTypes, !DefaultContentSetting>,
+ *   exceptions: !Object<ContentSettingsTypes, !Array<!RawSiteException>>,
+ *   chooserExceptions: !Object<ContentSettingsTypes,
+ * !Array<!RawChooserException>>
+ * }}
+ */
+export let SiteSettingsPref;
 
 /**
  * Helper to create a mock SiteSettingsPref.
@@ -150,7 +167,7 @@ export function createSiteSettingsPrefs(
  *     eTLD+1.
  * @param {number=} mockUsage The override initial usage value for each origin
  *     in the site group.
- * @return {SiteGroup}
+ * @return {!SiteGroup}
  */
 export function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
   if (mockUsage === undefined) {
@@ -162,6 +179,7 @@ export function createSiteGroup(eTLDPlus1Name, originList, mockUsage) {
     etldPlus1: eTLDPlus1Name,
     origins: originInfoList,
     numCookies: 0,
+    hasInstalledPWA: false,
   };
 }
 
@@ -185,7 +203,7 @@ export function createOriginInfo(origin, override) {
  * |chooserType|.
  * @param {ChooserType} chooserType The chooser type of the
  *     permission.
- * @return {?ContentSettingsType}
+ * @return {?ContentSettingsTypes}
  */
 export function getContentSettingsTypeFromChooserType(chooserType) {
   switch (chooserType) {

@@ -130,6 +130,9 @@ const base::Feature kSystemTrayMicGainSetting{
 const base::Feature kWebUITabStripTabDragIntegration{
     "WebUITabStripTabDragIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kShelfAppScaling{"ShelfAppScaling",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
@@ -268,6 +271,10 @@ bool IsDisplayAlignmentAssistanceEnabled() {
 
 bool IsMovablePartialScreenshotEnabled() {
   return base::FeatureList::IsEnabled(kMovablePartialScreenshot);
+}
+
+bool IsAppScalingEnabled() {
+  return base::FeatureList::IsEnabled(kShelfAppScaling);
 }
 
 namespace {

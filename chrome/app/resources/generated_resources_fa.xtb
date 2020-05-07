@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">پنجره برنامه</translation>
 <translation id="1531275250079031713">‏نمایش کادر گفتگوی «افزودن Wi-Fi جدید»</translation>
 <translation id="1536754031901697553">درحال قطع اتصال...</translation>
+<translation id="1537254971476575106">ذره‌بین تمام‌صفحه</translation>
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
 <translation id="1540605929960647700">فعال کردن حالت نمایشی</translation>
 <translation id="1542514202066550870">‏این برگه محتوای VR را به هدست ارائه می‌دهد.</translation>
@@ -1161,6 +1162,7 @@
 <translation id="2501173422421700905">گواهی در انتظار</translation>
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2501797496290880632">تایپ کردن میان‌بر</translation>
+<translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2502441965851148920">به‌روزرسانی‌های خودکار فعال شده‌اند. سرپرست سیستم شما به‌روزرسانی‌های دستی را غیرفعال کرده است.</translation>
 <translation id="2502719318159902502">دسترسی کامل</translation>
 <translation id="2505127913256479918">این حساب تحت‌نظارت به‌زودی برداشته می‌شود</translation>
@@ -1546,6 +1548,7 @@
 <translation id="2993517869960930405">اطلاعات برنامه</translation>
 <translation id="2996286169319737844">‏داده‌ها با گذرواژه Google شما رمزگذاری می‌شود. این کار شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.</translation>
 <translation id="2996722619877761919">ورق زدن از طرف لبه بلندتر</translation>
+<translation id="3000461861112256445">صدای مونو</translation>
 <translation id="3001144475369593262">حساب‌های کودک</translation>
 <translation id="3003144360685731741">شبکه‌های برگزیده</translation>
 <translation id="3003623123441819449">‏حافظهٔ پنهان CSS</translation>
@@ -2480,6 +2483,7 @@
 <translation id="4211851069413100178">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. با ارسال خودکار داده‌های تشخیص عیب و داده‌های استفاده از دستگاه و برنامه به Google، به بهبود تجربه استفاده از Android کمک کنید. این داده‌ها به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوه نیز به برنامه‌ها و شرکای Google (مانند برنامه‌نویس‌های Android) کمک می‌کند. این <ph name="BEGIN_LINK1" />تنظیم<ph name="END_LINK1" /> توسط مالک اعمال می‌شود. ممکن است مالک انتخاب کند داده‌های استفاده و عیب‌یابی این دستگاه به Google ارسال شود. اگر تنظیم «فعالیت وب و برنامه» تکمیلی روشن باشد، ممکن است این داده‌ها در حساب Google شما ذخیره شود. <ph name="BEGIN_LINK2" />بیشتر بدانید<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">صادر کردن</translation>
 <translation id="42137655013211669">سرور، دسترسی به این منبع را ممنوع کرد.</translation>
+<translation id="4217571870635786043">املا</translation>
 <translation id="4218274196133425560">برداشتن استثنا برای <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">خطایی درحین فعال‌سازی روی داد.</translation>
 <translation id="4222772810963087151">جزئیات ساخت</translation>
@@ -3164,6 +3168,7 @@
 <translation id="5204967432542742771">گذرواژه را وارد کنید</translation>
 <translation id="5206215183583316675">«<ph name="CERTIFICATE_NAME" />» حذف شود؟</translation>
 <translation id="520621735928254154">خطا در وارد کردن گواهی</translation>
+<translation id="5207949376430453814">برجسته کردن هشتک نوشتار</translation>
 <translation id="5209320130288484488">دستگاهی یافت نشد</translation>
 <translation id="5210365745912300556">بستن برگه</translation>
 <translation id="5213481667492808996">سرویس داده «<ph name="NAME" />» شما آماده استفاده است</translation>
@@ -5077,6 +5082,7 @@
 <translation id="7766807826975222231">شرکت در تور</translation>
 <translation id="7766838926148951335">پذیرفتن مجوزها</translation>
 <translation id="7768770796815395237">تغییر دادن</translation>
+<translation id="7768784765476638775">انتخاب برای شنیدن</translation>
 <translation id="7769672763586021400">شناسه مدل</translation>
 <translation id="7770612696274572992">تصویر از دستگاه دیگری کپی شده است</translation>
 <translation id="7770651108375708429">‏قطع اتصال Wi-Fi</translation>

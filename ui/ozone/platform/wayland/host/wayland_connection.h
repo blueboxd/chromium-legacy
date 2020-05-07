@@ -19,7 +19,6 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
-#include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
@@ -69,8 +68,6 @@ class WaylandConnection {
 
   void SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
                        const gfx::Point& location);
-
-  int GetKeyboardModifiers() const;
 
   WaylandEventSource* event_source() const { return event_source_.get(); }
 
@@ -132,17 +129,7 @@ class WaylandConnection {
   // Returns true when dragging is entered or started.
   bool IsDragInProgress();
 
-  // Resets flags and keyboard modifiers.
-  //
-  // This method is specially handy for cases when the WaylandPointer state is
-  // modified by a POINTER_DOWN event, but the respective POINTER_UP event is
-  // not delivered.
-  void ResetPointerFlags();
-
  private:
-  // WaylandInputMethodContextFactory needs access to DispatchUiEvent
-  friend class WaylandInputMethodContextFactory;
-
   void Flush();
   void UpdateInputDevices(wl_seat* seat, uint32_t capabilities);
 
@@ -178,7 +165,11 @@ class WaylandConnection {
   wl::Object<wp_presentation> presentation_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
 
-  // Input devices
+  // Event source instance. Must be declared before input objects so it outlives
+  // them so thus being able to properly handle their destruction.
+  std::unique_ptr<WaylandEventSource> event_source_;
+
+  // Input device objects.
   std::unique_ptr<WaylandKeyboard> keyboard_;
   std::unique_ptr<WaylandPointer> pointer_;
   std::unique_ptr<WaylandTouch> touch_;
@@ -201,8 +192,6 @@ class WaylandConnection {
 
   // Manages Wayland windows.
   WaylandWindowManager wayland_window_manager_;
-
-  std::unique_ptr<WaylandEventSource> event_source_;
 
   bool scheduled_flush_ = false;
 

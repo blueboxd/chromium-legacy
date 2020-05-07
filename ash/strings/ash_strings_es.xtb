@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1199716647557067911">¿Seguro que quieres desactivar la accesibilidad mediante interruptores?</translation>
+<translation id="121097972571826261">Avanzar por palabra</translation>
+<translation id="1229194443904279055">Dejar de seleccionar</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">¿Qué tiempo hace?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Se ha habilitado la lupa de pantalla completa. Pulsa Ctrl + tecla de búsqueda + M de nuevo para desactivarla.</translation>
 <translation id="2302092602801625023">Esta cuenta se gestiona con Family Link</translation>
 <translation id="2303600792989757991">Activar vista general de ventanas</translation>
+<translation id="2322173485024759474">Retroceder por carácter</translation>
 <translation id="2339073806695260576">Toca el botón del lápiz óptico situado en la estantería para tomar una nota, hacer una captura de pantalla o utilizar el puntero láser o la lupa.</translation>
 <translation id="2341729377289034582">Bloqueada en vertical</translation>
 <translation id="2352467521400612932">Configuración del lápiz óptico</translation>
@@ -239,6 +242,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="383629559565718788">Mostrar configuración de teclado</translation>
 <translation id="3846575436967432996">No hay información de red disponible.</translation>
 <translation id="385051799172605136">Atrás</translation>
+<translation id="385300504083504382">Comienzo</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
 <translation id="3893630138897523026">ChromeVox (síntesis de voz)</translation>
 <translation id="3897533311200664389">Iniciar una consulta de texto</translation>
@@ -347,6 +351,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5379115545237091094">Demasiados intentos</translation>
 <translation id="5397578532367286026">El administrador puede consultar el uso y el historial de este usuario (<ph name="MANAGER_EMAIL" />) en la página chrome.com.</translation>
 <translation id="5400461572260843123">Ajustes rápidos. Pulsa la tecla de búsqueda y la flecha izquierda para acceder al centro de notificaciones.</translation>
+<translation id="5428899915242071344">Empezar a seleccionar</translation>
 <translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
@@ -468,6 +473,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6777216307882431711">Alimentando dispositivos USB‑C conectados</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6803622936009808957">No se han podido proyectar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
+<translation id="6818242057446442178">Retroceder por palabra</translation>
 <translation id="6820676911989879663">Haz una pausa</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Combinación de teclas desactivada</translation>
@@ -581,6 +587,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crear nota</translation>
+<translation id="8371779926711439835">Avanzar por carácter</translation>
 <translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> y tu teléfono se conectarán automáticamente</translation>
 <translation id="8388750414311082622">No se puede quitar el último escritorio.</translation>
 <translation id="8392451568018454956">Menú de opciones de <ph name="USER_EMAIL_ADDRESS" /></translation>

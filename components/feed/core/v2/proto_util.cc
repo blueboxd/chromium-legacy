@@ -107,7 +107,7 @@ feedwire::Version GetAppVersionMessage(const ChromeInfo& chrome_info) {
 
 feedwire::Request CreateFeedQueryRequest(
     feedwire::FeedQuery::RequestReason request_reason,
-    const ChromeInfo& chrome_info,
+    const RequestMetadata& request_metadata,
     const std::string& consistency_token,
     const std::string& next_page_token) {
   feedwire::Request request;
@@ -116,7 +116,7 @@ feedwire::Request CreateFeedQueryRequest(
   feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
   feed_request.add_client_capability(feedwire::Capability::BASE_UI);
   feed_request.add_client_capability(feedwire::Capability::REQUEST_SCHEDULE);
-  *feed_request.mutable_client_info() = CreateClientInfo(chrome_info);
+  *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();
   query.set_reason(request_reason);
   if (!consistency_token.empty()) {
@@ -156,13 +156,21 @@ bool CompareContentId(const feedwire::ContentId& a,
          std::tie(b.content_domain(), b_id, b_type);
 }
 
-feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info) {
+feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
   feedwire::ClientInfo client_info;
-  // TODO(harringtond): Fill out locale.
-  // TODO(harringtond): Fill out DisplayInfo.
   // TODO(harringtond): Fill out client_instance_id.
   // TODO(harringtond): Fill out advertising_id.
   // TODO(harringtond): Fill out device_country.
+
+  feedwire::DisplayInfo& display_info = *client_info.add_display_info();
+  display_info.set_screen_density(request_metadata.display_metrics.density);
+  display_info.set_screen_width_in_pixels(
+      request_metadata.display_metrics.width_pixels);
+  display_info.set_screen_height_in_pixels(
+      request_metadata.display_metrics.height_pixels);
+
+  client_info.set_locale(request_metadata.language_tag);
+
 #if defined(OS_ANDROID)
   client_info.set_platform_type(feedwire::ClientInfo::ANDROID_ID);
 #elif defined(OS_IOS)
@@ -170,24 +178,25 @@ feedwire::ClientInfo CreateClientInfo(const ChromeInfo& chrome_info) {
 #endif
   client_info.set_app_type(feedwire::ClientInfo::TEST_APP);
   *client_info.mutable_platform_version() = GetPlatformVersionMessage();
-  *client_info.mutable_app_version() = GetAppVersionMessage(chrome_info);
+  *client_info.mutable_app_version() =
+      GetAppVersionMessage(request_metadata.chrome_info);
   return client_info;
 }
 
 feedwire::Request CreateFeedQueryRefreshRequest(
     feedwire::FeedQuery::RequestReason request_reason,
-    const ChromeInfo& chrome_info,
+    const RequestMetadata& request_metadata,
     const std::string& consistency_token) {
-  return CreateFeedQueryRequest(request_reason, chrome_info, consistency_token,
-                                std::string());
+  return CreateFeedQueryRequest(request_reason, request_metadata,
+                                consistency_token, std::string());
 }
 
 feedwire::Request CreateFeedQueryLoadMoreRequest(
-    const ChromeInfo& chrome_info,
+    const RequestMetadata& request_metadata,
     const std::string& consistency_token,
     const std::string& next_page_token) {
   return CreateFeedQueryRequest(feedwire::FeedQuery::NEXT_PAGE_SCROLL,
-                                chrome_info, consistency_token,
+                                request_metadata, consistency_token,
                                 next_page_token);
 }
 

@@ -35,13 +35,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationStatement {
 
   // Returns true if the attestation is a "self" attestation, i.e. is just the
   // private key signing itself to show that it is fresh.
-  virtual bool IsSelfAttestation() = 0;
+  virtual bool IsSelfAttestation() const = 0;
 
   // Returns true if the attestation is known to be inappropriately identifying.
   // Some tokens return unique attestation certificates even when the bit to
   // request that is not set. (Normal attestation certificates are not
   // indended to be trackable.)
-  virtual bool IsAttestationCertificateInappropriatelyIdentifying() = 0;
+  virtual bool IsAttestationCertificateInappropriatelyIdentifying() const = 0;
 
   // Return the DER bytes of the leaf X.509 certificate, if any.
   virtual base::Optional<base::span<const uint8_t>> GetLeafCertificate()
@@ -67,8 +67,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) NoneAttestationStatement
   ~NoneAttestationStatement() override;
 
   cbor::Value AsCBOR() const override;
-  bool IsSelfAttestation() override;
-  bool IsAttestationCertificateInappropriatelyIdentifying() override;
+  bool IsSelfAttestation() const override;
+  bool IsAttestationCertificateInappropriatelyIdentifying() const override;
   base::Optional<base::span<const uint8_t>> GetLeafCertificate() const override;
 
  private:

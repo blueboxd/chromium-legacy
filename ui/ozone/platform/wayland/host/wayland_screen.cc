@@ -140,7 +140,6 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
 }
 
 gfx::Point WaylandScreen::GetCursorScreenPoint() const {
-  auto* wayland_window_manager = connection_->wayland_window_manager();
   // Wayland does not provide either location of surfaces in global space
   // coordinate system or location of a pointer. Instead, only locations of
   // mouse/touch events are known. Given that Chromium assumes top-level windows
@@ -151,10 +150,12 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
   // last known cursor position. Otherwise, return such a point, which is not
   // contained by any of the windows.
   auto* cursor_position = connection_->wayland_cursor_position();
-  if (wayland_window_manager->GetCurrentFocusedWindow() && cursor_position)
+  if (connection_->wayland_window_manager()->GetCurrentFocusedWindow() &&
+      cursor_position)
     return cursor_position->GetCursorSurfacePoint();
 
-  auto* window = wayland_window_manager->GetWindowWithLargestBounds();
+  auto* window =
+      connection_->wayland_window_manager()->GetWindowWithLargestBounds();
   DCHECK(window);
   const gfx::Rect bounds = window->GetBounds();
   return gfx::Point(bounds.width() + 10, bounds.height() + 10);

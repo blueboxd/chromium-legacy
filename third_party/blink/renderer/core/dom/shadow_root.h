@@ -156,6 +156,8 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   }
 
   void SetIsDeclarativeShadowRoot(bool flag) {
+    DCHECK(!flag || GetType() == ShadowRootType::kOpen ||
+           GetType() == ShadowRootType::kClosed);
     is_declarative_shadow_root_ = flag;
   }
   bool IsDeclarativeShadowRoot() const { return is_declarative_shadow_root_; }

@@ -574,8 +574,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetIsInert, OnSetIsInert)
-    IPC_MESSAGE_HANDLER(WidgetMsg_UpdateRenderThrottlingStatus,
-                        OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
@@ -2036,6 +2034,14 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     render_frame->SetDeviceScaleFactorOnRenderView(
         compositor_deps_->IsUseZoomForDSFEnabled(),
         screen_info_.device_scale_factor);
+    // When the device scale changes, the size and position of the popup would
+    // need to be adjusted, which we can't do. Just close the popup, which is
+    // also consistent with page zoom and resize behavior.
+    if (previous_original_screen_info.device_scale_factor !=
+        screen_info_.device_scale_factor) {
+      blink::WebView* web_view = GetFrameWidget()->LocalRoot()->View();
+      web_view->CancelPagePopup();
+    }
   }
 
   // Propagate changes down to child local root RenderWidgets and BrowserPlugins
@@ -2107,12 +2113,6 @@ void RenderWidget::OnSetViewportIntersection(
 void RenderWidget::OnSetIsInert(bool inert) {
   if (auto* frame_widget = GetFrameWidget())
     frame_widget->SetIsInert(inert);
-}
-
-void RenderWidget::OnUpdateRenderThrottlingStatus(bool is_throttled,
-                                                  bool subtree_throttled) {
-  if (auto* frame_widget = GetFrameWidget())
-    frame_widget->UpdateRenderThrottlingStatus(is_throttled, subtree_throttled);
 }
 
 void RenderWidget::OnDragTargetDragEnter(

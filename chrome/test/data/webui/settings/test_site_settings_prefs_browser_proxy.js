@@ -5,22 +5,13 @@
 // clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {ContentSetting,SiteSettingSource} from 'chrome://settings/lazy_load.js';
-import {createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType} from 'chrome://test/settings/test_util.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {ContentSetting, ContentSettingsTypes, CookieControlsManagedState, HandlerEntry, ProtocolEntry, RawChooserException, RawSiteException, RecentSitePermissions, SiteSettingSource, SiteSettingsPrefsBrowserProxy, ZoomLevelEntry} from 'chrome://settings/lazy_load.js';
+
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+import {createOriginInfo, createSiteGroup,createSiteSettingsPrefs, getContentSettingsTypeFromChooserType, SiteSettingsPref} from './test_util.js';
 // clang-format on
 
-/**
- * In the real (non-test) code, this data comes from the C++ handler.
- * Only used for tests.
- * @typedef {{defaults: !Object<ContentSettingsTypes,
- *                             !DefaultContentSetting>,
- *            exceptions: !Object<ContentSettingsTypes,
- *                                !Array<!RawSiteException>>,
- *            chooserExceptions: !Object<ContentSettingsTypes,
- *                                       !Array<!RawChooserException>>}}
- */
-let SiteSettingsPref;
 
 /**
  * A test version of SiteSettingsPrefsBrowserProxy. Provides helper methods
@@ -58,6 +49,9 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'clearEtldPlus1DataAndCookies',
       'clearOriginDataAndCookies',
       'recordAction',
+      'getCookieControlsManagedState',
+      'getCookieSettingDescription',
+      'getRecentSitePermissions',
     ]);
 
     /** @private {boolean} */
@@ -81,11 +75,14 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     /** @private {boolean} */
     this.isPatternValidForType_ = true;
 
-    this.mockMethods([
-      'getCookieSettingDescription',
-      'getCookieControlsManagedState',
-      'getRecentSitePermissions',
-    ]);
+    /** @private {!CookieControlsManagedState|undefined} */
+    this.cookieControlsManagedState_ = undefined;
+
+    /** @private {string} */
+    this.cookieSettingDesciption_ = '';
+
+    /** @private {!Array<!RecentSitePermissions>} */
+    this.recentSitePermissions_ = [];
   }
 
   /**
@@ -165,7 +162,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
   /**
    * Sets the prefs to use when testing.
-   * @param {!Array<!HandlerEntry>}
+   * @param {!Array<!HandlerEntry>} list
    */
   setIgnoredProtocols(list) {
     // Shallow copy of the passed-in array so mutation won't impact the source
@@ -297,8 +294,8 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     // Create a deep copy of the pref so that the chooser-exception-list element
     // is able update the UI appropriately when incognito mode is toggled.
-    const pref =
-        JSON.parse(JSON.stringify(this.prefs_.chooserExceptions[setting]));
+    const pref = /** @type {!Array<!RawChooserException>} */ (
+        JSON.parse(JSON.stringify(this.prefs_.chooserExceptions[setting])));
     assert(pref !== undefined, 'Pref is missing for ' + chooserType);
 
     if (this.hasIncognito_) {
@@ -340,7 +337,7 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   isPatternValidForType(pattern, category) {
-    this.methodCalled('isPatternValidForType', pattern, category);
+    this.methodCalled('isPatternValidForType', [pattern, category]);
     return Promise.resolve({
       isValid: this.isPatternValidForType_,
       reason: this.isPatternValidForType_ ? '' : 'pattern is invalid',
@@ -360,7 +357,6 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'resetCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, incognito]);
-    return Promise.resolve();
   }
 
   /** @override */
@@ -369,7 +365,6 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'resetChooserExceptionForSite',
         [chooserType, origin, embeddingOrigin, exception]);
-    return Promise.resolve();
   }
 
   /** @override */
@@ -425,7 +420,6 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'setCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, value, incognito]);
-    return Promise.resolve();
   }
 
   /** @override */
@@ -487,4 +481,51 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   recordAction() {
     this.methodCalled('recordAction');
   }
+
+
+  /** @param {!CookieControlsManagedState} state */
+  setCookieControlsManagedState(state) {
+    this.cookieControlsManagedState_ = state;
+  }
+
+  /** @override */
+  getCookieControlsManagedState() {
+    this.methodCalled('getCookieControlsManagedState');
+    return Promise.resolve(/** @type {!CookieControlsManagedState} */ (
+        this.cookieControlsManagedState_));
+  }
+
+  /** @param {string} label */
+  setCookieSettingDescription(label) {
+    this.cookieSettingDesciption_ = label;
+  }
+
+  /** @override */
+  getCookieSettingDescription() {
+    this.methodCalled('getCookieSettingDescription');
+    return Promise.resolve(this.cookieSettingDesciption_);
+  }
+
+  /** @param {!Array<!RecentSitePermissions>} permissions */
+  setRecentSitePermissions(permissions) {
+    this.recentSitePermissions_ = permissions;
+  }
+
+  /** @override */
+  getRecentSitePermissions() {
+    this.methodCalled('getRecentSitePermissions');
+    return Promise.resolve(this.recentSitePermissions_);
+  }
+
+  /** @override */
+  getDefaultCaptureDevices() {}
+
+  /** @override */
+  setDefaultCaptureDevice() {}
+
+  /** @override */
+  setProtocolHandlerDefault() {}
+
+  /** @override */
+  showAndroidManageAppLinks() {}
 }

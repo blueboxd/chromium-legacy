@@ -99,7 +99,6 @@ namespace content {
 class BrowserContext;
 struct FrameVisualProperties;
 class FrameTreeNode;
-class InterstitialPage;
 class NavigationHandle;
 class NavigationRequest;
 class RenderFrameMetadataProviderImpl;
@@ -984,10 +983,6 @@ RenderWidgetHost* GetMouseCaptureWidget(WebContents* web_contents);
 bool RequestKeyboardLock(WebContents* web_contents,
                          base::Optional<base::flat_set<ui::DomCode>> codes);
 void CancelKeyboardLock(WebContents* web_contents);
-
-// Returns true if inner |interstitial_page| is connected to an outer
-// WebContents.
-bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page);
 
 // Returns the screen orientation provider that's been set via
 // WebContents::SetScreenOrientationDelegate(). May return null.

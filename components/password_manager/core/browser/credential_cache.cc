@@ -43,14 +43,7 @@ void CredentialCache::SaveCredentialsAndBlacklistedForOrigin(
                           return credential.origin() == origin;
                         });
   GetOrCreateCredentialStore(origin).SaveCredentials(std::move(credentials));
-  GetOrCreateCredentialStore(origin).InitializeBlacklistedStatus(
-      is_blacklisted.value());
-}
-
-void CredentialCache::UpdateBlacklistedForOrigin(
-    const url::Origin& origin,
-    IsOriginBlacklisted is_blacklisted) {
-  GetOrCreateCredentialStore(origin).UpdateBlacklistedStatus(
+  GetOrCreateCredentialStore(origin).SetBlacklistedStatus(
       is_blacklisted.value());
 }
 

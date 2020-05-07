@@ -34,13 +34,16 @@ public final class BrowserViewController
                    WebContentsGestureStateTracker.OnGestureStateChangedListener,
                    ModalDialogManager.ModalDialogManagerObserver {
     private final ContentViewRenderView mContentViewRenderView;
+    // Child of mContentViewRenderView. Be very careful adding Views to this, as any Views are not
+    // accessible (ContentView provides it's own accessible implementation that interacts with
+    // WebContents).
     private final ContentView mContentView;
-    // Child of mContentView, holds top-view from client.
+    // Child of mContentViewRenderView, holds top-view from client.
     private final BrowserControlsContainerView mTopControlsContainerView;
-    // Child of mContentView, holds bottom-view from client.
+    // Child of mContentViewRenderView, holds bottom-view from client.
     private final BrowserControlsContainerView mBottomControlsContainerView;
-    // Other child of mContentView, which holds views that sit on top of the web contents, such as
-    // tab modal dialogs.
+    // Other child of mContentViewRenderView, which holds views that sit on top of the web contents,
+    // such as tab modal dialogs.
     private final FrameLayout mWebContentsOverlayView;
 
     private final FragmentWindowAndroid mWindowAndroid;
@@ -73,23 +76,24 @@ public final class BrowserViewController
         mContentView = ContentView.createContentView(
                 context, mTopControlsContainerView.getEventOffsetHandler());
         mContentViewRenderView.addView(mContentView,
-                new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
-        mContentView.addView(mTopControlsContainerView,
+                new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT));
+        mContentViewRenderView.addView(mTopControlsContainerView,
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         RelativeLayout.LayoutParams bottomControlsContainerViewParams =
                 new RelativeLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         bottomControlsContainerViewParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mContentView.addView(mBottomControlsContainerView, bottomControlsContainerViewParams);
+        mContentViewRenderView.addView(
+                mBottomControlsContainerView, bottomControlsContainerViewParams);
 
         mWebContentsOverlayView = new FrameLayout(context);
         RelativeLayout.LayoutParams overlayParams =
                 new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0);
         overlayParams.addRule(RelativeLayout.BELOW, mTopControlsContainerView.getId());
         overlayParams.addRule(RelativeLayout.ABOVE, mBottomControlsContainerView.getId());
-        mContentView.addView(mWebContentsOverlayView, overlayParams);
+        mContentViewRenderView.addView(mWebContentsOverlayView, overlayParams);
         mWindowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
 
         mModalDialogManager = new ModalDialogManager(

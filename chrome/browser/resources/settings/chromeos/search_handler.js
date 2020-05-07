@@ -23,7 +23,7 @@ cr.define('settings', function() {
   /**
    * @return {!chromeos.settings.mojom.SearchHandlerInterface} Search handler.
    */
-  function getSearchHandler() {
+  /* #export */ function getSearchHandler() {
     if (settingsSearchHandler) {
       return settingsSearchHandler;
     }

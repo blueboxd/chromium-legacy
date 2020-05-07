@@ -36,7 +36,6 @@ IN_PROC_BROWSER_TEST_F(PrefsInternalsTest, TestPrefsAreServed) {
   ASSERT_TRUE(web_contents);
   EXPECT_EQ(kUrl, web_contents->GetLastCommittedURL());
   EXPECT_FALSE(web_contents->IsCrashed());
-  EXPECT_FALSE(web_contents->GetInterstitialPage());
 
   // It's difficult to test the content of the page without duplicating the
   // implementation, but we can at least assert that something is being shown.

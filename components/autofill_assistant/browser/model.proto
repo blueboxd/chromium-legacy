@@ -31,6 +31,8 @@ message ValueProto {
   }
   // If set to true, this value will not be sent to the backend. This flag is
   // mostly used internally, to prevent certain values from leaving the device.
+  // Note that values derived from client_side_only values will inherit this
+  // property.
   optional bool is_client_side_only = 6;
 }
 

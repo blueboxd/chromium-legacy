@@ -367,7 +367,7 @@ void ShelfAppButton::SetImage(const gfx::ImageSkia& image) {
   }
   icon_image_ = image;
 
-  const int icon_size = ShelfConfig::Get()->button_icon_size() * icon_scale_;
+  const int icon_size = shelf_view_->GetButtonIconSize() * icon_scale_;
 
   // Resize the image maintaining our aspect ratio.
   float aspect_ratio = static_cast<float>(icon_image_.width()) /
@@ -532,7 +532,7 @@ bool ShelfAppButton::IsIconSizeCurrent() {
   int icon_width =
       GetIconBounds().width() + insets_shadows.left() + insets_shadows.right();
 
-  return icon_width == ShelfConfig::Get()->button_icon_size();
+  return icon_width == shelf_view_->GetButtonIconSize();
 }
 
 bool ShelfAppButton::FireDragTimerForTest() {
@@ -547,7 +547,7 @@ void ShelfAppButton::FireRippleActivationTimerForTest() {
 }
 
 gfx::Rect ShelfAppButton::CalculateSmallRippleArea() const {
-  int ink_drop_small_size = ShelfConfig::Get()->hotseat_size();
+  int ink_drop_small_size = shelf_view_->GetButtonSize();
   gfx::Point center_point = GetLocalBounds().CenterPoint();
   const int padding = ShelfConfig::Get()->GetAppIconEndPadding();
 
@@ -626,9 +626,8 @@ bool ShelfAppButton::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 gfx::Rect ShelfAppButton::GetIconViewBounds(float icon_scale) {
-  const float icon_size = ShelfConfig::Get()->button_icon_size() * icon_scale;
-  const float icon_padding =
-      (ShelfConfig::Get()->hotseat_size() - icon_size) / 2;
+  const float icon_size = shelf_view_->GetButtonIconSize() * icon_scale;
+  const float icon_padding = (shelf_view_->GetButtonSize() - icon_size) / 2;
 
   const gfx::Rect button_bounds(GetContentsBounds());
   const Shelf* shelf = shelf_view_->shelf();
@@ -792,7 +791,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
 std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
     const {
   const gfx::Rect small_ripple_area = CalculateSmallRippleArea();
-  const int ripple_size = ShelfConfig::Get()->GetShelfItemRippleSize();
+  const int ripple_size = shelf_view_->GetShelfItemRippleSize();
 
   return std::make_unique<views::SquareInkDropRipple>(
       gfx::Size(ripple_size, ripple_size), ink_drop_large_corner_radius(),

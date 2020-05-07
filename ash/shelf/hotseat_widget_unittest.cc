@@ -1664,7 +1664,7 @@ TEST_P(HotseatWidgetTest, FailingOverviewDragResultsInExtendedHotseat) {
   // overview.
   const int extended_hotseat_distance_from_top_of_shelf =
       ShelfConfig::Get()->hotseat_bottom_padding() +
-      ShelfConfig::Get()->hotseat_size();
+      GetPrimaryShelf()->hotseat_widget()->GetHotseatSize();
   UpdateScroll(-extended_hotseat_distance_from_top_of_shelf - 30);
   EndScroll(/*is_fling=*/false, 0.f);
 

@@ -16,9 +16,12 @@
 #include "chromeos/network/network_metadata_store.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -81,6 +84,15 @@ class NetworkMetadataStoreTest : public ::testing::Test {
     NetworkMetadataStore::RegisterPrefs(user_prefs_->registry());
     NetworkMetadataStore::RegisterPrefs(device_prefs_->registry());
 
+    auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
+    auto account_id = AccountId::FromUserEmail("account@test.com");
+    const user_manager::User* user = fake_user_manager->AddUser(account_id);
+    fake_user_manager->UserLoggedIn(user->GetAccountId(), user->username_hash(),
+                                    true /* browser_restart */,
+                                    false /* is_child */);
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(fake_user_manager));
+
     metadata_store_ = std::make_unique<NetworkMetadataStore>(
         network_configuration_handler_, network_connection_handler_.get(),
         network_state_handler_, user_prefs_.get(), device_prefs_.get());
@@ -96,6 +108,7 @@ class NetworkMetadataStoreTest : public ::testing::Test {
     device_prefs_.reset();
     network_configuration_handler_ = nullptr;
     network_connection_handler_.reset();
+    scoped_user_manager_.reset();
     NetworkHandler::Shutdown();
   }
 
@@ -129,6 +142,7 @@ class NetworkMetadataStoreTest : public ::testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> user_prefs_;
   std::unique_ptr<NetworkMetadataStore> metadata_store_;
   std::unique_ptr<TestNetworkMetadataObserver> metadata_observer_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMetadataStoreTest);
 };

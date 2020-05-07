@@ -441,9 +441,9 @@ void RenderWidgetHostViewChildFrame::UpdateInheritedEffectiveTouchAction() {
 
 void RenderWidgetHostViewChildFrame::UpdateRenderThrottlingStatus() {
   if (host() && frame_connector_) {
-    host()->Send(new WidgetMsg_UpdateRenderThrottlingStatus(
-        host()->GetRoutingID(), frame_connector_->IsThrottled(),
-        frame_connector_->IsSubtreeThrottled()));
+    host_->GetAssociatedFrameWidget()->UpdateRenderThrottlingStatusForSubFrame(
+        frame_connector_->IsThrottled(),
+        frame_connector_->IsSubtreeThrottled());
   }
 }
 

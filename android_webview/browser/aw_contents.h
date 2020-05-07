@@ -391,8 +391,6 @@ class AwContents : public FindHelper::Listener,
                              content::RenderViewHost* new_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
 
   // AwSafeBrowsingUIManager::UIManagerClient implementation
   bool CanShowInterstitial() override;

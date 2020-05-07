@@ -144,6 +144,15 @@ class PropertyTreeManager {
                                       CompositorElementId,
                                       const gfx::ScrollOffset&);
 
+  // Ensures a cc::ScrollNode for all scroll translations.
+  void EnsureCompositorScrollNodes(
+      const Vector<const TransformPaintPropertyNode*>&
+          scroll_translation_nodes);
+
+  // Sets the cc::ScrollNode::is_composited bit to true for the node with ID
+  // |cc_node_id|.
+  void SetCcScrollNodeIsComposited(int cc_node_id);
+
  private:
   void SetupRootTransformNode();
   void SetupRootClipNode();

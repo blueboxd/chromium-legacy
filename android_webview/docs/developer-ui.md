@@ -112,6 +112,14 @@ When you're done, open the notification tray and tap the WebView DevTools
 notification to go back to the flag UI. Tap "Reset all to default" and kill and
 restart WebView apps to go back to the default behavior.
 
+*** aside
+[Starting in
+M84](https://chromiumdash.appspot.com/commit/f5ee8b7f1d23d2a915ea234bdd4e49e4c908b267),
+toggled flags will be restored after WebView updates or rebooting your device.
+This is convenient if you want to try out features for longer periods of time,
+such as for dogfooding or compatibility testing.
+***
+
 ### Overriding variations/Field Trials
 
 Like Chrome, WebView supports A/B experiments and feature rollouts through
@@ -176,16 +184,22 @@ system UI where you can select your new WebView channel.
 
 ### Filing a bug report
 
-*** aside
-This was [added in M84](https://chromiumdash.appspot.com/commit/874adae46ba404dfec1660ef239899eef47d72bc).
-***
-
 You can file general bug reports for the WebView engineering team. Launch
 WebView DevTools, open the three-dotted menu, and select "Report WebView Bug."
 Similar to filing bug reports for crashes, this will open the system browser to
 [our bug
 tracker](https://bugs.chromium.org/p/chromium/issues/entry?template=Webview+Bugs&labels=Via-WebView-DevTools)
 (requires sign-in), where you can describe the issue.
+
+### Check for WebView updates
+
+*** aside
+This was [added in M84](https://chromiumdash.appspot.com/commit/f23d4aa70857ce71a44a2341584461feae95b8a6).
+***
+
+You can check for WebView updates directly from WebView DevTools. This is handy
+if you've applied flags, since the Play Store may pause automatic updates while
+WebView's persistent service is running.
 
 ## Looking for Chrome DevTools?
 

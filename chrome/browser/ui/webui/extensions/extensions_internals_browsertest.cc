@@ -40,7 +40,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsInternalsTest,
   ASSERT_TRUE(web_contents);
   EXPECT_EQ(navigation_url, web_contents->GetLastCommittedURL());
   EXPECT_FALSE(web_contents->IsCrashed());
-  EXPECT_FALSE(web_contents->GetInterstitialPage());
 
   // Look for a bit of JSON that has the extension's unique ID.
   bool has_text = false;

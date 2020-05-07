@@ -19,6 +19,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/types/event_type.h"
 #include "ui/gfx/range/range.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/zwp_text_input_wrapper_v1.h"
@@ -34,13 +35,13 @@ constexpr int kXkbKeycodeOffset = 8;
 
 WaylandInputMethodContext::WaylandInputMethodContext(
     WaylandConnection* connection,
-    LinuxInputMethodContextDelegate* delegate,
-    bool is_simple,
-    const EventDispatchCallback& callback)
+    WaylandKeyboard::Delegate* key_delegate,
+    LinuxInputMethodContextDelegate* ime_delegate,
+    bool is_simple)
     : connection_(connection),
-      delegate_(delegate),
+      key_delegate_(key_delegate),
+      ime_delegate_(ime_delegate),
       is_simple_(is_simple),
-      callback_(callback),
       text_input_(nullptr) {
   Init();
 }
@@ -79,7 +80,7 @@ bool WaylandInputMethodContext::DispatchKeyEvent(
   UpdatePreeditText(character_composer_.preedit_string());
   auto composed = character_composer_.composed_character();
   if (!composed.empty())
-    delegate_->OnCommit(composed);
+    ime_delegate_->OnCommit(composed);
   return true;
 }
 
@@ -93,7 +94,7 @@ void WaylandInputMethodContext::UpdatePreeditText(
   preedit.ime_text_spans.push_back(ImeTextSpan(
       ImeTextSpan::Type::kComposition, 0, length, ImeTextSpan::Thickness::kThin,
       ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
-  delegate_->OnPreeditChanged(preedit);
+  ime_delegate_->OnPreeditChanged(preedit);
 }
 
 void WaylandInputMethodContext::Reset() {
@@ -144,22 +145,21 @@ void WaylandInputMethodContext::OnPreeditString(const std::string& text,
   ui::CompositionText composition_text;
   composition_text.text = base::UTF8ToUTF16(text);
   composition_text.selection = selection_range;
-  delegate_->OnPreeditChanged(composition_text);
+  ime_delegate_->OnPreeditChanged(composition_text);
 }
 
 void WaylandInputMethodContext::OnCommitString(const std::string& text) {
-  delegate_->OnCommit(base::UTF8ToUTF16(text));
+  ime_delegate_->OnCommit(base::UTF8ToUTF16(text));
 }
 
 void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,
                                                         uint32_t length) {
-  delegate_->OnDeleteSurroundingText(index, length);
+  ime_delegate_->OnDeleteSurroundingText(index, length);
 }
 
 void WaylandInputMethodContext::OnKeysym(uint32_t key,
                                          uint32_t state,
                                          uint32_t modifiers) {
-  uint8_t flags = 0;  // for now ignore modifiers
   DomKey dom_key = NonPrintableXKeySymToDomKey(key);
   KeyboardCode key_code = NonPrintableDomKeyToKeyboardCode(dom_key);
   DomCode dom_code =
@@ -167,10 +167,11 @@ void WaylandInputMethodContext::OnKeysym(uint32_t key,
   if (dom_code == ui::DomCode::NONE)
     return;
 
-  bool down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
-  ui::KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code,
-                     dom_code, flags, dom_key, EventTimeForNow());
-  callback_.Run(&event);
+  // TODO(crbug.com/1079353): Handle modifiers.
+  EventType type =
+      state == WL_KEYBOARD_KEY_STATE_PRESSED ? ET_KEY_PRESSED : ET_KEY_RELEASED;
+  key_delegate_->OnKeyboardKeyEvent(type, dom_code, dom_key, key_code,
+                                    /*repeat=*/false, EventTimeForNow());
 }
 
 }  // namespace ui

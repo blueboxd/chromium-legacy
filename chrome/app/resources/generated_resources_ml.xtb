@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">ആപ്പ് വിൻഡോ</translation>
 <translation id="1531275250079031713">'പുതിയ വൈഫൈ ചേർക്കുക' ഡയലോഗ് കാണിക്കുക</translation>
 <translation id="1536754031901697553">വിച്ഛേദിക്കുന്നു...</translation>
+<translation id="1537254971476575106">പൂർണ്ണസ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1540605929960647700">ഡെമോ മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="1542514202066550870">ഒരു ഹെഡ്‌സെറ്റിലേക്ക് ഈ ടാബ് VR ഉള്ളടക്കം അവതരിപ്പിക്കുന്നു.</translation>
@@ -1126,7 +1127,7 @@
 <translation id="2464089476039395325">HTTP പ്രോക്‌സി</translation>
 <translation id="2465237718053447668">നിങ്ങൾ ഇപ്പോൾ വൈഫൈയിൽ കണക്റ്റ് ചെയ്‌ത് അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാൻ <ph name="DOMAIN" /> ആവശ്യപ്പെടുന്നു. അല്ലെങ്കിൽ, മീറ്റർ ചെയ്‌തത കണക്ഷനിൽ നിന്ന് ഡൗൺലോഡ് ചെയ്യുക (നിരക്കുകൾ ബാധകമായേക്കാം).</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> നെറ്റ്‍വർക്ക്, ഓഫാണ്</translation>
-<translation id="2468178265280335214">ടച്ച്‌പാഡ് സ്ക്രോൾ ചെയ്യൽ ആക്സിലറേഷൻ</translation>
+<translation id="2468178265280335214">ടച്ച്‌പാഡ് സ്ക്രോൾ ആക്സിലറേഷൻ</translation>
 <translation id="2468205691404969808">നിങ്ങൾ ആ പേജുകൾ സന്ദർശിക്കുന്നില്ലെങ്കിൽ പോലും, നിങ്ങളുടെ മുൻഗണനകൾ ഓർമ്മിക്കുന്നതിന് കുക്കികളെ ഉപയോഗിക്കുന്നു</translation>
 <translation id="2468402215065996499">താമഗോച്ചി</translation>
 <translation id="2469259292033957819">നിങ്ങൾക്ക് സംരക്ഷിച്ചിരിക്കുന്ന പ്രിന്ററുകളൊന്നുമില്ല.</translation>
@@ -1161,6 +1162,7 @@
 <translation id="2501173422421700905">സര്‍‌ട്ടിഫിക്കറ്റ് തടഞ്ഞിരിക്കുന്നു</translation>
 <translation id="2501278716633472235">പിന്നോട്ട് പോകുക</translation>
 <translation id="2501797496290880632">ഒരു കുറുക്കുവഴി ടൈപ്പ് ചെയ്യുക</translation>
+<translation id="2501920221385095727">സ്‌റ്റിക്കി കീകൾ</translation>
 <translation id="2502441965851148920">സ്വയമേവയുള്ള അപ്‌ഡേറ്റുകൾ പ്രവർത്തനക്ഷമമാക്കി. സ്വമേധയാ ഉള്ള അപ്‌ഡേറ്റുകൾ നിങ്ങളുടെ അഡ്‌മിനി‌സ്‌ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="2502719318159902502">പൂർണ്ണമായ ആക്സസ്</translation>
 <translation id="2505127913256479918">മേൽനോട്ടം വഹിക്കപ്പെടുന്ന ഈ അക്കൗണ്ട് വൈകാതെ നീക്കം ചെയ്യപ്പെടും</translation>
@@ -1172,7 +1174,7 @@
 <translation id="2508428939232952663">Google Play സ്‌റ്റോർ അക്കൗണ്ട്</translation>
 <translation id="2509495747794740764">സ്‌കെയിൽ തുക 10-നും 200-നും ഇടയിലുള്ള സംഖ്യ ആയിരിക്കണം.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2510988373360790637">Bluetooth ഉപകരണം ജോടി പിരിക്കുക</translation>
+<translation id="2510988373360790637">Bluetooth ഉപകരണം മറക്കുക</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2518024842978892609">നിങ്ങളുടെ ക്ലയന്റ് സർട്ടിഫിക്കറ്റുകൾ ഉപയോഗിക്കുക</translation>
@@ -1539,13 +1541,14 @@
 <translation id="2985348301114641460">"<ph name="EXTENSION_NAME" />" ഇൻസ്‌റ്റാൾ ചെയ്യാൻ നിങ്ങളുടെ അഡ്‌മിന് ഒരു അഭ്യർത്ഥന അയയ്ക്കണോ?</translation>
 <translation id="2986010903908656993">MIDI ഉപകരണങ്ങളുടെ പൂർണ്ണ നിയന്ത്രണത്തിലാകുന്നതിൽ നിന്ന് ഈ പേജ് തടഞ്ഞിരിക്കുന്നു.</translation>
 <translation id="2987620471460279764">മറ്റൊരു ഉപകരണത്തിൽ നിന്ന് പങ്കിട്ട ടെക്‌സ്‌റ്റ്</translation>
-<translation id="2989123969927553766">മൗസ് സ്ക്രോൾ ചെയ്യൽ ആക്സിലറേഷൻ</translation>
+<translation id="2989123969927553766">മൗസ് സ്ക്രോൾ ആക്സിലറേഷൻ</translation>
 <translation id="2989474696604907455">അറ്റാച്ചുചെയ്‌തില്ല</translation>
 <translation id="2989786307324390836">DER-എന്‍‌കോഡ് ചെയ്‌ത ബൈനറി, ഒറ്റ സര്‍‌ട്ടിഫിക്കറ്റ്</translation>
 <translation id="2992931425024192067">എല്ലാ അറിയിപ്പിന്റെയും ഉള്ളടക്കം കാണിക്കുക</translation>
 <translation id="2993517869960930405">ആപ്പ് വിവരം</translation>
 <translation id="2996286169319737844">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച് ഡാറ്റ എൻക്രിപ്‌റ്റ് ചെയ്‌തു. ഇതിൽ Google Pay-ൽ നിന്നുള്ള പേയ്മെന്‍റ് രീതികളും വിലാസങ്ങളും അടങ്ങുന്നില്ല.</translation>
 <translation id="2996722619877761919">ദീർഘ എഡ്‌ജിൽ ഫ്ലിപ്പ് ചെയ്യുക</translation>
+<translation id="3000461861112256445">മോണോ ഓഡിയോ</translation>
 <translation id="3001144475369593262">കുട്ടികളുടെ അക്കൗണ്ടുകൾ</translation>
 <translation id="3003144360685731741">തിരഞ്ഞെടുത്ത നെറ്റ്‌വർക്കുകൾ</translation>
 <translation id="3003623123441819449">CSS കാഷെ</translation>
@@ -2479,6 +2482,7 @@
 <translation id="4211851069413100178">ഉപയോഗവും പ്രശ്‌നനിർണ്ണയവുമായി ബന്ധപ്പെട്ട ഡാറ്റ അയയ്ക്കുക. പ്രശ്‌നനിർണ്ണയം, ഉപകരണം, ആപ്പ് ഉപയോഗം എന്നിവയുമായി ബന്ധപ്പെട്ട ഡാറ്റ സ്വയമേവ Google-ന് അയച്ച്, നിങ്ങളുടെ Android അനുഭവം മെച്ചപ്പെടുത്താൻ സഹായിക്കുക. സിസ്‌റ്റം, ആപ്പ് സ്ഥിരത, മറ്റ് മെച്ചപ്പെടുത്തൽ എന്നിവയ്ക്ക് ഇത് സഹായിക്കും. ചില സംഗ്രഹ ഡാറ്റ, Google ആപ്പുകളെയും Android ഡെവലപ്പർമാരെപ്പോലുള്ള പങ്കാളികളെയും സഹായിക്കുകയും ചെയ്യും. ഈ <ph name="BEGIN_LINK1" />ക്രമീകരണം<ph name="END_LINK1" /> നടപ്പിലാക്കുന്നത് ഉടമയാണ്. ഈ ഉപകരണത്തിലെ പ്രശ്‌നനിർണ്ണയവും ഉപയോഗവുമായി ബന്ധപ്പെട്ട ഡാറ്റ Google-ന് അയയ്ക്കാൻ ഉടമ തീരുമാനിച്ചേക്കാം. നിങ്ങളുടെ അധിക വെബ്, ആപ്പ് ആക്റ്റിവിറ്റി ക്രമീകരണം ഓണാക്കിയിട്ടുണ്ടെങ്കിൽ, ഈ ഡാറ്റ നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംരക്ഷിക്കപ്പെട്ടേക്കാം. <ph name="BEGIN_LINK2" />കൂടുതലറിയുക<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">എക്‌സ്‌പോർട്ടുചെയ്യുക</translation>
 <translation id="42137655013211669">ഈ ഉറവിടത്തിലേക്കുള്ള ആക്‌സസ് സെർവർ തടഞ്ഞു.</translation>
+<translation id="4217571870635786043">പറഞ്ഞ് കൊടുക്കൽ</translation>
 <translation id="4218274196133425560"><ph name="HOST_NAME" />-ലെ ഒഴിവാക്കൽ നീക്കം ചെയ്യുക</translation>
 <translation id="4220648711404560261">സജീവമാക്കുന്നതിനിടെ ഒരു പിശകുണ്ടായി.</translation>
 <translation id="4222772810963087151">ബിൽഡ് വിശദാംശങ്ങൾ</translation>
@@ -3137,7 +3141,7 @@
 <translation id="5158983316805876233">എല്ലാ പ്രോട്ടോക്കോളുകള്‍ക്കും ഒരേ പ്രോക്സി ഉപയോഗിക്കുക</translation>
 <translation id="5160857336552977725">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> എന്നതിൽ സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="5166596762332123936">കാലഹരണപ്പെട്ടതിനാൽ, <ph name="PLUGIN_NAME" /> ബ്ലോക്ക് ചെയ്യപ്പെട്ടു</translation>
-<translation id="5169131225159279624">ചേർക്കുന്നു</translation>
+<translation id="5169131225159279624">ചേർക്കൽ</translation>
 <translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
 <translation id="5171045022955879922">തിരയുക അല്ലെങ്കിൽ URL ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="5171343362375269016">സ്വാപ്പുചെയ്‌ത മെമ്മറി</translation>
@@ -3163,6 +3167,7 @@
 <translation id="5204967432542742771">പാസ്‌വേഡ് നല്‍കുക</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" ഇല്ലാതാക്കണോ?</translation>
 <translation id="520621735928254154">സർട്ടിഫിക്കറ്റ് ഇമ്പോർട്ട് ചെയ്യുന്നതിൽ പിശക്</translation>
+<translation id="5207949376430453814">ടെക്‌സ്‌റ്റ് കാരറ്റ് ഹൈലൈറ്റ് ചെയ്യുക</translation>
 <translation id="5209320130288484488">ഉപകരണങ്ങളൊന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="5210365745912300556">ടാബ് അടയ്ക്കൂക</translation>
 <translation id="5213481667492808996">നിങ്ങളുടെ '<ph name="NAME" />' ഡാറ്റാ സേവനം ഉപയോഗിക്കാൻ തയ്യാറാണ്</translation>
@@ -3187,7 +3192,7 @@
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">പുതിയ ടാബ് തുറക്കുമ്പോൾ കാണിക്കേണ്ട പേജ് മാറ്റുക</translation>
 <translation id="5238278114306905396">"<ph name="EXTENSION_NAME" />" ആപ്പ് സ്വയമേവ നീക്കംചെയ്‌തു.</translation>
-<translation id="5238435043462632060">നിങ്ങളുടെ രക്ഷിതാവ് Chrome-നുള്ള "സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കുമുള്ള അനുമതികൾ" ഓഫാക്കി. <ph name="ACTION_PARAMETER" /> ഇത് <ph name="EXTENSION_TYPE_PARAMETER" /> അനുവദനീയമല്ല.</translation>
+<translation id="5238435043462632060">നിങ്ങളുടെ രക്ഷിതാവ് Chrome-നുള്ള "സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കുമുള്ള അനുമതികൾ" ഓഫാക്കി. ഈ <ph name="EXTENSION_TYPE_PARAMETER" /> <ph name="ACTION_PARAMETER" />അനുവദനീയമല്ല.</translation>
 <translation id="5239730228370806996">ഈ വലിച്ചിട്ട ഡാറ്റ നിങ്ങളുടെ സ്ഥാപനത്തിന്റെ സുരക്ഷാ നയങ്ങൾ ലംഘിക്കുന്നു. എന്തായാലും തുടരണോ?</translation>
 <translation id="5241128660650683457">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിലെ എല്ലാ വിവരവും വായിക്കുക</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" പ്രവർത്തനക്ഷമമാക്കണോ?</translation>
@@ -3839,7 +3844,7 @@
 <translation id="6085886413119427067">സുരക്ഷിത കണക്ഷനിലൂടെ വെബ്‌സൈറ്റുകളിലേക്ക് എങ്ങനെ കണക്റ്റ് ചെയ്യാമെന്ന് നിർണ്ണയിക്കുന്നു</translation>
 <translation id="6086846494333236931">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഇൻസ്റ്റാൾ ചെയ്‌തു</translation>
 <translation id="6087960857463881712">മനോഹരമായ മുഖം</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> പ്രവർത്തനരഹിതമാക്കി</translation>
+<translation id="6088036808197002565"><ph name="EXTENSION_TYPE_PARAMETER" /> <ph name="ACTION_PARAMETER" /> പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="6091761513005122595">പങ്കിടൽ വിജയകരമായി മൗണ്ട് ചെയ്തു.</translation>
 <translation id="6093888419484831006">അപ്‌ഡേറ്റ് റദ്ദാക്കുന്നു...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5078,6 +5083,7 @@
 <translation id="7766807826975222231">ഒരു ടൂര്‍‌ നടത്തുക</translation>
 <translation id="7766838926148951335">അനുമതികൾ അംഗീകരിക്കുക</translation>
 <translation id="7768770796815395237">മാറ്റുക</translation>
+<translation id="7768784765476638775">വായിച്ചുകേൾക്കാൻ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7769672763586021400">മോഡൽ ഐഡി</translation>
 <translation id="7770612696274572992">മറ്റൊരു ഉപകരണത്തിൽ നിന്ന് പകർത്തിയ ചിത്രം</translation>
 <translation id="7770651108375708429">വൈഫൈ വിച്ഛേദിക്കുക</translation>

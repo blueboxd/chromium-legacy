@@ -56,6 +56,8 @@ class FeedStream : public FeedStreamApi,
     virtual bool IsEulaAccepted() = 0;
     // Returns true if the device is offline.
     virtual bool IsOffline() = 0;
+    virtual DisplayMetrics GetDisplayMetrics() = 0;
+    virtual std::string GetLanguageTag() = 0;
   };
 
   // Forwards to |feed::TranslateWireResponse()| by default. Can be overridden
@@ -181,7 +183,7 @@ class FeedStream : public FeedStreamApi,
 
   const base::Clock* GetClock() const { return clock_; }
   const base::TickClock* GetTickClock() const { return tick_clock_; }
-  const ChromeInfo& GetChromeInfo() const { return chrome_info_; }
+  RequestMetadata GetRequestMetadata() const;
 
   WireResponseTranslator* GetWireResponseTranslator() const {
     return wire_response_translator_;

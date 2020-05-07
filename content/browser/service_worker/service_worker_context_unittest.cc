@@ -1057,10 +1057,6 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   }
   EXPECT_EQ(1u, results.size());
   EXPECT_TRUE(base::Contains(results, container_host2.get()));
-
-  context()->UnregisterContainerHostByClientID(container_host1->client_uuid());
-  context()->UnregisterContainerHostByClientID(container_host2->client_uuid());
-  context()->UnregisterContainerHostByClientID(container_host3->client_uuid());
 }
 
 class ServiceWorkerContextRecoveryTest

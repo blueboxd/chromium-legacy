@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -24,7 +25,7 @@ class SplitViewDragIndicators;
 // Provides special handling for Chrome tab drags on behalf of
 // DragDropController. This must be created at the beginning of a tab drag and
 // destroyed at the end.
-class TabDragDropDelegate {
+class ASH_EXPORT TabDragDropDelegate {
  public:
   // Determines whether |drag_data| indicates a tab drag from a WebUI tab strip
   // (or simply returns false if the integration is disabled).

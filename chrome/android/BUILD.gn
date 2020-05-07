@@ -2066,6 +2066,7 @@ template("chrome_test_apk_tmpl") {
                              "android_manifest",
                              "android_manifest_dep",
                              "data_deps",
+                             "enable_lint",
                              "shared_libraries",
                            ])
 
@@ -2151,6 +2152,7 @@ template("monochrome_test_apk_tmpl") {
 }
 
 chrome_test_apk_tmpl("chrome_public_test_apk") {
+  enable_lint = true
   apk_name = "ChromePublicTest"
   android_manifest = chrome_public_test_apk_manifest
   android_manifest_dep = ":chrome_public_test_apk_manifest"

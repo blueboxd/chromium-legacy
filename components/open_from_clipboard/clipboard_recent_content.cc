@@ -38,7 +38,8 @@ base::TimeDelta ClipboardRecentContent::MaximumAgeOfClipboard() {
   // Identify the current setting for this parameter from the feature, using
   // 3600 seconds (1 hour) as a default if the parameter is not set.
   // On iOS, the default is 600 seconds (10 minutes).
-#if defined(OS_IOS)
+  // TODO(gangwu) : Remove this feature flag after full launched in Android.
+#if defined(OS_IOS) || defined(OS_ANDROID)
   int default_maximum_age = 600;
 #else
   int default_maximum_age = 3600;

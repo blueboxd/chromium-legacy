@@ -147,10 +147,10 @@ bool DesktopPWAsWithoutExtensions() {
 }
 
 bool HasMatchingOrGreaterThanIcon(
-    const std::vector<WebApplicationIconInfo>& icon_infos,
+    std::vector<SquareSizePx> downloaded_icon_sizes,
     int pixels) {
-  for (const auto& icon : icon_infos) {
-    if (icon.square_size_px >= pixels)
+  for (const SquareSizePx icon_size : downloaded_icon_sizes) {
+    if (icon_size >= pixels)
       return true;
   }
   return false;
@@ -207,14 +207,14 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
   base::Optional<std::string> icon_big;
   base::Optional<std::string> icon_small;
 
-  if (HasMatchingOrGreaterThanIcon(registrar.GetAppIconInfos(app_id),
+  if (HasMatchingOrGreaterThanIcon(registrar.GetAppDownloadedIconSizes(app_id),
                                    kWebAppIconLargeNonDefault)) {
     icon_big =
         apps::AppIconSource::GetIconURL(app_id, kWebAppIconLargeNonDefault)
             .spec();
   }
 
-  if (HasMatchingOrGreaterThanIcon(registrar.GetAppIconInfos(app_id),
+  if (HasMatchingOrGreaterThanIcon(registrar.GetAppDownloadedIconSizes(app_id),
                                    kWebAppIconSmallNonDefault)) {
     icon_small =
         apps::AppIconSource::GetIconURL(app_id, kWebAppIconSmallNonDefault)

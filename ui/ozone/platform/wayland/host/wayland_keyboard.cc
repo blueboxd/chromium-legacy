@@ -13,11 +13,13 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/events/types/event_type.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -35,10 +37,10 @@ const wl_callback_listener WaylandKeyboard::callback_listener_ = {
 WaylandKeyboard::WaylandKeyboard(wl_keyboard* keyboard,
                                  WaylandConnection* connection,
                                  KeyboardLayoutEngine* layout_engine,
-                                 const EventDispatchCallback& callback)
+                                 Delegate* delegate)
     : obj_(keyboard),
       connection_(connection),
-      callback_(callback),
+      delegate_(delegate),
       auto_repeat_handler_(this),
 #if BUILDFLAG(USE_XKBCOMMON)
       layout_engine_(static_cast<XkbKeyboardLayoutEngine*>(layout_engine)) {
@@ -51,12 +53,16 @@ WaylandKeyboard::WaylandKeyboard(wl_keyboard* keyboard,
       &WaylandKeyboard::Modifiers, &WaylandKeyboard::RepeatInfo,
   };
 
-  wl_keyboard_add_listener(obj_.get(), &listener, this);
+  DCHECK(delegate_);
+  delegate_->OnKeyboardCreated(this);
 
+  wl_keyboard_add_listener(obj_.get(), &listener, this);
   // TODO(tonikitoo): Default auto-repeat to ON here?
 }
 
-WaylandKeyboard::~WaylandKeyboard() {}
+WaylandKeyboard::~WaylandKeyboard() {
+  delegate_->OnKeyboardDestroyed(this);
+}
 
 void WaylandKeyboard::Keymap(void* data,
                              wl_keyboard* obj,
@@ -89,8 +95,10 @@ void WaylandKeyboard::Enter(void* data,
                             wl_surface* surface,
                             wl_array* keys) {
   // wl_surface might have been destroyed by this time.
-  if (surface)
-    WaylandWindow::FromSurface(surface)->set_keyboard_focus(true);
+  if (auto* window = WaylandWindow::FromSurface(surface)) {
+    auto* self = static_cast<WaylandKeyboard*>(data);
+    self->delegate_->OnKeyboardFocusChanged(window, /*focused=*/true);
+  }
 }
 
 void WaylandKeyboard::Leave(void* data,
@@ -98,14 +106,12 @@ void WaylandKeyboard::Leave(void* data,
                             uint32_t serial,
                             wl_surface* surface) {
   // wl_surface might have been destroyed by this time.
-  if (surface)
-    WaylandWindow::FromSurface(surface)->set_keyboard_focus(false);
-
-  WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
-  DCHECK(keyboard);
+  auto* self = static_cast<WaylandKeyboard*>(data);
+  if (auto* window = WaylandWindow::FromSurface(surface))
+    self->delegate_->OnKeyboardFocusChanged(window, /*focused=*/false);
 
   // Upon window focus lose, reset the key repeat timers.
-  keyboard->auto_repeat_handler_.StopKeyRepeat();
+  self->auto_repeat_handler_.StopKeyRepeat();
 }
 
 void WaylandKeyboard::Key(void* data,
@@ -120,7 +126,7 @@ void WaylandKeyboard::Key(void* data,
   keyboard->connection_->set_serial(serial);
 
   bool down = state == WL_KEYBOARD_KEY_STATE_PRESSED;
-  int device_id = keyboard->obj_.id();
+  int device_id = keyboard->device_id();
 
   keyboard->auto_repeat_handler_.UpdateKeyRepeat(
       key, down, false /*suppress_auto_repeat*/, device_id);
@@ -141,8 +147,9 @@ void WaylandKeyboard::Modifiers(void* data,
   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
   DCHECK(keyboard);
 
-  keyboard->modifiers_ = keyboard->layout_engine_->UpdateModifiers(
-      depressed, latched, locked, group);
+  int modifiers = keyboard->layout_engine_->UpdateModifiers(depressed, latched,
+                                                            locked, group);
+  keyboard->delegate_->OnKeyboardModifiersChanged(modifiers);
 #endif
 }
 
@@ -183,20 +190,20 @@ void WaylandKeyboard::DispatchKey(uint32_t key,
   if (dom_code == ui::DomCode::NONE)
     return;
 
-  DomKey dom_key;
-  KeyboardCode key_code;
-  if (!layout_engine_->Lookup(dom_code, modifiers_, &dom_key, &key_code))
-    return;
+  // Pass empty DomKey and KeyboardCode here so the delegate can pre-process
+  // and decode it when needed.
+  delegate_->OnKeyboardKeyEvent(down ? ET_KEY_PRESSED : ET_KEY_RELEASED,
+                                dom_code, DomKey::NONE,
+                                KeyboardCode::VKEY_UNKNOWN, repeat, timestamp);
+}
 
-  if (!repeat) {
-    int flag = ModifierDomKeyToEventFlag(dom_key);
-    UpdateModifier(flag, down);
-  }
-
-  ui::KeyEvent event(down ? ET_KEY_PRESSED : ET_KEY_RELEASED, key_code,
-                     dom_code, modifiers_, dom_key, timestamp);
-  event.set_source_device_id(device_id);
-  callback_.Run(&event);
+bool WaylandKeyboard::Decode(DomCode dom_code,
+                             int modifiers,
+                             DomKey* out_dom_key,
+                             KeyboardCode* out_key_code) {
+  DCHECK(out_dom_key);
+  DCHECK(out_key_code);
+  return layout_engine_->Lookup(dom_code, modifiers, out_dom_key, out_key_code);
 }
 
 void WaylandKeyboard::SyncCallback(void* data,
@@ -204,28 +211,9 @@ void WaylandKeyboard::SyncCallback(void* data,
                                    uint32_t time) {
   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
   DCHECK(keyboard);
-
+  DCHECK(keyboard->auto_repeat_closure_);
   std::move(keyboard->auto_repeat_closure_).Run();
-  DCHECK(keyboard->auto_repeat_closure_.is_null());
   keyboard->sync_callback_.reset();
-}
-
-void WaylandKeyboard::UpdateModifier(int modifier, bool down) {
-  if (modifier == EF_NONE)
-    return;
-
-  // TODO(nickdiego): ChromeOS-specific keyboard remapping logic.
-  // Remove this once it is properly guarded under OS_CHROMEOS.
-  //
-  // Currently EF_MOD3_DOWN means that the CapsLock key is currently down,
-  // and EF_CAPS_LOCK_ON means the caps lock state is enabled (and the
-  // key may or may not be down, but usually isn't). There does need to
-  // to be two different flags, since the physical CapsLock key is subject
-  // to remapping, but the caps lock state (which can be triggered in a
-  // variety of ways) is not.
-  if (modifier == EF_CAPS_LOCK_ON)
-    modifier = (modifier & ~EF_CAPS_LOCK_ON) | EF_MOD3_DOWN;
-  modifiers_ = down ? (modifiers_ | modifier) : (modifiers_ & ~modifier);
 }
 
 }  // namespace ui

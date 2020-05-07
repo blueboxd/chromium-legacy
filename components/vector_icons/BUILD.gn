@@ -47,8 +47,6 @@ aggregate_vector_icons("components_vector_icons") {
     "lightbulb_outline.icon",
     "location_on.icon",
     "lock.icon",
-    "media_enter_pip.icon",
-    "media_exit_pip.icon",
     "media_next_track.icon",
     "media_previous_track.icon",
     "media_router_active.icon",

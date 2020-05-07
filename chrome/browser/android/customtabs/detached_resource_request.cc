@@ -152,10 +152,28 @@ void DetachedResourceRequest::Start(
   request->url_loader_->SetOnRedirectCallback(
       base::BindRepeating(&DetachedResourceRequest::OnRedirectCallback,
                           base::Unretained(request.get())));
-  // Only retry on network changes, not HTTP 5xx codes. This is a client-side
-  // failure, and main requests are retried in this case.
-  request->url_loader_->SetRetryOptions(
-      1 /* max_retries */, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+
+  // Retry for client-side transient failures: DNS resolution errors and network
+  // configuration changes. Server HTTP 5xx errors are not retried.
+  //
+  // This is due to seeing that network changes happen quite a bit in
+  // practice. This may be due to these requests happening early in Chrome's
+  // lifecycle, so perhaps when the network was otherwise idle before,
+  // potentially triggering a network change as a consequence. This is only an
+  // hypothesis, but happens in practice, and retrying does help lowering the
+  // failure rate.
+  //
+  // DNS errors are both independent and linked to this. They can happen for a
+  // number of reasons, including a network change. Starting with Chrome 81
+  // however, a network change happening during DNS resolution is reported as a
+  // DNS error, not a network configuration change. This is visible in
+  // metrics. As a consequence, retry the request on DNS errors as well. Note
+  // that this is harmless, since the request cannot have server-side
+  // side-effects if the DNS resolution failed. See crbug.com/1078350 for
+  // details.
+  int retry_mode = network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
+                   network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED;
+  request->url_loader_->SetRetryOptions(1 /* max_retries */, retry_mode);
 
   // |url_loader_| is owned by the request, and must be kept alive to not cancel
   // the request. Pass the ownership of the request to the response callback,

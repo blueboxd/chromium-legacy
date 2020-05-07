@@ -6,10 +6,10 @@
 
 namespace ash {
 
-bool ShellDelegate::CreateBrowserForTabDrop(
-    gfx::NativeWindow source_window,
+aura::Window* ShellDelegate::CreateBrowserForTabDrop(
+    aura::Window* source_window,
     const ui::OSExchangeData& drop_data) {
-  return false;
+  return nullptr;
 }
 
 media_session::mojom::MediaSessionService*

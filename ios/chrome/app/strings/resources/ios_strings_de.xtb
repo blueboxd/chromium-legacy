@@ -95,7 +95,7 @@
 <translation id="2103075008456228677">history.google.com öffnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
 <translation id="2118594521750010466">Jetzt beheben</translation>
-<translation id="213900355088104901">Wenn Sie privat surfen möchten, öffnen Sie einen Inkognito-Tab</translation>
+<translation id="213900355088104901">Wenn Sie privat surfen möchten, öffnen Sie einen Inkognitotab</translation>
 <translation id="2139867232736819575">Nach von Ihnen kopiertem Text suchen</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
 <translation id="2175927920773552910">QR-Code</translation>
@@ -292,7 +292,7 @@ Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie 
 <translation id="4689564913179979534">Zahlungsmethoden verwalten…</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4747097190499141774">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay. Nur Personen mit Ihrer Passphrase können Ihre verschlüsselten Daten lesen. Die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen oder diese Einstellung ändern möchten, müssen Sie die Synchronisierung zurücksetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
-<translation id="4751645464639803239">Neuer Inkognito-Tab</translation>
+<translation id="4751645464639803239">Neuer Inkognitotab</translation>
 <translation id="4758977202923349869">Positionieren Sie die Kreditkarte in diesem Bereich</translation>
 <translation id="4802417911091824046">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay.
 
@@ -313,7 +313,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4945756290001680296">Auf Passworteinstellungen zugreifen</translation>
 <translation id="4979397965658815378">Melden Sie sich mit Ihrem Google-Konto an, um Ihre Lesezeichen, Ihre Passwörter, Ihren Verlauf und Ihre anderen Einstellungen auf allen Geräten abrufen zu können</translation>
 <translation id="5005498671520578047">Passwort kopieren</translation>
-<translation id="5010803260590204777">Öffnet einen Inkognito-Tab zum anonymen Surfen im Web</translation>
+<translation id="5010803260590204777">Öffnet einen Inkognitotab zum anonymen Surfen im Web</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5059136629401106827">Ok</translation>
 <translation id="5062321486222145940">Google Drive installieren</translation>
@@ -378,7 +378,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5948291296578561264">Dadurch können Sie Fotos in der Fotogalerie speichern.</translation>
 <translation id="5955891643922670672">Offlineversion wird angezeigt</translation>
 <translation id="5957613098218939406">Weitere Optionen</translation>
-<translation id="5964480694698977962">Neuen Inkognito-Tab erstellen.</translation>
+<translation id="5964480694698977962">Neuen Inkognitotab erstellen.</translation>
 <translation id="5965679971710331625">Sie sind angemeldet</translation>
 <translation id="5979837087407522202">Passwörter suchen</translation>
 <translation id="5982717868370722439">Vorhandene Daten zu <ph name="USER_EMAIL" /> hinzufügen.</translation>
@@ -431,7 +431,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Nachricht gesendet</translation>
 <translation id="6447842834002726250">Cookies</translation>
-<translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
+<translation id="6464071786529933911">In neuem Inkognitotab öffnen</translation>
 <translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="648164694371393720">Authentifizierungsfehler</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>

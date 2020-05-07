@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">Nájdite kláves, potom napíšte písmeno zdvihnutím prsta</translation>
 <translation id="1012173283529841972">Položka zoznamu</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">Potiahnite dvoma prstami doprava</translation>
 <translation id="1022586497894531524">Používate hovorenú spätnú väzbu čítačky ChromeVox prvýkrát? Tento stručný návod vám vysvetlí základy potrebné na začatie používania čítačky ChromeVox.</translation>
 <translation id="1025074108959230262">Rýchly režim bol zakázaný</translation>
 <translation id="1031961866430398710">a potom</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">Žiadna predchádzajúca položka zoznamu</translation>
 <translation id="1114836634143403764">Návrh</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">Potiahnite dvoma prstami nahor</translation>
 <translation id="1126928665165112660">Text nie je kurzíva</translation>
 <translation id="113582498867142724">Počet položiek v zbierke <ph name="TAG" />: <ph name="NUM" /></translation>
 <translation id="1161762950103988776">Preskočenie</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">päta</translation>
 <translation id="174268867904053074">Ďalší obrázok</translation>
 <translation id="1756785467854861272">Tmavopurpurová</translation>
+<translation id="1765245556747822181">Potiahnite prstom nahor</translation>
 <translation id="1771761307086386028">Posunúť doprava</translation>
 <translation id="1781173782405573156">Preskočiť kláves</translation>
 <translation id="1787176709638001873">Text úpravy hesla</translation>
@@ -133,6 +136,7 @@
 <translation id="2010555995361223825">Ponuky ChromeVox</translation>
 <translation id="203030071582665758">Žiadny predchádzajúci nadpis štvrtej úrovne</translation>
 <translation id="2045055672832940894">Žiadny predchádzajúci ovládací prvok</translation>
+<translation id="2045606329038304310">Ovládací prvok poľa formulára</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="2086961585857038472">Ďalšie slovo</translation>
 <translation id="2087981446621639008">dscrplst dtl</translation>
@@ -159,6 +163,7 @@
 <translation id="225732394367814946">Zvýšiť rýchlosť reči</translation>
 <translation id="2267538686624070261">Preklep nebol opravený</translation>
 <translation id="2267945578749931355">Ďalší znak</translation>
+<translation id="2278490101488436824">Potiahnite troma prstami doľava</translation>
 <translation id="2305942658236913680">Žiadny ďalší nadpis</translation>
 <translation id="2311237334957139798">Prejsť na predchádzajúcu položku na úrovni podrobností</translation>
 <translation id="2314393392395134769">Text nie je dolný index</translation>
@@ -232,12 +237,14 @@
 <translation id="2867808975387772810">Bibliografia</translation>
 <translation id="2873259058405069099">Prejsť na začiatok tabuľky</translation>
 <translation id="287383510823843610">Tmavooranžová</translation>
+<translation id="2879867157561757640">Potiahnite troma prstami nadol</translation>
 <translation id="288178314850623291">Ak chcete prejsť na konkrétne typy prvkov, použite príkazy na preskočenie. Ak chcete prechádzať dopredu medzi nadpismi, stlačte kombináciu klávesov Hľadať + H. Ak chcete prejsť dozadu, stlačte kombináciu klávesov Hľadať + Shift + H.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{minúta}few{minúty}many{minúty}other{minút}}</translation>
 <translation id="2894654529758326923">Informácie</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ľavá zložená zátvorka}few{# ľavé zložené zátvorky}many{# left braces}other{# ľavých zložených zátvoriek}}</translation>
 <translation id="2909584066358367921">Žiadne ďalšie tlačidlo</translation>
 <translation id="2911433807131383493">Otvoriť príručku rozšírenia ChromeVox</translation>
+<translation id="2912405967290226587">Potiahnite troma prstami doprava</translation>
 <translation id="2937799153569150791">Žiadny ďalší nadpis tretej úrovne</translation>
 <translation id="2942710183375260152">Tmavobridlicovomodrá</translation>
 <translation id="2943596527105977722">Tmavobéžová</translation>
@@ -245,6 +252,7 @@
 <translation id="2968634799764242930">Morská zelená</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tabulátor}few{# tabulátory}many{# tabs}other{# tabulátorov}}</translation>
 <translation id="2972205263822847197">Popis</translation>
+<translation id="297825089465017871">Potiahnite dvoma prstami doľava</translation>
 <translation id="2998131015536248178">Predchádzajúci znak</translation>
 <translation id="2999559350546931576">Znížiť výšku hlasu</translation>
 <translation id="3014130421870723208">@upr osembodové</translation>
@@ -254,6 +262,7 @@
 <translation id="3046838483509668188">Možnosti rozšírenia ChromeVox</translation>
 <translation id="3060756054951570867">otvorila sa ponuka <ph name="TITLE" /></translation>
 <translation id="3060880924447482063">Ak chcete prechádzať po položkách, potiahnite doľava alebo doprava</translation>
+<translation id="3070245424257836917">Potiahnite troma prstami nahor</translation>
 <translation id="3078345202707391975">Ďalší nadpis 2. úrovne</translation>
 <translation id="3078740164268491126">tabuľka</translation>
 <translation id="3082249673510793544">Posunúť vzad</translation>
@@ -435,6 +444,7 @@
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="4402014469255336455">Sýtosvetlomodrá</translation>
 <translation id="4432457053224379116">Indiánska červená</translation>
+<translation id="4437615272777527928">Zadajte výraz a vyhľadajte ho tak v ponukách. Výsledkami prechádzajte šípkami nahor a nadol. Ľavou a pravou šípkou upravte textový kurzor a presúvajte sa medzi ponukami</translation>
 <translation id="4457472090507035117">Vybrať aktuálny hlas:</translation>
 <translation id="4476183483923481720">nový riadok</translation>
 <translation id="4479068155583208887">Ohnivá tehlová</translation>
@@ -459,6 +469,7 @@
 <translation id="4677535310137735442">Prechod na ďalší stĺpec</translation>
 <translation id="4688873778442829762">mriežka</translation>
 <translation id="4693675773662933727">Prechádzajúci orientačný bod</translation>
+<translation id="4710166929009737753">Potiahnite prstom doprava</translation>
 <translation id="4712898966495541134">Koniec výberu</translation>
 <translation id="4740661827607246557">Príkazy pomocníka</translation>
 <translation id="4755857887974653209">Zakázať ChromeVox</translation>
@@ -709,9 +720,11 @@
 <translation id="6793101435925451627">pole zoznamu</translation>
 <translation id="6815255864998354418">Citrónová šifónová</translation>
 <translation id="6816066673340002913">Svetlobéžová</translation>
+<translation id="6826226459053491773">Potiahnite dvoma prstami nadol</translation>
 <translation id="6833103209700200188">Päta</translation>
 <translation id="6837853484260746864">Vyberte hlas:</translation>
 <translation id="6858047746862060282">Prológ</translation>
+<translation id="6859876496651143278">Potiahnite prstom doľava</translation>
 <translation id="6865519907510167493">Preklep</translation>
 <translation id="6894148351896207544">Prečítať nahlas aktuálny čas a dátum</translation>
 <translation id="6896758677409633944">Kopírovať</translation>
@@ -993,6 +1006,7 @@
 <translation id="923331726185079994">Aplikácia ChromeVox bola aktualizovaná</translation>
 <translation id="93384979447910801">Tmavá morská zelená</translation>
 <translation id="948171205378458592">Znížiť rýchlosť reči</translation>
+<translation id="958854023026327378">Potiahnite prstom nadol</translation>
 <translation id="962913030769097253">Ďalší nadpis 1. úrovne</translation>
 <translation id="966588271015727539">Vybrať Braillov displej s rozhraním Bluetooth</translation>
 <translation id="973955474346881951">Povoliť alebo zakázať rýchly režim</translation>

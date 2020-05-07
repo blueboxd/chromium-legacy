@@ -94,40 +94,26 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   using ExecutionReadyCallback = base::OnceClosure;
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
 
-  // Used to create a ServiceWorkerContainerHost for a window during a
-  // navigation. |are_ancestors_secure| should be true for main frames.
-  // Otherwise it is true iff all ancestor frames of this frame have a secure
-  // origin. |frame_tree_node_id| is FrameTreeNode id. |web_contents_getter|
-  // indicates the tab where the navigation is occurring.
-  static base::WeakPtr<ServiceWorkerContainerHost> CreateForWindow(
-      bool are_ancestors_secure,
-      int frame_tree_node_id,
-      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-          host_receiver,
-      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote,
+  // Constructor for service worker.
+  explicit ServiceWorkerContainerHost(
       base::WeakPtr<ServiceWorkerContextCore> context);
 
-  // Used for starting a web worker (dedicated worker or shared worker). Returns
-  // a container host for the worker.
-  static base::WeakPtr<ServiceWorkerContainerHost> CreateForWebWorker(
-      blink::mojom::ServiceWorkerClientType client_type,
-      int process_id,
-      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-          host_receiver,
-      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote,
-      base::WeakPtr<ServiceWorkerContextCore> context);
-
+  // Constructor for window clients.
   ServiceWorkerContainerHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool is_parent_frame_secure,
-      base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
-      int frame_tree_node_id,
-      mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
-          host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote);
+          container_remote,
+      int frame_tree_node_id);
+
+  // Constructor for worker clients.
+  ServiceWorkerContainerHost(
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      int process_id,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          container_remote,
+      blink::mojom::ServiceWorkerClientType client_type);
+
   ~ServiceWorkerContainerHost() override;
 
   ServiceWorkerContainerHost(const ServiceWorkerContainerHost& other) = delete;
@@ -418,8 +404,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
     return fetch_request_window_id_;
   }
 
-  void SetContainerProcessId(int process_id);
-
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return process_id_; }
   int frame_id() const { return frame_id_; }
@@ -585,15 +569,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // renderer process.
   std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerObjectHost>>
       service_worker_object_hosts_;
-
-  // |receiver_| keeps the connection to the renderer-side counterpart
-  // (content::ServiceWorkerProviderContext). When the connection bound on
-  // |receiver_| gets killed from the renderer side, or the bound
-  // |ServiceWorkerProviderInfoForStartWorker::host_remote| is otherwise
-  // destroyed before being passed to the renderer, this
-  // content::ServiceWorkerContainerHost will be destroyed.
-  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainerHost> receiver_{
-      this};
 
   // For all service worker clients --------------------------------------------
 

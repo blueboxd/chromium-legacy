@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
@@ -50,7 +51,7 @@ public interface OmniboxSuggestionsDropdown {
     }
 
     /** Get the Android View implementing suggestion list. */
-    View getView();
+    ViewGroup getViewGroup();
 
     /** Show (and properly size) the suggestions list. */
     void show();

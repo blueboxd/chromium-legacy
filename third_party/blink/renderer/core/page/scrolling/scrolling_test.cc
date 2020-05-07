@@ -23,12 +23,14 @@
  */
 
 #include "build/build_config.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/scrollbar_layer_base.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/sticky_position_constraint.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -55,6 +57,8 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -1664,6 +1668,425 @@ TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
   RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale);
   EXPECT_EQ(FloatPoint(0, 210), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 210), CurrentScrollOffset(element_id));
+}
+
+class ScrollingSimTest : public SimTest, public PaintTestConfigurations {
+ public:
+  ScrollingSimTest() : scroll_unification_enabled_(true) {}
+
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+    WebView().MainFrameWidgetBase()->Resize(IntSize(1000, 1000));
+    WebView().MainFrameWidgetBase()->UpdateAllLifecyclePhases(
+        DocumentUpdateReason::kTest);
+  }
+
+  void RunIdleTasks() {
+    auto* scheduler =
+        ThreadScheduler::Current()->GetWebMainThreadSchedulerForTest();
+    blink::scheduler::RunIdleTasksForTesting(scheduler,
+                                             base::BindOnce([]() {}));
+    test::RunPendingTasks();
+  }
+
+  const cc::Layer* RootCcLayer() { return GetDocument().View()->RootCcLayer(); }
+
+  const cc::ScrollNode* ScrollNodeForScrollableArea(
+      const ScrollableArea* scrollable_area) {
+    if (!scrollable_area)
+      return nullptr;
+    const auto* property_trees =
+        RootCcLayer()->layer_tree_host()->property_trees();
+    return property_trees->scroll_tree.Node(
+        property_trees->element_id_to_scroll_node_index.at(
+            scrollable_area->GetScrollElementId()));
+  }
+
+ protected:
+  RuntimeEnabledFeaturesTestHelpers::ScopedScrollUnification
+      scroll_unification_enabled_;
+};
+
+INSTANTIATE_PAINT_TEST_SUITE_P(ScrollingSimTest);
+
+// Tests that the compositor gets a scroll node for noncomposited scrollers by
+// loading a page with a scroller that has a clip path, and ensuring that
+// scroller generates a compositor scroll node with the proper noncomposited
+// reasons set. It then removes the clip property and ensures the compositor
+// node updates accordingly.
+TEST_P(ScrollingSimTest, ScrollNodeForNonCompositedScroller) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #noncomposited {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      position: absolute;
+      top: 300px;
+      clip: rect(0px, 200px, 200px, 50px);
+    }
+    #spacer {
+      width: 100%;
+      height: 10000px;
+    }
+    </style>
+    <div id="noncomposited">
+      <div id="spacer"></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Element* noncomposited_element =
+      MainFrame().GetFrame()->GetDocument()->getElementById("noncomposited");
+  auto* scrollable_area = noncomposited_element->GetScrollableArea();
+  ASSERT_EQ(cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+            scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+
+  const auto* scroll_node = ScrollNodeForScrollableArea(scrollable_area);
+  ASSERT_TRUE(scroll_node);
+
+  EXPECT_EQ(scroll_node->element_id, scrollable_area->GetScrollElementId());
+  EXPECT_FALSE(RootCcLayer()
+                   ->layer_tree_host()
+                   ->property_trees()
+                   ->scroll_tree.IsComposited(*scroll_node));
+
+  // Now remove the clip property and ensure the compositor scroll node changes.
+  noncomposited_element->setAttribute(html_names::kStyleAttr, "clip: auto");
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(0u, scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  EXPECT_EQ(scroll_node->element_id, scrollable_area->GetScrollElementId());
+  EXPECT_TRUE(RootCcLayer()
+                  ->layer_tree_host()
+                  ->property_trees()
+                  ->scroll_tree.IsComposited(*scroll_node));
+}
+
+// Tests that the compositor retains the scroll node for a composited scroller
+// when it becomes noncomposited, and ensures the scroll node has its
+// IsComposited state updated accordingly.
+TEST_P(ScrollingSimTest, ScrollNodeForCompositedToNonCompositedScroller) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #composited {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      position: absolute;
+      top: 300px;
+    }
+    #spacer {
+      width: 100%;
+      height: 10000px;
+    }
+    </style>
+    <div id="composited">
+      <div id="spacer"></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Element* composited_element =
+      MainFrame().GetFrame()->GetDocument()->getElementById("composited");
+  auto* scrollable_area = composited_element->GetScrollableArea();
+  EXPECT_EQ(0u, scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+
+  const auto* scroll_node = ScrollNodeForScrollableArea(scrollable_area);
+  ASSERT_TRUE(scroll_node);
+
+  EXPECT_EQ(scroll_node->element_id, scrollable_area->GetScrollElementId());
+  EXPECT_TRUE(RootCcLayer()
+                  ->layer_tree_host()
+                  ->property_trees()
+                  ->scroll_tree.IsComposited(*scroll_node));
+
+  // Now add a clip property to make the node noncomposited and ensure the
+  // compositor scroll node updates accordingly.
+  composited_element->setAttribute(html_names::kStyleAttr,
+                                   "clip: rect(0px, 200px, 200px, 50px)");
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+            scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  EXPECT_EQ(scroll_node->element_id, scrollable_area->GetScrollElementId());
+  EXPECT_FALSE(RootCcLayer()
+                   ->layer_tree_host()
+                   ->property_trees()
+                   ->scroll_tree.IsComposited(*scroll_node));
+}
+
+// Tests that the compositor gets a scroll node for noncomposited scrollers
+// embedded in an iframe, by loading a document with an iframe that has a
+// scroller with a clip path, and ensuring that scroller generates a compositor
+// scroll node with the proper noncomposited reasons set.
+TEST_P(ScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #iframe {
+      width: 300px;
+      height: 300px;
+      overflow: auto;
+    }
+    </style>
+    <iframe id="iframe" srcdoc="
+        <!DOCTYPE html>
+        <style>
+          #scroller {
+            width: 200px;
+            height: 200px;
+            overflow: auto;
+            position: absolute;
+            top: 50px;
+            clip: rect(0px, 200px, 200px, 50px);
+          }
+          #spacer {
+            width: 100%;
+            height: 10000px;
+          }
+        </style>
+        <div id='scroller'>
+          <div id='spacer'></div>
+        </div>
+        <div id='spacer'></div>">
+    </iframe>
+  )HTML");
+
+  // RunIdleTasks to load the srcdoc iframe.
+  RunIdleTasks();
+  Compositor().BeginFrame();
+
+  HTMLFrameOwnerElement* iframe =
+      To<HTMLFrameOwnerElement>(GetDocument().getElementById("iframe"));
+  auto* iframe_scrollable_area =
+      iframe->contentDocument()->View()->LayoutViewport();
+  const auto* iframe_scroll_node =
+      ScrollNodeForScrollableArea(iframe_scrollable_area);
+  ASSERT_TRUE(iframe_scroll_node);
+
+  // The iframe itself is a composited scroller.
+  EXPECT_EQ(
+      0u, iframe_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  EXPECT_EQ(iframe_scroll_node->element_id,
+            iframe_scrollable_area->GetScrollElementId());
+  EXPECT_TRUE(RootCcLayer()
+                  ->layer_tree_host()
+                  ->property_trees()
+                  ->scroll_tree.IsComposited(*iframe_scroll_node));
+
+  // Ensure we have a compositor scroll node for the noncomposited subscroller.
+  auto* child_scrollable_area = iframe->contentDocument()
+                                    ->getElementById("scroller")
+                                    ->GetScrollableArea();
+  const auto* child_scroll_node =
+      ScrollNodeForScrollableArea(child_scrollable_area);
+  ASSERT_TRUE(child_scroll_node);
+
+  EXPECT_EQ(
+      cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+      child_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  EXPECT_EQ(child_scroll_node->element_id,
+            child_scrollable_area->GetScrollElementId());
+
+  EXPECT_FALSE(RootCcLayer()
+                   ->layer_tree_host()
+                   ->property_trees()
+                   ->scroll_tree.IsComposited(*child_scroll_node));
+}
+
+// Similar to the above test, but for deeper nesting iframes to ensure we
+// generate scroll nodes that are deeper than the main frame's children.
+TEST_P(ScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimRequest child_request_1("https://example.com/child1.html", "text/html");
+  SimRequest child_request_2("https://example.com/child2.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    iframe {
+      width: 300px;
+      height: 300px;
+      overflow: auto;
+    }
+    </style>
+    <iframe id="child1" src="child1.html">
+  )HTML");
+
+  child_request_1.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    iframe {
+      width: 300px;
+      height: 300px;
+      overflow: auto;
+    }
+    </style>
+    <iframe id="child2" src="child2.html">
+  )HTML");
+
+  child_request_2.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #scroller {
+        width: 200px;
+        height: 200px;
+        overflow: auto;
+        position: absolute;
+        top: 50px;
+        clip: rect(0px, 200px, 200px, 50px);
+      }
+      #spacer {
+        width: 100%;
+        height: 10000px;
+      }
+    </style>
+    <div id='scroller'>
+      <div id='spacer'></div>
+    </div>
+    <div id='spacer'></div>
+  )HTML");
+
+  RunIdleTasks();
+  Compositor().BeginFrame();
+
+  HTMLFrameOwnerElement* child_iframe_1 =
+      To<HTMLFrameOwnerElement>(GetDocument().getElementById("child1"));
+
+  HTMLFrameOwnerElement* child_iframe_2 = To<HTMLFrameOwnerElement>(
+      child_iframe_1->contentDocument()->getElementById("child2"));
+
+  // Ensure we have a compositor scroll node for the noncomposited subscroller
+  // nested in the second iframe.
+  auto* child_scrollable_area = child_iframe_2->contentDocument()
+                                    ->getElementById("scroller")
+                                    ->GetScrollableArea();
+  const auto* child_scroll_node =
+      ScrollNodeForScrollableArea(child_scrollable_area);
+  ASSERT_TRUE(child_scroll_node);
+
+  EXPECT_EQ(
+      cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+      child_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  EXPECT_EQ(child_scroll_node->element_id,
+            child_scrollable_area->GetScrollElementId());
+
+  EXPECT_FALSE(RootCcLayer()
+                   ->layer_tree_host()
+                   ->property_trees()
+                   ->scroll_tree.IsComposited(*child_scroll_node));
+}
+
+// Tests that the compositor gets a scroll node for opacity 0 noncomposited
+// scrollers by loading a page with an opacity 0 scroller that has a clip path,
+// and ensuring that scroller generates a compositor scroll node with the proper
+// noncomposited reasons set. The test also ensures that there is no scroll node
+// for a display:none scroller, as there is no scrollable area.
+TEST_P(ScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    .noncomposited {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      position: absolute;
+      top: 300px;
+      clip: rect(0px, 200px, 200px, 50px);
+    }
+    #invisible {
+      opacity: 0;
+    }
+    #displaynone {
+      display: none;
+    }
+    #spacer {
+      width: 100%;
+      height: 10000px;
+    }
+    </style>
+    <div id="invisible" class="noncomposited">
+      <div id="spacer"></div>
+    </div>
+    <div id="displaynone" class="noncomposited">
+      <div id="spacer"></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Ensure the opacity 0 noncomposited scrollable area generates a scroll node
+  auto* invisible_scrollable_area = MainFrame()
+                                        .GetFrame()
+                                        ->GetDocument()
+                                        ->getElementById("invisible")
+                                        ->GetScrollableArea();
+  ASSERT_EQ(
+      cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+      invisible_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+
+  const auto* invisible_scroll_node =
+      ScrollNodeForScrollableArea(invisible_scrollable_area);
+  ASSERT_TRUE(invisible_scroll_node);
+
+  EXPECT_EQ(invisible_scroll_node->element_id,
+            invisible_scrollable_area->GetScrollElementId());
+
+  EXPECT_FALSE(RootCcLayer()
+                   ->layer_tree_host()
+                   ->property_trees()
+                   ->scroll_tree.IsComposited(*invisible_scroll_node));
+
+  // Ensure there's no scrollable area (and therefore no scroll node) for a
+  // display none scroller.
+  EXPECT_EQ(nullptr, MainFrame()
+                         .GetFrame()
+                         ->GetDocument()
+                         ->getElementById("displaynone")
+                         ->GetScrollableArea());
+}
+
+// Tests that the compositor gets a scroll node for scrollable input boxes,
+// which are unique as they are not a composited scroller but also do not have
+// NonCompositedMainThreadScrollingReasons.
+TEST_P(ScrollingSimTest, ScrollNodeForInputBox) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        input {
+          width: 50px;
+        }
+      </style>
+      <input id="textinput" type="text" value="some overflowing text"/>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Element* input_element =
+      MainFrame().GetFrame()->GetDocument()->getElementById("textinput");
+  auto* scrollable_area = input_element->GetScrollableArea();
+  ASSERT_EQ(0u, scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+
+  const auto* scroll_node = ScrollNodeForScrollableArea(scrollable_area);
+  ASSERT_TRUE(scroll_node);
+
+  EXPECT_EQ(scroll_node->element_id, scrollable_area->GetScrollElementId());
+  EXPECT_FALSE(RootCcLayer()
+                   ->layer_tree_host()
+                   ->property_trees()
+                   ->scroll_tree.IsComposited(*scroll_node));
 }
 
 class ScrollingTestWithAcceleratedContext : public ScrollingTest {

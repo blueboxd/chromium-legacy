@@ -20,13 +20,6 @@
 
 namespace network {
 
-namespace {
-
-using ::testing::AllOf;
-using ::testing::Truly;
-
-}  // namespace
-
 mojom::TrustTokenKeyCommitmentResultPtr GetCommitmentForOrigin(
     const TrustTokenKeyCommitments& commitments,
     const url::Origin& origin) {
@@ -216,6 +209,24 @@ TEST(TrustTokenKeyCommitments, FiltersKeys) {
                                    base::Time::Now() +
                                        base::TimeDelta::FromMinutes(1);
                           }));
+}
+
+TEST(TrustTokenKeyCommitments, GetSync) {
+  TrustTokenKeyCommitments commitments;
+
+  auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
+  expectation->batch_size = mojom::TrustTokenKeyCommitmentBatchSize::New(5);
+
+  auto suitable_origin = *SuitableTrustTokenOrigin::Create(
+      GURL("https://suitable-origin.example"));
+
+  base::flat_map<url::Origin, mojom::TrustTokenKeyCommitmentResultPtr> to_set;
+  to_set.insert_or_assign(suitable_origin.origin(), expectation.Clone());
+  commitments.Set(std::move(to_set));
+
+  auto result = commitments.GetSync(suitable_origin.origin());
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(result.Equals(expectation));
 }
 
 }  // namespace network

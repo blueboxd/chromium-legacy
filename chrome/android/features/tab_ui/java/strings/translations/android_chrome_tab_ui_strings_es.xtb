@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Ver</translation>
 <translation id="5073204694187207510">Ocultar la cuadrícula en pantalla completa</translation>
 <translation id="5082793167783849073">Crea un grupo para comparar páginas rápidamente. Para comenzar, mantén pulsado un enlace.</translation>
+<translation id="5533021382642990449">Mostrar más tarde</translation>
 <translation id="5580090775658607195">Se han agrupado <ph name="TAB_COUNT" /> pestañas</translation>
 <translation id="58326064309361797">Arrastra las pestañas para agruparlas</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Cerrar las sugerencias.</translation>
 <translation id="814503310257431685">Ver todo</translation>
 <translation id="8205266828577616993">Subir pestaña</translation>
+<translation id="8304833501377495048">¿No volver a mostrar la barra de pestañas?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Cerrar <ph name="TABS_COUNT_ONE" /> pestaña seleccionada}other{Cerrar <ph name="TABS_COUNT_MANY" /> pestañas seleccionadas}}</translation>
+<translation id="8749939518995770034">Barra de pestañas cerrada</translation>
 <translation id="9150694013019234766">Cambia de una pestaña a otra en tu grupo de pestañas de la parte inferior de la pantalla</translation>
 <translation id="9169594135889675189">Añadir una pestaña al grupo</translation>
 <translation id="959682366969460160">Mantenlo todo organizado</translation>

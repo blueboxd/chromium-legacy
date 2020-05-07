@@ -79,6 +79,12 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void Commit(scoped_refptr<CanvasResource> canvas_resource,
                       const SkIRect& damage_rect);
 
+  // For deferred canvases this will have the side effect of drawing recorded
+  // commands in order to finalize the frame.
+  virtual ScriptPromise convertToBlob(ScriptState*,
+                                      const ImageEncodeOptions*,
+                                      ExceptionState&);
+
   bool IsPaintable() const;
 
   // Required by template functions in WebGLRenderingContextBase
@@ -95,12 +101,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   bool Is3d() const;
   bool Is2d() const;
   CanvasColorParams ColorParams() const;
-
-  // For deferred canvases this will have the side effect of drawing recorded
-  // commands in order to finalize the frame.
-  ScriptPromise convertToBlob(ScriptState*,
-                              const ImageEncodeOptions*,
-                              ExceptionState&);
 
   // blink::CanvasImageSource
   bool IsOffscreenCanvas() const override;

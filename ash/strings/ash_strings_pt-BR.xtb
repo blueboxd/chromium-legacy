@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1199716647557067911">Tem certeza de que você quer desativar o "acesso com interruptor"?</translation>
+<translation id="121097972571826261">Avançar por palavra</translation>
+<translation id="1229194443904279055">Parar de selecionar</translation>
 <translation id="1247372569136754018">Microfone (interno)</translation>
 <translation id="1252999807265626933">Carregando a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Como está o tempo?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Lupa de tela cheia ativada. Pressione Ctrl+Pesquisa+M novamente para desativá-la.</translation>
 <translation id="2302092602801625023">Esta conta é gerenciada pelo Family Link</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
+<translation id="2322173485024759474">Voltar por letra</translation>
 <translation id="2339073806695260576">Toque no botão da stylus na estante para criar uma nota, fazer uma captura de tela e usar o apontador laser ou a lupa.</translation>
 <translation id="2341729377289034582">Bloqueado na vertical</translation>
 <translation id="2352467521400612932">Configurações da stylus</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Mostrar configurações do teclado</translation>
 <translation id="3846575436967432996">Não há informações de rede disponíveis</translation>
 <translation id="385051799172605136">Voltar</translation>
+<translation id="385300504083504382">Começo</translation>
 <translation id="3891340733213178823">Pressione Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="3893630138897523026">ChromeVox (feedback falado)</translation>
 <translation id="3897533311200664389">Iniciar uma consulta por texto</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Muitas tentativas</translation>
 <translation id="5397578532367286026">O uso e o histórico deste usuário podem ser analisados pelo administrador (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
 <translation id="5400461572260843123">Configurações rápidas, pressione "Pesquisa" + seta para a esquerda para acessar a central de notificações.</translation>
+<translation id="5428899915242071344">Iniciar seleção</translation>
 <translation id="5430931332414098647">Tethering instantâneo</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
@@ -468,6 +473,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6777216307882431711">Carregando dispositivos USB-C conectados</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
+<translation id="6818242057446442178">Voltar por palavra</translation>
 <translation id="6820676911989879663">Faça uma pausa</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Atalho desativado</translation>
@@ -581,6 +587,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Criar nota</translation>
+<translation id="8371779926711439835">Avançar por letra</translation>
 <translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> e seu smartphone serão conectados automaticamente</translation>
 <translation id="8388750414311082622">Não é possível remover a última área de trabalho.</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>

@@ -166,7 +166,8 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   void UpdateMediaFeedDisplayTime(const int64_t feed_id);
 
   void ResetMediaFeed(const url::Origin& origin,
-                      media_feeds::mojom::ResetReason reason);
+                      media_feeds::mojom::ResetReason reason,
+                      const bool include_subdomains);
 
   void ResetMediaFeedDueToCacheClearing(
       const base::Time& start_time,

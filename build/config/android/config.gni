@@ -118,10 +118,6 @@ if (is_android || is_chromeos) {
     }
   }
 
-  if (!defined(system_webview_apk_target)) {
-    system_webview_apk_target = "//android_webview:system_webview_apk"
-  }
-
   webview_public_framework_dep =
       "//third_party/android_sdk:public_framework_system_java"
   if (!defined(webview_framework_dep)) {
@@ -212,6 +208,9 @@ if (is_android || is_chromeos) {
     # Controls whether proguard obfuscation is enabled for targets
     # configured to use it.
     enable_proguard_obfuscation = true
+
+    # The target to use as the system WebView implementation.
+    system_webview_apk_target = "//android_webview:system_webview_apk"
   }
 
   # We need a second declare_args block to make sure we are using the overridden

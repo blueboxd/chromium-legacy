@@ -8,6 +8,8 @@
 #include "weblayer/browser/android/resource_mapper.h"
 #include "weblayer/browser/url_bar/page_info_delegate_impl.h"
 
+namespace weblayer {
+
 // static
 PageInfoClientImpl* PageInfoClientImpl::GetInstance() {
   return new PageInfoClientImpl();
@@ -22,3 +24,5 @@ std::unique_ptr<PageInfoDelegate> PageInfoClientImpl::CreatePageInfoDelegate(
 int PageInfoClientImpl::GetJavaResourceId(int native_resource_id) {
   return weblayer::MapToJavaDrawableId(native_resource_id);
 }
+
+}  // namespace weblayer

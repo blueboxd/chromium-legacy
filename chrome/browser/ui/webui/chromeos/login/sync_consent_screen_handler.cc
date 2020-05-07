@@ -116,6 +116,9 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
   RememberLocalizedValue("syncConsentScreenOsSyncDescription",
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
                          builder);
+  RememberLocalizedValue("syncConsentScreenChromeBrowserSyncName",
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
+                         builder);
   RememberLocalizedValue(
       "syncConsentReviewBrowserSyncOptions",
       IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS, builder);

@@ -90,8 +90,9 @@ class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
 
 class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
  public:
-  explicit StreamDelegateImpl(PrefService* local_state)
-      : eula_notifier_(local_state) {}
+  StreamDelegateImpl(PrefService* local_state,
+                     FeedService::Delegate* service_delegate)
+      : service_delegate_(service_delegate), eula_notifier_(local_state) {}
   StreamDelegateImpl(const StreamDelegateImpl&) = delete;
   StreamDelegateImpl& operator=(const StreamDelegateImpl&) = delete;
 
@@ -103,8 +104,15 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   // FeedStream::Delegate.
   bool IsEulaAccepted() override { return eula_notifier_.IsEulaAccepted(); }
   bool IsOffline() override { return net::NetworkChangeNotifier::IsOffline(); }
+  DisplayMetrics GetDisplayMetrics() override {
+    return service_delegate_->GetDisplayMetrics();
+  }
+  std::string GetLanguageTag() override {
+    return service_delegate_->GetLanguageTag();
+  }
 
  private:
+  FeedService::Delegate* service_delegate_;
   web_resource::EulaAcceptedNotifier eula_notifier_;
   std::unique_ptr<EulaObserver> eula_observer_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;
@@ -127,7 +135,8 @@ FeedService::FeedService(
     const ChromeInfo& chrome_info)
     : delegate_(std::move(delegate)),
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
-  stream_delegate_ = std::make_unique<StreamDelegateImpl>(local_state);
+  stream_delegate_ =
+      std::make_unique<StreamDelegateImpl>(local_state, delegate.get());
   network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
   metrics_reporter_ =
       std::make_unique<MetricsReporter>(base::DefaultTickClock::GetInstance());

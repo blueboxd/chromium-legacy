@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Посмотреть</translation>
 <translation id="5073204694187207510">Скрыть полноэкранную сетку с вкладками</translation>
 <translation id="5082793167783849073">Сравнивайте страницы быстрее, объединяя их в группы. Чтобы начать, нажмите на ссылку и удерживайте ее.</translation>
+<translation id="5533021382642990449">Показать позже</translation>
 <translation id="5580090775658607195">Вкладки сгруппированы (всего <ph name="TAB_COUNT" />).</translation>
 <translation id="58326064309361797">Перетаскивайте вкладки, чтобы группировать их</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Скрыть подсказки.</translation>
 <translation id="814503310257431685">Показать все</translation>
 <translation id="8205266828577616993">Переместить вкладку вверх</translation>
+<translation id="8304833501377495048">Больше не показывать панель вкладок?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Закрыть <ph name="TABS_COUNT_ONE" /> выбранную вкладку}one{Закрыть <ph name="TABS_COUNT_MANY" /> выбранную вкладку}few{Закрыть <ph name="TABS_COUNT_MANY" /> выбранные вкладки}many{Закрыть <ph name="TABS_COUNT_MANY" /> выбранных вкладок}other{Закрыть <ph name="TABS_COUNT_MANY" /> выбранной вкладки}}</translation>
+<translation id="8749939518995770034">Панель вкладок закрыта.</translation>
 <translation id="9150694013019234766">В нижней части экрана можно переключаться между вкладками, объединенными в группы</translation>
 <translation id="9169594135889675189">Добавить новую вкладку в группу</translation>
 <translation id="959682366969460160">Организация работы</translation>

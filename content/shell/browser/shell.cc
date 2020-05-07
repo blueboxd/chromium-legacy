@@ -33,6 +33,7 @@
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/shell/app/resource.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
@@ -59,6 +60,8 @@ const int kDefaultTestWindowHeightDip = 600;
 std::vector<Shell*> Shell::windows_;
 base::OnceCallback<void(Shell*)> Shell::shell_created_callback_;
 
+ShellPlatformDelegate* g_platform;
+
 class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
  public:
   DevToolsWebContentsObserver(Shell* shell, WebContents* web_contents)
@@ -80,15 +83,7 @@ class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
 Shell::Shell(std::unique_ptr<WebContents> web_contents,
              bool should_set_delegate)
     : WebContentsObserver(web_contents.get()),
-      web_contents_(std::move(web_contents)),
-      devtools_frontend_(nullptr),
-      is_fullscreen_(false),
-      window_(nullptr),
-#if defined(OS_MACOSX)
-      url_edit_view_(NULL),
-#endif
-      headless_(false),
-      hide_toolbar_(false) {
+      web_contents_(std::move(web_contents)) {
   if (should_set_delegate)
     web_contents_->SetDelegate(this);
 
@@ -100,10 +95,6 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
         web_contents_->GetMutableRendererPrefs());
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kContentShellHideToolbar))
-    hide_toolbar_ = true;
-
   windows_.push_back(this);
 
   if (shell_created_callback_)
@@ -111,7 +102,7 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
 }
 
 Shell::~Shell() {
-  PlatformCleanUp();
+  g_platform->CleanUp(this);
 
   for (size_t i = 0; i < windows_.size(); ++i) {
     if (windows_[i] == this) {
@@ -120,15 +111,18 @@ Shell::~Shell() {
     }
   }
 
-  // Always destroy WebContents before calling PlatformExit(). WebContents
-  // destruction sequence may depend on the resources destroyed in
-  // PlatformExit() (e.g. the display::Screen singleton).
+  // Always destroy WebContents before ShellPlatformDelegate::Shutdown().
+  // WebContents destruction sequence may depend on the resources destroyed in
+  // ShellPlatformDelegate::Shutdown() (e.g. the display::Screen singleton).
   web_contents_->SetDelegate(nullptr);
   web_contents_.reset();
 
   if (windows_.empty()) {
+    // TODO(danakj): Do we need both this one and the call in CloseAllWindows()?
+    // Can we just always Shutdown() here?
     if (headless_)
-      PlatformExit();
+      g_platform->Shutdown();
+
     for (auto it = RenderProcessHost::AllHostsIterator(); !it.IsAtEnd();
          it.Advance()) {
       it.GetCurrentValue()->DisableKeepAliveRefCount();
@@ -143,11 +137,8 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
                           bool should_set_delegate) {
   WebContents* raw_web_contents = web_contents.get();
   Shell* shell = new Shell(std::move(web_contents), should_set_delegate);
-  shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
-
-  shell->PlatformSetContents();
-
-  shell->PlatformResizeSubViews();
+  g_platform->CreatePlatformWindow(shell, initial_size);
+  g_platform->SetContents(shell);
 
   // Note: Do not make RenderFrameHost or RenderViewHost specific state changes
   // here, because they will be forgotten after a cross-process navigation. Use
@@ -181,7 +172,7 @@ void Shell::CloseAllWindows() {
   if (*g_quit_main_message_loop)
     std::move(*g_quit_main_message_loop).Run();
 
-  PlatformExit();
+  g_platform->Shutdown();
 }
 
 void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
@@ -199,6 +190,12 @@ void Shell::SetShellCreatedCallback(
   shell_created_callback_ = std::move(shell_created_callback);
 }
 
+// static
+bool Shell::ShouldHideToolbar() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kContentShellHideToolbar);
+}
+
 Shell* Shell::FromWebContents(WebContents* web_contents) {
   for (Shell* window : windows_) {
     if (window->web_contents() && window->web_contents() == web_contents) {
@@ -208,8 +205,9 @@ Shell* Shell::FromWebContents(WebContents* web_contents) {
   return nullptr;
 }
 
-void Shell::Initialize() {
-  PlatformInitialize(GetShellDefaultSize());
+void Shell::Initialize(ShellPlatformDelegate* platform) {
+  g_platform = platform;
+  g_platform->Initialize(GetShellDefaultSize());
 }
 
 gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
@@ -357,9 +355,12 @@ void Shell::UpdateNavigationControls(bool to_different_document) {
   int current_index = web_contents_->GetController().GetCurrentEntryIndex();
   int max_index = web_contents_->GetController().GetEntryCount() - 1;
 
-  PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
-  PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
-  PlatformEnableUIControl(STOP_BUTTON,
+  g_platform->EnableUIControl(this, ShellPlatformDelegate::BACK_BUTTON,
+                              current_index > 0);
+  g_platform->EnableUIControl(this, ShellPlatformDelegate::FORWARD_BUTTON,
+                              current_index < max_index);
+  g_platform->EnableUIControl(
+      this, ShellPlatformDelegate::STOP_BUTTON,
       to_different_document && web_contents_->IsLoading());
 }
 
@@ -381,11 +382,51 @@ void Shell::CloseDevTools() {
   devtools_frontend_ = nullptr;
 }
 
+#if defined(OS_MACOSX)
+void Shell::ResizeWebContentForTests(const gfx::Size& content_size) {
+  g_platform->ResizeWebContent(this, content_size);
+}
+#endif
+
 gfx::NativeView Shell::GetContentView() {
   if (!web_contents_)
     return nullptr;
   return web_contents_->GetNativeView();
 }
+
+#if !defined(OS_ANDROID)
+gfx::NativeWindow Shell::window() {
+  return g_platform->GetNativeWindow(this);
+}
+#endif
+
+#if defined(OS_MACOSX)
+void Shell::ActionPerformed(int control) {
+  switch (control) {
+    case IDC_NAV_BACK:
+      GoBackOrForward(-1);
+      break;
+    case IDC_NAV_FORWARD:
+      GoBackOrForward(1);
+      break;
+    case IDC_NAV_RELOAD:
+      Reload();
+      break;
+    case IDC_NAV_STOP:
+      Stop();
+      break;
+  }
+}
+
+void Shell::URLEntered(const std::string& url_string) {
+  if (!url_string.empty()) {
+    GURL url(url_string);
+    if (!url.has_scheme())
+      url = GURL("http://" + url_string);
+    LoadURL(url);
+  }
+}
+#endif
 
 WebContents* Shell::OpenURLFromTab(WebContents* source,
                                    const OpenURLParams& params) {
@@ -441,8 +482,14 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
 void Shell::LoadingStateChanged(WebContents* source,
     bool to_different_document) {
   UpdateNavigationControls(to_different_document);
-  PlatformSetIsLoading(source->IsLoading());
+  g_platform->SetIsLoading(this, source->IsLoading());
 }
+
+#if defined(OS_ANDROID)
+void Shell::SetOverlayMode(bool use_overlay_mode) {
+  g_platform->SetOverlayMode(this, use_overlay_mode);
+}
+#endif
 
 void Shell::EnterFullscreenModeForTab(
     WebContents* web_contents,
@@ -458,7 +505,7 @@ void Shell::ExitFullscreenModeForTab(WebContents* web_contents) {
 void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
                                        bool enter_fullscreen) {
 #if defined(OS_ANDROID)
-  PlatformToggleFullscreenModeForTab(web_contents, enter_fullscreen);
+  g_platform->ToggleFullscreenModeForTab(this, web_contents, enter_fullscreen);
 #endif
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
@@ -470,7 +517,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
 
 bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) {
 #if defined(OS_ANDROID)
-  return PlatformIsFullscreenForTabOrPending(web_contents);
+  return g_platform->IsFullscreenForTabOrPending(this, web_contents);
 #else
   return is_fullscreen_;
 #endif
@@ -493,6 +540,13 @@ void Shell::RequestToLockMouse(WebContents* web_contents,
       blink::mojom::PointerLockResult::kSuccess);
 }
 
+void Shell::Close() {
+  // Shell is "self-owned" and destroys itself. The ShellPlatformDelegate
+  // has the chance to co-opt this and do its own destruction.
+  if (!g_platform->DestroyShell(this))
+    delete this;
+}
+
 void Shell::CloseContents(WebContents* source) {
   Close();
 }
@@ -508,7 +562,7 @@ bool Shell::CanOverscrollContent() {
 void Shell::NavigationStateChanged(WebContents* source,
                                    InvalidateTypes changed_flags) {
   if (changed_flags & INVALIDATE_TYPE_URL)
-    PlatformSetAddressBarURL(source->GetVisibleURL());
+    g_platform->SetAddressBarURL(this, source->GetVisibleURL());
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
@@ -536,6 +590,13 @@ std::unique_ptr<BluetoothScanningPrompt> Shell::ShowBluetoothScanningPrompt(
     const BluetoothScanningPrompt::EventHandler& event_handler) {
   return std::make_unique<FakeBluetoothScanningPrompt>(event_handler);
 }
+
+#if defined(OS_MACOSX)
+bool Shell::HandleKeyboardEvent(WebContents* source,
+                                const NativeWebKeyboardEvent& event) {
+  return g_platform->HandleKeyboardEvent(this, source, event);
+}
+#endif
 
 bool Shell::DidAddMessageToConsole(WebContents* source,
                                    blink::mojom::ConsoleMessageLevel log_level,
@@ -567,7 +628,7 @@ void Shell::ActivateContents(WebContents* contents) {
   // focusing the WebContents would cause the OS to focus the window. Because
   // headless mac doesn't actually have system windows, we can't go down the
   // normal path and have to fake it out in the browser process.
-  PlatformActivateContents(contents);
+  g_platform->ActivateContents(this, contents);
 #endif
 }
 
@@ -583,8 +644,8 @@ std::unique_ptr<WebContents> Shell::ActivatePortalWebContents(
     shell_devtools_bindings->UpdateInspectedWebContents(portal_contents.get());
   }
   std::swap(web_contents_, portal_contents);
-  PlatformSetContents();
-  PlatformSetAddressBarURL(web_contents_->GetVisibleURL());
+  g_platform->SetContents(this);
+  g_platform->SetAddressBarURL(this, web_contents_->GetVisibleURL());
   LoadingStateChanged(web_contents_.get(), true);
   return portal_contents;
 }
@@ -637,9 +698,15 @@ gfx::Size Shell::GetShellDefaultSize() {
   return default_shell_size;
 }
 
+#if defined(OS_ANDROID)
+void Shell::LoadProgressChanged(double progress) {
+  g_platform->LoadProgressChanged(this, progress);
+}
+#endif
+
 void Shell::TitleWasSet(NavigationEntry* entry) {
   if (entry)
-    PlatformSetTitle(entry->GetTitle());
+    g_platform->SetTitle(this, entry->GetTitle());
 }
 
 void Shell::OnDevToolsWebContentsDestroyed() {

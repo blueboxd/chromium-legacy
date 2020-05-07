@@ -57,6 +57,10 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // Calls the power event OnAcInserted on all registered power observers.
   void EmitAcInsertedEventForTesting();
 
+  // Calls the Bluetooth event OnAdapterAdded on all registered Bluetooth
+  // observers.
+  void EmitAdapterAddedEventForTesting();
+
  private:
   FakeCrosHealthdService fake_service_;
   mojo::Receiver<mojom::CrosHealthdServiceFactory> receiver_{&fake_service_};

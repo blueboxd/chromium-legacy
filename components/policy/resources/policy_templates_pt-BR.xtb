@@ -300,6 +300,15 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 <translation id="1474273443907024088">Desativar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Enviar informações sobre as luzes de fundo</translation>
+<translation id="1488406778491620405">O recurso de acessibilidade "<ph name="PRODUCT_NAME" />" permite que pessoas com deficiência visual que usam leitores de tela recebam descrições de imagens sem etiqueta na Web. Os usuários que decidirem ativá-lo poderão usar um serviço anônimo do Google para fornecer descrições automáticas para imagens sem etiqueta que encontrarem na Web.
+
+          Se esse recurso for ativado, conteúdo de imagens será enviado aos servidores do Google para gerar uma descrição. Nenhum cookie ou dado do usuário será enviado, e o Google não salvará nem registrará nenhum conteúdo de imagens.
+
+          Se a política for definida como verdadeira, o recurso "<ph name="PRODUCT_NAME" />" será ativado, mas só afetará pessoas que usarem um leitor de tela ou outra tecnologia adaptativa semelhante.
+
+          Se ela for definida como falsa, os usuários não poderão ativar esse recurso.
+
+          Se você definir esta política, o usuário não poderá mudá-la ou substituí-la.</translation>
 <translation id="1497640071678474358">Permite definir uma lista com padrões de URL que especificam quais sites não têm permissão para abrir pop-ups.
 
           Se esta política não for definida, o valor padrão global será usado para todos os sites. Esse valor será o mesmo da política DefaultPopupsSetting, caso ela esteja definida, ou da configuração pessoal do usuário.
@@ -1591,6 +1600,7 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 
       Esta política só pode ser definida conforme recomendado. É possível usar esta política para mover um conjunto de localidades recomendadas para o topo da lista, mas os usuários sempre poderão escolher qualquer localidade compatível com o <ph name="PRODUCT_OS_NAME" /> para a sessão deles.
       </translation>
+<translation id="3373381043600809954">Ativar "<ph name="PRODUCT_NAME" />".</translation>
 <translation id="3378482432905539452">Essa política está obsoleta. Use <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar a disponibilidade do plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar se o visualizador de PDF integrado será usado para abrir arquivos PDF.
 
       Especifica uma lista de plug-ins que o usuário pode ativar ou desativar no <ph name="PRODUCT_NAME" />.
@@ -2973,6 +2983,10 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Quando esta política for desativada, o usuário nunca receberá solicitações, e a captura de áudio ficará disponível apenas para URLs configurados na AudioCaptureAllowedUrls.
 
       Esta política afeta todos os tipos de entradas de áudio, não apenas o microfone integrado.</translation>
+<translation id="5417906792459853336">Envia informações sobre o uso e inventário de aplicativos de um dispositivo.
+
+      Se a política for definida como falsa ou se não for definida, as informações não serão enviadas.
+      Se ela for definida como verdadeira, os aplicativos e o uso do dispositivo serão informados.</translation>
 <translation id="5422643441807528365">Chave de licença de <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>
@@ -3020,6 +3034,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5457065417344056871">Ativar o modo visitante no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador HTML padrão quando <ph name="PRODUCT_FRAME_NAME" /> estiver instalado. A configuração padrão utilizada quando esta política é deixada sem definição é permitir que o navegador host faça o processamento, mas você pode, opcionalmente, substituí-la para que <ph name="PRODUCT_FRAME_NAME" /> processe as páginas HTML por padrão.</translation>
 <translation id="5464816904705580310">Definir configurações para usuários gerenciados.</translation>
+<translation id="5466596281866046569">Relatar informações sobre aplicativos</translation>
 <translation id="546726650689747237">Intervalo de escurecimento da tela no funcionamento com alimentação CA</translation>
 <translation id="5469143988693423708">O usuário tem permissão para executar o Crostini</translation>
 <translation id="5469825884154817306">Bloquear imagens nestes sites</translation>
@@ -4714,7 +4729,6 @@ Se a política não for definida, a configuração ficará ativada, mas o usuár
       Se desativar esta configuração, os usuários não conseguirão usar o Preenchimento automático.
 
       Se ativar esta configuração ou não definir um valor, o Preenchimento automático continuará sob o controle do usuário. Isso permitirá que ele configure perfis de Preenchimento automático e ative ou desative esse recurso quando quiser.</translation>
-<translation id="8042971420829376618">Esta política especifica o ID do usuário do <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="8044493735196713914">Informar modo de inicialização do dispositivo</translation>
 <translation id="8050080920415773384">Impressão nativa</translation>
 <translation id="8053580360728293758">Modifica o modo de cor de impressão padrão. Se o modo não estiver disponível, esta política será ignorada.</translation>

@@ -169,11 +169,6 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_SetViewportIntersection,
 // https://html.spec.whatwg.org/multipage/interaction.html#inert
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetIsInert, bool /* inert */)
 
-// Toggles render throttling for an out-of-process iframe.
-IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateRenderThrottlingStatus,
-                    bool /* is_throttled */,
-                    bool /* subtree_throttled */)
-
 // Sent by the browser to synchronize with the next compositor frame by
 // requesting an ACK be queued. Used only for tests.
 IPC_MESSAGE_ROUTED1(WidgetMsg_WaitForNextFrameForTests,

@@ -578,7 +578,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3484560055331845446">Google-ko konturako sarbidea gal zenezake. Pasahitza aldatzea gomendatzen dizu Chrome-k. Horretarako, saioa hasi beharko duzu.</translation>
 <translation id="3487845404393360112">4. erretilua</translation>
 <translation id="3495081129428749620">Bilatu <ph name="PAGE_TITLE" /> orrian</translation>
-<translation id="3507936815618196901">Sortu inguruaren 3D mapa bat eta egin kameraren posizioaren jarraipena</translation>
+<translation id="3507936815618196901">Sortu inguruaren 3D-ko mapa bat eta egin kameraren posizioaren jarraipena</translation>
 <translation id="3512163584740124171">Ez ikusi egin zaio gidalerro honi, gidalerro-talde bereko beste gidalerro batek lehentasun handiagoa duelako.</translation>
 <translation id="3518941727116570328">Objektu bat baino gehiago kudeatzea</translation>
 <translation id="3528171143076753409">Zerbitzariaren ziurtagiria ez da fidagarria.</translation>
@@ -1051,7 +1051,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5481076368049295676">Baliteke edukiak software kaltegarria instalatzen saiatzea zure informazioa lapurtu edo ezabatzeko. <ph name="BEGIN_LINK" />Erakutsi, hala ere<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Gehitu balio duen helbide bat</translation>
 <translation id="5490432419156082418">Helbideak eta beste</translation>
-<translation id="5492298309214877701">Enpresako, erakundeko edo eskolako intraneteko webgune honek kanpoko webgune baten URL bera du.
+<translation id="5492298309214877701">Enpresako, erakundeko edo ikastetxeko intraneteko webgune honek kanpoko webgune baten URL bera du.
     <ph name="LINE_BREAK" />
     Jarri harremanetan sistemaren administratzailearekin.</translation>
 <translation id="549333378215107354">Tamaina: 3</translation>
@@ -1334,7 +1334,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6710594484020273272">&lt;Idatzi bilaketa-hitza&gt;</translation>
 <translation id="671076103358959139">Izena emateko tokena:</translation>
 <translation id="6711464428925977395">Arazo bat dago proxy-zerbitzariarekin edo helbidea okerra da.</translation>
-<translation id="6716672519412350405"><ph name="URL" /> webguneak inguruaren 3D mapa bat sortu eta kameraren posizioaren jarraipena egin nahi du</translation>
+<translation id="6716672519412350405"><ph name="URL" /> webguneak inguruaren 3D-ko mapa bat sortu eta kameraren posizioaren jarraipena egin nahi du</translation>
 <translation id="6738516213925468394">Data honetan hasi ziren enkriptatzen zure datuak <ph name="BEGIN_LINK" />Sinkronizatzeko pasaesaldiaren<ph name="END_LINK" /> bidez: <ph name="TIME" />. Idatz ezazu sinkronizatzen hasteko.</translation>
 <translation id="674375294223700098">Zerbitzari-ziurtagiriaren errore ezezaguna.</translation>
 <translation id="6744009308914054259">Konexio baten zain zauden bitartean, Deskargak atalera joan zaitezke konexiorik behar ez duten artikuluak irakurtzera.</translation>

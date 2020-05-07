@@ -4814,7 +4814,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu ayarı devre dışı bırakırsanız kullanıcılar Otomatik Doldurma özelliğine erişemezler.
 
       Bu ayarı etkinleştirirseniz veya bir değer ayarlamazsanız, Otomatik Doldurma kullanıcının denetimi altında kalır. Böylece kullanıcılara, Otomatik Doldurma profillerini yapılandırma ve kendi istedikleri şekilde Otomatik Doldurma özelliğini açıp kapama olanağı verilir.</translation>
-<translation id="8042971420829376618">Bu politika, bu cihaz için <ph name="PLUGIN_VM_NAME" /> kullanıcı kimliğini belirtmektedir.</translation>
 <translation id="8044493735196713914">Rapor cihazı önyükleme modu</translation>
 <translation id="8050080920415773384">Yerel Yazdırma</translation>
 <translation id="8053580360728293758">Varsayılan renkli yazdırma modunu geçersiz kılar. Mod mevcut değilse bu politika yoksayılır.</translation>

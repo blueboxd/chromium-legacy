@@ -99,8 +99,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         if ((!isRtl && KeyNavigationUtil.isGoRight(event))
                 || (isRtl && KeyNavigationUtil.isGoLeft(event))) {
-            mActionView.callOnClick();
-            return true;
+            return mActionView.callOnClick();
         }
         return super.onKeyDown(keyCode, event);
     }

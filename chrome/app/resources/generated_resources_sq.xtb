@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">Dritarja e aplikacionit</translation>
 <translation id="1531275250079031713">Shfaq dialogun "Shto Wi-Fi të ri"</translation>
 <translation id="1536754031901697553">Po shkëputet...</translation>
+<translation id="1537254971476575106">Zmadhuesi i ekranit të plotë</translation>
 <translation id="15373452373711364">Kursor i madh</translation>
 <translation id="1540605929960647700">Aktivizo modalitetin e demonstrimit</translation>
 <translation id="1542514202066550870">Kjo skedë po prezanton përmbajtje VR në një kufje.</translation>
@@ -1094,7 +1095,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2428510569851653187">Përshkruaj çfarë po bëje kur skeda pësoi një ndërprerje aksidentale</translation>
 <translation id="2428939361789119025">Çaktivizo Wi-Fi</translation>
 <translation id="2431027948063157455">"Asistenti i Google" nuk ishte në gjendje të ngarkohej, kontrollo lidhjen e rrjetit provo sërish.</translation>
-<translation id="2431846145771260397">Je i sigurt që dëshiron të rezervosh një disk me madhësi fikse për Linux (Beta)?</translation>
+<translation id="2431846145771260397">E konfirmon që dëshiron të rezervosh një disk me madhësi fikse për Linux (Beta)?</translation>
 <translation id="2432753757290432042">Nevojitet përditësim i Linux (Beta)</translation>
 <translation id="2433452467737464329">Shto një parametër pyetjeje në URL për të rifreskuar automatikisht faqen: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433490881840073798"><ph name="RECENT_PERMISSIONS_CHANGE_SENTENCE_START" />, <ph name="RECENT_PERMISSIONS_CHANGE" /></translation>
@@ -1161,12 +1162,13 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2501173422421700905">Certifikata është në pritje</translation>
 <translation id="2501278716633472235">Kthehu prapa</translation>
 <translation id="2501797496290880632">Shkruaj një shkurtore</translation>
+<translation id="2501920221385095727">Tastet e përhershme</translation>
 <translation id="2502441965851148920">Përditësimet automatike janë aktivizuar. Përditësimet manuale janë çaktivizuar nga administratori.</translation>
 <translation id="2502719318159902502">Qasje e plotë</translation>
 <translation id="2505127913256479918">Kjo llogari e mbikëqyrur do të hiqet së shpejti</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Ekrani #}other{Ekrani #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> nga <ph name="TOTAL_SIZE" /></translation>
-<translation id="250704661983564564">Shfaq sistemimin</translation>
+<translation id="250704661983564564">Sistemimi i ekranit</translation>
 <translation id="2507253002925770350">Bileta u hoq</translation>
 <translation id="2507397597949272797"><ph name="NAME" /> është vendosur në pauzë</translation>
 <translation id="2508428939232952663">Llogaria në "Dyqanin e Google Play"</translation>
@@ -1546,6 +1548,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2993517869960930405">Informacioni mbi aplikacionin</translation>
 <translation id="2996286169319737844">Të dhënat janë enkriptuar me frazën tënde të kalimit. Kjo nuk përfshin mënyrat e pagesës dhe adresat nga Google Pay.</translation>
 <translation id="2996722619877761919">Ktheje në anën e gjatë</translation>
+<translation id="3000461861112256445">Audioja mono</translation>
 <translation id="3001144475369593262">Llogaritë e fëmijëve</translation>
 <translation id="3003144360685731741">Rrjetet e preferuara</translation>
 <translation id="3003623123441819449">Memoria specifike e CSS-së</translation>
@@ -2480,6 +2483,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4211851069413100178">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Ndihmo me përmirësimin e përvojës sate të Android duke dërguar automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Ky <ph name="BEGIN_LINK1" />cilësim<ph name="END_LINK1" /> zbatohet nga zotëruesi. Zotëruesi mund të zgjedhë të dërgojë te Google të dhënat e diagnostikimit dhe të përdorimit për këtë pajisje. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar, këto të dhëna mund të ruhen në "Llogarinë tënde të Google". <ph name="BEGIN_LINK2" />Mëso më shumë<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Eksporto</translation>
 <translation id="42137655013211669">Qasja te ky burim është e ndaluar nga serveri.</translation>
+<translation id="4217571870635786043">Diktimi</translation>
 <translation id="4218274196133425560">Hiq përjashtimin për <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Ndodhi një gabim gjatë aktivizimit.</translation>
 <translation id="4222772810963087151">Detajet e versionit</translation>
@@ -3164,6 +3168,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5204967432542742771">Fut fjalëkalimin</translation>
 <translation id="5206215183583316675">Të fshihet "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Gabim në importimin e certifikatës</translation>
+<translation id="5207949376430453814">Thekso kursorin e tekstit</translation>
 <translation id="5209320130288484488">Nuk u gjet asnjë pajisje</translation>
 <translation id="5210365745912300556">Mbyll skedën</translation>
 <translation id="5213481667492808996">Shërbimi yt i të dhënave të "<ph name="NAME" />" është gati për përdorim</translation>
@@ -4373,7 +4378,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6817174620439930047">Pyet kur një faqe kërkon të përdorë mesazhe ekskluzive të sistemit për t'u qasur në pajisjet MIDI (rekomandohet)</translation>
 <translation id="6818198425579322765">Faqja "Gjuha në të cilën do të përkthehet"</translation>
 <translation id="682123305478866682">Transmeto desktopin</translation>
-<translation id="6823174134746916417">Trokit për të klikuar në bllokun me prekje</translation>
+<translation id="6823174134746916417">Trokitja për të klikuar në bllokun me prekje</translation>
 <translation id="6823506025919456619">Duhet të identifikohesh te Chrome për të parë pajisjet e tua</translation>
 <translation id="6824564591481349393">Kopjo adresën e &amp;mail-it</translation>
 <translation id="6824584962142919697">&amp;Inspekto elementet</translation>
@@ -5077,6 +5082,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7766807826975222231">Bëj një turne</translation>
 <translation id="7766838926148951335">Prano lejet</translation>
 <translation id="7768770796815395237">Ndrysho</translation>
+<translation id="7768784765476638775">Zgjidh që të thuhet</translation>
 <translation id="7769672763586021400">ID-ja e modelit</translation>
 <translation id="7770612696274572992">Imazhi u kopjua nga pajisja tjetër</translation>
 <translation id="7770651108375708429">Shkëput Wi-Fi</translation>

@@ -425,6 +425,9 @@ extern const char kEnableNetworkLoggingToFileDescription[];
 extern const char kEnableNetworkServiceInProcessName[];
 extern const char kEnableNetworkServiceInProcessDescription[];
 
+extern const char kEnableTranslateSubFramesName[];
+extern const char kEnableTranslateSubFramesDescription[];
+
 extern const char kCorsForContentScriptsName[];
 extern const char kCorsForContentScriptsDescription[];
 
@@ -1000,9 +1003,6 @@ extern const char kSafetyTipDescription[];
 
 extern const char kSameSiteByDefaultCookiesName[];
 extern const char kSameSiteByDefaultCookiesDescription[];
-
-extern const char kScalableAppListName[];
-extern const char kScalableAppListDescription[];
 
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];

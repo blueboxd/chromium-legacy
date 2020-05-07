@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -47,6 +48,11 @@ import org.chromium.ui.touch_selection.SelectionEventType;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+// TODO(donnd): Add parameterized testing so Long-press resolve and Translations
+// can be tested too.  Or just remove this whole suite if it's not useful for
+// these experimental triggering changes.
+@Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE,
+        ChromeFeatureList.CONTEXTUAL_SEARCH_TRANSLATIONS})
 public class ContextualSearchTapEventTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

@@ -300,6 +300,25 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1474273443907024088">Inhabilitar el inicio falso de TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Enviar información sobre la retroiluminación</translation>
+<translation id="1488406778491620405">La función de accesibilidad
+          de <ph name="PRODUCT_NAME" /> permite que las personas con discapacidad visual que usen un lector de pantalla
+          obtengan descripciones de imágenes sin etiquetar en la Web. Los usuarios que habiliten esta función
+          tendrán la opción de usar un servicio anónimo de Google para proporcionar
+          descripciones automáticas de las imágenes sin etiquetar que encuentren en la Web.
+
+          Si esta función está habilitada, se enviará el contenido de las imágenes a los servidores
+          de Google para generar una descripción. No se enviarán cookies ni otros
+          datos del usuario. Además, Google no guardará ni registrará el contenido de las imágenes.
+
+          Si se asigna el valor "true" a esta política,
+          se habilitará
+          la función <ph name="PRODUCT_NAME" />, aunque solo afectará a los usuarios que usen un
+          lector de pantalla u otra tecnología asistencial similar.
+
+          Si se le asigna el valor "false", los usuarios no tendrán la opción de habilitar
+          esta función.
+
+          Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.</translation>
 <translation id="1497640071678474358">Permite definir una lista de patrones de URL donde se especifica qué sitios web no pueden abrir ventanas emergentes.
 
           Si no se establece esta política, se usará en todos los sitios web el valor general predeterminado especificado en la política DefaultPopupsSetting (si se ha definido) o en la configuración personal del usuario (en caso contrario).
@@ -1630,6 +1649,7 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 
       Esta política solo se puede establecer según los ajustes recomendados. Puedes utilizarla para mover un conjunto de configuraciones regionales recomendadas al principio de la lista, pero los usuarios siempre pueden elegir cualquier configuración regional admitida por <ph name="PRODUCT_OS_NAME" /> para su sesión.
       </translation>
+<translation id="3373381043600809954">Habilitar <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3378482432905539452">Esta política está obsoleta. Utiliza <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> para controlar la disponibilidad del complemento Flash y <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> para controlar si el visor de PDF integrado se debe usar para abrir archivos PDF.
 
       Especifica una lista de complementos que el usuario puede habilitar o inhabilitar en <ph name="PRODUCT_NAME" />.
@@ -3073,6 +3093,10 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       de audio solo estará disponible para las URL configuradas en AudioCaptureAllowedUrls.
 
       Esta política afecta a todos los tipos de entradas de audio y no solo al micrófono integrado.</translation>
+<translation id="5417906792459853336">Define si se envía información sobre el uso y el inventario de aplicaciones de un dispositivo.
+
+      Si se asigna el valor "false" a esta política o no se establece ningún valor, no se enviará esta información.
+      Si se le asigna el valor "true", se enviará la información sobre las aplicaciones y el uso del dispositivo.</translation>
 <translation id="5422643441807528365">Clave de licencia de <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="5423001109873148185">Si se habilita, esta política fuerza la importación de los motores de búsqueda desde el navegador predeterminado actual. Si está habilitada, la política también afecta al cuadro de diálogo de importación.
 
@@ -3125,6 +3149,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5457924070961220141">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.
           Si no se establece esta política, se permitirá que el navegador del host muestre las páginas HTML de forma predeterminada, pero puedes anular esta opción para que <ph name="PRODUCT_FRAME_NAME" /> muestre las páginas HTML de forma predeterminada.</translation>
 <translation id="5464816904705580310">Permite establecer opciones de configuración de usuarios administrados.</translation>
+<translation id="5466596281866046569">Enviar información sobre las aplicaciones</translation>
 <translation id="546726650689747237">Retraso de atenuación de pantalla cuando el dispositivo está conectado a la red</translation>
 <translation id="5469143988693423708">El usuario tiene permiso para ejecutar Crostini</translation>
 <translation id="5469825884154817306">Bloquear imágenes en estos sitios web</translation>
@@ -4851,7 +4876,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si se inhabilita esta opción, los usuarios no podrán acceder a la función Autocompletar.
 
       Si se habilita esta opción o no se le asigna ningún valor, los usuarios controlarán la función Autocompletar: podrán configurar perfiles de Autocompletar y activarla o desactivarla según sus preferencias.</translation>
-<translation id="8042971420829376618">Esta política especifica el ID de usuario de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="8044493735196713914">Notificar modo de inicio de dispositivo</translation>
 <translation id="8050080920415773384">Impresión nativa</translation>
 <translation id="8053580360728293758">Anula el modo predeterminado de impresión en color. Si el modo no está disponible, se ignora la política.</translation>

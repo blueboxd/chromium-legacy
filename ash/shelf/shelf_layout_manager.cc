@@ -1346,6 +1346,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     in_split_view =
         split_view_controller && split_view_controller->InSplitViewMode();
   }
+  const int hotseat_size = shelf_->hotseat_widget()->GetHotseatSize();
   switch (drag_status_) {
     case kDragNone:
     case kDragHomeToOverviewInProgress: {
@@ -1419,11 +1420,11 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       // |drag_amount_| is relative to the top of the hotseat when the drag
       // begins with an extended hotseat. Correct for this to get
       // |total_amount_dragged|.
-      const int drag_base = (hotseat_state() == HotseatState::kExtended &&
-                             state_.visibility_state == SHELF_VISIBLE)
-                                ? (ShelfConfig::Get()->hotseat_size() +
-                                   ShelfConfig::Get()->hotseat_bottom_padding())
-                                : 0;
+      const int drag_base =
+          (hotseat_state() == HotseatState::kExtended &&
+           state_.visibility_state == SHELF_VISIBLE)
+              ? (hotseat_size + ShelfConfig::Get()->hotseat_bottom_padding())
+              : 0;
       const float total_amount_dragged = drag_base + drag_amount_;
       const float end_of_drag_in_screen =
           drag_start_point_in_screen_.y() + total_amount_dragged;
@@ -1448,8 +1449,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
           screen_bottom -
           shelf_->hotseat_widget()->GetWindowBoundsInScreen().y();
       const bool dragged_over_half_hotseat_size =
-          top_of_hotseat_to_screen_bottom <
-          ShelfConfig::Get()->hotseat_size() / 2;
+          top_of_hotseat_to_screen_bottom < hotseat_size / 2;
       if (dragged_over_half_hotseat_size)
         return HotseatState::kHidden;
 
@@ -1710,7 +1710,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
     int hotseat_y = 0;
     const int hotseat_extended_y =
-        Shell::Get()->shelf_config()->hotseat_size() +
+        shelf_->hotseat_widget()->GetHotseatSize() +
         Shell::Get()->shelf_config()->hotseat_bottom_padding();
     const int hotseat_baseline =
         (hotseat_target_state == HotseatState::kExtended) ? -hotseat_extended_y
@@ -2260,7 +2260,7 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
   // offset to the hotseats extended position.
   if (hotseat_state() == HotseatState::kExtended &&
       visibility_state() == SHELF_VISIBLE) {
-    drag_amount_ = -(ShelfConfig::Get()->hotseat_size() +
+    drag_amount_ = -(shelf_->hotseat_widget()->GetHotseatSize() +
                      ShelfConfig::Get()->hotseat_bottom_padding());
   } else {
     drag_amount_ = 0.f;
@@ -2601,7 +2601,7 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
   // hasn't been fully dragged up.
   if (hotseat_state() == HotseatState::kHidden) {
     const int full_drag_amount =
-        -ShelfConfig::Get()->GetHotseatFullDragAmount();
+        -shelf_->hotseat_widget()->GetHotseatFullDragAmount();
     if (drag_amount_ > full_drag_amount)
       return false;
   } else if (hotseat_state() == HotseatState::kExtended) {
@@ -2693,7 +2693,7 @@ bool ShelfLayoutManager::MaybeEndDragFromOverviewToHome(
     ShelfConfig* shelf_config = ShelfConfig::Get();
     const int drag_amount_threshold =
         -(shelf_config->shelf_size() + shelf_config->hotseat_bottom_padding() +
-          kHotseatSizeMultiplier * shelf_config->hotseat_size());
+          kHotseatSizeMultiplier * shelf_->hotseat_widget()->GetHotseatSize());
     if (drag_amount_ > drag_amount_threshold)
       return false;
   }

@@ -25,6 +25,15 @@ class TrustTokenKeyCommitmentGetter {
       const = 0;
 };
 
+// Class SynchronousTrustTokenKeyCommitmentGetter fetches key commitments
+// synchronously.
+class SynchronousTrustTokenKeyCommitmentGetter {
+ public:
+  virtual ~SynchronousTrustTokenKeyCommitmentGetter() = default;
+  virtual mojom::TrustTokenKeyCommitmentResultPtr GetSync(
+      const url::Origin& origin) const = 0;
+};
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_KEY_COMMITMENT_GETTER_H_

@@ -28,13 +28,7 @@ namespace base {
 class DictionaryValue;
 class FilePath;
 class ListValue;
-}
-
-namespace content {
-class WebUIDataSource;
-}
-
-class Profile;
+}  // namespace base
 
 namespace settings {
 
@@ -44,9 +38,6 @@ class AboutHandler : public settings::SettingsPageUIHandler,
  public:
   AboutHandler();
   ~AboutHandler() override;
-
-  static AboutHandler* Create(content::WebUIDataSource* html_source,
-                              Profile* profile);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;

@@ -471,6 +471,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="4913169188695071480">Dejar de actualizar</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /> mientras se buscan dispositivos…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# página}other{# páginas}}</translation>
+<translation id="49268022542405662">Tus contraseñas se exportarán y descargarán como un archivo de texto. Todos los usuarios y aplicaciones que tengan acceso a la carpeta de destino podrán ver tus contraseñas.</translation>
 <translation id="4932247056774066048">Estás cerrando sesión de una cuenta gestionada por <ph name="DOMAIN_NAME" />, por lo que tus datos de Chrome se eliminarán de este dispositivo. Sin embargo, permanecerán en tu cuenta de Google.</translation>
 <translation id="4943703118917034429">Realidad virtual</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
@@ -753,6 +754,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7328017930301109123">En el modo básico, Chrome carga las páginas más rápido y reduce el uso de datos hasta un 60 por ciento.</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>
+<translation id="7340958967809483333">Opciones de Discover</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceder a métodos de pago</translation>
@@ -817,6 +819,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7810647596859435254">Abrir con…</translation>
 <translation id="7821588508402923572">El ahorro de datos aparecerá aquí</translation>
+<translation id="7835852323729233924">Reproduciendo contenido multimedia</translation>
 <translation id="783819812427904514">Dejar de silenciar vídeo</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>

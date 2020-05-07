@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">Anwendungsfenster</translation>
 <translation id="1531275250079031713">Dialogfeld "Anderes WLAN hinzufügen" anzeigen</translation>
 <translation id="1536754031901697553">Verbindung wird getrennt…</translation>
+<translation id="1537254971476575106">Vollbildlupe</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
 <translation id="1540605929960647700">Demomodus aktivieren</translation>
 <translation id="1542514202066550870">Über diesen Tab werden VR-Inhalte für ein Headset abgespielt.</translation>
@@ -666,7 +667,7 @@
 <translation id="1850508293116537636">Im &amp;Uhrzeigersinn drehen</translation>
 <translation id="1852141627593563189">Schädliche Software finden</translation>
 <translation id="1852799913675865625">Beim Versuch, die Datei <ph name="ERROR_TEXT" /> zu lesen, ist ein Fehler aufgetreten.</translation>
-<translation id="1853692000353488670">Neuer Inkognito-Tab</translation>
+<translation id="1853692000353488670">Neuer Inkognitotab</translation>
 <translation id="1854180393107901205">Übertragung beenden</translation>
 <translation id="1856715684130786728">Speicherort hinzufügen...</translation>
 <translation id="1858585891038687145">Diesem Zertifikat zur Identifizierung von Softwareherstellern vertrauen</translation>
@@ -903,7 +904,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2174948148799307353">Konto wird von <ph name="PARENT_EMAIL" /> verwaltet. Wenn Sie sich auf diesem Gerät aus dem primären Konto abmelden möchten, klicken Sie auf dem Bildschirm auf die Uhrzeit. Wählen Sie dann im eingeblendeten Menü "Abmelden" aus.</translation>
 <translation id="2175607476662778685">Schnellstartleiste</translation>
 <translation id="217576141146192373">Drucker kann nicht hinzugefügt werden. Prüfen Sie bitte die Konfiguration des Druckers und versuchen Sie es noch einmal.</translation>
-<translation id="2177950615300672361">Inkognito-Tab: <ph name="TAB_NAME" /></translation>
+<translation id="2177950615300672361">Inkognitotab: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">Das Plug-in <ph name="PEPPER_PLUGIN_NAME" /> auf <ph name="PEPPER_PLUGIN_DOMAIN" /> möchte auf Ihren Computer zugreifen</translation>
 <translation id="2178614541317717477">Kompromittierung der Zertifizierungsstelle</translation>
 <translation id="2182058453334755893">In die Zwischenablage kopiert</translation>
@@ -1160,6 +1161,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2501173422421700905">Zertifikat vorübergehend ausgesetzt</translation>
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2501797496290880632">Tastenkombination eingeben</translation>
+<translation id="2501920221385095727">Sticky Keys</translation>
 <translation id="2502441965851148920">Automatische Updates sind aktiviert. Manuelle Updates sind durch Ihren Administrator deaktiviert.</translation>
 <translation id="2502719318159902502">Vollzugriff</translation>
 <translation id="2505127913256479918">Dieses gemeinsam verwaltete Konto wird bald entfernt</translation>
@@ -1545,6 +1547,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2993517869960930405">App-Info</translation>
 <translation id="2996286169319737844">Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Davon ausgenommen sind Zahlungsmethoden oder Adressen von Google Pay.</translation>
 <translation id="2996722619877761919">Entlang der langen Seite wenden</translation>
+<translation id="3000461861112256445">Mono-Audio</translation>
 <translation id="3001144475369593262">Kinderkonten</translation>
 <translation id="3003144360685731741">Bevorzugte Netzwerke</translation>
 <translation id="3003623123441819449">CSS-Cache</translation>
@@ -2479,6 +2482,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4211851069413100178">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese <ph name="BEGIN_LINK1" />Einstellung<ph name="END_LINK1" /> wird vom Inhaber erzwungen. Der Inhaber kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Exportieren</translation>
 <translation id="42137655013211669">Der Zugriff auf diese Ressource wurde vom Server nicht zugelassen.</translation>
+<translation id="4217571870635786043">Spracheingabe</translation>
 <translation id="4218274196133425560">Ausnahme für <ph name="HOST_NAME" /> entfernen</translation>
 <translation id="4220648711404560261">Bei der Aktivierung ist ein Fehler aufgetreten.</translation>
 <translation id="4222772810963087151">Build-Details</translation>
@@ -3163,6 +3167,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5204967432542742771">Passwort eingeben</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="520621735928254154">Fehler beim Importieren des Zertifikats</translation>
+<translation id="5207949376430453814">Textcursor hervorheben</translation>
 <translation id="5209320130288484488">Keine Geräte gefunden</translation>
 <translation id="5210365745912300556">Schließen</translation>
 <translation id="5213481667492808996">Der "<ph name="NAME" />"-Datendienst kann nun verwendet werden</translation>
@@ -5076,6 +5081,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7766807826975222231">Tour starten</translation>
 <translation id="7766838926148951335">Berechtigungen akzeptieren</translation>
 <translation id="7768770796815395237">Ändern</translation>
+<translation id="7768784765476638775">Vorlesen</translation>
 <translation id="7769672763586021400">Modell-ID</translation>
 <translation id="7770612696274572992">Bild wurde von einem anderen Gerät kopiert</translation>
 <translation id="7770651108375708429">WLAN trennen</translation>

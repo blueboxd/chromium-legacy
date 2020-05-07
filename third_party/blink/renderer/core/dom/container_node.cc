@@ -1047,9 +1047,11 @@ bool ContainerNode::ChildrenChangedAllChildrenRemovedNeedsList() const {
   return false;
 }
 
-void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
+void ContainerNode::CloneChildNodesFrom(const ContainerNode& node,
+                                        CloneChildrenFlag flag) {
+  DCHECK_NE(flag, CloneChildrenFlag::kSkip);
   for (const Node& child : NodeTraversal::ChildrenOf(node))
-    AppendChild(child.Clone(GetDocument(), CloneChildrenFlag::kClone));
+    AppendChild(child.Clone(GetDocument(), flag));
 }
 
 PhysicalRect ContainerNode::BoundingBox() const {

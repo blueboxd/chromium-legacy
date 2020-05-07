@@ -19,3 +19,7 @@ video {
   height: 200px;
   width: 449px;
 }
+
+#enableDebuggingDiv {
+  margin-top: 2px;
+}

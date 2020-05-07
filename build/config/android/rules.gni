@@ -3337,20 +3337,25 @@ if (enable_java_templates) {
       _final_deps += [ ":$_apk_operations_target_name" ]
     }
 
-    # This is necessary so we only lint chromium apks.
-    if (defined(invoker.chromium_code)) {
-      _chromium_code = invoker.chromium_code
+    if (defined(invoker.enable_lint)) {
+      # Allow individual apks to opt-in to lint.
+      _enable_lint = invoker.enable_lint && !disable_android_lint
     } else {
-      # Default based on whether target is in third_party.
-      _chromium_code =
-          filter_exclude([ get_label_info(":$target_name", "dir") ],
-                         [ "*\bthird_party\b*" ]) != []
-    }
+      # This is necessary so we only lint chromium apks.
+      if (defined(invoker.chromium_code)) {
+        _chromium_code = invoker.chromium_code
+      } else {
+        # Default based on whether target is in third_party.
+        _chromium_code =
+            filter_exclude([ get_label_info(":$target_name", "dir") ],
+                           [ "*\bthird_party\b*" ]) != []
+      }
 
-    # Bundle modules get linted via android_app_bundle targets.
-    # Skip testonly apks since many of them trigger lint warnings.
-    _enable_lint = _chromium_code && !_is_bundle_module &&
-                   (!defined(testonly) || !testonly) && !disable_android_lint
+      # Bundle modules get linted via android_app_bundle targets.
+      # Skip testonly apks since many of them trigger lint warnings.
+      _enable_lint = _chromium_code && !_is_bundle_module &&
+                     (!defined(testonly) || !testonly) && !disable_android_lint
+    }
     if (_enable_lint) {
       # Only run lint on final apk targets so that lint can run on all source
       # files and all resources. This is both faster and more correct for checks
@@ -3457,6 +3462,7 @@ if (enable_java_templates) {
                                "disable_checkdiscard",
                                "disable_r8_outlining",
                                "dist_ijar_path",
+                               "enable_lint",
                                "enable_jetify",
                                "enable_multidex",
                                "enable_native_mocks",

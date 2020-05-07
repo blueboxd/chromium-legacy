@@ -262,6 +262,11 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
   return base::make_span(form_fetcher_->GetInteractionsStats());
 }
 
+base::span<const CompromisedCredentials>
+PasswordFormManager::GetCompromisedCredentials() const {
+  return form_fetcher_->GetCompromisedCredentials();
+}
+
 bool PasswordFormManager::IsBlacklisted() const {
   return form_fetcher_->IsBlacklisted() || newly_blacklisted_;
 }

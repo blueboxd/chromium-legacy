@@ -471,6 +471,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4913169188695071480">Stop refreshing</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Page}other{# Pages}}</translation>
+<translation id="49268022542405662">Your passwords will be exported and downloaded as a text file. They will be visible to anyone and any app with access to the destination folder.</translation>
 <translation id="4932247056774066048">Because you're signing out of an account managed by <ph name="DOMAIN_NAME" />, your Chrome data will be deleted from this device. It will remain in your Google account.</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
@@ -753,6 +754,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7302081693174882195">Details: Sorted by amount of data saved</translation>
 <translation id="7328017930301109123">In Lite mode, Chrome loads pages faster and uses up to 60 per cent less data.</translation>
 <translation id="7333031090786104871">Still adding previous site</translation>
+<translation id="7340958967809483333">Options for Discover</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
 <translation id="7359002509206457351">Access payment methods</translation>
@@ -817,6 +819,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7810647596859435254">Open with…</translation>
 <translation id="7821588508402923572">Your data savings will appear here</translation>
+<translation id="7835852323729233924">Playing media</translation>
 <translation id="783819812427904514">Unmute video</translation>
 <translation id="784934925303690534">Time range</translation>
 <translation id="7851858861565204677">Other devices</translation>

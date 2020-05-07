@@ -238,7 +238,8 @@ export class SiteSettingsPrefsBrowserProxy {
 
   /**
    * Gets the exceptions (site list) for a particular category.
-   * @param {string} contentType The name of the category to query.
+   * @param {!ContentSettingsTypes} contentType The name of the category to
+   *     query.
    * @return {!Promise<!Array<!RawSiteException>>}
    */
   getExceptionList(contentType) {}
@@ -250,7 +251,7 @@ export class SiteSettingsPrefsBrowserProxy {
    * @param {string} origin The origin to look up permissions for.
    * @param {!Array<!ContentSettingsTypes>} contentTypes A list of
    *     categories to retrieve the ContentSetting for.
-   * @return {!Promise<!NodeList<!RawSiteException>>}
+   * @return {!Promise<!Array<!RawSiteException>>}
    */
   getOriginPermissions(origin, contentTypes) {}
 

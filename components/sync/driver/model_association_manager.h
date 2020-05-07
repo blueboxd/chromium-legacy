@@ -115,17 +115,12 @@ class ModelAssociationManager {
   // Start loading non-running types that are in |desired_types_|.
   void LoadEnabledTypes();
 
-  // Callback passed to each data type controller on starting association. This
-  // callback will be invoked when the model association is done.
-  void TypeStartCallback(ModelType type,
-                         base::TimeTicks type_start_time,
-                         DataTypeController::ConfigureResult start_result,
-                         const SyncMergeResult& local_merge_result,
-                         const SyncMergeResult& syncer_merge_result);
-
   // Callback that will be invoked when the models finish loading. This callback
   // will be passed to |LoadModels| function.
   void ModelLoadCallback(ModelType type, const SyncError& error);
+
+  // TODO(crbug.com/647505): Consider removing or renaming this function.
+  void TypeStartCallback(ModelType type);
 
   // Called when all requested types are associated or association times out.
   // Will clean up any unfinished types, and update |state_| to be |new_state|
@@ -165,10 +160,6 @@ class ModelAssociationManager {
   // Data types that are associated, i.e. no more action needed during
   // reconfiguration if not disabled.
   ModelTypeSet associated_types_;
-
-  // Time when StartAssociationAsync() is called to associate for a set of data
-  // types.
-  base::TimeTicks association_start_time_;
 
   // Set of all registered controllers.
   const DataTypeController::TypeMap* controllers_;

@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActionModeHandler;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabThemeColorProvider;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -38,6 +39,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewTabHelper;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareUtils;
@@ -119,6 +121,8 @@ public class RootUiCoordinator
     private ToolbarActionModeCallback mActionModeControllerCallback;
     private ObservableSupplierImpl<Boolean> mOmniboxFocusStateSupplier =
             new ObservableSupplierImpl<>();
+    private final ObservableSupplier<Profile> mProfileSupplier;
+    private final ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -128,11 +132,14 @@ public class RootUiCoordinator
      *         changes.
      * @param shareDelegateSupplier Supplies {@link ShareDelegate} object.
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
+     * @param profileSupplier Supplier of the currently applicable profile.
+     * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
      */
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
-            ActivityTabProvider tabProvider) {
+            ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
         mActivity.getLifecycleDispatcher().register(this);
@@ -148,6 +155,8 @@ public class RootUiCoordinator
         mTabObscuringHandler = new TabObscuringHandler();
         mAccessibilityVisibilityHandler = new AccessibilityVisibilityHandler(
                 activity.getLifecycleDispatcher(), mActivityTabProvider, mTabObscuringHandler);
+        mProfileSupplier = profileSupplier;
+        mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
 
         mOmniboxFocusStateSupplier.set(false);
 
@@ -423,7 +432,8 @@ public class RootUiCoordinator
                     urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
                     mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
-                    mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager);
+                    mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager,
+                    mProfileSupplier, mBookmarkBridgeSupplier);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

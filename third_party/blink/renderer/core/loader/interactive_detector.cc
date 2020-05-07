@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/profiler/sample_metadata.h"
 #include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -19,7 +20,7 @@ namespace blink {
 namespace {
 
 // Used to generate a unique id when emitting the "Long Input Delay" trace
-// event.
+// event and metadata.
 int g_num_long_input_events = 0;
 
 // The threshold to emit the "Long Input Delay" trace event is the 99th
@@ -251,6 +252,11 @@ void InteractiveDetector::HandleForInputDelay(
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
         "latency", "Long Input Delay", TRACE_ID_LOCAL(g_num_long_input_events),
         event_timestamp + delay);
+    // Apply metadata on stack samples.
+    base::ApplyMetadataToPastSamples(
+        event_timestamp, event_timestamp + delay,
+        "PageLoad.InteractiveTiming.LongInputDelay", g_num_long_input_events,
+        1);
     g_num_long_input_events++;
   }
 

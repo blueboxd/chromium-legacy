@@ -10,6 +10,8 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
@@ -359,6 +361,28 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
       GetOriginForFeaturePolicy(frame_element_)->ToUrlOrigin()));
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
             container_policy[2].feature);
+}
+
+using HTMLIFrameElementSimTest = SimTest;
+
+TEST_F(HTMLIFrameElementSimTest, PolicyAttributeParsingError) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe policy="bad-feature-name"></iframe>
+  )");
+
+  // Note: Parsing of policy attribute string, i.e. call to
+  // HTMLFrameOwnerElement::UpdateRequiredPolicy(), happens twice in above
+  // situation:
+  // - HTMLFrameOwnerElement::LoadOrRedirectSubframe()
+  // - HTMLIFrameElement::ParseAttribute()
+  EXPECT_EQ(ConsoleMessages().size(), 2u);
+  for (const auto& message : ConsoleMessages()) {
+    EXPECT_TRUE(
+        message.StartsWith("Unrecognized document policy feature name"));
+  }
 }
 
 }  // namespace blink

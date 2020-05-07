@@ -194,6 +194,7 @@ base::OnceClosure ShowDeviceChooserDialog(
   gfx::NativeView parent = parent_widget->GetNativeView();
   DCHECK(parent);
   bubble->set_parent_window(parent);
+  bubble->UpdateAnchor(browser);
 
   base::OnceClosure close_closure = bubble->MakeCloseClosure();
   views::Widget* widget =

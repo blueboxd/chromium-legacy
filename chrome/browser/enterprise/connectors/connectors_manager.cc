@@ -78,35 +78,31 @@ bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) {
   return pref && g_browser_process->local_state()->HasPrefPath(pref);
 }
 
-void ConnectorsManager::GetAnalysisSettings(const GURL& url,
-                                            AnalysisConnector connector,
-                                            AnalysisSettingsCallback callback) {
-  if (IsConnectorEnabled(connector)) {
-    GetAnalysisSettingsFromConnectorPolicy(url, connector, std::move(callback));
-  } else {
-    std::move(callback).Run(
-        GetAnalysisSettingsFromLegacyPolicies(url, connector));
-  }
+base::Optional<AnalysisSettings> ConnectorsManager::GetAnalysisSettings(
+    const GURL& url,
+    AnalysisConnector connector) {
+  // Prioritize new Connector policies over legacy ones.
+  if (IsConnectorEnabled(connector))
+    return GetAnalysisSettingsFromConnectorPolicy(url, connector);
+
+  return GetAnalysisSettingsFromLegacyPolicies(url, connector);
 }
 
-void ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
+base::Optional<AnalysisSettings>
+ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
     const GURL& url,
-    AnalysisConnector connector,
-    AnalysisSettingsCallback callback) {
+    AnalysisConnector connector) {
   if (connector_settings_.count(connector) == 0)
     CacheConnectorPolicy(connector);
 
   // If the connector is still not in memory, it means the pref is set to an
   // empty list or that it is not a list.
-  if (connector_settings_.count(connector) == 0) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
+  if (connector_settings_.count(connector) == 0)
+    return base::nullopt;
 
   // While multiple services can be set by the connector policies, only the
   // first one is considered for now.
-  std::move(callback).Run(
-      connector_settings_[connector][0].GetAnalysisSettings(url));
+  return connector_settings_[connector][0].GetAnalysisSettings(url);
 }
 
 void ConnectorsManager::CacheConnectorPolicy(AnalysisConnector connector) {

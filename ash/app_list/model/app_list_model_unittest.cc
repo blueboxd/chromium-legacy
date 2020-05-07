@@ -15,12 +15,10 @@
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_model_observer.h"
 
@@ -228,55 +226,9 @@ TEST_F(AppListModelTest, AppOrder) {
 
 using AppListModelFolderTest = AppListModelTest;
 
-TEST_F(AppListModelFolderTest, FolderItem) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({},
-                                       {app_list_features::kScalableAppList});
-  AppListFolderItem* folder = new AppListFolderItem("folder1");
-  const size_t num_folder_apps = 8;
-  const size_t num_observed_apps = 4;
-  model_.AddItem(folder);
-  for (int i = 0; static_cast<size_t>(i) < num_folder_apps; ++i) {
-    std::string name = model_.GetItemName(i);
-    model_.AddItemToFolder(model_.CreateItem(name), folder->id());
-  }
-  ASSERT_EQ(num_folder_apps, folder->item_list()->item_count());
-  // Check that items 0 and 3 are observed.
-  EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0),
-                                   AppListConfigType::kShared));
-  EXPECT_TRUE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps - 1),
-      AppListConfigType::kShared));
-  // Check that item 4 is not observed.
-  EXPECT_FALSE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps),
-      AppListConfigType::kShared));
-  folder->item_list()->MoveItem(num_observed_apps, 0);
-  // Confirm that everything was moved where expected.
-  EXPECT_EQ(model_.GetItemName(num_observed_apps),
-            folder->item_list()->item_at(0)->id());
-  EXPECT_EQ(model_.GetItemName(0), folder->item_list()->item_at(1)->id());
-  EXPECT_EQ(model_.GetItemName(num_observed_apps - 1),
-            folder->item_list()->item_at(num_observed_apps)->id());
-  // Check that items 0 and 3 are observed.
-  EXPECT_TRUE(ItemObservedByFolder(folder, folder->item_list()->item_at(0),
-                                   AppListConfigType::kShared));
-  EXPECT_TRUE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps - 1),
-      AppListConfigType::kShared));
-  // Check that item 4 is not observed.
-  EXPECT_FALSE(ItemObservedByFolder(
-      folder, folder->item_list()->item_at(num_observed_apps),
-      AppListConfigType::kShared));
-}
-
 TEST_F(AppListModelFolderTest, NonSharedConfigIconGeneration) {
   // Ensure any configs set by previous tests are cleared.
   AppListConfigProvider::Get().ResetForTesting();
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({app_list_features::kScalableAppList},
-                                       {});
 
   // Start with kLarge config available.
   const AppListConfig* large_config =

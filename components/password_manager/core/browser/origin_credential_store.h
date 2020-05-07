@@ -93,13 +93,12 @@ class OriginCredentialStore {
   // Returns references to the held credentials (or an empty set if aren't any).
   base::span<const UiCredential> GetCredentials() const;
 
-  // Initializes the blacklisted status with either |kNeverBlacklisted|
-  // or |kIsBlacklisted|.
-  void InitializeBlacklistedStatus(bool is_blacklisted);
-
-  // Updates the blacklsited status as a result of a use action. The status
-  // can only change from |kWasBlacklsited| to |kIsBlacklisted| or vice-versa.
-  void UpdateBlacklistedStatus(bool is_blacklisted);
+  // Sets the blacklisted status. The possible transitions are:
+  // (*, is_blacklisted = true) -> kIsBlacklisted
+  // ((kIsBlacklisted|kWasBlacklisted), is_blacklisted = false)
+  //      -> kWasBlacklisted
+  // (kNeverBlacklisted, is_blacklisted = false) -> kNeverBlacklisted
+  void SetBlacklistedStatus(bool is_blacklisted);
 
   // Returns the blacklsited status for |origin_|.
   BlacklistedStatus GetBlacklistedStatus() const;

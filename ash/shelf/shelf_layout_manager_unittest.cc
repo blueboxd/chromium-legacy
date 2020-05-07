@@ -41,6 +41,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
@@ -125,6 +126,10 @@ ShelfWidget* GetShelfWidget() {
 
 ShelfLayoutManager* GetShelfLayoutManager() {
   return AshTestBase::GetPrimaryShelf()->shelf_layout_manager();
+}
+
+HotseatWidget* GetHotseatWidget() {
+  return AshTestBase::GetPrimaryShelf()->hotseat_widget();
 }
 
 gfx::Rect GetScreenAvailableBounds() {
@@ -2599,7 +2604,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   const int shelf_widget_bottom =
       GetShelfWidget()->GetWindowBoundsInScreen().bottom();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
 
   const struct TestCase {
@@ -2763,7 +2768,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   std::unique_ptr<aura::Window> window1 =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -2800,7 +2805,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInOverview) {
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   std::unique_ptr<aura::Window> window1 =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -2838,7 +2843,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   std::unique_ptr<aura::Window> window1 =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -2900,7 +2905,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   std::unique_ptr<aura::Window> window1 =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -2979,7 +2984,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
 
   // Simulate virtual keyboard closing, and a swipe from shelf to home.
@@ -3013,7 +3018,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DISABLED_NoOpForHiddenShelf) {
   wm::ActivateWindow(window.get());
   Shelf* shelf = GetPrimaryShelf();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
 
   // The window can be dragged on a visible shelf.
@@ -3075,7 +3080,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   const int hotseat_y =
@@ -3104,7 +3109,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest,
   const gfx::Point start = shelf_widget_bounds.bottom_center();
   StartScroll(start);
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   const int hotseat_y =
@@ -3188,7 +3193,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, StartsDragAfterHotseatIsUp) {
   const gfx::Rect shelf_widget_bounds =
       GetShelfWidget()->GetWindowBoundsInScreen();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
-  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
 
   // Starts the drag from the center of the shelf's bottom.

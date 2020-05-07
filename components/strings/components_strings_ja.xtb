@@ -70,7 +70,7 @@
     &lt;/ol&gt;</translation>
 <translation id="1257286744552378071">組織が管理していないサイトでパスワードを入力しました。アカウントを保護するには、他のアプリやサイトでパスワードを再使用しないでください。</translation>
 <translation id="1263231323834454256">リーディング リスト</translation>
-<translation id="1270502636509132238">集荷方法</translation>
+<translation id="1270502636509132238">受け取り方法</translation>
 <translation id="1281476433249504884">スタッカー 1</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="1292701964462482250">「パソコンにインストールされているソフトウェアが原因で、Chrome からインターネットに安全に接続することができません」（Windows パソコンのみ）</translation>
@@ -94,7 +94,7 @@
           <ph name="LIST_ITEM" />ご利用のインターネット サービス プロバイダ
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">登録ドメイン:</translation>
-<translation id="1340482604681802745">引取先住所</translation>
+<translation id="1340482604681802745">受け取り場所の住所</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="1348198688976932919">アクセス先のサイトには危険なアプリがあります</translation>
 <translation id="1348779747280417563">名前を確認</translation>
@@ -170,7 +170,7 @@
 <translation id="1645368109819982629">サポートされていないプロトコルです</translation>
 <translation id="1652415888492971589">JIS B8</translation>
 <translation id="1656024727720460136">ページを見やすくするため、Chrome によって簡易表示されています。Chrome による元のページの取得は、保護された接続を介して行われました。</translation>
-<translation id="1656489000284462475">引取</translation>
+<translation id="1656489000284462475">受け取り</translation>
 <translation id="1662550410081243962">お支払い方法の保存と入力</translation>
 <translation id="1663943134801823270">Chrome に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
@@ -415,7 +415,7 @@
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />接続診断ツールを実行する<ph name="END_LINK" /></translation>
 <translation id="2734544361860335147">これらの機能を有効にすると、ブラウザのデータが失われたり、セキュリティやプライバシーが侵害されたりする可能性があります。有効にした機能は、このブラウザのすべてのユーザーに適用されます。</translation>
 <translation id="2735043616039983645">このポリシーには、値が競合する複数のソースがあります。</translation>
-<translation id="2738330467931008676">集荷先住所を選択</translation>
+<translation id="2738330467931008676">受け取り場所の住所を選択</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">選択したアイテムを削除</translation>
 <translation id="277133753123645258">配送方法</translation>
@@ -486,7 +486,7 @@
 <translation id="3086579638707268289">ウェブでのアクティビティが監視されています</translation>
 <translation id="3087734570205094154">下</translation>
 <translation id="3095940652251934233">Statement</translation>
-<translation id="3096100844101284527">集荷先住所を追加</translation>
+<translation id="3096100844101284527">受け取り場所の住所を追加</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />セキュア DNS の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
@@ -807,7 +807,7 @@
 <translation id="4406896451731180161">検索結果</translation>
 <translation id="4408413947728134509">Cookie <ph name="NUM_COOKIES" /></translation>
 <translation id="4414290883293381923">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />、<ph name="WEBSITE_3" /> のほか、このパスワードを使用しているサイトで、パスワードを今すぐ変更することをおすすめします。</translation>
-<translation id="4415426530740016218">集荷先住所</translation>
+<translation id="4415426530740016218">受け取り場所の住所</translation>
 <translation id="4424024547088906515">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="443121186588148776">シリアルポート</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> でログイン証明書が承認されなかったか、ログイン証明書が提示されていない可能性があります。</translation>
@@ -1645,7 +1645,7 @@
 <translation id="803771048473350947">ファイル</translation>
 <translation id="8041089156583427627">フィードバックを送信</translation>
 <translation id="8041940743680923270">グローバルのデフォルト値（[確認]）を使用</translation>
-<translation id="8042918947222776840">集荷方法を選択</translation>
+<translation id="8042918947222776840">受け取り方法を選択</translation>
 <translation id="8057711352706143257">「<ph name="SOFTWARE_NAME" />」が正しく設定されていません。通常、この問題は「<ph name="SOFTWARE_NAME" />」をアンインストールすることで解決します。<ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">エラーが発生しました。</translation>
 <translation id="8067872629359326442">偽のサイトでパスワードを入力しました。Chromium を使って不正利用への対策ができます。パスワードを変更し、Google にアカウントの状況を通知するには、[アカウントを保護] をクリックしてください。</translation>

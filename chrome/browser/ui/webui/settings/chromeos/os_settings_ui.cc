@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
-#include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
@@ -87,6 +86,13 @@
 namespace chromeos {
 namespace settings {
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+namespace {
+const char kOsGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/settings/";
+}
+#endif
+
 // static
 void OSSettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -120,8 +126,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ProtocolHandlersHandler>());
-  AddSettingsPageUIHandler(
-      base::WrapUnique(::settings::AboutHandler::Create(html_source, profile)));
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -142,12 +146,10 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
                                IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_HTML);
 #else
-  // Add all settings resources.
-  for (size_t i = 0; i < kOsSettingsResourcesSize; ++i) {
-    html_source->AddResourcePath(kOsSettingsResources[i].name,
-                                 kOsSettingsResources[i].value);
-  }
-  html_source->SetDefaultResource(IDR_OS_SETTINGS_SETTINGS_HTML);
+  webui::SetupWebUIDataSource(
+      html_source,
+      base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
+      kOsGeneratedPath, IDR_OS_SETTINGS_SETTINGS_V3_HTML);
 #endif
 
   html_source->AddResourcePath("constants/routes.mojom-lite.js",

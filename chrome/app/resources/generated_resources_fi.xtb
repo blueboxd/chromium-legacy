@@ -412,6 +412,7 @@
 <translation id="1531004739673299060">Sovellusikkuna</translation>
 <translation id="1531275250079031713">Näytä Lisää uusi Wi-Fi ‑valintaikkuna</translation>
 <translation id="1536754031901697553">Katkaistaan yhteyttä...</translation>
+<translation id="1537254971476575106">Koko näytön suurennus</translation>
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
 <translation id="1540605929960647700">Ota esittelytila käyttöön</translation>
 <translation id="1542514202066550870">Tällä välilehdellä esitetään VR-sisältöä headsetiin.</translation>
@@ -1164,6 +1165,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2501173422421700905">Varmenne on pidossa</translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2501797496290880632">Syötä pikanäppäin</translation>
+<translation id="2501920221385095727">Päälle jäävät näppäimet</translation>
 <translation id="2502441965851148920">Automaattiset päivitykset ovat käytössä, mutta järjestelmänvalvoja on estänyt manuaaliset päivitykset.</translation>
 <translation id="2502719318159902502">Täydet käyttöoikeudet</translation>
 <translation id="2505127913256479918">Tämä valvottu tili poistetaan pian</translation>
@@ -1549,6 +1551,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2993517869960930405">Sovelluksen tiedot</translation>
 <translation id="2996286169319737844">Data salataan Google-salasanallasi. Tämä ei koske Google Payhin tallennettuja maksutapoja tai osoitteita.</translation>
 <translation id="2996722619877761919">Käännä pitkän reunan ympäri</translation>
+<translation id="3000461861112256445">Monoääni</translation>
 <translation id="3001144475369593262">Alatason tilit</translation>
 <translation id="3003144360685731741">Ensisijaiset verkot</translation>
 <translation id="3003623123441819449">CSS-välimuisti</translation>
@@ -2480,6 +2483,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4211851069413100178">Lähetä käyttö- ja diagnostiikkadataa. Auta parantamaan Android-käyttökokemusta lähettämällä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän <ph name="BEGIN_LINK1" />asetuksen<ph name="END_LINK1" /> käyttöön. Omistaja voi lähettää tätä laitetta koskevaa diagnostiikka- ja käyttödataa Googlelle. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK2" />Lue lisää<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Vie</translation>
 <translation id="42137655013211669">Palvelin kielsi tämän resurssin käytön.</translation>
+<translation id="4217571870635786043">Sanelu</translation>
 <translation id="4218274196133425560">Poista poikkeus (<ph name="HOST_NAME" />)</translation>
 <translation id="4220648711404560261">Aktivoinnin aikana tapahtui virhe.</translation>
 <translation id="4222772810963087151">Koontiversion tiedot</translation>
@@ -3164,6 +3168,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5204967432542742771">Lisää salasana</translation>
 <translation id="5206215183583316675">Poistetaanko <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Varmenteen tuontivirhe</translation>
+<translation id="5207949376430453814">Korosta tekstikursori</translation>
 <translation id="5209320130288484488">Laitteita ei löytynyt</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="5213481667492808996">Datapalvelu (<ph name="NAME" />) on valmiina käyttöön</translation>
@@ -5079,6 +5084,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7766807826975222231">Katso esittely</translation>
 <translation id="7766838926148951335">Hyväksy käyttöoikeudet</translation>
 <translation id="7768770796815395237">Muuta</translation>
+<translation id="7768784765476638775">Teksti puhuttuna</translation>
 <translation id="7769672763586021400">Mallitunnus</translation>
 <translation id="7770612696274572992">Toiselta laitteelta kopioitu kuva</translation>
 <translation id="7770651108375708429">Katkaise Wi-Fi-yhteys</translation>

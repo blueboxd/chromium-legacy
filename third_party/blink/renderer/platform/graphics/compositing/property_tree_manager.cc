@@ -232,6 +232,19 @@ cc::ScrollTree& PropertyTreeManager::GetScrollTree() {
   return property_trees_.scroll_tree;
 }
 
+void PropertyTreeManager::EnsureCompositorScrollNodes(
+    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
+  DCHECK(RuntimeEnabledFeatures::ScrollUnificationEnabled());
+
+  for (auto* node : scroll_translation_nodes)
+    EnsureCompositorScrollNode(*node);
+}
+
+void PropertyTreeManager::SetCcScrollNodeIsComposited(int cc_node_id) {
+  DCHECK(RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  GetScrollTree().Node(cc_node_id)->is_composited = true;
+}
+
 void PropertyTreeManager::SetupRootTransformNode() {
   // cc is hardcoded to use transform node index 1 for device scale and
   // transform.

@@ -471,6 +471,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4913169188695071480">Sluta uppdatera</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /> under sökningen efter enheter …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# sida}other{# sidor}}</translation>
+<translation id="49268022542405662">Dina lösenord exporteras och laddas ned som en textfil. De blir synliga för alla personer och appar som har åtkomst till målmappen.</translation>
 <translation id="4932247056774066048">Eftersom du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" /> raderas din Chrome-data från den här enheten. Den finns kvar på ditt Google-konto.</translation>
 <translation id="4943703118917034429">Virtuell verklighet</translation>
 <translation id="4943872375798546930">Inga resultat</translation>
@@ -753,6 +754,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7302081693174882195">Mer information: Sorterad efter databesparing</translation>
 <translation id="7328017930301109123">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent.</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>
+<translation id="7340958967809483333">Alternativ för Förslag</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7359002509206457351">Åtkomst till betalningsmetoder</translation>
@@ -817,6 +819,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="780301667611848630">Nej tack</translation>
 <translation id="7810647596859435254">Öppna med …</translation>
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
+<translation id="7835852323729233924">Spelar upp media</translation>
 <translation id="783819812427904514">Slå på ljudet för videon</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>

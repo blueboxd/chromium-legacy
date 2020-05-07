@@ -271,7 +271,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), getToolbarManager().getBookmarkBridgeSupplier(),
+                getWindow().getDecorView(), mBookmarkBridgeSupplier,
                 CustomTabsUiType.MINIMAL_UI_WEBAPP, new ArrayList<String>(),
                 true /* is opened by Chrome */, true /* should show share */,
                 false /* should show star (bookmarking) */, false /* should show download */,

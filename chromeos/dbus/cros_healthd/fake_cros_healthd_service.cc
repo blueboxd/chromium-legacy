@@ -127,6 +127,11 @@ void FakeCrosHealthdService::RunBatteryDischargeRoutine(
   std::move(callback).Run(run_routine_response_.Clone());
 }
 
+void FakeCrosHealthdService::AddBluetoothObserver(
+    mojom::CrosHealthdBluetoothObserverPtr observer) {
+  bluetooth_observers_.Add(observer.PassInterface());
+}
+
 void FakeCrosHealthdService::AddPowerObserver(
     mojom::CrosHealthdPowerObserverPtr observer) {
   power_observers_.Add(observer.PassInterface());
@@ -161,6 +166,11 @@ void FakeCrosHealthdService::SetProbeTelemetryInfoResponseForTesting(
 void FakeCrosHealthdService::EmitAcInsertedEventForTesting() {
   for (auto& observer : power_observers_)
     observer->OnAcInserted();
+}
+
+void FakeCrosHealthdService::EmitAdapterAddedEventForTesting() {
+  for (auto& observer : bluetooth_observers_)
+    observer->OnAdapterAdded();
 }
 
 }  // namespace cros_healthd

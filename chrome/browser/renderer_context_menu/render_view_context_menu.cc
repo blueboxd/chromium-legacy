@@ -2553,7 +2553,6 @@ bool RenderViewContextMenu::IsTranslateEnabled() const {
           0) &&
          !original_lang.empty() &&  // Did we receive the page language yet?
          !chrome_translate_client->GetLanguageState().IsPageTranslated() &&
-         !embedder_web_contents_->GetInterstitialPage() &&
          // There are some application locales which can't be used as a
          // target language for translation. In that case GetTargetLanguage()
          // may return empty.

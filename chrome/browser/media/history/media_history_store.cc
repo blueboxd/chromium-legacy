@@ -931,7 +931,8 @@ void MediaHistoryStore::UpdateMediaFeedDisplayTime(const int64_t feed_id) {
 }
 
 void MediaHistoryStore::ResetMediaFeed(const url::Origin& origin,
-                                       media_feeds::mojom::ResetReason reason) {
+                                       media_feeds::mojom::ResetReason reason,
+                                       const bool include_subdomains) {
   if (!CanAccessDatabase())
     return;
 
@@ -944,7 +945,8 @@ void MediaHistoryStore::ResetMediaFeed(const url::Origin& origin,
   }
 
   // Get all the feeds with |origin| as an associated origin.
-  std::set<int64_t> feed_ids = feed_origins_table_->GetFeeds(origin);
+  std::set<int64_t> feed_ids =
+      feed_origins_table_->GetFeeds(origin, include_subdomains);
 
   if (ResetMediaFeedInternal(feed_ids, reason)) {
     DB()->CommitTransaction();

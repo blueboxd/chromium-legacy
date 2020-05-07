@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1199716647557067911">Tem a certeza de que pretende desativar o acesso por comutador?</translation>
+<translation id="121097972571826261">Avançar por palavra</translation>
+<translation id="1229194443904279055">Parar seleção</translation>
 <translation id="1247372569136754018">Microfone (interno)</translation>
 <translation id="1252999807265626933">A carregar a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Como está o tempo?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Lupa de ecrã inteiro ativada. Prima Ctrl + Pesquisa + M novamente para a desativar.</translation>
 <translation id="2302092602801625023">Esta conta é gerida pelo Family Link</translation>
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
+<translation id="2322173485024759474">Recuar por letra</translation>
 <translation id="2339073806695260576">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã, utilizar o ponteiro de laser ou a lupa.</translation>
 <translation id="2341729377289034582">Bloqueado na vertical</translation>
 <translation id="2352467521400612932">Definições da caneta stylus</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Mostrar definições do teclado</translation>
 <translation id="3846575436967432996">Não existem informações de rede disponíveis</translation>
 <translation id="385051799172605136">Anterior</translation>
+<translation id="385300504083504382">Início</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
 <translation id="3897533311200664389">Iniciar uma consulta de texto</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Demasiadas tentativas</translation>
 <translation id="5397578532367286026">A utilização e o histórico deste utilizador podem ser consultados pelo gestor (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
 <translation id="5400461572260843123">Nas Definições rápidas, prima Pesquisa + seta para a esquerda para aceder ao centro de notificações.</translation>
+<translation id="5428899915242071344">Iniciar seleção</translation>
 <translation id="5430931332414098647">Ligação via telemóvel instantânea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Já foram adicionados a esta sessão todos os utilizadores disponíveis.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Ligar os dispositivos USB-C ligados</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
+<translation id="6818242057446442178">Recuar por palavra</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Atalho desativado</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Criar nota</translation>
+<translation id="8371779926711439835">Avançar por letra</translation>
 <translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> e o telemóvel serão associados automaticamente.</translation>
 <translation id="8388750414311082622">Não é possível remover o último espaço de trabalho.</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>

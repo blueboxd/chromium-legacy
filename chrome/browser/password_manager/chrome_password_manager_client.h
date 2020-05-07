@@ -128,8 +128,6 @@ class ChromePasswordManagerClient
       const GURL& origin,
       const std::vector<const autofill::PasswordForm*>& best_matches,
       bool is_blacklisted) override;
-  void UpdateCacheWithBlacklistedForOrigin(const url::Origin& origin,
-                                           bool is_blacklisted) override;
   void AutomaticPasswordSave(
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           saved_form_manager) override;

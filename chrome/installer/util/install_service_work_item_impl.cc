@@ -269,6 +269,9 @@ bool InstallServiceWorkItemImpl::DoComRegistration() {
     com_registration_work_items_->AddSetRegValueWorkItem(
         HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
         WorkItem::kWow64Default, L"", base::win::String16FromGUID(iid_), true);
+    com_registration_work_items_->AddSetRegValueWorkItem(
+        HKEY_LOCAL_MACHINE, iid_reg_path + L"\\TypeLib",
+        WorkItem::kWow64Default, L"Version", L"1.0", true);
 
     // The TypeLib registration for the Ole Automation marshaler.
     com_registration_work_items_->AddCreateRegKeyWorkItem(

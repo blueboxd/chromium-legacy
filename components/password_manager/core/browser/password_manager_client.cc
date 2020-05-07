@@ -43,10 +43,6 @@ void PasswordManagerClient::UpdateCredentialCache(
     const std::vector<const autofill::PasswordForm*>& best_matches,
     bool is_blacklisted) {}
 
-void PasswordManagerClient::UpdateCacheWithBlacklistedForOrigin(
-    const url::Origin& origin,
-    bool is_blacklisted) {}
-
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>& best_matches,
     const GURL& origin,

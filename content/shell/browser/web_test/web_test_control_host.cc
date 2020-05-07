@@ -524,8 +524,9 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
                          ->GetWebkitPreferences();
   } else {
 #if defined(OS_MACOSX)
-    // Shell::SizeTo is not implemented on all platforms.
-    main_window_->SizeTo(initial_size_);
+    // Mac requires platform-specific code to resize the main frame's
+    // RenderWidgetHostView (independent of the Shell window).
+    main_window_->ResizeWebContentForTests(initial_size_);
 #endif
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();

@@ -5,6 +5,7 @@
 <translation id="1011903154582639569">키를 찾은 다음 손가락을 떼서 입력하세요.</translation>
 <translation id="1012173283529841972">목록 항목</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1014370462248694370">손가락 두 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="1022586497894531524">ChromeVox 음성 피드백을 처음 사용하시나요? 이 빠른 가이드에서 ChromeVox를 시작하기 위한 기본사항을 알아볼 수 있습니다.</translation>
 <translation id="1025074108959230262">고정 모드 사용 중지됨</translation>
 <translation id="1031961866430398710">플러스</translation>
@@ -18,6 +19,7 @@
 <translation id="1088402100970133699">이전 목록 항목이 없습니다</translation>
 <translation id="1114836634143403764">추천</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "fox", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
+<translation id="1120938014254001895">손가락 두 개를 사용하여 위로 스와이프</translation>
 <translation id="1126928665165112660">기울임꼴 아님</translation>
 <translation id="113582498867142724"><ph name="NUM" />개 항목을 포함한 <ph name="TAG" /> 컬렉션</translation>
 <translation id="1161762950103988776">점프</translation>
@@ -105,6 +107,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">다음 그래픽</translation>
 <translation id="1756785467854861272">다크 마젠타</translation>
+<translation id="1765245556747822181">손가락 한 개를 사용하여 위로 스와이프</translation>
 <translation id="1771761307086386028">오른쪽으로 스크롤</translation>
 <translation id="1781173782405573156">통과 키</translation>
 <translation id="1787176709638001873">비밀번호 수정 텍스트</translation>
@@ -159,6 +162,7 @@
 <translation id="225732394367814946">말하기 속도 증가</translation>
 <translation id="2267538686624070261">맞춤법 오류 남아 있음</translation>
 <translation id="2267945578749931355">다음 문자</translation>
+<translation id="2278490101488436824">손가락 세 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2305942658236913680">다음 제목이 없습니다</translation>
 <translation id="2311237334957139798">이전 세부 수준으로 이동</translation>
 <translation id="2314393392395134769">아래 첨자 아님</translation>
@@ -232,12 +236,14 @@
 <translation id="2867808975387772810">참고문헌</translation>
 <translation id="2873259058405069099">표의 처음으로 이동</translation>
 <translation id="287383510823843610">다크 오렌지</translation>
+<translation id="2879867157561757640">손가락 세 개를 사용하여 아래로 스와이프</translation>
 <translation id="288178314850623291">특정 유형의 요소로 건너뛰려면 이동 명령어를 사용합니다. 제목 간 이동하려면 검색+H를 눌러 앞으로 이동, 검색+Shift+H를 눌러 뒤로 이동합니다.</translation>
 <translation id="2885764457467528513">{COUNT,plural, =1{분}other{분}}</translation>
 <translation id="2894654529758326923">정보</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{왼쪽 중괄호}other{왼쪽 중괄호 #개}}</translation>
 <translation id="2909584066358367921">다음 버튼이 없습니다</translation>
 <translation id="2911433807131383493">ChromeVox 가이드 열기</translation>
+<translation id="2912405967290226587">손가락 세 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="2937799153569150791">다음 수준 3 제목이 없습니다</translation>
 <translation id="2942710183375260152">다크 슬레이트 블루</translation>
 <translation id="2943596527105977722">다크 골든로드</translation>
@@ -245,6 +251,7 @@
 <translation id="2968634799764242930">씨 그린</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{탭}other{탭 #개}}</translation>
 <translation id="2972205263822847197">툴팁</translation>
+<translation id="297825089465017871">손가락 두 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2998131015536248178">이전 문자</translation>
 <translation id="2999559350546931576">음조 낮춤</translation>
 <translation id="3014130421870723208">@수정 입력란 8점</translation>
@@ -254,6 +261,7 @@
 <translation id="3046838483509668188">ChromeVox 옵션</translation>
 <translation id="3060756054951570867"><ph name="TITLE" /> 메뉴 열림</translation>
 <translation id="3060880924447482063">한 항목씩 이동하려면 좌우로 스와이프하세요.</translation>
+<translation id="3070245424257836917">손가락 세 개를 사용하여 위로 스와이프</translation>
 <translation id="3078345202707391975">다음 수준 2 제목</translation>
 <translation id="3078740164268491126">표</translation>
 <translation id="3082249673510793544">뒤로 스크롤</translation>
@@ -459,6 +467,7 @@
 <translation id="4677535310137735442">다음 열로 이동</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">이전 랜드마크</translation>
+<translation id="4710166929009737753">손가락 한 개를 사용하여 오른쪽으로 스와이프</translation>
 <translation id="4712898966495541134">선택 종료</translation>
 <translation id="4740661827607246557">도움말 명령어</translation>
 <translation id="4755857887974653209">ChromeVox 사용 중지</translation>
@@ -709,9 +718,11 @@
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6815255864998354418">레몬 시폰</translation>
 <translation id="6816066673340002913">페일 골든로드</translation>
+<translation id="6826226459053491773">손가락 두 개를 사용하여 아래로 스와이프</translation>
 <translation id="6833103209700200188">바닥글</translation>
 <translation id="6837853484260746864">음성 선택:</translation>
 <translation id="6858047746862060282">프롤로그</translation>
+<translation id="6859876496651143278">손가락 한 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="6865519907510167493">맞춤법 오류</translation>
 <translation id="6894148351896207544">현재 날짜와 시간 말하기</translation>
 <translation id="6896758677409633944">복사</translation>
@@ -993,6 +1004,7 @@
 <translation id="923331726185079994">ChromeVox 업데이트됨</translation>
 <translation id="93384979447910801">다크 씨 그린</translation>
 <translation id="948171205378458592">말하기 속도 줄이기</translation>
+<translation id="958854023026327378">손가락 한 개를 사용하여 아래로 스와이프</translation>
 <translation id="962913030769097253">다음 수준 1 제목</translation>
 <translation id="966588271015727539">블루투스 점자 디스플레이 선택</translation>
 <translation id="973955474346881951">고정 모드 사용/사용 중지</translation>

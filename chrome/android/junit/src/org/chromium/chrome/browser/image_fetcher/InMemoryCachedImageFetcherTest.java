@@ -5,8 +5,7 @@
 package org.chromium.chrome.browser.image_fetcher;
 
 import static org.junit.Assume.assumeFalse;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -106,8 +105,8 @@ public class InMemoryCachedImageFetcherTest {
             mCallbackCaptor.getValue().onResult(bitmap);
             return null;
         }).when(mMockImageFetcher)
-                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), anyInt(),
-                        anyInt(), mCallbackCaptor.capture());
+                .fetchImage(any(),
+                        mCallbackCaptor.capture());
         // clang-format on
     }
 
@@ -129,17 +128,16 @@ public class InMemoryCachedImageFetcherTest {
     @Test
     public void testFetchImageCachesFirstCall() {
         answerFetch(mBitmap, false);
-        mInMemoryCachedImageFetcher.fetchImage(
-                URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
+        ImageFetcher.Params params =
+                ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+        mInMemoryCachedImageFetcher.fetchImage(params, mCallback);
         verify(mCallback).onResult(mBitmap);
 
         reset(mCallback);
-        mInMemoryCachedImageFetcher.fetchImage(
-                URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, mCallback);
+        mInMemoryCachedImageFetcher.fetchImage(params, mCallback);
         verify(mCallback).onResult(mBitmap);
 
-        verify(mMockImageFetcher)
-                .fetchImage(eq(URL), eq(UMA_CLIENT_NAME), eq(WIDTH_PX), eq(HEIGHT_PX), anyObject());
+        verify(mMockImageFetcher).fetchImage(eq(params), any());
 
         // Verify metrics are reported.
         verify(mBridge).reportEvent(UMA_CLIENT_NAME, ImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
@@ -161,7 +159,7 @@ public class InMemoryCachedImageFetcherTest {
     @Test
     public void testFetchGif() {
         mInMemoryCachedImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, (BaseGifImage gif) -> {});
-        verify(mMockImageFetcher).fetchGif(eq(URL), eq(UMA_CLIENT_NAME), anyObject());
+        verify(mMockImageFetcher).fetchGif(eq(URL), eq(UMA_CLIENT_NAME), any());
     }
 
     @Test

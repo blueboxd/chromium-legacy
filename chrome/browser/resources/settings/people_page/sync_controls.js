@@ -20,6 +20,7 @@ const SyncPrefsIndividualDataTypes = [
   'passwordsSynced',
   'tabsSynced',
   'paymentsIntegrationEnabled',
+  'wifiConfigurationsSynced',
 ];
 
 /**

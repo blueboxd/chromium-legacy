@@ -6,6 +6,7 @@
 
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
+
 #include <memory>
 
 #include "base/environment.h"
@@ -14,6 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_popup.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
@@ -373,11 +375,8 @@ struct xdg_positioner* XDGPopupWrapperImpl::CreatePositionerStable(
   if (!positioner)
     return nullptr;
 
-  auto* pointer = connection->pointer();
-  uint32_t flags = 0;
-  if (pointer)
-    flags = pointer->GetFlagsWithKeyboardModifiers();
-  bool is_right_click_menu = flags & EF_RIGHT_MOUSE_BUTTON;
+  bool is_right_click_menu =
+      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
 
   // Different types of menu require different anchors, constraint adjustments,
   // gravity and etc.
@@ -474,11 +473,8 @@ zxdg_positioner_v6* XDGPopupWrapperImpl::CreatePositionerV6(
   if (!positioner)
     return nullptr;
 
-  auto* pointer = connection->pointer();
-  uint32_t flags = 0;
-  if (pointer)
-    flags = pointer->GetFlagsWithKeyboardModifiers();
-  bool is_right_click_menu = flags & EF_RIGHT_MOUSE_BUTTON;
+  bool is_right_click_menu =
+      connection->event_source()->IsPointerButtonPressed(EF_RIGHT_MOUSE_BUTTON);
 
   // Different types of menu require different anchors, constraint adjustments,
   // gravity and etc.

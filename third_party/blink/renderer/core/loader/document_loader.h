@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/core/frame/dactyloscoper.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/use_counter_helper.h"
@@ -70,7 +71,6 @@
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-
 namespace base {
 class TickClock;
 }
@@ -496,6 +496,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
   bool was_blocked_by_document_policy_;
+  Vector<PolicyParserMessageBuffer::Message> document_policy_parsing_messages_;
 
   const Member<ContentSecurityPolicy> content_security_policy_;
   const bool was_blocked_by_csp_;

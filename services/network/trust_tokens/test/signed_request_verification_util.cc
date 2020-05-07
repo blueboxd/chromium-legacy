@@ -14,6 +14,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/structured_headers.h"
 #include "services/network/trust_tokens/ed25519_trust_token_request_signer.h"
+#include "services/network/trust_tokens/signed_redemption_record_serialization.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
 #include "services/network/trust_tokens/trust_token_request_canonicalizer.h"
@@ -54,32 +55,9 @@ SrrVerificationStatus VerifyTrustTokenSignedRedemptionRecord(
     base::StringPiece record,
     base::StringPiece verification_key,
     std::string* srr_body_out) {
-  base::Optional<net::structured_headers::Dictionary> maybe_dictionary =
-      net::structured_headers::ParseDictionary(record);
-  if (!maybe_dictionary)
+  std::string body, signature;
+  if (!ParseTrustTokenSignedRedemptionRecord(record, &body, &signature))
     return SrrVerificationStatus::kParseError;
-
-  if (maybe_dictionary->size() != 2u)
-    return SrrVerificationStatus::kParseError;
-
-  if (!maybe_dictionary->contains("body") ||
-      !maybe_dictionary->contains("signature")) {
-    return SrrVerificationStatus::kParseError;
-  }
-
-  net::structured_headers::Item& body_item =
-      maybe_dictionary->at("body").member.front().item;
-  if (!body_item.is_byte_sequence())
-    return SrrVerificationStatus::kParseError;
-  std::string body =
-      body_item.GetString();  // GetString gets a byte sequence, too.
-
-  net::structured_headers::Item& signature_item =
-      maybe_dictionary->at("signature").member.front().item;
-  if (!signature_item.is_byte_sequence())
-    return SrrVerificationStatus::kParseError;
-  std::string signature =
-      signature_item.GetString();  // GetString gets a byte sequence, too.
 
   if (verification_key.size() != ED25519_PUBLIC_KEY_LEN)
     return SrrVerificationStatus::kSignatureVerificationError;

@@ -56,10 +56,6 @@ WebContents* RenderFrameHostDelegate::GetAsWebContents() {
   return nullptr;
 }
 
-InterstitialPage* RenderFrameHostDelegate::GetAsInterstitialPage() {
-  return nullptr;
-}
-
 void RenderFrameHostDelegate::RequestMediaAccessPermission(
     const MediaStreamRequest& request,
     MediaResponseCallback callback) {

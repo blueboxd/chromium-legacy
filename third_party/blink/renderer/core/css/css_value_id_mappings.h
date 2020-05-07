@@ -489,6 +489,19 @@ inline CSSValueID PlatformEnumToCSSValueID(EListStyleType v) {
   return CSSValueID::kDisc;
 }
 
+template <>
+inline PageOrientation CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueID::kUpright)
+    return PageOrientation::kUpright;
+  if (v == CSSValueID::kRotateLeft)
+    return PageOrientation::kRotateLeft;
+  if (v == CSSValueID::kRotateRight)
+    return PageOrientation::kRotateRight;
+
+  NOTREACHED();
+  return PageOrientation::kUpright;
+}
+
 }  // namespace blink
 
 #endif

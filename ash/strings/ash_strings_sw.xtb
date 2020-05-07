@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
 <translation id="119944043368869598">Ondoa vyote</translation>
 <translation id="1199716647557067911">Je, una uhakika kuwa ungependa kuzima kipengele cha Kufikia Kupitia Swichi?</translation>
+<translation id="121097972571826261">Sogeza mbele kwa neno moja</translation>
+<translation id="1229194443904279055">Acha kuchagua</translation>
 <translation id="1247372569136754018">Maikrofoni (ya ndani)</translation>
 <translation id="1252999807265626933">Inachaji kwenye <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hali ya hewa ikoje?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Umewasha Kikuza Skrini Nzima. Bonyeza Ctrl+Search+M tena ili ukizime.</translation>
 <translation id="2302092602801625023">Akaunti hii inasimamiwa na Family Link</translation>
 <translation id="2303600792989757991">Geuza muhtasari wa dirisha</translation>
+<translation id="2322173485024759474">Rudi nyuma kwa herufi moja</translation>
 <translation id="2339073806695260576">Gusa kitufe cha stylus kwenye rafu ili uandike kidokezo, upige picha ya skrini, utumie kielekezi cha leza au lenzi.</translation>
 <translation id="2341729377289034582">Inatumia skrini wima pekee</translation>
 <translation id="2352467521400612932">Mipangilio ya stylus</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Onyesha mipangilio ya kibodi</translation>
 <translation id="3846575436967432996">Hakuna maelezo ya mtandao yanayopatikana</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
+<translation id="385300504083504382">Mwanzo</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
 <translation id="3897533311200664389">Anza kuandika hoja ya utafutaji</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Umejaribu mara nyingi mno</translation>
 <translation id="5397578532367286026">Matumizi na historia ya mtumiaji huyu yanaweza kukaguliwa na msimamizi ( <ph name="MANAGER_EMAIL" /> ) kwenye chrome.com.</translation>
 <translation id="5400461572260843123">Mipangilio ya Haraka, Bonyeza 'search + left' ili ufikie kituo cha arifa.</translation>
+<translation id="5428899915242071344">Anza kuchagua</translation>
 <translation id="5430931332414098647">Mtandao wa Kusambazwa Papo Hapo</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tayari watumiaji wanaopatikana wameongezwa kwenye kikao hiki.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Inawasha vifaa vya USB-C vilivyounganishwa</translation>
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>
+<translation id="6818242057446442178">Rudi nyuma kwa neno moja</translation>
 <translation id="6820676911989879663">Pumzika kidogo!</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Njia ya mkato imezimwa</translation>
@@ -581,6 +587,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Unda kidokezo</translation>
+<translation id="8371779926711439835">Sogeza mbele kwa herufi moja</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> hii na simu yako zitaunganishwa kiotomatiki</translation>
 <translation id="8388750414311082622">Huruhusiwi kuondoa kiolesura cha mwisho.</translation>
 <translation id="8392451568018454956">Menyu ya chaguo za <ph name="USER_EMAIL_ADDRESS" /></translation>

@@ -409,6 +409,7 @@
 <translation id="1531004739673299060">Ventana de la app</translation>
 <translation id="1531275250079031713">Mostrar el cuadro de diálogo para agregar Wi-Fi nueva</translation>
 <translation id="1536754031901697553">Desconectando…</translation>
+<translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1540605929960647700">Activar el modo de demostración</translation>
 <translation id="1542514202066550870">Esta pestaña muestra contenido de RV en un visor.</translation>
@@ -1161,6 +1162,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2501173422421700905">Certificado en espera</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
 <translation id="2501797496290880632">Escribe un acceso directo.</translation>
+<translation id="2501920221385095727">Teclas especiales</translation>
 <translation id="2502441965851148920">Las actualizaciones automáticas están habilitadas. Tu administrador inhabilitó las actualizaciones manuales.</translation>
 <translation id="2502719318159902502">Acceso total</translation>
 <translation id="2505127913256479918">Pronto se quitará esta cuenta supervisada</translation>
@@ -1546,6 +1548,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2993517869960930405">Info. de la aplicación</translation>
 <translation id="2996286169319737844">Los datos están encriptados con tu frase de contraseña de sincronización. No se incluyen formas de pago ni direcciones de Google Pay.</translation>
 <translation id="2996722619877761919">Orientación horizontal</translation>
+<translation id="3000461861112256445">Audio mono</translation>
 <translation id="3001144475369593262">Cuentas de niños</translation>
 <translation id="3003144360685731741">Redes preferidas</translation>
 <translation id="3003623123441819449">Caché CSS</translation>
@@ -1684,7 +1687,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3181954750937456830">Navegación segura (te protege a ti y tu dispositivo de sitios peligrosos)</translation>
 <translation id="3182749001423093222">Corrector ortográfico</translation>
 <translation id="3183139917765991655">Importador de perfiles</translation>
-<translation id="3183944777708523606">Disposición del monitor</translation>
+<translation id="3183944777708523606">Configuración del monitor</translation>
 <translation id="3184536091884214176">Configura o administra impresoras CUPS. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="3188257591659621405">Mis archivos</translation>
 <translation id="3188465121994729530">Promedio móvil</translation>
@@ -2480,6 +2483,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4211851069413100178">Envía datos de uso y diagnóstico. Para ayudar a mejorar tu experiencia de Android, envía a Google datos de diagnóstico y uso de dispositivos y apps de forma automática. Esta información ayudará a lograr la estabilidad de las apps y el sistema, entre otras mejoras. Algunos datos agregados también ayudarán a las apps y los socios de Google, como los desarrolladores de Android. El propietario controla esta <ph name="BEGIN_LINK1" />configuración<ph name="END_LINK1" />. Es posible que el propietario decida enviar a Google datos de uso y diagnóstico de este dispositivo. Si habilitaste la "Actividad de web y de aplicaciones adicional", es posible que se almacenen estos datos en tu Cuenta de Google. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="42126664696688958">Exportar</translation>
 <translation id="42137655013211669">El servidor prohibió el acceso a este recurso.</translation>
+<translation id="4217571870635786043">Dictado</translation>
 <translation id="4218274196133425560">Quitar la excepción para <ph name="HOST_NAME" /></translation>
 <translation id="4220648711404560261">Se produjo un error durante la activación.</translation>
 <translation id="4222772810963087151">Detalles de compilación</translation>
@@ -3164,6 +3168,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5204967432542742771">Ingresar contraseña</translation>
 <translation id="5206215183583316675">¿Deseas borrar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Error en la importación de certificado</translation>
+<translation id="5207949376430453814">Destacar el símbolo de intercalación de texto</translation>
 <translation id="5209320130288484488">No se encontraron dispositivos.</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5213481667492808996">Ya puedes usar tu servicio de datos de "<ph name="NAME" />"</translation>
@@ -5077,6 +5082,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7766807826975222231">Hacer un recorrido</translation>
 <translation id="7766838926148951335">Aceptar permisos</translation>
 <translation id="7768770796815395237">Cambiar</translation>
+<translation id="7768784765476638775">Seleccionar para pronunciar</translation>
 <translation id="7769672763586021400">ID del modelo</translation>
 <translation id="7770612696274572992">Imagen copiada de otro dispositivo</translation>
 <translation id="7770651108375708429">Desconectar Wi-Fi</translation>
@@ -5548,7 +5554,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="833986336429795709">Para abrir este vínculo, selecciona una app</translation>
 <translation id="8342861492835240085">Seleccionar una colección</translation>
 <translation id="834290227245955730">El PIN no es válido. Intentos restantes: <ph name="RETRIES" />.</translation>
-<translation id="8350789879725387295">Herramientas de la pluma stylus en el dock</translation>
+<translation id="8350789879725387295">Herramientas de la pluma stylus en el panel</translation>
 <translation id="8351419472474436977">Esta extensión tomó control de tu configuración de proxy, lo que significa que puede cambiar, dañar o espiar cualquier actividad que realices en línea. Si sabes con certeza por qué se produjo este cambio, probablemente no lo desees.</translation>
 <translation id="8351630282875799764">No se está cargando la batería</translation>
 <translation id="835238322900896202">Se produjo un error durante la desinstalación. Completa la operación a través de la terminal.</translation>
@@ -6092,7 +6098,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9040661932550800571">¿Quieres actualizar la contraseña para <ph name="ORIGIN" />?</translation>
 <translation id="9041692268811217999">Tu administrador bloqueó el acceso a los archivos locales en tu máquina</translation>
-<translation id="904224458472510106">Esta operación no se puede deshacer</translation>
+<translation id="904224458472510106">Esta acción no se puede deshacer</translation>
 <translation id="9042893549633094279">Privacidad y seguridad</translation>
 <translation id="904451693890288097">Ingresa la clave de acceso de "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS" /></translation>
@@ -6198,7 +6204,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9203398526606335860">&amp;Perfiles activados</translation>
 <translation id="9203904171912129171">Seleccionar un dispositivo</translation>
 <translation id="9203962528777363226">El administrador de este dispositivo ha inhabilitado a nuevos usuarios para evitar que se agreguen.</translation>
-<translation id="9206889157914079472">Toma de notas con la pluma stylus desde la pantalla de bloqueo</translation>
+<translation id="9206889157914079472">Tomar notas con la pluma stylus cuando la pantalla está bloqueada</translation>
 <translation id="9209689095351280025">Los sitios no pueden usar cookies para rastrearte en la Web</translation>
 <translation id="9211177926627870898">Actualización necesaria</translation>
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Comunícate con el representante de asistencia.</translation>

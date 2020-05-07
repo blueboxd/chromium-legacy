@@ -647,15 +647,16 @@ void WebFrameWidgetImpl::SetIsInert(bool inert) {
   LocalRootImpl()->GetFrame()->SetIsInert(inert);
 }
 
-void WebFrameWidgetImpl::SetInheritedEffectiveTouchAction(
+void WebFrameWidgetImpl::SetInheritedEffectiveTouchActionForSubFrame(
     TouchAction touch_action) {
   DCHECK(LocalRootImpl()->Parent());
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
   LocalRootImpl()->GetFrame()->SetInheritedEffectiveTouchAction(touch_action);
 }
 
-void WebFrameWidgetImpl::UpdateRenderThrottlingStatus(bool is_throttled,
-                                                      bool subtree_throttled) {
+void WebFrameWidgetImpl::UpdateRenderThrottlingStatusForSubFrame(
+    bool is_throttled,
+    bool subtree_throttled) {
   DCHECK(LocalRootImpl()->Parent());
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
   LocalRootImpl()->GetFrameView()->UpdateRenderThrottlingStatus(

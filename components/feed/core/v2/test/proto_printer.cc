@@ -7,6 +7,7 @@
 #include <sstream>
 #include <type_traits>
 #include "base/json/string_escape.h"
+#include "components/feed/core/proto/v2/wire/client_info.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
 #include "components/feed/core/v2/protocol_translator.h"
 
@@ -108,6 +109,40 @@ class TextProtoPrinter {
     PRINT_FIELD(content_domain);
     PRINT_FIELD(type);
     PRINT_FIELD(id);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedwire::ClientInfo& v) {
+    BeginMessage();
+    PRINT_FIELD(platform_type);
+    PRINT_FIELD(platform_version);
+    PRINT_FIELD(app_type);
+    PRINT_FIELD(app_version);
+    PRINT_FIELD(locale);
+    PRINT_FIELD(display_info);
+    PRINT_FIELD(client_instance_id);
+    PRINT_FIELD(advertising_id);
+    PRINT_FIELD(device_country);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedwire::Version& v) {
+    BeginMessage();
+    PRINT_FIELD(major);
+    PRINT_FIELD(minor);
+    PRINT_FIELD(build);
+    PRINT_FIELD(revision);
+    PRINT_FIELD(architecture);
+    PRINT_FIELD(build_type);
+    PRINT_FIELD(api_version);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedwire::DisplayInfo& v) {
+    BeginMessage();
+    PRINT_FIELD(screen_density);
+    PRINT_FIELD(screen_width_in_pixels);
+    PRINT_FIELD(screen_height_in_pixels);
     EndMessage();
     return *this;
   }
@@ -256,6 +291,15 @@ class TextProtoPrinter {
 };  // namespace feed
 
 std::string ToTextProto(const feedwire::ContentId& v) {
+  return TextProtoPrinter::ToString(v);
+}
+std::string ToTextProto(const feedwire::DisplayInfo& v) {
+  return TextProtoPrinter::ToString(v);
+}
+std::string ToTextProto(const feedwire::Version& v) {
+  return TextProtoPrinter::ToString(v);
+}
+std::string ToTextProto(const feedwire::ClientInfo& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::StreamData& v) {

@@ -703,7 +703,7 @@
 <translation id="9034924485347205037">‏קובצי Linux</translation>
 <translation id="9035012421917565900">לא ניתן להחזיר את הפריטים אל '<ph name="DESTINATION_NAME" />', ולא ניתן לבטל את הפעולה.</translation>
 <translation id="9038620279323455325">הקובץ שנקרא "<ph name="FILE_NAME" />" כבר קיים. יש לבחור שם אחר.</translation>
-<translation id="9062992083244091966">כדי לפתוח קבצים עם אפליקציות <ph name="APP_NAME" /> קודם צריך להעביר אותם אל תיקיית הקבצים המשותפים של <ph name="APP_NAME" />.</translation>
+<translation id="9062992083244091966">כדי לפתוח קבצים עם אפליקציות <ph name="APP_NAME" />, קודם צריך להעביר אותם אל תיקיית הקבצים המשותפים של <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">מעביר...</translation>
 <translation id="9065203028668620118">עריכה</translation>
 <translation id="9099674669267916096">מספר עמודים</translation>

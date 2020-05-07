@@ -81,7 +81,6 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -116,7 +115,6 @@
 #endif
 
 using content::BrowserThread;
-using content::InterstitialPage;
 using content::WebContents;
 using ::testing::_;
 using ::testing::Mock;

@@ -157,6 +157,30 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   );
 }
 
+class MockCrosHealthdBluetoothObserver
+    : public mojom::CrosHealthdBluetoothObserver {
+ public:
+  MockCrosHealthdBluetoothObserver() : receiver_{this} {}
+  MockCrosHealthdBluetoothObserver(const MockCrosHealthdBluetoothObserver&) =
+      delete;
+  MockCrosHealthdBluetoothObserver& operator=(
+      const MockCrosHealthdBluetoothObserver&) = delete;
+
+  MOCK_METHOD(void, OnAdapterAdded, (), (override));
+  MOCK_METHOD(void, OnAdapterRemoved, (), (override));
+  MOCK_METHOD(void, OnAdapterPropertyChanged, (), (override));
+  MOCK_METHOD(void, OnDeviceAdded, (), (override));
+  MOCK_METHOD(void, OnDeviceRemoved, (), (override));
+  MOCK_METHOD(void, OnDevicePropertyChanged, (), (override));
+
+  mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_remote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<mojom::CrosHealthdBluetoothObserver> receiver_;
+};
+
 class MockCrosHealthdPowerObserver : public mojom::CrosHealthdPowerObserver {
  public:
   MockCrosHealthdPowerObserver() : receiver_{this} {}
@@ -440,6 +464,22 @@ TEST_F(CrosHealthdServiceConnectionTest, RunBatteryDischargeRoutine) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
         run_loop.Quit();
       }));
+  run_loop.Run();
+}
+
+// Test that we can add a Bluetooth observer.
+TEST_F(CrosHealthdServiceConnectionTest, AddBluetoothObserver) {
+  MockCrosHealthdBluetoothObserver observer;
+  ServiceConnection::GetInstance()->AddBluetoothObserver(
+      observer.pending_remote());
+
+  // Send out an event to verify the observer is connected.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnAdapterAdded()).WillOnce(Invoke([&]() {
+    run_loop.Quit();
+  }));
+  FakeCrosHealthdClient::Get()->EmitAdapterAddedEventForTesting();
+
   run_loop.Run();
 }
 

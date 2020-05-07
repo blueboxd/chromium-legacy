@@ -22,12 +22,13 @@
   /* Button */                                                                 \
   OP(kColorId_ButtonColor),                                                    \
   OP(kColorId_ButtonBorderColor),                                              \
+  OP(kColorId_ButtonCheckedColor),                                             \
+  OP(kColorId_ButtonUncheckedColor),                                           \
   OP(kColorId_ButtonEnabledColor),                                             \
   OP(kColorId_ButtonDisabledColor),                                            \
   OP(kColorId_ButtonHoverColor),                                               \
   OP(kColorId_ButtonInkDropFillColor),                                         \
   OP(kColorId_ButtonInkDropShadowColor),                                       \
-  OP(kColorId_ButtonUncheckedColor),                                           \
   OP(kColorId_ProminentButtonColor),                                           \
   OP(kColorId_ProminentButtonDisabledColor),                                   \
   OP(kColorId_ProminentButtonFocusedColor),                                    \

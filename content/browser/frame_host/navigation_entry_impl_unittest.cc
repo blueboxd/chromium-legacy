@@ -156,6 +156,10 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(ASCIIToUTF16("bar baz.txt?x=foo/bar?y=baz/boo"),
             entry1_->GetTitleForDisplay());
 
+  // For chrome-untrusted:// URLs, title is blank.
+  entry1_->SetURL(GURL("chrome-untrusted://terminal/html/terminal.html"));
+  EXPECT_EQ(base::string16(), entry1_->GetTitleForDisplay());
+
   // Title affects GetTitleForDisplay
   entry1_->SetTitle(ASCIIToUTF16("Google"));
   EXPECT_EQ(ASCIIToUTF16("Google"), entry1_->GetTitleForDisplay());

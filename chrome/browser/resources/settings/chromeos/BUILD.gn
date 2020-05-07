@@ -5,6 +5,7 @@
 import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
 import("../../optimize_webui.gni")
 
@@ -68,6 +69,7 @@ if (optimize_webui) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
+    deps += [ ":polymer3_elements" ]
     defines = chrome_grit_defines
     outputs = [
       "grit/os_settings_resources.h",
@@ -356,8 +358,6 @@ polymer_modulizer("os_settings_icons_css") {
   html_file = "os_settings_icons_css.html"
   html_type = "style-module"
 }
-
-import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [

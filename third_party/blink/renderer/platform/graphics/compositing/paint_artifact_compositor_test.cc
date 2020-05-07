@@ -147,9 +147,12 @@ class PaintArtifactCompositorTest : public testing::Test,
   void Update(
       scoped_refptr<const PaintArtifact> artifact,
       const ViewportProperties& viewport_properties = ViewportProperties(),
-      const Settings& settings = Settings()) {
+      const Settings& settings = Settings(),
+      const WTF::Vector<const TransformPaintPropertyNode*>&
+          scroll_translation_nodes = {}) {
     paint_artifact_compositor_->SetNeedsUpdate();
-    paint_artifact_compositor_->Update(artifact, viewport_properties, settings);
+    paint_artifact_compositor_->Update(artifact, viewport_properties, settings,
+                                       scroll_translation_nodes);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
 
@@ -4937,6 +4940,32 @@ TEST_P(PaintArtifactCompositorTest, DirectlySetScrollOffset) {
   // DirectlySetScrollOffset doesn't update transform node.
   EXPECT_EQ(gfx::ScrollOffset(-7, -9), transform_node->scroll_offset);
   EXPECT_FALSE(transform_tree.needs_update());
+}
+
+TEST_P(PaintArtifactCompositorTest, AddNonCompositedScrollNodes) {
+  RuntimeEnabledFeaturesTestHelpers::ScopedScrollUnification
+      scroll_unification_enabled_(true);
+
+  const uint32_t main_thread_scrolling_reason =
+      cc::MainThreadScrollingReason::kHasTransformAndLCDText;
+  ASSERT_TRUE(cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
+      main_thread_scrolling_reason));
+  CompositorElementId scroll_element_id = ScrollElementId(123);
+  auto scroll = CreateScroll(ScrollPaintPropertyNode::Root(), ScrollState1(),
+                             main_thread_scrolling_reason, scroll_element_id);
+  auto scroll_translation = CreateScrollTranslation(t0(), 7, 9, *scroll);
+
+  WTF::Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
+  scroll_translation_nodes.push_back(scroll_translation.get());
+
+  TestPaintArtifact artifact;
+  Update(artifact.Build(), ViewportProperties(), Settings(),
+         scroll_translation_nodes);
+
+  auto& scroll_tree = GetPropertyTrees().scroll_tree;
+  auto* scroll_node = scroll_tree.FindNodeFromElementId(scroll_element_id);
+  EXPECT_TRUE(scroll_node);
+  EXPECT_FALSE(scroll_node->is_composited);
 }
 
 }  // namespace blink

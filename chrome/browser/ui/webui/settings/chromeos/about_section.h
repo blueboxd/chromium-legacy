@@ -23,6 +23,7 @@ class AboutSection : public OsSettingsSection {
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void AddHandlers(content::WebUI* web_ui) override;
 };
 
 }  // namespace settings

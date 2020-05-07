@@ -182,4 +182,26 @@ TEST_F(MediaImageManagerTest, MinAndIdealAndImageSizeAreSame) {
   EXPECT_TRUE(manager.SelectImage(images));
 }
 
+TEST_F(MediaImageManagerTest, PreferImagesWithNonZeroArea) {
+  std::vector<MediaImage> images;
+
+  MediaImage image1;
+  image1.sizes.push_back(gfx::Size(kMinSize, kMinSize));
+  images.push_back(image1);
+
+  MediaImage image2;
+  image2.sizes.push_back(gfx::Size(kIdealSize, 0));
+  images.push_back(image2);
+
+  MediaImage image3;
+  image3.sizes.push_back(gfx::Size(0, kIdealSize));
+  images.push_back(image3);
+
+  MediaImage image4;
+  image4.sizes.push_back(gfx::Size(0, 0));
+  images.push_back(image4);
+
+  EXPECT_EQ(image1, manager()->SelectImage(images));
+}
+
 }  // namespace media_session

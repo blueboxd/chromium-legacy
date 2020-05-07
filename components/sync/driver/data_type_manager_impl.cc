@@ -733,12 +733,6 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
     ModelType type,
     const DataTypeAssociationStats& association_stats) {
   DCHECK(!association_types_queue_.empty());
-  auto c_it = controllers_->find(type);
-  DCHECK(c_it != controllers_->end());
-  if (c_it->second->state() == DataTypeController::RUNNING) {
-    // Delegate activation to the controller.
-    c_it->second->ActivateDataType(configurer_);
-  }
 
   if (!debug_info_listener_.IsInitialized())
     return;

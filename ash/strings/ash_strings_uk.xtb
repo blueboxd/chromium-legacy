@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">облямівка екрана</translation>
 <translation id="119944043368869598">Очистити все</translation>
 <translation id="1199716647557067911">Вимкнути кнопковий доступ?</translation>
+<translation id="121097972571826261">Уперед на одне слово</translation>
+<translation id="1229194443904279055">Припинити вибір</translation>
 <translation id="1247372569136754018">Мікрофон (внутрішній)</translation>
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Який прогноз погоди?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Увімкнено повноекранну лупу. Щоб вимкнути її, знову натисніть комбінацію Ctrl + клавіша пошуку + M.</translation>
 <translation id="2302092602801625023">Цим обліковим записом керують через Family Link</translation>
 <translation id="2303600792989757991">Увімкнення чи вимкнення вікна перегляду</translation>
+<translation id="2322173485024759474">Назад на одну літеру</translation>
 <translation id="2339073806695260576">Щоб робити нотатки та знімки екрана, використовувати лазерний вказівник чи лупу, торкніться кнопки стилуса на полиці.</translation>
 <translation id="2341729377289034582">Заблоковано у вертикальному положенні</translation>
 <translation id="2352467521400612932">Налаштування стилуса</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Показати налаштування клавіатури</translation>
 <translation id="3846575436967432996">Інформація про мережу не доступна</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="385300504083504382">На початок</translation>
 <translation id="3891340733213178823">Щоб вийти, двічі натисніть Ctrl+Shift+Q.</translation>
 <translation id="3893630138897523026">ChromeVox (голосові підказки)</translation>
 <translation id="3897533311200664389">Ввести текстовий запит</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Забагато спроб</translation>
 <translation id="5397578532367286026">Менеджер (<ph name="MANAGER_EMAIL" />) може переглядати дії й історію цього користувача на chrome.com.</translation>
 <translation id="5400461572260843123">Швидкі налаштування: натисніть клавішу пошуку + стрілку ліворуч, щоб перейти в центр сповіщень.</translation>
+<translation id="5428899915242071344">Почати вибір</translation>
 <translation id="5430931332414098647">Миттєва точка доступу</translation>
 <translation id="5431825016875453137">OpenVPN або L2TP</translation>
 <translation id="544691375626129091">Усіх доступних користувачів уже додано до цього сеансу.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Живлення підключених пристроїв USB-C</translation>
 <translation id="6790428901817661496">Відтворити</translation>
 <translation id="6803622936009808957">Не вдалося дублювати зображення екранів, оскільки не знайдено підтримувані значення роздільної здатності. Натомість запущено режим розширеного робочого столу.</translation>
+<translation id="6818242057446442178">Назад на одне слово</translation>
 <translation id="6820676911989879663">Зробіть перерву!</translation>
 <translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">Комбінацію клавіш вимкнено</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Попереднє меню</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Створити нотатку</translation>
+<translation id="8371779926711439835">Уперед на одну літеру</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> і ваш телефон під’єднуватимуться автоматично</translation>
 <translation id="8388750414311082622">Останній робочий стіл не можна видалити.</translation>
 <translation id="8392451568018454956">Меню параметрів для <ph name="USER_EMAIL_ADDRESS" /></translation>

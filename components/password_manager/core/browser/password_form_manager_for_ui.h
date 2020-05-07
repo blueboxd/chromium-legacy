@@ -18,6 +18,7 @@ struct PasswordForm;
 
 namespace password_manager {
 
+struct CompromisedCredentials;
 struct InteractionsStats;
 class PasswordFormMetricsRecorder;
 
@@ -54,6 +55,10 @@ class PasswordFormManagerForUI {
 
   // Statistics for recent password bubble usage.
   virtual base::span<const InteractionsStats> GetInteractionsStats() const = 0;
+
+  // List of compromised passwords for the current site.
+  virtual base::span<const CompromisedCredentials> GetCompromisedCredentials()
+      const = 0;
 
   // Determines if the user opted to 'never remember' passwords for this form.
   virtual bool IsBlacklisted() const = 0;

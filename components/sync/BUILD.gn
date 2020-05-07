@@ -593,7 +593,6 @@ source_set("unit_tests") {
     "driver/profile_sync_service_unittest.cc",
     "driver/startup_controller_unittest.cc",
     "driver/sync_auth_manager_unittest.cc",
-    "driver/sync_merge_result_unittest.cc",
     "driver/sync_service_crypto_unittest.cc",
     "driver/sync_service_utils_unittest.cc",
     "driver/sync_session_durations_metrics_recorder_unittest.cc",

@@ -11,6 +11,13 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+static_assert(sizeof(CheckedPtr<void>) == sizeof(void*),
+              "CheckedPtr shouldn't add memory overhead");
+static_assert(sizeof(CheckedPtr<int>) == sizeof(int*),
+              "CheckedPtr shouldn't add memory overhead");
+static_assert(sizeof(CheckedPtr<std::string>) == sizeof(std::string*),
+              "CheckedPtr shouldn't add memory overhead");
+
 // This helps when copying arrays/vectors of pointers.
 static_assert(std::is_trivially_copyable<CheckedPtr<void>>::value,
               "CheckedPtr should be trivially copyable");

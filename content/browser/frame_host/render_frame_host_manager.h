@@ -32,7 +32,6 @@
 
 namespace content {
 class FrameTreeNode;
-class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationRequest;
@@ -147,10 +146,6 @@ class CONTENT_EXPORT RenderFrameHostManager
         RenderFrameHost* old_host,
         RenderFrameHost* new_host) = 0;
     virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
-
-    // Returns the interstitial page showing in the delegate, or null if there
-    // is none.
-    virtual InterstitialPageImpl* GetInterstitialForRenderManager() = 0;
 
     // Returns true if the location bar should be focused by default rather than
     // the page contents. The view calls this function when the tab is focused

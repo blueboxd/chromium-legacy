@@ -122,34 +122,37 @@ public class CachedImageFetcher extends ImageFetcher {
     @Override
     public void fetchImage(
             String url, String clientName, int width, int height, Callback<Bitmap> callback) {
+        fetchImage(ImageFetcher.Params.create(url, clientName, width, height), callback);
+    }
+
+    @Override
+    public void fetchImage(final Params params, Callback<Bitmap> callback) {
         long startTimeMillis = System.currentTimeMillis();
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
             // Try to read the bitmap from disk, then post back to the ui thread.
-            String filePath = getImageFetcherBridge().getFilePath(url);
+            String filePath = getImageFetcherBridge().getFilePath(params.url);
             Bitmap bitmap = mImageLoader.tryToLoadImageFromDisk(filePath);
             PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
-                continueFetchImageAfterDisk(
-                        url, clientName, width, height, callback, bitmap, startTimeMillis);
+                continueFetchImageAfterDisk(params, callback, bitmap, startTimeMillis);
             });
         });
     }
 
     @VisibleForTesting
-    void continueFetchImageAfterDisk(String url, String clientName, int width, int height,
-            Callback<Bitmap> callback, Bitmap cachedBitmap, long startTimeMillis) {
+    void continueFetchImageAfterDisk(final ImageFetcher.Params params, Callback<Bitmap> callback,
+            Bitmap cachedBitmap, long startTimeMillis) {
         if (cachedBitmap != null) {
             // In case the image's dimensions on disk don't match the desired dimensions.
-            cachedBitmap = ImageFetcher.resizeImage(cachedBitmap, width, height);
+            cachedBitmap = ImageFetcher.resizeImage(cachedBitmap, params.width, params.height);
             callback.onResult(cachedBitmap);
-            reportEvent(clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
-            getImageFetcherBridge().reportCacheHitTime(clientName, startTimeMillis);
+            reportEvent(params.clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
+            getImageFetcherBridge().reportCacheHitTime(params.clientName, startTimeMillis);
         } else {
-            getImageFetcherBridge().fetchImage(
-                    getConfig(), url, clientName, width, height, (Bitmap bitmapFromNative) -> {
-                        callback.onResult(bitmapFromNative);
-                        getImageFetcherBridge().reportTotalFetchTimeFromNative(
-                                clientName, startTimeMillis);
-                    });
+            getImageFetcherBridge().fetchImage(getConfig(), params, (Bitmap bitmapFromNative) -> {
+                callback.onResult(bitmapFromNative);
+                getImageFetcherBridge().reportTotalFetchTimeFromNative(
+                        params.clientName, startTimeMillis);
+            });
         }
     }
 

@@ -103,11 +103,12 @@ class MockPasswordManagerClient
   explicit MockPasswordManagerClient(MockPasswordStore* mock_password_store)
       : mock_password_store_(mock_password_store) {}
 
-  MOCK_METHOD(void,
-              UpdateCacheWithBlacklistedForOrigin,
-              (const url::Origin&, bool));
+  MOCK_METHOD(void, UpdateFormManagers, (), (override));
 
-  MOCK_METHOD(bool, IsSavingAndFillingEnabled, (const GURL&), (const));
+  MOCK_METHOD(bool,
+              IsSavingAndFillingEnabled,
+              (const GURL&),
+              (const, override));
 
   password_manager::PasswordStore* GetProfilePasswordStore() const override {
     return mock_password_store_;
@@ -658,9 +659,9 @@ TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfWasBlacklisted) {
       {}, CredentialCache::IsOriginBlacklisted(true),
       url::Origin::Create(GURL(kExampleSite)));
   // Simulate unblacklisting.
-  cache()->UpdateBlacklistedForOrigin(
-      url::Origin::Create(GURL(kExampleSite)),
-      CredentialCache::IsOriginBlacklisted(false));
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
   ON_CALL(*password_client(), IsSavingAndFillingEnabled(GURL(kExampleSite)))
       .WillByDefault(Return(true));
   AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
@@ -680,8 +681,7 @@ TEST_F(PasswordAccessoryControllerTest, AddsSaveToggleIfWasBlacklisted) {
 
 TEST_F(PasswordAccessoryControllerTest, SavePasswordsToggledUpdatesCache) {
   url::Origin example_origin = url::Origin::Create(GURL(kExampleSite));
-  EXPECT_CALL(*password_client(),
-              UpdateCacheWithBlacklistedForOrigin(example_origin, false));
+  EXPECT_CALL(*password_client(), UpdateFormManagers);
   controller()->OnToggleChanged(
       autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS, true);
 }

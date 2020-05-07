@@ -2260,6 +2260,11 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         // offset transform for paint_offset_root.
         !context_.current.paint_offset_root->PaintingLayer()
              ->EnclosingPaginationLayer()) {
+      if (object_.StyleRef().GetPosition() == EPosition::kAbsolute)
+        context_.current = context_.absolute_position;
+      else if (object_.StyleRef().GetPosition() == EPosition::kFixed)
+        context_.current = context_.fixed_position;
+
       // Set fragment visual paint offset.
       PhysicalOffset paint_offset = PaintOffsetInPaginationContainer(
           object_, *enclosing_pagination_layer);
@@ -3086,6 +3091,7 @@ PaintPropertyTreeBuilder::ContextForFragment(
   // For each case, we need to adjust context.current.clip. For now it's the
   // first parent fragment's FragmentClip which is not the correct clip for
   // object_.
+  const ClipPaintPropertyNode* found_clip = nullptr;
   for (const auto* container = object_.Container(); container;
        container = container->Container()) {
     if (!container->FirstFragment().HasLocalBorderBoxProperties())
@@ -3101,8 +3107,8 @@ PaintPropertyTreeBuilder::ContextForFragment(
         logical_top_in_containing_flow_thread) {
       // Found a matching fragment in an ancestor container. Use the
       // container's content clip as the clip state.
-      context.current.clip = &container_fragment->PostOverflowClip();
-      return context;
+      found_clip = &container_fragment->PostOverflowClip();
+      break;
     }
 
     // We didn't find corresponding fragment in the container because the
@@ -3117,8 +3123,8 @@ PaintPropertyTreeBuilder::ContextForFragment(
         if (const auto* overflow_clip = container_properties->OverflowClip()) {
           context.logical_top_in_flow_thread =
               container_fragment->LogicalTopInFlowThread();
-          context.current.clip = overflow_clip;
-          return context;
+          found_clip = overflow_clip;
+          break;
         }
       }
     }
@@ -3136,7 +3142,15 @@ PaintPropertyTreeBuilder::ContextForFragment(
   // because logical_top_in_containing_flow_thread will be zero when we traverse
   // across the top-level flow thread and it should match the first fragment of
   // a non-fragmented ancestor container.
-  NOTREACHED();
+  DCHECK(found_clip);
+
+  if (!crossed_flow_thread)
+    context.fragment_clip = base::nullopt;
+  context.current.clip = found_clip;
+  if (object_.StyleRef().GetPosition() == EPosition::kAbsolute)
+    context.absolute_position.clip = found_clip;
+  else if (object_.StyleRef().GetPosition() == EPosition::kFixed)
+    context.fixed_position.clip = found_clip;
   return context;
 }
 

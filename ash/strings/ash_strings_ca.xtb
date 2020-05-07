@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">ajusta la mida</translation>
 <translation id="119944043368869598">Esborra-ho tot</translation>
 <translation id="1199716647557067911">Confirmes que vols desactivar l'accés amb interruptors?</translation>
+<translation id="121097972571826261">Endavant per paraula</translation>
+<translation id="1229194443904279055">Deixa de seleccionar</translation>
 <translation id="1247372569136754018">Micròfon (intern)</translation>
 <translation id="1252999807265626933">S'està carregant amb: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Quin temps fa?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">La lupa de pantalla completa està activada. Torna a prémer Ctrl+Cerca+M per desactivar-la.</translation>
 <translation id="2302092602801625023">Family Link gestiona aquest compte</translation>
 <translation id="2303600792989757991">Commuta la visió general de la finestra</translation>
+<translation id="2322173485024759474">Enrere per lletra</translation>
 <translation id="2339073806695260576">Toca el botó del llapis òptic al prestatge per escriure una nota, fer una captura de pantalla o bé utilitzar-lo com a punter làser o lupa.</translation>
 <translation id="2341729377289034582">Bloquejada en vertical</translation>
 <translation id="2352467521400612932">Configuració del llapis òptic</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Mostra la configuració del teclat</translation>
 <translation id="3846575436967432996">No hi ha informació de xarxa disponible</translation>
 <translation id="385051799172605136">Enrere</translation>
+<translation id="385300504083504382">Principi</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="3893630138897523026">ChromeVox (avisos de veu)</translation>
 <translation id="3897533311200664389">Inicia una consulta de text</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Massa intents</translation>
 <translation id="5397578532367286026">El gestor (<ph name="MANAGER_EMAIL" />) pot revisar l'ús i l'historial d'aquest usuari a chrome.com.</translation>
 <translation id="5400461572260843123">Configuració ràpida, prem cerca+fletxa esquerra per accedir al centre de notificacions.</translation>
+<translation id="5428899915242071344">Comença a seleccionar</translation>
 <translation id="5430931332414098647">Compartició de xarxa instantània</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">S'estan alimentant els dispositius USB-C connectats</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
+<translation id="6818242057446442178">Enrere per paraula</translation>
 <translation id="6820676911989879663">Fes una pausa</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">S'ha desactivat la drecera</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crea una nota</translation>
+<translation id="8371779926711439835">Endavant per lletra</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> i el teu telèfon es connectaran automàticament</translation>
 <translation id="8388750414311082622">L'últim escriptori no es pot suprimir.</translation>
 <translation id="8392451568018454956">Menú d'opcions per a <ph name="USER_EMAIL_ADDRESS" /></translation>

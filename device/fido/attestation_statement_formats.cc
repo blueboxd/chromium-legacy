@@ -135,12 +135,12 @@ cbor::Value FidoAttestationStatement::AsCBOR() const {
   return cbor::Value(std::move(attestation_statement_map));
 }
 
-bool FidoAttestationStatement::IsSelfAttestation() {
+bool FidoAttestationStatement::IsSelfAttestation() const {
   return false;
 }
 
 bool FidoAttestationStatement::
-    IsAttestationCertificateInappropriatelyIdentifying() {
+    IsAttestationCertificateInappropriatelyIdentifying() const {
   // An attestation certificate is considered inappropriately identifying if it
   // contains a common name of "FT FIDO 0100". See "Inadequately batched
   // attestation certificates" on https://www.chromium.org/security-keys
@@ -194,12 +194,12 @@ cbor::Value PackedAttestationStatement::AsCBOR() const {
   return cbor::Value(std::move(attestation_statement_map));
 }
 
-bool PackedAttestationStatement::IsSelfAttestation() {
+bool PackedAttestationStatement::IsSelfAttestation() const {
   return x509_certificates_.empty();
 }
 
 bool PackedAttestationStatement::
-    IsAttestationCertificateInappropriatelyIdentifying() {
+    IsAttestationCertificateInappropriatelyIdentifying() const {
   for (const auto& der_bytes : x509_certificates_) {
     if (IsCertificateInappropriatelyIdentifying(der_bytes)) {
       return true;

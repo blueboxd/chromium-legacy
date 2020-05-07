@@ -274,9 +274,17 @@ void SecurityContextInit::InitializeDocumentPolicy(
   // we have origin trial information available.
   document_policy_ = FilterByOriginTrial(initializer.GetDocumentPolicy(), this);
 
+  // Handle Report-Only-Document-Policy HTTP header.
+  // Console messages generated from logger are discarded, because currently
+  // there is no way to output them to console.
+  // Calling |Document::AddConsoleMessage| in
+  // |SecurityContextInit::ApplyPendingDataToDocument| will have no effect,
+  // because when the function is called, the document is not fully initialized
+  // yet (|document_| field in current frame is not yet initialized yet).
+  PolicyParserMessageBuffer logger("%s", /* discard_message */ true);
   base::Optional<DocumentPolicy::ParsedDocumentPolicy>
       report_only_parsed_policy = DocumentPolicyParser::Parse(
-          initializer.ReportOnlyDocumentPolicyHeader());
+          initializer.ReportOnlyDocumentPolicyHeader(), logger);
   if (report_only_parsed_policy) {
     report_only_document_policy_ =
         FilterByOriginTrial(*report_only_parsed_policy, this);

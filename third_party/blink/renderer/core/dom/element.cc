@@ -631,8 +631,36 @@ bool Element::IsFocusableStyle() const {
 }
 
 Node* Element::Clone(Document& factory, CloneChildrenFlag flag) const {
-  return flag == CloneChildrenFlag::kClone ? &CloneWithChildren(&factory)
-                                           : &CloneWithoutChildren(&factory);
+  if (flag == CloneChildrenFlag::kSkip)
+    return &CloneWithoutChildren(&factory);
+  Element* copy = &CloneWithChildren(&factory);
+  // 7. If node is a shadow host and the clone shadows flag is set, run these
+  // steps:
+  if (flag == CloneChildrenFlag::kCloneWithShadows) {
+    DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
+    auto* shadow_root = GetShadowRoot();
+    if (shadow_root && (shadow_root->GetType() == ShadowRootType::kOpen ||
+                        shadow_root->GetType() == ShadowRootType::kClosed)) {
+      // 7.1 Run attach a shadow root with shadow host equal to copy, mode equal
+      // to node’s shadow root’s mode, and delegates focus equal to node’s
+      // shadow root’s delegates focus.
+      ShadowRoot& cloned_shadow_root = copy->AttachShadowRootInternal(
+          shadow_root->GetType(),
+          shadow_root->delegatesFocus() ? FocusDelegation::kDelegateFocus
+                                        : FocusDelegation::kNone,
+          shadow_root->GetSlotAssignmentMode());
+      // 7.2 If node’s shadow root’s "is declarative shadow root" is true, then
+      // set copy’s shadow root’s "is declarative shadow root" property to true.
+      cloned_shadow_root.SetIsDeclarativeShadowRoot(
+          shadow_root->IsDeclarativeShadowRoot());
+      // 7.3 If the clone children flag is set, clone all the children of node’s
+      // shadow root and append them to copy’s shadow root, with document as
+      // specified, the clone children flag being set, and the clone shadows
+      // flag being set.
+      cloned_shadow_root.CloneChildNodesFrom(*shadow_root, flag);
+    }
+  }
+  return copy;
 }
 
 Element& Element::CloneWithChildren(Document* nullable_factory) const {
@@ -644,7 +672,7 @@ Element& Element::CloneWithChildren(Document* nullable_factory) const {
 
   clone.CloneAttributesFrom(*this);
   clone.CloneNonAttributePropertiesFrom(*this, CloneChildrenFlag::kClone);
-  clone.CloneChildNodesFrom(*this);
+  clone.CloneChildNodesFrom(*this, CloneChildrenFlag::kClone);
   return clone;
 }
 
@@ -3601,8 +3629,8 @@ const char* Element::ErrorMessageForAttachShadow() const {
     }
   }
 
-  // 4. If shadow host has a non-null shadow root whose is declarative shadow
-  // root property is false, then throw an "NotSupportedError" DOMException.
+  // 4. If shadow host has a non-null shadow root whose "is declarative shadow
+  // root" property is false, then throw an "NotSupportedError" DOMException.
   if (GetShadowRoot() && !GetShadowRoot()->IsDeclarativeShadowRoot()) {
     return "Shadow root cannot be created on a host "
            "which already hosts a shadow tree.";

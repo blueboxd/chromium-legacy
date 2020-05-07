@@ -198,7 +198,7 @@
   <message name="IDS_OS_SETTINGS_WALLPAPER_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of wallpaper across devices.">
     Wallpaper
   </message>
-  <message name="IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of Wi-Fi networks across devices.">
+  <message name="IDS_OS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL" desc="Label for the checkbox which enables syncing of Wi-Fi networks across devices.">
     Wi-Fi networks
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL" desc="Label of Account Manager submenu in Settings page.">

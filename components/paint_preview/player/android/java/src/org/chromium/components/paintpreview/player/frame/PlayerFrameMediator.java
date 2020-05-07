@@ -57,6 +57,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private final Rect mViewportRect = new Rect();
     /** Rect used for requesting a new bitmap from Paint Preview compositor. */
     private final Rect mBitmapRequestRect = new Rect();
+    /** Dimension of tiles for each scale factor. */
+    private final Map<Float, int[]> mTileDimensions = new HashMap<>();
     /**
      * A scale factor cache of matrices of bitmaps that make up the content of this frame at a
      * given scale factor.
@@ -96,39 +98,42 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     @Override
     public void setLayoutDimensions(int width, int height) {
         // Set initial scale so that content width fits within the layout dimensions.
-        float scaleFactor = ((float) width) / ((float) mContentWidth);
-        initializeViewPort(width, height, scaleFactor);
+        float initialScaleFactor = ((float) width) / ((float) mContentWidth);
+        updateViewportSize(width, height, mScaleFactor == 0f ? initialScaleFactor : mScaleFactor);
     }
 
-    void initializeViewPort(int width, int height, float scaleFactor) {
-        // If the dimensions of mViewportRect has been set, we don't need to do anything.
-        if (!mViewportRect.isEmpty() || width <= 0 || height <= 0) return;
+    void updateViewportSize(int width, int height, float scaleFactor) {
+        if (width <= 0 || height <= 0) return;
 
-        mViewportRect.set(0, 0, width, height);
-        updateViewport(0, 0, scaleFactor);
+        mViewportRect.set(mViewportRect.left, mViewportRect.top, mViewportRect.left + width,
+                mViewportRect.top + height);
+        moveViewport(0, 0, scaleFactor);
     }
 
     /**
-     * Called when either the view port of the scale factor should be changed. Updates the view port
+     * Called when the view port is moved or the scale factor is changed. Updates the view port
      * and requests bitmap tiles for portion of the view port that don't have bitmap tiles.
      * @param distanceX   The horizontal distance that the view port should be moved by.
      * @param distanceY   The vertical distance that the view port should be moved by.
      * @param scaleFactor The new scale factor.
      */
-    private void updateViewport(int distanceX, int distanceY, float scaleFactor) {
+    private void moveViewport(int distanceX, int distanceY, float scaleFactor) {
         // Initialize the bitmap matrix for this scale factor if we haven't already.
+        int[] tileDimensions = mTileDimensions.get(scaleFactor);
         Bitmap[][] bitmapMatrix = mBitmapMatrix.get(scaleFactor);
         boolean[][] pendingBitmapRequests = mPendingBitmapRequests.get(scaleFactor);
         boolean[][] requiredBitmaps = mRequiredBitmaps.get(scaleFactor);
         if (bitmapMatrix == null) {
-            // Each tile is as big as the view port. Here we determine the number of columns and
-            // rows for the current scale factor.
+            // Each tile is as big as the initial view port. Here we determine the number of
+            // columns and rows for the current scale factor.
             int rows = (int) Math.ceil((mContentHeight * scaleFactor) / mViewportRect.height());
             int cols = (int) Math.ceil((mContentWidth * scaleFactor) / mViewportRect.width());
+            tileDimensions = new int[] {mViewportRect.width(), mViewportRect.height()};
             bitmapMatrix = new Bitmap[rows][cols];
-            mBitmapMatrix.put(scaleFactor, bitmapMatrix);
             pendingBitmapRequests = new boolean[rows][cols];
             requiredBitmaps = new boolean[rows][cols];
+            mTileDimensions.put(scaleFactor, tileDimensions);
+            mBitmapMatrix.put(scaleFactor, bitmapMatrix);
             mPendingBitmapRequests.put(scaleFactor, pendingBitmapRequests);
             mRequiredBitmaps.put(scaleFactor, requiredBitmaps);
         }
@@ -142,6 +147,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         // Update mViewportRect and let the view know. PropertyModelChangeProcessor is smart about
         // this and will only update the view if mViewportRect is actually changed.
         mViewportRect.offset(distanceX, distanceY);
+        mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, tileDimensions);
         mModel.set(PlayerFrameProperties.VIEWPORT, mViewportRect);
 
         // Clear the required bitmaps matrix. It will be updated in #requestBitmapForTile.
@@ -152,8 +158,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         }
 
         // Request bitmaps for tiles inside the view port that don't already have a bitmap.
-        final int tileWidth = mViewportRect.width();
-        final int tileHeight = mViewportRect.height();
+        final int tileWidth = tileDimensions[0];
+        final int tileHeight = tileDimensions[1];
         final int colStart = mViewportRect.left / tileWidth;
         final int colEnd = (int) Math.ceil((double) mViewportRect.right / tileWidth);
         final int rowStart = mViewportRect.top / tileHeight;
@@ -251,7 +257,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     /**
      * Called on scroll events from the user. Checks if scrolling is possible, and if so, calls
-     * {@link #updateViewport}.
+     * {@link #moveViewport}.
      * @param distanceX Horizontal scroll distance in pixels.
      * @param distanceY Vertical scroll distance in pixels.
      * @return Whether the scrolling was possible and view port was updated.
@@ -281,7 +287,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
         if (validDistanceX == 0 && validDistanceY == 0) return false;
 
-        updateViewport(validDistanceX, validDistanceY, mScaleFactor);
+        moveViewport(validDistanceX, validDistanceY, mScaleFactor);
         return true;
     }
 

@@ -38,7 +38,6 @@
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
@@ -63,7 +62,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/browser/histogram_fetcher.h"
-#include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -2218,29 +2216,6 @@ void CancelKeyboardLock(WebContents* web_contents) {
   RenderWidgetHostImpl* render_widget_host_impl =
       web_contents_impl->GetMainFrame()->GetRenderWidgetHost();
   render_widget_host_impl->CancelKeyboardLock();
-}
-
-bool IsInnerInterstitialPageConnected(InterstitialPage* interstitial_page) {
-  InterstitialPageImpl* impl =
-      static_cast<InterstitialPageImpl*>(interstitial_page);
-
-  RenderWidgetHostViewBase* rwhvb =
-      static_cast<RenderWidgetHostViewBase*>(impl->GetView());
-  EXPECT_TRUE(rwhvb->IsRenderWidgetHostViewChildFrame());
-  RenderWidgetHostViewChildFrame* rwhvcf =
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhvb);
-
-  CrossProcessFrameConnector* frame_connector =
-      static_cast<CrossProcessFrameConnector*>(
-          rwhvcf->FrameConnectorForTesting());
-
-  WebContentsImpl* inner_web_contents =
-      static_cast<WebContentsImpl*>(impl->GetWebContents());
-  FrameTreeNode* outer_node = FrameTreeNode::GloballyFindByID(
-      inner_web_contents->GetOuterDelegateFrameTreeNodeId());
-
-  return outer_node->current_frame_host()->GetView() ==
-         frame_connector->GetParentRenderWidgetHostView();
 }
 
 ScreenOrientationDelegate* GetScreenOrientationDelegate() {

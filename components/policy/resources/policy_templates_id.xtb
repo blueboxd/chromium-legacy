@@ -4723,7 +4723,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan dapat diakses oleh pengguna.
 
       Jika setelan ini diaktifkan atau nilainya tidak ditetapkan, IsiOtomatis akan dapat dikontrol oleh pengguna. Penetapan ini akan memungkinkan pengguna untuk mengonfigurasi profil IsiOtomatis dan mengaktifkan atau menonaktifkan IsiOtomatis sesuai keinginan.</translation>
-<translation id="8042971420829376618">Kebijakan ini menetapkan ID pengguna <ph name="PLUGIN_VM_NAME" /> untuk perangkat ini.</translation>
 <translation id="8044493735196713914">Laporkan mode boot perangkat</translation>
 <translation id="8050080920415773384">Pencetakan Asli</translation>
 <translation id="8053580360728293758">Mengganti mode warna pencetakan default. Jika mode tersebut tidak tersedia, kebijakan ini akan diabaikan.</translation>

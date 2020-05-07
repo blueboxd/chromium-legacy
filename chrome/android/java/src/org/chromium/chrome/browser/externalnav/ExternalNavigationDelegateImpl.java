@@ -19,8 +19,6 @@ import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
@@ -123,40 +121,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public int countSpecializedHandlers(List<ResolveInfo> infos) {
-        return getSpecializedHandlersWithFilter(infos, null).size();
+        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, true).size();
     }
 
     @Override
     public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
-        return getSpecializedHandlersWithFilter(infos, null);
-    }
-
-    @VisibleForTesting
-    public static ArrayList<String> getSpecializedHandlersWithFilter(
-            List<ResolveInfo> infos, String filterPackageName) {
-        ArrayList<String> result = new ArrayList<>();
-        if (infos == null) {
-            return result;
-        }
-
-        for (ResolveInfo info : infos) {
-            if (!ExternalNavigationHandler.matchResolveInfoExceptWildCardHost(
-                        info, filterPackageName)) {
-                continue;
-            }
-
-            if (info.activityInfo != null) {
-                if (IntentUtils.isInstantAppResolveInfo(info)) {
-                    // Don't consider the Instant Apps resolver a specialized application.
-                    continue;
-                }
-
-                result.add(info.activityInfo.packageName);
-            } else {
-                result.add("");
-            }
-        }
-        return result;
+        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, true);
     }
 
     /**
@@ -170,7 +140,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public static boolean isPackageSpecializedHandler(String packageName, Intent intent) {
         List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
                 intent, PackageManager.GET_RESOLVED_FILTER);
-        return !getSpecializedHandlersWithFilter(handlers, packageName).isEmpty();
+        return !ExternalNavigationHandler
+                        .getSpecializedHandlersWithFilter(handlers, packageName, true)
+                        .isEmpty();
     }
 
     @Override

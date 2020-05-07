@@ -54,10 +54,11 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/debug_urls.h"
-#include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
@@ -778,7 +779,7 @@ bool NavigationControllerImpl::CanViewSource() {
                                !media::IsSupportedMediaMimeType(mime_type);
   NavigationEntry* visible_entry = GetVisibleEntry();
   return visible_entry && !visible_entry->IsViewSourceMode() &&
-         is_viewable_mime_type && !delegate_->GetInterstitialPage();
+         is_viewable_mime_type;
 }
 
 int NavigationControllerImpl::GetLastCommittedEntryIndex() {
@@ -2665,19 +2666,6 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
       pending_entry_->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) {
     delegate_->Stop();
 
-    // If an interstitial page is showing, we want to close it to get back to
-    // what was showing before.
-    //
-    // There are two ways to get the interstitial page given a WebContents.
-    // Because WebContents::GetInterstitialPage() returns null between the
-    // interstitial's Show() method being called and the interstitial becoming
-    // visible, while InterstitialPage::GetInterstitialPage() returns the
-    // interstitial during that time, use the latter.
-    InterstitialPage* interstitial =
-        InterstitialPage::GetInterstitialPage(GetWebContents());
-    if (interstitial)
-      interstitial->DontProceed();
-
     DiscardNonCommittedEntries();
     return;
   }
@@ -2746,16 +2734,6 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
       DiscardPendingEntry(false);
       return;
     }
-  }
-
-  // If an interstitial page is showing, the previous renderer is blocked and
-  // cannot make new requests.  Unblock (and disable) it to allow this
-  // navigation to succeed.  The interstitial will stay visible until the
-  // resulting DidNavigate.
-  // TODO(clamy): See if this can be removed. See https://crbug.com/849250.
-  if (delegate_->GetInterstitialPage()) {
-    static_cast<InterstitialPageImpl*>(delegate_->GetInterstitialPage())
-        ->CancelForNavigation();
   }
 
   // This call does not support re-entrancy.  See http://crbug.com/347742.
@@ -2983,15 +2961,6 @@ void NavigationControllerImpl::NavigateWithoutEntry(
   // Safety check that NavigationRequest and NavigationEntry match.
   ValidateRequestMatchesEntry(request.get(), pending_entry_);
 #endif
-
-  // If an interstitial page is showing, the previous renderer is blocked and
-  // cannot make new requests.  Unblock (and disable) it to allow this
-  // navigation to succeed.  The interstitial will stay visible until the
-  // resulting DidNavigate.
-  if (delegate_->GetInterstitialPage()) {
-    static_cast<InterstitialPageImpl*>(delegate_->GetInterstitialPage())
-        ->CancelForNavigation();
-  }
 
   // This call does not support re-entrancy.  See http://crbug.com/347742.
   CHECK(!in_navigate_to_pending_entry_);

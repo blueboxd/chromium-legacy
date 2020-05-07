@@ -72,7 +72,7 @@
 <translation id="1513352483775369820">Penanda halaman dan sejarah web</translation>
 <translation id="1513858653616922153">Padam kata laluan</translation>
 <translation id="1521774566618522728">Aktif hari ini</translation>
-<translation id="1543538514740974167">Akses ini dengan lebih cepat</translation>
+<translation id="1543538514740974167">Akses lebih pantas</translation>
 <translation id="1544826120773021464">Untuk mengurus akaun Google anda, ketik butang "Urus akaun"</translation>
 <translation id="1549000191223877751">Alihkan ke tetingkap lain</translation>
 <translation id="1553358976309200471">Kemas Kini Chrome</translation>
@@ -471,6 +471,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4913169188695071480">Berhenti memuat semula</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /> semasa mengimbas peranti…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Halaman}other{# Halaman}}</translation>
+<translation id="49268022542405662">Kata laluan anda akan dieksport dan dimuat turun sebagai fail teks. Kata laluan itu akan dapat dilihat oleh sesiapa dan sebarang apl yang mempunyai akses kepada folder destinasi.</translation>
 <translation id="4932247056774066048">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="DOMAIN_NAME" />, data Chrome anda akan dipadamkan daripada peranti ini. Data tersebut akan kekal dalam Akaun Google anda.</translation>
 <translation id="4943703118917034429">Realiti Maya</translation>
 <translation id="4943872375798546930">Tiada hasil carian</translation>
@@ -753,6 +754,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7302081693174882195">Butiran: Diisih mengikut jumlah penjimatan data</translation>
 <translation id="7328017930301109123">Dalam mod Ringkas, Chrome memuatkan halaman lebih pantas dan mengurangkan penggunaan data sehingga 60 peratus.</translation>
 <translation id="7333031090786104871">Masih menambahkan tapak yang terdahulu</translation>
+<translation id="7340958967809483333">Pilihan untuk Discover</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kongsi 1 item yang dipilih}other{Kongsi # item yang dipilih}}</translation>
 <translation id="7359002509206457351">Akses kaedah pembayaran</translation>
@@ -817,6 +819,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7810647596859435254">Buka dengan...</translation>
 <translation id="7821588508402923572">Penjimatan data anda akan dipaparkan di sini</translation>
+<translation id="7835852323729233924">Memainkan media</translation>
 <translation id="783819812427904514">Nyahredam video</translation>
 <translation id="784934925303690534">Julat masa</translation>
 <translation id="7851858861565204677">Peranti lain</translation>

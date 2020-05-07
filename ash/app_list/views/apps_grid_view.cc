@@ -1102,8 +1102,7 @@ void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
                                            bool is_in_drag) {
   const bool fullscreen_or_in_drag =
       is_in_drag || app_list_state == AppListViewState::kFullscreenAllApps ||
-      (app_list_features::IsScalableAppListEnabled() &&
-       app_list_state == AppListViewState::kFullscreenSearch);
+      app_list_state == AppListViewState::kFullscreenSearch;
   SetVisible(fullscreen_or_in_drag);
 }
 
@@ -1912,7 +1911,7 @@ bool AppsGridView::HandleVerticalFocusMovement(bool arrow_up) {
   } else if (target_row > (GetItemsNumOfPage(target_page) - 1) / cols_) {
     if (folder_delegate_) {
       // Move focus to folder name if we are in folder.
-      contents_view_->GetAppsContainerView()
+      contents_view_->apps_container_view()
           ->app_list_folder_view()
           ->folder_header_view()
           ->SetTextFocus();
@@ -2773,7 +2772,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
   if (strcmp(sender->GetClassName(), AppListItemView::kViewClassName))
     return;
 
-  if (contents_view_->GetAppsContainerView()
+  if (contents_view_->apps_container_view()
           ->app_list_folder_view()
           ->IsAnimationRunning()) {
     return;

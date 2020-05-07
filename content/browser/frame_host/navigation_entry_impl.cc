@@ -543,6 +543,11 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay() {
     base::string16::size_type slashpos = title.rfind('/', lastpos);
     if (slashpos != base::string16::npos)
       title = title.substr(slashpos + 1);
+
+  } else if (GetURL().SchemeIs(kChromeUIUntrustedScheme)) {
+    // For chrome-untrusted:// URLs, leave title blank until the page loads.
+    title = base::string16();
+
   } else if (base::i18n::StringContainsStrongRTLChars(title)) {
     // Wrap the URL in an LTR embedding for proper handling of RTL characters.
     // (RFC 3987 Section 4.1 states that "Bidirectional IRIs MUST be rendered in

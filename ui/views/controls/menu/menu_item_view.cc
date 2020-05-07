@@ -923,7 +923,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     const gfx::VectorIcon& radio_icon =
         toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
     const SkColor radio_icon_color = GetNativeTheme()->GetSystemColor(
-        toggled ? ui::NativeTheme::kColorId_ButtonEnabledColor
+        toggled ? ui::NativeTheme::kColorId_ButtonCheckedColor
                 : ui::NativeTheme::kColorId_ButtonUncheckedColor);
     radio_check_image_view_->SetImage(
         gfx::CreateVectorIcon(radio_icon, kMenuCheckSize, radio_icon_color));

@@ -1202,6 +1202,10 @@ const ScrollNode* ScrollTree::FindNodeFromElementId(ElementId id) const {
   return Node(iterator->second);
 }
 
+bool ScrollTree::IsComposited(const ScrollNode& node) const {
+  return node.is_composited;
+}
+
 void ScrollTree::clear() {
   PropertyTree<ScrollNode>::clear();
 

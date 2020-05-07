@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Bekijken</translation>
 <translation id="5073204694187207510">Raster op volledig scherm verbergen</translation>
 <translation id="5082793167783849073">Vergelijk pagina's snel door een groep te maken. Tik op een link en houd deze vast om te beginnen.</translation>
+<translation id="5533021382642990449">Later weergeven</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabbladen gegroepeerd</translation>
 <translation id="58326064309361797">Sleep de tabbladen om ze te groeperen</translation>
 <translation id="6040143037577758943">Sluiten</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Sluit de suggesties.</translation>
 <translation id="814503310257431685">Alles weergeven</translation>
 <translation id="8205266828577616993">Tabblad omhoog verplaatsen</translation>
+<translation id="8304833501377495048">Tabbladstrook niet meer weergeven?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> geselecteerd tabblad sluiten}other{<ph name="TABS_COUNT_MANY" /> geselecteerde tabbladen sluiten}}</translation>
+<translation id="8749939518995770034">Tabbladstrook gesloten</translation>
 <translation id="9150694013019234766">Je kunt onderaan het scherm schakelen tussen tabbladen in je tabbladgroep</translation>
 <translation id="9169594135889675189">Nieuw tabblad aan groep toevoegen</translation>
 <translation id="959682366969460160">Georganiseerd werken</translation>

@@ -1,6 +1,8 @@
 include_rules = [
     "+base",
     "+media/base",
+    "+media/filters",
+    "+media/media_buildflags.h",
     "+media/video",
     "+third_party/libyuv",
     "+ui/gfx/geometry/rect.h",

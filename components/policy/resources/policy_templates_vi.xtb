@@ -4841,7 +4841,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn tắt tùy chọn cài đặt này, thì người dùng sẽ không sử dụng được tính năng Tự động điền.
 
       Nếu bạn bật hoặc không đặt giá trị cho tùy chọn cài đặt này, thì người dùng vẫn có quyền kiểm soát đối với tính năng Tự động điền. Điều này sẽ cho phép họ định cấu hình cho hồ sơ Tự động điền và bật hoặc tắt tính năng này theo ý muốn.</translation>
-<translation id="8042971420829376618">Chính sách này chỉ định mã người dùng <ph name="PLUGIN_VM_NAME" /> cho thiết bị này.</translation>
 <translation id="8044493735196713914">Báo cáo chế độ khởi động thiết bị</translation>
 <translation id="8050080920415773384">In bản gốc</translation>
 <translation id="8053580360728293758">Ghi đè chế độ in màu mặc định. Nếu không có chế độ này thì chính sách này sẽ bị bỏ qua.</translation>

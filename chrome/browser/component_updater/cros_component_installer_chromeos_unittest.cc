@@ -333,10 +333,8 @@ class CrOSComponentInstallerTest : public testing::Test {
     const std::string manifest =
         base::StringPrintf(manifest_template.c_str(), name.c_str(),
                            version.c_str(), min_env_version.c_str());
-    if (base::WriteFile(path.AppendASCII("manifest.json"), manifest.data(),
-                        manifest.size()) != static_cast<int>(manifest.size())) {
+    if (!base::WriteFile(path.AppendASCII("manifest.json"), manifest))
       return base::nullopt;
-    }
 
     return base::make_optional(path);
   }

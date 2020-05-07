@@ -230,6 +230,24 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorCredentialManagementPreview = 0x41,
 };
 
+// Enumerates the keys in a COSE Key structure. See
+// https://tools.ietf.org/html/rfc8152#section-7.1
+enum class CoseKeyKey : int {
+  kAlg = 3,
+  kKty = 1,
+  kEllipticCurve = -1,
+  kEllipticX = -2,
+  kEllipticY = -3,
+};
+
+// Enumerates COSE key types. See
+// https://tools.ietf.org/html/rfc8152#section-13
+enum class CoseKeyTypes : int { kEC2 = 2 };
+
+// Enumerates COSE elliptic curves. See
+// https://tools.ietf.org/html/rfc8152#section-13.1
+enum class CoseCurves : int { kP256 = 1 };
+
 enum class CoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
 
 // APDU instruction code for U2F request encoding.

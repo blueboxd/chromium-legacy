@@ -123,7 +123,10 @@ VideoCaptureDeviceFactoryFuchsia::CreateDevice(
   uint64_t device_id;
   bool converted =
       base::StringToUint64(device_descriptor.device_id, &device_id);
-  DCHECK(converted);
+
+  // Test may call CreateDevice() with an invalid |device_id|.
+  if (!converted)
+    return nullptr;
 
   fidl::InterfaceHandle<fuchsia::camera3::Device> device;
   device_watcher_->ConnectToDevice(device_id, device.NewRequest());

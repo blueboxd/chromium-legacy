@@ -40,6 +40,9 @@ class AssistantOnboardingCoordinator {
     private static final String INTENT_IDENTFIER = "INTENT";
     private static final String BUY_MOVIE_TICKETS_INTENT = "BUY_MOVIE_TICKET";
     private static final String RENT_CAR_INTENT = "RENT_CAR";
+    private static final String FLIGHTS_INTENT = "FLIGHTS_CHECKIN";
+    private static final String FOOD_ORDERING_INTENT = "FOOD_ORDERING";
+    private static final String VOICE_SEARCH_INTENT = "TELEPORT";
     private static final String BUY_MOVIE_TICKETS_EXPERIMENT_ID = "4363482";
 
     private final String mExperimentIds;
@@ -205,6 +208,18 @@ class AssistantOnboardingCoordinator {
         TextView titleTextView = initView.findViewById(R.id.onboarding_try_assistant);
         TextView termsTextView = initView.findViewById(R.id.onboarding_subtitle);
         switch (mParameters.get(INTENT_IDENTFIER)) {
+            case FLIGHTS_INTENT:
+                termsTextView.setText(R.string.autofill_assistant_init_message_short);
+                titleTextView.setText(R.string.autofill_assistant_init_message_flights_checkin);
+                break;
+            case FOOD_ORDERING_INTENT:
+                termsTextView.setText(R.string.autofill_assistant_init_message_short);
+                titleTextView.setText(R.string.autofill_assistant_init_message_food_ordering);
+                break;
+            case VOICE_SEARCH_INTENT:
+                termsTextView.setText(R.string.autofill_assistant_init_message_short);
+                titleTextView.setText(R.string.autofill_assistant_init_message_voice_search);
+                break;
             case RENT_CAR_INTENT:
                 termsTextView.setText(R.string.autofill_assistant_init_message_short);
                 titleTextView.setText(R.string.autofill_assistant_init_message_rent_car);

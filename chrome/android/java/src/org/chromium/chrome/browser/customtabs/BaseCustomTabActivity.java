@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -68,6 +69,12 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected boolean mShouldOverridePackage;
 
     /**
+     * Builds {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
+     */
+    protected abstract BrowserServicesIntentDataProvider buildIntentDataProvider(
+            Intent intent, @CustomTabsIntent.ColorScheme int colorScheme);
+
+    /**
      * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
      */
     @VisibleForTesting
@@ -92,6 +99,21 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     @Override
     protected void initializeNightModeStateProvider() {
         mNightModeStateController.initialize(getDelegate(), getIntent());
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        Intent originalIntent = getIntent();
+        super.onNewIntent(intent);
+        // Currently we can't handle arbitrary updates of intent parameters, so make sure
+        // getIntent() returns the same intent as before.
+        setIntent(originalIntent);
+
+        // Color scheme doesn't matter here: currently we don't support updating UI using Intents.
+        BrowserServicesIntentDataProvider dataProvider =
+                buildIntentDataProvider(intent, CustomTabsIntent.COLOR_SCHEME_LIGHT);
+
+        mCustomTabIntentHandler.onNewIntent(dataProvider);
     }
 
     @Override

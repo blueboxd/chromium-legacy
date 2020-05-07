@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/pending_app_registration_task.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 
 namespace web_app {
 
@@ -263,7 +264,10 @@ void PendingAppManagerImpl::CurrentInstallationFinished(
       base::FeatureList::IsEnabled(
           features::kDesktopPWAsCacheDuringDefaultInstall)) {
     const GURL& launch_url = registrar()->GetAppLaunchURL(*app_id);
-    if (!launch_url.is_empty() && launch_url.scheme() != "chrome")
+    bool is_local_resource =
+        launch_url.scheme() == content::kChromeUIScheme ||
+        launch_url.scheme() == content::kChromeUIUntrustedScheme;
+    if (!launch_url.is_empty() && !is_local_resource)
       pending_registrations_.push_back(launch_url);
   }
 

@@ -93,10 +93,8 @@ class LocalNTPRenderTest : public InProcessBrowserTest {
         gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
     DCHECK(result);
     base::ScopedAllowBlockingForTesting allow_blocking;
-    EXPECT_EQ(base::checked_cast<int>(bitmap_data.size()),
-              base::WriteFile(GetTestDataDir().AppendASCII(filename),
-                              reinterpret_cast<char*>(bitmap_data.data()),
-                              bitmap_data.size()));
+    EXPECT_TRUE(
+        base::WriteFile(GetTestDataDir().AppendASCII(filename), bitmap_data));
     run_loop_->Quit();
   }
 

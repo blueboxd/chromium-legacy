@@ -180,8 +180,9 @@ TileInfoRequestStatus TileFetcherTest::RunFetcher(
 
 // Tests that net errors will result in failed status.
 TEST_F(TileFetcherTest, NetErrors) {
-  // TODO(hesen): we should handle network errors.
-  /*EXPECT_EQ(TileInfoRequestStatus::kFailure,
+  EXPECT_EQ(TileInfoRequestStatus::kShouldSuspend,
+            RunFetcherWithNetError(net::ERR_BLOCKED_BY_ADMINISTRATOR));
+  EXPECT_EQ(TileInfoRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_INTERNET_DISCONNECTED));
   EXPECT_EQ(TileInfoRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_NETWORK_CHANGED));
@@ -190,12 +191,14 @@ TEST_F(TileFetcherTest, NetErrors) {
   EXPECT_EQ(TileInfoRequestStatus::kFailure,
             RunFetcherWithNetError(net::ERR_CONNECTION_CLOSED));
   EXPECT_EQ(TileInfoRequestStatus::kFailure,
-            RunFetcherWithNetError(net::ERR_CONNECTION_REFUSED));*/
+            RunFetcherWithNetError(net::ERR_CONNECTION_REFUSED));
 }
 
 // Tests that http errors will result in failed status.
 TEST_F(TileFetcherTest, HttpErrors) {
-  EXPECT_EQ(TileInfoRequestStatus::kFailure,
+  EXPECT_EQ(TileInfoRequestStatus::kShouldSuspend,
+            RunFetcherWithHttpError(net::HTTP_FORBIDDEN));
+  EXPECT_EQ(TileInfoRequestStatus::kShouldSuspend,
             RunFetcherWithHttpError(net::HTTP_NOT_IMPLEMENTED));
   EXPECT_EQ(TileInfoRequestStatus::kFailure,
             RunFetcherWithHttpError(net::HTTP_UNAUTHORIZED));
@@ -216,15 +219,14 @@ TEST_F(TileFetcherTest, HttpErrors) {
 // Tests that empty responses are handled properly.
 TEST_F(TileFetcherTest, EmptyResponse) {
   std::string data;
-  // TODO(hesen): we should consider this kFailure instead of kInit.
-  EXPECT_EQ(TileInfoRequestStatus::kInit, RunFetcherWithData("", &data));
+  EXPECT_EQ(TileInfoRequestStatus::kSuccess, RunFetcherWithData("", &data));
   EXPECT_TRUE(data.empty());
 }
 
-// Tests that empty responses are handled properly.
+// Tests that a susscess response is received properly.
 TEST_F(TileFetcherTest, Success) {
   std::string data;
-  EXPECT_EQ(TileInfoRequestStatus::kInit,
+  EXPECT_EQ(TileInfoRequestStatus::kSuccess,
             RunFetcherWithData(kTileGroupsMessage, &data));
   EXPECT_EQ(kTileGroupsMessage, data);
 

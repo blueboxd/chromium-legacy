@@ -213,6 +213,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return header;
 }
 
+// TODO(crbug.com/1063426): Add egtest for server cards.
 - (TableViewItem*)itemForCreditCard:(const autofill::CreditCard&)creditCard {
   std::string guid(creditCard.guid());
   NSString* creditCardName = autofill::GetCreditCardName(
@@ -220,7 +221,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   AutofillDataItem* item = [[AutofillDataItem alloc] initWithType:ItemTypeCard];
   item.text = creditCardName;
-  item.leadingDetailText = autofill::GetCreditCardObfuscatedNumber(creditCard);
+  item.leadingDetailText = autofill::GetCreditCardIdentifierString(creditCard);
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   item.accessibilityIdentifier = creditCardName;
   item.deletable = autofill::IsCreditCardLocal(creditCard);

@@ -12,7 +12,6 @@ import android.support.test.filters.SmallTest;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,9 +31,9 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter.FooterItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.browser_ui.widget.MoreProgressButton;
 import org.chromium.components.browser_ui.widget.MoreProgressButton.State;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -95,6 +94,9 @@ public class HistoryActivityScrollingTest {
         }
     }
 
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;
     private HistoryManager mHistoryManager;
@@ -119,10 +121,11 @@ public class HistoryActivityScrollingTest {
 
     @Before
     public void setUp() throws Exception {
-        // Account not signed in by default. The clear browsing data header, one date view, and two
-        // history item views should be shown, but the info header should not. We enforce a defaultx
+        // Account not signed in by default, the AccountManagerTestRule above is used to setup
+        // the signin environment.
+        // The clear browsing data header, one date view, and two history item views
+        // should be shown, but the info header should not. We enforce a defaultx
         // state because the number of headers shown depends on the signed-in state.
-        SigninTestUtil.setUpAuthForTest();
 
         mHistoryProvider = new StubbedHistoryProvider();
         mHistoryProvider.setPaging(mPaging);
@@ -146,11 +149,6 @@ public class HistoryActivityScrollingTest {
         Assert.assertTrue("At least one item should be loaded to adapter", mOrigItemsCount > 0);
     }
 
-    @After
-    public void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
-    }
-
     private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
         mHistoryManager = activity.getHistoryManagerForTests();
@@ -158,7 +156,7 @@ public class HistoryActivityScrollingTest {
         mTestObserver = new TestObserver();
         mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
         mAdapter.registerAdapterDataObserver(mTestObserver);
-        mRecyclerView = ((RecyclerView) activity.findViewById(R.id.recycler_view));
+        mRecyclerView = activity.findViewById(R.id.recycler_view);
     }
 
     @Test

@@ -49,12 +49,17 @@ AtomicString FontSelector::FamilyNameFromSettings(
   return g_empty_atom;
 }
 
-FontSelector::FontSelector()
-    : font_fallback_map_(MakeGarbageCollected<FontFallbackMap>(this)) {}
-
 void FontSelector::Trace(Visitor* visitor) {
   visitor->Trace(font_fallback_map_);
   FontCacheClient::Trace(visitor);
+}
+
+FontFallbackMap& FontSelector::GetFontFallbackMap() {
+  if (!font_fallback_map_) {
+    font_fallback_map_ = MakeGarbageCollected<FontFallbackMap>(this);
+    RegisterForInvalidationCallbacks(font_fallback_map_);
+  }
+  return *font_fallback_map_;
 }
 
 }  // namespace blink

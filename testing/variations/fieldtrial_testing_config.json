@@ -1916,27 +1916,6 @@
             ]
         }
     ],
-    "DisableLatencyRecoveryDesktop": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledImplDisabledMain",
-                    "enable_features": [
-                        "ImplLatencyRecovery"
-                    ],
-                    "disable_features": [
-                        "MainLatencyRecovery"
-                    ]
-                }
-            ]
-        }
-    ],
     "DnsOverHttps": [
         {
             "platforms": [

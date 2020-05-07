@@ -285,9 +285,8 @@ class SingleRulesetTest : public DeclarativeNetRequestUnittest {
     // Overwrite the JSON rules file with some invalid json.
     if (persist_invalid_json_file_) {
       std::string data = "invalid json";
-      ASSERT_EQ(static_cast<int>(data.size()),
-                base::WriteFile(extension_dir().AppendASCII(kJSONRulesFilename),
-                                data.c_str(), data.size()));
+      ASSERT_TRUE(base::WriteFile(
+          extension_dir().AppendASCII(kJSONRulesFilename), data));
     }
 
     if (persist_initial_indexed_ruleset_) {
@@ -296,8 +295,7 @@ class SingleRulesetTest : public DeclarativeNetRequestUnittest {
           extension_dir().Append(file_util::GetIndexedRulesetRelativePath(
               kMinValidStaticRulesetID.value()));
       ASSERT_TRUE(base::CreateDirectory(ruleset_path.DirName()));
-      ASSERT_EQ(static_cast<int>(data.size()),
-                base::WriteFile(ruleset_path, data.c_str(), data.size()));
+      ASSERT_TRUE(base::WriteFile(ruleset_path, data));
     }
   }
 

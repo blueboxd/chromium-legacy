@@ -185,7 +185,9 @@ struct CollectUserDataOptions {
   std::vector<std::string> supported_basic_card_networks;
   std::vector<LoginChoice> login_choices;
   std::string default_email;
+  std::string contact_details_section_title;
   std::string login_section_title;
+  std::string shipping_address_section_title;
   UserActionProto confirm_action;
   std::vector<UserActionProto> additional_actions;
   TermsAndConditionsState initial_terms_and_conditions = NOT_SELECTED;

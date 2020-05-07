@@ -45,7 +45,7 @@ class ZeroStateFileProviderTest : public testing::Test {
   }
 
   void WriteFile(const std::string& filename) {
-    CHECK_NE(base::WriteFile(Path(filename), "abcd", 4), -1);
+    CHECK(base::WriteFile(Path(filename), "abcd"));
     CHECK(base::PathExists(Path(filename)));
     Wait();
   }

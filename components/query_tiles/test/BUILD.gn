@@ -2,6 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_tile_service.cc",
+    "fake_tile_service.h",
+  ]
+
+  deps = [ "//components/query_tiles:public" ]
+}
+
 source_set("test_lib") {
   testonly = true
 
@@ -11,8 +22,6 @@ source_set("test_lib") {
   ]
 
   sources = [
-    "fake_tile_service.cc",
-    "fake_tile_service.h",
     "test_utils.cc",
     "test_utils.h",
   ]

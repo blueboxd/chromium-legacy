@@ -44,8 +44,7 @@ class ProfileDeleteMediaBrowserTest : public AndroidBrowserTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::CreateDirectory(media_cache_path));
     std::string data = "foo";
-    base::WriteFile(media_cache_path.AppendASCII("foo"), data.c_str(),
-                    data.size());
+    base::WriteFile(media_cache_path.AppendASCII("foo"), data);
 
     AndroidBrowserTest::SetUp();
   }

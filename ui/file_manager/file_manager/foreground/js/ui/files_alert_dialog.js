@@ -11,6 +11,10 @@ class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
    */
   constructor(parentNode) {
     super(parentNode);
+
+    if (util.isFilesNg()) {
+      this.container.classList.add('files-ng');
+    }
   }
 
   /**

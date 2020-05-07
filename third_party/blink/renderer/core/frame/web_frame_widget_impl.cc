@@ -37,6 +37,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -552,13 +553,9 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
 }
 
 void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
-    const IntrinsicSizingInfo& sizing_info) {
-  WebIntrinsicSizingInfo web_sizing_info;
-  web_sizing_info.size = sizing_info.size;
-  web_sizing_info.aspect_ratio = sizing_info.aspect_ratio;
-  web_sizing_info.has_width = sizing_info.has_width;
-  web_sizing_info.has_height = sizing_info.has_height;
-  Client()->IntrinsicSizingInfoChanged(web_sizing_info);
+    mojom::blink::IntrinsicSizingInfoPtr sizing_info) {
+  GetAssociatedFrameWidgetHost()->IntrinsicSizingInfoChanged(
+      std::move(sizing_info));
 }
 
 void WebFrameWidgetImpl::MouseCaptureLost() {

@@ -326,8 +326,6 @@ class CONTENT_EXPORT RenderWidget
 
   // blink::WebWidgetClient
   void ScheduleAnimation() override;
-  void IntrinsicSizingInfoChanged(
-      const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void DidChangeCursor(const ui::Cursor& cursor) override;
   void AutoscrollStart(const gfx::PointF& point) override;

@@ -3010,9 +3010,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, WipeCrashData) {
   constexpr char kCrashEntry2[] = "67890,def\n";
   std::string initial_contents = kCrashEntry1;
   initial_contents.append(kCrashEntry2);
-  ASSERT_GT(base::WriteFile(upload_log_path, initial_contents.c_str(),
-                            static_cast<int>(initial_contents.size())),
-            0);
+  ASSERT_TRUE(base::WriteFile(upload_log_path, initial_contents));
 
   BlockUntilBrowsingDataRemoved(
       base::Time::FromTimeT(67890u), base::Time::Max(),

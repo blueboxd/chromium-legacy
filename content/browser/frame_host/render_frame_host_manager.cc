@@ -183,19 +183,23 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
 // "same-origin + COEP" value.
 // [1] https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
 bool CrossOriginOpenerPolicyMatch(
-    network::mojom::CrossOriginOpenerPolicy initiator_coop,
+    network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
     network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
     const url::Origin& initiator_origin,
-    network::mojom::CrossOriginOpenerPolicy destination_coop,
+    network::mojom::CrossOriginOpenerPolicyValue destination_coop,
     network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
     const url::Origin& destination_origin) {
   if (initiator_coop != destination_coop)
     return false;
-  if (initiator_coop == network::mojom::CrossOriginOpenerPolicy::kUnsafeNone)
+  if (initiator_coop ==
+      network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone) {
     return true;
-  if (initiator_coop == network::mojom::CrossOriginOpenerPolicy::kSameOrigin &&
-      initiator_coep != destination_coep)
+  }
+  if (initiator_coop ==
+          network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin &&
+      initiator_coep != destination_coep) {
     return false;
+  }
   if (!initiator_origin.IsSameOriginWith(destination_origin))
     return false;
   return true;
@@ -205,15 +209,15 @@ bool CrossOriginOpenerPolicyMatch(
 // COOP rules defined in:
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
 bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-    network::mojom::CrossOriginOpenerPolicy initiator_coop,
+    network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
     network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
     const url::Origin& initiator_origin,
     bool is_initiator_aboutblank,
-    network::mojom::CrossOriginOpenerPolicy destination_coop,
+    network::mojom::CrossOriginOpenerPolicyValue destination_coop,
     network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
     const url::Origin& destination_origin) {
   using network::mojom::CrossOriginEmbedderPolicyValue;
-  using network::mojom::CrossOriginOpenerPolicy;
+  using network::mojom::CrossOriginOpenerPolicyValue;
 
   if (!base::FeatureList::IsEnabled(
           network::features::kCrossOriginOpenerPolicy))
@@ -239,8 +243,8 @@ bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
   // [1]
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
   if (is_initiator_aboutblank &&
-      initiator_coop == CrossOriginOpenerPolicy::kSameOriginAllowPopups &&
-      destination_coop == CrossOriginOpenerPolicy::kUnsafeNone) {
+      initiator_coop == CrossOriginOpenerPolicyValue::kSameOriginAllowPopups &&
+      destination_coop == CrossOriginOpenerPolicyValue::kUnsafeNone) {
     return false;
   }
   return true;
@@ -2435,11 +2439,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   bool cross_origin_policy_swap =
       request->response() && frame_tree_node_->IsMainFrame() &&
       ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-          render_frame_host_->cross_origin_opener_policy(),
+          render_frame_host_->cross_origin_opener_policy().value,
           render_frame_host_->cross_origin_embedder_policy().value,
           render_frame_host_->GetLastCommittedOrigin(),
           !render_frame_host_->has_committed_any_navigation(),
-          request->response()->parsed_headers->cross_origin_opener_policy,
+          request->response()->parsed_headers->cross_origin_opener_policy.value,
           request->response()
               ->parsed_headers->cross_origin_embedder_policy.value,
           url::Origin::Create(request->common_params().url));

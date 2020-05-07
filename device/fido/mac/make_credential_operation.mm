@@ -24,6 +24,7 @@
 #include "device/fido/mac/credential_metadata.h"
 #include "device/fido/mac/credential_store.h"
 #include "device/fido/mac/util.h"
+#include "device/fido/public_key.h"
 #include "device/fido/strings/grit/fido_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

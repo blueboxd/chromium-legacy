@@ -82,6 +82,7 @@
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
@@ -1362,11 +1363,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Semi-formal definition of COOP:
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-  network::mojom::CrossOriginOpenerPolicy cross_origin_opener_policy() const {
+  network::CrossOriginOpenerPolicy cross_origin_opener_policy() const {
     return cross_origin_opener_policy_;
   }
-  void set_cross_origin_opener_policy(
-      network::mojom::CrossOriginOpenerPolicy policy) {
+  void set_cross_origin_opener_policy(network::CrossOriginOpenerPolicy policy) {
     cross_origin_opener_policy_ = policy;
   }
 
@@ -2329,8 +2329,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
 
-  network::mojom::CrossOriginOpenerPolicy cross_origin_opener_policy_ =
-      network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+  network::CrossOriginOpenerPolicy cross_origin_opener_policy_;
 
   // Track the site URL of the last site we committed successfully, as obtained
   // from SiteInstance::GetSiteURL.

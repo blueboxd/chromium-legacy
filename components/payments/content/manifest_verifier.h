@@ -136,9 +136,9 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // cache.
   base::OnceClosure finished_using_resources_callback_;
 
-  // The mapping of payment method names to the origins of the apps that want to
+  // The mapping of payment method names to the id of the apps that want to
   // use these payment method names.
-  std::map<GURL, std::set<url::Origin>> manifest_url_to_app_origins_map_;
+  std::map<GURL, std::vector<int64_t>> manifest_url_to_app_id_map_;
 
   // The mapping of cache request handles to the payment method manifest URLs.
   std::map<WebDataServiceBase::Handle, GURL> cache_request_handles_;

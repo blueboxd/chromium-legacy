@@ -209,7 +209,7 @@ class PluginVmInstallerTestBase : public testing::Test {
   base::FilePath CreateZipFile() {
     base::FilePath zip_file_path =
         profile_->GetPath().AppendASCII(kPluginVmImageFile);
-    base::WriteFile(zip_file_path, kContent, strlen(kContent));
+    base::WriteFile(zip_file_path, kContent);
     return zip_file_path;
   }
 

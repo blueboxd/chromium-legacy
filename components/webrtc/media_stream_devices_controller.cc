@@ -111,6 +111,25 @@ void MediaStreamDevicesController::RequestPermissions(
     content_settings_types.push_back(ContentSettingsType::MEDIASTREAM_CAMERA);
     will_prompt_for_video =
         permission_status.content_setting == CONTENT_SETTING_ASK;
+
+#if !defined(OS_ANDROID)
+    // TODO(crbug.com/934063): Check that hardware supports PTZ before
+    if (request.request_pan_tilt_zoom_permission) {
+      permissions::PermissionResult permission_status =
+          permission_manager->GetPermissionStatusForFrame(
+              ContentSettingsType::CAMERA_PAN_TILT_ZOOM, rfh,
+              request.security_origin);
+      if (permission_status.content_setting == CONTENT_SETTING_BLOCK) {
+        controller->denial_reason_ =
+            blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+        controller->RunCallback(/*blocked_by_feature_policy=*/false);
+        return;
+      }
+
+      content_settings_types.push_back(
+          ContentSettingsType::CAMERA_PAN_TILT_ZOOM);
+    }
+#endif
   }
 
   permission_manager->RequestPermissions(
@@ -461,10 +480,12 @@ bool MediaStreamDevicesController::PermissionIsBlockedForReason(
 
 void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
     const std::vector<ContentSetting>& responses) {
+  bool need_audio = ShouldRequestAudio();
+  bool need_video = ShouldRequestVideo();
+  bool blocked_by_feature_policy = need_audio || need_video;
   // The audio setting will always be the first one in the vector, if it was
   // requested.
-  bool blocked_by_feature_policy = ShouldRequestAudio() || ShouldRequestVideo();
-  if (ShouldRequestAudio()) {
+  if (need_audio) {
     audio_setting_ = responses.front();
     blocked_by_feature_policy &=
         audio_setting_ == CONTENT_SETTING_BLOCK &&
@@ -473,8 +494,8 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
             permissions::PermissionStatusSource::FEATURE_POLICY);
   }
 
-  if (ShouldRequestVideo()) {
-    video_setting_ = responses.back();
+  if (need_video) {
+    video_setting_ = responses.at(need_audio ? 1 : 0);
     blocked_by_feature_policy &=
         video_setting_ == CONTENT_SETTING_BLOCK &&
         PermissionIsBlockedForReason(

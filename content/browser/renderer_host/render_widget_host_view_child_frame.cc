@@ -146,9 +146,9 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
 }
 
 void RenderWidgetHostViewChildFrame::UpdateIntrinsicSizingInfo(
-    const blink::WebIntrinsicSizingInfo& sizing_info) {
+    blink::mojom::IntrinsicSizingInfoPtr sizing_info) {
   if (frame_connector_)
-    frame_connector_->SendIntrinsicSizingInfoToParent(sizing_info);
+    frame_connector_->SendIntrinsicSizingInfoToParent(std::move(sizing_info));
 }
 
 std::unique_ptr<SyntheticGestureTarget>

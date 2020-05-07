@@ -25,13 +25,6 @@ public class WebappInfo {
     private final @NonNull BrowserServicesIntentDataProvider mProvider;
     private final @NonNull WebApkExtras mWebApkExtras;
 
-    public static WebappInfo createEmpty() {
-        return new WebappInfo(
-                new WebappIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
-                        false /* hasCustomToolbarColor */, null /* shareData */,
-                        WebappExtras.createEmpty(), WebApkExtras.createEmpty()));
-    }
-
     /**
      * Construct a WebappInfo.
      * @param intent Intent containing info about the app.

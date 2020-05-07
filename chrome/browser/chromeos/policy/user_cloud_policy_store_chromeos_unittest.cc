@@ -71,9 +71,7 @@ bool StoreUserPolicyKey(const base::FilePath& user_policy_dir,
       GetUserPolicyKeyFile(user_policy_dir, cryptohome_id);
   if (!base::CreateDirectory(user_policy_key_file.DirName()))
     return false;
-  int result = base::WriteFile(user_policy_key_file, public_key.data(),
-                               public_key.size());
-  return result == static_cast<int>(public_key.size());
+  return base::WriteFile(user_policy_key_file, public_key);
 }
 
 // For detailed test for UserCloudPOlicyStoreChromeOS, this supports

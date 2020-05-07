@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -401,6 +402,9 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateOutsideSettingsFetcher(
   DCHECK(IsContextThread());
 
   auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
+  content_security_policy->SetSupportsWasmEval(
+      SchemeRegistry::SchemeSupportsWasmEvalCSP(
+          outside_settings_object.GetSecurityOrigin()->Protocol()));
   for (const auto& policy_and_type : outside_content_security_policy_headers_) {
     content_security_policy->DidReceiveHeader(
         policy_and_type.first, policy_and_type.second,
@@ -473,6 +477,8 @@ void WorkerOrWorkletGlobalScope::InitContentSecurityPolicyFromVector(
     const Vector<CSPHeaderAndType>& headers) {
   if (!GetContentSecurityPolicy()) {
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->SetSupportsWasmEval(SchemeRegistry::SchemeSupportsWasmEvalCSP(
+        GetSecurityOrigin()->Protocol()));
     GetSecurityContext().SetContentSecurityPolicy(csp);
   }
   for (const auto& policy_and_type : headers) {

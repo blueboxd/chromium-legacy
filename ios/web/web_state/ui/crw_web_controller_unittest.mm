@@ -1078,8 +1078,7 @@ class WindowOpenByDomTest : public WebTestWithWebController {
     NSString* const kOpenWindowScript =
         @"w = window.open('javascript:void(0);', target='_blank');"
          "w ? w.toString() : null;";
-    id windowJSObject = ExecuteJavaScript(kOpenWindowScript);
-    return windowJSObject;
+    return ExecuteJavaScript(kOpenWindowScript);
   }
 
   // Executes JavaScript that closes previously opened window.
@@ -1266,16 +1265,16 @@ class CRWWebControllerWebProcessTest : public WebTestWithWebController {
  protected:
   void SetUp() override {
     WebTestWithWebController::SetUp();
-    webView_ = BuildTerminatedWKWebView();
+    web_view_ = BuildTerminatedWKWebView();
     TestWebViewContentView* webViewContentView = [[TestWebViewContentView alloc]
-        initWithMockWebView:webView_
-                 scrollView:[webView_ scrollView]];
+        initWithMockWebView:web_view_
+                 scrollView:[web_view_ scrollView]];
     [web_controller() injectWebViewContentView:webViewContentView];
 
     // This test intentionally crashes the render process.
     SetIgnoreRenderProcessCrashesDuringTesting(true);
   }
-  WKWebView* webView_;
+  WKWebView* web_view_;
 };
 
 // Tests that WebStateDelegate::RenderProcessGone is called when WKWebView web
@@ -1288,7 +1287,7 @@ TEST_F(CRWWebControllerWebProcessTest, Crash) {
 
   TestWebStateObserver observer(web_state());
   TestWebStateObserver* observer_ptr = &observer;
-  SimulateWKWebViewCrash(webView_);
+  SimulateWKWebViewCrash(web_view_);
   base::test::ios::WaitUntilCondition(^bool() {
     return observer_ptr->render_process_gone_info();
   });

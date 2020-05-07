@@ -14,13 +14,13 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/public/common/screen_info.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 class WebGestureEvent;
-struct WebIntrinsicSizingInfo;
 }
 
 namespace cc {
@@ -76,7 +76,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Sends the given intrinsic sizing information from a sub-frame to
   // its corresponding remote frame in the parent frame's renderer.
   virtual void SendIntrinsicSizingInfoToParent(
-      const blink::WebIntrinsicSizingInfo&) {}
+      blink::mojom::IntrinsicSizingInfoPtr) {}
 
   // Sends new resize parameters to the sub-frame's renderer.
   void SynchronizeVisualProperties(

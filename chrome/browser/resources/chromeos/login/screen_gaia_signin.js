@@ -338,6 +338,13 @@ Polymer({
    */
   pinDialogResultReported_: false,
 
+  /**
+   * Emulate click on the primary action button when it is visible and enabled.
+   * @type {boolean}
+   * @private
+   */
+  clickPrimaryActionButtonForTesting_: false,
+
   /** @override */
   ready() {
     this.authenticator_ = new cr.login.Authenticator(this.getSigninFrame_());
@@ -1015,6 +1022,7 @@ Polymer({
    */
   onSetPrimaryActionEnabled_(e) {
     this.primaryActionButtonEnabled_ = e.detail;
+    this.maybeClickPrimaryActionButtonForTesting_();
   },
 
   /**
@@ -1031,6 +1039,7 @@ Polymer({
    */
   onSetPrimaryActionLabel_(e) {
     this.primaryActionButtonLabel_ = e.detail;
+    this.maybeClickPrimaryActionButtonForTesting_();
   },
 
   /**
@@ -1647,6 +1656,23 @@ Polymer({
    */
   showOverlay_(navigationEnabled, isSamlSsoVisible) {
     return !navigationEnabled || isSamlSsoVisible;
+  },
+
+  clickPrimaryButtonForTesting() {
+    this.clickPrimaryActionButtonForTesting_ = true;
+    this.maybeClickPrimaryActionButtonForTesting_();
+  },
+
+  maybeClickPrimaryActionButtonForTesting_() {
+    if (!this.clickPrimaryActionButtonForTesting_)
+      return;
+
+    const button = this.$['primary-action-button'];
+    if (button.hidden || button.disabled)
+      return;
+
+    this.clickPrimaryActionButtonForTesting_ = false;
+    button.click();
   },
 });
 })();

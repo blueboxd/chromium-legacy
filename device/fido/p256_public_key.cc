@@ -7,72 +7,128 @@
 #include <utility>
 
 #include "components/cbor/writer.h"
-#include "device/fido/fido_parsing_utils.h"
+#include "components/device_event_log/device_event_log.h"
+#include "device/fido/fido_constants.h"
+#include "device/fido/public_key.h"
+#include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/obj.h"
 
 namespace device {
 
-namespace {
-// In a U2F registration response, the key is located after the first byte of
-// the response (which is a reserved byte). It's in X9.62 format:
-// - a constant 0x04 prefix to indicate an uncompressed key
-// - the 32-byte x coordinate
-// - the 32-byte y coordinate.
-constexpr size_t kReservedLength = 1;
-constexpr uint8_t kUncompressedKey = 0x04;
+// kFieldElementLength is the size of a P-256 field element. The field is
+// GF(2^256 - 2^224 + 2^192 + 2^96 - 1) and thus an element is 256 bits, or 32
+// bytes.
 constexpr size_t kFieldElementLength = 32;
-}  // namespace
+
+// kUncompressedPointLength is the size of an X9.62 uncompressed point over
+// P-256. It's one byte of type information followed by two field elements (x
+// and y).
+constexpr size_t kUncompressedPointLength = 1 + 2 * kFieldElementLength;
 
 // static
-std::unique_ptr<P256PublicKey>
-P256PublicKey::ExtractFromU2fRegistrationResponse(
-    std::string algorithm,
+std::unique_ptr<PublicKey> P256PublicKey::ExtractFromU2fRegistrationResponse(
+    int32_t algorithm,
     base::span<const uint8_t> u2f_data) {
-  return ParseX962Uncompressed(
-      std::move(algorithm),
-      fido_parsing_utils::ExtractSuffixSpan(u2f_data, kReservedLength));
+  // In a U2F registration response, there is first a reserved byte that must be
+  // ignored. Following that is the rest of the response.
+  if (u2f_data.size() < 1 + kUncompressedPointLength) {
+    return nullptr;
+  }
+  return ParseX962Uncompressed(algorithm,
+                               u2f_data.subspan(1, kUncompressedPointLength));
 }
 
 // static
-std::unique_ptr<P256PublicKey> P256PublicKey::ParseX962Uncompressed(
-    std::string algorithm,
-    base::span<const uint8_t> input) {
-  if (input.empty() || input[0] != kUncompressedKey)
+std::unique_ptr<PublicKey> P256PublicKey::ExtractFromCOSEKey(
+    int32_t algorithm,
+    base::span<const uint8_t> cbor_bytes,
+    const cbor::Value::MapValue& map) {
+  cbor::Value::MapValue::const_iterator it =
+      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kKty)));
+  if (it == map.end() || !it->second.is_integer() ||
+      it->second.GetInteger() != static_cast<int64_t>(CoseKeyTypes::kEC2)) {
     return nullptr;
+  }
 
-  const std::vector<uint8_t> x =
-      fido_parsing_utils::Extract(input, 1, kFieldElementLength);
-  if (x.empty())
+  it = map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
+  if (it == map.end() || !it->second.is_integer() ||
+      it->second.GetInteger() != static_cast<int64_t>(CoseCurves::kP256)) {
     return nullptr;
+  }
 
-  const std::vector<uint8_t> y = fido_parsing_utils::Extract(
-      input, 1 + kFieldElementLength, kFieldElementLength);
-  if (y.empty())
+  cbor::Value::MapValue::const_iterator it_x =
+      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticX)));
+  cbor::Value::MapValue::const_iterator it_y =
+      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticY)));
+  if (it_x == map.end() || !it_x->second.is_bytestring() || it_y == map.end() ||
+      !it_y->second.is_bytestring()) {
     return nullptr;
+  }
 
-  return std::make_unique<P256PublicKey>(std::move(algorithm), std::move(x),
-                                         std::move(y));
+  const std::vector<uint8_t>& x(it_x->second.GetBytestring());
+  const std::vector<uint8_t>& y(it_y->second.GetBytestring());
+
+  if (x.size() != kFieldElementLength || y.size() != kFieldElementLength) {
+    FIDO_LOG(ERROR) << "Incorrect length for P-256 COSE key coordinates";
+  }
+
+  bssl::UniquePtr<BIGNUM> x_bn(BN_new());
+  bssl::UniquePtr<BIGNUM> y_bn(BN_new());
+  if (!BN_bin2bn(x.data(), x.size(), x_bn.get()) ||
+      !BN_bin2bn(y.data(), y.size(), y_bn.get())) {
+    return nullptr;
+  }
+
+  // Parse into an |EC_POINT| to perform the validity checks that BoringSSL
+  // does.
+  bssl::UniquePtr<EC_GROUP> p256(
+      EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+  bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
+  if (!EC_POINT_set_affine_coordinates_GFp(p256.get(), point.get(), x_bn.get(),
+                                           y_bn.get(), /*ctx=*/nullptr)) {
+    FIDO_LOG(ERROR) << "P-256 public key is not on curve";
+    return nullptr;
+  }
+
+  return std::make_unique<PublicKey>(algorithm, cbor_bytes);
 }
 
-P256PublicKey::P256PublicKey(std::string algorithm,
-                             std::vector<uint8_t> x,
-                             std::vector<uint8_t> y)
-    : PublicKey(std::move(algorithm)),
-      x_coordinate_(std::move(x)),
-      y_coordinate_(std::move(y)) {
-  DCHECK_EQ(x_coordinate_.size(), kFieldElementLength);
-  DCHECK_EQ(y_coordinate_.size(), kFieldElementLength);
-}
+// static
+std::unique_ptr<PublicKey> P256PublicKey::ParseX962Uncompressed(
+    int32_t algorithm,
+    base::span<const uint8_t> x962) {
+  // Parse into an |EC_POINT| to perform the validity checks that BoringSSL
+  // does.
+  bssl::UniquePtr<EC_GROUP> p256(
+      EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+  bssl::UniquePtr<EC_POINT> point(EC_POINT_new(p256.get()));
+  if (x962.size() != kUncompressedPointLength ||
+      x962[0] != POINT_CONVERSION_UNCOMPRESSED ||
+      !EC_POINT_oct2point(p256.get(), point.get(), x962.data(), x962.size(),
+                          /*ctx=*/nullptr)) {
+    FIDO_LOG(ERROR) << "P-256 public key is not on curve";
+    return nullptr;
+  }
 
-P256PublicKey::~P256PublicKey() = default;
+  base::span<const uint8_t, kFieldElementLength> x(&x962[1],
+                                                   kFieldElementLength);
+  base::span<const uint8_t, kFieldElementLength> y(
+      &x962[1 + kFieldElementLength], kFieldElementLength);
 
-std::vector<uint8_t> P256PublicKey::EncodeAsCOSEKey() const {
   cbor::Value::MapValue map;
-  map[cbor::Value(1)] = cbor::Value(2);
-  map[cbor::Value(3)] = cbor::Value(-7);
-  map[cbor::Value(-1)] = cbor::Value(1);
-  map[cbor::Value(-2)] = cbor::Value(x_coordinate_);
-  map[cbor::Value(-3)] = cbor::Value(y_coordinate_);
-  return *cbor::Writer::Write(cbor::Value(std::move(map)));
+  map.emplace(static_cast<int>(CoseKeyKey::kKty),
+              static_cast<int64_t>(CoseKeyTypes::kEC2));
+  map.emplace(static_cast<int>(CoseKeyKey::kAlg), algorithm);
+  map.emplace(static_cast<int>(CoseKeyKey::kEllipticCurve),
+              static_cast<int64_t>(CoseCurves::kP256));
+  map.emplace(static_cast<int>(CoseKeyKey::kEllipticX), x);
+  map.emplace(static_cast<int>(CoseKeyKey::kEllipticY), y);
+
+  const std::vector<uint8_t> cbor_bytes(
+      std::move(cbor::Writer::Write(cbor::Value(std::move(map))).value()));
+
+  return std::make_unique<PublicKey>(algorithm, cbor_bytes);
 }
 
 }  // namespace device

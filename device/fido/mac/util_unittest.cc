@@ -7,9 +7,10 @@
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "device/fido/authenticator_data.h"
-#include "device/fido/fido_parsing_utils.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/p256_public_key.h"
+#include "device/fido/public_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,9 +21,10 @@ namespace fido {
 namespace mac {
 namespace {
 
-std::unique_ptr<P256PublicKey> TestKey() {
+std::unique_ptr<PublicKey> TestKey() {
   return P256PublicKey::ParseX962Uncompressed(
-      fido_parsing_utils::kEs256, test_data::kX962UncompressedPublicKey);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      test_data::kX962UncompressedPublicKey);
 }
 
 base::Time g_fake_now;

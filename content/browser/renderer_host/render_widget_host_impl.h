@@ -914,13 +914,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
   void OnFirstVisuallyNonEmptyPaint();
-  void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
                                        const gfx::Rect& rect_to_zoom) override;
   void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
   void SetHasTouchEventHandlers(bool has_handlers) override;
+  void IntrinsicSizingInfoChanged(
+      blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.

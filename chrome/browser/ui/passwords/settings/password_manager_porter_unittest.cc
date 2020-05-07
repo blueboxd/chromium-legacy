@@ -323,8 +323,7 @@ TEST_P(PasswordManagerPorterStoreTest, Import) {
 
   base::FilePath temp_file_path;
   ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_path));
-  ASSERT_EQ(static_cast<int>(tc.csv.size()),
-            base::WriteFile(temp_file_path, tc.csv.data(), tc.csv.size()));
+  ASSERT_TRUE(base::WriteFile(temp_file_path, tc.csv));
 
   // No credential provider needed, because this |porter| won't be used for
   // exporting. No progress callback needed, because UI interaction will be

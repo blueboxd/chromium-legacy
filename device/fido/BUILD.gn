@@ -111,8 +111,6 @@ component("fido") {
     "make_credential_task.h",
     "opaque_attestation_statement.cc",
     "opaque_attestation_statement.h",
-    "opaque_public_key.cc",
-    "opaque_public_key.h",
     "p256_public_key.cc",
     "p256_public_key.h",
     "pin.cc",

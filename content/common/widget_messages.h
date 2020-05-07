@@ -21,7 +21,6 @@
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ui_base_types.h"
@@ -197,15 +196,6 @@ IPC_MESSAGE_ROUTED1(WidgetHostMsg_SelectionBoundsChanged,
 // Sent in response to a WidgetMsg_UpdateScreenRects so that the renderer can
 // throttle these messages.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
-
-// Only used for SVGs inside of <object> and not for iframes. Informs the
-// browser that hte current frame's intrinsic sizing info has changed. The
-// browser can then notify a containing frame that the frame may need to
-// trigger a new layout.
-//
-// Also see blink::mojom::RemoteFrame::IntrinsicSizingInfoOfChildChanged.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_IntrinsicSizingInfoChanged,
-                    blink::WebIntrinsicSizingInfo)
 
 // Send the tooltip text for the current mouse position to the browser.
 IPC_MESSAGE_ROUTED2(WidgetHostMsg_SetTooltipText,

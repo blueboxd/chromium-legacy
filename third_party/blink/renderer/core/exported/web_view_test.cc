@@ -4100,6 +4100,8 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
       has_touch_event_handler_count_[state]++;
     has_touch_event_handler_ = state;
   }
+  void IntrinsicSizingInfoChanged(
+      mojom::blink::IntrinsicSizingInfoPtr sizing_info) override {}
 
  private:
   mojo::AssociatedReceiver<mojom::blink::FrameWidgetHost>

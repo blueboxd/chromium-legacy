@@ -458,6 +458,22 @@
       default: false,
       valid_type: "bool",
     },
+
+    // - is_border
+    // The property, when used by the author, will disable any native
+    // appearance on UI elements.
+    is_border: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - is_background
+    // The property, when used by the author, will disable any native
+    // appearance on UI elements.
+    is_background: {
+      default: false,
+      valid_type: "bool",
+    },
   },
 
   // Members in the data objects should appear in the same order as in the
@@ -1079,6 +1095,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-blend-mode",
@@ -1096,6 +1113,7 @@
         fill_type_getter: "GetBlendMode",
       },
       valid_for_first_letter: true,
+      is_background: true,
     },
     {
       name: "background-clip",
@@ -1109,6 +1127,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-color",
@@ -1130,6 +1149,7 @@
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-image",
@@ -1145,6 +1165,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-origin",
@@ -1158,6 +1179,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-position-x",
@@ -1169,6 +1191,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-position-y",
@@ -1180,6 +1203,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "background-repeat-x",
@@ -1212,6 +1236,7 @@
       },
       valid_for_first_letter: true,
       valid_for_cue: true,
+      is_background: true,
     },
     {
       name: "baseline-shift",
@@ -1238,6 +1263,7 @@
       style_builder_template: "color",
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1251,6 +1277,7 @@
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-bottom-right-radius",
@@ -1264,6 +1291,7 @@
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-bottom-style",
@@ -1278,6 +1306,7 @@
       default_value: "none",
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-bottom-width",
@@ -1293,6 +1322,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-collapse",
@@ -1314,6 +1344,7 @@
         modifier_type: "Outset",
       },
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-image-repeat",
@@ -1325,6 +1356,7 @@
         modifier_type: "Repeat",
       },
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-image-slice",
@@ -1336,6 +1368,7 @@
         modifier_type: "Slice",
       },
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-image-source",
@@ -1345,6 +1378,7 @@
       typedom_types: ["Keyword", "Image"],
       style_builder_custom_functions: ["value"],
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-image-width",
@@ -1357,6 +1391,7 @@
         modifier_type: "Width",
       },
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-left-color",
@@ -1374,6 +1409,7 @@
       style_builder_template: "color",
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-left-style",
@@ -1388,6 +1424,7 @@
       default_value: "none",
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-left-width",
@@ -1403,6 +1440,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-right-color",
@@ -1420,6 +1458,7 @@
       style_builder_template: "color",
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-right-style",
@@ -1434,6 +1473,7 @@
       default_value: "none",
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-right-width",
@@ -1449,6 +1489,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-top-color",
@@ -1466,6 +1507,7 @@
       style_builder_template: "color",
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-top-left-radius",
@@ -1479,6 +1521,7 @@
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-top-right-radius",
@@ -1492,6 +1535,7 @@
       converter: "ConvertRadius",
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-top-style",
@@ -1506,6 +1550,7 @@
       default_value: "none",
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "border-top-width",
@@ -1521,6 +1566,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
+      is_border: true,
     },
     {
       name: "bottom",

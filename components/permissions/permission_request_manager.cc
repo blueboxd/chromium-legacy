@@ -45,25 +45,20 @@ bool IsMessageTextEqual(PermissionRequest* a, PermissionRequest* b) {
   return false;
 }
 
+bool isMediaRequest(PermissionRequestType type) {
+  return type == PermissionRequestType::PERMISSION_MEDIASTREAM_MIC ||
+         type == PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA ||
+         type == PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM;
+}
+
 // We only group together media requests. We don't display grouped requests for
 // any other permissions at present.
 bool ShouldGroupRequests(PermissionRequest* a, PermissionRequest* b) {
   if (a->GetOrigin() != b->GetOrigin())
     return false;
 
-  if (a->GetPermissionRequestType() ==
-      PermissionRequestType::PERMISSION_MEDIASTREAM_MIC) {
-    return b->GetPermissionRequestType() ==
-           PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
-  }
-
-  if (a->GetPermissionRequestType() ==
-      PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA) {
-    return b->GetPermissionRequestType() ==
-           PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
-  }
-
-  return false;
+  return isMediaRequest(a->GetPermissionRequestType()) &&
+         isMediaRequest(b->GetPermissionRequestType());
 }
 
 }  // namespace
@@ -362,8 +357,8 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
   requests_.push_back(queued_requests_.front());
   queued_requests_.pop_front();
 
-  if (!queued_requests_.empty() &&
-      ShouldGroupRequests(requests_.front(), queued_requests_.front())) {
+  while (!queued_requests_.empty() &&
+         ShouldGroupRequests(requests_.front(), queued_requests_.front())) {
     requests_.push_back(queued_requests_.front());
     queued_requests_.pop_front();
   }

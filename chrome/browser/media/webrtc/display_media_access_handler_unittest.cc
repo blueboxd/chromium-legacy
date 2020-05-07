@@ -55,7 +55,9 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
         std::string(), std::string(),
         request_audio ? blink::mojom::MediaStreamType::DISPLAY_AUDIO_CAPTURE
                       : blink::mojom::MediaStreamType::NO_SERVICE,
-        blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE, false);
+        blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+        /*disable_local_echo=*/false,
+        /*request_pan_tilt_zoom_permission=*/false);
 
     base::RunLoop wait_loop;
     content::MediaResponseCallback callback = base::BindOnce(
@@ -170,7 +172,7 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
       render_process_id, render_frame_id, page_request_id,
       GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(), audio_stream_type, video_stream_type,
-      false);
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -200,7 +202,8 @@ TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
   content::MediaStreamRequest request(
       0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
       std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
-      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE, false);
+      blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+      /*disable_local_echo=*/false, /*request_pan_tilt_zoom_permission=*/false);
   content::MediaResponseCallback callback;
   access_handler_->HandleRequest(web_contents(), request, std::move(callback),
                                  nullptr /* extension */);
@@ -237,7 +240,9 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
     content::MediaStreamRequest request(
         0, 0, 0, GURL("http://origin/"), false, blink::MEDIA_GENERATE_STREAM,
         std::string(), std::string(), blink::mojom::MediaStreamType::NO_SERVICE,
-        blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE, false);
+        blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
+        /*disable_local_echo=*/false,
+        /*request_pan_tilt_zoom_permission=*/false);
     content::MediaResponseCallback callback = base::BindOnce(
         [](base::RunLoop* wait_loop,
            blink::mojom::MediaStreamRequestResult* request_result,

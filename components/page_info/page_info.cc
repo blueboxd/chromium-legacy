@@ -88,6 +88,7 @@ namespace {
 ContentSettingsType kPermissionType[] = {
     ContentSettingsType::GEOLOCATION,
     ContentSettingsType::MEDIASTREAM_CAMERA,
+    ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
     ContentSettingsType::MEDIASTREAM_MIC,
     ContentSettingsType::SENSORS,
     ContentSettingsType::NOTIFICATIONS,
@@ -176,6 +177,10 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
   // The Native File System write permission is desktop only at the moment.
   if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD)
     return false;
+
+  // Camera PTZ is desktop only at the moment.
+  if (info.type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM)
+    return false;
 #else
   // Flash is shown if the user has ever changed its setting for |site_url|.
   if (info.type == ContentSettingsType::PLUGINS &&
@@ -194,6 +199,13 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
   if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD &&
       web_contents->HasNativeFileSystemHandles()) {
     return true;
+  }
+
+  // Camera PTZ is shown only if Experimental Web Platform features are enabled.
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (info.type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM &&
+      !cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures)) {
+    return false;
   }
 #endif
 

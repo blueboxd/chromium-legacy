@@ -613,7 +613,7 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath config_path = temp_dir_.GetPath().AppendASCII("config.json");
-    base::WriteFile(config_path, kTestPolicyConfig, strlen(kTestPolicyConfig));
+    base::WriteFile(config_path, kTestPolicyConfig);
     test_server_ = std::make_unique<LocalPolicyTestServer>(config_path);
     test_server_->RegisterClient(kDMToken, kClientID, {} /* state_keys */);
   }
@@ -773,7 +773,7 @@ class MachineLevelUserCloudPolicyRobotAuthTest
     base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath config_path = temp_dir_.GetPath().AppendASCII("config.json");
-    base::WriteFile(config_path, kTestPolicyConfig, strlen(kTestPolicyConfig));
+    base::WriteFile(config_path, kTestPolicyConfig);
     test_server_ = std::make_unique<LocalPolicyTestServer>(config_path);
     test_server_->RegisterClient(kDMToken, kClientID, {} /* state_keys */);
   }

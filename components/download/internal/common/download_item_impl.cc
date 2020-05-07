@@ -1947,8 +1947,7 @@ void DownloadItemImpl::Completed() {
 
   bool is_parallelizable = job_ && job_->IsParallelizable();
   RecordDownloadCompleted(GetReceivedBytes(), is_parallelizable,
-                          download_source_, has_resumed_,
-                          HasStrongValidators());
+                          download_source_);
   if (!delegate_->IsOffTheRecord()) {
     RecordDownloadCountWithSource(COMPLETED_COUNT_NORMAL_PROFILE,
                                   download_source_);
@@ -2518,15 +2517,12 @@ void DownloadItemImpl::ResumeInterruptedDownload(
                                 download_source_);
 
   base::TimeDelta time_since_start = base::Time::Now() - GetStartTime();
-
   DownloadUkmHelper::RecordDownloadResumed(ukm_download_id_, GetResumeMode(),
                                            time_since_start);
-  RecordDownloadResumed(HasStrongValidators());
 
   delegate_->ResumeInterruptedDownload(std::move(download_params),
                                        request_info_.site_url);
 
-  has_resumed_ = true;
   if (job_)
     job_->Resume(false);
 }

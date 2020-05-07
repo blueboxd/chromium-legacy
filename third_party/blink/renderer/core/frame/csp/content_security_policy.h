@@ -475,6 +475,7 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   // Returns the 'wasm-eval' source is supported.
   bool SupportsWasmEval() const { return supports_wasm_eval_; }
+  void SetSupportsWasmEval(bool value) { supports_wasm_eval_ = value; }
 
   // Sometimes we don't know the initiator or it might be destroyed already
   // for certain navigational checks. We create a string version of the relevant

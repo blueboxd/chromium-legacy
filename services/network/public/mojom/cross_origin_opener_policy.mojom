@@ -5,9 +5,7 @@
 module network.mojom;
 
 // Cross-Origin-Opener-Policy enum representing parsed values.
-// Following spec draft:
-// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-enum CrossOriginOpenerPolicy {
+enum CrossOriginOpenerPolicyValue {
   // Severs the opener relationship with openers/opened documents that are not
   // same-origin.
   kSameOrigin,
@@ -21,3 +19,20 @@ enum CrossOriginOpenerPolicy {
   // opened documents.
   kUnsafeNone
 };
+
+// Cross-Origin-Opener-Policy enum representing parsed values.
+// Following spec draft:
+// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+struct CrossOriginOpenerPolicy {
+    // The value of the policy.
+    CrossOriginOpenerPolicyValue value =
+        CrossOriginOpenerPolicyValue.kUnsafeNone;
+    // The reporting endpoint for the policy.
+    string? reporting_endpoint;
+    // The value for the "report only" mode.
+    CrossOriginOpenerPolicyValue report_only_value =
+        CrossOriginOpenerPolicyValue.kUnsafeNone;
+    // The reporting endpoint for the "report only" mode.
+    string? report_only_reporting_endpoint;
+};
+

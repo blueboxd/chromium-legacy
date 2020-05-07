@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "cc/mojom/touch_action.mojom";
 
@@ -35,6 +36,14 @@ interface FrameWidgetHost {
 
   // Notifies whether there are JavaScript touch event handlers or not.
   SetHasTouchEventHandlers(bool has_handlers);
+
+  // Sent by a widget to the browser to be used for SVGs inside of <object> and
+  // not for iframes. Informs the browser that the current frame's intrinsic
+  // sizing info has changed. The browser can then notify a containing frame
+  // that the frame may need to trigger a new layout.
+  //
+  // Also see blink::mojom::RemoteFrame::IntrinsicSizingInfoOfChildChanged.
+  IntrinsicSizingInfoChanged(IntrinsicSizingInfo sizing_info);
 };
 
 // Implemented in Blink, this interface defines widget-specific methods that

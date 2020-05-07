@@ -124,6 +124,12 @@ class MODULES_EXPORT UserMediaProcessor
       WebMediaStreamDeviceObserver* media_stream_device_observer);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
+                           PanConstraintRequestPanTiltZoomPermission);
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
+                           TiltConstraintRequestPanTiltZoomPermission);
+  FRIEND_TEST_ALL_PREFIXES(UserMediaClientTest,
+                           ZoomConstraintRequestPanTiltZoomPermission);
   class RequestInfo;
   using LocalStreamSources = Vector<blink::WebMediaStreamSource>;
 
@@ -248,6 +254,9 @@ class MODULES_EXPORT UserMediaProcessor
       const blink::AudioDeviceCaptureCapabilities& capabilities);
 
   void SetupVideoInput();
+  // Exported for testing.
+  static bool IsPanTiltZoomPermissionRequested(
+      const MediaConstraints& constraints);
   void SelectVideoDeviceSettings(
       UserMediaRequest* user_media_request,
       Vector<blink::mojom::blink::VideoInputDeviceCapabilitiesPtr>

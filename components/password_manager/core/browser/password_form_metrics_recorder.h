@@ -253,6 +253,17 @@ class PasswordFormMetricsRecorder
     kMaxValue = kNoSavedCredentialsAndBlacklistedBySmartBubble,
   };
 
+  // Records which store(s) a filled password came from.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class FillingSource {
+    kNotFilled = 0,
+    kFilledFromProfileStore = 1,
+    kFilledFromAccountStore = 2,
+    kFilledFromBothStores = 3,
+    kMaxValue = kFilledFromBothStores,
+  };
+
   // Records whether a password hash was saved or not on Chrome sign-in page.
   enum class ChromeSignInPageHashSaved {
     kPasswordTypedHashNotSaved = 0,
@@ -354,8 +365,10 @@ class PasswordFormMetricsRecorder
   // the successful submission is detected.
   void CalculateFillingAssistanceMetric(
       const autofill::FormData& submitted_form,
-      const std::set<base::string16>& saved_usernames,
-      const std::set<base::string16>& saved_passwords,
+      const std::set<std::pair<base::string16, autofill::PasswordForm::Store>>&
+          saved_usernames,
+      const std::set<std::pair<base::string16, autofill::PasswordForm::Store>>&
+          saved_passwords,
       bool is_blacklisted,
       const std::vector<InteractionsStats>& interactions_stats,
       metrics_util::PasswordAccountStorageUsageLevel
@@ -461,6 +474,7 @@ class PasswordFormMetricsRecorder
   bool password_hash_saved_on_chrome_sing_in_page_ = false;
 
   base::Optional<FillingAssistance> filling_assistance_;
+  base::Optional<FillingSource> filling_source_;
   base::Optional<metrics_util::PasswordAccountStorageUsageLevel>
       account_storage_usage_level_;
 

@@ -13,7 +13,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/one_shot_event.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -180,6 +182,23 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
     run_loop.Run();
   }
 
+  void ReleaseWebContents() override {
+    PendingAppManagerImpl::ReleaseWebContents();
+
+    // May be called more than once, if PendingAppManager finishes all tasks
+    // before it is shutdown.
+    if (!web_contents_released_event_.is_signaled()) {
+      web_contents_released_event_.Signal();
+    }
+  }
+
+  // Wait for PendingAppManager to finish all installations and registrations.
+  void WaitForWebContentsReleased() {
+    base::RunLoop run_loop;
+    web_contents_released_event_.Post(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   TestAppRegistrar* registrar() { return test_app_registrar_; }
 
  private:
@@ -275,6 +294,7 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
   std::map<GURL, InstallResultCode> next_installation_task_results_;
   std::map<GURL, GURL> next_installation_launch_urls_;
   base::Optional<base::OnceClosure> preempt_registration_callback_;
+  base::OneShotEvent web_contents_released_event_;
 };
 
 }  // namespace
@@ -1442,6 +1462,33 @@ TEST_F(PendingAppManagerImplTest,
     EXPECT_EQ(FooWebAppUrl(), url.value());
 
     EXPECT_EQ(2u, install_run_count());
+  }
+}
+
+TEST_F(PendingAppManagerImplTest, DoNotRegisterServiceWorkerForLocalApps) {
+  GURL local_urls[] = {GURL("chrome://sample"),
+                       GURL("chrome-untrusted://sample")};
+
+  for (const auto& install_url : local_urls) {
+    size_t prev_install_run_count = install_run_count();
+
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        install_url, InstallResultCode::kSuccessNewInstall);
+    pending_app_manager_impl()->SetNextInstallationLaunchURL(
+        install_url, install_url.Resolve("launch_page"));
+    url_loader()->SetNextLoadUrlResult(install_url,
+                                       WebAppUrlLoader::Result::kUrlLoaded);
+    ExternalInstallOptions install_option(
+        install_url, DisplayMode::kStandalone,
+        ExternalInstallSource::kSystemInstalled);
+    const auto& url_and_result =
+        InstallAndWait(pending_app_manager_impl(), install_option);
+    EXPECT_EQ(install_url, url_and_result.first);
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, url_and_result.second);
+
+    pending_app_manager_impl()->WaitForWebContentsReleased();
+    EXPECT_EQ(prev_install_run_count + 1, install_run_count());
+    EXPECT_EQ(0u, registration_run_count());
   }
 }
 

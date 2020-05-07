@@ -666,6 +666,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
   EXPECT_EQ(
       OfflineCapability::kSupported,
       CheckOfflineCapability("/service_worker/empty.html?fetch_or_offline"));
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html?cache_add"));
 }
 
 // Sites with a service worker which is not activated yet are identified as

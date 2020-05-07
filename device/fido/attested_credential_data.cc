@@ -9,9 +9,10 @@
 
 #include "base/numerics/safe_math.h"
 #include "components/cbor/reader.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
-#include "device/fido/opaque_public_key.h"
+#include "device/fido/p256_public_key.h"
 #include "device/fido/public_key.h"
 
 namespace device {
@@ -41,21 +42,84 @@ AttestedCredentialData::ConsumeFromCtapResponse(
   auto credential_id = buffer.first(credential_id_length);
   buffer = buffer.subspan(credential_id_length);
 
-  // The public key is a CBOR map and is thus variable length. Therefore the
-  // CBOR parser needs to be invoked to find its length, even though the result
-  // is discarded.
-  size_t bytes_read;
-  if (!cbor::Reader::Read(buffer, &bytes_read)) {
+  size_t public_key_byte_len;
+  base::Optional<cbor::Value> public_key_cbor =
+      cbor::Reader::Read(buffer, &public_key_byte_len);
+  if (!public_key_cbor || !public_key_cbor->is_map()) {
+    FIDO_LOG(ERROR) << "CBOR error in COSE public key";
     return base::nullopt;
   }
-  auto credential_public_key_data =
-      std::make_unique<OpaquePublicKey>(buffer.first(bytes_read));
-  buffer = buffer.subspan(bytes_read);
+
+  const base::span<const uint8_t> public_key_cbor_bytes(
+      buffer.first(public_key_byte_len));
+  buffer = buffer.subspan(public_key_byte_len);
+
+  const cbor::Value::MapValue& public_key_map = public_key_cbor->GetMap();
+
+  // kAlg is required to be present. See
+  // https://www.w3.org/TR/webauthn/#credentialpublickey
+  // COSE allows it to be a string or an integer. However, WebAuthn defines
+  // COSEAlgorithmIdentifier to be a long[1], thus only integer-based algorithms
+  // can be negotiated.
+  //
+  // [1] https://www.w3.org/TR/webauthn/#alg-identifier
+  const auto it =
+      public_key_map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kAlg)));
+  if (it == public_key_map.end() || !it->second.is_integer()) {
+    FIDO_LOG(ERROR) << "Public key is missing algorithm identifier";
+    return base::nullopt;
+  }
+
+  // In WebIDL, a |long| is an |int32_t|[1].
+  //
+  // [1] https://heycam.github.io/webidl/#idl-long
+  const int64_t algorithm64 = it->second.GetInteger();
+  if (algorithm64 > std::numeric_limits<int32_t>::max() ||
+      algorithm64 < std::numeric_limits<int32_t>::min()) {
+    FIDO_LOG(ERROR) << "COSE algorithm in public key is out of range";
+    return base::nullopt;
+  }
+  const int32_t algorithm = static_cast<int32_t>(algorithm64);
+
+  std::unique_ptr<PublicKey> public_key;
+
+  // kKty is required in COSE keys:
+  // https://tools.ietf.org/html/rfc8152#section-7
+  auto public_key_type =
+      public_key_map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kKty)));
+  if (public_key_type == public_key_map.end()) {
+    FIDO_LOG(ERROR) << "COSE key missing kty";
+    return base::nullopt;
+  }
+
+  if (public_key_type->second.is_unsigned() &&
+      public_key_type->second.GetUnsigned() ==
+          static_cast<int64_t>(CoseKeyTypes::kEC2)) {
+    auto curve = public_key_map.find(
+        cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
+    if (curve == public_key_map.end() || !curve->second.is_integer()) {
+      return base::nullopt;
+    }
+
+    if (curve->second.GetInteger() == static_cast<int64_t>(CoseCurves::kP256)) {
+      auto p256_key = P256PublicKey::ExtractFromCOSEKey(
+          algorithm, public_key_cbor_bytes, public_key_map);
+      if (!p256_key) {
+        FIDO_LOG(ERROR) << "Invalid P-256 public key";
+        return base::nullopt;
+      }
+      public_key = std::move(p256_key);
+    }
+  }
+
+  if (!public_key) {
+    public_key = std::make_unique<PublicKey>(algorithm, public_key_cbor_bytes);
+  }
 
   return std::make_pair(
       AttestedCredentialData(aaguid, credential_id_length_span,
                              fido_parsing_utils::Materialize(credential_id),
-                             std::move(credential_public_key_data)),
+                             std::move(public_key)),
       buffer);
 }
 
@@ -117,7 +181,7 @@ std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {
   fido_parsing_utils::Append(&attestation_data, aaguid_);
   fido_parsing_utils::Append(&attestation_data, credential_id_length_);
   fido_parsing_utils::Append(&attestation_data, credential_id_);
-  fido_parsing_utils::Append(&attestation_data, public_key_->EncodeAsCOSEKey());
+  fido_parsing_utils::Append(&attestation_data, public_key_->cose_key_bytes());
   return attestation_data;
 }
 

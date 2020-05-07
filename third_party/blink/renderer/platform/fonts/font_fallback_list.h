@@ -112,7 +112,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
  private:
   explicit FontFallbackList(FontSelector* font_selector);
 
-  scoped_refptr<FontData> GetFontData(const FontDescription&, int& family_index) const;
+  scoped_refptr<FontData> GetFontData(const FontDescription&);
 
   const SimpleFontData* DeterminePrimarySimpleFontData(const FontDescription&);
 

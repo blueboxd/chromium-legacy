@@ -103,7 +103,8 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         // the Activity parameters, including the background of the page.
         // Note that color scheme is fixed for the lifetime of Activity: if the system setting
         // changes, we recreate the activity.
-        mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this, getColorScheme());
+        mIntentDataProvider = (CustomTabIntentDataProvider) buildIntentDataProvider(
+                getIntent(), getColorScheme());
 
         super.performPreInflationStartup();
         mTabProvider.addObserver(mTabChangeObserver);
@@ -162,21 +163,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         if (AutofillAssistantFacade.isAutofillAssistantEnabled(getInitialIntent())) {
             AutofillAssistantFacade.start(this);
         }
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        Intent originalIntent = getIntent();
-        super.onNewIntent(intent);
-        // Currently we can't handle arbitrary updates of intent parameters, so make sure
-        // getIntent() returns the same intent as before.
-        setIntent(originalIntent);
-
-        // Color scheme doesn't matter here: currently we don't support updating UI using Intents.
-        CustomTabIntentDataProvider dataProvider = new CustomTabIntentDataProvider(intent, this,
-                CustomTabsIntent.COLOR_SCHEME_LIGHT);
-
-        mCustomTabIntentHandler.onNewIntent(dataProvider);
     }
 
     private void resetPostMessageHandlersForCurrentSession() {
@@ -256,6 +242,12 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
 
     @Override
     public void onUpdateStateChanged() {}
+
+    @Override
+    protected BrowserServicesIntentDataProvider buildIntentDataProvider(
+            Intent intent, @CustomTabsIntent.ColorScheme int colorScheme) {
+        return new CustomTabIntentDataProvider(intent, this, colorScheme);
+    }
 
     @Override
     public BrowserServicesIntentDataProvider getIntentDataProvider() {

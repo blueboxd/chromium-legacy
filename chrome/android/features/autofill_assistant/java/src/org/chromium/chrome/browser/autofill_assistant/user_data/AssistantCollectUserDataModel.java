@@ -67,6 +67,10 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<AutofillContact> SELECTED_CONTACT_DETAILS =
             new WritableObjectPropertyKey<>();
 
+    /** The contact details section title. */
+    public static final WritableObjectPropertyKey<String> CONTACT_SECTION_TITLE =
+            new WritableObjectPropertyKey<>();
+
     /** The login section title. */
     public static final WritableObjectPropertyKey<String> LOGIN_SECTION_TITLE =
             new WritableObjectPropertyKey<>();
@@ -77,6 +81,10 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     /** The status of the third party terms & conditions. */
     public static final WritableIntPropertyKey TERMS_STATUS = new WritableIntPropertyKey();
+
+    /** The shipping section title. */
+    public static final WritableObjectPropertyKey<String> SHIPPING_SECTION_TITLE =
+            new WritableObjectPropertyKey<>();
 
     public static final WritableBooleanPropertyKey REQUEST_NAME = new WritableBooleanPropertyKey();
     public static final WritableBooleanPropertyKey REQUEST_EMAIL = new WritableBooleanPropertyKey();
@@ -194,11 +202,12 @@ public class AssistantCollectUserDataModel extends PropertyModel {
 
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SELECTED_SHIPPING_ADDRESS,
-                SELECTED_PAYMENT_INSTRUMENT, SELECTED_CONTACT_DETAILS, LOGIN_SECTION_TITLE,
-                SELECTED_LOGIN, TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE,
-                REQUEST_SHIPPING_ADDRESS, REQUEST_PAYMENT, ACCEPT_TERMS_AND_CONDITIONS_TEXT,
-                SHOW_TERMS_AS_CHECKBOX, REQUEST_LOGIN_CHOICE, AVAILABLE_BILLING_ADDRESSES,
-                AVAILABLE_CONTACTS, AVAILABLE_SHIPPING_ADDRESSES, AVAILABLE_PAYMENT_INSTRUMENTS,
+                SELECTED_PAYMENT_INSTRUMENT, SELECTED_CONTACT_DETAILS, CONTACT_SECTION_TITLE,
+                LOGIN_SECTION_TITLE, SELECTED_LOGIN, SHIPPING_SECTION_TITLE, TERMS_STATUS,
+                REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS,
+                REQUEST_PAYMENT, ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX,
+                REQUEST_LOGIN_CHOICE, AVAILABLE_BILLING_ADDRESSES, AVAILABLE_CONTACTS,
+                AVAILABLE_SHIPPING_ADDRESSES, AVAILABLE_PAYMENT_INSTRUMENTS,
                 SUPPORTED_BASIC_CARD_NETWORKS, AVAILABLE_LOGINS, EXPANDED_SECTION,
                 REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
                 CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START_OPTIONS,
@@ -284,6 +293,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
+    private void setContactSectionTitle(String text) {
+        set(CONTACT_SECTION_TITLE, text);
+    }
+
+    @CalledByNative
     private void setLoginSectionTitle(String loginSectionTitle) {
         set(LOGIN_SECTION_TITLE, loginSectionTitle);
     }
@@ -291,6 +305,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setRequestLoginChoice(boolean requestLoginChoice) {
         set(REQUEST_LOGIN_CHOICE, requestLoginChoice);
+    }
+
+    @CalledByNative
+    private void setShippingSectionTitle(String text) {
+        set(SHIPPING_SECTION_TITLE, text);
     }
 
     @CalledByNative

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+  <title>WebRTC Automated Test</title>
+  <script type="text/javascript" src="test_functions.js"></script>
+  <script>
+  'use strict';
+  let microphonePermissionStatus;
+  let cameraPermissionStatus;
+  let panTiltZoomPermissionStatus;
+
+  let queryPermissions = Promise.all([
+    navigator.permissions.query({ name: "microphone" }),
+    navigator.permissions.query({ name: "camera" }),
+    navigator.permissions.query({ name: "camera", panTiltZoom: true }),
+  ]);
+
+  function runGetUserMedia(constraints) {
+    queryPermissions
+      .then((permissionStatuses) => {
+        [
+          microphonePermissionStatus,
+          cameraPermissionStatus,
+          panTiltZoomPermissionStatus,
+        ] = permissionStatuses;
+        return navigator.mediaDevices.getUserMedia(constraints);
+      })
+      .then(() => returnToTest("runGetUserMedia-success"))
+      .catch(() => returnToTest("runGetUserMedia-failure"));
+  }
+
+  function getMicrophonePermission() {
+    returnToTest(microphonePermissionStatus.state);
+  }
+
+  function getCameraPermission() {
+    returnToTest(cameraPermissionStatus.state);
+  }
+
+  function getPanTiltZoomPermission() {
+    returnToTest(panTiltZoomPermissionStatus.state);
+  }
+  </script>
+</head>
+<body>
+</body>
+</html>
+

@@ -493,13 +493,14 @@ void RenderWidgetInputHandler::HandleInputEvent(
   }
 
   // Send gesture scroll events and their dispositions to the compositor thread,
-  // so that they can be used to produce the elastic overscroll effect on Mac.
+  // so that they can be used to produce the elastic overscroll effect.
   if (input_event.GetType() == WebInputEvent::Type::kGestureScrollBegin ||
       input_event.GetType() == WebInputEvent::Type::kGestureScrollEnd ||
       input_event.GetType() == WebInputEvent::Type::kGestureScrollUpdate) {
     const WebGestureEvent& gesture_event =
         static_cast<const WebGestureEvent&>(input_event);
-    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
+    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad ||
+        gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
       gfx::Vector2dF latest_overscroll_delta =
           handling_state.event_overscroll
               ? handling_state.event_overscroll->latest_overscroll_delta

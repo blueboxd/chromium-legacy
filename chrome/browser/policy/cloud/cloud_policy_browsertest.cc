@@ -311,9 +311,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
 
   void SetServerPolicy(const std::string& policy) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    int result = base::WriteFile(policy_file_path(), policy.data(),
-                                 policy.size());
-    ASSERT_EQ(base::checked_cast<int>(policy.size()), result);
+    ASSERT_TRUE(base::WriteFile(policy_file_path(), policy));
   }
 
   base::FilePath policy_file_path() const {

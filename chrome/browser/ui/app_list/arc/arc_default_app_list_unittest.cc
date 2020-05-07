@@ -18,8 +18,7 @@ std::string GetBoardName(const std::string& content) {
   CHECK(scoped_dir.CreateUniqueTempDir());
   base::FilePath path;
   CHECK(base::CreateTemporaryFileInDir(scoped_dir.GetPath(), &path));
-  CHECK(base::WriteFile(path, content.data(), content.size()) ==
-        static_cast<int>(content.size()));
+  CHECK(base::WriteFile(path, content));
   return ArcDefaultAppList::GetBoardNameForTesting(path);
 }
 

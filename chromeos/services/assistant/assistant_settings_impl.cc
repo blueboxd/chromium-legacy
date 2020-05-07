@@ -220,11 +220,8 @@ void AssistantSettingsImpl::HandleSpeakerIdEnrollmentUpdate(
       break;
     case SpeakerIdEnrollmentState::DONE:
       speaker_id_enrollment_client_->OnSpeakerIdEnrollmentDone();
-      if (!speaker_id_enrollment_done_) {
+      if (!speaker_id_enrollment_done_)
         speaker_id_enrollment_done_ = true;
-        assistant_manager_service_->UpdateInternalOptions(
-            assistant_manager_service_->assistant_manager_internal());
-      }
       break;
     case SpeakerIdEnrollmentState::FAILURE:
       speaker_id_enrollment_client_->OnSpeakerIdEnrollmentFailure();
@@ -243,11 +240,7 @@ void AssistantSettingsImpl::HandleSpeakerIdEnrollmentStatusSync(
 
   speaker_id_enrollment_done_ = status.user_model_exists;
 
-  if (speaker_id_enrollment_done_) {
-    assistant_manager_service_->UpdateInternalOptions(
-        assistant_manager_service_->assistant_manager_internal());
-
-  } else {
+  if (!speaker_id_enrollment_done_) {
     // If hotword is enabled but there is no voice model found, launch the
     // enrollment flow.
     if (assistant_state()->hotword_enabled().value())

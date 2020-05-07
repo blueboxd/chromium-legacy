@@ -37,10 +37,6 @@ from util import md5_check
 from util import protoresources
 from util import resource_utils
 
-_JETIFY_SCRIPT_PATH = os.path.join(build_utils.DIR_SOURCE_ROOT, 'third_party',
-                                   'jetifier_standalone', 'bin',
-                                   'jetifier-standalone')
-
 # Pngs that we shouldn't convert to webp. Please add rationale when updating.
 _PNG_WEBP_EXCLUSION_PATTERN = re.compile('|'.join([
     # Crashes on Galaxy S5 running L (https://crbug.com/807059).
@@ -614,31 +610,6 @@ def _ConvertToWebP(webp_binary, png_paths, path_info, webp_cache_dir):
                 cache_hits[0], len(png_paths), sha1_time[0], cwebp_time[0])
 
 
-def _JetifyArchive(dep_path, output_path):
-  """Runs jetify script on a directory.
-
-  This converts resources to reference androidx over android support libraries.
-  Directories will be put in a zip file, jetified, then unzipped as jetify
-  only runs on archives.
-  """
-  # Jetify script only works on archives.
-  with tempfile.NamedTemporaryFile() as temp_archive:
-    build_utils.ZipDir(temp_archive.name, dep_path)
-
-    # Use -l error to avoid warnings when nothing is jetified.
-    jetify_cmd = [
-        _JETIFY_SCRIPT_PATH, '-i', temp_archive.name, '-o', temp_archive.name,
-        '-l', 'error'
-    ]
-    env = os.environ.copy()
-    env['JAVA_HOME'] = build_utils.JAVA_HOME
-    subprocess.check_call(jetify_cmd, env=env)
-    with zipfile.ZipFile(temp_archive.name) as zf:
-      zf.extractall(output_path)
-
-  return output_path
-
-
 def _RemoveImageExtensions(directory, path_info):
   """Remove extensions from image files in the passed directory.
 
@@ -657,13 +628,10 @@ def _RemoveImageExtensions(directory, path_info):
 
 
 def _CompileSingleDep(args):
-  index, dep_path, aapt2_path, temp_dir, partials_dir, exclusion_rules = args
+  index, dep_path, aapt2_path, partials_dir, exclusion_rules = args
   basename = os.path.basename(dep_path)
   unique_name = '{}_{}'.format(index, basename)
   partial_path = os.path.join(partials_dir, '{}.zip'.format(unique_name))
-
-  new_path = os.path.join(temp_dir, 'jetify', '{}.zip'.format(unique_name))
-  dep_path = _JetifyArchive(dep_path, new_path)
 
   compile_command = [
       aapt2_path,
@@ -699,7 +667,7 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir, exclusion_rules):
 
   def iter_params():
     for i, dep_path in enumerate(dep_subdirs):
-      yield i, dep_path, aapt2_path, temp_dir, partials_dir, exclusion_rules
+      yield i, dep_path, aapt2_path, partials_dir, exclusion_rules
 
   pool = multiprocessing.dummy.Pool(10)
   try:
@@ -840,7 +808,7 @@ def _PackageApk(options, build):
     _MoveImagesToNonMdpiFolders(directory, path_info)
     _RemoveImageExtensions(directory, path_info)
 
-  logging.debug('Running aapt2 compile (and jetify)')
+  logging.debug('Running aapt2 compile')
   exclusion_rules = [x.split(':', 1) for x in options.values_filter_rules]
   partials = _CompileDeps(options.aapt2_path, dep_subdirs, build.temp_dir,
                           exclusion_rules)

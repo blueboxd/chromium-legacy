@@ -180,6 +180,15 @@
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_BUY_MOVIE_TICKETS" desc="Onboarding message describing autofill assistant's capability for movie tickets.">
         Buy movie tickets \n in just a few taps
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_FOOD_ORDERING" desc="Onboarding message describing autofill assistant's capability for food ordering.">
+        Order food \n in just a few taps
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_FLIGHTS_CHECKIN" desc="Onboarding message describing autofill assistant's capability for flights.">
+        Check in to your flight \n in just a few taps
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE_VOICE_SEARCH" desc="Onboarding message describing autofill assistant's capability for voice search.">
+        Try voice actions \n on websites
+      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
         Google Assistant saves you time by helping you complete actions on the web, like search and checkout.
       </message>

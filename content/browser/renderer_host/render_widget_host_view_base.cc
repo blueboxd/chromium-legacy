@@ -133,7 +133,7 @@ void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {}
 
 void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
-    const blink::WebIntrinsicSizingInfo& sizing_info) {}
+    blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
 
 gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),

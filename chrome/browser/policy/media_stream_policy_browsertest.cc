@@ -68,7 +68,8 @@ class MediaStreamDevicesControllerBrowserTest
     return content::MediaStreamRequest(
         render_process_id, render_frame_id, 0, request_url_.GetOrigin(), false,
         blink::MEDIA_DEVICE_ACCESS, std::string(), std::string(),
-        audio_request_type, video_request_type, false);
+        audio_request_type, video_request_type, /*disable_local_echo=*/false,
+        /*request_pan_tilt_zoom_permission=*/false);
   }
 
   // Configure a given policy map. The |policy_name| is the name of either the

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -761,6 +762,11 @@ void UserMediaProcessor::SetupVideoInput() {
   auto& video_controls = current_request_info_->stream_controls()->video;
   InitializeVideoTrackControls(current_request_info_->request(),
                                &video_controls);
+
+  current_request_info_->stream_controls()->request_pan_tilt_zoom_permission =
+      IsPanTiltZoomPermissionRequested(
+          current_request_info_->request()->VideoConstraints());
+
   if (blink::IsDeviceMediaType(video_controls.stream_type)) {
     GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
         WTF::Bind(&UserMediaProcessor::SelectVideoDeviceSettings,
@@ -780,6 +786,28 @@ void UserMediaProcessor::SetupVideoInput() {
     }
     SelectVideoContentSettings();
   }
+}
+
+// static
+bool UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+    const MediaConstraints& constraints) {
+  if (!RuntimeEnabledFeatures::MediaCapturePanTiltEnabled())
+    return false;
+
+  if (!constraints.Basic().pan.IsEmpty() ||
+      !constraints.Basic().tilt.IsEmpty() ||
+      !constraints.Basic().zoom.IsEmpty()) {
+    return true;
+  }
+
+  for (const auto& advanced_set : constraints.Advanced()) {
+    if (!advanced_set.pan.IsEmpty() || !advanced_set.tilt.IsEmpty() ||
+        !advanced_set.zoom.IsEmpty()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void UserMediaProcessor::SelectVideoDeviceSettings(

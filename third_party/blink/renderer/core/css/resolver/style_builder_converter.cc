@@ -962,20 +962,29 @@ void StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
 
 float StyleBuilderConverter::ConvertBorderWidth(StyleResolverState& state,
                                                 const CSSValue& value) {
+  double result = 0;
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    CSSValueID value_id = identifier_value->GetValueID();
-    if (value_id == CSSValueID::kThin)
-      return 1;
-    if (value_id == CSSValueID::kMedium)
-      return 3;
-    if (value_id == CSSValueID::kThick)
-      return 5;
-    NOTREACHED();
-    return 0;
+    switch (identifier_value->GetValueID()) {
+      case CSSValueID::kThin:
+        result = 1;
+        break;
+      case CSSValueID::kMedium:
+        result = 3;
+        break;
+      case CSSValueID::kThick:
+        result = 5;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    result = state.CssToLengthConversionData().ZoomedComputedPixels(
+        result, CSSPrimitiveValue::UnitType::kPixels);
+  } else {
+    const auto& primitive_value = To<CSSPrimitiveValue>(value);
+    result =
+        primitive_value.ComputeLength<float>(state.CssToLengthConversionData());
   }
-  const auto& primitive_value = To<CSSPrimitiveValue>(value);
-  double result =
-      primitive_value.ComputeLength<float>(state.CssToLengthConversionData());
   double zoomed_result = state.StyleRef().EffectiveZoom() * result;
   if (zoomed_result > 0.0 && zoomed_result < 1.0)
     return 1.0;

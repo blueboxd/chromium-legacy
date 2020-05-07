@@ -20,8 +20,9 @@ NSString* GetCreditCardName(const CreditCard& credit_card,
       autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL), locale));
 }
 
-NSString* GetCreditCardObfuscatedNumber(const CreditCard& credit_card) {
-  return base::SysUTF16ToNSString(credit_card.NetworkAndLastFourDigits());
+NSString* GetCreditCardIdentifierString(const CreditCard& credit_card) {
+  return base::SysUTF16ToNSString(
+      credit_card.CardIdentifierStringForAutofillDisplay());
 }
 
 NSDateComponents* GetCreditCardExpirationDate(const CreditCard& credit_card) {

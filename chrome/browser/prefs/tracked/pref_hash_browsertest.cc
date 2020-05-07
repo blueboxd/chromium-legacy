@@ -377,10 +377,8 @@ class PrefHashBrowserTestBase
 
       std::string num_tracked_prefs_str =
           base::NumberToString(num_tracked_prefs_);
-      EXPECT_EQ(static_cast<int>(num_tracked_prefs_str.size()),
-                base::WriteFile(num_tracked_prefs_file,
-                                num_tracked_prefs_str.c_str(),
-                                num_tracked_prefs_str.size()));
+      EXPECT_TRUE(
+          base::WriteFile(num_tracked_prefs_file, num_tracked_prefs_str));
     } else {
       std::string num_tracked_prefs_str;
       EXPECT_TRUE(base::ReadFileToString(num_tracked_prefs_file,

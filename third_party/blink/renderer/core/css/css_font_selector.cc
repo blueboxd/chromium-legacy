@@ -58,7 +58,6 @@ CSSFontSelector::CSSFontSelector(Document* document)
   FontCache::GetFontCache()->AddClient(this);
   FontFaceSetDocument::From(*document)->AddFontFacesToFontFaceCache(
       &font_face_cache_);
-  RegisterForInvalidationCallbacks(&GetFontFallbackMap());
 }
 
 CSSFontSelector::~CSSFontSelector() = default;

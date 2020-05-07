@@ -46,7 +46,6 @@ class GenericFontFamilySettings;
 
 class PLATFORM_EXPORT FontSelector : public FontCacheClient {
  public:
-  FontSelector();
   ~FontSelector() override = default;
   virtual scoped_refptr<FontData> GetFontData(const FontDescription&,
                                        const AtomicString& family_name) = 0;
@@ -96,7 +95,7 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
       const FontDescription&,
       const AtomicString& passed_family) = 0;
 
-  FontFallbackMap& GetFontFallbackMap() { return *font_fallback_map_; }
+  FontFallbackMap& GetFontFallbackMap();
 
   void Trace(Visitor* visitor) override;
 

@@ -662,7 +662,8 @@ interface RemoteFrame {
 
   // Sent to the remote frame placeholder in the parent process indicating the
   // intrinsic sizing parameters of the content frame have changed. Generated
-  // when the browser receives a WidgetHostMsg_IntrinsicSizingInfoChanged.
+  // when the browser receives a IntrinsicSizingInfoChanged message of
+  // FrameWidgetHost interface.
   IntrinsicSizingInfoOfChildChanged(IntrinsicSizingInfo sizing_info);
 
   // Used to replicate the updated sandbox flags and feature policy headers to

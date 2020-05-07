@@ -4,6 +4,8 @@
 
 #include "content/public/test/fake_render_widget_host.h"
 
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
+
 namespace content {
 
 FakeRenderWidgetHost::FakeRenderWidgetHost() = default;
@@ -28,5 +30,8 @@ void FakeRenderWidgetHost::ZoomToFindInPageRectInMainFrame(
     const gfx::Rect& rect_to_zoom) {}
 
 void FakeRenderWidgetHost::SetHasTouchEventHandlers(bool has_handlers) {}
+
+void FakeRenderWidgetHost::IntrinsicSizingInfoChanged(
+    blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
 
 }  // namespace content

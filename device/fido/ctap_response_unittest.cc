@@ -16,8 +16,8 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/opaque_attestation_statement.h"
-#include "device/fido/opaque_public_key.h"
 #include "device/fido/p256_public_key.h"
+#include "device/fido/public_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -426,9 +426,10 @@ TEST(CTAPResponseTest, TestParseRegisterResponseData) {
 // Test that an EC public key serializes to CBOR properly.
 TEST(CTAPResponseTest, TestSerializedPublicKey) {
   auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
-      fido_parsing_utils::kEs256, test_data::kTestU2fRegisterResponse);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(public_key);
-  EXPECT_THAT(public_key->EncodeAsCOSEKey(),
+  EXPECT_THAT(public_key->cose_key_bytes(),
               ::testing::ElementsAreArray(test_data::kTestECPublicKeyCOSE));
 }
 
@@ -447,7 +448,8 @@ TEST(CTAPResponseTest, TestParseU2fAttestationStatementCBOR) {
 // Tests that well-formed attested credential data serializes properly.
 TEST(CTAPResponseTest, TestSerializeAttestedCredentialData) {
   auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
-      fido_parsing_utils::kEs256, test_data::kTestU2fRegisterResponse);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      test_data::kTestU2fRegisterResponse);
   auto attested_data = AttestedCredentialData::CreateFromU2fRegisterResponse(
       test_data::kTestU2fRegisterResponse, std::move(public_key));
   ASSERT_TRUE(attested_data);
@@ -458,7 +460,8 @@ TEST(CTAPResponseTest, TestSerializeAttestedCredentialData) {
 // Tests that well-formed authenticator data serializes properly.
 TEST(CTAPResponseTest, TestSerializeAuthenticatorData) {
   auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
-      fido_parsing_utils::kEs256, test_data::kTestU2fRegisterResponse);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      test_data::kTestU2fRegisterResponse);
   auto attested_data = AttestedCredentialData::CreateFromU2fRegisterResponse(
       test_data::kTestU2fRegisterResponse, std::move(public_key));
 
@@ -477,7 +480,8 @@ TEST(CTAPResponseTest, TestSerializeAuthenticatorData) {
 // Tests that a U2F attestation object serializes properly.
 TEST(CTAPResponseTest, TestSerializeU2fAttestationObject) {
   auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
-      fido_parsing_utils::kEs256, test_data::kTestU2fRegisterResponse);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      test_data::kTestU2fRegisterResponse);
   auto attested_data = AttestedCredentialData::CreateFromU2fRegisterResponse(
       test_data::kTestU2fRegisterResponse, std::move(public_key));
 
@@ -685,7 +689,9 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
           {0x00, 0x10}} /* credential_id_length */,
       fido_parsing_utils::Materialize(
           test_data::kCtap2MakeCredentialCredentialId),
-      std::make_unique<OpaquePublicKey>(kCoseEncodedPublicKey));
+      std::make_unique<PublicKey>(
+          static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+          kCoseEncodedPublicKey));
   AuthenticatorData authenticator_data(application_parameter, flag,
                                        signature_counter,
                                        std::move(attested_credential_data));

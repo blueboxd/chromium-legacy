@@ -838,9 +838,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // UKM ID for reporting, default to 0 if uninitialized.
   uint64_t ukm_download_id_ = 0;
 
-  // Whether download has been resumed.
-  bool has_resumed_ = false;
-
   // The MixedContentStatus if determined.
   MixedContentStatus mixed_content_status_ = MixedContentStatus::UNKNOWN;
 

@@ -421,7 +421,7 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
     // Create the launch file, which stores 4 characters "test".
     base::FilePath launch_file_path;
     ASSERT_TRUE(base::CreateTemporaryFileInDir(base_dir, &launch_file_path));
-    ASSERT_EQ(4, base::WriteFile(launch_file_path, "test", 4));
+    ASSERT_TRUE(base::WriteFile(launch_file_path, "test"));
 
     // Launch the App.
     const GURL& launch_url = WebAppProvider::Get(browser()->profile())
@@ -474,7 +474,7 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
     base::FilePath non_launch_file_path;
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(base_dir, &non_launch_file_path));
-    ASSERT_EQ(5, base::WriteFile(non_launch_file_path, "test2", 5));
+    ASSERT_TRUE(base::WriteFile(non_launch_file_path, "test2"));
 
     std::string non_launch_file_js_handle =
         content::JsReplace("window.launchParams.files[0].getFile($1)",

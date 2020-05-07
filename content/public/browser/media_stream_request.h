@@ -33,7 +33,8 @@ struct CONTENT_EXPORT MediaStreamRequest {
                      const std::string& requested_video_device_id,
                      blink::mojom::MediaStreamType audio_type,
                      blink::mojom::MediaStreamType video_type,
-                     bool disable_local_echo);
+                     bool disable_local_echo,
+                     bool request_pan_tilt_zoom_permission);
 
   MediaStreamRequest(const MediaStreamRequest& other);
 
@@ -78,6 +79,9 @@ struct CONTENT_EXPORT MediaStreamRequest {
   // Flag for desktop or tab share to indicate whether to prevent the captured
   // audio being played out locally.
   bool disable_local_echo;
+
+  // Flag to indicate whether the request is for PTZ use.
+  bool request_pan_tilt_zoom_permission;
 
   // True if all ancestors of the requesting frame have the same origin.
   bool all_ancestors_have_same_origin;

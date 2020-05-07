@@ -665,7 +665,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionPolicyUITest,
 
   const std::string schema_file = "schema.json";
   base::FilePath schema_path = temp_dir_.GetPath().AppendASCII(schema_file);
-  base::WriteFile(schema_path, json_data.data(), json_data.size());
+  base::WriteFile(schema_path, json_data);
 
   // Build extension that contains the policy schema.
   extensions::DictionaryBuilder storage;

@@ -52,7 +52,7 @@ class PendingAppManagerImpl : public PendingAppManager {
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
 
  protected:
-  void ReleaseWebContents();
+  virtual void ReleaseWebContents();
 
   virtual std::unique_ptr<PendingAppInstallTask> CreateInstallationTask(
       ExternalInstallOptions install_options);

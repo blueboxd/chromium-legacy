@@ -18,7 +18,7 @@ namespace network {
 // TODO(ahemery): add a fuzzer for the parser, see
 // services/network/content_security_policy_fuzzer.cc for an example.
 COMPONENT_EXPORT(NETWORK_CPP)
-mojom::CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
+CrossOriginOpenerPolicy ParseCrossOriginOpenerPolicy(
     const net::HttpResponseHeaders& headers);
 
 }  // namespace network

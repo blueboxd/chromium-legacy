@@ -28,9 +28,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// VideoCaptureDevice not implemented on Fuchsia.
-#if !defined(OS_FUCHSIA)
-
 #if defined(OS_WIN)
 #include <mfcaptureengine.h>
 #include "base/win/scoped_com_initializer.h"
@@ -72,8 +69,9 @@
 #define MAYBE_UsingRealWebcam_CaptureWithSize UsingRealWebcam_CaptureWithSize
 #define MAYBE_UsingRealWebcam_CheckPhotoCallbackRelease \
   UsingRealWebcam_CheckPhotoCallbackRelease
-#elif defined(OS_WIN)
-// TODO(crbug.com/893494): Fails on win: error: Value of: device_descriptor.
+#elif defined(OS_WIN) || defined(OS_FUCHSIA)
+// Windows test bots don't have camera.
+// On Fuchsia the tests run under emulator that doesn't support camera.
 #define MAYBE_UsingRealWebcam_AllocateBadSize \
   DISABLED_UsingRealWebcam_AllocateBadSize
 #define MAYBE_UsingRealWebcam_CaptureMjpeg DISABLED_UsingRealWebcam_CaptureMjpeg
@@ -224,6 +222,18 @@ class MockImageCaptureClient
   mojom::PhotoStatePtr state_;
 };
 
+base::test::SingleThreadTaskEnvironment::MainThreadType kMainThreadType =
+#if defined(OS_MACOSX)
+    // Video capture code on MacOSX must run on a CFRunLoop enabled thread
+    // for interaction with AVFoundation.
+    base::test::SingleThreadTaskEnvironment::MainThreadType::UI;
+#elif defined(OS_FUCHSIA)
+    // FIDL APIs on Fuchsia requires IO thread.
+    base::test::SingleThreadTaskEnvironment::MainThreadType::IO;
+#else
+    base::test::SingleThreadTaskEnvironment::MainThreadType::DEFAULT;
+#endif
+
 }  // namespace
 
 class VideoCaptureDeviceTest
@@ -252,13 +262,7 @@ class VideoCaptureDeviceTest
   typedef VideoCaptureDevice::Client Client;
 
   VideoCaptureDeviceTest()
-      :
-#if defined(OS_MACOSX)
-        // Video capture code on MacOSX must run on a CFRunLoop enabled thread
-        // for interaction with AVFoundation.
-        task_environment_(
-            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
-#endif
+      : task_environment_(kMainThreadType),
         device_descriptors_(new VideoCaptureDeviceDescriptors()),
         main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         video_capture_client_(CreateDeviceClient()),
@@ -884,4 +888,3 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest,
 #endif
 
 }  // namespace media
-#endif  // !defined(OS_FUCHSIA)

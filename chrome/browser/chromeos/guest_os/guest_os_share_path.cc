@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
@@ -320,8 +321,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   // PluginVm before sharing, we can detect that the VM is not started
   // if handle == 0.
   if (vm_name == plugin_vm::kPluginVmName) {
-    request.set_handle(plugin_vm::PluginVmManager::GetForProfile(profile_)
-                           ->seneschal_server_handle());
+    request.set_handle(
+        plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
+            ->seneschal_server_handle());
   } else {
     // Restart VM if not currently running.
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
@@ -349,13 +351,15 @@ void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
 
   // Return success if VM is not currently running.
   if (vm_name == plugin_vm::kPluginVmName) {
-    if (plugin_vm::PluginVmManager::GetForProfile(profile_)->vm_state() !=
+    if (plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
+            ->vm_state() !=
         vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING) {
       std::move(callback).Run(true, "PluginVm not running");
       return;
     }
-    request.set_handle(plugin_vm::PluginVmManager::GetForProfile(profile_)
-                           ->seneschal_server_handle());
+    request.set_handle(
+        plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
+            ->seneschal_server_handle());
   } else {
     auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
     base::Optional<crostini::VmInfo> vm_info =

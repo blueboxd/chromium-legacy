@@ -394,15 +394,21 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       gesture.data.scroll_begin.delta_y_hint =
           IfNanUseMaxFloat(details.scroll_y_hint());
       gesture.data.scroll_begin.delta_hint_units = details.scroll_begin_units();
+      gesture.data.scroll_begin.inertial_phase =
+          WebGestureEvent::InertialPhaseState::kNonMomentum;
       break;
     case ET_GESTURE_SCROLL_UPDATE:
       gesture.SetType(WebInputEvent::Type::kGestureScrollUpdate);
       gesture.data.scroll_update.delta_x = IfNanUseMaxFloat(details.scroll_x());
       gesture.data.scroll_update.delta_y = IfNanUseMaxFloat(details.scroll_y());
       gesture.data.scroll_update.delta_units = details.scroll_update_units();
+      gesture.data.scroll_update.inertial_phase =
+          WebGestureEvent::InertialPhaseState::kNonMomentum;
       break;
     case ET_GESTURE_SCROLL_END:
       gesture.SetType(WebInputEvent::Type::kGestureScrollEnd);
+      gesture.data.scroll_end.inertial_phase =
+          WebGestureEvent::InertialPhaseState::kNonMomentum;
       break;
     case ET_SCROLL_FLING_START:
       gesture.SetType(WebInputEvent::Type::kGestureFlingStart);

@@ -243,9 +243,7 @@ void SaveUptimeToFile(const base::FilePath& path,
     return;
 
   const std::string uptime_seconds = base::NumberToString(uptime.InSecondsF());
-  ASSERT_EQ(static_cast<int>(uptime_seconds.size()),
-            base::WriteFile(path, uptime_seconds.c_str(),
-                            uptime_seconds.size()));
+  ASSERT_TRUE(base::WriteFile(path, uptime_seconds));
 }
 
 MockUptimeProvider::MockUptimeProvider(
@@ -323,10 +321,10 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   const base::FilePath& temp_dir = temp_dir_.GetPath();
   const base::FilePath uptime_file = temp_dir.Append("uptime");
   uptime_provider()->set_uptime_file_path(uptime_file);
-  ASSERT_EQ(0, base::WriteFile(uptime_file, NULL, 0));
+  ASSERT_TRUE(base::WriteFile(uptime_file, ""));
   update_reboot_needed_uptime_file_ =
       temp_dir.Append("update_reboot_needed_uptime");
-  ASSERT_EQ(0, base::WriteFile(update_reboot_needed_uptime_file_, NULL, 0));
+  ASSERT_TRUE(base::WriteFile(update_reboot_needed_uptime_file_, ""));
   ASSERT_TRUE(base::PathService::Override(FILE_UPTIME, uptime_file));
   ASSERT_TRUE(base::PathService::Override(FILE_UPDATE_REBOOT_NEEDED_UPTIME,
                                           update_reboot_needed_uptime_file_));

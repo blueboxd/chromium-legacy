@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -141,8 +142,8 @@ void LockToSingleUserManager::AddVmStartingObservers(user_manager::User* user) {
 
   crostini::CrostiniManager::GetForProfile(profile)->AddVmStartingObserver(
       this);
-  plugin_vm::PluginVmManager::GetForProfile(profile)->AddVmStartingObserver(
-      this);
+  plugin_vm::PluginVmManagerFactory::GetForProfile(profile)
+      ->AddVmStartingObserver(this);
 
   GetConciergeClient()->AddVmObserver(this);
 

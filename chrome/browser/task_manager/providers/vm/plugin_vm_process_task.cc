@@ -5,6 +5,7 @@
 #include "chrome/browser/task_manager/providers/vm/plugin_vm_process_task.h"
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -24,7 +25,7 @@ PluginVmProcessTask::PluginVmProcessTask(base::ProcessId pid,
 
 void PluginVmProcessTask::Kill() {
   plugin_vm::PluginVmManager* plugin_vm_manager =
-      plugin_vm::PluginVmManager::GetForProfile(
+      plugin_vm::PluginVmManagerFactory::GetForProfile(
           ProfileManager::GetActiveUserProfile());
   if (plugin_vm_manager)
     plugin_vm_manager->StopPluginVm(vm_name_, /*force=*/true);

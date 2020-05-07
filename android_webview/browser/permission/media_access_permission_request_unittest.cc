@@ -55,7 +55,8 @@ class MediaAccessPermissionRequestTest : public testing::Test {
         0, 0, 0, origin, false, blink::MEDIA_GENERATE_STREAM, audio_id,
         video_id, blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
         blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
-        false /* disable_local_echo */);
+        false /* disable_local_echo */,
+        false /* request_pan_tilt_zoom_permission */);
 
     std::unique_ptr<TestMediaAccessPermissionRequest> permission_request;
     permission_request.reset(new TestMediaAccessPermissionRequest(

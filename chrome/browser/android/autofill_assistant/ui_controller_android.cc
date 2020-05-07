@@ -1014,6 +1014,14 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
           env, collect_user_data_options->login_section_title));
+  Java_AssistantCollectUserDataModel_setContactSectionTitle(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->contact_details_section_title));
+  Java_AssistantCollectUserDataModel_setShippingSectionTitle(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->shipping_address_section_title));
   Java_AssistantCollectUserDataModel_setAcceptTermsAndConditionsText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(

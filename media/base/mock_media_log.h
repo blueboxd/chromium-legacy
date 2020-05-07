@@ -97,7 +97,15 @@ class MockMediaLog : public MediaLog {
 
   static std::string MediaEventToLogString(const MediaLogRecord& event);
 
+  // Return whatever the last AddLogRecordLocked() was given.
+  // TODO(tmathmeyer): Remove this in favor of a mock, to allow EXPECT_CALL.
+  std::unique_ptr<MediaLogRecord> take_most_recent_event() {
+    return std::move(most_recent_event_);
+  }
+
  private:
+  std::unique_ptr<MediaLogRecord> most_recent_event_;
+
   DISALLOW_COPY_AND_ASSIGN(MockMediaLog);
 };
 

@@ -25,6 +25,7 @@
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
@@ -572,23 +573,23 @@ TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedMultipleTimes) {
 
 // todo add namespace
 
-struct FillingAssistanceTestCase {
-  struct FieldInfo {
-    std::string value;
-    std::string typed_value;
-    bool user_typed = false;
-    bool automatically_filled = false;
-    bool manually_filled = false;
-    bool is_password = false;
-  };
+struct TestCaseFieldInfo {
+  std::string value;
+  std::string typed_value;
+  bool user_typed = false;
+  bool automatically_filled = false;
+  bool manually_filled = false;
+  bool is_password = false;
+};
 
+struct FillingAssistanceTestCase {
   const char* description_for_logging;
 
   bool is_blacklisted = false;
   bool submission_detected = true;
   bool submission_is_successful = true;
 
-  std::vector<FieldInfo> fields;
+  std::vector<TestCaseFieldInfo> fields;
   std::vector<std::string> saved_usernames;
   std::vector<std::string> saved_passwords;
   std::vector<InteractionsStats> interactions_stats;
@@ -596,8 +597,7 @@ struct FillingAssistanceTestCase {
   base::Optional<PasswordFormMetricsRecorder::FillingAssistance> expectation;
 };
 
-FormData ConvertToFormData(
-    const std::vector<FillingAssistanceTestCase::FieldInfo>& fields) {
+FormData ConvertToFormData(const std::vector<TestCaseFieldInfo>& fields) {
   FormData form;
   for (const auto& field : fields) {
     FormFieldData form_field;
@@ -621,11 +621,15 @@ FormData ConvertToFormData(
   return form;
 }
 
-std::set<base::string16> ConvertToString16Set(
-    const std::vector<std::string>& v) {
-  std::set<base::string16> result;
-  for (const std::string& str : v)
-    result.insert(ASCIIToUTF16(str));
+std::set<std::pair<base::string16, PasswordForm::Store>>
+ConvertToString16AndStoreSet(
+    const std::vector<std::string>& profile_store_values,
+    const std::vector<std::string>& account_store_values) {
+  std::set<std::pair<base::string16, PasswordForm::Store>> result;
+  for (const std::string& str : profile_store_values)
+    result.emplace(ASCIIToUTF16(str), PasswordForm::Store::kProfileStore);
+  for (const std::string& str : account_store_values)
+    result.emplace(ASCIIToUTF16(str), PasswordForm::Store::kAccountStore);
   return result;
 }
 
@@ -666,10 +670,15 @@ void CheckFillingAssistanceTestCase(
     base::HistogramTester histogram_tester;
 
     FormData form_data = ConvertToFormData(test_case.fields);
-    std::set<base::string16> saved_usernames =
-        ConvertToString16Set(test_case.saved_usernames);
-    std::set<base::string16> saved_passwords =
-        ConvertToString16Set(test_case.saved_passwords);
+
+    // Note: Don't bother with the profile store vs. account store distinction
+    // here; there are separate tests that cover the filling source.
+    std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames =
+        ConvertToString16AndStoreSet(test_case.saved_usernames,
+                                     /*account_store_values=*/{});
+    std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords =
+        ConvertToString16AndStoreSet(test_case.saved_passwords,
+                                     /*account_store_values=*/{});
 
     auto recorder = CreatePasswordFormMetricsRecorder(
         sub_case.is_main_frame_secure, nullptr);
@@ -1031,6 +1040,129 @@ TEST(PasswordFormMetricsRecorder, FilledValueMatchesSavedUsernameAndPassword) {
 
        .expectation =
            PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
+}
+
+struct FillingSourceTestCase {
+  std::vector<TestCaseFieldInfo> fields;
+
+  std::vector<std::string> saved_profile_usernames;
+  std::vector<std::string> saved_profile_passwords;
+  std::vector<std::string> saved_account_usernames;
+  std::vector<std::string> saved_account_passwords;
+
+  base::Optional<PasswordFormMetricsRecorder::FillingSource> expectation;
+};
+
+void CheckFillingSourceTestCase(const FillingSourceTestCase& test_case) {
+  base::test::TaskEnvironment task_environment;
+  base::HistogramTester histogram_tester;
+
+  FormData form_data = ConvertToFormData(test_case.fields);
+
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames =
+      ConvertToString16AndStoreSet(test_case.saved_profile_usernames,
+                                   test_case.saved_account_usernames);
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords =
+      ConvertToString16AndStoreSet(test_case.saved_profile_passwords,
+                                   test_case.saved_account_passwords);
+
+  {
+    auto recorder = CreatePasswordFormMetricsRecorder(
+        /*is_main_frame_secure=*/true, nullptr);
+    recorder->CalculateFillingAssistanceMetric(
+        form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+        /*interactions_stats=*/{},
+        PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+    recorder->LogSubmitPassed();
+  }
+
+  if (test_case.expectation) {
+    histogram_tester.ExpectUniqueSample("PasswordManager.FillingSource",
+                                        *test_case.expectation, 1);
+  } else {
+    histogram_tester.ExpectTotalCount("PasswordManager.FillingSource", 0);
+  }
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceNone) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "manualuser", .automatically_filled = true},
+                 {.value = "manualpass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation = PasswordFormMetricsRecorder::FillingSource::kNotFilled,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceProfile) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "profileuser", .automatically_filled = true},
+                 {.value = "profilepass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromProfileStore,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceAccount) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "accountuser", .automatically_filled = true},
+                 {.value = "accountpass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceBoth) {
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "user", .automatically_filled = true},
+                 {.value = "pass",
+                  .automatically_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"user"},
+      .saved_profile_passwords = {"pass"},
+      .saved_account_usernames = {"user"},
+      .saved_account_passwords = {"pass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores,
+  });
+}
+
+TEST(PasswordFormMetricsRecorder, FillingSourceBothDifferent) {
+  // This test covers a rare edge case: If a password from the profile store and
+  // a *different* password from the account store were both filled, then this
+  // should also be recorded as kFilledFromBothStores.
+  CheckFillingSourceTestCase({
+      .fields = {{.value = "profileuser", .manually_filled = true},
+                 {.value = "profilepass",
+                  .manually_filled = true,
+                  .is_password = true},
+                 {.value = "accountuser", .manually_filled = true},
+                 {.value = "accountpass",
+                  .manually_filled = true,
+                  .is_password = true}},
+      .saved_profile_usernames = {"profileuser"},
+      .saved_profile_passwords = {"profilepass"},
+      .saved_account_usernames = {"accountuser"},
+      .saved_account_passwords = {"accountpass"},
+      .expectation =
+          PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores,
+  });
 }
 
 }  // namespace password_manager

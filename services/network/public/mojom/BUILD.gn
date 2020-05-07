@@ -498,6 +498,15 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "network.mojom.CrossOriginOpenerPolicy"
+          cpp = "::network::CrossOriginOpenerPolicy"
+        },
+      ]
+      traits_headers = [ "//services/network/public/cpp/cross_origin_opener_policy_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
           mojom = "network.mojom.TrustedUrlRequestParams"
           cpp = "::network::ResourceRequest::TrustedParams"
         },

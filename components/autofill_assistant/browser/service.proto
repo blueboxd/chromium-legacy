@@ -1217,6 +1217,9 @@ message ContactDetailsProto {
   repeated AutofillContactField full_fields = 7;
   // The maximum number of lines for contacts in the expanded contact section.
   optional int32 max_number_full_lines = 8;
+  // If present, it will be used as the title to be displayed for the contact
+  // details section instead of the default one.
+  optional string contact_details_section_title = 9;
 }
 
 message LoginDetailsProto {
@@ -1366,7 +1369,7 @@ message PopupListSectionProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 32
+// Next: 33
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -1385,6 +1388,9 @@ message CollectUserDataProto {
   // specified name. If empty we won't ask for the shipping address. Data saved
   // under this name can be reused by UseAddressAction.
   optional string shipping_address_name = 3;
+  // If present, it will be used as the title to be displayed for the shipping
+  // address section instead of the default one.
+  optional string shipping_address_section_title = 32;
   // When 'true' will ask for the credit card.
   optional bool request_payment_method = 4;
   // If non-empty, the UI will filter the available basic-card networks

@@ -18,6 +18,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -286,7 +287,7 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
     if (observer_)
       observer_->OnDlcDownloadCompleted();
 
-    PluginVmManager::GetForProfile(profile_)->UpdateVmState(
+    PluginVmManagerFactory::GetForProfile(profile_)->UpdateVmState(
         base::BindOnce(&PluginVmInstaller::OnUpdateVmState,
                        weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&PluginVmInstaller::OnUpdateVmStateFailed,

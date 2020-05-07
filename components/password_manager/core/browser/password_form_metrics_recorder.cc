@@ -87,6 +87,9 @@ struct UsernamePasswordsState {
   bool username_automatically_filled = false;
   bool unknown_password_typed = false;
 
+  bool password_exists_in_profile_store = false;
+  bool password_exists_in_account_store = false;
+
   bool IsPasswordFilled() {
     return password_automatically_filled || password_manually_filled;
   }
@@ -96,8 +99,10 @@ struct UsernamePasswordsState {
 // |submitted_form|.
 UsernamePasswordsState CalculateUsernamePasswordsState(
     const FormData& submitted_form,
-    const std::set<base::string16>& saved_usernames,
-    const std::set<base::string16>& saved_passwords) {
+    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+        saved_usernames,
+    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+        saved_passwords) {
   UsernamePasswordsState result;
 
   for (const FormFieldData& field : submitted_form.fields) {
@@ -114,8 +119,26 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
     // or both. In the last case we use the control type of the form as a
     // tie-break, if this is `password`, the user likely typed a password,
     // otherwise a username.
-    bool is_possibly_saved_username = base::Contains(saved_usernames, value);
-    bool is_possibly_saved_password = base::Contains(saved_passwords, value);
+    bool is_possibly_saved_username_in_profile_store = base::Contains(
+        saved_usernames,
+        std::make_pair(value, PasswordForm::Store::kProfileStore));
+    bool is_possibly_saved_username_in_account_store = base::Contains(
+        saved_usernames,
+        std::make_pair(value, PasswordForm::Store::kAccountStore));
+    bool is_possibly_saved_username =
+        is_possibly_saved_username_in_profile_store ||
+        is_possibly_saved_username_in_account_store;
+
+    bool is_possibly_saved_password_in_profile_store = base::Contains(
+        saved_passwords,
+        std::make_pair(value, PasswordForm::Store::kProfileStore));
+    bool is_possibly_saved_password_in_account_store = base::Contains(
+        saved_passwords,
+        std::make_pair(value, PasswordForm::Store::kAccountStore));
+    bool is_possibly_saved_password =
+        is_possibly_saved_password_in_profile_store ||
+        is_possibly_saved_password_in_account_store;
+
     bool field_has_password_type = field.form_control_type == "password";
 
     if (is_possibly_saved_username &&
@@ -128,6 +151,10 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
       result.saved_password_typed |= user_typed;
       result.password_manually_filled |= manually_filled;
       result.password_automatically_filled |= automatically_filled;
+      result.password_exists_in_profile_store |=
+          is_possibly_saved_password_in_profile_store;
+      result.password_exists_in_account_store |=
+          is_possibly_saved_password_in_account_store;
     } else if (user_typed && field_has_password_type) {
       result.unknown_password_typed = true;
     }
@@ -268,6 +295,11 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
               *account_storage_usage_level_);
       base::UmaHistogramEnumeration(
           "PasswordManager.FillingAssistance." + suffix, filling_assistance);
+    }
+
+    if (filling_source_) {
+      base::UmaHistogramEnumeration("PasswordManager.FillingSource",
+                                    *filling_source_);
     }
   }
 
@@ -413,14 +445,17 @@ void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
 
 void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     const FormData& submitted_form,
-    const std::set<base::string16>& saved_usernames,
-    const std::set<base::string16>& saved_passwords,
+    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+        saved_usernames,
+    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+        saved_passwords,
     bool is_blacklisted,
     const std::vector<InteractionsStats>& interactions_stats,
     metrics_util::PasswordAccountStorageUsageLevel
         account_storage_usage_level) {
   CalculateJsOnlyInput(submitted_form);
 
+  filling_source_ = FillingSource::kNotFilled;
   account_storage_usage_level_ = account_storage_usage_level;
 
   if (saved_passwords.empty() && is_blacklisted) {
@@ -455,6 +490,18 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
             ? FillingAssistance::kNewPasswordTypedWhileCredentialsExisted
             : FillingAssistance::kNoUserInputNoFillingInPasswordFields;
     return;
+  }
+
+  // At this point, the password was filled from at least one of the two stores,
+  // so compute the filling source now.
+  if (username_password_state.password_exists_in_profile_store &&
+      username_password_state.password_exists_in_account_store) {
+    filling_source_ = FillingSource::kFilledFromBothStores;
+  } else if (username_password_state.password_exists_in_profile_store) {
+    filling_source_ = FillingSource::kFilledFromProfileStore;
+  } else {
+    DCHECK(username_password_state.password_exists_in_account_store);
+    filling_source_ = FillingSource::kFilledFromAccountStore;
   }
 
   if (username_password_state.saved_username_typed) {

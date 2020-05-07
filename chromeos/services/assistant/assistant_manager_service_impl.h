@@ -212,9 +212,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void OnAndroidAppListRefreshed(
       std::vector<mojom::AndroidAppInfoPtr> apps_info) override;
 
-  void UpdateInternalOptions(
-      assistant_client::AssistantManagerInternal* assistant_manager_internal);
-
   assistant_client::AssistantManager* assistant_manager() {
     return assistant_manager_.get();
   }
@@ -250,7 +247,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   }
 
  private:
-  void StartAssistantInternal(const base::Optional<UserInfo>& user);
+  void StartAssistantInternal(const base::Optional<UserInfo>& user,
+                              const std::string& locale);
   void PostInitAssistant();
 
   // Update device id, type and locale

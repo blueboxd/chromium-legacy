@@ -24,8 +24,7 @@ static base::AtomicSequenceNumber g_media_log_count;
 MediaLog::MediaLog() : MediaLog(new ParentLogRecord(this)) {}
 
 MediaLog::MediaLog(scoped_refptr<ParentLogRecord> parent_log_record)
-    : parent_log_record_(std::move(parent_log_record)),
-      id_(g_media_log_count.GetNext()) {}
+    : parent_log_record_(std::move(parent_log_record)) {}
 
 MediaLog::~MediaLog() {
   // If we are the underlying log, then somebody should have called
@@ -105,7 +104,7 @@ void MediaLog::AddLogRecord(std::unique_ptr<MediaLogRecord> record) {
 std::unique_ptr<MediaLogRecord> MediaLog::CreateRecord(
     MediaLogRecord::Type type) {
   auto record = std::make_unique<MediaLogRecord>();
-  record->id = id_;
+  record->id = id();
   record->type = type;
   record->time = base::TimeTicks::Now();
   return record;
@@ -121,7 +120,8 @@ void MediaLog::InvalidateLog() {
   // Keep |parent_log_record_| around, since the lock must keep working.
 }
 
-MediaLog::ParentLogRecord::ParentLogRecord(MediaLog* log) : media_log(log) {}
+MediaLog::ParentLogRecord::ParentLogRecord(MediaLog* log)
+    : id(g_media_log_count.GetNext()), media_log(log) {}
 MediaLog::ParentLogRecord::~ParentLogRecord() = default;
 
 LogHelper::LogHelper(MediaLogMessageLevel level, MediaLog* media_log)

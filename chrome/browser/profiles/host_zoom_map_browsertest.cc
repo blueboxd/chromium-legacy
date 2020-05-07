@@ -183,8 +183,7 @@ class HostZoomMapBrowserTestWithPrefs : public HostZoomMapBrowserTest {
         .AppendASCII(TestingProfile::kTestUserProfileDir)
         .Append(chrome::kPreferencesFilename);
     base::CreateDirectory(path_to_prefs.DirName());
-    base::WriteFile(
-        path_to_prefs, prefs_data_.c_str(), prefs_data_.size());
+    base::WriteFile(path_to_prefs, prefs_data_);
     return true;
   }
 

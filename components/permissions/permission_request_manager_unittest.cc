@@ -39,6 +39,9 @@ class PermissionRequestManagerTest : public content::RenderViewHostTestHarness {
         request_camera_("cam",
                         PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
                         PermissionRequestGestureType::NO_GESTURE),
+        request_ptz_("ptz",
+                     PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM,
+                     PermissionRequestGestureType::NO_GESTURE),
         iframe_request_same_domain_(
             "iframe",
             PermissionRequestType::PERMISSION_NOTIFICATIONS,
@@ -46,6 +49,10 @@ class PermissionRequestManagerTest : public content::RenderViewHostTestHarness {
         iframe_request_other_domain_(
             "iframe",
             PermissionRequestType::PERMISSION_GEOLOCATION,
+            GURL("http://www.youtube.com")),
+        iframe_request_camera_other_domain_(
+            "iframe",
+            PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
             GURL("http://www.youtube.com")),
         iframe_request_mic_other_domain_(
             "iframe",
@@ -113,8 +120,10 @@ class PermissionRequestManagerTest : public content::RenderViewHostTestHarness {
   MockPermissionRequest request2_;
   MockPermissionRequest request_mic_;
   MockPermissionRequest request_camera_;
+  MockPermissionRequest request_ptz_;
   MockPermissionRequest iframe_request_same_domain_;
   MockPermissionRequest iframe_request_other_domain_;
+  MockPermissionRequest iframe_request_camera_other_domain_;
   MockPermissionRequest iframe_request_mic_other_domain_;
   PermissionRequestManager* manager_;
   std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
@@ -183,6 +192,53 @@ TEST_F(PermissionRequestManagerTest, MicCameraGrouped) {
   ASSERT_EQ(prompt_factory_->request_count(), 1);
 }
 
+// Only camera/ptz requests from the same origin should be grouped.
+TEST_F(PermissionRequestManagerTest, CameraPtzGrouped) {
+  manager_->AddRequest(&request_camera_);
+  manager_->AddRequest(&request_ptz_);
+  WaitForBubbleToBeShown();
+
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 2);
+
+  Accept();
+  EXPECT_TRUE(request_camera_.granted());
+  EXPECT_TRUE(request_ptz_.granted());
+
+  // If the requests come from different origins, they should not be grouped.
+  manager_->AddRequest(&iframe_request_camera_other_domain_);
+  manager_->AddRequest(&request_ptz_);
+  WaitForBubbleToBeShown();
+
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
+}
+
+// Only mic/camera/ptz requests from the same origin should be grouped.
+TEST_F(PermissionRequestManagerTest, MicCameraPtzGrouped) {
+  manager_->AddRequest(&request_mic_);
+  manager_->AddRequest(&request_camera_);
+  manager_->AddRequest(&request_ptz_);
+  WaitForBubbleToBeShown();
+
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 3);
+
+  Accept();
+  EXPECT_TRUE(request_mic_.granted());
+  EXPECT_TRUE(request_camera_.granted());
+  EXPECT_TRUE(request_ptz_.granted());
+
+  // If the requests come from different origins, they should not be grouped.
+  manager_->AddRequest(&iframe_request_mic_other_domain_);
+  manager_->AddRequest(&request_camera_);
+  manager_->AddRequest(&request_ptz_);
+  WaitForBubbleToBeShown();
+
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 1);
+}
+
 TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   manager_->AddRequest(&request_mic_);
   manager_->AddRequest(&request_camera_);
@@ -206,6 +262,33 @@ TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   Accept();
   EXPECT_TRUE(request_mic_.granted());
   EXPECT_TRUE(request_camera_.granted());
+}
+
+TEST_F(PermissionRequestManagerTest, ThreeRequestsTabSwitch) {
+  manager_->AddRequest(&request_mic_);
+  manager_->AddRequest(&request_camera_);
+  manager_->AddRequest(&request_ptz_);
+  WaitForBubbleToBeShown();
+
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 3);
+
+  MockTabSwitchAway();
+#if defined(OS_ANDROID)
+  EXPECT_TRUE(prompt_factory_->is_visible());
+#else
+  EXPECT_FALSE(prompt_factory_->is_visible());
+#endif
+
+  MockTabSwitchBack();
+  WaitForBubbleToBeShown();
+  EXPECT_TRUE(prompt_factory_->is_visible());
+  ASSERT_EQ(prompt_factory_->request_count(), 3);
+
+  Accept();
+  EXPECT_TRUE(request_mic_.granted());
+  EXPECT_TRUE(request_camera_.granted());
+  EXPECT_TRUE(request_ptz_.granted());
 }
 
 TEST_F(PermissionRequestManagerTest, NoRequests) {
@@ -491,7 +574,7 @@ class MockNotificationPermissionUiSelector
 
 TEST_F(PermissionRequestManagerTest,
        UiSelectorNotUsedForPermissionsOtherThanNotification) {
-  for (auto* request : {&request_mic_, &request_camera_}) {
+  for (auto* request : {&request_mic_, &request_camera_, &request_ptz_}) {
     MockNotificationPermissionUiSelector::CreateForManager(
         manager_, NotificationPermissionUiSelector::UiToUse::kQuietUi,
         false /* async */);

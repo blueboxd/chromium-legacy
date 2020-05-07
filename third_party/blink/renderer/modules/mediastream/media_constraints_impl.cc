@@ -688,6 +688,18 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
     CopyStringConstraint(constraints_in->videoKind(), naked_treatment,
                          constraint_buffer.video_kind);
   }
+  if (constraints_in->hasPan()) {
+    CopyDoubleConstraint(constraints_in->pan(), naked_treatment,
+                         constraint_buffer.pan);
+  }
+  if (constraints_in->hasTilt()) {
+    CopyDoubleConstraint(constraints_in->tilt(), naked_treatment,
+                         constraint_buffer.tilt);
+  }
+  if (constraints_in->hasZoom()) {
+    CopyDoubleConstraint(constraints_in->zoom(), naked_treatment,
+                         constraint_buffer.zoom);
+  }
 }
 
 MediaConstraints ConvertTrackConstraintsToMediaConstraints(

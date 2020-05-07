@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -83,9 +84,14 @@ void RemoteFrameOwner::IntrinsicSizingInfoChanged() {
   // By virtue of having been invoked, GetIntrinsicSizingInfo() should always
   // succeed here.
   DCHECK(result);
+
+  auto sizing_info = mojom::blink::IntrinsicSizingInfo::New(
+      gfx::SizeF(intrinsic_sizing_info.size),
+      gfx::SizeF(intrinsic_sizing_info.aspect_ratio),
+      intrinsic_sizing_info.has_width, intrinsic_sizing_info.has_height);
   WebLocalFrameImpl::FromFrame(local_frame)
       ->FrameWidgetImpl()
-      ->IntrinsicSizingInfoChanged(intrinsic_sizing_info);
+      ->IntrinsicSizingInfoChanged(std::move(sizing_info));
 }
 
 void RemoteFrameOwner::SetNeedsOcclusionTracking(bool needs_tracking) {

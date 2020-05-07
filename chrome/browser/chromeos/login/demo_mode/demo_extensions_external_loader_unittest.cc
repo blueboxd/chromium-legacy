@@ -175,9 +175,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
     base::FilePath config_path =
         demo_mode_test_helper_->GetDemoResourcesPath().Append(
             "demo_extensions.json");
-    int written =
-        base::WriteFile(config_path, config_str.data(), config_str.size());
-    return written == static_cast<int>(config_str.size());
+    return base::WriteFile(config_path, config_str);
   }
 
   void AddExtensionToConfig(const std::string& id,

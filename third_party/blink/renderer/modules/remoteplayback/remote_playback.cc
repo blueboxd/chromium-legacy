@@ -96,7 +96,9 @@ RemotePlayback::RemotePlayback(HTMLMediaElement& element)
       state_(mojom::blink::PresentationConnectionState::CLOSED),
       availability_(mojom::ScreenAvailability::UNKNOWN),
       media_element_(&element),
-      is_listening_(false) {}
+      is_listening_(false),
+      presentation_connection_receiver_(this, element.GetExecutionContext()),
+      target_presentation_connection_(element.GetExecutionContext()) {}
 
 const AtomicString& RemotePlayback::InterfaceName() const {
   return event_target_names::kRemotePlayback;
@@ -242,10 +244,6 @@ String RemotePlayback::state() const {
 bool RemotePlayback::HasPendingActivity() const {
   return HasEventListeners() || !availability_callbacks_.IsEmpty() ||
          prompt_promise_resolver_;
-}
-
-void RemotePlayback::ContextDestroyed() {
-  CleanupConnections();
 }
 
 void RemotePlayback::PromptInternal() {
@@ -528,9 +526,12 @@ void RemotePlayback::OnConnectionSuccess(
     return;
 
   // Note: Messages on |connection_receiver| are ignored.
-  target_presentation_connection_.Bind(std::move(result->connection_remote));
+  target_presentation_connection_.Bind(
+      std::move(result->connection_remote),
+      GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent));
   presentation_connection_receiver_.Bind(
-      std::move(result->connection_receiver));
+      std::move(result->connection_receiver),
+      GetExecutionContext()->GetTaskRunner(TaskType::kMediaElementEvent));
 }
 
 void RemotePlayback::OnConnectionError(
@@ -608,6 +609,8 @@ void RemotePlayback::Trace(Visitor* visitor) {
   visitor->Trace(availability_callbacks_);
   visitor->Trace(prompt_promise_resolver_);
   visitor->Trace(media_element_);
+  visitor->Trace(presentation_connection_receiver_);
+  visitor->Trace(target_presentation_connection_);
   visitor->Trace(observers_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);

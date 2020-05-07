@@ -15,10 +15,10 @@ import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;
-import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -47,7 +47,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
@@ -62,6 +61,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     private WebappInfo mWebappInfo;
 
+    private static WebappInfo sWebappInfoOverride;
+
     private BrowserServicesIntentDataProvider mIntentDataProvider;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
@@ -71,21 +72,15 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     private static Integer sOverrideCoreCountForTesting;
 
-    /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
-    private static class Holder {
-        // This static map is used to cache WebappInfo objects between their initial creation in
-        // WebappLauncherActivity and final use in WebappActivity.
-        private static final HashMap<String, WebappInfo> sWebappInfoMap =
-                new HashMap<String, WebappInfo>();
+    @Override
+    protected BrowserServicesIntentDataProvider buildIntentDataProvider(
+            Intent intent, @CustomTabsIntent.ColorScheme int colorScheme) {
+        return createWebappInfo(intent).getProvider();
     }
 
-    /**
-     * Construct all the variables that shouldn't change.  We do it here both to clarify when the
-     * objects are created and to ensure that they exist throughout the parallelized initialization
-     * of the WebappActivity.
-     */
-    public WebappActivity() {
-        mWebappInfo = createWebappInfo(null);
+    @VisibleForTesting
+    public static void setWebappInfoForTesting(WebappInfo webappInfo) {
+        sWebappInfoOverride = webappInfo;
     }
 
     @Override
@@ -93,30 +88,16 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return mIntentDataProvider;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        if (intent == null) return;
-
-        super.onNewIntent(intent);
-
-        WebappInfo newWebappInfo = popWebappInfo(WebappIntentUtils.getId(intent));
-        if (newWebappInfo == null) newWebappInfo = createWebappInfo(intent);
-
-        if (newWebappInfo == null) {
-            Log.e(TAG, "Failed to parse new Intent: " + intent);
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
-        } else if (newWebappInfo.shouldForceNavigation()) {
-            mCustomTabIntentHandler.onNewIntent(newWebappInfo.getProvider());
-        }
-    }
-
     protected WebappInfo createWebappInfo(Intent intent) {
-        if (intent == null) return WebappInfo.createEmpty();
+        if (intent == null) return null;
 
-        WebappInfo info = WebApkInfo.create(intent);
-        if (info != null) return info;
+        if (sWebappInfoOverride != null) {
+            return sWebappInfoOverride;
+        }
 
-        return WebappInfo.create(intent);
+        return TextUtils.isEmpty(WebappIntentUtils.getWebApkPackageName(intent))
+                ? WebappInfo.create(intent)
+                : WebApkInfo.create(intent);
     }
 
     @Override
@@ -200,26 +181,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     public void performPreInflationStartup() {
         Intent intent = getIntent();
-        String id = WebappIntentUtils.getId(intent);
-        WebappInfo info = popWebappInfo(id);
-        // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
-        // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched
-        // with the intent stored in WebappActivity#getIntent() at the time that the WebappActivity
-        // was killed. WebappActivity may be relaunched from:
-
-        // (A) An intent from WebappLauncherActivity (e.g. as a result of a notification or a deep
-        // link). Android drops the intent from WebappLauncherActivity in favor of
-        // WebappActivity#getIntent() at the time that the WebappActivity was killed.
-
-        // (B) The user selecting the WebappActivity in recents. In case (A) we want to use the
-        // intent sent to WebappLauncherActivity and ignore WebappActivity#getSavedInstanceState().
-        // In case (B) we want to restore to saved tab state.
-        if (info == null) {
-            info = createWebappInfo(intent);
-        } else if (info.shouldForceNavigation()) {
-            // Don't restore to previous page, navigate using WebappInfo retrieved from cache.
-            resetSavedInstanceState();
-        }
+        WebappInfo info = createWebappInfo(intent);
 
         if (info == null) {
             // If {@link info} is null, there isn't much we can do, abort.
@@ -235,7 +197,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             WebappRegistry.getInstance();
-            WebappRegistry.warmUpSharedPrefsForId(id);
+            WebappRegistry.warmUpSharedPrefsForId(info.id());
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -243,8 +205,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         super.performPreInflationStartup();
 
         if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
-            new ImmersiveModeController(getLifecycleDispatcher(), this).enterImmersiveMode(
-                    LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
+            new ImmersiveModeController(getLifecycleDispatcher(), this)
+                    .enterImmersiveMode(LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
         }
 
         initSplash();
@@ -322,14 +284,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public WebappInfo getWebappInfo() {
         return mWebappInfo;
-    }
-
-    public static void addWebappInfo(String id, WebappInfo info) {
-        Holder.sWebappInfoMap.put(id, info);
-    }
-
-    public static WebappInfo popWebappInfo(String id) {
-        return Holder.sWebappInfoMap.remove(id);
     }
 
     protected CustomTabTabObserver createTabObserver() {

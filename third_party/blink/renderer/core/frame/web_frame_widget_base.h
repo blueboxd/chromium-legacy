@@ -45,7 +45,6 @@ class PaintWorkletPaintDispatcher;
 class WebLocalFrameImpl;
 class WebViewImpl;
 class WidgetBase;
-struct IntrinsicSizingInfo;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollected<WebFrameWidgetBase>,
@@ -77,7 +76,8 @@ class CORE_EXPORT WebFrameWidgetBase
   void BindLocalRoot(WebLocalFrame&);
 
   virtual bool ForSubframe() const = 0;
-  virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
+  virtual void IntrinsicSizingInfoChanged(
+      mojom::blink::IntrinsicSizingInfoPtr) {}
 
   // Creates or returns cached mutator dispatcher. This usually requires a
   // round trip to the compositor. The returned WeakPtr must only be

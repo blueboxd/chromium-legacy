@@ -305,6 +305,9 @@
     <message name="IDS_PAGE_INFO_TYPE_AR" desc="The label used for the AR permission controls in the Page Info popup.">
       Augmented reality
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_CAMERA_PAN_TILT_ZOOM" desc="The label used for the Camera PTZ permission controls in the Page Info popup.">
+      Camera movement
+    </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 
     <!-- Permission values -->

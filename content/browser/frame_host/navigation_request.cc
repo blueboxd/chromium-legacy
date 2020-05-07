@@ -1985,7 +1985,7 @@ void NavigationRequest::OnResponseStarted(
     // insecure contexts.
     if (!IsOriginSecure(common_params_->url)) {
       response_head_->parsed_headers->cross_origin_opener_policy =
-          network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+          network::CrossOriginOpenerPolicy();
     }
 
     // Popups with a sandboxing flag, inherited from their opener, are not
@@ -1993,8 +1993,8 @@ void NavigationRequest::OnResponseStarted(
     // is not "unsafe-none". This ensures a COOP document does not inherit any
     // property from an opener.
     // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-    if (response_head_->parsed_headers->cross_origin_opener_policy !=
-            network::mojom::CrossOriginOpenerPolicy::kUnsafeNone &&
+    if (response_head_->parsed_headers->cross_origin_opener_policy.value !=
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
         (frame_tree_node_->pending_frame_policy().sandbox_flags !=
          network::mojom::WebSandboxFlags::kNone)) {
       OnRequestFailedInternal(

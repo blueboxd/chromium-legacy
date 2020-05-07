@@ -165,8 +165,6 @@ void V8PerIsolateData::WillBeDestroyed(v8::Isolate* isolate) {
     data->profiler_group_ = nullptr;
   }
 
-  data->active_script_wrappable_manager_.Clear();
-
   // Detach V8's garbage collector.
   // Need to finalize an already running garbage collection as otherwise
   // callbacks are missing and state gets out of sync.

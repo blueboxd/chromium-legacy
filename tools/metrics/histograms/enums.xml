@@ -51508,6 +51508,15 @@ Called by update_net_trust_anchors.py.-->
              site is blacklisted by the smart bubble"/>
 </enum>
 
+<enum name="PasswordManagerFillingSource">
+  <int value="0" label="Filled password was not in either of the stores"/>
+  <int value="1" label="Filled password was in the profile-scoped store"/>
+  <int value="2" label="Filled password was in the account-scoped store"/>
+  <int value="3"
+      label="Filled password was both in the profile-scoped and in the
+             account-scoped store"/>
+</enum>
+
 <enum name="PasswordManagerFirstRendererFillingResult">
   <int value="0" label="Success"/>
   <int value="1" label="No password element">

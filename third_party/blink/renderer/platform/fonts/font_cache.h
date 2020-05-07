@@ -270,7 +270,7 @@ class PLATFORM_EXPORT FontCache {
   void DumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump*);
   void DumpShapeResultCache(base::trace_event::ProcessMemoryDump*);
 
-  FontFallbackMap& GetFontFallbackMap() { return *font_fallback_map_; }
+  FontFallbackMap& GetFontFallbackMap();
 
   ~FontCache() = default;
 

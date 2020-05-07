@@ -25,8 +25,7 @@ class ProcfsUtilTest : public testing::Test {
   void WriteContentsToFile(const std::string& contents,
                            const std::string& file_name) {
     base::FilePath file_path = slash_proc_.Append(file_name);
-    EXPECT_EQ(static_cast<int>(contents.size()),
-              base::WriteFile(file_path, contents.c_str(), contents.size()));
+    EXPECT_TRUE(base::WriteFile(file_path, contents));
   }
 
   // Create a directory |dir_name| under /proc and write |contents| to file
@@ -37,8 +36,7 @@ class ProcfsUtilTest : public testing::Test {
     base::FilePath dir = slash_proc_.Append(dir_name);
     CHECK(base::CreateDirectory(dir));
     base::FilePath file = dir.Append(file_name);
-    EXPECT_EQ(static_cast<int>(contents.size()),
-              base::WriteFile(file, contents.c_str(), contents.size()));
+    EXPECT_TRUE(base::WriteFile(file, contents));
   }
 
  protected:

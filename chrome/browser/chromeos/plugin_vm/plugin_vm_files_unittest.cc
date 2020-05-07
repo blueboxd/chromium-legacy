@@ -69,7 +69,7 @@ TEST_F(PluginVmFilesTest, FileAlreadyExists) {
       file_manager::util::GetMyFilesFolderForProfile(profile_.get());
   base::FilePath path = my_files.Append("PvmDefault");
   EXPECT_TRUE(base::CreateDirectory(my_files));
-  EXPECT_EQ(base::WriteFile(path, "", 0), 0);
+  EXPECT_TRUE(base::WriteFile(path, ""));
   EnsureDefaultSharedDirExists(profile_.get(),
                                base::BindOnce(&PluginVmFilesTest::Callback,
                                               base::Unretained(this), false));

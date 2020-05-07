@@ -10,10 +10,12 @@ enum class TileInfoRequestStatus {
   kInit = 0,
   // Request completed successfully.
   kSuccess = 1,
-  // Request failed.
+  // Request failed. Suggesting a retry with backoff.
   kFailure = 2,
+  // Request failed, suggesting a suspend.
+  kShouldSuspend = 3,
   // Max value.
-  kMaxValue = kFailure,
+  kMaxValue = kShouldSuspend,
 };
 
 enum class TileGroupStatus {

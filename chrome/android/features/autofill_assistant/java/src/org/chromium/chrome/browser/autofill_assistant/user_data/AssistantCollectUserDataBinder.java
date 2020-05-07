@@ -218,9 +218,17 @@ class AssistantCollectUserDataBinder
 
     private boolean updateSectionTitles(
             AssistantCollectUserDataModel model, PropertyKey propertyKey, ViewHolder view) {
-        if (propertyKey == AssistantCollectUserDataModel.LOGIN_SECTION_TITLE) {
+        if (propertyKey == AssistantCollectUserDataModel.CONTACT_SECTION_TITLE) {
+            view.mContactDetailsSection.setTitle(
+                    model.get(AssistantCollectUserDataModel.CONTACT_SECTION_TITLE));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.LOGIN_SECTION_TITLE) {
             view.mLoginSection.setTitle(
                     model.get(AssistantCollectUserDataModel.LOGIN_SECTION_TITLE));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.SHIPPING_SECTION_TITLE) {
+            view.mShippingAddressSection.setTitle(
+                    model.get(AssistantCollectUserDataModel.SHIPPING_SECTION_TITLE));
             return true;
         } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_DATE_LABEL) {
             view.mDateRangeStartSection.setDateTitle(

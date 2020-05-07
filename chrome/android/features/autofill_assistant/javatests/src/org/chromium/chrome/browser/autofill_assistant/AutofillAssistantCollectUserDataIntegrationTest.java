@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto.TermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResultProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ContactDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateTimeRangeProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
@@ -737,5 +738,39 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                                 .StringList.newBuilder()
                                                 .addValues("new value")))
                                 .build()));
+    }
+
+    @Test
+    @MediumTest
+    public void testCustomSectionTitles() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(
+                                CollectUserDataProto.newBuilder()
+                                        .setRequestTermsAndConditions(false)
+                                        .setShippingAddressSectionTitle("Delivery address")
+                                        .setShippingAddressName("SHIPPING_ADDRESS")
+                                        .setContactDetails(ContactDetailsProto.newBuilder()
+                                                                   .setRequestPayerName(true)
+                                                                   .setContactDetailsName("Profile")
+                                                                   .setContactDetailsSectionTitle(
+                                                                           "Custom info")))
+                        .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Continue")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Delivery address"), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText("Custom info"), isCompletelyDisplayed());
     }
 }

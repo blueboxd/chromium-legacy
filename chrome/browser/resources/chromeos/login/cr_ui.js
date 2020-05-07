@@ -407,6 +407,13 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Click on the primary action button ("Next" usually).
+   */
+  Oobe.clickGaiaPrimaryButtonForTesting = function() {
+    $('gaia-signin').clickPrimaryButtonForTesting();
+  };
+
+  /**
    * Sets the number of users on the views login screen.
    * @param {number} userCount The number of users.
    */

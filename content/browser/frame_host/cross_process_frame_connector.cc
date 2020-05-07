@@ -152,21 +152,15 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 }
 
 void CrossProcessFrameConnector::SendIntrinsicSizingInfoToParent(
-    const blink::WebIntrinsicSizingInfo& sizing_info) {
+    blink::mojom::IntrinsicSizingInfoPtr sizing_info) {
   // The width/height should not be negative since gfx::SizeF will clamp
   // negative values to zero.
-  DCHECK((sizing_info.size.width >= 0.f) && (sizing_info.size.height >= 0.f));
-  DCHECK((sizing_info.aspect_ratio.width >= 0.f) &&
-         (sizing_info.aspect_ratio.height >= 0.f));
-
-  auto info = blink::mojom::IntrinsicSizingInfo::New(
-      gfx::SizeF(sizing_info.size.width, sizing_info.size.height),
-      gfx::SizeF(sizing_info.aspect_ratio.width,
-                 sizing_info.aspect_ratio.height),
-      sizing_info.has_width, sizing_info.has_height);
-
+  DCHECK((sizing_info->size.width() >= 0.f) &&
+         (sizing_info->size.height() >= 0.f));
+  DCHECK((sizing_info->aspect_ratio.width() >= 0.f) &&
+         (sizing_info->aspect_ratio.height() >= 0.f));
   frame_proxy_in_parent_renderer_->GetAssociatedRemoteFrame()
-      ->IntrinsicSizingInfoOfChildChanged(std::move(info));
+      ->IntrinsicSizingInfoOfChildChanged(std::move(sizing_info));
 }
 
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {

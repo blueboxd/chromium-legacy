@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
-import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -51,7 +50,7 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
     public WebappActivity startWebApkActivity(WebappInfo webApkInfo) {
         Intent intent = createIntent(webApkInfo);
 
-        WebappActivity.addWebappInfo(webApkInfo.id(), webApkInfo);
+        WebappActivity.setWebappInfoForTesting(webApkInfo);
         final WebappActivity webApkActivity =
                 (WebappActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
                         intent);
@@ -67,9 +66,6 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
 
         ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), webApkInfo.url());
         WebappActivityTestRule.waitUntilSplashHides(webApkActivity);
-
-        // Launching the WebAPK should have popped the WebApkInfo.
-        Assert.assertNull(WebappActivity.popWebappInfo(webApkInfo.id()));
 
         return webApkActivity;
     }

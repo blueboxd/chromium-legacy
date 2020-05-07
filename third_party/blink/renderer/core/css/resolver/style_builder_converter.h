@@ -312,26 +312,34 @@ T StyleBuilderConverter::ConvertFlags(StyleResolverState& state,
 template <typename T>
 T StyleBuilderConverter::ConvertLineWidth(StyleResolverState& state,
                                           const CSSValue& value) {
+  double result = 0;
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    CSSValueID value_id = identifier_value->GetValueID();
-    if (value_id == CSSValueID::kThin)
-      return 1;
-    if (value_id == CSSValueID::kMedium)
-      return 3;
-    if (value_id == CSSValueID::kThick)
-      return 5;
-    NOTREACHED();
-    return 0;
+    switch (identifier_value->GetValueID()) {
+      case CSSValueID::kThin:
+        result = 1;
+        break;
+      case CSSValueID::kMedium:
+        result = 3;
+        break;
+      case CSSValueID::kThick:
+        result = 5;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+    result = state.CssToLengthConversionData().ZoomedComputedPixels(
+        result, CSSPrimitiveValue::UnitType::kPixels);
+  } else {
+    result = To<CSSPrimitiveValue>(value).ComputeLength<double>(
+        state.CssToLengthConversionData());
   }
-  const auto& primitive_value = To<CSSPrimitiveValue>(value);
-  // FIXME: We are moving to use the full page zoom implementation to handle
-  // high-dpi.  In that case specyfing a border-width of less than 1px would
-  // result in a border that is one device pixel thick.  With this change that
-  // would instead be rounded up to 2 device pixels.  Consider clamping it to
-  // device pixels or zoom adjusted CSS pixels instead of raw CSS pixels.
-  // Reference crbug.com/485650 and crbug.com/382483
-  double result =
-      primitive_value.ComputeLength<double>(state.CssToLengthConversionData());
+  // TODO(crbug.com/485650, crbug.com/382483): We are moving to use the full
+  // page zoom implementation to handle high-dpi.  In that case specyfing a
+  // border-width of less than 1px would result in a border that is one device
+  // pixel thick.  With this change that would instead be rounded up to 2
+  // device pixels.  Consider clamping it to device pixels or zoom adjusted CSS
+  // pixels instead of raw CSS pixels.
   double zoomed_result = state.StyleRef().EffectiveZoom() * result;
   if (zoomed_result > 0.0 && zoomed_result < 1.0)
     return 1.0;

@@ -70,12 +70,10 @@ TEST_F(TrustTokenKeyCommitmentsComponentInstallerTest, LoadsCommitments) {
       std::make_unique<TrustTokenKeyCommitmentsComponentInstallerPolicy>(
           base::BindLambdaForTesting(confirmation_callback));
 
-  ASSERT_EQ(
-      base::WriteFile(
-          TrustTokenKeyCommitmentsComponentInstallerPolicy::GetInstalledPath(
-              component_install_dir_.GetPath()),
-          expectation.data(), expectation.size()),
-      static_cast<int>(expectation.size()));
+  ASSERT_TRUE(base::WriteFile(
+      TrustTokenKeyCommitmentsComponentInstallerPolicy::GetInstalledPath(
+          component_install_dir_.GetPath()),
+      expectation));
 
   policy->ComponentReady(base::Version(), component_install_dir_.GetPath(),
                          std::make_unique<base::DictionaryValue>());

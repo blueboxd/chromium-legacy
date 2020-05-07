@@ -666,6 +666,9 @@ void RenderThreadImpl::Init() {
 // but the system default is true.
 #if defined(OS_MACOSX)
   is_elastic_overscroll_enabled_ = true;
+#elif defined(OS_WIN)
+  is_elastic_overscroll_enabled_ =
+      base::FeatureList::IsEnabled(features::kElasticOverscrollWin);
 #else
   is_elastic_overscroll_enabled_ = false;
 #endif

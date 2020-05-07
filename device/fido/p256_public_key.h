@@ -6,51 +6,31 @@
 #define DEVICE_FIDO_P256_PUBLIC_KEY_H_
 
 #include <stdint.h>
+
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/macros.h"
-#include "device/fido/public_key.h"
+#include "components/cbor/values.h"
 
 namespace device {
 
-// An uncompressed P256PublicKey consisting of 64 bytes:
-// - the 32-byte x coordinate
-// - the 32-byte y coordinate.
-class COMPONENT_EXPORT(DEVICE_FIDO) P256PublicKey : public PublicKey {
- public:
-  static std::unique_ptr<P256PublicKey> ExtractFromU2fRegistrationResponse(
-      std::string algorithm,
+class PublicKey;
+
+struct COMPONENT_EXPORT(DEVICE_FIDO) P256PublicKey {
+  static std::unique_ptr<PublicKey> ExtractFromU2fRegistrationResponse(
+      int32_t algorithm,
       base::span<const uint8_t> u2f_data);
 
+  static std::unique_ptr<PublicKey> ExtractFromCOSEKey(
+      int32_t algorithm,
+      base::span<const uint8_t> cbor_bytes,
+      const cbor::Value::MapValue& map);
+
   // Parse a public key encoded in ANSI X9.62 uncompressed format.
-  static std::unique_ptr<P256PublicKey> ParseX962Uncompressed(
-      std::string algorithm,
+  static std::unique_ptr<PublicKey> ParseX962Uncompressed(
+      int32_t algorithm,
       base::span<const uint8_t> input);
-
-  P256PublicKey(std::string algorithm,
-                std::vector<uint8_t> x,
-                std::vector<uint8_t> y);
-
-  ~P256PublicKey() override;
-
-  // Produces a key in COSE_key format, which is an integer-keyed CBOR map:
-  // { 1 ("kty") : 2 (the EC2 key id),
-  //   3 ("alg") : -7 (the ES256 COSEAlgorithmIdentifier),
-  //  -1 ("crv"): 1 (the P-256 EC identifier),
-  //  -2: x-coordinate,
-  //  -3: y-coordinate }
-  std::vector<uint8_t> EncodeAsCOSEKey() const override;
-
- private:
-  // Note that these values might not be minimal and might not be on the curve.
-  const std::vector<uint8_t> x_coordinate_;
-  const std::vector<uint8_t> y_coordinate_;
-
-  DISALLOW_COPY_AND_ASSIGN(P256PublicKey);
 };
 
 }  // namespace device

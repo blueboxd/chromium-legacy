@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -143,7 +144,8 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
         crostini::CrostiniManager::GetForProfile(controller()->profile())
             ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
       } else if (item().id.app_id == plugin_vm::kPluginVmAppId) {
-        plugin_vm::PluginVmManager::GetForProfile(controller()->profile())
+        plugin_vm::PluginVmManagerFactory::GetForProfile(
+            controller()->profile())
             ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);
       } else {
         LOG(ERROR) << "App " << item().id.app_id

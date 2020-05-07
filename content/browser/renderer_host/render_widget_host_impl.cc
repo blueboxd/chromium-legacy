@@ -626,8 +626,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnForceRedrawComplete)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_IntrinsicSizingInfoChanged,
-                        OnIntrinsicSizingInfoChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -2725,12 +2723,6 @@ void RenderWidgetHostImpl::DecrementInFlightEventCount(
   }
 }
 
-void RenderWidgetHostImpl::OnIntrinsicSizingInfoChanged(
-    blink::WebIntrinsicSizingInfo info) {
-  if (view_)
-    view_->UpdateIntrinsicSizingInfo(info);
-}
-
 void RenderWidgetHostImpl::DidOverscroll(
     const ui::DidOverscrollParams& params) {
   if (view_)
@@ -3316,6 +3308,12 @@ void RenderWidgetHostImpl::ZoomToFindInPageRectInMainFrame(
 void RenderWidgetHostImpl::SetHasTouchEventHandlers(bool has_handlers) {
   input_router_->OnHasTouchEventHandlers(has_handlers);
   has_touch_handler_ = has_handlers;
+}
+
+void RenderWidgetHostImpl::IntrinsicSizingInfoChanged(
+    blink::mojom::IntrinsicSizingInfoPtr sizing_info) {
+  if (view_)
+    view_->UpdateIntrinsicSizingInfo(std::move(sizing_info));
 }
 
 gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {

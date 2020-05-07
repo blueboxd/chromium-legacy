@@ -214,6 +214,12 @@ class InteractiveRenderWidget : public RenderWidget {
     always_overscroll_ = overscroll;
   }
 
+  MOCK_METHOD4(ObserveGestureEventAndResult,
+               void(const blink::WebGestureEvent& gesture_event,
+                    const gfx::Vector2dF& unused_delta,
+                    const cc::OverscrollBehavior& overscroll_behavior,
+                    bool event_processed));
+
   IPC::TestSink* sink() { return &sink_; }
 
   MockWidgetInputHandlerHost* mock_input_handler_host() {
@@ -496,6 +502,47 @@ TEST_F(RenderWidgetExternalWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
+}
+
+// Ensures that the compositor thread gets sent the gesture event & overscroll
+// amount for an overscroll initiated by a touchpad.
+TEST_F(RenderWidgetExternalWidgetUnittest, SendElasticOverscrollForTouchpad) {
+  blink::WebGestureEvent scroll(
+      blink::WebInputEvent::Type::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
+      blink::WebGestureDevice::kTouchpad);
+  scroll.SetPositionInWidget(gfx::PointF(-10, 0));
+  scroll.data.scroll_update.delta_y = 10;
+
+  // We only really care that ObserveGestureEventAndResult was called; we
+  // therefore suppress the warning for the call to
+  // mock_webwidget()->HandleInputEvent().
+  EXPECT_CALL(*widget(), ObserveGestureEventAndResult(_, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
+      .Times(testing::AnyNumber());
+
+  widget()->SendInputEvent(scroll, HandledEventCallback());
+}
+
+// Ensures that the compositor thread gets sent the gesture event & overscroll
+// amount for an overscroll initiated by a touchscreen.
+TEST_F(RenderWidgetExternalWidgetUnittest,
+       SendElasticOverscrollForTouchscreen) {
+  blink::WebGestureEvent scroll(
+      blink::WebInputEvent::Type::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers, ui::EventTimeForNow(),
+      blink::WebGestureDevice::kTouchscreen);
+  scroll.SetPositionInWidget(gfx::PointF(-10, 0));
+  scroll.data.scroll_update.delta_y = 10;
+
+  // We only really care that ObserveGestureEventAndResult was called; we
+  // therefore suppress the warning for the call to
+  // mock_webwidget()->HandleInputEvent().
+  EXPECT_CALL(*widget(), ObserveGestureEventAndResult(_, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
+      .Times(testing::AnyNumber());
+
+  widget()->SendInputEvent(scroll, HandledEventCallback());
 }
 
 // Tests that if a RenderWidget is auto-resized, it requests a new

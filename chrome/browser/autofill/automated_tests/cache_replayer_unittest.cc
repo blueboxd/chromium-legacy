@@ -149,8 +149,7 @@ bool WriteJSONNode(const base::FilePath& file_path, const base::Value& node) {
     return false;
   }
 
-  if (base::WriteFile(file_path, compressed_json_text.data(),
-                      compressed_json_text.size()) == -1) {
+  if (!base::WriteFile(file_path, compressed_json_text)) {
     VLOG(1) << "Could not write json at file: " << file_path;
     return false;
   }
@@ -211,8 +210,7 @@ TEST(AutofillCacheReplayerDeathTest,
   const std::string invalid_json = "{\"NoDomainNode\": \"invalid_field\"}";
 
   // Write json to file.
-  ASSERT_TRUE(
-      base::WriteFile(file_path, invalid_json.data(), invalid_json.size()) > -1)
+  ASSERT_TRUE(base::WriteFile(file_path, invalid_json))
       << "there was an error when writing content to json file: " << file_path;
 
   // Crash since json content is invalid.

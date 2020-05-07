@@ -43,7 +43,6 @@
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
@@ -82,10 +81,6 @@ class WebWidgetClient {
   // single thread and no scheduler, the impl should schedule a task to run
   // a synchronous composite.
   virtual void ScheduleAnimation() {}
-
-  // A notification callback for when the intrinsic sizing of the
-  // widget changed. This is only called for SVG within a remote frame.
-  virtual void IntrinsicSizingInfoChanged(const WebIntrinsicSizingInfo&) {}
 
   // Called immediately following the first compositor-driven (frame-generating)
   // layout that happened after an interesting document lifecyle change (see

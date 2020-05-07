@@ -139,8 +139,7 @@ String HTMLOptGroupElement::GroupLabelText() const {
 }
 
 HTMLSelectElement* HTMLOptGroupElement::OwnerSelectElement() const {
-  // TODO(tkent): We should return only the parent <select>.
-  return Traversal<HTMLSelectElement>::FirstAncestor(*this);
+  return DynamicTo<HTMLSelectElement>(parentNode());
 }
 
 String HTMLOptGroupElement::DefaultToolTip() const {

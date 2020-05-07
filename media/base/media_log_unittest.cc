@@ -44,4 +44,13 @@ TEST_F(MediaLogTest, EventsAreNotForwardedAfterInvalidate) {
   child_media_log->AddMessage(MediaLogMessageLevel::kERROR, "test");
 }
 
+TEST_F(MediaLogTest, ClonedLogsInhertParentPlayerId) {
+  std::unique_ptr<MockMediaLog> root_log(std::make_unique<MockMediaLog>());
+  std::unique_ptr<MediaLog> child_media_log(root_log->Clone());
+  child_media_log->AddMessage(MediaLogMessageLevel::kERROR, "test");
+  auto event = root_log->take_most_recent_event();
+  EXPECT_NE(event, nullptr);
+  EXPECT_EQ(event->id, root_log->id());
+}
+
 }  // namespace media

@@ -12,6 +12,10 @@ class FilesConfirmDialog extends cr.ui.dialogs.ConfirmDialog {
   constructor(parentElement) {
     super(parentElement);
 
+    if (util.isFilesNg()) {
+      this.container.classList.add('files-ng');
+    }
+
     /**
      * @type {?function()} showModalElement Optional call to show the
      * modal <dialog> parent of |this| if needed.

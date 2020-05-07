@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -170,7 +171,7 @@ void LaunchPluginVmApp(Profile* profile,
                                    "Plugin VM is not enabled for this profile");
   }
 
-  auto* manager = PluginVmManager::GetForProfile(profile);
+  auto* manager = PluginVmManagerFactory::GetForProfile(profile);
 
   if (!manager) {
     return std::move(callback).Run(false, "Could not get PluginVmManager");

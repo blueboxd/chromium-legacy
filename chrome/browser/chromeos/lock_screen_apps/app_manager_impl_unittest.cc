@@ -331,7 +331,7 @@ class LockScreenAppManagerImplTest
       return nullptr;
     }
 
-    if (base::WriteFile(extension_path.Append("background.js"), "{}", 2) != 2) {
+    if (!base::WriteFile(extension_path.Append("background.js"), "{}")) {
       ADD_FAILURE() << "Failed to write background script file";
       return nullptr;
     }

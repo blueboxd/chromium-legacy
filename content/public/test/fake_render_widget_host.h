@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -30,6 +31,8 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost {
                                        const gfx::Rect& rect_to_zoom) override;
   void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
   void SetHasTouchEventHandlers(bool has_handlers) override;
+  void IntrinsicSizingInfoChanged(
+      blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
 
  private:
   mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>

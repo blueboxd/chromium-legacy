@@ -930,4 +930,50 @@ TEST(ComputedStyleTest, InitialAndInheritedAndNonInheritedVariableNames) {
   EXPECT_TRUE(style->GetVariableNames().Contains("--e"));
 }
 
+TEST(ComputedStyleTest, BorderWidthZoom) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_ =
+      std::make_unique<DummyPageHolder>(IntSize(0, 0), nullptr);
+
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+
+  StyleResolverState state(dummy_page_holder_->GetDocument(),
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetEffectiveZoom(2);
+  style->SetBorderLeftStyle(EBorderStyle::kSolid);
+  style->SetOutlineStyle(EBorderStyle::kSolid);
+  style->SetColumnRuleStyle(EBorderStyle::kSolid);
+  state.SetStyle(style);
+
+  const struct {
+    CSSIdentifierValue* css_value;
+    double expected_px;
+    STACK_ALLOCATED();
+  } tests[] = {
+      {CSSIdentifierValue::Create(CSSValueID::kThin), 1.0},
+      {CSSIdentifierValue::Create(CSSValueID::kMedium), 3.0},
+      {CSSIdentifierValue::Create(CSSValueID::kThick), 5.0},
+  };
+
+  for (const auto& test : tests) {
+    for (const auto* property :
+         {&GetCSSPropertyBorderLeftWidth(), &GetCSSPropertyOutlineWidth(),
+          &GetCSSPropertyColumnRuleWidth()}) {
+      const Longhand& longhand = To<Longhand>(*property);
+      longhand.ApplyValue(state, *test.css_value);
+      auto* computed_value = longhand.CSSValueFromComputedStyleInternal(
+          *style, style->SvgStyle(), nullptr /* layout_object */,
+          false /* allow_visited_style */);
+      AtomicString prop_name = longhand.GetCSSPropertyName().ToAtomicString();
+      ASSERT_TRUE(computed_value) << prop_name;
+      auto* numeric_value = DynamicTo<CSSNumericLiteralValue>(computed_value);
+      ASSERT_TRUE(numeric_value) << prop_name;
+      EXPECT_TRUE(numeric_value->IsPx()) << prop_name;
+      EXPECT_EQ(test.expected_px, numeric_value->DoubleValue()) << prop_name;
+    }
+  }
+}
+
 }  // namespace blink

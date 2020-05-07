@@ -94,7 +94,6 @@ FontCache* FontCache::GetFontCache() {
 FontCache::FontCache()
     : purge_prevent_count_(0),
       font_manager_(sk_ref_sp(static_font_manager_)),
-      font_fallback_map_(MakeGarbageCollected<FontFallbackMap>(nullptr)),
       font_size_limit_(std::nextafter(
           (static_cast<float>(std::numeric_limits<unsigned>::max()) - 2.f) /
               static_cast<float>(blink::FontCacheKey::PrecisionMultiplier()),
@@ -111,7 +110,6 @@ FontCache::FontCache()
   }
   DCHECK(font_manager_.get());
 #endif
-  AddClient(font_fallback_map_);
 }
 
 #if !defined(OS_MACOSX)
@@ -546,6 +544,14 @@ const std::vector<FontEnumerationEntry>& FontCache::EnumerateAvailableFonts() {
   }
 
   return font_enumeration_cache_;
+}
+
+FontFallbackMap& FontCache::GetFontFallbackMap() {
+  if (!font_fallback_map_) {
+    font_fallback_map_ = MakeGarbageCollected<FontFallbackMap>(nullptr);
+    AddClient(font_fallback_map_);
+  }
+  return *font_fallback_map_;
 }
 
 }  // namespace blink

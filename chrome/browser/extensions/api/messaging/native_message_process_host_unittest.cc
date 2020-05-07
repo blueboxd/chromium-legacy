@@ -166,12 +166,9 @@ class NativeMessagingTest : public ::testing::Test,
       return base::FilePath();
 
     std::string message_with_header = FormatMessage(message);
-    int bytes_written = base::WriteFile(
-        filename, message_with_header.data(), message_with_header.size());
-    if (bytes_written < 0 ||
-        (message_with_header.size() != static_cast<size_t>(bytes_written))) {
+    if (!base::WriteFile(filename, message_with_header))
       return base::FilePath();
-    }
+
     return filename;
   }
 

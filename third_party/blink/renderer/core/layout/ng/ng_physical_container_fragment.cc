@@ -295,7 +295,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
         containing_block);
 
     if (!descendant_line_box->Size().IsEmpty()) {
-      outline_rects->emplace_back(additional_offset,
+      outline_rects->emplace_back(additional_offset + descendant.Offset(),
                                   descendant_line_box->Size().ToLayoutSize());
     } else if (descendant_line_box->Children().empty()) {
       // Special-case for when the first continuation does not generate

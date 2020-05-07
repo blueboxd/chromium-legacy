@@ -86,16 +86,14 @@ class DemoModeResourcesRemoverTest : public testing::Test {
         "version": "0.0.1",
         "min_env_version": "1.0"
     })";
-    if (base::WriteFile(demo_resources_path_.AppendASCII("manifest.json"),
-                        manifest.data(),
-                        manifest.size()) != static_cast<int>(manifest.size())) {
+    if (!base::WriteFile(demo_resources_path_.AppendASCII("manifest.json"),
+                         manifest)) {
       return false;
     }
 
     const std::string image = "fake image content";
-    if (base::WriteFile(demo_resources_path_.AppendASCII("image.squash"),
-                        image.data(),
-                        image.size()) != static_cast<int>(image.size())) {
+    if (!base::WriteFile(demo_resources_path_.AppendASCII("image.squash"),
+                         image)) {
       return false;
     }
 

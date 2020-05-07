@@ -43,6 +43,12 @@ self.addEventListener("fetch", event => {
         return new Response("Hello Offline page");
       })
     );
+  } else if (param.has("cache_add")) {
+    event.respondWith((async () => {
+      const cache = await caches.open('maybe_offline_support_cache_add');
+      await cache.add(event.request);
+      return cache.match(event.request);
+    })());
   } else {
     // fallback case: do nothing.
   }

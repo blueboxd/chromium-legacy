@@ -37,7 +37,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
 
     // Create file "messages".
     const base::FilePath messages_path = log_dir_.GetPath().Append("messages");
-    base::WriteFile(messages_path, "", 0);
+    base::WriteFile(messages_path, "");
     EXPECT_TRUE(base::PathExists(messages_path)) << messages_path.value();
 
     // Create file "ui/ui.LATEST".
@@ -45,7 +45,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
     ASSERT_TRUE(base::CreateDirectory(ui_dir_path)) << ui_dir_path.value();
 
     const base::FilePath ui_latest_path = ui_dir_path.Append("ui.LATEST");
-    base::WriteFile(ui_latest_path, "", 0);
+    base::WriteFile(ui_latest_path, "");
     ASSERT_TRUE(base::PathExists(ui_latest_path)) << ui_latest_path.value();
   }
 
@@ -62,9 +62,7 @@ class SingleLogFileLogSourceTest : public ::testing::Test {
   // |relative_path| under |log_dir_|.
   bool WriteFile(const base::FilePath& relative_path,
                  const std::string& input) {
-    return base::WriteFile(log_dir_.GetPath().Append(relative_path),
-                           input.data(),
-                           input.size()) == static_cast<int>(input.size());
+    return base::WriteFile(log_dir_.GetPath().Append(relative_path), input);
   }
   bool AppendToFile(const base::FilePath& relative_path,
                     const std::string& input) {

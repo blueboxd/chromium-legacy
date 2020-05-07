@@ -279,9 +279,7 @@ TEST_F(RecurrenceRankerTest, LoadFromDisk) {
   // Serialise a testing proto.
   RecurrenceRankerProto proto = MakeTestingProto();
   const std::string proto_str = proto.SerializeAsString();
-  EXPECT_NE(
-      base::WriteFile(ranker_filepath_, proto_str.c_str(), proto_str.size()),
-      -1);
+  EXPECT_TRUE(base::WriteFile(ranker_filepath_, proto_str));
 
   // Make a ranker.
   RecurrenceRanker ranker("MyModel", ranker_filepath_, MakeSimpleConfig(),

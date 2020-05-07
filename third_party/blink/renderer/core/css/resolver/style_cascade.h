@@ -313,10 +313,6 @@ class CORE_EXPORT StyleCascade {
   const Document& GetDocument() const;
   const CSSProperty& ResolveSurrogate(const CSSProperty& surrogate);
 
-  bool HasAuthorDeclaration(const CSSProperty&) const;
-  bool HasAuthorBorder() const;
-  bool HasAuthorBackground() const;
-
   StyleResolverState& state_;
   MatchResult match_result_;
   CascadeInterpolations interpolations_;

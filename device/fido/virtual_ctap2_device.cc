@@ -33,6 +33,7 @@
 #include "device/fido/p256_public_key.h"
 #include "device/fido/pin.h"
 #include "device/fido/pin_internal.h"
+#include "device/fido/public_key.h"
 #include "device/fido/virtual_u2f_device.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -98,18 +99,21 @@ bool AreMakeCredentialParamsValid(const CtapMakeCredentialRequest& request) {
       });
 }
 
-std::unique_ptr<P256PublicKey> ConstructECPublicKey(
+std::unique_ptr<PublicKey> ConstructP256PublicKey(
     std::string public_key_string) {
   DCHECK_EQ(64u, public_key_string.size());
 
-  const auto public_key_x_coordinate =
-      base::as_bytes(base::make_span(public_key_string)).first(32);
-  const auto public_key_y_coordinate =
-      base::as_bytes(base::make_span(public_key_string)).last(32);
-  return std::make_unique<P256PublicKey>(
-      fido_parsing_utils::kEs256,
-      fido_parsing_utils::Materialize(public_key_x_coordinate),
-      fido_parsing_utils::Materialize(public_key_y_coordinate));
+  std::vector<uint8_t> x962_public_key;
+  x962_public_key.push_back(0x04);  // uncompressed
+
+  const uint8_t* public_key_data =
+      reinterpret_cast<const uint8_t*>(public_key_string.data());
+  x962_public_key.insert(x962_public_key.end(), public_key_data,
+                         public_key_data + public_key_string.size());
+
+  return P256PublicKey::ParseX962Uncompressed(
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      x962_public_key);
 }
 
 std::vector<uint8_t> ConstructSignatureBuffer(
@@ -831,7 +835,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   auto authenticator_data = ConstructAuthenticatorData(
       rp_id_hash, user_verified, 01ul,
       ConstructAttestedCredentialData(key_handle,
-                                      ConstructECPublicKey(public_key)),
+                                      ConstructP256PublicKey(public_key)),
       std::move(extensions));
 
   base::Optional<std::string> opt_android_client_data_json;
@@ -1072,7 +1076,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
         config_.return_attested_cred_data_in_get_assertion_response
             ? base::make_optional(ConstructAttestedCredentialData(
                   fido_parsing_utils::Materialize(registration.first),
-                  ConstructECPublicKey(public_key)))
+                  ConstructP256PublicKey(public_key)))
             : base::nullopt;
 
     auto authenticator_data = ConstructAuthenticatorData(

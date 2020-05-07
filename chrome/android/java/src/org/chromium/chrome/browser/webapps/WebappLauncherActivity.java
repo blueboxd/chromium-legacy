@@ -225,14 +225,6 @@ public class WebappLauncherActivity extends Activity {
 
     private static void launchWebapp(Activity launchingActivity, Intent intent,
             @NonNull LaunchData launchData, long createTimestamp) {
-        // Add all information needed to launch WebappActivity without {@link
-        // WebappActivity#sWebappInfoMap} to launch intent. When the Android OS has killed a
-        // WebappActivity and the user selects the WebappActivity from "Android Recents" the
-        // WebappActivity is launched without going through WebappLauncherActivity first.
-        WebappInfo webappInfo =
-                launchData.isForWebApk ? WebApkInfo.create(intent) : WebappInfo.create(intent);
-        WebappActivity.addWebappInfo(launchData.id, webappInfo);
-
         Intent launchIntent = createIntentToLaunchForWebapp(intent, launchData, createTimestamp);
 
         WarmupManager.getInstance().maybePrefetchDnsForUrlInBackground(

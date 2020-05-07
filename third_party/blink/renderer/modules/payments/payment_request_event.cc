@@ -34,20 +34,14 @@ namespace blink {
 
 PaymentRequestEvent* PaymentRequestEvent::Create(
     const AtomicString& type,
-    const PaymentRequestEventInit* initializer) {
-  return MakeGarbageCollected<PaymentRequestEvent>(
-      type, initializer, mojo::NullRemote(), nullptr, nullptr);
-}
-
-PaymentRequestEvent* PaymentRequestEvent::Create(
-    const AtomicString& type,
     const PaymentRequestEventInit* initializer,
     mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
     RespondWithObserver* respond_with_observer,
-    WaitUntilObserver* wait_until_observer) {
+    WaitUntilObserver* wait_until_observer,
+    ExecutionContext* execution_context) {
   return MakeGarbageCollected<PaymentRequestEvent>(
       type, initializer, std::move(host), respond_with_observer,
-      wait_until_observer);
+      wait_until_observer, execution_context);
 }
 
 PaymentRequestEvent::PaymentRequestEvent(
@@ -55,7 +49,8 @@ PaymentRequestEvent::PaymentRequestEvent(
     const PaymentRequestEventInit* initializer,
     mojo::PendingRemote<payments::mojom::blink::PaymentHandlerHost> host,
     RespondWithObserver* respond_with_observer,
-    WaitUntilObserver* wait_until_observer)
+    WaitUntilObserver* wait_until_observer,
+    ExecutionContext* execution_context)
     : ExtendableEvent(type, initializer, wait_until_observer),
       top_origin_(initializer->topOrigin()),
       payment_request_origin_(initializer->paymentRequestOrigin()),
@@ -75,13 +70,18 @@ PaymentRequestEvent::PaymentRequestEvent(
       shipping_options_(initializer->hasShippingOptions()
                             ? initializer->shippingOptions()
                             : HeapVector<Member<PaymentShippingOption>>()),
-      observer_(respond_with_observer) {
+      observer_(respond_with_observer),
+      payment_handler_host_(execution_context) {
   if (!host.is_valid())
     return;
 
-  payment_handler_host_.Bind(std::move(host));
-  payment_handler_host_.set_disconnect_handler(WTF::Bind(
-      &PaymentRequestEvent::OnHostConnectionError, WrapWeakPersistent(this)));
+  if (execution_context) {
+    payment_handler_host_.Bind(
+        std::move(host),
+        execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+    payment_handler_host_.set_disconnect_handler(WTF::Bind(
+        &PaymentRequestEvent::OnHostConnectionError, WrapWeakPersistent(this)));
+  }
 }
 
 PaymentRequestEvent::~PaymentRequestEvent() = default;
@@ -329,6 +329,7 @@ void PaymentRequestEvent::Trace(Visitor* visitor) {
   visitor->Trace(shipping_options_);
   visitor->Trace(change_payment_request_details_resolver_);
   visitor->Trace(observer_);
+  visitor->Trace(payment_handler_host_);
   ExtendableEvent::Trace(visitor);
 }
 

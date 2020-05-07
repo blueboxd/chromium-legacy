@@ -1524,11 +1524,6 @@ void RenderWidget::SetScreenRects(const gfx::Rect& widget_screen_rect,
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
 
-void RenderWidget::IntrinsicSizingInfoChanged(
-    const blink::WebIntrinsicSizingInfo& sizing_info) {
-  Send(new WidgetHostMsg_IntrinsicSizingInfoChanged(routing_id_, sizing_info));
-}
-
 void RenderWidget::DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
   if (layout_type == blink::WebMeaningfulLayout::kVisuallyNonEmpty) {
     QueueMessage(std::make_unique<WidgetHostMsg_DidFirstVisuallyNonEmptyPaint>(

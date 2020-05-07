@@ -554,6 +554,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       base::UmaHistogramEnumeration("Permissions.Action.StorageAccess", action,
                                     PermissionAction::NUM);
       break;
+    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
+      base::UmaHistogramEnumeration("Permissions.Action.CameraPanTiltZoom",
+                                    action, PermissionAction::NUM);
+      break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.
     default:

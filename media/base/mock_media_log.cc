@@ -15,6 +15,7 @@ void MockMediaLog::AddLogRecordLocked(std::unique_ptr<MediaLogRecord> event) {
   const auto log_string = MediaEventToLogString(*event);
   VLOG(2) << "MediaLog: " << log_string;
   DoAddLogRecordLogString(log_string);
+  most_recent_event_ = std::move(event);
 }
 
 std::string MockMediaLog::MediaEventToLogString(const MediaLogRecord& event) {

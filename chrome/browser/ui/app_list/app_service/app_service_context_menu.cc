@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -125,8 +126,8 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
         crostini::CrostiniManager::GetForProfile(profile())->StopVm(
             crostini::kCrostiniDefaultVmName, base::DoNothing());
       } else if (app_id() == plugin_vm::kPluginVmAppId) {
-        plugin_vm::PluginVmManager::GetForProfile(profile())->StopPluginVm(
-            plugin_vm::kPluginVmName, /*force=*/false);
+        plugin_vm::PluginVmManagerFactory::GetForProfile(profile())
+            ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);
       } else {
         LOG(ERROR) << "App " << app_id()
                    << " should not have a shutdown guest OS command.";

@@ -685,6 +685,45 @@ public class AutofillAssistantPersonalDataManagerTest {
                 isCompletelyDisplayed());
     }
 
+    /**
+     * Opens the edit dialog for a server card.
+     */
+    @Test
+    @MediumTest
+    public void testEditOfServerCard() throws Exception {
+        String profileId = mHelper.addDummyProfile("Adam West", "adamwest@google.com");
+        mHelper.addServerCreditCard(mHelper.createDummyCreditCard(
+                profileId, "4111111111111111", /* isLocal = */ false));
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
+                                                     .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+
+        onView(withText("Payment method")).perform(click());
+        waitUntilViewMatchesCondition(withContentDescription("Edit card"), isDisplayed());
+        onView(withContentDescription("Edit card")).perform(click());
+        waitUntilViewMatchesCondition(withText("Billing address*"), isDisplayed());
+        // TODO(b/155624806) edit billing address and fill/check values on test website.
+        onView(withId(org.chromium.chrome.R.id.payments_edit_cancel_button)).perform(click());
+    }
+
     private void runScript(AutofillAssistantTestScript script) {
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(script));

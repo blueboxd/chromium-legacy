@@ -208,10 +208,7 @@ void CompareSnapshotToReference(const base::FilePath& reference,
     std::vector<unsigned char> png_data;
     ASSERT_TRUE(
         gfx::PNGCodec::EncodeBGRASkBitmap(clipped_bitmap, false, &png_data));
-    ASSERT_EQ(static_cast<int>(png_data.size()),
-              base::WriteFile(reference,
-                              reinterpret_cast<const char*>(png_data.data()),
-                              png_data.size()));
+    ASSERT_TRUE(base::WriteFile(reference, png_data));
   }
 
   done_cb.Run();

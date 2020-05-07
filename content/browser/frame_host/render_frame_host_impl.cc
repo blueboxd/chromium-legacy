@@ -591,13 +591,13 @@ const uint32_t kMaxCookieSameSiteDeprecationUrls = 20;
 
 void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
   ContentBrowserClient* client = GetContentClient()->browser();
-  if (rfh->cross_origin_opener_policy() ==
-      network::mojom::CrossOriginOpenerPolicy::kSameOrigin) {
+  if (rfh->cross_origin_opener_policy().value ==
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) {
     client->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kCrossOriginOpenerPolicySameOrigin);
   }
-  if (rfh->cross_origin_opener_policy() ==
-      network::mojom::CrossOriginOpenerPolicy::kSameOriginAllowPopups) {
+  if (rfh->cross_origin_opener_policy().value ==
+      network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups) {
     client->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::
                  kCrossOriginOpenerPolicySameOriginAllowPopups);
@@ -609,8 +609,8 @@ void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
         rfh, blink::mojom::WebFeature::kCrossOriginEmbedderPolicyRequireCorp);
   }
 
-  if ((rfh->cross_origin_opener_policy() ==
-       network::mojom::CrossOriginOpenerPolicy::kSameOrigin) &&
+  if ((rfh->cross_origin_opener_policy().value ==
+       network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) &&
       (rfh->cross_origin_embedder_policy().value ==
        network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp)) {
     client->LogWebFeatureForCurrentPage(
@@ -4521,8 +4521,7 @@ void RenderFrameHostImpl::CreateNewWindow(
         dom_storage_context, params->session_storage_namespace_id);
   }
 
-  network::mojom::CrossOriginOpenerPolicy popup_coop =
-      network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+  network::CrossOriginOpenerPolicy popup_coop;
   network::CrossOriginEmbedderPolicy popup_coep;
   if (base::FeatureList::IsEnabled(
           network::features::kCrossOriginOpenerPolicy)) {
@@ -4539,8 +4538,8 @@ void RenderFrameHostImpl::CreateNewWindow(
       // The documents are cross origin, leave COOP of the popup to the default
       // unsafe-none.
       // Then set the popup to noopener if the top level COOP is same origin.
-      if (top_level_opener->cross_origin_opener_policy() ==
-          network::mojom::CrossOriginOpenerPolicy::kSameOrigin) {
+      if (top_level_opener->cross_origin_opener_policy().value ==
+          network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin) {
         params->opener_suppressed = true;
         // The frame name should not be forwarded to a noopener popup.
         // TODO(https://crbug.com/1060691) This should be applied to all

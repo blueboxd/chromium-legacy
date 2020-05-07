@@ -697,7 +697,7 @@ TEST_F(ExtensionProtocolsTest, VerifyScriptListedAsIcon) {
   {
     base::FilePath file_path = unzipped_path.AppendASCII("background.js");
     const std::string content = "new content";
-    EXPECT_NE(base::WriteFile(file_path, content.c_str(), content.size()), -1);
+    EXPECT_TRUE(base::WriteFile(file_path, content));
     TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
 
     content_verifier_->OnExtensionLoaded(browser_context(), extension.get());

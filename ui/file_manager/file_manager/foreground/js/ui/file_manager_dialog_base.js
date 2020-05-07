@@ -11,6 +11,10 @@ class FileManagerDialogBase extends cr.ui.dialogs.BaseDialog {
    */
   constructor(parentNode) {
     super(parentNode);
+
+    if (util.isFilesNg()) {
+      this.container.classList.add('files-ng');
+    }
   }
 
   /**

@@ -69,10 +69,8 @@ TEST_F(BrowserDMTokenStorageLinuxTest, InitEnrollmentToken) {
 
   ASSERT_TRUE(base::CreateDirectory(enrollment_token_file_path.DirName()));
 
-  int bytes_written =
-      base::WriteFile(base::FilePath(enrollment_token_file_path),
-                      kEnrollmentToken, strlen(kEnrollmentToken));
-  ASSERT_EQ(static_cast<int>(strlen(kEnrollmentToken)), bytes_written);
+  ASSERT_TRUE(base::WriteFile(base::FilePath(enrollment_token_file_path),
+                              kEnrollmentToken));
 
   MockBrowserDMTokenStorageLinux storage;
   EXPECT_EQ(kEnrollmentToken, storage.InitEnrollmentToken());
@@ -95,9 +93,7 @@ TEST_F(BrowserDMTokenStorageLinuxTest, InitDMToken) {
 
   base::FilePath dm_token_file_path =
       dm_token_dir_path.Append(kExpectedClientId);
-  int bytes_written = base::WriteFile(base::FilePath(dm_token_file_path),
-                                      kDMToken, strlen(kDMToken));
-  ASSERT_EQ(static_cast<int>(strlen(kDMToken)), bytes_written);
+  ASSERT_TRUE(base::WriteFile(base::FilePath(dm_token_file_path), kDMToken));
 
   MockBrowserDMTokenStorageLinux storage;
   EXPECT_EQ(kDMToken, storage.InitDMToken());

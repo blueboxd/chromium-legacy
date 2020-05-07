@@ -30,7 +30,7 @@ namespace mac {
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AttestedCredentialData> MakeAttestedCredentialData(
     std::vector<uint8_t> credential_id,
-    std::unique_ptr<P256PublicKey> public_key);
+    std::unique_ptr<PublicKey> public_key);
 
 // MakeAuthenticatorData returns an AuthenticatorData instance for the Touch ID
 // authenticator with the given Relying Party ID and AttestedCredentialData,
@@ -50,9 +50,9 @@ base::Optional<std::vector<uint8_t>> GenerateSignature(
     SecKeyRef private_key) API_AVAILABLE(macosx(10.12.2));
 
 // SecKeyRefToECPublicKey converts a SecKeyRef for a public key into an
-// equivalent |P256PublicKey| instance. It returns |nullptr| if the key cannot
+// equivalent |PublicKey| instance. It returns |nullptr| if the key cannot
 // be converted.
-std::unique_ptr<P256PublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
+std::unique_ptr<PublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
     API_AVAILABLE(macosx(10.12.2));
 
 }  // namespace mac

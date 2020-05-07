@@ -16,6 +16,10 @@ cr.define('cr.filebrowser', () => {
     constructor(parentNode) {
       super(parentNode);
       super.setOkLabel(str('IMPORT_CROSTINI_IMAGE_DIALOG_OK_LABEL'));
+
+      if (util.isFilesNg()) {
+        this.container.classList.add('files-ng');
+      }
     }
 
     /**

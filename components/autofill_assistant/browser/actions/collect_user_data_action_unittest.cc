@@ -16,9 +16,11 @@
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/mock_website_login_manager.h"
 #include "components/autofill_assistant/browser/user_model.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 const char kFakeUrl[] = "https://www.example.com";
@@ -1364,6 +1366,82 @@ TEST_F(CollectUserDataActionTest, InitialSelectsProfileAndShippingAddress) {
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, ShippingAddressSectionCustomTitle) {
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            // do not call confirm_callback since we are only looking to test
+            // |collect_user_data_options|.
+            EXPECT_EQ(collect_user_data_options->shipping_address_section_title,
+                      "custom title");
+          }));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_shipping_address_section_title("custom title");
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, ShippingAddressSectionDefaultTitle) {
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            // do not call confirm_callback since we are only looking to test
+            // |collect_user_data_options|.
+            EXPECT_EQ(
+                collect_user_data_options->shipping_address_section_title,
+                l10n_util::GetStringUTF8(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL));
+          }));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_shipping_address_section_title("");
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, ContactDetailsSectionCustomTitle) {
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            // do not call confirm_callback since we are only looking to test
+            // |collect_user_data_options|.
+            EXPECT_EQ(collect_user_data_options->contact_details_section_title,
+                      "custom title");
+          }));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->mutable_contact_details()
+      ->set_contact_details_section_title("custom title");
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, ContactDetailsSectionDefaultTitle) {
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+            // do not call confirm_callback since we are only looking to test
+            // |collect_user_data_options|.
+            EXPECT_EQ(
+                collect_user_data_options->shipping_address_section_title,
+                l10n_util::GetStringUTF8(IDS_PAYMENTS_CONTACT_DETAILS_LABEL));
+          }));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->mutable_contact_details()
+      ->set_contact_details_section_title("");
+
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }

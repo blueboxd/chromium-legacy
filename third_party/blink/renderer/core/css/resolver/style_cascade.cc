@@ -149,8 +149,9 @@ void StyleCascade::Apply(CascadeFilter filter) {
   if (map_.Find(CSSPropertyName(CSSPropertyID::kAppearance)) &&
       !resolver.filter_.Rejects(GetCSSPropertyAppearance()) &&
       state_.Style()->HasAppearance()) {
-    state_.Style()->SetHasAuthorBackground(HasAuthorBackground());
-    state_.Style()->SetHasAuthorBorder(HasAuthorBorder());
+    CSSProperty::Flags flags = resolver.AuthorFlags();
+    state_.Style()->SetHasAuthorBackground(flags & CSSProperty::kBackground);
+    state_.Style()->SetHasAuthorBorder(flags & CSSProperty::kBorder);
   }
 }
 
@@ -534,14 +535,15 @@ const CSSValue* StyleCascade::Resolve(const CSSProperty& property,
                                       CascadeOrigin origin,
                                       CascadeResolver& resolver) {
   DCHECK(!property.IsSurrogate());
+  if (value.IsRevertValue())
+    return ResolveRevert(property, origin, resolver);
+  resolver.CollectAuthorFlags(property, origin);
   if (const auto* v = DynamicTo<CSSCustomPropertyDeclaration>(value))
     return ResolveCustomProperty(property, *v, origin, resolver);
   if (const auto* v = DynamicTo<CSSVariableReferenceValue>(value))
     return ResolveVariableReference(property, *v, resolver);
   if (const auto* v = DynamicTo<cssvalue::CSSPendingSubstitutionValue>(value))
     return ResolvePendingSubstitution(property, *v, resolver);
-  if (value.IsRevertValue())
-    return ResolveRevert(property, origin, resolver);
   return &value;
 }
 
@@ -893,47 +895,6 @@ const CSSProperty& StyleCascade::ResolveSurrogate(const CSSProperty& property) {
       state_.Style()->Direction(), state_.Style()->GetWritingMode());
   DCHECK(original);
   return *original;
-}
-
-bool StyleCascade::HasAuthorDeclaration(const CSSProperty& property) const {
-  return map_.At(property.GetCSSPropertyName()).GetOrigin() ==
-         CascadeOrigin::kAuthor;
-}
-
-bool StyleCascade::HasAuthorBorder() const {
-  return HasAuthorDeclaration(GetCSSPropertyBorderBottomColor()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderBottomLeftRadius()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderBottomRightRadius()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderBottomStyle()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderBottomWidth()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderImageOutset()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderImageRepeat()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderImageSlice()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderImageSource()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderImageWidth()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderLeftColor()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderLeftStyle()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderLeftWidth()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderRightColor()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderRightStyle()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderRightWidth()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderTopColor()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderTopLeftRadius()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderTopRightRadius()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderTopStyle()) ||
-         HasAuthorDeclaration(GetCSSPropertyBorderTopWidth());
-}
-
-bool StyleCascade::HasAuthorBackground() const {
-  return HasAuthorDeclaration(GetCSSPropertyBackgroundAttachment()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundBlendMode()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundClip()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundColor()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundImage()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundOrigin()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundPositionX()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundPositionY()) ||
-         HasAuthorDeclaration(GetCSSPropertyBackgroundSize());
 }
 
 }  // namespace blink

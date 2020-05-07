@@ -1930,6 +1930,9 @@ crbug.com/1075869 http/tests/devtools/elements/styles-3/spectrum.js [ Pass Failu
 crbug.com/1075869 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure Timeout ]
 
+# Disabled for DevTools roll (userAgent CDP method changes).
+crbug.com/1031511 http/tests/devtools/report-API-errors.js [ Pass Failure ]
+
 # Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
 # with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]

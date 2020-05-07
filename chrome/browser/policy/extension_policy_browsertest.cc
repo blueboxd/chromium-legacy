@@ -1060,10 +1060,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                               extensions::disable_reason::DISABLE_RELOAD);
 
     const std::string kCorruptedContent("// corrupted\n");
-    ASSERT_EQ(kCorruptedContent.size(),
-              static_cast<unsigned>(base::WriteFile(resource_path,
-                                                    kCorruptedContent.data(),
-                                                    kCorruptedContent.size())));
+    ASSERT_TRUE(base::WriteFile(resource_path, kCorruptedContent));
 
     service->EnableExtension(kGoodCrxId);
   }
@@ -1132,17 +1129,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                               extensions::disable_reason::DISABLE_RELOAD);
 
     const std::string kCorruptedContent("// corrupted\n");
-    ASSERT_EQ(kCorruptedContent.size(),
-              static_cast<unsigned>(base::WriteFile(resource_path,
-                                                    kCorruptedContent.data(),
-                                                    kCorruptedContent.size())));
+    ASSERT_TRUE(base::WriteFile(resource_path, kCorruptedContent));
 
     const std::string kInvalidJson("not a json");
-    ASSERT_EQ(
-        kInvalidJson.size(),
-        static_cast<unsigned>(base::WriteFile(
-            extensions::file_util::GetComputedHashesPath(extension->path()),
-            kInvalidJson.data(), kInvalidJson.size())));
+    ASSERT_TRUE(base::WriteFile(
+        extensions::file_util::GetComputedHashesPath(extension->path()),
+        kInvalidJson));
 
     service->EnableExtension(kGoodCrxId);
   }
@@ -1216,10 +1208,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                               extensions::disable_reason::DISABLE_RELOAD);
 
     const std::string kCorruptedContent("// corrupted\n");
-    ASSERT_EQ(kCorruptedContent.size(),
-              static_cast<unsigned>(base::WriteFile(resource_path,
-                                                    kCorruptedContent.data(),
-                                                    kCorruptedContent.size())));
+    ASSERT_TRUE(base::WriteFile(resource_path, kCorruptedContent));
     ASSERT_TRUE(base::DeleteFile(
         extensions::file_util::GetComputedHashesPath(extension->path()),
         /*recursive=*/false));

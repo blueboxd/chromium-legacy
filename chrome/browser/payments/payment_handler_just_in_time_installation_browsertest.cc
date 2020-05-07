@@ -84,8 +84,10 @@ IN_PROC_BROWSER_TEST_F(PaymentHandlerJustInTimeInstallationTest,
   // show() should get rejected since the JIT installable app does not have an
   // icon.
   ExpectBodyContains(
+      "\nBob Pay and Cards Test\nInstallable App\nThe payment method "
+      "\"https://henrypay.com/webpay\" is not supported. "
       "Failed to download or decode a non-empty icon for payment app with "
-      "\"https://henrypay.com/app.json\" manifest.");
+      "\"https://henrypay.com/app.json\" manifest.\n\n\n\n\n");
 }
 
 class AlwaysAllowJustInTimePaymentAppTest

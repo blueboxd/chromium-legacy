@@ -944,17 +944,16 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
   // TODO(https://crbug.com/918846): implement collecting all necessary data
   // on iOS.
 #if not defined(OS_IOS)
-  std::set<base::string16> saved_usernames;
-  std::set<base::string16> saved_passwords;
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames;
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords;
 
   for (auto* saved_form : form_fetcher_->GetNonFederatedMatches()) {
-    saved_usernames.insert(saved_form->username_value);
-    saved_passwords.insert(saved_form->password_value);
+    // Saved credentials might have empty usernames which are not interesting
+    // for filling assistance metric.
+    if (!saved_form->username_value.empty())
+      saved_usernames.emplace(saved_form->username_value, saved_form->in_store);
+    saved_passwords.emplace(saved_form->password_value, saved_form->in_store);
   }
-
-  // Saved credentials might have empty usernames which are not interesting
-  // for filling assistance metric.
-  saved_usernames.erase(base::string16());
 
   metrics_recorder_->CalculateFillingAssistanceMetric(
       submitted_form, saved_usernames, saved_passwords, IsBlacklisted(),

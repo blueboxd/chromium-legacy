@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
+#include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 
 namespace blink {
@@ -57,6 +58,14 @@ class CORE_EXPORT CascadeResolver {
   // used to skip application of a declaration).
   void MarkApplied(CascadePriority*) const;
 
+  // If the incoming origin is kAuthor, collect flags from 'property'.
+  // AuthorFlags() can then later be used to see which flags have been observed.
+  void CollectAuthorFlags(const CSSProperty& property, CascadeOrigin origin) {
+    author_flags_ |=
+        (origin == CascadeOrigin::kAuthor ? property.GetFlags() : 0);
+  }
+  CSSProperty::Flags AuthorFlags() const { return author_flags_; }
+
   // Automatically locks and unlocks the given property. (See
   // CascadeResolver::IsLocked).
   class CORE_EXPORT AutoLock {
@@ -98,6 +107,7 @@ class CORE_EXPORT CascadeResolver {
   wtf_size_t cycle_depth_ = kNotFound;
   CascadeFilter filter_;
   const uint8_t generation_ = 0;
+  CSSProperty::Flags author_flags_ = 0;
 
   // A very simple cache for CSSPendingSubstitutionValues. We cache only the
   // most recently parsed CSSPendingSubstitutionValue, such that consecutive

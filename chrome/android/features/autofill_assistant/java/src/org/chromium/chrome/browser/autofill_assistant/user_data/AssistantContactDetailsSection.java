@@ -37,7 +37,6 @@ public class AssistantContactDetailsSection
                         R.dimen.autofill_assistant_payment_request_title_padding),
                 context.getString(R.string.payments_add_contact),
                 context.getString(R.string.payments_add_contact));
-        setTitle(context.getString(R.string.payments_contact_details_label));
     }
 
     public void setEditor(ContactEditor editor) {

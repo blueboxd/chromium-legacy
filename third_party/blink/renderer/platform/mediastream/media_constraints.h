@@ -237,6 +237,9 @@ struct MediaTrackConstraintSetPlatform {
   LongConstraint channel_count;
   StringConstraint device_id;
   BooleanConstraint disable_local_echo;
+  DoubleConstraint pan;
+  DoubleConstraint tilt;
+  DoubleConstraint zoom;
   StringConstraint group_id;
   // https://w3c.github.io/mediacapture-depth/#mediatrackconstraints
   StringConstraint video_kind;

@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -162,7 +163,7 @@ bool PluginVmInstallerView::ShouldShowWindowTitle() const {
 bool PluginVmInstallerView::Accept() {
   if (state_ == State::CREATED || state_ == State::IMPORTED) {
     // Launch button has been clicked.
-    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm(
+    plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->LaunchPluginVm(
         base::DoNothing());
     return true;
   }

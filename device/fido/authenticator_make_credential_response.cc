@@ -14,6 +14,7 @@
 #include "device/fido/client_data.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/p256_public_key.h"
+#include "device/fido/public_key.h"
 
 namespace device {
 
@@ -24,7 +25,7 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
     base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
   auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
-      fido_parsing_utils::kEs256, u2f_data);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256), u2f_data);
   if (!public_key)
     return base::nullopt;
 

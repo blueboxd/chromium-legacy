@@ -767,6 +767,11 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
 
     collect_user_data_options_->contact_details_name =
         contact_details.contact_details_name();
+
+    collect_user_data_options_->contact_details_section_title.assign(
+        contact_details.contact_details_section_title().empty()
+            ? l10n_util::GetStringUTF8(IDS_PAYMENTS_CONTACT_DETAILS_LABEL)
+            : contact_details.contact_details_section_title());
   }
 
   for (const auto& network :
@@ -816,6 +821,10 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       collect_user_data.has_login_details();
   collect_user_data_options_->login_section_title.assign(
       collect_user_data.login_details().section_title());
+  collect_user_data_options_->shipping_address_section_title.assign(
+      collect_user_data.shipping_address_section_title().empty()
+          ? l10n_util::GetStringUTF8(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL)
+          : collect_user_data.shipping_address_section_title());
 
   // Transform login options to concrete login choices.
   for (const auto& login_option :

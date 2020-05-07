@@ -285,7 +285,8 @@ class COLOR_SPACE_EXPORT ColorSpace {
   const _GLcolorSpace* AsGLColorSpace() const;
 
   // For YUV color spaces, return the closest SkYUVColorSpace.
-  // Returns true if a close match is found.
+  // Returns true if a close match is found. Otherwise, leaves *out unchanged
+  // and returns false.
   bool ToSkYUVColorSpace(SkYUVColorSpace* out) const;
 
   void GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const;

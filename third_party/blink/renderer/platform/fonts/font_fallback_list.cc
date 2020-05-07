@@ -161,14 +161,13 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
 }
 
 scoped_refptr<FontData> FontFallbackList::GetFontData(
-    const FontDescription& font_description,
-    int& family_index) const {
+    const FontDescription& font_description) {
   const FontFamily* curr_family = &font_description.Family();
-  for (int i = 0; curr_family && i < family_index; i++)
+  for (int i = 0; curr_family && i < family_index_; i++)
     curr_family = curr_family->Next();
 
   for (; curr_family; curr_family = curr_family->Next()) {
-    family_index++;
+    family_index_++;
     if (curr_family->Family().length()) {
       scoped_refptr<FontData> result;
       if (font_selector_)
@@ -189,7 +188,7 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
         font_selector_->ReportFailedFontFamilyMatch(curr_family->Family());
     }
   }
-  family_index = kCAllFamiliesScanned;
+  family_index_ = kCAllFamiliesScanned;
 
   if (font_selector_) {
     // Try the user's preferred standard font.
@@ -254,7 +253,7 @@ const FontData* FontFallbackList::FontDataAt(
   // the same spot in the list twice.  GetFontData will adjust our
   // |family_index_| as it scans for the right font to make.
   DCHECK_EQ(FontCache::GetFontCache()->Generation(), generation_);
-  scoped_refptr<FontData> result = GetFontData(font_description, family_index_);
+  scoped_refptr<FontData> result = GetFontData(font_description);
   if (result) {
     font_list_.push_back(result);
     if (result->IsLoadingFallback())

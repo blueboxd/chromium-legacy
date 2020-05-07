@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-async function testShowDialogAfterHide(done) {
+function setUp() {
   // Polyfill chrome.app.window.current().
   /** @suppress {duplicate,checkTypes,const} */
   chrome.app = {window: {current: () => null}};
 
+  window.loadTimeData.data = {
+    FILES_NG_ENABLED: true,
+  };
+}
+
+async function testShowDialogAfterHide(done) {
   const container =
       assertInstanceof(document.createElement('div'), HTMLElement);
 

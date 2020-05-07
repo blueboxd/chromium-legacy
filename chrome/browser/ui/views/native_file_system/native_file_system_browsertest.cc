@@ -148,8 +148,7 @@ class NativeFileSystemBrowserTest : public testing::WithParamInterface<bool>,
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath result;
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &result));
-    EXPECT_EQ(int{contents.size()},
-              base::WriteFile(result, contents.data(), contents.size()));
+    EXPECT_TRUE(base::WriteFile(result, contents));
     return result;
   }
 

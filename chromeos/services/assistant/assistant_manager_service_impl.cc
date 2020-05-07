@@ -142,6 +142,27 @@ std::vector<std::pair<std::string, std::string>> ToAuthTokensOrEmpty(
   return {std::make_pair(user.value().gaia_id, user.value().access_token)};
 }
 
+void UpdateInternalOptions(
+    assistant_client::AssistantManagerInternal* assistant_manager_internal,
+    const std::string& locale,
+    bool spoken_feedback_enabled) {
+  // NOTE: this method is called on multiple threads, it needs to be
+  // thread-safe.
+  auto* internal_options =
+      assistant_manager_internal->CreateDefaultInternalOptions();
+  SetAssistantOptions(internal_options, locale, spoken_feedback_enabled);
+
+  internal_options->SetClientControlEnabled(
+      assistant::features::IsRoutinesEnabled());
+
+  if (!features::IsVoiceMatchDisabled())
+    internal_options->EnableRequireVoiceMatchVerification();
+
+  assistant_manager_internal->SetOptions(*internal_options, [](bool success) {
+    DVLOG(2) << "set options: " << success;
+  });
+}
+
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
@@ -208,7 +229,8 @@ void AssistantManagerServiceImpl::Start(const base::Optional<UserInfo>& user,
   background_thread_.task_runner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                     base::Unretained(this), user),
+                     base::Unretained(this), user,
+                     assistant_state()->locale().value()),
       base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
                      weak_factory_.GetWeakPtr()));
 }
@@ -1022,8 +1044,11 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
-    const base::Optional<UserInfo>& user) {
+    const base::Optional<UserInfo>& user,
+    const std::string& locale) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
+  // NOTE: as the above showed, this is running in a different thread, we can
+  // only access |new_xxx| members here.
   base::AutoLock lock(new_assistant_manager_lock_);
   // There can only be one |AssistantManager| instance at any given time.
   DCHECK(!assistant_manager_);
@@ -1036,7 +1061,8 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   new_assistant_manager_internal_ =
       delegate_->UnwrapAssistantManagerInternal(new_assistant_manager_.get());
 
-  UpdateInternalOptions(new_assistant_manager_internal_);
+  UpdateInternalOptions(new_assistant_manager_internal_, locale,
+                        spoken_feedback_enabled_);
 
   new_assistant_manager_internal_->SetLocaleOverride(
       GetLocaleOrDefault(assistant_state()->locale().value()));
@@ -1173,25 +1199,6 @@ void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
   display_connection_->OnAndroidAppListRefreshed(android_apps_info);
 }
 
-void AssistantManagerServiceImpl::UpdateInternalOptions(
-    assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  // Build internal options
-  auto* internal_options =
-      assistant_manager_internal->CreateDefaultInternalOptions();
-  SetAssistantOptions(internal_options, assistant_state()->locale().value(),
-                      spoken_feedback_enabled_);
-
-  internal_options->SetClientControlEnabled(
-      assistant::features::IsRoutinesEnabled());
-
-  if (!features::IsVoiceMatchDisabled())
-    internal_options->EnableRequireVoiceMatchVerification();
-
-  assistant_manager_internal->SetOptions(*internal_options, [](bool success) {
-    DVLOG(2) << "set options: " << success;
-  });
-}
-
 void AssistantManagerServiceImpl::OnPlaybackStateChange(
     const MediaStatus& status) {
   media_session_->NotifyMediaSessionMetadataChanged(status);
@@ -1275,8 +1282,11 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
 
   // When |spoken_feedback_enabled_| changes we need to update our internal
   // options to turn on/off A11Y features in LibAssistant.
-  if (assistant_manager_internal_)
-    UpdateInternalOptions(assistant_manager_internal_);
+  if (assistant_manager_internal_) {
+    UpdateInternalOptions(assistant_manager_internal_,
+                          assistant_state()->locale().value(),
+                          spoken_feedback_enabled_);
+  }
 }
 
 void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {

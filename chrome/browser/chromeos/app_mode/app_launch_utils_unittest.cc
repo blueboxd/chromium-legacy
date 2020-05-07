@@ -57,8 +57,7 @@ class AppLaunchUtilsTest : public testing::Test {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     input_file_ = temp_dir_.GetPath().AppendASCII("prefs.json");
-    ASSERT_LT(0, base::WriteFile(input_file_, kEmptyPrefsFile,
-                                 base::size(kEmptyPrefsFile) - 1));
+    ASSERT_TRUE(base::WriteFile(input_file_, kEmptyPrefsFile));
 
     registry_ = new PrefRegistrySimple;
   }

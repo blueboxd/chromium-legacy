@@ -14,6 +14,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -111,7 +112,8 @@ bool IsPluginVmEnabled(const Profile* profile) {
 }
 
 bool IsPluginVmRunning(Profile* profile) {
-  return plugin_vm::PluginVmManager::GetForProfile(profile)->vm_state() ==
+  return plugin_vm::PluginVmManagerFactory::GetForProfile(profile)
+                 ->vm_state() ==
              vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING &&
          ChromeLauncherController::instance()->IsOpen(
              ash::ShelfID(kPluginVmAppId));

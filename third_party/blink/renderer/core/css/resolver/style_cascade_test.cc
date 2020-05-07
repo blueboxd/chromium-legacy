@@ -2823,10 +2823,10 @@ TEST_F(StyleCascadeTest, ApplyWithFilter) {
 }
 
 TEST_F(StyleCascadeTest, HasAuthorBackground) {
-  Vector<String> properties = {"background-attachment"/*, "background-blend-mode",
+  Vector<String> properties = {"background-attachment", "background-blend-mode",
                                "background-clip",       "background-image",
                                "background-origin",     "background-position-x",
-                               "background-position-y", "background-size"*/};
+                               "background-position-y", "background-size"};
 
   for (String property : properties) {
     TestCascade cascade(GetDocument());
@@ -2860,6 +2860,16 @@ TEST_F(StyleCascadeTest, HasAuthorBorder) {
   }
 }
 
+TEST_F(StyleCascadeTest, HasAuthorBorderLogical) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
+  cascade.Add("border-block-start-color", "red", Origin::kUserAgent);
+  cascade.Add("border-block-start-color", "green", Origin::kAuthor);
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_TRUE(style->HasAuthorBorder());
+}
+
 TEST_F(StyleCascadeTest, NoAuthorBackgroundOrBorder) {
   TestCascade cascade(GetDocument());
   cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
@@ -2870,6 +2880,36 @@ TEST_F(StyleCascadeTest, NoAuthorBackgroundOrBorder) {
   cascade.Apply();
   auto style = cascade.TakeStyle();
   EXPECT_FALSE(style->HasAuthorBackground());
+  EXPECT_FALSE(style->HasAuthorBorder());
+}
+
+TEST_F(StyleCascadeTest, AuthorBackgroundRevert) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
+  cascade.Add("background-color", "red", Origin::kUserAgent);
+  cascade.Add("background-color", "revert", Origin::kAuthor);
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_FALSE(style->HasAuthorBackground());
+}
+
+TEST_F(StyleCascadeTest, AuthorBorderRevert) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
+  cascade.Add("border-top-color", "red", Origin::kUserAgent);
+  cascade.Add("border-top-color", "revert", Origin::kAuthor);
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
+  EXPECT_FALSE(style->HasAuthorBorder());
+}
+
+TEST_F(StyleCascadeTest, AuthorBorderRevertLogical) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-appearance", "button", Origin::kUserAgent);
+  cascade.Add("border-block-start-color", "red", Origin::kUserAgent);
+  cascade.Add("border-block-start-color", "revert", Origin::kAuthor);
+  cascade.Apply();
+  auto style = cascade.TakeStyle();
   EXPECT_FALSE(style->HasAuthorBorder());
 }
 

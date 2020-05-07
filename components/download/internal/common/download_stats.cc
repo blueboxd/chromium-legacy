@@ -152,9 +152,7 @@ void RecordDownloadCountWithSource(DownloadCountTypes type,
 
 void RecordDownloadCompleted(int64_t download_len,
                              bool is_parallelizable,
-                             DownloadSource download_source,
-                             bool has_resumed,
-                             bool has_strong_validators) {
+                             DownloadSource download_source) {
   RecordDownloadCountWithSource(COMPLETED_COUNT, download_source);
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
   download_len /= 1024;              // In Kilobytes
@@ -163,11 +161,6 @@ void RecordDownloadCompleted(int64_t download_len,
   if (is_parallelizable) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize.Parallelizable",
                                 download_len, 1, max, 256);
-  }
-
-  if (has_resumed) {
-    base::UmaHistogramBoolean("Download.ResumptionComplete.HasStrongValidators",
-                              has_strong_validators);
   }
 }
 
@@ -773,11 +766,6 @@ void RecordResumptionRestartReason(DownloadInterruptReason reason) {
 
 void RecordResumptionRestartCount(ResumptionRestartCountTypes type) {
   base::UmaHistogramEnumeration("Download.ResumptionRestart.Counts", type);
-}
-
-void RecordDownloadResumed(bool has_strong_validators) {
-  base::UmaHistogramBoolean("Download.ResumptionStart.HasStrongValidators",
-                            has_strong_validators);
 }
 
 void RecordDownloadManagerCreationTimeSinceStartup(

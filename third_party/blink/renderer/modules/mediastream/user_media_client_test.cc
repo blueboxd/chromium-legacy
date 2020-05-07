@@ -48,9 +48,6 @@ using testing::Mock;
 
 namespace blink {
 
-// To avoid symbol collisions in jumbo builds.
-namespace user_media_client_impl_test {
-
 using EchoCancellationType =
     blink::AudioProcessingProperties::EchoCancellationType;
 
@@ -1436,5 +1433,85 @@ TEST_F(UserMediaClientTest, DesktopCaptureChangeSourceWithoutAudio) {
   base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace user_media_client_impl_test
+TEST_F(UserMediaClientTest, PanConstraintRequestPanTiltZoomPermission) {
+  EXPECT_FALSE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      CreateDefaultConstraints()));
+
+  blink::MockConstraintFactory exact_basic_factory;
+  exact_basic_factory.basic().pan.SetExact(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      exact_basic_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory ideal_basic_factory;
+  ideal_basic_factory.basic().pan.SetIdeal(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      ideal_basic_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory exact_advanced_factory;
+  auto& exact_advanced = exact_advanced_factory.AddAdvanced();
+  exact_advanced.pan.SetExact(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      exact_advanced_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory ideal_advanced_factory;
+  auto& ideal_advanced = ideal_advanced_factory.AddAdvanced();
+  ideal_advanced.pan.SetIdeal(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      ideal_advanced_factory.CreateMediaConstraints()));
+}
+
+TEST_F(UserMediaClientTest, TiltConstraintRequestPanTiltZoomPermission) {
+  EXPECT_FALSE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      CreateDefaultConstraints()));
+
+  blink::MockConstraintFactory exact_basic_factory;
+  exact_basic_factory.basic().tilt.SetExact(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      exact_basic_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory ideal_basic_factory;
+  ideal_basic_factory.basic().tilt.SetIdeal(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      ideal_basic_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory exact_advanced_factory;
+  auto& exact_advanced = exact_advanced_factory.AddAdvanced();
+  exact_advanced.tilt.SetExact(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      exact_advanced_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory ideal_advanced_factory;
+  auto& ideal_advanced = ideal_advanced_factory.AddAdvanced();
+  ideal_advanced.tilt.SetIdeal(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      ideal_advanced_factory.CreateMediaConstraints()));
+}
+
+TEST_F(UserMediaClientTest, ZoomConstraintRequestPanTiltZoomPermission) {
+  EXPECT_FALSE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      CreateDefaultConstraints()));
+
+  blink::MockConstraintFactory exact_basic_factory;
+  exact_basic_factory.basic().zoom.SetExact(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      exact_basic_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory ideal_basic_factory;
+  ideal_basic_factory.basic().zoom.SetIdeal(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      ideal_basic_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory exact_advanced_factory;
+  auto& exact_advanced = exact_advanced_factory.AddAdvanced();
+  exact_advanced.zoom.SetExact(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      exact_advanced_factory.CreateMediaConstraints()));
+
+  blink::MockConstraintFactory ideal_advanced_factory;
+  auto& ideal_advanced = ideal_advanced_factory.AddAdvanced();
+  ideal_advanced.zoom.SetIdeal(1);
+  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
+      ideal_advanced_factory.CreateMediaConstraints()));
+}
+
 }  // namespace blink

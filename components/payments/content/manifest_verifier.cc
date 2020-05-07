@@ -29,29 +29,24 @@ namespace {
 
 const char* const kAllOriginsSupportedIndicator = "*";
 
-// Enables |method_manifest_url| in those |apps| that are from |app_origins|, if
-// either |all_origins_supported| is true or |supported_origin_strings| contains
-// the origin of the app.
+// Enables |method_manifest_url| in the subset of |apps| specified by |app_ids|,
+// if either |all_origins_supported| is true or |supported_origin_strings|
+// contains the origin of the app.
 void EnableMethodManifestUrlForSupportedApps(
     const GURL& method_manifest_url,
     const std::vector<std::string>& supported_origin_strings,
     bool all_origins_supported,
-    const std::set<url::Origin>& app_origins,
     content::PaymentAppProvider::PaymentApps* apps,
+    std::vector<int64_t> app_ids,
     std::map<GURL, std::set<GURL>>* prohibited_payment_methods) {
-  for (const auto& app_origin : app_origins) {
-    for (auto& app : *apps) {
-      if (app_origin.IsSameOriginWith(
-              url::Origin::Create(app.second->scope.GetOrigin()))) {
-        app.second->has_explicitly_verified_methods =
-            base::Contains(supported_origin_strings, app_origin.Serialize());
-        if (all_origins_supported ||
-            app.second->has_explicitly_verified_methods) {
-          app.second->enabled_methods.emplace_back(method_manifest_url.spec());
-          prohibited_payment_methods->at(app.second->scope)
-              .erase(method_manifest_url);
-        }
-      }
+  for (auto app_id : app_ids) {
+    auto* app = (*apps)[app_id].get();
+    app->has_explicitly_verified_methods =
+        base::Contains(supported_origin_strings,
+                       url::Origin::Create(app->scope.GetOrigin()).Serialize());
+    if (all_origins_supported || app->has_explicitly_verified_methods) {
+      app->enabled_methods.emplace_back(method_manifest_url.spec());
+      prohibited_payment_methods->at(app->scope).erase(method_manifest_url);
     }
   }
 }
@@ -131,9 +126,9 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
       }
 
       manifests_to_download.insert(method_manifest_url);
-      manifest_url_to_app_origins_map_[method_manifest_url].insert(app_origin);
       prohibited_payment_methods_[app.second->scope].insert(
           method_manifest_url);
+      manifest_url_to_app_id_map_[method_manifest_url].emplace_back(app.first);
     }
 
     app.second->enabled_methods.swap(verified_method_names);
@@ -192,7 +187,7 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
 
   EnableMethodManifestUrlForSupportedApps(
       method_manifest_url, supported_origin_strings, all_origins_supported,
-      manifest_url_to_app_origins_map_[method_manifest_url], &apps_,
+      &apps_, manifest_url_to_app_id_map_[method_manifest_url],
       &prohibited_payment_methods_);
 
   if (!supported_origin_strings.empty()) {
@@ -256,7 +251,7 @@ void ManifestVerifier::OnPaymentMethodManifestParsed(
       cached_manifest_urls_.end()) {
     EnableMethodManifestUrlForSupportedApps(
         method_manifest_url, supported_origin_strings, all_origins_supported,
-        manifest_url_to_app_origins_map_[method_manifest_url], &apps_,
+        &apps_, manifest_url_to_app_id_map_[method_manifest_url],
         &prohibited_payment_methods_);
 
     if (--number_of_manifests_to_verify_ == 0) {

@@ -59,8 +59,6 @@ class TileFetcherImpl : public TileFetcher {
                                             api_key, experiment_tag);
     url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), kQueryTilesFetcherTrafficAnnotation);
-    url_loader_->SetOnResponseStartedCallback(base::BindRepeating(
-        &TileFetcherImpl::OnResponseStarted, weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -96,25 +94,45 @@ class TileFetcherImpl : public TileFetcher {
       request->headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
                                  accept_languages);
     }
-
     return request;
   }
 
-  // Called when start receiving HTTP response.
-  void OnResponseStarted(const GURL& final_url,
-                         const network::mojom::URLResponseHead& response_head) {
-    int response_code = -1;
-    if (response_head.headers)
-      response_code = response_head.headers->response_code();
-
-    // TODO(hesen): Handle more possible status, and record status to UMA.
-    if (response_code == -1 || (response_code < 200 || response_code > 299))
-      tile_info_request_status_ = TileInfoRequestStatus::kFailure;
+  bool ShouldSuspendDueToNetError() {
+    auto error_code = url_loader_->NetError();
+    switch (error_code) {
+      case net::ERR_BLOCKED_BY_ADMINISTRATOR:
+        return true;
+      default:
+        return false;
+    }
   }
 
-  // Called after receiving HTTP response. Processes the response code.
+  bool ShouldSuspend(int response_code) {
+    switch (response_code) {
+      case net::HTTP_NOT_IMPLEMENTED:
+      case net::HTTP_FORBIDDEN:
+        return true;
+      default:
+        return ShouldSuspendDueToNetError();
+    }
+  }
+
+  // Called after receiving HTTP response. Processes the response code and net
+  // error.
   void OnDownloadComplete(FinishedCallback callback,
                           std::unique_ptr<std::string> response_body) {
+    int response_code = -1;
+    if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
+      response_code = url_loader_->ResponseInfo()->headers->response_code();
+
+    if (response_code >= 200 && response_code < 300 && response_body) {
+      tile_info_request_status_ = TileInfoRequestStatus::kSuccess;
+    } else {
+      tile_info_request_status_ = ShouldSuspend(response_code)
+                                      ? TileInfoRequestStatus::kShouldSuspend
+                                      : TileInfoRequestStatus::kFailure;
+    }
+    // TODO(crbug.com/1068683): Record response code UMA.
     std::move(callback).Run(tile_info_request_status_,
                             std::move(response_body));
     tile_info_request_status_ = TileInfoRequestStatus::kInit;

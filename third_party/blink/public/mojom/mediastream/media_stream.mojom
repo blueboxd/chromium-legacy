@@ -104,6 +104,7 @@ struct StreamControls {
   TrackControls video;
   bool hotword_enabled;
   bool disable_local_echo;
+  bool request_pan_tilt_zoom_permission;
 };
 
 // Per-frame renderer-side interface that receives device stopped/change

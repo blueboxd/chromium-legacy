@@ -19,9 +19,9 @@ struct ParsedHeaders {
   // Cross-Origin-Embedder-Policy-Report-Only headers.
   CrossOriginEmbedderPolicy cross_origin_embedder_policy;
 
-  // The parsed value of the Cross-Origin-Opener-Policy (COOP) header.
-  CrossOriginOpenerPolicy cross_origin_opener_policy =
-      CrossOriginOpenerPolicy.kUnsafeNone;
+  // The parsed value of the Cross-Origin-Opener-Policy (COOP) and
+  // Cross-Origin-opener-Policy-Report-Only headers.
+  CrossOriginOpenerPolicy cross_origin_opener_policy;
 
   // The parsed Accept-CH from response headers.
   //

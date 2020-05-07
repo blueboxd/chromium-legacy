@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 44
+// Next MinVersion: 45
 
 module arc.mojom;
 
@@ -40,6 +40,9 @@ struct WebAppInfo {
   // The color used for the title bar of the app. Passed as a 32 bit ARGB value.
   // INT_MAX+1 represents an invalid color.
   int64 theme_color;
+
+  // If the web app is tied to a web-only TWA.
+  [MinVersion=44] bool is_web_only_twa;
 };
 
 // Describes ARC package.

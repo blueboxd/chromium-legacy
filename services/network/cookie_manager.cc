@@ -274,6 +274,7 @@ void CookieManager::ConfigureCookieSettings(
       params.third_party_cookies_allowed_schemes);
   out->set_content_settings_for_legacy_cookie_access(
       params.settings_for_legacy_cookie_access);
+  out->set_storage_access_grants(params.settings_for_storage_access);
 }
 
 void CookieManager::CrashOnGetCookieList() {

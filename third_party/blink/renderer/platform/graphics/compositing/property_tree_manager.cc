@@ -602,7 +602,6 @@ void PropertyTreeManager::EmitClipMaskLayer() {
       !pending_synthetic_mask_layers_.Contains(mask_isolation->id) &&
       mask_isolation->rounded_corner_bounds.IsEmpty();
 
-  int clip_id = EnsureCompositorClipNode(*current_.clip);
   CompositorElementId mask_isolation_id, mask_effect_id;
   SynthesizedClip& clip = client_.CreateOrReuseSynthesizedClipLayer(
       *current_.clip, *current_.transform, needs_layer, mask_isolation_id,
@@ -619,13 +618,13 @@ void PropertyTreeManager::EmitClipMaskLayer() {
 
   cc::EffectNode& mask_effect = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
-  mask_effect.stable_id = mask_effect_id.GetStableId();
-  mask_effect.clip_id = clip_id;
-  mask_effect.blend_mode = SkBlendMode::kDstIn;
-
   // The address of mask_isolation may have changed when we insert
   // |mask_effect| into the tree.
   mask_isolation = GetEffectTree().Node(current_.effect_id);
+
+  mask_effect.stable_id = mask_effect_id.GetStableId();
+  mask_effect.clip_id = mask_isolation->clip_id;
+  mask_effect.blend_mode = SkBlendMode::kDstIn;
 
   cc::PictureLayer* mask_layer = clip.Layer();
 
@@ -640,7 +639,7 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   int scroll_id =
       EnsureCompositorScrollNode(clip_space.NearestScrollTranslationNode());
   mask_layer->SetScrollTreeIndex(scroll_id);
-  mask_layer->SetClipTreeIndex(clip_id);
+  mask_layer->SetClipTreeIndex(mask_effect.clip_id);
   mask_layer->SetEffectTreeIndex(mask_effect.id);
 
   if (!mask_isolation->backdrop_filters.IsEmpty()) {
@@ -897,6 +896,7 @@ PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode& target_clip_arg,
     const EffectPaintPropertyNode* next_effect) {
   const auto* target_clip = &target_clip_arg.Unalias();
+  int clip_id = EnsureCompositorClipNode(*target_clip);
   auto backdrop_effect_state = kNoBackdropEffect;
   if (next_effect && next_effect->HasBackdropEffect()) {
     // Exit all synthetic effect node if the next child has backdrop effect
@@ -968,7 +968,7 @@ PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
 
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
-      synthetic_effect.clip_id = EnsureCompositorClipNode(*pending_clip.clip);
+      synthetic_effect.clip_id = clip_id;
       // For non-trivial clip, isolation_effect.stable_id will be assigned later
       // when the effect is closed. For now the default value INVALID_STABLE_ID
       // is used. See PropertyTreeManager::EmitClipMaskLayer().

@@ -47,6 +47,7 @@ third_party/libaddressinput/BUILD.gn.
       <output filename="address_input_strings_pa.pak" type="data_package" lang="pa" />
       <output filename="address_input_strings_si.pak" type="data_package" lang="si" />
       <output filename="address_input_strings_sq.pak" type="data_package" lang="sq" />
+      <output filename="address_input_strings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
       <output filename="address_input_strings_ur.pak" type="data_package" lang="ur" />
       <output filename="address_input_strings_uz.pak" type="data_package" lang="uz" />
       <output filename="address_input_strings_zh-HK.pak" type="data_package" lang="zh-HK" />

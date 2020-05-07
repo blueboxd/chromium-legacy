@@ -75,7 +75,7 @@ class PublicURLManagerTest : public testing::Test {
     // wants.
     execution_context_->SetUpSecurityContextForTesting();
 
-    mojo::AssociatedRemote<BlobURLStore> url_store_remote;
+    HeapMojoAssociatedRemote<BlobURLStore> url_store_remote(execution_context_);
     url_store_receiver_.Bind(
         url_store_remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
     url_manager().SetURLStoreForTesting(std::move(url_store_remote));

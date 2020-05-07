@@ -80,7 +80,7 @@ public class AssistantOnboardingCoordinatorTest {
         AutofillAssistantUiTestUtil.startOnBlankPage(mCustomTabActivityTestRule);
         mActivity = mCustomTabActivityTestRule.getActivity();
         mBottomSheetController = TestThreadUtils.runOnUiThreadBlocking(
-                () -> AutofillAssistantUiTestUtil.createBottomSheetController(mActivity));
+                () -> AutofillAssistantUiTestUtil.getBottomSheetController(mActivity));
         mTab = mActivity.getTabModelSelector().getCurrentTab();
     }
 

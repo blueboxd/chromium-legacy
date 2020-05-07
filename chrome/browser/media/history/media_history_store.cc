@@ -744,11 +744,15 @@ void MediaHistoryStore::StoreMediaFeedFetchResultInternal(
     item_content_types |= static_cast<int>(item->type);
   }
 
+  const media_feeds::mojom::UserIdentifier* user_identifier =
+      result.user_identifier ? result.user_identifier.get() : nullptr;
+
   // Update the metadata associated with this feed.
   if (!feeds_table_->UpdateFeedFromFetch(
           result.feed_id, result.status, result.was_fetched_from_cache,
           result.items.size(), item_play_next_count, item_content_types,
-          result.logos, result.display_name, item_safe_count)) {
+          result.logos, user_identifier, result.display_name,
+          item_safe_count)) {
     DB()->RollbackTransaction();
     return;
   }

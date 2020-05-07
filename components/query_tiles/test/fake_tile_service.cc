@@ -84,7 +84,4 @@ void FakeTileService::GetTile(const std::string& tile_id,
   std::move(callback).Run(tile);
 }
 
-void FakeTileService::GetVisuals(const std::string& tile_id,
-                                 VisualsCallback callback) {}
-
 }  // namespace upboarding

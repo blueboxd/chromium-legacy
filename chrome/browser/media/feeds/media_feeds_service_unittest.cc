@@ -23,6 +23,7 @@
 #include "components/safe_search_api/url_checker.h"
 #include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -253,6 +254,8 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
   network::TestURLLoaderFactory url_loader_factory_;
 
   std::unique_ptr<safe_search_api::StubURLChecker> stub_url_checker_;
+
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
 TEST_F(MediaFeedsServiceTest, GetForProfile) {

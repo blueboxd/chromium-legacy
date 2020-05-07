@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/navigation_entry.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -111,10 +113,16 @@ void TerminalSource::StartDataRequest(
   if (path.empty())
     path = kDefaultFile;
 
-  // Replace $i8n{themeColor} in *.html.
+  // Replace $i8n{themeColor} in *.html, set title to an empty value while
+  // the page is loading.  Must be non-blank, so use invisible unicode
+  // left-to-right-marker &lrm;.
   if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
     replacements_["themeColor"] = net::EscapeForHTML(
         crostini::GetTerminalSettingBackgroundColor(profile_));
+    if (content::WebContents* contents = wc_getter.Run()) {
+      if (auto* entry = contents->GetController().GetVisibleEntry())
+        entry->SetTitle(base::UTF8ToUTF16("\u200E"));
+    }
   }
 
   base::ThreadPool::PostTask(

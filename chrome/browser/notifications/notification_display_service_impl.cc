@@ -214,6 +214,8 @@ void NotificationDisplayServiceImpl::ProcessNotificationOperation(
       DCHECK(by_user.has_value());
       handler->OnClose(profile_, origin, notification_id, by_user.value(),
                        std::move(completed_closure));
+      for (auto& observer : observers_)
+        observer.OnNotificationClosed(notification_id);
       break;
     case NotificationCommon::OPERATION_DISABLE_PERMISSION:
       handler->DisableNotifications(profile_, origin);
@@ -308,9 +310,6 @@ void NotificationDisplayServiceImpl::Close(
 
   bridge->Close(profile_, notification_id);
 #endif
-
-  for (auto& observer : observers_)
-    observer.OnNotificationClosed(notification_id);
 }
 
 void NotificationDisplayServiceImpl::GetDisplayed(

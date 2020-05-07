@@ -4,7 +4,11 @@
 
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 
+#include <string>
+
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "fuchsia/engine/common/cors_exempt_headers.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -15,23 +19,6 @@ std::string ClearUrlQueryRef(const GURL& url) {
   replacements.ClearQuery();
   replacements.ClearRef();
   return url.ReplaceComponents(replacements).spec();
-}
-
-void ApplyAddHeaders(network::ResourceRequest* request,
-                     const mojom::UrlRequestRewriteAddHeadersPtr& add_headers) {
-  request->headers.MergeFrom(add_headers->headers);
-}
-
-void ApplyRemoveHeader(
-    network::ResourceRequest* request,
-    const mojom::UrlRequestRewriteRemoveHeaderPtr& remove_header) {
-  base::Optional<std::string> query_pattern = remove_header->query_pattern;
-  if (query_pattern &&
-      request->url.query().find(query_pattern.value()) == std::string::npos) {
-    return;
-  }
-
-  request->headers.RemoveHeader(remove_header->header_name);
 }
 
 void ApplySubstituteQueryPattern(
@@ -78,6 +65,21 @@ void ApplyReplaceUrl(network::ResourceRequest* request,
   request->url = request->url.ReplaceComponents(replacements);
 }
 
+void ApplyRemoveHeader(
+    network::ResourceRequest* request,
+    const mojom::UrlRequestRewriteRemoveHeaderPtr& remove_header) {
+  base::Optional<std::string> query_pattern = remove_header->query_pattern;
+  if (query_pattern &&
+      request->url.query().find(query_pattern.value()) == std::string::npos) {
+    // Per the FIDL API, the header should be removed if there is no query
+    // pattern or if the pattern matches. Neither is true here.
+    return;
+  }
+
+  request->headers.RemoveHeader(remove_header->header_name);
+  request->cors_exempt_headers.RemoveHeader(remove_header->header_name);
+}
+
 void ApplyAppendToQuery(
     network::ResourceRequest* request,
     const mojom::UrlRequestRewriteAppendToQueryPtr& append_to_query) {
@@ -89,30 +91,6 @@ void ApplyAppendToQuery(
   GURL::Replacements replacements;
   replacements.SetQueryStr(url_query);
   request->url = request->url.ReplaceComponents(replacements);
-}
-
-void ApplyRewrite(network::ResourceRequest* request,
-                  const mojom::UrlRequestActionPtr& rewrite) {
-  switch (rewrite->which()) {
-    case mojom::UrlRequestAction::Tag::ADD_HEADERS:
-      ApplyAddHeaders(request, rewrite->get_add_headers());
-      break;
-    case mojom::UrlRequestAction::Tag::REMOVE_HEADER:
-      ApplyRemoveHeader(request, rewrite->get_remove_header());
-      break;
-    case mojom::UrlRequestAction::Tag::SUBSTITUTE_QUERY_PATTERN:
-      ApplySubstituteQueryPattern(request,
-                                  rewrite->get_substitute_query_pattern());
-      break;
-    case mojom::UrlRequestAction::Tag::REPLACE_URL:
-      ApplyReplaceUrl(request, rewrite->get_replace_url());
-      break;
-    case mojom::UrlRequestAction::Tag::APPEND_TO_QUERY:
-      ApplyAppendToQuery(request, rewrite->get_append_to_query());
-      break;
-    case mojom::UrlRequestAction::Tag::POLICY:
-      break;
-  }
 }
 
 bool HostMatches(const base::StringPiece& url_host,
@@ -161,17 +139,6 @@ bool RuleFiltersMatchRequest(network::ResourceRequest* request,
   }
 
   return true;
-}
-
-// Applies |rule|'s transformations to |request| if it satisfies |rule|'s
-// criteria.
-void ApplyRule(network::ResourceRequest* request,
-               const mojom::UrlRequestRulePtr& rule) {
-  if (!RuleFiltersMatchRequest(request, rule))
-    return;
-
-  for (const auto& rewrite : rule->actions)
-    ApplyRewrite(request, rewrite);
 }
 
 // Returns true if |request| is either allowed or left unblocked by any rules.
@@ -233,4 +200,55 @@ void WebEngineURLLoaderThrottle::WillStartRequest(
 bool WebEngineURLLoaderThrottle::makes_unsafe_redirect() {
   // WillStartRequest() does not make cross-scheme redirects.
   return false;
+}
+
+void WebEngineURLLoaderThrottle::ApplyRule(
+    network::ResourceRequest* request,
+    const mojom::UrlRequestRulePtr& rule) {
+  if (!RuleFiltersMatchRequest(request, rule))
+    return;
+
+  for (const auto& rewrite : rule->actions)
+    ApplyRewrite(request, rewrite);
+}
+
+void WebEngineURLLoaderThrottle::ApplyRewrite(
+    network::ResourceRequest* request,
+    const mojom::UrlRequestActionPtr& rewrite) {
+  switch (rewrite->which()) {
+    case mojom::UrlRequestAction::Tag::ADD_HEADERS:
+      ApplyAddHeaders(request, rewrite->get_add_headers());
+      return;
+    case mojom::UrlRequestAction::Tag::REMOVE_HEADER:
+      ApplyRemoveHeader(request, rewrite->get_remove_header());
+      return;
+    case mojom::UrlRequestAction::Tag::SUBSTITUTE_QUERY_PATTERN:
+      ApplySubstituteQueryPattern(request,
+                                  rewrite->get_substitute_query_pattern());
+      return;
+    case mojom::UrlRequestAction::Tag::REPLACE_URL:
+      ApplyReplaceUrl(request, rewrite->get_replace_url());
+      return;
+    case mojom::UrlRequestAction::Tag::APPEND_TO_QUERY:
+      ApplyAppendToQuery(request, rewrite->get_append_to_query());
+      return;
+    case mojom::UrlRequestAction::Tag::POLICY:
+      // "Policy" is interpreted elsewhere; it is a no-op for rewriting.
+      return;
+  }
+  NOTREACHED();  // Invalid enum value.
+}
+
+void WebEngineURLLoaderThrottle::ApplyAddHeaders(
+    network::ResourceRequest* request,
+    const mojom::UrlRequestRewriteAddHeadersPtr& add_headers) {
+  // Bucket each |header| into the regular/CORS-compliant header list or the
+  // CORS-exempt header list.
+  for (const auto& header : add_headers->headers.GetHeaderVector()) {
+    if (IsHeaderCorsExempt(header.key)) {
+      request->cors_exempt_headers.SetHeader(header.key, header.value);
+    } else {
+      request->headers.SetHeader(header.key, header.value);
+    }
+  }
 }

@@ -170,6 +170,11 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
   }
 }
 
+void IsolatedPrerenderTabHelper::NotifyPrefetchProbeLatency(
+    base::TimeDelta probe_latency) {
+  page_->probe_latency_ = probe_latency;
+}
+
 void IsolatedPrerenderTabHelper::OnPrefetchStatusUpdate(const GURL& url,
                                                         PrefetchStatus usage) {
   page_->prefetch_status_by_url_[url] = usage;
@@ -199,12 +204,22 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
     after_srp->prefetch_eligible_count_ =
         page_->srp_metrics_->prefetch_eligible_count_;
 
+    after_srp->probe_latency_ = page_->probe_latency_;
+
     auto status_iter = page_->prefetch_status_by_url_.find(url);
     if (status_iter != page_->prefetch_status_by_url_.end()) {
       after_srp->prefetch_status_ = status_iter->second;
     } else {
       after_srp->prefetch_status_ = PrefetchStatus::kNavigatedToLinkNotOnSRP;
     }
+
+    // Whenever probe latency is set, the status should reflect that a probe
+    // was attempted and vise versa.
+    DCHECK_EQ(after_srp->probe_latency_.has_value(),
+              after_srp->prefetch_status_ ==
+                      PrefetchStatus::kPrefetchUsedProbeSuccess ||
+                  after_srp->prefetch_status_ ==
+                      PrefetchStatus::kPrefetchNotUsedProbeFailed);
 
     auto position_iter = page_->original_prediction_ordering_.find(url);
     if (position_iter != page_->original_prediction_ordering_.end()) {
@@ -396,14 +411,6 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
                            std::move(body));
   }
   Prefetch();
-}
-
-void IsolatedPrerenderTabHelper::CallHandlePrefetchResponseForTesting(
-    const GURL& url,
-    const net::IsolationInfo& isolation_info,
-    network::mojom::URLResponseHeadPtr head,
-    std::unique_ptr<std::string> body) {
-  HandlePrefetchResponse(url, isolation_info, std::move(head), std::move(body));
 }
 
 void IsolatedPrerenderTabHelper::HandlePrefetchResponse(

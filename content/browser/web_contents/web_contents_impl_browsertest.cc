@@ -27,6 +27,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -2218,8 +2219,6 @@ class UserAgentInjector : public WebContentsObserver {
 
   // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
-    NavigationEntry* entry = web_contents()->GetController().GetVisibleEntry();
-    ASSERT_TRUE(entry);
     web_contents()->SetUserAgentOverride(user_agent_override_, false);
     navigation_handle->SetIsOverridingUserAgent(is_overriding_user_agent_);
   }
@@ -2250,8 +2249,88 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(user_agent_override, http_response.http_request()->headers.at(
                                      net::HttpRequestHeaders::kUserAgent));
   WaitForLoadStop(shell()->web_contents());
-  EXPECT_EQ(user_agent_override, EvalJs(shell()->web_contents(),
-                                        "navigator.userAgent.toLowerCase()"));
+  EXPECT_EQ(user_agent_override,
+            EvalJs(shell()->web_contents(), "navigator.userAgent;"));
+}
+
+// Used by SetIsOverridingUserAgent(), adding assertions unique to it.
+class NoEntryUserAgentInjector : public UserAgentInjector {
+ public:
+  NoEntryUserAgentInjector(WebContents* web_contents,
+                           const std::string& user_agent)
+      : UserAgentInjector(web_contents, user_agent) {}
+
+  // WebContentsObserver:
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    UserAgentInjector::DidStartNavigation(navigation_handle);
+    // DidStartNavigation() should only be called once for this test.
+    ASSERT_FALSE(was_did_start_navigation_called_);
+    was_did_start_navigation_called_ = true;
+
+    // This test expects to exercise the code where thee NavigationRequest is
+    // created before the NavigationEntry.
+    EXPECT_EQ(
+        0, static_cast<NavigationRequest*>(navigation_handle)->nav_entry_id());
+  }
+
+ private:
+  bool was_did_start_navigation_called_ = false;
+};
+
+// Verifies the user-agent string may be changed for a NavigationRequest whose
+// NavigationEntry is created after the NavigationRequest is.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SetIsOverridingUserAgentNoEntry) {
+  net::test_server::ControllableHttpResponse http_response1(
+      embedded_test_server(), "", true);
+  net::test_server::ControllableHttpResponse http_response2(
+      embedded_test_server(), "", true);
+  net::test_server::ControllableHttpResponse http_response3(
+      embedded_test_server(), "", true);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  shell()->web_contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          embedded_test_server()->GetURL("/test.html")));
+  http_response1.WaitForRequest();
+  http_response1.Send(net::HTTP_OK, "text/html", "<html>");
+  http_response1.Done();
+  WaitForLoadStop(shell()->web_contents());
+  shell()->web_contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          embedded_test_server()->GetURL("/test2.html")));
+  http_response2.WaitForRequest();
+  http_response2.Send(net::HTTP_OK, "text/html", "<html>");
+  http_response2.Done();
+  WaitForLoadStop(shell()->web_contents());
+
+  // Register a WebContentsObserver that changes the user-agent.
+  const std::string user_agent_override = "foo";
+  NoEntryUserAgentInjector injector(shell()->web_contents(),
+                                    user_agent_override);
+
+  // This triggers creating a NavigationRequest without a NavigationEntry. More
+  // specifically back() triggers creating a pending entry, and because back()
+  // does not complete, the reload() call results in a NavigationRequest with no
+  // NavigationEntry.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "history.back(); location.reload();"));
+
+  http_response3.WaitForRequest();
+  http_response3.Send(net::HTTP_OK, "text/html", "<html>");
+  http_response3.Done();
+  EXPECT_EQ(user_agent_override, http_response3.http_request()->headers.at(
+                                     net::HttpRequestHeaders::kUserAgent));
+  WaitForLoadStop(shell()->web_contents());
+  auto* controller = &(shell()->web_contents()->GetController());
+  EXPECT_EQ(1, controller->GetLastCommittedEntryIndex());
+  EXPECT_TRUE(shell()
+                  ->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->GetIsOverridingUserAgent());
+  EXPECT_EQ(user_agent_override,
+            EvalJs(shell()->web_contents(), "navigator.userAgent;"));
 }
 
 class WebContentsImplBrowserTestClientHintsEnabled

@@ -309,7 +309,6 @@ void HTMLInputElement::UpdateFocusAppearanceWithOptions(
     SelectionBehaviorOnFocus selection_behavior,
     const FocusOptions* options) {
   if (IsTextField()) {
-    // TODO(tkent): Move this code block to TextFieldInputType.
     switch (selection_behavior) {
       case SelectionBehaviorOnFocus::kReset:
         select();
@@ -335,7 +334,6 @@ void HTMLInputElement::UpdateFocusAppearanceWithOptions(
         GetDocument().GetFrame()->Selection().RevealSelection();
     }
   } else {
-    input_type_view_->UpdateAppearanceOnFocus(selection_behavior, *options);
     TextControlElement::UpdateFocusAppearanceWithOptions(selection_behavior,
                                                          options);
   }

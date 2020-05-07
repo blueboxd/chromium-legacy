@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
+
 from gpu_tests import skia_gold_matching_algorithms as algo
 
 _FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
@@ -176,109 +178,60 @@ class PixelTestPages(object):
     tolerance_vp9 = 20
 
     return [
-        PixelTestPage(
-            'pixel_background_image.html',
-            base_name + '_BackgroundImage',
-            test_rect=[20, 20, 370, 370]),
+        PixelTestPage('pixel_background_image.html',
+                      base_name + '_BackgroundImage',
+                      test_rect=[20, 20, 370, 370]),
         PixelTestPage(
             'pixel_reflected_div.html',
             base_name + '_ReflectedDiv',
             test_rect=[0, 0, 100, 300],
-            expected_colors=[
-                {
-                    'comment': 'inside original div, orange',
-                    'location': [5, 5],
-                    'size': [90, 90],
-                    'color': [255, 128, 0],
-                },
-                {
-                    'comment':
-                    'outside both div and reflection, in between, white',
-                    'location': [5, 105],
-                    'size': [90, 90],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'inside reflection, orange',
-                    'location': [5, 205],
-                    'size': [90, 90],
-                    'color': [255, 128, 0],
-                }
-            ]),
-        PixelTestPage(
-            'pixel_canvas2d.html',
-            base_name + '_Canvas2DRedBox',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_canvas2d_untagged.html',
-            base_name + '_Canvas2DUntagged',
-            test_rect=[0, 0, 257, 257]),
-        PixelTestPage(
-            'pixel_css3d.html',
-            base_name + '_CSS3DBlueBox',
-            test_rect=[0, 0, 300, 300],
-            matching_algorithm=algo.SobelMatchingAlgorithm(
-                max_different_pixels=0,
-                pixel_delta_threshold=0,
-                edge_threshold=100)),
-        PixelTestPage(
-            'pixel_webgl_aa_alpha.html',
-            base_name + '_WebGLGreenTriangle_AA_Alpha',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_webgl_noaa_alpha.html',
-            base_name + '_WebGLGreenTriangle_NoAA_Alpha',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_webgl_aa_noalpha.html',
-            base_name + '_WebGLGreenTriangle_AA_NoAlpha',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_webgl_noaa_noalpha.html',
-            base_name + '_WebGLGreenTriangle_NoAA_NoAlpha',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_webgl_noalpha_implicit_clear.html',
-            base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_webgl_sad_canvas.html',
-            base_name + '_WebGLSadCanvas',
-            test_rect=[0, 0, 300, 300],
-            optional_action='CrashGpuProcess'),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
+        PixelTestPage('pixel_canvas2d.html',
+                      base_name + '_Canvas2DRedBox',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_canvas2d_untagged.html',
+                      base_name + '_Canvas2DUntagged',
+                      test_rect=[0, 0, 257, 257]),
+        PixelTestPage('pixel_css3d.html',
+                      base_name + '_CSS3DBlueBox',
+                      test_rect=[0, 0, 300, 300],
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=0,
+                          pixel_delta_threshold=0,
+                          edge_threshold=100)),
+        PixelTestPage('pixel_webgl_aa_alpha.html',
+                      base_name + '_WebGLGreenTriangle_AA_Alpha',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_webgl_noaa_alpha.html',
+                      base_name + '_WebGLGreenTriangle_NoAA_Alpha',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_webgl_aa_noalpha.html',
+                      base_name + '_WebGLGreenTriangle_AA_NoAlpha',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_webgl_noaa_noalpha.html',
+                      base_name + '_WebGLGreenTriangle_NoAA_NoAlpha',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_webgl_noalpha_implicit_clear.html',
+                      base_name +
+                      '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_webgl_sad_canvas.html',
+                      base_name + '_WebGLSadCanvas',
+                      test_rect=[0, 0, 300, 300],
+                      optional_action='CrashGpuProcess'),
         PixelTestPage(
             'pixel_scissor.html',
             base_name + '_ScissorTestWithPreserveDrawingBuffer',
             test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[
-                {
-                    'comment': 'red top',
-                    'location': [1, 1],
-                    'size': [198, 188],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'green bottom left',
-                    'location': [1, 191],
-                    'size': [8, 8],
-                    'color': [0, 255, 0],
-                },
-                {
-                    'comment': 'red bottom right',
-                    'location': [11, 191],
-                    'size': [188, 8],
-                    'color': [255, 0, 0],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_canvas2d_webgl.html',
-            base_name + '_2DCanvasWebGL',
-            test_rect=[0, 0, 300, 300]),
-        PixelTestPage(
-            'pixel_background.html',
-            base_name + '_SolidColorBackground',
-            test_rect=[500, 500, 100, 100]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
+        PixelTestPage('pixel_canvas2d_webgl.html',
+                      base_name + '_2DCanvasWebGL',
+                      test_rect=[0, 0, 300, 300]),
+        PixelTestPage('pixel_background.html',
+                      base_name + '_SolidColorBackground',
+                      test_rect=[500, 500, 100, 100]),
         PixelTestPage(
             'pixel_video_mp4.html',
             base_name + '_Video_MP4',
@@ -292,171 +245,172 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 135],
             tolerance=tolerance,
             expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_aspect_4x3.html',
-            base_name + '_Video_MP4_FourColors_Aspect_4x3',
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance,
-            expected_colors=[
-                {
-                    'comment': 'outside video content, left side, white',
-                    'location': [1, 1],
-                    'size': [28, 133],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside video content, right side, white',
-                    'location': [211, 1],
-                    'size': [28, 133],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'top left video, yellow',
-                    'location': [35, 5],
-                    'size': [80, 57],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'top right video, red',
-                    'location': [125, 5],
-                    'size': [80, 57],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'bottom left video, blue',
-                    'location': [35, 73],
-                    'size': [80, 57],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'bottom right video, green',
-                    'location': [125, 73],
-                    'size': [80, 57],
-                    'color': [44, 255, 16],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_90.html',
-            base_name + '_Video_MP4_FourColors_Rot_90',
-            test_rect=[0, 0, 270, 240],
-            tolerance=tolerance,
-            expected_colors=[
-                {
-                    'comment': 'outside video content, left side, white',
-                    'location': [1, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside video content, right side, white',
-                    'location': [210, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'top left video, red',
-                    'location': [73, 5],
-                    'size': [55, 110],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'top right video, green',
-                    'location': [141, 5],
-                    'size': [55, 110],
-                    'color': [44, 255, 16],
-                },
-                {
-                    'comment': 'bottom left video, yellow',
-                    'location': [73, 125],
-                    'size': [55, 110],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'bottom right video, blue',
-                    'location': [141, 125],
-                    'size': [55, 110],
-                    'color': [12, 12, 255],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_180.html',
-            base_name + '_Video_MP4_FourColors_Rot_180',
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance,
-            expected_colors=[
-                {
-                    'comment': 'top left video, green',
-                    'location': [5, 5],
-                    'size': [110, 57],
-                    'color': [44, 255, 16],
-                },
-                {
-                    'comment': 'top right video, blue',
-                    'location': [125, 5],
-                    'size': [110, 57],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'bottom left video, red',
-                    'location': [5, 72],
-                    'size': [110, 57],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'bottom right video, yellow',
-                    'location': [125, 72],
-                    'size': [110, 57],
-                    'color': [255, 255, 15],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_270.html',
-            base_name + '_Video_MP4_FourColors_Rot_270',
-            test_rect=[0, 0, 270, 240],
-            tolerance=tolerance,
-            expected_colors=[
-                {
-                    'comment': 'outside video content, left side, white',
-                    'location': [1, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside video content, right side, white',
-                    'location': [210, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'top left video, blue',
-                    'location': [73, 5],
-                    'size': [55, 110],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'top right video, yellow',
-                    'location': [141, 5],
-                    'size': [55, 110],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'bottom left video, green',
-                    'location': [73, 125],
-                    'size': [55, 110],
-                    'color': [44, 255, 16],
-                },
-                {
-                    'comment': 'bottom right video, red',
-                    'location': [141, 125],
-                    'size': [55, 110],
-                    'color': [255, 17, 24],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_video_mp4_rounded_corner.html',
-            base_name + '_Video_MP4_Rounded_Corner',
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance),
+        PixelTestPage('pixel_video_mp4_four_colors_aspect_4x3.html',
+                      base_name + '_Video_MP4_FourColors_Aspect_4x3',
+                      test_rect=[0, 0, 240, 135],
+                      tolerance=tolerance,
+                      expected_colors=[
+                          {
+                              'comment':
+                              'outside video content, left side, white',
+                              'location': [1, 1],
+                              'size': [28, 133],
+                              'color': [255, 255, 255],
+                          },
+                          {
+                              'comment':
+                              'outside video content, right side, white',
+                              'location': [211, 1],
+                              'size': [28, 133],
+                              'color': [255, 255, 255],
+                          },
+                          {
+                              'comment': 'top left video, yellow',
+                              'location': [35, 5],
+                              'size': [80, 57],
+                              'color': [255, 255, 15],
+                          },
+                          {
+                              'comment': 'top right video, red',
+                              'location': [125, 5],
+                              'size': [80, 57],
+                              'color': [255, 17, 24],
+                          },
+                          {
+                              'comment': 'bottom left video, blue',
+                              'location': [35, 73],
+                              'size': [80, 57],
+                              'color': [12, 12, 255],
+                          },
+                          {
+                              'comment': 'bottom right video, green',
+                              'location': [125, 73],
+                              'size': [80, 57],
+                              'color': [44, 255, 16],
+                          },
+                      ]),
+        PixelTestPage('pixel_video_mp4_four_colors_rot_90.html',
+                      base_name + '_Video_MP4_FourColors_Rot_90',
+                      test_rect=[0, 0, 270, 240],
+                      tolerance=tolerance,
+                      expected_colors=[
+                          {
+                              'comment':
+                              'outside video content, left side, white',
+                              'location': [1, 1],
+                              'size': [60, 238],
+                              'color': [255, 255, 255],
+                          },
+                          {
+                              'comment':
+                              'outside video content, right side, white',
+                              'location': [210, 1],
+                              'size': [60, 238],
+                              'color': [255, 255, 255],
+                          },
+                          {
+                              'comment': 'top left video, red',
+                              'location': [73, 5],
+                              'size': [55, 110],
+                              'color': [255, 17, 24],
+                          },
+                          {
+                              'comment': 'top right video, green',
+                              'location': [141, 5],
+                              'size': [55, 110],
+                              'color': [44, 255, 16],
+                          },
+                          {
+                              'comment': 'bottom left video, yellow',
+                              'location': [73, 125],
+                              'size': [55, 110],
+                              'color': [255, 255, 15],
+                          },
+                          {
+                              'comment': 'bottom right video, blue',
+                              'location': [141, 125],
+                              'size': [55, 110],
+                              'color': [12, 12, 255],
+                          },
+                      ]),
+        PixelTestPage('pixel_video_mp4_four_colors_rot_180.html',
+                      base_name + '_Video_MP4_FourColors_Rot_180',
+                      test_rect=[0, 0, 240, 135],
+                      tolerance=tolerance,
+                      expected_colors=[
+                          {
+                              'comment': 'top left video, green',
+                              'location': [5, 5],
+                              'size': [110, 57],
+                              'color': [44, 255, 16],
+                          },
+                          {
+                              'comment': 'top right video, blue',
+                              'location': [125, 5],
+                              'size': [110, 57],
+                              'color': [12, 12, 255],
+                          },
+                          {
+                              'comment': 'bottom left video, red',
+                              'location': [5, 72],
+                              'size': [110, 57],
+                              'color': [255, 17, 24],
+                          },
+                          {
+                              'comment': 'bottom right video, yellow',
+                              'location': [125, 72],
+                              'size': [110, 57],
+                              'color': [255, 255, 15],
+                          },
+                      ]),
+        PixelTestPage('pixel_video_mp4_four_colors_rot_270.html',
+                      base_name + '_Video_MP4_FourColors_Rot_270',
+                      test_rect=[0, 0, 270, 240],
+                      tolerance=tolerance,
+                      expected_colors=[
+                          {
+                              'comment':
+                              'outside video content, left side, white',
+                              'location': [1, 1],
+                              'size': [60, 238],
+                              'color': [255, 255, 255],
+                          },
+                          {
+                              'comment':
+                              'outside video content, right side, white',
+                              'location': [210, 1],
+                              'size': [60, 238],
+                              'color': [255, 255, 255],
+                          },
+                          {
+                              'comment': 'top left video, blue',
+                              'location': [73, 5],
+                              'size': [55, 110],
+                              'color': [12, 12, 255],
+                          },
+                          {
+                              'comment': 'top right video, yellow',
+                              'location': [141, 5],
+                              'size': [55, 110],
+                              'color': [255, 255, 15],
+                          },
+                          {
+                              'comment': 'bottom left video, green',
+                              'location': [73, 125],
+                              'size': [55, 110],
+                              'color': [44, 255, 16],
+                          },
+                          {
+                              'comment': 'bottom right video, red',
+                              'location': [141, 125],
+                              'size': [55, 110],
+                              'color': [255, 17, 24],
+                          },
+                      ]),
+        PixelTestPage('pixel_video_mp4_rounded_corner.html',
+                      base_name + '_Video_MP4_Rounded_Corner',
+                      test_rect=[0, 0, 240, 135],
+                      tolerance=tolerance),
         PixelTestPage(
             'pixel_video_vp9.html',
             base_name + '_Video_VP9',
@@ -493,297 +447,148 @@ class PixelTestPages(object):
                       expected_per_process_crashes={
                           CRASH_TYPE_GPU: 1,
                       }),
-        PixelTestPage(
-            'pixel_video_backdrop_filter.html',
-            base_name + '_Video_BackdropFilter',
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance),
+        PixelTestPage('pixel_video_backdrop_filter.html',
+                      base_name + '_Video_BackdropFilter',
+                      test_rect=[0, 0, 240, 135],
+                      tolerance=tolerance),
         PixelTestPage(
             'pixel_webgl_premultiplied_alpha_false.html',
             base_name + '_WebGL_PremultipliedAlpha_False',
             test_rect=[0, 0, 150, 150],
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'brown',
-                    'location': [1, 1],
-                    'size': [148, 148],
-                    # This is the color on an NVIDIA based MacBook Pro if the
-                    # sRGB profile's applied correctly.
-                    'color': [102, 77, 0],
-                    # This is the color if it isn't.
-                    # 'color': [101, 76, 12],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_webgl2_blitframebuffer_result_displayed.html',
             base_name + '_WebGL2_BlitFramebuffer_Result_Displayed',
             test_rect=[0, 0, 200, 200],
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    'location': [1, 1],
-                    'size': [180, 180],
-                    'color': [0, 255, 0],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_webgl2_clearbufferfv_result_displayed.html',
             base_name + '_WebGL2_ClearBufferfv_Result_Displayed',
             test_rect=[0, 0, 200, 200],
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    'location': [1, 1],
-                    'size': [180, 180],
-                    'color': [0, 255, 0],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_repeated_webgl_to_2d.html',
             base_name + '_RepeatedWebGLTo2D',
             test_rect=[0, 0, 256, 256],
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    # 64x64 rectangle around the center at (128,128)
-                    'location': [96, 96],
-                    'size': [64, 64],
-                    'color': [0, 255, 0],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_repeated_webgl_to_2d.html',
             base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
             test_rect=[0, 0, 256, 256],
             browser_args=sw_compositing_args,
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    # 64x64 rectangle around the center at (128,128)
-                    'location': [96, 96],
-                    'size': [64, 64],
-                    'color': [0, 255, 0],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_canvas2d_tab_switch.html',
             base_name + '_Canvas2DTabSwitch',
             test_rect=[0, 0, 100, 100],
             optional_action='SwitchTabs',
-            tolerance=3,
-            expected_colors=[
-                {
-                    'comment': 'top left, green',
-                    'location': [5, 5],
-                    'size': [40, 40],
-                    'color': [0, 128, 0],
-                },
-                {
-                    'comment': 'bottom right, blue',
-                    'location': [55, 55],
-                    'size': [40, 40],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'top right, red',
-                    'location': [55, 5],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'bottom left, red',
-                    'location': [5, 55],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_canvas2d_tab_switch.html',
             base_name + '_Canvas2DTabSwitch_SoftwareCompositing',
             test_rect=[0, 0, 100, 100],
             browser_args=sw_compositing_args,
             optional_action='SwitchTabs',
-            tolerance=3,
-            expected_colors=[
-                {
-                    'comment': 'top left, green',
-                    'location': [5, 5],
-                    'size': [40, 40],
-                    'color': [0, 128, 0],
-                },
-                {
-                    'comment': 'bottom right, blue',
-                    'location': [55, 55],
-                    'size': [40, 40],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'top right, red',
-                    'location': [55, 5],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'bottom left, red',
-                    'location': [5, 55],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
         PixelTestPage(
             'pixel_webgl_copy_image.html',
             base_name + '_WebGLCopyImage',
             test_rect=[0, 0, 200, 100],
-            tolerance=3,
-            expected_colors=[
-                {
-                    'comment': 'canvas top left, green',
-                    'location': [5, 5],
-                    'size': [40, 40],
-                    'color': [0, 255, 0],
-                },
-                {
-                    'comment': 'canvas bottom right, blue',
-                    'location': [55, 55],
-                    'size': [40, 40],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'canvas top right, red',
-                    'location': [55, 5],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'canvas bottom left, red',
-                    'location': [5, 55],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'image top left, green',
-                    'location': [105, 5],
-                    'size': [40, 40],
-                    'color': [0, 255, 0],
-                },
-                {
-                    'comment': 'image bottom right, blue',
-                    'location': [155, 55],
-                    'size': [40, 40],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'image top right, red',
-                    'location': [155, 5],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'image bottom left, red',
-                    'location': [105, 55],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_webgl_read_pixels_tab_switch.html',
-            base_name + '_WebGLReadPixelsTabSwitch',
-            test_rect=[0, 0, 100, 100],
-            optional_action='SwitchTabs',
-            tolerance=3,
-            expected_colors=[
-                {
-                    'comment': 'top left, red',
-                    'location': [5, 5],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'bottom right, red',
-                    'location': [55, 55],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'top right, blue',
-                    'location': [55, 5],
-                    'size': [40, 40],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'bottom left, green',
-                    'location': [5, 55],
-                    'size': [40, 40],
-                    'color': [0, 255, 0],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_webgl_read_pixels_tab_switch.html',
-            base_name + '_WebGLReadPixelsTabSwitch_SoftwareCompositing',
-            test_rect=[0, 0, 100, 100],
-            browser_args=sw_compositing_args,
-            optional_action='SwitchTabs',
-            tolerance=3,
-            expected_colors=[
-                {
-                    'comment': 'top left, red',
-                    'location': [5, 5],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'bottom right, red',
-                    'location': [55, 55],
-                    'size': [40, 40],
-                    'color': [255, 0, 0],
-                },
-                {
-                    'comment': 'top right, blue',
-                    'location': [55, 5],
-                    'size': [40, 40],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'bottom left, green',
-                    'location': [5, 55],
-                    'size': [40, 40],
-                    'color': [0, 255, 0],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_offscreen_canvas_ibrc_webgl_main.html',
-            base_name + '_OffscreenCanvasIBRCWebGLMain',
-            test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
-            optional_action='RunOffscreenCanvasIBRCWebGLTest'),
-        PixelTestPage(
-            'pixel_offscreen_canvas_ibrc_webgl_worker.html',
-            base_name + '_OffscreenCanvasIBRCWebGLWorker',
-            test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
-            optional_action='RunOffscreenCanvasIBRCWebGLTest'),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 13)),
+        PixelTestPage('pixel_webgl_read_pixels_tab_switch.html',
+                      base_name + '_WebGLReadPixelsTabSwitch',
+                      test_rect=[0, 0, 100, 100],
+                      optional_action='SwitchTabs',
+                      tolerance=3,
+                      expected_colors=[
+                          {
+                              'comment': 'top left, red',
+                              'location': [5, 5],
+                              'size': [40, 40],
+                              'color': [255, 0, 0],
+                          },
+                          {
+                              'comment': 'bottom right, red',
+                              'location': [55, 55],
+                              'size': [40, 40],
+                              'color': [255, 0, 0],
+                          },
+                          {
+                              'comment': 'top right, blue',
+                              'location': [55, 5],
+                              'size': [40, 40],
+                              'color': [0, 0, 255],
+                          },
+                          {
+                              'comment': 'bottom left, green',
+                              'location': [5, 55],
+                              'size': [40, 40],
+                              'color': [0, 255, 0],
+                          },
+                      ]),
+        PixelTestPage('pixel_webgl_read_pixels_tab_switch.html',
+                      base_name +
+                      '_WebGLReadPixelsTabSwitch_SoftwareCompositing',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=sw_compositing_args,
+                      optional_action='SwitchTabs',
+                      tolerance=3,
+                      expected_colors=[
+                          {
+                              'comment': 'top left, red',
+                              'location': [5, 5],
+                              'size': [40, 40],
+                              'color': [255, 0, 0],
+                          },
+                          {
+                              'comment': 'bottom right, red',
+                              'location': [55, 55],
+                              'size': [40, 40],
+                              'color': [255, 0, 0],
+                          },
+                          {
+                              'comment': 'top right, blue',
+                              'location': [55, 5],
+                              'size': [40, 40],
+                              'color': [0, 0, 255],
+                          },
+                          {
+                              'comment': 'bottom left, green',
+                              'location': [5, 55],
+                              'size': [40, 40],
+                              'color': [0, 255, 0],
+                          },
+                      ]),
+        PixelTestPage('pixel_offscreen_canvas_ibrc_webgl_main.html',
+                      base_name + '_OffscreenCanvasIBRCWebGLMain',
+                      test_rect=[0, 0, 300, 300],
+                      tolerance=3,
+                      expected_colors=[{
+                          'comment': 'solid green',
+                          'location': [100, 100],
+                          'size': [100, 100],
+                          'color': [0, 255, 0],
+                      }],
+                      optional_action='RunOffscreenCanvasIBRCWebGLTest'),
+        PixelTestPage('pixel_offscreen_canvas_ibrc_webgl_worker.html',
+                      base_name + '_OffscreenCanvasIBRCWebGLWorker',
+                      test_rect=[0, 0, 300, 300],
+                      tolerance=3,
+                      expected_colors=[{
+                          'comment': 'solid green',
+                          'location': [100, 100],
+                          'size': [100, 100],
+                          'color': [0, 255, 0],
+                      }],
+                      optional_action='RunOffscreenCanvasIBRCWebGLTest'),
     ]
 
   # Pages that should be run with GPU rasterization enabled.

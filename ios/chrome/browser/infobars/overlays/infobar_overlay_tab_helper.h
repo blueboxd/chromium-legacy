@@ -26,7 +26,7 @@ class InfobarOverlayTabHelper
   WEB_STATE_USER_DATA_KEY_DECL();
 
   // Getter for the request inserter.
-  const InfobarOverlayRequestInserter* request_inserter() const {
+  InfobarOverlayRequestInserter* request_inserter() {
     return request_inserter_;
   }
 
@@ -46,6 +46,7 @@ class InfobarOverlayTabHelper
    private:
     // The owning tab helper.
     InfobarOverlayTabHelper* tab_helper_ = nullptr;
+    web::WebState* web_state_ = nullptr;
     ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
         scoped_observer_;
   };

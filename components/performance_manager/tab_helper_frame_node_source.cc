@@ -31,7 +31,8 @@ FrameNodeImpl* TabHelperFrameNodeSource::GetFrameNode(
   PerformanceManagerTabHelper* performance_manager_tab_helper =
       PerformanceManagerTabHelper::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
-  DCHECK(performance_manager_tab_helper);
+  if (!performance_manager_tab_helper)
+    return nullptr;
 
   return performance_manager_tab_helper->GetFrameNode(render_frame_host);
 }

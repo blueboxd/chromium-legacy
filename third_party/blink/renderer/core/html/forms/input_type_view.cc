@@ -102,10 +102,6 @@ TextDirection InputTypeView::ComputedTextDirection() {
   return GetElement().ComputedStyleRef().Direction();
 }
 
-void InputTypeView::UpdateAppearanceOnFocus(
-    SelectionBehaviorOnFocus selection_behavior,
-    const FocusOptions& options) {}
-
 void InputTypeView::Blur() {
   GetElement().DefaultBlur();
 }

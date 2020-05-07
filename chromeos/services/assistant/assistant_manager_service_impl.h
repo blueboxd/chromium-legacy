@@ -20,7 +20,7 @@
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
-#include "chromeos/services/assistant/assistant_settings_manager_impl.h"
+#include "chromeos/services/assistant/assistant_settings_impl.h"
 #include "chromeos/services/assistant/chromium_api_delegate.h"
 #include "chromeos/services/assistant/public/cpp/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
@@ -124,7 +124,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   void EnableHotword(bool enable) override;
   void SetArcPlayStoreEnabled(bool enable) override;
   void SetAssistantContextEnabled(bool enable) override;
-  AssistantSettingsManager* GetAssistantSettingsManager() override;
+  AssistantSettings* GetAssistantSettings() override;
   void AddCommunicationErrorObserver(
       CommunicationErrorObserver* observer) override;
   void RemoveCommunicationErrorObserver(
@@ -328,7 +328,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // |display_connection_|.
   std::unique_ptr<CrosDisplayConnection> new_display_connection_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
-  std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
+  std::unique_ptr<AssistantSettingsImpl> assistant_settings_;
   // |new_assistant_manager_| is created on |background_thread_| then posted to
   // main thread to finish initialization then move to |assistant_manager_|.
   std::unique_ptr<assistant_client::AssistantManager> new_assistant_manager_;

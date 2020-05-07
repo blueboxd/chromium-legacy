@@ -83,6 +83,15 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
 
     vm_plugin_dispatcher_proxy_->ConnectToSignal(
         dispatcher::kVmPluginDispatcherInterface,
+        dispatcher::kVmToolsStateChangedSignal,
+        base::BindRepeating(
+            &VmPluginDispatcherClientImpl::OnVmToolsStateChangedSignal,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&VmPluginDispatcherClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    vm_plugin_dispatcher_proxy_->ConnectToSignal(
+        dispatcher::kVmPluginDispatcherInterface,
         dispatcher::kVmStateChangedSignal,
         base::BindRepeating(
             &VmPluginDispatcherClientImpl::OnVmStateChangedSignal,
@@ -129,6 +138,22 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
       return;
     }
     std::move(callback).Run(std::move(reponse_proto));
+  }
+
+  void OnVmToolsStateChangedSignal(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(), dispatcher::kVmPluginDispatcherInterface);
+    DCHECK_EQ(signal->GetMember(), dispatcher::kVmToolsStateChangedSignal);
+
+    dispatcher::VmToolsStateChangedSignal vm_state_changed_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&vm_state_changed_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+
+    for (auto& observer : observer_list_) {
+      observer.OnVmToolsStateChanged(vm_state_changed_signal);
+    }
   }
 
   void OnVmStateChangedSignal(dbus::Signal* signal) {

@@ -71,7 +71,8 @@ def _ReadInitArray(so_path, tool_prefix, expect_no_initializers):
     else:
       return 0
   elif not match:
-    raise Exception('Did not find section: .init_array in:\n' + stdout)
+    raise Exception('Did not find section: .init_array in {}:\n{}'.format(
+        so_path, stdout))
   size_str = re.split(r'\W+', match.group(0))[5]
   return int(size_str, 16)
 
@@ -94,11 +95,11 @@ def _CountStaticInitializers(so_path, tool_prefix, expect_no_initializers):
   return init_array_size / word_size
 
 
-def _AnalyzeStaticInitializers(apk_filename, tool_prefix, dump_sis, out_dir,
+def _AnalyzeStaticInitializers(apk_or_aab, tool_prefix, dump_sis, out_dir,
                                ignored_libs, no_initializers_libs):
   # Static initializer counting mostly copies logic in
   # infra/scripts/legacy/scripts/slave/chromium/sizes.py.
-  with zipfile.ZipFile(apk_filename) as z:
+  with zipfile.ZipFile(apk_or_aab) as z:
     so_files = [
         f for f in z.infolist() if f.filename.endswith('.so')
         and f.file_size > 0 and os.path.basename(f.filename) not in ignored_libs
@@ -109,11 +110,18 @@ def _AnalyzeStaticInitializers(apk_filename, tool_prefix, dump_sis, out_dir,
     has_64 = any('64' in f.filename for f in so_files)
     files_to_check = [f for f in so_files if not has_64 or '64' in f.filename]
 
+    # Do not check partitioned libs. They have no ".init_array" section since
+    # all SIs are considered "roots" by the linker, and so end up in the base
+    # module.
+    files_to_check = [
+        f for f in files_to_check if not f.filename.endswith('_partition.so')
+    ]
+
     si_count = 0
     for f in files_to_check:
-      expect_no_initializers = (os.path.basename(
-          f.filename) in no_initializers_libs)
-      with tempfile.NamedTemporaryFile() as temp:
+      lib_basename = os.path.basename(f.filename)
+      expect_no_initializers = lib_basename in no_initializers_libs
+      with tempfile.NamedTemporaryFile(prefix=lib_basename) as temp:
         temp.write(z.read(f))
         temp.flush()
         si_count += _CountStaticInitializers(temp.name, tool_prefix,
@@ -134,7 +142,7 @@ def main():
   parser.add_argument('--expected-count', required=True, type=int,
                       help='Fail if number of static initializers is not '
                            'equal to this value.')
-  parser.add_argument('apk', help='APK file path.')
+  parser.add_argument('apk_or_aab', help='Path to .apk or .aab file.')
   args = parser.parse_args()
 
   # TODO(crbug.com/838414): add support for files included via loadable_modules.
@@ -143,8 +151,9 @@ def main():
   # regular check throw. It should not have any.
   no_initializers_libs = ['libchromium_android_linker.so']
 
-  si_count = _AnalyzeStaticInitializers(args.apk, args.tool_prefix, False, '.',
-                                        ignored_libs, no_initializers_libs)
+  si_count = _AnalyzeStaticInitializers(args.apk_or_aab, args.tool_prefix,
+                                        False, '.', ignored_libs,
+                                        no_initializers_libs)
   if si_count != args.expected_count:
     print('Expected {} static initializers, but found {}.'.format(
         args.expected_count, si_count))
@@ -155,7 +164,7 @@ def main():
     else:
       print('Dumping static initializers via dump-static-initializers.py:')
       sys.stdout.flush()
-      _AnalyzeStaticInitializers(args.apk, args.tool_prefix, True, '.',
+      _AnalyzeStaticInitializers(args.apk_or_aab, args.tool_prefix, True, '.',
                                  ignored_libs, no_initializers_libs)
       print()
       print('If the above list is not useful, consider listing them with:')

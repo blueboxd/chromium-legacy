@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -216,15 +217,23 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
 
     if (preferred_app_id.has_value() &&
         base::Contains(app_ids, preferred_app_id.value())) {
-      auto launch_source = apps::mojom::LaunchSource::kFromLink;
-      proxy->LaunchAppWithUrl(
-          preferred_app_id.value(),
-          GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
-                        WindowOpenDisposition::NEW_WINDOW,
-                        /*prefer_container=*/true),
-          url, launch_source, display::kDefaultDisplayId);
-      CloseOrGoBack(web_contents);
-      return true;
+      // Only automatically launch PWA if the flag is on.
+      auto app_type =
+          proxy->AppRegistryCache().GetAppType(preferred_app_id.value());
+      if (app_type == apps::mojom::AppType::kArc ||
+          (app_type == apps::mojom::AppType::kWeb &&
+           base::FeatureList::IsEnabled(
+               features::kIntentPickerPWAPersistence))) {
+        auto launch_source = apps::mojom::LaunchSource::kFromLink;
+        proxy->LaunchAppWithUrl(
+            preferred_app_id.value(),
+            GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          /*prefer_container=*/true),
+            url, launch_source, display::kDefaultDisplayId);
+        CloseOrGoBack(web_contents);
+        return true;
+      }
     }
   }
 

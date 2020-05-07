@@ -7,12 +7,15 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/public/common/child_process_host.h"
@@ -117,14 +120,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   ServiceWorkerContainerHost(
-      base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
+      base::WeakPtr<ServiceWorkerContextCore> context,
       bool is_parent_frame_secure,
+      base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
       int frame_tree_node_id,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          container_remote,
-      base::WeakPtr<ServiceWorkerContextCore> context);
+          container_remote);
   ~ServiceWorkerContainerHost() override;
 
   ServiceWorkerContainerHost(const ServiceWorkerContainerHost& other) = delete;
@@ -558,107 +561,15 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
                                     const char* error_prefix,
                                     Args... args);
 
-  const base::Optional<blink::mojom::ServiceWorkerClientType> client_type_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
+
+  // The time when the container host is created.
+  const base::TimeTicks create_time_;
 
   // See comments for the getter functions.
   GURL url_;
   net::SiteForCookies site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
-
-  // For window clients. A token used internally to identify this context in
-  // requests. Corresponds to the Fetch specification's concept of a request's
-  // associated window: https://fetch.spec.whatwg.org/#concept-request-window
-  // This gets reset on redirects, unlike |client_uuid_|.
-  //
-  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
-  // right now because this gets reset on redirects, and potentially sites rely
-  // on the GUID format.
-  base::UnguessableToken fetch_request_window_id_;
-
-  // The time when the container host is created.
-  const base::TimeTicks create_time_;
-
-  // The identifier of the process where the container lives.
-  int process_id_ = ChildProcessHost::kInvalidUniqueID;
-
-  // The window's RenderFrame id, if this is a service worker window client.
-  // Otherwise, |MSG_ROUTING_NONE|.
-  int frame_id_ = MSG_ROUTING_NONE;
-
-  // |is_parent_frame_secure_| is false if the container host is created for a
-  // document whose parent frame is not secure. This doesn't mean the document
-  // is necessarily an insecure context, because the document may have a URL
-  // whose scheme is granted an exception that allows bypassing the ancestor
-  // secure context check. If the container is not created for a document, or
-  // the document does not have a parent frame, is_parent_frame_secure_| is
-  // true.
-  const bool is_parent_frame_secure_;
-
-  // FrameTreeNode id if this is a service worker window client.
-  // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.
-  const int frame_tree_node_id_;
-
-  // Only set when this object is pre-created for a navigation. It indicates the
-  // tab where the navigation occurs. Otherwise, a null callback.
-  const WebContentsGetter web_contents_getter_;
-
-  // For service worker clients. A GUID that is web-exposed as
-  // FetchEvent.clientId.
-  std::string client_uuid_;
-
-  // For service worker clients.
-  ClientPhase client_phase_ = ClientPhase::kInitial;
-
-  // For service worker clients. The embedder policy of the client. Set on
-  // response commit.
-  base::Optional<network::CrossOriginEmbedderPolicy>
-      cross_origin_embedder_policy_;
-  // An endpoint connected to the COEP reporter. A clone of this connection is
-  // passed to the service worker.
-  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter_;
-
-  // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
-  // and RenderFrameHost have the same lifetime.
-  bool is_in_back_forward_cache_ = false;
-
-  // For service worker clients. Callbacks to run upon transition to
-  // kExecutionReady.
-  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
-
-  // The ready() promise is only allowed to be created once.
-  // |get_ready_callback_| has three states:
-  // 1. |get_ready_callback_| is null when ready() has not yet been called.
-  // 2. |*get_ready_callback_| is a valid OnceCallback after ready() has been
-  //    called and the callback has not yet been run.
-  // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
-  //    been run.
-  std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
-
-  // For service worker clients. The controller service worker (i.e.,
-  // ServiceWorkerContainer#controller) and its registration. The controller is
-  // typically the same as the registration's active version, but during
-  // algorithms such as the update, skipWaiting(), and claim() steps, the active
-  // version and controller may temporarily differ. For example, to perform
-  // skipWaiting(), the registration's active version is updated first and then
-  // the container host's controller is updated to match it.
-  scoped_refptr<ServiceWorkerVersion> controller_;
-  scoped_refptr<ServiceWorkerRegistration> controller_registration_;
-
-  // Keyed by registration scope URL length.
-  using ServiceWorkerRegistrationMap =
-      std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
-  // Contains all living registrations whose scope this client's URL starts
-  // with, used for .ready and claim(). It is empty if
-  // IsContextSecureForServiceWorker() is false. See also
-  // AddMatchingRegistration().
-  ServiceWorkerRegistrationMap matching_registrations_;
-
-  // For service worker clients. The service workers in the chain of redirects
-  // during the main resource request for this client. These workers should be
-  // updated "soon". See AddServiceWorkerToUpdate() documentation.
-  class PendingUpdateVersion;
-  base::flat_set<PendingUpdateVersion> versions_to_update_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution
@@ -675,14 +586,6 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerObjectHost>>
       service_worker_object_hosts_;
 
-  // Mojo endpoint which will be be sent to the service worker just before
-  // the response is committed, where |cross_origin_embedder_policy_| is ready.
-  // We need to store this here because navigation code depends on having a
-  // mojo::Remote<ControllerServiceWorker> for making a SubresourceLoaderParams,
-  // which is created before the response header is ready.
-  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
-      pending_controller_receiver_;
-
   // |receiver_| keeps the connection to the renderer-side counterpart
   // (content::ServiceWorkerProviderContext). When the connection bound on
   // |receiver_| gets killed from the renderer side, or the bound
@@ -691,6 +594,73 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // content::ServiceWorkerContainerHost will be destroyed.
   mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainerHost> receiver_{
       this};
+
+  // For all service worker clients --------------------------------------------
+
+  // A GUID that is web-exposed as FetchEvent.clientId.
+  std::string client_uuid_;
+
+  // |is_parent_frame_secure_| is false if the container host is created for a
+  // document whose parent frame is not secure. This doesn't mean the document
+  // is necessarily an insecure context, because the document may have a URL
+  // whose scheme is granted an exception that allows bypassing the ancestor
+  // secure context check. If the container is not created for a document, or
+  // the document does not have a parent frame, is_parent_frame_secure_| is
+  // true.
+  const bool is_parent_frame_secure_ = true;
+
+  // The phase that this container host is on.
+  ClientPhase client_phase_ = ClientPhase::kInitial;
+
+  // The ID of the process where the container lives. For window clients, this
+  // is set on response commit, while it is set during initialization for worker
+  // clients.
+  int process_id_ = ChildProcessHost::kInvalidUniqueID;
+
+  // Callbacks to run upon transition to kExecutionReady.
+  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
+
+  // The ready() promise is only allowed to be created once.
+  // |get_ready_callback_| has three states:
+  // 1. |get_ready_callback_| is null when ready() has not yet been called.
+  // 2. |*get_ready_callback_| is a valid OnceCallback after ready() has been
+  //    called and the callback has not yet been run.
+  // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
+  //    been run.
+  std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
+
+  // The controller service worker (i.e., ServiceWorkerContainer#controller) and
+  // its registration. The controller is typically the same as the
+  // registration's active version, but during algorithms such as the update,
+  // skipWaiting(), and claim() steps, the active version and controller may
+  // temporarily differ. For example, to perform skipWaiting(), the
+  // registration's active version is updated first and then the container
+  // host's controller is updated to match it.
+  scoped_refptr<ServiceWorkerVersion> controller_;
+  scoped_refptr<ServiceWorkerRegistration> controller_registration_;
+
+  // Keyed by registration scope URL length.
+  using ServiceWorkerRegistrationMap =
+      std::map<size_t, scoped_refptr<ServiceWorkerRegistration>>;
+  // Contains all living registrations whose scope this client's URL starts
+  // with, used for .ready and claim(). It is empty if
+  // IsContextSecureForServiceWorker() is false. See also
+  // AddMatchingRegistration().
+  ServiceWorkerRegistrationMap matching_registrations_;
+
+  // The service workers in the chain of redirects during the main resource
+  // request for this client. These workers should be updated "soon". See
+  // AddServiceWorkerToUpdate() documentation.
+  class PendingUpdateVersion;
+  base::flat_set<PendingUpdateVersion> versions_to_update_;
+
+  // Mojo endpoint which will be be sent to the service worker just before
+  // the response is committed, where |cross_origin_embedder_policy_| is ready.
+  // We need to store this here because navigation code depends on having a
+  // mojo::Remote<ControllerServiceWorker> for making a SubresourceLoaderParams,
+  // which is created before the response header is ready.
+  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+      pending_controller_receiver_;
 
   // Container host receivers other than the original |receiver_|. These include
   // receivers used from (dedicated or shared) worker threads, or from
@@ -702,10 +672,50 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // is hosting.
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
 
-  // For service worker execution contexts. This provider host owns |this|.
-  ServiceWorkerProviderHost* service_worker_host_ = nullptr;
+  // The type of client.
+  const base::Optional<blink::mojom::ServiceWorkerClientType> client_type_;
 
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  // For window clients only ---------------------------------------------------
+
+  // The ID of the frame tree node where the navigation occurs.
+  const int frame_tree_node_id_ = FrameTreeNode::kFrameTreeNodeInvalidId;
+
+  // Used to retrieve the WebContents where the navigation occurs.
+  const WebContentsGetter web_contents_getter_;
+
+  // A token used internally to identify this context in requests. Corresponds
+  // to the Fetch specification's concept of a request's associated window:
+  // https://fetch.spec.whatwg.org/#concept-request-window. This gets reset on
+  // redirects, unlike |client_uuid_|.
+  //
+  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
+  // right now because this gets reset on redirects, and potentially sites rely
+  // on the GUID format.
+  base::UnguessableToken fetch_request_window_id_;
+
+  // The ID of the RenderFrameHost used for the navigation. Set on response
+  // commit.
+  int frame_id_ = MSG_ROUTING_NONE;
+
+  // The embedder policy of the client. Set on response commit.
+  base::Optional<network::CrossOriginEmbedderPolicy>
+      cross_origin_embedder_policy_;
+
+  // An endpoint connected to the COEP reporter. A clone of this connection is
+  // passed to the service worker. Bound on response commit.
+  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
+      coep_reporter_;
+
+  // Indicates if this container host is in the back-forward cache.
+  //
+  // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
+  // and RenderFrameHost have the same lifetime.
+  bool is_in_back_forward_cache_ = false;
+
+  // For service worker execution contexts -------------------------------------
+
+  // The ServiceWorkerProviderHost that owns |this|.
+  ServiceWorkerProviderHost* service_worker_host_ = nullptr;
 
   base::WeakPtrFactory<ServiceWorkerContainerHost> weak_factory_{this};
 };

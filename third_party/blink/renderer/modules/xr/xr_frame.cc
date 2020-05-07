@@ -80,7 +80,7 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
 
   session_->LogGetPose();
 
-  std::unique_ptr<TransformationMatrix> offset_space_from_viewer =
+  base::Optional<TransformationMatrix> offset_space_from_viewer =
       reference_space->OffsetFromViewer();
 
   // Can only update an XRViewerPose's views with an invertible matrix.

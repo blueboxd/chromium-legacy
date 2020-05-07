@@ -6,7 +6,9 @@
 
 #include "ash/public/cpp/shelf_model.h"
 #include "base/files/file_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
@@ -24,11 +26,19 @@
 #include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace plugin_vm {
 
+namespace {
+
+using MockLaunchPluginVmCallback =
+    testing::StrictMock<base::MockCallback<base::OnceCallback<void(bool)>>>;
+
 constexpr char kStartVmFailedNotificationId[] = "plugin-vm-start-vm-failed";
+
+}  // namespace
 
 class PluginVmManagerTest : public testing::Test {
  public:
@@ -81,6 +91,17 @@ class PluginVmManagerTest : public testing::Test {
     VmPluginDispatcherClient().set_list_vms_response(list_vms_response);
   }
 
+  void NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState state) {
+    vm_tools::plugin_dispatcher::VmToolsStateChangedSignal state_changed_signal;
+    state_changed_signal.set_owner_id(
+        chromeos::ProfileHelper::GetUserIdHashFromProfile(
+            testing_profile_.get()));
+    state_changed_signal.set_vm_name(kPluginVmName);
+    state_changed_signal.set_vm_tools_state(state);
+    VmPluginDispatcherClient().NotifyVmToolsStateChanged(state_changed_signal);
+  }
+
   void NotifyVmStateChanged(vm_tools::plugin_dispatcher::VmState state) {
     vm_tools::plugin_dispatcher::VmStateChangedSignal state_changed_signal;
     state_changed_signal.set_owner_id(
@@ -106,7 +127,9 @@ class PluginVmManagerTest : public testing::Test {
 
 TEST_F(PluginVmManagerTest, LaunchPluginVmRequiresPluginVmAllowed) {
   EXPECT_FALSE(IsPluginVmAllowedForProfile(testing_profile_.get()));
-  plugin_vm_manager_->LaunchPluginVm();
+  MockLaunchPluginVmCallback callback;
+  EXPECT_CALL(callback, Run(false));
+  plugin_vm_manager_->LaunchPluginVm(callback.Get());
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
@@ -126,7 +149,8 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
   // The PluginVmManager calls StartVm when the VM is not yet running.
   SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
 
-  plugin_vm_manager_->LaunchPluginVm();
+  MockLaunchPluginVmCallback callback;
+  plugin_vm_manager_->LaunchPluginVm(callback.Get());
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
@@ -137,6 +161,33 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmStartAndShow) {
 
   histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
                                         PluginVmLaunchResult::kSuccess, 1);
+
+  EXPECT_CALL(callback, Run(true));
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
+}
+
+TEST_F(PluginVmManagerTest, LaunchesOnceFromMultipleRequests) {
+  test_helper_->AllowPluginVm();
+  EXPECT_TRUE(IsPluginVmAllowedForProfile(testing_profile_.get()));
+
+  // The PluginVmManager calls StartVm when the VM is not yet running.
+  SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+
+  MockLaunchPluginVmCallback callback1, callback2, callback3;
+  plugin_vm_manager_->LaunchPluginVm(callback1.Get());
+  plugin_vm_manager_->LaunchPluginVm(callback2.Get());
+  plugin_vm_manager_->LaunchPluginVm(callback3.Get());
+  task_environment_.RunUntilIdle();
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kSuccess, 1);
+
+  EXPECT_CALL(callback1, Run(true));
+  EXPECT_CALL(callback2, Run(true));
+  EXPECT_CALL(callback3, Run(true));
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
 }
 
 TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
@@ -145,8 +196,13 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
 
   // The PluginVmManager skips calling StartVm when the VM is already running.
   SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
+  // The PluginVmManager doesn't wait for VmToolsState if it is already known.
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
 
-  plugin_vm_manager_->LaunchPluginVm();
+  MockLaunchPluginVmCallback callback;
+  plugin_vm_manager_->LaunchPluginVm(callback.Get());
+  EXPECT_CALL(callback, Run(true));
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_FALSE(VmPluginDispatcherClient().start_vm_called());
@@ -156,12 +212,12 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmShowAndStop) {
   EXPECT_FALSE(SeneschalClient().share_path_called());
   EXPECT_EQ(plugin_vm_manager_->seneschal_server_handle(), 0ul);
 
+  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
+                                        PluginVmLaunchResult::kSuccess, 1);
+
   plugin_vm_manager_->StopPluginVm(kPluginVmName, /*force=*/true);
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(VmPluginDispatcherClient().stop_vm_called());
-
-  histogram_tester_->ExpectUniqueSample(kPluginVmLaunchResultHistogram,
-                                        PluginVmLaunchResult::kSuccess, 1);
 }
 
 TEST_F(PluginVmManagerTest, OnStateChangedRunningStoppedSuspended) {
@@ -207,17 +263,18 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmSpinner) {
 
   SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
 
-  plugin_vm_manager_->LaunchPluginVm();
+  plugin_vm_manager_->LaunchPluginVm(base::DoNothing());
   task_environment_.RunUntilIdle();
 
   // Spinner exists for first launch.
   EXPECT_TRUE(SpinnerController()->HasApp(kPluginVmAppId));
+
   // The actual flow would've launched a real window.
   test_helper_->OpenShelfItem();
   EXPECT_FALSE(SpinnerController()->HasApp(kPluginVmAppId));
   test_helper_->CloseShelfItem();
 
-  plugin_vm_manager_->LaunchPluginVm();
+  plugin_vm_manager_->LaunchPluginVm(base::DoNothing());
   task_environment_.RunUntilIdle();
   // A second launch shouldn't show a spinner.
   EXPECT_FALSE(SpinnerController()->HasApp(kPluginVmAppId));
@@ -232,7 +289,8 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
       vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
 
   SetListVmsResponse(vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDING);
-  plugin_vm_manager_->LaunchPluginVm();
+  MockLaunchPluginVmCallback callback;
+  plugin_vm_manager_->LaunchPluginVm(callback.Get());
   task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
@@ -248,6 +306,10 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmFromSuspending) {
   EXPECT_TRUE(VmPluginDispatcherClient().list_vms_called());
   EXPECT_TRUE(VmPluginDispatcherClient().start_vm_called());
   EXPECT_TRUE(VmPluginDispatcherClient().show_vm_called());
+
+  EXPECT_CALL(callback, Run(true));
+  NotifyVmToolsStateChanged(
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED);
 }
 
 TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
@@ -262,7 +324,9 @@ TEST_F(PluginVmManagerTest, LaunchPluginVmInvalidLicense) {
       vm_tools::plugin_dispatcher::VmErrorCode::VM_ERR_LIC_NOT_VALID);
   VmPluginDispatcherClient().set_start_vm_response(start_vm_response);
 
-  plugin_vm_manager_->LaunchPluginVm();
+  MockLaunchPluginVmCallback callback;
+  plugin_vm_manager_->LaunchPluginVm(callback.Get());
+  EXPECT_CALL(callback, Run(false));
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(VmPluginDispatcherClient().show_vm_called());
 

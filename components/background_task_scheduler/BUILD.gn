@@ -18,11 +18,10 @@ if (is_android) {
 }
 
 group("background_task_scheduler") {
-  public_deps = [ ":public" ]
-
-  if (is_android) {
-    deps = [ ":factory" ]
-  }
+  public_deps = [
+    ":factory",
+    ":public",
+  ]
 }
 
 static_library("public") {
@@ -43,19 +42,20 @@ static_library("public") {
   ]
 }
 
-if (is_android) {
-  static_library("factory") {
-    sources = [
-      "background_task_scheduler_factory.cc",
-      "background_task_scheduler_factory.h",
-    ]
+static_library("factory") {
+  sources = [
+    "background_task_scheduler_factory.cc",
+    "background_task_scheduler_factory.h",
+  ]
 
-    deps = [
-      ":public",
-      "internal:native_task",
-    ]
+  deps = [ ":public" ]
+
+  if (is_android) {
+    deps += [ "internal:native_task" ]
   }
+}
 
+if (is_android) {
   # This is shared between WebView and Chrome. We do not want to add GCM
   # related permissions for WebView while still wanting to avoid collision
   # between WebView and Chrome.

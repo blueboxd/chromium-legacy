@@ -31,13 +31,16 @@ namespace plugin_vm {
 class PluginVmManager : public KeyedService,
                         public chromeos::VmPluginDispatcherClient::Observer {
  public:
+  using LaunchPluginVmCallback = base::OnceCallback<void(bool success)>;
+
   static PluginVmManager* GetForProfile(Profile* profile);
 
   explicit PluginVmManager(Profile* profile);
   ~PluginVmManager() override;
 
   // TODO(juwa): Don't allow launch/stop/uninstall to run simultaneously.
-  void LaunchPluginVm();
+  // |callback| is called either when VM tools are ready or if an error occurs.
+  void LaunchPluginVm(LaunchPluginVmCallback callback);
   void StopPluginVm(const std::string& name, bool force);
   void UninstallPluginVm();
 
@@ -45,6 +48,9 @@ class PluginVmManager : public KeyedService,
   uint64_t seneschal_server_handle() { return seneschal_server_handle_; }
 
   // chromeos::VmPluginDispatcherClient::Observer:
+  void OnVmToolsStateChanged(
+      const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal& signal)
+      override;
   void OnVmStateChanged(
       const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) override;
 
@@ -100,6 +106,8 @@ class PluginVmManager : public KeyedService,
   void OnDefaultSharedDirExists(const base::FilePath& dir, bool exists);
   void UninstallSucceeded();
 
+  // Called when LaunchPluginVm() is successful.
+  void LaunchSuccessful();
   // Called when LaunchPluginVm() is unsuccessful.
   void LaunchFailed(PluginVmLaunchResult result = PluginVmLaunchResult::kError);
 
@@ -119,6 +127,10 @@ class PluginVmManager : public KeyedService,
   std::string owner_id_;
   uint64_t seneschal_server_handle_ = 0;
 
+  // State of the default VM's tools, kept up-to-date by signals from the
+  // dispatcher.
+  vm_tools::plugin_dispatcher::VmToolsState vm_tools_state_ =
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_UNKNOWN;
   // State of the default VM, kept up-to-date by signals from the dispatcher.
   vm_tools::plugin_dispatcher::VmState vm_state_ =
       vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN;
@@ -130,10 +142,14 @@ class PluginVmManager : public KeyedService,
   // We can't immediately destroy the VM when it is in states like
   // suspending, so delay until an in progress operation finishes.
   bool pending_destroy_disk_image_ = false;
+  // |launch_vm_callbacks_| cannot be run before the vm tools are installed, so
+  // delay until the tools are installed.
+  bool pending_vm_tools_installed_ = false;
 
   std::unique_ptr<PluginVmUninstallerNotification> uninstaller_notification_;
 
   base::ObserverList<chromeos::VmStartingObserver> vm_starting_observers_;
+  std::vector<LaunchPluginVmCallback> launch_vm_callbacks_;
 
   base::WeakPtrFactory<PluginVmManager> weak_ptr_factory_{this};
 

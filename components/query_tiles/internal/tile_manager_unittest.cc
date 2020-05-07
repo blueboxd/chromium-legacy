@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
-#include "components/query_tiles/internal/config.h"
+#include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_store.h"
 #include "components/query_tiles/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,6 +51,29 @@ class TileManagerTest : public testing::Test {
   // Initial and load entries from store_, compare the |expected_status| to the
   // actual returned status.
   void Init(TileGroupStatus expected_status) {
+    base::RunLoop loop;
+    manager()->Init(base::BindOnce(&TileManagerTest::OnInitCompleted,
+                                   base::Unretained(this), loop.QuitClosure(),
+                                   expected_status));
+    loop.Run();
+  }
+
+  // TODO(crbug.com/1078163): Replace Init() with InitWithData.
+  void InitWithData(TileGroupStatus expected_status,
+                    std::vector<TileGroup> groups,
+                    bool success = true) {
+    MockTileStore::KeysAndEntries entries;
+    for (const auto& group : groups) {
+      entries[group.id] = std::make_unique<TileGroup>(group);
+    }
+
+    EXPECT_CALL(*tile_store(), InitAndLoad(_))
+        .WillOnce(Invoke(
+            [&](base::OnceCallback<void(bool, MockTileStore::KeysAndEntries)>
+                    callback) {
+              std::move(callback).Run(success, std::move(entries));
+            }));
+
     base::RunLoop loop;
     manager()->Init(base::BindOnce(&TileManagerTest::OnInitCompleted,
                                    base::Unretained(this), loop.QuitClosure(),
@@ -101,7 +124,7 @@ class TileManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void GetSingleTile(const std::string& id, Tile expected) {
+  void GetSingleTile(const std::string& id, base::Optional<Tile> expected) {
     base::RunLoop loop;
     manager()->GetTile(
         id, base::BindOnce(&TileManagerTest::OnGetTile, base::Unretained(this),
@@ -112,7 +135,9 @@ class TileManagerTest : public testing::Test {
   void OnGetTile(base::RepeatingClosure closure,
                  base::Optional<Tile> expected,
                  base::Optional<Tile> actual) {
-    EXPECT_TRUE(test::AreTilesIdentical(expected.value(), actual.value()));
+    ASSERT_EQ(expected.has_value(), actual.has_value());
+    if (expected.has_value())
+      EXPECT_TRUE(test::AreTilesIdentical(expected.value(), actual.value()));
     std::move(closure).Run();
   }
 
@@ -195,7 +220,6 @@ TEST_F(TileManagerTest, InitAndLoadSuccess) {
 
   Init(TileGroupStatus::kSuccess);
   GetTiles(expected);
-  GetSingleTile("guid-1-1", expected[0]);
 }
 
 // Failed to init an empty db, and save tiles call failed because of db is
@@ -317,6 +341,15 @@ TEST_F(TileManagerTest, SaveTilesAndReplaceOldGroupSuccess) {
 
   SaveTiles(std::move(tiles_to_save), TileGroupStatus::kSuccess);
   GetTiles(std::move(expected));
+}
+
+// Verifies GetTile(tile_id) API can return the right thing.
+TEST_F(TileManagerTest, GetTileById) {
+  TileGroup group;
+  test::ResetTestGroup(&group);
+  InitWithData(TileGroupStatus::kSuccess, {group});
+  GetSingleTile("guid-1-1", *group.tiles[0]);
+  GetSingleTile("id_not_exist", base::nullopt);
 }
 
 }  // namespace

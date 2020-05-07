@@ -75,6 +75,13 @@ enum class MediaLogProperty {
   // Track metadata.
   kAudioTracks,
   kVideoTracks,
+
+  // Effective video playback frame rate adjusted for the playback speed.
+  // Updated along with kVideoPlaybackRoughness (i.e. not very often)
+  kFramerate,
+
+  // A playback quality metric calculated by VideoPlaybackRoughnessReporter
+  kVideoPlaybackRoughness,
 };
 
 MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kResolution, gfx::Size);
@@ -97,6 +104,8 @@ MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kIsPlatformAudioDecoder, bool);
 MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kIsAudioDecryptingDemuxerStream, bool);
 MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kAudioTracks, std::vector<AudioDecoderConfig>);
 MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kVideoTracks, std::vector<VideoDecoderConfig>);
+MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kFramerate, double);
+MEDIA_LOG_PROPERTY_SUPPORTS_TYPE(kVideoPlaybackRoughness, double);
 
 // Convert the enum to a string (used for the front-end enum matching).
 MEDIA_EXPORT std::string MediaLogPropertyKeyToString(MediaLogProperty property);

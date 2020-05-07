@@ -62,6 +62,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "last_fetch_content_types INTEGER, "
                          "logo BLOB, "
                          "display_name TEXT, "
+                         "user_identifier BLOB, "
                          "last_display_time_s INTEGER, "
                          "reset_reason INTEGER DEFAULT 0, "
                          "reset_token BLOB, "
@@ -183,7 +184,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.logo, "
       "mediaFeed.display_name, "
       "mediaFeed.last_display_time_s, "
-      "mediaFeed.reset_reason");
+      "mediaFeed.reset_reason, "
+      "mediaFeed.user_identifier");
 
   sql::Statement statement;
 
@@ -328,6 +330,25 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       feed->origin_audio_video_watchtime_percentile = 100;
     }
 
+    if (statement.GetColumnType(16) == sql::ColumnType::kBlob) {
+      media_feeds::UserIdentifier identifier;
+      if (!GetProto(statement, 16, identifier)) {
+        base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
+                                      FeedReadResult::kBadUserIdentifier);
+
+        continue;
+      }
+
+      feed->user_identifier = media_feeds::mojom::UserIdentifier::New();
+      feed->user_identifier->name = identifier.name();
+      feed->user_identifier->email = identifier.email();
+
+      auto image_url = GURL(identifier.image().url());
+
+      if (image_url.is_valid())
+        feed->user_identifier->image = ProtoToMediaImage(identifier.image());
+    }
+
     feeds.push_back(std::move(feed));
 
     // If we are returning top feeds then we should apply a limit here.
@@ -347,6 +368,7 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
     const int item_play_next_count,
     const int item_content_types,
     const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
+    const media_feeds::mojom::UserIdentifier* user_identifier,
     const std::string& display_name,
     const int item_safe_count) {
   DCHECK_LT(0, DB()->transaction_nesting());
@@ -377,8 +399,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "UPDATE mediaFeed SET last_fetch_time_s = ?, last_fetch_result = ?, "
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
-        "logo = ?, display_name = ?, last_fetch_safe_item_count = ? "
-        "WHERE id = ?"));
+        "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
+        "user_identifier = ? WHERE id = ?"));
   } else {
     statement.Assign(DB()->GetCachedStatement(
         SQL_FROM_HERE,
@@ -386,8 +408,8 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
         "fetch_failed_count = ?, last_fetch_item_count = ?, "
         "last_fetch_play_next_count = ?, last_fetch_content_types = ?, "
         "logo = ?, display_name = ?, last_fetch_safe_item_count = ?, "
-        "last_fetch_time_not_cache_hit_s = ? WHERE "
-        "id = ?"));
+        "user_identifier = ?, last_fetch_time_not_cache_hit_s = ? "
+        "WHERE id = ?"));
   }
 
   statement.BindInt64(0,
@@ -408,12 +430,26 @@ bool MediaHistoryFeedsTable::UpdateFeedFromFetch(
   statement.BindString(7, display_name);
   statement.BindInt64(8, item_safe_count);
 
+  if (user_identifier) {
+    media_feeds::UserIdentifier proto_id;
+    proto_id.set_name(user_identifier->name);
+    if (user_identifier->email.has_value())
+      proto_id.set_email(user_identifier->email.value());
+
+    media_feeds::MediaImageToProto(proto_id.mutable_image(),
+                                   user_identifier->image);
+
+    BindProto(statement, 9, proto_id);
+  } else {
+    statement.BindNull(9);
+  }
+
   if (was_fetched_from_cache) {
-    statement.BindInt64(9, feed_id);
+    statement.BindInt64(10, feed_id);
   } else {
     statement.BindInt64(
-        9, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-    statement.BindInt64(10, feed_id);
+        10, base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
+    statement.BindInt64(11, feed_id);
   }
 
   return statement.Run() && DB()->GetLastChangeCount() == 1;
@@ -465,8 +501,8 @@ bool MediaHistoryFeedsTable::Reset(
       "fetch_failed_count = 0, last_fetch_time_not_cache_hit_s = NULL, "
       "last_fetch_item_count = 0, last_fetch_safe_item_count = 0, "
       "last_fetch_play_next_count = 0, last_fetch_content_types = 0, "
-      "logo = NULL, display_name = NULL, reset_reason = ?, reset_token = ? "
-      "WHERE id = ?"));
+      "logo = NULL, display_name = NULL, user_identifier = NULL, "
+      "reset_reason = ?, reset_token = ? WHERE id = ?"));
 
   statement.BindInt64(0, static_cast<int>(reason));
 

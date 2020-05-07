@@ -37,6 +37,7 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="generated_resources_pa.pak" type="data_package" lang="pa" />
       <output filename="generated_resources_si.pak" type="data_package" lang="si" />
       <output filename="generated_resources_sq.pak" type="data_package" lang="sq" />
+      <output filename="generated_resources_sr-Latn.pak" type="data_package" lang="sr-Latn" />
       <output filename="generated_resources_ur.pak" type="data_package" lang="ur" />
       <output filename="generated_resources_uz.pak" type="data_package" lang="uz" />
       <output filename="generated_resources_zh-HK.pak" type="data_package" lang="zh-HK" />
@@ -168,6 +169,7 @@ are declared in tools/grit/grit_rule.gni.
       <output filename="java/res/values-sl/generated_resources.xml" lang="sl" type="android" context="android_java" />
       <output filename="java/res/values-sq/generated_resources.xml" lang="sq" type="android" context="android_java" />
       <output filename="java/res/values-sr/generated_resources.xml" lang="sr" type="android" context="android_java" />
+      <output filename="java/res/values-b+sr+Latn/generated_resources.xml" lang="sr-Latn" type="android" context="android_java" />
       <output filename="java/res/values-sv/generated_resources.xml" lang="sv" type="android" context="android_java" />
       <output filename="java/res/values-sw/generated_resources.xml" lang="sw" type="android" context="android_java" />
       <output filename="java/res/values-ta/generated_resources.xml" lang="ta" type="android" context="android_java" />

@@ -88,6 +88,7 @@ class ApkWebAppService : public KeyedService,
                           const std::vector<uint8_t>& icon_png_data);
   void OnDidFinishInstall(const std::string& package_name,
                           const web_app::AppId& web_app_id,
+                          bool is_web_only_twa,
                           web_app::InstallResultCode code);
   bool IsWebAppInstalledFromArc(const web_app::AppId& web_app_id);
 

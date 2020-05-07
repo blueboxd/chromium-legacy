@@ -71,6 +71,22 @@ struct MediaFeed {
   // are deleted or expire on the origin then we will delete the feed items.
   // https://wicg.github.io/media-feeds/#dfn-associated-origin
   array<url.mojom.Origin> associated_origins;
+
+  // Contains details about the user signed into the website.
+  UserIdentifier? user_identifier;
+};
+
+// Contains details about the user signed into the website.
+// https://wicg.github.io/media-feeds/#dfn-currently-logged-in-user
+struct UserIdentifier {
+  // The name of the user’s account.
+  string name;
+
+  // The email address of the users’ account.
+  string? email;
+
+  // The image of the user’s account.
+  MediaImage? image;
 };
 
 // The result of fetching the feed. This enum is committed to storage so do not

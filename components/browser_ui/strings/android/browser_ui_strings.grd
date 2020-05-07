@@ -69,6 +69,7 @@
     <output filename="values-sl/browser_ui_strings.xml" lang="sl" type="android" />
     <output filename="values-sq/browser_ui_strings.xml" lang="sq" type="android" />
     <output filename="values-sr/browser_ui_strings.xml" lang="sr" type="android" />
+    <output filename="values-b+sr+Latn/browser_ui_strings.xml" lang="sr-Latn" type="android" />
     <output filename="values-sv/browser_ui_strings.xml" lang="sv" type="android" />
     <output filename="values-sw/browser_ui_strings.xml" lang="sw" type="android" />
     <output filename="values-ta/browser_ui_strings.xml" lang="ta" type="android" />

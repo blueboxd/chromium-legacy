@@ -294,12 +294,31 @@ cr.define('cr.ui', function() {
   const treeItemProto = (function() {
     const treeItem = document.createElement('div');
     treeItem.className = 'tree-item';
-    treeItem.innerHTML = '<div class="tree-row">' +
+    const htmlString = '<div class="tree-row">' +
         '<span class="expand-icon"></span>' +
         '<span class="tree-label-icon"></span>' +
         '<span class="tree-label"></span>' +
         '</div>' +
         '<div class="tree-children" role="group"></div>';
+
+    if (window.trustedTypes) {
+      /**
+       * This is used to create TrustedHTML.
+       *
+       * @type {TrustedTypePolicy}
+       */
+      const staticHTMLPolicy =
+          trustedTypes.createPolicy('cr-ui-tree-js-static', {
+            createHTML: () => {
+              return htmlString;
+            },
+          });
+
+      treeItem.innerHTML = staticHTMLPolicy.createHTML('');
+    } else {
+      treeItem.innerHTML = htmlString;
+    }
+
     treeItem.setAttribute('role', 'treeitem');
     return treeItem;
   })();

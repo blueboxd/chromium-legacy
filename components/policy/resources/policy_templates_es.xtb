@@ -873,7 +873,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Las plantillas con formato incorrecto se ignorarán.</translation>
 <translation id="2345547870894930157">Habilitar DNS-over-HTTPS sin alternativa insegura</translation>
-<translation id="2353442107789326507">Lista con los ajustes de los servicios de conectores de Chrome Enterprise que van a aplicarse al conector <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> de Enterprise, que se activa cuando se adjunta un archivo a Chrome.
+<translation id="2353442107789326507">Lista con los ajustes de los servicios de Chrome Enterprise Connectors que van a aplicarse al conector <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" /> de Enterprise, que se activa cuando se adjunta un archivo a Chrome.
 
       Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar un archivo para su análisis cuando se adjunte a una página específica y qué etiquetas se van a incluir en la solicitud de análisis del archivo. Se incluirá en la solicitud de análisis una etiqueta correspondiente a un patrón "enable" si la URL de la página coincide con un patrón asociado a esta etiqueta, siempre y cuando no se encuentre una misma etiqueta que coincida con la URL de la página con el patrón "disable". El análisis se realiza si se debe incluir al menos 1 etiqueta en la solicitud.
 
@@ -951,7 +951,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si se utiliza el valor False, no se podrá omitir el inicio de sesión automático sin tiempo de espera (si se ha configurado).</translation>
 <translation id="2449669951136028258">Lista de tipos de archivo que deberían abrirse automáticamente al descargarse. No se debe incluir el separador del principio al añadir un tipo de archivo a la lista, así que añade "txt" en lugar de ".txt".
 
-      Los archivos de los tipos que se deben abrir automáticamente seguirán estando sujetos a las comprobaciones de Navegación Segura y no se abrirán si no las pasan.
+      Los archivos de los tipos que se deben abrir automáticamente seguirán estando sujetos a las comprobaciones de Navegación Segura y no se abrirán si no las superan.
 
       Si no se establece esta política, solo se abrirán automáticamente al descargarse los tipos de archivo que haya especificado el usuario.
 
@@ -2835,8 +2835,8 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si habilitas esta opción, <ph name="PRODUCT_NAME" /> ignorará todas las opciones relacionadas con el proxy que se especifiquen en la línea de comandos.
 
           Si no se asigna ningún valor a esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
-<translation id="5177260184597743704">Política de configuración del conector OnSecurityEvent de Chrome Enterprise</translation>
-<translation id="5179734767316042713">Lista con los ajustes de los servicios de conectores de Chrome Enterprise que se van a aplicar al conector <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> de Enterprise, que se activa cuando se produce una actividad relacionada con la seguridad en Chrome. Esto incluye resultados negativos del análisis de conectores de Enterprise, reutilización de contraseñas, acceso a páginas no seguras y otras acciones del usuario relacionadas con la seguridad.
+<translation id="5177260184597743704">Política de configuración del conector OnSecurityEvent de Chrome Enterprise Connectors</translation>
+<translation id="5179734767316042713">Lista con los ajustes de los servicios de Chrome Enterprise Connectors que se van a aplicar al conector <ph name="ON_SECURITY_EVENT_ENTERPRISE_CONNECTOR" /> de Enterprise, que se activa cuando se produce una actividad relacionada con la seguridad en Chrome. Esto incluye resultados negativos del análisis de Enterprise Connectors, reutilización de contraseñas, acceso a páginas no seguras y otras acciones del usuario relacionadas con la seguridad.
 
       El campo <ph name="ENTERPRISE_CONNECTOR_SERVICE_PROVIDER_FIELD" /> identifica a qué proveedor de servicios de informes corresponde la configuración.
 
@@ -3296,7 +3296,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Antes de la versión 75, no se admite separar los ID de las extensiones con comas y se omitirá. El resto de la política seguirá siendo aplicable.</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
-<translation id="5646234199535103501">Política de configuración del conector OnBulkDataEntry de Chrome Enterprise</translation>
+<translation id="5646234199535103501">Política de configuración del conector OnBulkDataEntry de Chrome Enterprise Connectors</translation>
 <translation id="5656177735561364047">Habilita la función de portapapeles compartido</translation>
 <translation id="5666457529647159548">Permite que los usuarios gestionen los certificados de cliente instalados.</translation>
 <translation id="5676740747107495269">Mostrar las opciones de accesibilidad en el menú de la bandeja del sistema de la pantalla de inicio de sesión</translation>
@@ -3854,7 +3854,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6553143066970470539">Porcentaje de brillo de la pantalla</translation>
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara y al micrófono</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
-<translation id="6561900678873266853">Lista con los ajustes de los servicios de conectores de Chrome Enterprise que se van a aplicar al conector <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> de Enterprise, que se activa cuando se introducen datos en Chrome desde el portapapeles o arrastrando y soltando contenido web.
+<translation id="6561900678873266853">Lista con los ajustes de los servicios de Chrome Enterprise Connectors que se van a aplicar al conector <ph name="ON_BULK_DATA_ENTRY_ENTERPRISE_CONNECTOR" /> de Enterprise, que se activa cuando se introducen datos en Chrome desde el portapapeles o arrastrando y soltando contenido web.
 
       Los campos <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> y <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> se usan para determinar si el conector debe enviar datos para su análisis cuando se introduzcan en una página específica y qué etiquetas se van a incluir en la solicitud de análisis de esos datos. Se incluirá en la solicitud de análisis una etiqueta correspondiente a un patrón "enable" si la URL de la página coincide con un patrón asociado a esta etiqueta, siempre y cuando no se encuentre una misma etiqueta que coincida con la URL de la página con el patrón "disable". El análisis se realiza si se debe incluir al menos 1 etiqueta en la solicitud.
 

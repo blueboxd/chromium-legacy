@@ -76,7 +76,7 @@ public class PermissionParamsListBuilderUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        PermissionParamsListBuilder.setProfileForTesting(mProfileMock);
+        ChromePermissionParamsListBuilderDelegate.setProfileForTesting(mProfileMock);
         mocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeMock);
         when(mWebsitePreferenceBridgeMock.isPermissionControlledByDSE(
                      any(BrowserContextHandle.class), anyInt(), anyString()))
@@ -84,9 +84,10 @@ public class PermissionParamsListBuilderUnitTest {
         FakePermissionDelegate.clearBlockedPermissions();
         AndroidPermissionDelegate permissionDelegate = new FakePermissionDelegate();
         mSettingsActivityRequiredListener = new FakeSystemSettingsActivityRequiredListener();
-        mPermissionParamsListBuilder = new PermissionParamsListBuilder(
-                RuntimeEnvironment.application, permissionDelegate, "https://example.com", true,
-                mSettingsActivityRequiredListener, result -> {});
+        mPermissionParamsListBuilder =
+                new PermissionParamsListBuilder(RuntimeEnvironment.application, permissionDelegate,
+                        "https://example.com", true, mSettingsActivityRequiredListener,
+                        result -> {}, new ChromePermissionParamsListBuilderDelegate());
     }
 
     @Test

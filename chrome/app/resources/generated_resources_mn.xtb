@@ -922,7 +922,7 @@
 <translation id="2199719347983604670">Chrome синкийн өгөгдөл</translation>
 <translation id="2200094388063410062">Имэйл</translation>
 <translation id="2200356397587687044">Chrome-д үргэлжлүүлэхийн тулд зөвшөөрөл шаардлагатай</translation>
-<translation id="2200729650590440847">ПИН түгжигдсэн дэлгэцийн тохиргоо</translation>
+<translation id="2200729650590440847">ПИН-тэй түгжигдсэн дэлгэцийн тохиргоо</translation>
 <translation id="220138918934036434">Товчийг нуу</translation>
 <translation id="2202898655984161076">Принтерийн жагсаалтыг гаргахад асуудал үүслээ. Таны зарим принтер <ph name="CLOUD_PRINT_NAME" /> руу амжилттай бүртгэгдэж чадаагүй байж болох юм.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Хаягийн талбарт<ph name="END_LINK" /> ашигласан хайлтын хэрэгсэл</translation>
@@ -1124,7 +1124,7 @@
 <translation id="2464089476039395325">HTTP прокси</translation>
 <translation id="2465237718053447668"><ph name="DOMAIN" /> таныг одоо Wi-Fi-д холбогдож, шинэчлэлт татахыг шаардаж байна. Эсвэл хязгаартай холболтоос татаж авна уу (төлбөр гарч болзошгүй).</translation>
 <translation id="2467267713099745100"><ph name="NETWORK_TYPE" /> сүлжээ, унтраалттай</translation>
-<translation id="2468178265280335214">Мэдрэгч самбарын гүйлгэх хурдасгуур</translation>
+<translation id="2468178265280335214">Мэдрэгч самбарын гүйлгэлтийн хурдасгуур</translation>
 <translation id="2468205691404969808">Таны сонголтыг таныг тэдгээр хуудсанд зочлоогүй байсан ч санахын тулд күүки ашигладаг</translation>
 <translation id="2468402215065996499">Тамагочи</translation>
 <translation id="2469259292033957819">Танд хадгалсан хэвлэгч байхгүй байна.</translation>
@@ -1360,7 +1360,7 @@
 <translation id="2755367719610958252">Хандалтын онцлогийг удирдах</translation>
 <translation id="275662540872599901">дэлгэц унтраалттай</translation>
 <translation id="2757338480560142065">Таны хадгалж буй нууц үг <ph name="WEBSITE" />-н нууц үгтэй таарч байгаа эсэхийг шалгана уу</translation>
-<translation id="276221322463921688">Чиглэлийг хянах</translation>
+<translation id="276221322463921688">Мониторын чиглэл</translation>
 <translation id="2762441749940182211">Камерыг блоклосон</translation>
 <translation id="2765217105034171413">Жижиг</translation>
 <translation id="2766091842833763951">Тохируулгын асуудлын улмаас <ph name="APP_NAME" />-г тохируулж чадсангүй. Байгууллагынхаа төхөөрөмжийн администратортай холбогдоно уу. Алдааны код: <ph name="ERROR_CODE" />.</translation>
@@ -1537,7 +1537,7 @@
 <translation id="2985348301114641460">Таны администраторт "<ph name="EXTENSION_NAME" />"-г суулгах хүсэлтийг илгээх үү?</translation>
 <translation id="2986010903908656993">Энэ хуудсыг MIDI төхөөрөмжүүдийг бүрэн хяналтандаа авсан учир блоклосон.</translation>
 <translation id="2987620471460279764">Өөр төхөөрөмжөөс хуваалцсан текст</translation>
-<translation id="2989123969927553766">Хулганын гүйлгэх хурдасгуур</translation>
+<translation id="2989123969927553766">Хулганын гүйлгэлтийн хурдасгуур</translation>
 <translation id="2989474696604907455">Хавсаргаагүй</translation>
 <translation id="2989786307324390836">DER шифрлэлттэй бинар дан гэрчилгээ</translation>
 <translation id="2992931425024192067">Бүх мэдэгдлийн агуулгыг харуулах</translation>
@@ -3725,7 +3725,7 @@
 <translation id="5944869793365969636">Хурдан хариу үйлдлийн кодыг скан хийх</translation>
 <translation id="5946591249682680882"><ph name="WEBRTC_LOG_REPORT_ID" /> ID-ыг мэдээлэх</translation>
 <translation id="5949544233750246342">Файл задлах боломжгүй байна</translation>
-<translation id="5951624318208955736">Хянах</translation>
+<translation id="5951624318208955736">Монитор</translation>
 <translation id="5955282598396714173">Таны нууц үг хүчингүй боллоо. Нууц үгээ өөрчлөхийн тулд бүртгэлээсээ гараад буцаж нэвтэрнэ үү.</translation>
 <translation id="5955304353782037793">аппликейшн</translation>
 <translation id="5955721306465922729">Вэб сайт энэ хэрэглээний програмыг нээх хүсэлтэй байна.</translation>
@@ -4777,7 +4777,7 @@
 <translation id="7363117941401515667"><ph name="HOURS" /> цагийн өмнө шинэчилсэн</translation>
 <translation id="7364591875953874521">Хандах хүсэлт тавьсан</translation>
 <translation id="7364796246159120393">Файлаа сонгоно уу</translation>
-<translation id="7365076891350562061">Хэмжээг хянах</translation>
+<translation id="7365076891350562061">Мониторын хэмжээ</translation>
 <translation id="7366415735885268578">Сайт нэмэх</translation>
 <translation id="7366909168761621528">Хайх өгөгдөл</translation>
 <translation id="7367714965999718019">Хурдан хариу үйлдлийн код үүсгэгч</translation>
@@ -5541,7 +5541,7 @@
 <translation id="833986336429795709">Энэ холбоосыг нээхийн тулд апп сонгоно уу</translation>
 <translation id="8342861492835240085">Цуглуулга сонгох</translation>
 <translation id="834290227245955730">ПИН буруу байна. Үлдсэн дахин оролдлого: <ph name="RETRIES" />.</translation>
-<translation id="8350789879725387295">Суурилуулалт дахь мэдрэгч үзгийн хэрэгсэл</translation>
+<translation id="8350789879725387295">Холбогч дахь мэдрэгч үзгийн хэрэгсэл</translation>
 <translation id="8351419472474436977">Өргөлтгөл нь таны прокси тохиргоог хяналтандаа оруулсан байна. Энэ нь таны онлайнаар хийсэн юуг ч өөрчлөх, гэмтээх, бүр таны яриаг ч чагнаж байж болох юм. Хэрэв та энэ өөрчлөлтийг хийгээгүй бол үүнийг хүсэхгүй л болов уу.</translation>
 <translation id="8351630282875799764">Батарей цэнэглэгдэхгүй байна</translation>
 <translation id="835238322900896202">Устгах явцад алдаа гарлаа. Терминалаар устгана уу.</translation>

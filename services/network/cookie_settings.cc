@@ -166,7 +166,33 @@ void CookieSettings::GetCookieSettingInternal(
     }
   }
 
-  if (block_third && is_third_party_request)
+  bool block = block_third && is_third_party_request;
+  if (block) {
+    for (const auto& entry : storage_access_grants_) {
+      // If a valid entry exists that matches both our first party and request
+      // url this indicates a Storage Access API grant that may unblock
+      // storage access despite third party cookies being blocked.
+      // ContentSettingsType::STORAGE_ACCESS stores grants in the following
+      // manner:
+      // Primary Pattern:   Embedded site requiring third party storage access
+      // Secondary Pattern: Top-Level site hosting embedded content
+      // Value:             CONTENT_SETTING_[ALLOW/BLOCK] indicating grant
+      //                    status
+      if (!entry.IsExpired() && entry.primary_pattern.Matches(url) &&
+          entry.secondary_pattern.Matches(first_party_url)) {
+        ContentSetting storage_access_setting = entry.GetContentSetting();
+        // We'll only utilize the SAA grant if our value is set to
+        // CONTENT_SETTING_ALLOW as other values would indicate the user
+        // rejected a prompt to allow access.
+        if (storage_access_setting == CONTENT_SETTING_ALLOW)
+          block = false;
+
+        break;
+      }
+    }
+  }
+
+  if (block)
     *cookie_setting = CONTENT_SETTING_BLOCK;
 }
 

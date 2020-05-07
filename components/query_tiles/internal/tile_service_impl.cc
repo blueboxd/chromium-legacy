@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/rand_util.h"
 #include "components/query_tiles/internal/proto_conversion.h"
+#include "components/query_tiles/internal/tile_config.h"
 
 namespace upboarding {
 namespace {
@@ -44,6 +45,20 @@ TileServiceImpl::TileServiceImpl(
 
 TileServiceImpl::~TileServiceImpl() = default;
 
+void TileServiceImpl::Initialize(SuccessCallback callback) {
+  tile_manager_->Init(base::BindOnce(&TileServiceImpl::OnTileManagerInitialized,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(callback)));
+}
+
+void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
+                                               TileGroupStatus status) {
+  bool success = (status == TileGroupStatus::kSuccess);
+  DCHECK(callback);
+  // TODO(xingliu): Handle TileGroupStatus::kInvalidGroup.
+  std::move(callback).Run(success);
+}
+
 void TileServiceImpl::GetQueryTiles(GetTilesCallback callback) {
   tile_manager_->GetTiles(std::move(callback));
 }
@@ -51,11 +66,6 @@ void TileServiceImpl::GetQueryTiles(GetTilesCallback callback) {
 void TileServiceImpl::GetTile(const std::string& tile_id,
                               TileCallback callback) {
   tile_manager_->GetTile(tile_id, std::move(callback));
-}
-
-void TileServiceImpl::GetVisuals(const std::string& tile_id,
-                                 VisualsCallback callback) {
-  NOTIMPLEMENTED();
 }
 
 void TileServiceImpl::ScheduleDailyTask() {

@@ -18,6 +18,7 @@ extern const base::Feature kIframeOneGoogleBar;
 extern const base::Feature kRealboxMatchOmniboxTheme;
 extern const base::Feature kRealboxUseGoogleGIcon;
 extern const base::Feature kWebUI;
+extern const base::Feature kWebUIRealbox;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
 extern const base::Feature kRealbox;

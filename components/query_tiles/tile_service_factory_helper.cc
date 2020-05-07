@@ -16,7 +16,8 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/query_tiles/internal/cached_image_loader.h"
-#include "components/query_tiles/internal/config.h"
+#include "components/query_tiles/internal/init_aware_tile_service.h"
+#include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
 #include "components/query_tiles/internal/tile_service_impl.h"
@@ -62,9 +63,10 @@ std::unique_ptr<TileService> CreateTileService(
       TileConfig::GetQueryTilesServerUrl(), country_code, accepted_language,
       api_key, TileConfig::GetExperimentTag(), url_loader_factory);
 
-  return std::make_unique<TileServiceImpl>(std::move(image_loader),
-                                           std::move(tile_manager), scheduler,
-                                           std::move(tile_fetcher));
+  auto tile_service_impl = std::make_unique<TileServiceImpl>(
+      std::move(image_loader), std::move(tile_manager), scheduler,
+      std::move(tile_fetcher));
+  return std::make_unique<InitAwareTileService>(std::move(tile_service_impl));
 }
 
 }  // namespace upboarding

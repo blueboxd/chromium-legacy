@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">जर्मन किबोर्ड</translation>
 <translation id="1972984168337863910">फाइलका प्रतिक्रियाका प्यानलहरू विस्तृत गर्नुहोस्</translation>
 <translation id="1984603991036629094">आर्मेनियाली फोनेटिक किबोर्ड</translation>
+<translation id="1995337122023280937">फाइल रहेको स्थानमा जानुहोस्</translation>
 <translation id="2001796770603320721">ड्राइभमा व्यवस्थित गर्नुहोस्</translation>
 <translation id="2009067268969781306">ड्राइभ फर्म्याट गर्नुले यसमा भण्डार गरिएका सम्पूर्ण डेटा मेट्ने छ। यो कार्य उल्टाउन सकिँदैन।</translation>
 <translation id="2028997212275086731">RAR सङ्ग्रह</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google ड्राइभमा पुग्न सकिएन। कृपया <ph name="BEGIN_LINK" />लग आउट<ph name="END_LINK" /> गर्नुहोस् र फेरि लग इन गर्नुहोस्।</translation>
 <translation id="2649120831653069427">रेनबोफिस</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">फाइल रहेको स्थान</translation>
 <translation id="2672394958563893062">एउटा त्रुटि देखापर्‍यो। सुरुदेखि पुन: सुरु गर्न क्लिक गर्नुहोस्।</translation>
 <translation id="2676946222714718093">प्ले गर्दै</translation>
 <translation id="2735698359135166290">रोमानियाली मानक कुञ्जीपाटी</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फाइलहरू मेटाइने छन्</translation>
 <translation id="509429900233858213">त्रुटि भयो।</translation>
 <translation id="5098629044894065541">हिब्रु</translation>
+<translation id="5112685521274804841">यो फोल्डरभित्र रहेका फाइलहरू रिड गर्न मात्र मिल्छ। केही क्रियाकलापहरू गर्न मिल्दैन।</translation>
 <translation id="5123433949759960244">बास्केटबल</translation>
 <translation id="5129662217315786329">पोलिस</translation>
 <translation id="5144820558584035333">हंगुल 3 सेट (390)</translation>
@@ -698,6 +701,7 @@
 <translation id="9034924485347205037">Linux का फाइलहरू</translation>
 <translation id="9035012421917565900">यी वस्तुहरूलाई फेरि '<ph name="DESTINATION_NAME" />' मा सार्न सकिँदैन, त्यसैले तपाईं यस कार्यलाई अन्डू गर्न सक्नुहुनेछैन।</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" नाम गरेको फाइल पहिलेदेखि नै अवस्थित छ। कृपया कुनै फरक नाम चयन गर्नुहोस्।</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" /> का एप प्रयोग गरी फाइलहरू खोल्न सर्वप्रथम ती फाइललाई सारेर <ph name="APP_NAME" /> का साझा फाइलहरू नामक फोल्डरमा लैजानुहोस्।</translation>
 <translation id="9064939804718829769">सरुवा गर्दै...</translation>
 <translation id="9065203028668620118">सम्पादन गर्नुहोस</translation>
 <translation id="9099674669267916096">पृष्ठको गणना</translation>

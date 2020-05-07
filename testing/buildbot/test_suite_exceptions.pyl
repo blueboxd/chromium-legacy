@@ -559,12 +559,6 @@
       'Fuchsia x64',  # https://crbug.com/1077462
     ],
   },
-  'capture_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64',  # https://crbug.com/1075762
-      'Fuchsia x64',  # https://crbug.com/1075762
-    ],
-  },
   'cc_unittests': {
     'modifications': {
       'Linux TSan Tests': {

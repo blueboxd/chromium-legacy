@@ -30,10 +30,10 @@ using LaunchPluginVmAppCallback =
     base::OnceCallback<void(bool success, const std::string& failure_reason)>;
 
 // Launch a Plugin VM App with a given set of files, given as cracked urls in
-// the VM.
+// the VM. Will start Plugin VM if it is not already running.
 void LaunchPluginVmApp(Profile* profile,
                        std::string app_id,
-                       const std::vector<storage::FileSystemURL>& files,
+                       std::vector<storage::FileSystemURL> files,
                        LaunchPluginVmAppCallback callback);
 
 }  // namespace plugin_vm

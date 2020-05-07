@@ -8,9 +8,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace schema_org {
@@ -28,7 +32,16 @@ class SchemaOrgExtractorTest : public testing::Test {
 
  protected:
   EntityPtr Extract(const std::string& text) {
-    return extractor_.Extract(text);
+    base::RunLoop run_loop;
+    EntityPtr out;
+
+    extractor_.Extract(text, base::BindLambdaForTesting([&](EntityPtr entity) {
+                         out = std::move(entity);
+                         run_loop.Quit();
+                       }));
+
+    run_loop.Run();
+    return out;
   }
 
   PropertyPtr CreateStringProperty(const std::string& name,
@@ -50,8 +63,11 @@ class SchemaOrgExtractorTest : public testing::Test {
 
   PropertyPtr CreateEntityProperty(const std::string& name, EntityPtr value);
 
+  base::test::TaskEnvironment task_environment_;
+
  private:
   Extractor extractor_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
 PropertyPtr SchemaOrgExtractorTest::CreateStringProperty(

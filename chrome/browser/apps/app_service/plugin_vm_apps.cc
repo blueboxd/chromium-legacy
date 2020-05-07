@@ -116,7 +116,8 @@ void PluginVmApps::Launch(const std::string& app_id,
                           int64_t display_id) {
   DCHECK_EQ(plugin_vm::kPluginVmAppId, app_id);
   if (plugin_vm::IsPluginVmEnabled(profile_)) {
-    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
+    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm(
+        base::DoNothing());
   } else {
     plugin_vm::ShowPluginVmInstallerView(profile_);
   }

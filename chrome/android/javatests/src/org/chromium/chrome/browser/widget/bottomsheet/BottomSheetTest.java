@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
@@ -20,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
@@ -160,6 +162,25 @@ public class BottomSheetTest {
 
         assertEquals("The obscuring handler should not have been called.", 0,
                 obscuringStateChangedHelper.getCallCount());
+    }
+
+    @Test
+    @MediumTest
+    public void testOmniboxFocusSuppressesSheet() {
+        ToolbarManager toolbarManager = mBottomSheetTestRule.getActivity()
+                                                .getRootUiCoordinatorForTesting()
+                                                .getToolbarManager();
+        showContent(mSheetContent, SheetState.HALF);
+
+        runOnUiThreadBlocking(() -> toolbarManager.setUrlBarFocus(true, 0));
+
+        assertEquals("The bottom sheet should be hidden.", SheetState.HIDDEN,
+                mBottomSheetTestRule.getBottomSheetController().getSheetState());
+
+        runOnUiThreadBlocking(() -> toolbarManager.setUrlBarFocus(false, 0));
+
+        assertNotEquals("The bottom sheet should not be hidden.", SheetState.HIDDEN,
+                mBottomSheetTestRule.getBottomSheetController().getSheetState());
     }
 
     private void hideSheet() {

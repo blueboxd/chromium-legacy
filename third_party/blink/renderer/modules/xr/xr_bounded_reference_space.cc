@@ -88,14 +88,13 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
   DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
 }
 
-std::unique_ptr<TransformationMatrix>
-XRBoundedReferenceSpace::NativeFromMojo() {
+base::Optional<TransformationMatrix> XRBoundedReferenceSpace::NativeFromMojo() {
   EnsureUpdated();
 
   if (!bounded_native_from_mojo_)
-    return nullptr;
+    return base::nullopt;
 
-  return std::make_unique<TransformationMatrix>(*bounded_native_from_mojo_);
+  return *bounded_native_from_mojo_;
 }
 
 HeapVector<Member<DOMPointReadOnly>> XRBoundedReferenceSpace::boundsGeometry() {

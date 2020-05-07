@@ -289,10 +289,11 @@ CommandUtil.shouldShowMenuItemsForEntry = (volumeManager, entry) => {
 /**
  * Returns whether all of the given entries have the given capability.
  *
+ * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps.
  * @param {!Array<Entry>} entries List of entries to check capabilities for.
  * @param {!string} capability Name of the capability to check for.
  */
-CommandUtil.hasCapability = (entries, capability) => {
+CommandUtil.hasCapability = (fileManager, entries, capability) => {
   if (entries.length == 0) {
     return false;
   }
@@ -841,7 +842,7 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends Command {
 
       const locationInfo = fileManager.volumeManager.getLocationInfo(entry);
       event.canExecute = locationInfo && !locationInfo.isReadOnly &&
-          CommandUtil.hasCapability([entry], 'canAddChildren');
+          CommandUtil.hasCapability(fileManager, [entry], 'canAddChildren');
       event.command.setHidden(false);
     } else {
       const directoryModel = fileManager.directoryModel;
@@ -849,7 +850,8 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends Command {
       event.canExecute = !fileManager.directoryModel.isReadOnly() &&
           !fileManager.namingController.isRenamingInProgress() &&
           !directoryModel.isSearching() &&
-          CommandUtil.hasCapability([directoryEntry], 'canAddChildren');
+          CommandUtil.hasCapability(
+              fileManager, [directoryEntry], 'canAddChildren');
       event.command.setHidden(false);
     }
     if (this.busy_) {
@@ -1044,7 +1046,7 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
     return entries.length > 0 &&
         !this.containsReadOnlyEntry_(entries, fileManager) &&
         !fileManager.directoryModel.isReadOnly() &&
-        CommandUtil.hasCapability(entries, 'canDelete');
+        CommandUtil.hasCapability(fileManager, entries, 'canDelete');
   }
 
   /**
@@ -1366,7 +1368,7 @@ CommandHandler.COMMANDS_['rename'] = new class extends Command {
         null;
     const volumeIsNotReadOnly = !!locationInfo && !locationInfo.isReadOnly;
     event.canExecute = entries.length === 1 && volumeIsNotReadOnly &&
-        CommandUtil.hasCapability(entries, 'canRename');
+        CommandUtil.hasCapability(fileManager, entries, 'canRename');
     event.command.setHidden(false);
   }
 };

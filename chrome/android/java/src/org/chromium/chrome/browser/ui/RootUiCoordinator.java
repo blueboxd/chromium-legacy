@@ -117,6 +117,8 @@ public class RootUiCoordinator
     private IdentityDiscController mIdentityDiscController;
     private ChromeActionModeHandler mChromeActionModeHandler;
     private ToolbarActionModeCallback mActionModeControllerCallback;
+    private ObservableSupplierImpl<Boolean> mOmniboxFocusStateSupplier =
+            new ObservableSupplierImpl<>();
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -146,6 +148,8 @@ public class RootUiCoordinator
         mTabObscuringHandler = new TabObscuringHandler();
         mAccessibilityVisibilityHandler = new AccessibilityVisibilityHandler(
                 activity.getLifecycleDispatcher(), mActivityTabProvider, mTabObscuringHandler);
+
+        mOmniboxFocusStateSupplier.set(false);
 
         initOverviewModeSupplierObserver();
     }
@@ -400,6 +404,7 @@ public class RootUiCoordinator
                 if (mOnOmniboxFocusChangedListener != null) {
                     mOnOmniboxFocusChangedListener.onResult(hasFocus);
                 }
+                mOmniboxFocusStateSupplier.set(hasFocus);
             };
 
             ObservableSupplierImpl<Boolean> bottomToolbarVisibilitySupplier =
@@ -553,7 +558,8 @@ public class RootUiCoordinator
                 new BottomSheetController(mActivity.getLifecycleDispatcher(), mActivityTabProvider,
                         () -> mScrimCoordinator, sheetViewSupplier, panelManagerSupplier,
                         mActivity.getFullscreenManager(), mActivity.getWindow(),
-                        mActivity.getWindowAndroid().getKeyboardDelegate());
+                        mActivity.getWindowAndroid().getKeyboardDelegate(),
+                        mOmniboxFocusStateSupplier);
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
                 mActivity::getFullscreenManager, mActivity::getModalDialogManager,

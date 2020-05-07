@@ -1235,6 +1235,15 @@ bool NavigationControllerImpl::RendererDidNavigate(
   details->is_main_frame = !rfh->GetParent();
   details->http_status_code = params.http_status_code;
 
+  // If the NavigationRequest was created without a NavigationEntry and
+  // SetIsOverridingUserAgent() was called, it needs to be applied to the
+  // NavigationEntry now.
+  if (!navigation_request->nav_entry_id() &&
+      navigation_request->was_set_overriding_user_agent_called()) {
+    active_entry->SetIsOverridingUserAgent(
+        navigation_request->entry_overrides_ua());
+  }
+
   NotifyNavigationEntryCommitted(details);
 
   if (active_entry->GetURL().SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&

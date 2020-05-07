@@ -156,8 +156,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           assistant::features::IsAppSupportEnabled(),
           assistant::features::IsRoutinesEnabled())),
       chromium_api_delegate_(std::move(pending_url_loader_factory)),
-      assistant_settings_manager_(
-          std::make_unique<AssistantSettingsManagerImpl>(context, this)),
+      assistant_settings_(
+          std::make_unique<AssistantSettingsImpl>(context, this)),
       context_(context),
       delegate_(std::move(delegate)),
       background_thread_("background thread"),
@@ -368,9 +368,8 @@ void AssistantManagerServiceImpl::SetAssistantContextEnabled(bool enable) {
   display_connection_->SetAssistantContextEnabled(enable);
 }
 
-AssistantSettingsManager*
-AssistantManagerServiceImpl::GetAssistantSettingsManager() {
-  return assistant_settings_manager_.get();
+AssistantSettings* AssistantManagerServiceImpl::GetAssistantSettings() {
+  return assistant_settings_.get();
 }
 
 void AssistantManagerServiceImpl::AddCommunicationErrorObserver(
@@ -395,7 +394,7 @@ void AssistantManagerServiceImpl::RemoveStateObserver(
 }
 
 void AssistantManagerServiceImpl::SyncDeviceAppsStatus() {
-  assistant_settings_manager_->SyncDeviceAppsStatus(
+  assistant_settings_->SyncDeviceAppsStatus(
       base::BindOnce(&AssistantManagerServiceImpl::OnDeviceAppsEnabled,
                      weak_factory_.GetWeakPtr()));
 }
@@ -1092,7 +1091,7 @@ void AssistantManagerServiceImpl::PostInitAssistant() {
 
   SetStateAndInformObservers(State::STARTED);
 
-  assistant_settings_manager_->UpdateServerDeviceSettings();
+  assistant_settings_->UpdateServerDeviceSettings();
 
   if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport)) {
     scoped_app_list_event_subscriber.Add(device_actions());
@@ -1136,7 +1135,7 @@ void AssistantManagerServiceImpl::OnStartFinished() {
     is_first_init = false;
     // Only sync status at the first init to prevent unexpected corner cases.
     if (assistant_state()->hotword_enabled().value())
-      assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
+      assistant_settings_->SyncSpeakerIdEnrollmentStatus();
   }
 
   const base::TimeDelta time_since_started =

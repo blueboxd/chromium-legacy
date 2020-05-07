@@ -3080,6 +3080,80 @@ def _CheckSecurityOwners(input_api, output_api):
   return results
 
 
+def _GetFilesUsingSecurityCriticalFunctions(input_api):
+  """Checks affected files for changes to security-critical calls. This
+  function checks the full change diff, to catch both additions/changes
+  and removals.
+
+  Returns a dict keyed by file name, and the value is a set of detected
+  functions.
+  """
+  # Map of function pretty name (displayed in an error) to the pattern to
+  # match it with.
+  _PATTERNS_TO_CHECK = {
+      'content::ServiceProcessHost::LaunchOptions::WithSandboxType':
+          'WithSandboxType\\('
+  }
+  _PATTERNS_TO_CHECK = {
+      k: input_api.re.compile(v)
+      for k, v in _PATTERNS_TO_CHECK.items()
+  }
+
+  # Scan all affected files for changes touching _FUNCTIONS_TO_CHECK.
+  files_to_functions = {}
+  for f in input_api.AffectedFiles():
+    diff = f.GenerateScmDiff()
+    for line in diff.split('\n'):
+      # Not using just RightHandSideLines() because removing a
+      # call to a security-critical function can be just as important
+      # as adding or changing the arguments.
+      if line.startswith('-') or (line.startswith('+') and
+          not line.startswith('++')):
+        for name, pattern in _PATTERNS_TO_CHECK.items():
+          if pattern.search(line):
+            path = f.LocalPath()
+            if not path in files_to_functions:
+              files_to_functions[path] = set()
+            files_to_functions[path].add(name)
+  return files_to_functions
+
+
+def _CheckSecurityChanges(input_api, output_api):
+  """Checks that changes involving security-critical functions are reviewed
+  by the security team.
+  """
+  files_to_functions = _GetFilesUsingSecurityCriticalFunctions(input_api)
+  if len(files_to_functions):
+    owners_db = input_api.owners_db
+    owner_email, reviewers = (
+        input_api.canned_checks.GetCodereviewOwnerAndReviewers(
+            input_api,
+            owners_db.email_regexp,
+            approval_needed=input_api.is_committing))
+
+    # Load the OWNERS file for security changes.
+    owners_file = 'ipc/SECURITY_OWNERS'
+    security_owners = owners_db.owners_rooted_at_file(owners_file)
+
+    has_security_owner = any([owner in reviewers for owner in security_owners])
+    if not has_security_owner:
+      msg = 'The following files change calls to security-sensive functions\n' \
+          'that need to be reviewed by {}.\n'.format(owners_file)
+      for path, names in files_to_functions.items():
+        msg += '  {}\n'.format(path)
+        for name in names:
+          msg += '    {}\n'.format(name)
+        msg += '\n'
+
+      if input_api.is_committing:
+        output = output_api.PresubmitError
+      else:
+        output = output_api.PresubmitNotifyResult
+      return [output(msg)]
+
+  return []
+
+
 def _CheckSetNoParent(input_api, output_api):
   """Checks that set noparent is only used together with an OWNERS file in
      //build/OWNERS.setnoparent (see also
@@ -4308,6 +4382,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckSecurityOwners(input_api, output_api))
+  results.extend(_CheckSecurityChanges(input_api, output_api))
   results.extend(_CheckSetNoParent(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))

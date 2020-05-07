@@ -17,7 +17,6 @@ source_set("send_tab_to_self") {
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui/activity_services",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/infobars/presentation",

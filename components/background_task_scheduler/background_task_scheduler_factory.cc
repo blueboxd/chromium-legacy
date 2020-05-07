@@ -7,8 +7,13 @@
 #include <memory>
 
 #include "base/memory/singleton.h"
-#include "components/background_task_scheduler/internal/android/native_task_scheduler.h"
+#include "build/build_config.h"
+#include "components/background_task_scheduler/background_task_scheduler.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
+
+#if defined(OS_ANDROID)
+#include "components/background_task_scheduler/internal/android/native_task_scheduler.h"
+#endif
 
 namespace background_task {
 
@@ -33,7 +38,11 @@ BackgroundTaskSchedulerFactory::~BackgroundTaskSchedulerFactory() = default;
 std::unique_ptr<KeyedService>
 BackgroundTaskSchedulerFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
+#if defined(OS_ANDROID)
   return std::make_unique<NativeTaskScheduler>();
+#else
+  return nullptr;
+#endif
 }
 
 SimpleFactoryKey* BackgroundTaskSchedulerFactory::GetKeyToUse(

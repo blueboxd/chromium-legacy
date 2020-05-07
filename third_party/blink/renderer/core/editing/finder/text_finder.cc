@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/find_in_page_coordinates.h"
@@ -73,9 +74,36 @@ void TextFinder::FindMatch::Trace(Visitor* visitor) {
 }
 
 static void ScrollToVisible(Range* match) {
+  const EphemeralRangeInFlatTree range(match);
   const Node& first_node = *match->FirstNode();
+
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled()) {
+    // Find-in-page matches can't span multiple block-level elements (because
+    // the text will be broken by newlines between blocks), so first we find the
+    // block-level element which contains the match.
+    // This means we only need to traverse up from one node in the range, in
+    // this case we are traversing from the start position of the range.
+    Element* enclosing_block =
+        EnclosingBlock(range.StartPosition(), kCannotCrossEditingBoundary);
+    DCHECK(enclosing_block);
+    // Note that we don't check the `range.EndPosition()` since we just activate
+    // the beginning of the range. In find-in-page cases, the end position is
+    // the same since the matches cannot cross block boundaries. However, in
+    // scroll-to-text, the range might be different, but we still just activate
+    // the beginning of the range. See
+    // https://github.com/WICG/display-locking/issues/125 for more details.
+    enclosing_block->DispatchEvent(
+        *Event::Create(event_type_names::kBeforematch));
+    // TODO(jarhar): Consider what to do based on DOM/style modifications made
+    // by the beforematch event here and write tests for it once we decide on a
+    // behavior here: https://github.com/WICG/display-locking/issues/150
+  }
+
+  // The beforematch event may detach the target element from the DOM.
+  if (!first_node.isConnected())
+    return;
+
   if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
-    const EphemeralRangeInFlatTree range(match);
     // TODO(vmpstr): Rework this, since it is only used for bookkeeping.
     DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range);
 

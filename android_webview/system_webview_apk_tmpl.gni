@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//android_webview/variables.gni")
+import("//base/android/resource_exclusions.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
@@ -177,14 +178,8 @@ template("system_webview_apk_or_module_tmpl") {
 
     aapt_locale_allowlist = locales
 
-    # Match drawables, but not mipmaps.
-    resource_exclusion_regex = "drawable[^/]*-xxxhdpi"
-
-    # Exception rationale in https://crbug.com/691733.
-    resource_exclusion_exceptions = [
-      "*shadow*",  # Combination of gradient & transparency cause pixelation.
-      "*.9.*",  # Most nine-patches contain shadows.
-    ]
+    resource_exclusion_regex = common_resource_exclusion_regex
+    resource_exclusion_exceptions = common_resource_exclusion_exceptions
 
     if (!_is_bundle_module) {
       # Used as an additional apk in test scripts.

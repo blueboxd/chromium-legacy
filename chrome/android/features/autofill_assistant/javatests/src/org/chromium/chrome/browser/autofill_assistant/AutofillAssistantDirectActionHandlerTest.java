@@ -65,7 +65,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         mActivity = mActivityTestRule.getActivity();
 
         mBottomSheetController = TestThreadUtils.runOnUiThreadBlocking(
-                () -> AutofillAssistantUiTestUtil.createBottomSheetController(mActivity));
+                () -> AutofillAssistantUiTestUtil.getBottomSheetController(mActivity));
         mModuleEntryProvider = new TestingAutofillAssistantModuleEntryProvider();
         mModuleEntryProvider.setCannotInstall();
 

@@ -34,11 +34,13 @@ namespace {
 //  "web_app_apks" : {
 //    <web_app_id_1> : {
 //      "package_name" : <apk_package_name_1>,
-//      "should_remove": <bool>
+//      "should_remove": <bool>,
+//      "is_web_only_twa": <bool>
 //    },
 //    <web_app_id_2> : {
 //      "package_name" : <apk_package_name_2>,
-//      "should_remove": <bool>
+//      "should_remove": <bool>,
+//      "is_web_only_twa": <bool>
 //    },
 //    ...
 //  },
@@ -47,6 +49,7 @@ namespace {
 const char kWebAppToApkDictPref[] = "web_app_apks";
 const char kPackageNameKey[] = "package_name";
 const char kShouldRemoveKey[] = "should_remove";
+const char kIsWebOnlyTwaKey[] = "is_web_only_twa";
 constexpr char kLastAppId[] = "last_app_id";
 constexpr char kPinIndex[] = "pin_index";
 
@@ -86,8 +89,16 @@ ApkWebAppService::ApkWebAppService(Profile* profile) : profile_(profile) {
 ApkWebAppService::~ApkWebAppService() = default;
 
 bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& web_app_id) {
-  // TODO(crbug.com/1078673): Differentiate between WebAPKs and web-only TWAs.
-  return IsWebAppInstalledFromArc(web_app_id);
+  if (!IsWebAppInstalledFromArc(web_app_id))
+    return false;
+
+  DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
+                                        kWebAppToApkDictPref);
+
+  // Find the entry associated with the provided web app id.
+  const base::Value* v = web_apps_to_apks->FindPathOfType(
+      {web_app_id, kIsWebOnlyTwaKey}, base::Value::Type::BOOLEAN);
+  return v && v->GetBool();
 }
 
 void ApkWebAppService::SetArcAppListPrefsForTesting(ArcAppListPrefs* prefs) {
@@ -381,6 +392,7 @@ void ApkWebAppService::OnDidGetWebAppIcon(
 
 void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
                                           const web_app::AppId& web_app_id,
+                                          bool is_web_only_twa,
                                           web_app::InstallResultCode code) {
   // Do nothing: any error cancels installation.
   if (code != web_app::InstallResultCode::kSuccessNewInstall)
@@ -396,6 +408,9 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
   // while the ARC container isn't running can be marked for uninstallation
   // when the container starts up again.
   dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
+
+  dict_update->SetPath({web_app_id, kIsWebOnlyTwaKey},
+                       base::Value(is_web_only_twa));
 
   // For testing.
   if (web_app_installed_callback_)

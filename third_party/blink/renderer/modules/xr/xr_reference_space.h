@@ -36,14 +36,14 @@ class XRReferenceSpace : public XRSpace {
                    Type type);
   ~XRReferenceSpace() override;
 
-  std::unique_ptr<TransformationMatrix> NativeFromMojo() override;
-  std::unique_ptr<TransformationMatrix> NativeFromViewer(
-      const TransformationMatrix* mojo_from_viewer) override;
+  base::Optional<TransformationMatrix> NativeFromMojo() override;
+  base::Optional<TransformationMatrix> NativeFromViewer(
+      const base::Optional<TransformationMatrix>& mojo_from_viewer) override;
 
   // MojoFromNative is final to enforce that children should be returning
   // NativeFromMojo, since this is simply written to always provide the inverse
   // of NativeFromMojo
-  std::unique_ptr<TransformationMatrix> MojoFromNative() final;
+  base::Optional<TransformationMatrix> MojoFromNative() final;
 
   TransformationMatrix NativeFromOffsetMatrix() override;
   TransformationMatrix OffsetFromNativeMatrix() override;

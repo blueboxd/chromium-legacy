@@ -435,6 +435,12 @@ const base::Feature kInstallableAmbientBadgeInfoBar{
     "InstallableAmbientBadgeInfoBar", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if !defined(OS_ANDROID)
+// Allow user to have preference for PWA in the intent picker.
+const base::Feature kIntentPickerPWAPersistence{
+    "IntentPickerPWAPersistence", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
@@ -651,7 +657,7 @@ const base::Feature kStreamlinedUsbPrinterSetup{
     "StreamlinedUsbPrinterSetup", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables using smbfs for accessing SMB file shares.
-const base::Feature kSmbFs{"SmbFs", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSmbFs{"SmbFs", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
 // Enables or disables the ability to use the sound content setting to mute a

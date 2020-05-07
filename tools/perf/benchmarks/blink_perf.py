@@ -638,4 +638,4 @@ class BlinkPerfWebAudio(_BlinkPerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'UNSCHEDULED_blink_perf.webaudio'
+    return 'blink_perf.webaudio'

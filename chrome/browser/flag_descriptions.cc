@@ -3611,6 +3611,10 @@ const char kImeNativeDecoderName[] = "Enable native decoders in IME Service";
 const char kImeNativeDecoderDescription[] =
     "Enable native decoders in IME service to deprecate NaCl decoders";
 
+const char kIntentPickerPWAPersistenceName[] = "Intent picker PWA Persistence";
+const char kIntentPickerPWAPersistenceDescription[] =
+    "Allow user to always open with PWA in intent picker.";
+
 const char kLacrosSupportName[] = "LaCrOS support";
 const char kLacrosSupportDescription[] =
     "Support for the experimental lacros-chrome browser.";

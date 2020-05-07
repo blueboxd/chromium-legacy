@@ -52,10 +52,6 @@ enum ActivityType {
 // match any known App Extensions. |activityString| must not be nil.
 ActivityType TypeFromString(NSString* activityString);
 
-// Returns the message to present when the activity |type| has completed
-// successfully. Returns nil if no message should be presented.
-NSString* CompletionMessageForActivity(ActivityType type);
-
 // Records the UMA for activity |type|.
 void RecordMetricForActivity(ActivityType type);
 

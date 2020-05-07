@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_browser_agent.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#import "ios/chrome/browser/ui/activity_services/activity_service_mediator.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
@@ -27,6 +26,14 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Snackbar category for activity services.
+NSString* const kActivityServicesSnackbarCategory =
+    @"ActivityServicesSnackbarCategory";
+
+}  // namespace
 
 @interface SendTabToSelfCoordinator () <UIViewControllerTransitioningDelegate,
                                         SendTabToSelfModalPositioner,

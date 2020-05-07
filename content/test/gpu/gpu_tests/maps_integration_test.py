@@ -71,12 +71,6 @@ class MapsIntegrationTest(
     yield ('Maps_maps', 'file://performance.html',
            ('maps_pixel_expectations.json'))
 
-  def _ReadPixelExpectations(self, expectations_file):
-    expectations_path = os.path.join(_DATA_PATH, expectations_file)
-    with open(expectations_path, 'r') as f:
-      json_contents = json.load(f)
-    return json_contents
-
   def RunActualGpuTest(self, url, *args):
     tab = self.tab
     pixel_expectations_file = args[0]
@@ -108,21 +102,10 @@ class MapsIntegrationTest(
     # factor for these bots in the test expectations. This relies on
     # the test-machine-name argument being specified on the command
     # line.
-    expected = self._ReadPixelExpectations(pixel_expectations_file)
-    page = self._MapsExpectationToPixelExpectation(url, expected, _TOLERANCE)
+    expected = _ReadPixelExpectations(pixel_expectations_file)
+    page = _MapsExpectationToPixelExpectation(url, expected, _TOLERANCE)
     self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr,
                                                 self._GetBuildIdArgs())
-
-  def _MapsExpectationToPixelExpectation(self, url, expected_colors, tolerance):
-    page = pixel_test_pages.PixelTestPage(
-        url=url,
-        name=('Maps_maps'),
-        # Exact test_rect is arbitrary, just needs to encapsulate all pixels
-        # that are tested.
-        test_rect=[0, 0, 600, 400],
-        tolerance=tolerance,
-        expected_colors=expected_colors)
-    return page
 
   @classmethod
   def ExpectationsFiles(cls):
@@ -131,6 +114,25 @@ class MapsIntegrationTest(
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
             'maps_expectations.txt')
     ]
+
+
+def _ReadPixelExpectations(expectations_file):
+  expectations_path = os.path.join(_DATA_PATH, expectations_file)
+  with open(expectations_path, 'r') as f:
+    json_contents = json.load(f)
+  return json_contents
+
+
+def _MapsExpectationToPixelExpectation(url, expected_colors, tolerance):
+  page = pixel_test_pages.PixelTestPage(
+      url=url,
+      name=('Maps_maps'),
+      # Exact test_rect is arbitrary, just needs to encapsulate all pixels
+      # that are tested.
+      test_rect=[0, 0, 600, 400],
+      tolerance=tolerance,
+      expected_colors=expected_colors)
+  return page
 
 
 def load_tests(loader, tests, pattern):

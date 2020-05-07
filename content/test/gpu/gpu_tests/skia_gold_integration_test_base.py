@@ -317,16 +317,8 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                       str(actual_color.r) + ", " + str(actual_color.g) + ", " +
                       str(actual_color.b) + ", " + str(actual_color.a) + "]")
 
-  def ToHex(self, num):
-    return hex(int(num))
-
-  def ToHexOrNone(self, num):
-    return 'None' if num == None else self.ToHex(num)
-
-  def ToNonEmptyStrOrNone(self, val):
-    return 'None' if val == '' else str(val)
-
-  def _UrlToImageName(self, url):
+  @staticmethod
+  def _UrlToImageName(url):
     image_name = re.sub(r'^(http|https|file)://(/*)', '', url)
     image_name = re.sub(r'\.\./', '', image_name)
     image_name = re.sub(r'(\.|/|-)', '_', image_name)
@@ -357,12 +349,12 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     img_params = self.GetImageParameters(page)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
-        'vendor_id': self.ToHexOrNone(img_params.vendor_id),
-        'device_id': self.ToHexOrNone(img_params.device_id),
-        'vendor_string': self.ToNonEmptyStrOrNone(img_params.vendor_string),
-        'device_string': self.ToNonEmptyStrOrNone(img_params.device_string),
+        'vendor_id': _ToHexOrNone(img_params.vendor_id),
+        'device_id': _ToHexOrNone(img_params.device_id),
+        'vendor_string': _ToNonEmptyStrOrNone(img_params.vendor_string),
+        'device_string': _ToNonEmptyStrOrNone(img_params.device_string),
         'msaa': str(img_params.msaa),
-        'model_name': self.ToNonEmptyStrOrNone(img_params.model_name),
+        'model_name': _ToNonEmptyStrOrNone(img_params.model_name),
     }
     return gpu_keys
 
@@ -609,6 +601,18 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def RunActualGpuTest(self, options):
     raise NotImplementedError(
         'RunActualGpuTest must be overridden in a subclass')
+
+
+def _ToHex(num):
+  return hex(int(num))
+
+
+def _ToHexOrNone(num):
+  return 'None' if num == None else _ToHex(num)
+
+
+def _ToNonEmptyStrOrNone(val):
+  return 'None' if val == '' else str(val)
 
 
 def load_tests(loader, tests, pattern):

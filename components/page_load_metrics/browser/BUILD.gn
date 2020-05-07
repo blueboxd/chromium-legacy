@@ -16,6 +16,8 @@ source_set("browser") {
     "observers/core_page_load_metrics_observer.h",
     "observers/largest_contentful_paint_handler.cc",
     "observers/largest_contentful_paint_handler.h",
+    "observers/layout_page_load_metrics_observer.cc",
+    "observers/layout_page_load_metrics_observer.h",
     "observers/use_counter/ukm_features.cc",
     "observers/use_counter_page_load_metrics_observer.cc",
     "observers/use_counter_page_load_metrics_observer.h",

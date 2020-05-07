@@ -187,6 +187,10 @@ class IsolatedPrerenderTabHelper
 
     // The status of a prefetch done on the SRP that may have been used here.
     base::Optional<PrefetchStatus> prefetch_status_;
+
+    // The amount of time it took the probe to complete. Set only when a
+    // prefetch is used and a probe was required.
+    base::Optional<base::TimeDelta> probe_latency_;
   };
 
   const PrefetchMetrics& srp_metrics() const { return *(page_->srp_metrics_); }
@@ -195,12 +199,6 @@ class IsolatedPrerenderTabHelper
   // got parsed SRP links from NavigationPredictor.
   base::Optional<IsolatedPrerenderTabHelper::AfterSRPMetrics>
   after_srp_metrics() const;
-
-  void CallHandlePrefetchResponseForTesting(
-      const GURL& url,
-      const net::IsolationInfo& isolation_info,
-      network::mojom::URLResponseHeadPtr head,
-      std::unique_ptr<std::string> body);
 
   // content::WebContentsObserver implementation.
   void DidStartNavigation(
@@ -215,6 +213,9 @@ class IsolatedPrerenderTabHelper
 
   // Updates |prefetch_status_by_url_|.
   void OnPrefetchStatusUpdate(const GURL& url, PrefetchStatus usage);
+
+  // Called by the URLLoaderInterceptor to update |page_.probe_latency_|.
+  void NotifyPrefetchProbeLatency(base::TimeDelta probe_latency);
 
   void AddObserverForTesting(Observer* observer);
   void RemoveObserverForTesting(Observer* observer);
@@ -257,6 +258,10 @@ class IsolatedPrerenderTabHelper
 
     // An ordered list of the URLs to prefetch.
     std::vector<GURL> urls_to_prefetch_;
+
+    // The amount of time that the probe took to complete. Kept in this class
+    // until commit in order to be plumbed into |AfterSRPMetrics|.
+    base::Optional<base::TimeDelta> probe_latency_;
 
     // All prefetched responses by URL. This is cleared every time a mainframe
     // navigation commits.

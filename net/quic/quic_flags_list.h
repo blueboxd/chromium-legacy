@@ -387,3 +387,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_change_default_encryption_level,
           false)
+
+// If true, do not change ACK in PostProcessAckFrame if an ACK has been queued.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, false)
+
+// If true, reject IETF QUIC connections with invalid SNI.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tls_enforce_valid_sni, false)

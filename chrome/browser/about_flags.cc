@@ -4442,6 +4442,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshDragWindowFromShelfName,
      flag_descriptions::kAshDragWindowFromShelfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragFromShelfToHomeOrOverview)},
+
+    {"intent-picker-pwa-persistence",
+     flag_descriptions::kIntentPickerPWAPersistenceName,
+     flag_descriptions::kIntentPickerPWAPersistenceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kIntentPickerPWAPersistence)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)

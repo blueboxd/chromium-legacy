@@ -599,11 +599,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       blink::mojom::ConsoleMessageLevel message_level,
       const std::string& message);
 
-  // TODO(crbug.com/951571): Remove once the bug is debugged.
-  const base::debug::StackTrace& redundant_state_callstack() const {
-    return redundant_state_callstack_;
-  }
-
   mojo::AssociatedReceiver<blink::mojom::ServiceWorkerHost>&
   service_worker_host_receiver_for_testing() {
     return receiver_;
@@ -1088,10 +1083,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   blink::mojom::FetchClientSettingsObjectPtr
       outside_fetch_client_settings_object_;
-
-  // TODO(crbug.com/951571): Remove once the bug is debugged.
-  // This is set when this service worker becomes redundant.
-  base::debug::StackTrace redundant_state_callstack_;
 
   // Callback to stop service worker small seconds after all controllees are
   // gone. This callback can be canceled when the service worker starts to

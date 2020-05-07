@@ -4,7 +4,10 @@
 
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
@@ -14,6 +17,7 @@
 #include "components/schema_org/extractor.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "components/schema_org/schema_org_property_names.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +42,8 @@ class MediaFeedsConverterTest : public testing::Test {
             {schema_org::entity::kCompleteDataFeed, schema_org::entity::kMovie,
              schema_org::entity::kWatchAction, schema_org::entity::kTVEpisode,
              schema_org::entity::kImageObject,
-             schema_org::entity::kPropertyValue}) {}
+             schema_org::entity::kPropertyValue, schema_org::entity::kPerson}) {
+  }
 
  protected:
   Property* GetProperty(Entity* entity, const std::string& name);
@@ -60,14 +65,18 @@ class MediaFeedsConverterTest : public testing::Test {
   EntityPtr ValidMediaImage();
   EntityPtr WithContentAttributes(EntityPtr image);
   EntityPtr WithAssociatedOrigins(EntityPtr feed);
+  EntityPtr WithImage(EntityPtr entity);
   mojom::MediaFeedItemPtr ExpectedFeedItem();
   mojom::MediaImagePtr ExpectedMediaImage();
   EntityPtr AddItemToFeed(EntityPtr feed, EntityPtr item);
   base::Optional<std::vector<mojom::MediaFeedItemPtr>> GetResults(
       const schema_org::improved::mojom::EntityPtr& schema_org_entity);
 
+  base::test::TaskEnvironment task_environment_;
+
  private:
   schema_org::Extractor extractor_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
 Property* MediaFeedsConverterTest::GetProperty(Entity* entity,
@@ -152,11 +161,20 @@ PropertyPtr MediaFeedsConverterTest::CreateDoubleProperty(
 
 EntityPtr MediaFeedsConverterTest::ConvertJSONToEntityPtr(
     const std::string& json) {
-  return extractor_.Extract(json);
+  base::RunLoop run_loop;
+  EntityPtr out;
+
+  extractor_.Extract(json, base::BindLambdaForTesting([&](EntityPtr entity) {
+                       out = std::move(entity);
+                       run_loop.Quit();
+                     }));
+
+  run_loop.Run();
+  return out;
 }
 
 EntityPtr MediaFeedsConverterTest::ValidActiveWatchAction() {
-  return extractor_.Extract(
+  return ConvertJSONToEntityPtr(
       R"END(
       {
         "@type": "WatchAction",
@@ -168,7 +186,7 @@ EntityPtr MediaFeedsConverterTest::ValidActiveWatchAction() {
 }
 
 EntityPtr MediaFeedsConverterTest::ValidPotentialWatchAction() {
-  return extractor_.Extract(
+  return ConvertJSONToEntityPtr(
       R"END(
       {
         "@type": "WatchAction",
@@ -180,7 +198,7 @@ EntityPtr MediaFeedsConverterTest::ValidPotentialWatchAction() {
 }
 
 EntityPtr MediaFeedsConverterTest::ValidMediaFeed() {
-  return extractor_.Extract(
+  return ConvertJSONToEntityPtr(
       R"END(
         {
           "@type": "CompleteDataFeed",
@@ -197,12 +215,6 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeed() {
                 "name": "contentAttributes",
                 "value": ["forDarkBackground", "hasTitle"]
               }
-            },
-            "member": {
-              "@type": "Person",
-              "name": "Becca Hughes",
-              "image": "https://www.example.org/profile_pic.jpg",
-              "email": "beccahughes@chromium.org"
             }
           }
         }
@@ -211,7 +223,7 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeed() {
 
 EntityPtr MediaFeedsConverterTest::ValidEpisode(int episode_number,
                                                 EntityPtr action) {
-  EntityPtr episode = extractor_.Extract(
+  EntityPtr episode = ConvertJSONToEntityPtr(
       R"END(
         {
           "@type": "TVEpisode",
@@ -232,7 +244,7 @@ EntityPtr MediaFeedsConverterTest::ValidEpisode(int episode_number,
 }
 
 EntityPtr MediaFeedsConverterTest::ValidMediaFeedItem() {
-  EntityPtr item = extractor_.Extract(
+  EntityPtr item = ConvertJSONToEntityPtr(
       R"END(
         {
           "@type": "Movie",
@@ -250,7 +262,7 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeedItem() {
 }
 
 EntityPtr MediaFeedsConverterTest::ValidMediaImage() {
-  return extractor_.Extract(
+  return ConvertJSONToEntityPtr(
       R"END(
         {
           "@type": "ImageObject",
@@ -262,7 +274,7 @@ EntityPtr MediaFeedsConverterTest::ValidMediaImage() {
 }
 
 EntityPtr MediaFeedsConverterTest::WithContentAttributes(EntityPtr image) {
-  auto attributes = extractor_.Extract(
+  auto attributes = ConvertJSONToEntityPtr(
       R"END(
         {
           "@type": "PropertyValue",
@@ -276,7 +288,7 @@ EntityPtr MediaFeedsConverterTest::WithContentAttributes(EntityPtr image) {
 }
 
 EntityPtr MediaFeedsConverterTest::WithAssociatedOrigins(EntityPtr feed) {
-  auto origins = extractor_.Extract(
+  auto origins = ConvertJSONToEntityPtr(
       R"END(
       {
         "@type": "PropertyValue",
@@ -288,6 +300,12 @@ EntityPtr MediaFeedsConverterTest::WithAssociatedOrigins(EntityPtr feed) {
   feed->properties.push_back(CreateEntityProperty(
       schema_org::property::kAdditionalProperty, std::move(origins)));
   return feed;
+}
+
+EntityPtr MediaFeedsConverterTest::WithImage(EntityPtr entity) {
+  entity->properties.push_back(
+      CreateEntityProperty(schema_org::property::kImage, ValidMediaImage()));
+  return entity;
 }
 
 mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
@@ -352,6 +370,9 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
       mojom::ContentAttribute::kForDarkBackground,
       mojom::ContentAttribute::kHasTitle};
 
+  mojom::MediaImagePtr expected_user_image = mojom::MediaImage::New();
+  expected_user_image->src = GURL("https://www.example.org/profile_pic.jpg");
+
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
   ConvertMediaFeed(std::move(entity), &result);
 
@@ -371,6 +392,58 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidFeedWithAssociatedOrigins) {
   expected_origins.insert(url::Origin::Create(GURL("https://www.github2.com")));
 
   EXPECT_EQ(expected_origins, result.associated_origins);
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeedWithUser) {
+  auto feed = ValidMediaFeed();
+  auto user = ConvertJSONToEntityPtr(
+      R"END(
+              {
+                "@type": "Person",
+                "name": "Becca Hughes",
+                "image": "https://www.example.org/profile_pic.jpg",
+                "email": "beccahughes@chromium.org"
+              }
+            )END");
+
+  // Add the user to the provider property inside the feed.
+  feed->properties[0]->values->entity_values[0]->properties.push_back(
+      CreateEntityProperty(schema_org::property::kMember, std::move(user)));
+
+  mojom::MediaImagePtr expected_user_image = mojom::MediaImage::New();
+  expected_user_image->src = GURL("https://www.example.org/profile_pic.jpg");
+
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  ConvertMediaFeed(std::move(feed), &result);
+
+  ASSERT_TRUE(result.user_identifier);
+  EXPECT_EQ("Becca Hughes", result.user_identifier->name);
+  EXPECT_EQ(expected_user_image, result.user_identifier->image);
+  EXPECT_EQ("beccahughes@chromium.org", result.user_identifier->email);
+}
+
+TEST_F(MediaFeedsConverterTest,
+       SucceedsOnValidCompleteDataFeedWithMinimalUser) {
+  auto feed = ValidMediaFeed();
+  auto user = ConvertJSONToEntityPtr(
+      R"END(
+              {
+                "@type": "Person",
+                "name": "Becca Hughes"
+              }
+            )END");
+
+  // Add the user to the provider property inside the feed.
+  feed->properties[0]->values->entity_values[0]->properties.push_back(
+      CreateEntityProperty(schema_org::property::kMember, std::move(user)));
+
+  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
+  ConvertMediaFeed(std::move(feed), &result);
+
+  ASSERT_TRUE(result.user_identifier);
+  EXPECT_EQ("Becca Hughes", result.user_identifier->name);
+  EXPECT_FALSE(result.user_identifier->image);
+  EXPECT_FALSE(result.user_identifier->email.has_value());
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeedWithItem) {
@@ -835,6 +908,25 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisode) {
   EXPECT_EQ(expected_item, result.value()[0]);
 }
 
+// Successfully converts a TV episode with embedded images.
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisodeWithImage) {
+  EntityPtr item = ValidMediaFeedItem();
+  item->type = schema_org::entity::kTVSeries;
+  item->properties.push_back(CreateEntityProperty(
+      schema_org::property::kEpisode,
+      WithImage(ValidEpisode(1, ValidPotentialWatchAction()))));
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  auto result = GetResults(std::move(entity));
+
+  EXPECT_TRUE(result.has_value());
+  ASSERT_EQ(1u, result.value().size());
+  ASSERT_TRUE(result.value()[0]->tv_episode);
+  EXPECT_EQ(1u, result.value()[0]->tv_episode->images.size());
+  EXPECT_EQ(ExpectedMediaImage(), result.value()[0]->tv_episode->images[0]);
+}
+
 // Fails because TV episode is present, but TV episode name is empty.
 TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidTVEpisode) {
   EntityPtr item = ValidMediaFeedItem();
@@ -1105,6 +1197,34 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextNoSeason) {
   EXPECT_EQ(result.value()[0]->play_next_candidate,
             expected_item->play_next_candidate);
   EXPECT_EQ(expected_item, result.value()[0]);
+}
+
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextAndEpisodeImages) {
+  EntityPtr item = ValidMediaFeedItem();
+  item->type = schema_org::entity::kTVSeries;
+
+  PropertyPtr property = Property::New();
+  property->name = schema_org::property::kEpisode;
+  property->values = Values::New();
+  property->values->entity_values.push_back(
+      WithImage(ValidEpisode(15, ValidActiveWatchAction())));
+  property->values->entity_values.push_back(
+      WithImage(ValidEpisode(16, ValidPotentialWatchAction())));
+  item->properties.push_back(std::move(property));
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  auto result = GetResults(std::move(entity));
+
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(1u, result.value().size());
+  ASSERT_TRUE(result.value()[0]->tv_episode);
+  ASSERT_TRUE(result.value()[0]->play_next_candidate);
+  ASSERT_EQ(1u, result.value()[0]->tv_episode->images.size());
+  ASSERT_EQ(1u, result.value()[0]->play_next_candidate->images.size());
+  EXPECT_EQ(ExpectedMediaImage(), result.value()[0]->tv_episode->images[0]);
+  EXPECT_EQ(ExpectedMediaImage(),
+            result.value()[0]->play_next_candidate->images[0]);
 }
 
 TEST_F(MediaFeedsConverterTest, SucceedsItemWithImageObject) {

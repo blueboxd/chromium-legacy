@@ -32,6 +32,8 @@ std::string MediaLogPropertyKeyToString(MediaLogProperty property) {
     STRINGIFY(kIsPlatformAudioDecoder);
     STRINGIFY(kAudioTracks);
     STRINGIFY(kVideoTracks);
+    STRINGIFY(kFramerate);
+    STRINGIFY(kVideoPlaybackRoughness);
   }
 #undef STRINGIFY
 }

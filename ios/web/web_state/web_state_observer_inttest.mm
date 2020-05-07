@@ -1007,8 +1007,8 @@ TEST_F(WebStateObserverTest, FailedNavigation) {
   web::NavigationItem* item = manager->GetPendingItem();
   item->SetTitle(base::UTF8ToUTF16(kFailedTitle));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
-                                         /*error_code=*/-1005,
+      web_state(), testing::GetErrorText(web_state(), url,
+                                         testing::CreateConnectionLostError(),
                                          /*is_post=*/false, /*is_otr=*/false,
                                          /*cert_status=*/0)));
   DCHECK_EQ(item->GetTitle(), base::UTF8ToUTF16(kFailedTitle));
@@ -1134,9 +1134,10 @@ TEST_F(WebStateObserverTest, WebViewUnsupportedSchemeNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
   test::LoadUrl(web_state(), url);
+  NSError* error = testing::CreateErrorWithUnderlyingErrorChain(
+      {{NSURLErrorDomain, -1002}, {net::kNSErrorDomain, net::ERR_INVALID_URL}});
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
-                                         /*error_code=*/-1002,
+      web_state(), testing::GetErrorText(web_state(), url, error,
                                          /*is_post=*/false, /*is_otr=*/false,
                                          /*cert_status=*/0)));
 }
@@ -1179,9 +1180,10 @@ TEST_F(WebStateObserverTest, WebViewUnsupportedUrlNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
   test::LoadUrl(web_state(), url);
+  NSError* error = testing::CreateErrorWithUnderlyingErrorChain(
+      {{@"WebKitErrorDomain", 101}, {net::kNSErrorDomain, net::ERR_FAILED}});
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), testing::GetErrorText(web_state(), url, "WebKitErrorDomain",
-                                         /*error_code=*/101,
+      web_state(), testing::GetErrorText(web_state(), url, error,
                                          /*is_post=*/false, /*is_otr=*/false,
                                          /*cert_status=*/0)));
 }
@@ -2074,9 +2076,7 @@ TEST_F(WebStateObserverTest, DisallowRequestAndShowError) {
   test::LoadUrl(web_state(), url);
 
   EXPECT_TRUE(test::WaitForWebViewContainingText(
-      web_state(), testing::GetErrorText(web_state(), url,
-                                         base::SysNSStringToUTF8(error.domain),
-                                         /*error_code=*/error.code,
+      web_state(), testing::GetErrorText(web_state(), url, error,
                                          /*is_post=*/false, /*is_otr=*/false,
                                          /*cert_status=*/0)));
   // The URL of the error page should remain the URL of the blocked page.

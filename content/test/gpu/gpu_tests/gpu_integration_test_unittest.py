@@ -375,41 +375,42 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
         self._test_result = json.load(f)
       with open(test_state_path) as f:
         self._test_state = json.load(f)
-      actual_successes, actual_failures, actual_skips = (
-          self._ExtractTestResults(self._test_result))
+      actual_successes, actual_failures, actual_skips = (_ExtractTestResults(
+          self._test_result))
       self.assertEquals(set(actual_failures), set(failures))
       self.assertEquals(set(actual_successes), set(successes))
       self.assertEquals(set(actual_skips), set(skips))
     finally:
       shutil.rmtree(temp_dir)
 
-  def _ExtractTestResults(self, test_result):
-    delimiter = test_result['path_delimiter']
-    failures = []
-    successes = []
-    skips = []
 
-    def _IsLeafNode(node):
-      test_dict = node[1]
-      return ('expected' in test_dict
-              and isinstance(test_dict['expected'], basestring))
+def _ExtractTestResults(test_result):
+  delimiter = test_result['path_delimiter']
+  failures = []
+  successes = []
+  skips = []
 
-    node_queues = []
-    for t in test_result['tests']:
-      node_queues.append((t, test_result['tests'][t]))
-    while node_queues:
-      node = node_queues.pop()
-      full_test_name, test_dict = node
-      if _IsLeafNode(node):
-        if all(res not in test_dict['expected'].split()
-               for res in test_dict['actual'].split()):
-          failures.append(full_test_name)
-        elif test_dict['expected'] == test_dict['actual'] == 'SKIP':
-          skips.append(full_test_name)
-        else:
-          successes.append(full_test_name)
+  def _IsLeafNode(node):
+    test_dict = node[1]
+    return ('expected' in test_dict
+            and isinstance(test_dict['expected'], basestring))
+
+  node_queues = []
+  for t in test_result['tests']:
+    node_queues.append((t, test_result['tests'][t]))
+  while node_queues:
+    node = node_queues.pop()
+    full_test_name, test_dict = node
+    if _IsLeafNode(node):
+      if all(res not in test_dict['expected'].split()
+             for res in test_dict['actual'].split()):
+        failures.append(full_test_name)
+      elif test_dict['expected'] == test_dict['actual'] == 'SKIP':
+        skips.append(full_test_name)
       else:
-        for k in test_dict:
-          node_queues.append(('%s%s%s' % (full_test_name, delimiter, k),
-                              test_dict[k]))
-    return successes, failures, skips
+        successes.append(full_test_name)
+    else:
+      for k in test_dict:
+        node_queues.append(
+            ('%s%s%s' % (full_test_name, delimiter, k), test_dict[k]))
+  return successes, failures, skips

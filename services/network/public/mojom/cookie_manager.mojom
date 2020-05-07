@@ -34,6 +34,11 @@ struct CookieManagerParams {
   array<content_settings.mojom.ContentSettingPatternSource>
       settings_for_legacy_cookie_access;
 
+  // Content settings for which storage access grants have been set using
+  // the Storage Access API.
+  array<content_settings.mojom.ContentSettingPatternSource>
+      settings_for_storage_access;
+
   // The type of CookieAccessDelegate to pass to the underlying CookieStore.
   // If these params are not present, CookieManager defaults to using
   // USE_CONTENT_SETTINGS.

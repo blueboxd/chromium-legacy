@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
@@ -35,13 +36,13 @@ class XRSpace : public EventTargetWithInlineData {
   // maps from this space's native origin to mojo space (aka device space).
   // Unless noted otherwise, all data returned over vr_service.mojom interfaces
   // is expressed in mojo space coordinates.
-  // Returns nullptr if computing a transform is not possible.
-  virtual std::unique_ptr<TransformationMatrix> MojoFromNative() = 0;
+  // Returns nullopt if computing a transform is not possible.
+  virtual base::Optional<TransformationMatrix> MojoFromNative() = 0;
 
   // Convenience method to try to get the inverse of the above. This will return
   // the pose of the mojo origin in this space's native origin.
-  // Returns nullptr if computing a transform is not possible.
-  virtual std::unique_ptr<TransformationMatrix> NativeFromMojo() = 0;
+  // Returns nullopt if computing a transform is not possible.
+  virtual base::Optional<TransformationMatrix> NativeFromMojo() = 0;
 
   // Gets the viewer pose in the native coordinates of this space, corresponding
   // to a transform from viewer coordinates to this space's native coordinates.
@@ -50,24 +51,24 @@ class XRSpace : public EventTargetWithInlineData {
   // Prefer this helper method over querying NativeFromMojo and multiplying
   // on the calling side, as this allows the viewer space to return identity
   // instead of something near to, but not quite, identity.
-  // Returns nullptr if computing a transform is not possible.
-  virtual std::unique_ptr<TransformationMatrix> NativeFromViewer(
-      const TransformationMatrix* mojo_from_viewer);
+  // Returns nullopt if computing a transform is not possible.
+  virtual base::Optional<TransformationMatrix> NativeFromViewer(
+      const base::Optional<TransformationMatrix>& mojo_from_viewer);
 
   // Convenience method for calling NativeFromViewer with the current
   // MojoFromViewer of the session associated with this space. This also handles
   // the multiplication of OffsetFromNative onto the result of NativeFromViewer.
-  // Returns nullptr if computing a transform is not possible.
-  std::unique_ptr<TransformationMatrix> OffsetFromViewer();
+  // Returns nullopt if computing a transform is not possible.
+  base::Optional<TransformationMatrix> OffsetFromViewer();
 
   // Return origin offset matrix, aka native_origin_from_offset_space.
   virtual TransformationMatrix NativeFromOffsetMatrix();
   virtual TransformationMatrix OffsetFromNativeMatrix();
 
   // Returns transformation from offset space to mojo space. Convenience method,
-  // returns MojoFromNative() * NativeFromOffsetMatrix() or nullptr if computing
+  // returns MojoFromNative() * NativeFromOffsetMatrix() or nullopt if computing
   // a transform is not possible.
-  std::unique_ptr<TransformationMatrix> MojoFromOffsetMatrix();
+  base::Optional<TransformationMatrix> MojoFromOffsetMatrix();
 
   // Indicates whether or not the position portion of the native origin of this
   // space is emulated.
@@ -88,8 +89,8 @@ class XRSpace : public EventTargetWithInlineData {
   void Trace(Visitor* visitor) override;
 
  protected:
-  std::unique_ptr<TransformationMatrix> TryInvert(
-      std::unique_ptr<TransformationMatrix> matrix);
+  static base::Optional<TransformationMatrix> TryInvert(
+      const base::Optional<TransformationMatrix>& matrix);
 
  private:
   const Member<XRSession> session_;

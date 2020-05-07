@@ -3609,6 +3609,25 @@
       "features": [
         "disable_mediafoundation_async_h264_encoding"
       ]
+    },
+    {
+      "id": 338,
+      "description": "Disable hardware overlay on icelake with older Intel drivers",
+      "cr_bugs": [1062653],
+      "os": {
+        "type": "win"
+      },
+      "intel_gpu_series" : [
+        "icelake"
+      ],
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "26.20.100.7755"
+      },
+      "features": [
+        "disable_direct_composition_video_overlays"
+      ]
     }
   ]
 }

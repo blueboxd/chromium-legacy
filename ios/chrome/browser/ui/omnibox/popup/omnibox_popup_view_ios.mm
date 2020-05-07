@@ -36,7 +36,8 @@ using base::UserMetricsAction;
 OmniboxPopupViewIOS::OmniboxPopupViewIOS(
     OmniboxEditModel* edit_model,
     OmniboxPopupViewSuggestionsDelegate* delegate)
-    : model_(new OmniboxPopupModel(this, edit_model)), delegate_(delegate) {
+    : model_(new OmniboxPopupModel(this, edit_model, nullptr)),
+      delegate_(delegate) {
   DCHECK(delegate);
   DCHECK(edit_model);
 }

@@ -27,17 +27,12 @@ class XRObjectSpace : public XRSpace {
   explicit XRObjectSpace(XRSession* session, const T* object)
       : XRSpace(session), object_(object) {}
 
-  std::unique_ptr<TransformationMatrix> MojoFromNative() override {
-    auto maybe_mojo_from_object = object_->MojoFromObject();
-    if (maybe_mojo_from_object) {
-      return std::make_unique<TransformationMatrix>(*maybe_mojo_from_object);
-    } else {
-      return nullptr;
-    }
+  base::Optional<TransformationMatrix> MojoFromNative() override {
+    return object_->MojoFromObject();
   }
 
-  std::unique_ptr<TransformationMatrix> NativeFromMojo() final {
-    return TryInvert(MojoFromNative());
+  base::Optional<TransformationMatrix> NativeFromMojo() final {
+    return XRSpace::TryInvert(MojoFromNative());
   }
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override {

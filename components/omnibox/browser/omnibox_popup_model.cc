@@ -17,6 +17,7 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "ui/gfx/geometry/rect.h"
@@ -53,9 +54,11 @@ OmniboxPopupModel::Selection OmniboxPopupModel::Selection::With(
 const size_t OmniboxPopupModel::kNoMatch = static_cast<size_t>(-1);
 
 OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
-                                     OmniboxEditModel* edit_model)
+                                     OmniboxEditModel* edit_model,
+                                     PrefService* pref_service)
     : view_(popup_view),
       edit_model_(edit_model),
+      pref_service_(pref_service),
       selection_(kNoMatch, NORMAL),
       has_selected_match_(false) {
   edit_model->set_popup_model(this);
@@ -470,6 +473,15 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
     return false;
   }
   const auto& match = result().match_at(selection.line);
+  // Skip rows that are hidden because their header is collapsed, unless the
+  // user is trying to focus the header itself (which is still shown).
+  if (selection.state != HEADER_BUTTON_FOCUSED &&
+      match.suggestion_group_id.has_value() && pref_service_ &&
+      omnibox::IsSuggestionGroupIdHidden(pref_service_,
+                                         match.suggestion_group_id.value())) {
+    return false;
+  }
+
   switch (selection.state) {
     case NO_STATE:
       return false;

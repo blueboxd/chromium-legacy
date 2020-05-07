@@ -4,11 +4,21 @@
 
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 
+#include <string>
+#include <utility>
+
 #include "base/test/task_environment.h"
+#include "fuchsia/engine/common/cors_exempt_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace {
+
+constexpr char kMixedCaseCorsExemptHeader[] = "CoRs-ExEmPt";
+constexpr char kUpperCaseCorsExemptHeader[] = "CORS-EXEMPT";
+constexpr char kMixedCaseCorsExemptHeader2[] = "Another-CoRs-ExEmPt-2";
+constexpr char kUpperCaseCorsExemptHeader2[] = "ANOTHER-CORS-EXEMPT-2";
+constexpr char kRequiresCorsHeader[] = "requires-cors";
 
 class TestCachedRulesProvider
     : public WebEngineURLLoaderThrottle::CachedRulesProvider {
@@ -42,6 +52,8 @@ class WebEngineURLLoaderThrottleTest : public testing::Test {
   WebEngineURLLoaderThrottleTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
   ~WebEngineURLLoaderThrottleTest() override = default;
+
+  void SetUp() override { SetCorsExemptHeaders({}); }
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -90,6 +102,61 @@ TEST_F(WebEngineURLLoaderThrottleTest, WildcardHosts) {
   request4.url = GURL("http://otherdomain.net");
   throttle.WillStartRequest(&request4, &defer);
   EXPECT_FALSE(request4.headers.HasHeader("Header"));
+}
+
+// Verifies that injected headers are correctly exempted from CORS checks if
+// their names are registered as CORS exempt.
+TEST_F(WebEngineURLLoaderThrottleTest, CorsAwareHeaders) {
+  // Use the mixed case form for CORS exempt header #1, and the uppercased form
+  // of header #2.
+  SetCorsExemptHeaders(
+      {kMixedCaseCorsExemptHeader, kUpperCaseCorsExemptHeader2});
+
+  mojom::UrlRequestRewriteAddHeadersPtr add_headers =
+      mojom::UrlRequestRewriteAddHeaders::New();
+  add_headers->headers.SetHeader(kRequiresCorsHeader, "Value");
+
+  // Inject the uppercased form for CORS exempt header #1, and the mixed case
+  // form of header #2.
+  add_headers->headers.SetHeader(kUpperCaseCorsExemptHeader, "Value");
+  add_headers->headers.SetHeader(kMixedCaseCorsExemptHeader2, "Value");
+
+  mojom::UrlRequestActionPtr rewrite =
+      mojom::UrlRequestAction::NewAddHeaders(std::move(add_headers));
+  std::vector<mojom::UrlRequestActionPtr> actions;
+  actions.push_back(std::move(rewrite));
+  mojom::UrlRequestRulePtr rule = mojom::UrlRequestRule::New();
+  rule->hosts_filter = base::Optional<std::vector<std::string>>({"*.test.net"});
+  rule->actions = std::move(actions);
+
+  std::vector<mojom::UrlRequestRulePtr> rules;
+  rules.push_back(std::move(rule));
+
+  TestCachedRulesProvider provider;
+  provider.SetCachedRules(
+      base::MakeRefCounted<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>(
+          std::move(rules)));
+
+  WebEngineURLLoaderThrottle throttle(&provider);
+
+  network::ResourceRequest request;
+  request.url = GURL("http://test.net");
+  bool defer = false;
+  throttle.WillStartRequest(&request, &defer);
+  EXPECT_FALSE(defer);
+
+  // Verify that the cors-exempt and cors-required headers were partitioned into
+  // the "cors_exempt_headers" and "headers" arrays, respectively.
+  EXPECT_TRUE(
+      request.cors_exempt_headers.HasHeader(kUpperCaseCorsExemptHeader));
+  EXPECT_TRUE(
+      request.cors_exempt_headers.HasHeader(kMixedCaseCorsExemptHeader2));
+  EXPECT_TRUE(request.headers.HasHeader(kRequiresCorsHeader));
+
+  // Verify that the headers were not also placed in the other array.
+  EXPECT_FALSE(request.cors_exempt_headers.HasHeader(kRequiresCorsHeader));
+  EXPECT_FALSE(request.headers.HasHeader(kUpperCaseCorsExemptHeader));
+  EXPECT_FALSE(request.headers.HasHeader(kMixedCaseCorsExemptHeader2));
 }
 
 // Tests URL replacement rules that replace to a data URL do not append query or

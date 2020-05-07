@@ -127,6 +127,15 @@ void MetricsRenderFrameObserver::DidObserveLayoutShift(
                                                        after_input_or_scroll);
 }
 
+void MetricsRenderFrameObserver::DidObserveLayoutNg(uint32_t all_block_count,
+                                                    uint32_t ng_block_count,
+                                                    uint32_t all_call_count,
+                                                    uint32_t ng_call_count) {
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->DidObserveLayoutNg(
+        all_block_count, ng_block_count, all_call_count, ng_call_count);
+}
+
 void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
     blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
   if (page_timing_metrics_sender_)

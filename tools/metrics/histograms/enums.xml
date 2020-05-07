@@ -7720,6 +7720,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Composited UI"/>
   <int value="6" label="VR"/>
   <int value="7" label="PROMOTE_TAB"/>
+  <int value="8" label="OMNIBOX_FOCUS"/>
 </enum>
 
 <enum name="BrokenAlternateProtocolLocation">
@@ -27187,6 +27188,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3277" label="TrustTokenXhr"/>
   <int value="3278" label="TrustTokenIframe"/>
   <int value="3279" label="TrustedTypesPolicyCreated"/>
+  <int value="3280"
+      label="V8HTMLVideoElement_RequestVideoFrameCallback_Method"/>
+  <int value="3281" label="V8HTMLVideoElement_CancelVideoFrameCallback_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40187,6 +40191,7 @@ from previous Chrome versions.
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
   <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
+  <int value="409566604" label="IntentPickerPWAPersistence:enabled"/>
   <int value="411250226" label="AutoplayMutedVideos:disabled"/>
   <int value="412957264" label="tab-close-buttons-hidden-with-touch"/>
   <int value="413081240" label="enable-new-md-input-view"/>
@@ -40903,6 +40908,7 @@ from previous Chrome versions.
   <int value="1259798038" label="AllowAmbientEQ:disabled"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>
   <int value="1261379424" label="DecodeLossyWebPImagesToYUV:disabled"/>
+  <int value="1261620998" label="IntentPickerPWAPersistence:disabled"/>
   <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
   <int value="1262469513" label="GesturePropertiesDBusService:disabled"/>
   <int value="1265666387" label="DesktopPWAsAppIconShortcutsMenu:disabled"/>
@@ -43471,7 +43477,8 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Bad user status"/>
   <int value="2" label="Bad fetch result"/>
   <int value="3" label="Bad logo"/>
-  <int value="4" label="Bad reset reason"/>
+  <int value="4" label="Bad user identifier"/>
+  <int value="5" label="Bad reset reason"/>
 </enum>
 
 <enum name="MediaFeedSafeSearchResult">

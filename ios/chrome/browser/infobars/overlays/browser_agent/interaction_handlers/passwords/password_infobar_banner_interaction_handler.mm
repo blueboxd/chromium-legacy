@@ -45,8 +45,15 @@ void PasswordInfobarBannerInteractionHandler::MainButtonTapped(
 void PasswordInfobarBannerInteractionHandler::ShowModalButtonTapped(
     InfoBarIOS* infobar,
     web::WebState* web_state) {
-  InfobarOverlayRequestInserter::FromWebState(web_state)->AddOverlayRequest(
-      infobar, InfobarOverlayType::kModal);
+  InsertParams params(infobar);
+  params.infobar = infobar;
+  params.overlay_type = InfobarOverlayType::kModal;
+  params.insertion_index = OverlayRequestQueue::FromWebState(
+                               web_state, OverlayModality::kInfobarModal)
+                               ->size();
+  params.source = InfobarOverlayInsertionSource::kBanner;
+  InfobarOverlayRequestInserter::FromWebState(web_state)->InsertOverlayRequest(
+      params);
 }
 
 void PasswordInfobarBannerInteractionHandler::BannerDismissedByUser(

@@ -29,4 +29,6 @@ enum class TileGroupStatus {
   kMaxValue = kInvalidGroup,
 };
 
+using SuccessCallback = base::OnceCallback<void(bool)>;
+
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_TYPES_H_

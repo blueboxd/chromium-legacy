@@ -21,9 +21,13 @@ namespace chromeos {
 class COMPONENT_EXPORT(CHROMEOS_DBUS) VmPluginDispatcherClient
     : public DBusClient {
  public:
-  // Used to observe changes to VM state.
+  // Used to observe changes to VM tool's state and VM's state.
   class Observer : public base::CheckedObserver {
    public:
+    virtual void OnVmToolsStateChanged(
+        const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal&
+            signal) = 0;
+
     virtual void OnVmStateChanged(
         const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) = 0;
 

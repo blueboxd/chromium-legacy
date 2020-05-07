@@ -97,23 +97,17 @@ void AssistantSetup::OnAssistantStatusChanged(
   if (state == ash::mojom::AssistantState::NOT_READY)
     return;
 
-  // Sync settings state when Assistant service started.
-  if (!settings_manager_)
-    SyncSettingsState();
+  SyncSettingsState();
 }
 
 void AssistantSetup::SyncSettingsState() {
-  // Set up settings mojom.
-  chromeos::assistant::AssistantService::Get()->BindSettingsManager(
-      settings_manager_.BindNewPipeAndPassReceiver());
-
   chromeos::assistant::SettingsUiSelector selector;
   chromeos::assistant::ConsentFlowUiSelector* consent_flow_ui =
       selector.mutable_consent_flow_ui_selector();
   consent_flow_ui->set_flow_id(
       chromeos::assistant::ActivityControlSettingsUiSelector::
           ASSISTANT_SUW_ONBOARDING_ON_CHROME_OS);
-  settings_manager_->GetSettings(
+  chromeos::assistant::AssistantSettings::Get()->GetSettings(
       selector.SerializeAsString(),
       base::BindOnce(&AssistantSetup::OnGetSettingsResponse,
                      base::Unretained(this)));

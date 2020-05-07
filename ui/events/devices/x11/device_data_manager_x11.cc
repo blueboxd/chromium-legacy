@@ -781,16 +781,6 @@ void DeviceDataManagerX11::UpdateScrollClassDevice(
 
   DCHECK(deviceid >= 0 && deviceid < kMaxDeviceNum);
   ScrollInfo& info = scroll_data_[deviceid];
-
-  bool legacy_scroll_available =
-      (scroll_class_info->flags & XIScrollFlagNoEmulation) == 0;
-  // If the device's highest resolution is lower than the resolution of xinput1
-  // then use xinput1's events instead (ie. don't configure smooth scrolling).
-  if (legacy_scroll_available &&
-      std::abs(scroll_class_info->increment) <= 1.0) {
-    return;
-  }
-
   switch (scroll_class_info->scroll_type) {
     case XIScrollTypeVertical:
       info.vertical.number = scroll_class_info->number;

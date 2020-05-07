@@ -170,6 +170,8 @@ component("web_engine_core") {
     "browser/web_engine_net_log_observer.h",
     "browser/web_engine_permission_delegate.cc",
     "browser/web_engine_permission_delegate.h",
+    "common/cors_exempt_headers.cc",
+    "common/cors_exempt_headers.h",
     "common/web_engine_content_client.cc",
     "common/web_engine_content_client.h",
     "common/web_engine_url_loader_throttle.cc",
@@ -297,6 +299,7 @@ test("web_engine_unittests") {
   ]
   deps = [
     ":mojom",
+    ":switches",
     ":web_engine_core",
     "//base/test:test_support",
     "//fuchsia/base:test_support",

@@ -70,6 +70,9 @@
             "blink_perf.svg": {
                 "abridged": false
             },
+            "blink_perf.webaudio": {
+                "abridged": false
+            },
             "dromaeo": {
                 "abridged": false
             },

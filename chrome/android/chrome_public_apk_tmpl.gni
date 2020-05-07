@@ -4,6 +4,7 @@
 
 import("//android_webview/variables.gni")
 import("//base/android/linker/config.gni")
+import("//base/android/resource_exclusions.gni")
 import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")
@@ -158,14 +159,11 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
     target_sdk_version = android_sdk_version
 
-    # Strip xxxhdpi images to save size. It's extremely difficult to see the
-    # difference without magnification.
-    resource_exclusion_regex = "drawable[^/]*-xxxhdpi"
+    resource_exclusion_regex = common_resource_exclusion_regex
+    resource_exclusion_exceptions = common_resource_exclusion_exceptions
 
     # Exceptions (rationale in https://crbug.com/691733):
-    resource_exclusion_exceptions = [
-      "*shadow*",  # Combination of gradient & transparency cause pixelation.
-      "*.9.*",  # Most nine-patches contain shadows.
+    resource_exclusion_exceptions += [
       "*ic_file_download_white*",  # Bottom edge seems misaligned.
       "*ic_lock.*",  # Bottom edge seems misaligned.
       "*ic_group_*",  # Appear only in xxxhdpi.
@@ -176,8 +174,27 @@ template("chrome_public_common_apk_or_module_tmpl") {
       resource_exclusion_regex += "|app_single_page_icon"
     }
 
-    # Remove WearOS resources (a couple exist in appcompat).
-    resource_exclusion_regex += "|-watch\b"
+    # Used only by alert dialog on tiny screens.
+    _material_package = "com_google_android_material_material.*"
+    resource_exclusion_regex += "|${_material_package}values-small"
+
+    # Material design layouts that cause views to be kept that we don't use.
+    # Instead of manually filtering, unused resource removal would be better:
+    # https://crbug.com/636448
+    resource_exclusion_regex += "|${_material_package}/layout"
+    _material_package = "*com_google_android_material_material*"
+    resource_exclusion_exceptions += [
+      # AppBarLayout
+      "${_material_package}design_appbar_*",
+
+      # TabLayout
+      "${_material_package}_tab*",
+
+      # TextInputLayout
+      "${_material_package}/design_text_*",
+      "${_material_package}/text_*",
+    ]
+    resource_values_filter_rules = [ "${_material_package}:mtrl_alert" ]
 
     if (!_is_monochrome) {
       product_config_java_packages = [ "org.chromium.chrome.browser" ]

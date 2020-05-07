@@ -131,14 +131,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 
-  def _WaitForPageToFinish(self, tab):
-    try:
-      tab.WaitForJavaScriptCondition(
-          'window.domAutomationController._finished', timeout=wait_timeout)
-      return True
-    except exceptions.TimeoutException:
-      return False
-
   def _KillGPUProcess(self, number_of_gpu_process_kills, check_crash_count):
     tab = self.tab
     # Doing the GPU process kill operation cooperatively -- in the
@@ -166,7 +158,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       # process was chosen.
       tab.EvaluateJavaScript('chrome.gpuBenchmarking.crashGpuProcess()')
 
-      completed = self._WaitForPageToFinish(tab)
+      completed = _WaitForPageToFinish(tab)
 
       if check_crash_count:
         self._CheckCrashCount(tab, expected_kills)
@@ -222,7 +214,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _WaitForTabAndCheckCompletion(self):
     tab = self.tab
-    completed = self._WaitForPageToFinish(tab)
+    completed = _WaitForPageToFinish(tab)
     if not completed:
       self.fail('Test didn\'t complete (no context lost / restored event?)')
     if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
@@ -420,6 +412,15 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
             'context_lost_expectations.txt')
     ]
+
+
+def _WaitForPageToFinish(tab):
+  try:
+    tab.WaitForJavaScriptCondition('window.domAutomationController._finished',
+                                   timeout=wait_timeout)
+    return True
+  except exceptions.TimeoutException:
+    return False
 
 
 def load_tests(loader, tests, pattern):

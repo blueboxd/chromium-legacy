@@ -60,6 +60,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeVmPluginDispatcherClient
     list_vms_response_ = response;
   }
 
+  // Calls observers of the OnVmToolsStateChanged signal
+  void NotifyVmToolsStateChanged(
+      const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal& signal);
+
   // Calls observers of the OnVmStateChanged signal
   void NotifyVmStateChanged(
       const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal);

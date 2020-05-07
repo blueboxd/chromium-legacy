@@ -32,6 +32,20 @@ Profile* ProfileFromFrameTreeNodeID(int frame_tree_node_id) {
   return Profile::FromBrowserContext(web_contents->GetBrowserContext());
 }
 
+void ReportProbeLatency(int frame_tree_node_id, base::TimeDelta probe_latency) {
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  if (!web_contents)
+    return;
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return;
+
+  tab_helper->NotifyPrefetchProbeLatency(probe_latency);
+}
+
 }  // namespace
 
 IsolatedPrerenderURLLoaderInterceptor::IsolatedPrerenderURLLoaderInterceptor(
@@ -91,6 +105,10 @@ void IsolatedPrerenderURLLoaderInterceptor::DoNotInterceptNavigation() {
 void IsolatedPrerenderURLLoaderInterceptor::OnProbeComplete(
     base::OnceClosure on_success_callback,
     bool success) {
+  DCHECK(probe_start_time_.has_value());
+  ReportProbeLatency(frame_tree_node_id_,
+                     base::TimeTicks::Now() - probe_start_time_.value());
+
   if (success) {
     NotifyPrefetchStatusUpdate(
         IsolatedPrerenderTabHelper::PrefetchStatus::kPrefetchUsedProbeSuccess);
@@ -139,6 +157,8 @@ void IsolatedPrerenderURLLoaderInterceptor::StartProbe(
               "developer testing."
             policy_exception_justification: "Not implemented."
         })");
+
+  probe_start_time_ = base::TimeTicks::Now();
 
   AvailabilityProber::TimeoutPolicy timeout_policy;
   timeout_policy.base_timeout = IsolatedPrerenderProbeTimeout();

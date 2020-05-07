@@ -12,14 +12,11 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 
-import androidx.annotation.VisibleForTesting;
 import androidx.core.app.NotificationManagerCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.site_settings.ContentSettingsResources;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsFeatureList;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
@@ -43,7 +40,6 @@ import java.util.List;
  *
  */
 class PermissionParamsListBuilder {
-    private static Profile sProfileForTesting;
 
     private final List<PageInfoPermissionEntry> mEntries;
     private final String mFullUrl;
@@ -52,6 +48,7 @@ class PermissionParamsListBuilder {
     private final AndroidPermissionDelegate mPermissionDelegate;
     private final SystemSettingsActivityRequiredListener mSettingsActivityRequiredListener;
     private final Callback<PageInfoView.PermissionParams> mDisplayPermissionsCallback;
+    private final PermissionParamsListBuilderDelegate mDelegate;
 
     /**
      * Creates a new builder of a list of PermissionParams that can be displayed.
@@ -68,7 +65,8 @@ class PermissionParamsListBuilder {
     PermissionParamsListBuilder(Context context, AndroidPermissionDelegate permissionDelegate,
             String fullUrl, boolean shouldShowTitle,
             SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
-            Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
+            Callback<PageInfoView.PermissionParams> displayPermissionsCallback,
+            PermissionParamsListBuilderDelegate delegate) {
         mContext = context;
         mFullUrl = fullUrl;
         mShouldShowTitle = shouldShowTitle;
@@ -76,6 +74,7 @@ class PermissionParamsListBuilder {
         mPermissionDelegate = permissionDelegate;
         mEntries = new ArrayList<>();
         mDisplayPermissionsCallback = displayPermissionsCallback;
+        mDelegate = delegate;
     }
 
     void addPermissionEntry(String name, int type, @ContentSettingValues int value) {
@@ -158,10 +157,9 @@ class PermissionParamsListBuilder {
 
         String managedBy = null;
         if (permission.type == ContentSettingsType.NOTIFICATIONS) {
-            TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
             Origin origin = Origin.create(mFullUrl);
             if (origin != null) {
-                managedBy = manager.getDelegateAppName(origin);
+                managedBy = mDelegate.getDelegateAppName(origin);
             }
         }
         if (managedBy != null) {
@@ -180,7 +178,7 @@ class PermissionParamsListBuilder {
                                    + permission.type;
             }
             if (WebsitePreferenceBridge.isPermissionControlledByDSE(
-                        getProfile(), permission.type, mFullUrl)) {
+                        mDelegate.getBrowserContextHandle(), permission.type, mFullUrl)) {
                 status_text = statusTextForDSEPermission(permission.setting);
             }
         }
@@ -264,16 +262,6 @@ class PermissionParamsListBuilder {
         }
 
         return mContext.getString(R.string.page_info_dse_permission_blocked);
-    }
-
-    @VisibleForTesting
-    public static void setProfileForTesting(Profile profileForTesting) {
-        sProfileForTesting = profileForTesting;
-    }
-
-    private static Profile getProfile() {
-        return (sProfileForTesting != null) ? sProfileForTesting
-                                            : Profile.getLastUsedRegularProfile();
     }
 
     /**

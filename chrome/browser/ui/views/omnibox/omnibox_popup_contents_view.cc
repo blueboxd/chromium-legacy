@@ -141,16 +141,17 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
     OmniboxViewViews* omnibox_view,
     OmniboxEditModel* edit_model,
     LocationBarView* location_bar_view)
-    : model_(new OmniboxPopupModel(this, edit_model)),
-      omnibox_view_(omnibox_view),
-      location_bar_view_(location_bar_view) {
+    : omnibox_view_(omnibox_view), location_bar_view_(location_bar_view) {
+  PrefService* const pref_service = GetPrefService();
+  model_ = std::make_unique<OmniboxPopupModel>(this, edit_model, pref_service);
+
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
-  if (PrefService* const pref_service = GetPrefService()) {
+  if (pref_service) {
     // We are observing the preference here rather than in OmniboxResultView,
     // because showing and hiding matches also requires resizing the popup.
     pref_change_registrar_.Init(pref_service);

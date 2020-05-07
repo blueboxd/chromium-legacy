@@ -41,6 +41,17 @@ struct FuchsiaEGLWindowDeleter {
   }
 };
 
+fuchsia::ui::scenic::ScenicPtr ConnectToScenic() {
+  fuchsia::ui::scenic::ScenicPtr scenic =
+      base::fuchsia::ComponentContextForCurrentProcess()
+          ->svc()
+          ->Connect<fuchsia::ui::scenic::Scenic>();
+  scenic.set_error_handler([](zx_status_t status) {
+    ZX_LOG(FATAL, status) << "Scenic connection failed";
+  });
+  return scenic;
+}
+
 class GLSurfaceFuchsiaImagePipe : public gl::NativeViewGLSurfaceEGL {
  public:
   explicit GLSurfaceFuchsiaImagePipe(
@@ -272,36 +283,20 @@ ScenicSurfaceFactory::CreateScenicSession() {
   fuchsia::ui::scenic::SessionPtr session;
   fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener_handle;
   auto listener_request = listener_handle.NewRequest();
-  auto create_session_task =
-      base::BindOnce(&ScenicSurfaceFactory::CreateScenicSessionOnMainThread,
-                     weak_ptr_factory_.GetWeakPtr(), session.NewRequest(),
-                     listener_handle.Bind());
-  if (main_thread_task_runner_->BelongsToCurrentThread()) {
-    // In a single threaded environment, we need to connect the session
-    // before returning so that synchronous calls do not deadlock the
-    // current thread.
-    std::move(create_session_task).Run();
-  } else {
-    main_thread_task_runner_->PostTask(FROM_HERE,
-                                       std::move(create_session_task));
+
+  {
+    // Cache Scenic connection for main thread. For other treads create
+    // one-shot connection.
+    fuchsia::ui::scenic::ScenicPtr local_scenic;
+    fuchsia::ui::scenic::ScenicPtr* scenic =
+        main_thread_task_runner_->BelongsToCurrentThread() ? &scenic_
+                                                           : &local_scenic;
+    if (!*scenic)
+      *scenic = ConnectToScenic();
+    (*scenic)->CreateSession(session.NewRequest(), std::move(listener_handle));
   }
 
   return {std::move(session), std::move(listener_request)};
-}
-
-void ScenicSurfaceFactory::CreateScenicSessionOnMainThread(
-    fidl::InterfaceRequest<fuchsia::ui::scenic::Session> session_request,
-    fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!scenic_) {
-    scenic_ = base::fuchsia::ComponentContextForCurrentProcess()
-                  ->svc()
-                  ->Connect<fuchsia::ui::scenic::Scenic>();
-    scenic_.set_error_handler([](zx_status_t status) {
-      ZX_LOG(FATAL, status) << "Scenic connection failed";
-    });
-  }
-  scenic_->CreateSession(std::move(session_request), std::move(listener));
 }
 
 void ScenicSurfaceFactory::AttachSurfaceToWindow(

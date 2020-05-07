@@ -69,6 +69,7 @@
     <output filename="values-sl/permissions_android_strings.xml" lang="sl" type="android" />
     <output filename="values-sq/permissions_android_strings.xml" lang="sq" type="android" />
     <output filename="values-sr/permissions_android_strings.xml" lang="sr" type="android" />
+    <output filename="values-b+sr+Latn/permissions_android_strings.xml" lang="sr-Latn" type="android" />
     <output filename="values-sv/permissions_android_strings.xml" lang="sv" type="android" />
     <output filename="values-sw/permissions_android_strings.xml" lang="sw" type="android" />
     <output filename="values-ta/permissions_android_strings.xml" lang="ta" type="android" />

@@ -30,13 +30,6 @@ void RunGetTilesCallback(const JavaRef<jobject>& j_callback,
       j_callback, TileConversionBridge::CreateJavaTiles(env, std::move(tiles)));
 }
 
-void RunGetVisualsCallback(const JavaRef<jobject>& j_callback,
-                           const gfx::Image& image) {
-  ScopedJavaLocalRef<jobject> j_bitmap =
-      gfx::ConvertToJavaBitmap(image.ToSkBitmap());
-  RunObjectCallbackAndroid(j_callback, j_bitmap);
-}
-
 }  // namespace
 
 // static
@@ -73,16 +66,6 @@ void TileProviderBridge::GetQueryTiles(JNIEnv* env,
                                        const JavaParamRef<jobject>& jcallback) {
   tile_service_->GetQueryTiles(base::BindOnce(
       &RunGetTilesCallback, ScopedJavaGlobalRef<jobject>(jcallback)));
-}
-
-void TileProviderBridge::GetVisuals(JNIEnv* env,
-                                    const JavaParamRef<jobject>& jcaller,
-                                    const JavaParamRef<jstring>& jid,
-                                    const JavaParamRef<jobject>& jcallback) {
-  std::string tile_id = ConvertJavaStringToUTF8(env, jid);
-  tile_service_->GetVisuals(
-      tile_id, base::BindOnce(&RunGetVisualsCallback,
-                              ScopedJavaGlobalRef<jobject>(jcallback)));
 }
 
 }  // namespace upboarding

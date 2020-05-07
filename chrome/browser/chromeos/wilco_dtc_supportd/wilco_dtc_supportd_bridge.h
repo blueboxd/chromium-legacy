@@ -117,6 +117,8 @@ class WilcoDtcSupportdBridge final
   void GetCrosHealthdDiagnosticsService(
       cros_healthd::mojom::CrosHealthdDiagnosticsServiceRequest service)
       override;
+  void GetCrosHealthdProbeService(
+      cros_healthd::mojom::CrosHealthdProbeServiceRequest service) override;
 
   std::unique_ptr<Delegate> delegate_;
 

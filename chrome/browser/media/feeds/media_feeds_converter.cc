@@ -350,6 +350,46 @@ base::Optional<std::vector<mojom::MediaImagePtr>> GetLogoImages(
   return logos;
 }
 
+bool GetCurrentlyLoggedInUser(
+    const Property& member,
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
+  if (member.values->entity_values.empty())
+    return false;
+
+  auto user_identifier = mojom::UserIdentifier::New();
+
+  auto& person = member.values->entity_values[0];
+  if (person->type != schema_org::entity::kPerson)
+    return false;
+
+  auto* name = GetProperty(person.get(), schema_org::property::kName);
+  if (!name || !IsNonEmptyString(*name))
+    return false;
+
+  user_identifier->name = name->values->string_values[0];
+
+  auto* image = GetProperty(person.get(), schema_org::property::kImage);
+  if (image) {
+    auto maybe_images = GetMediaImage(*image);
+    if (!maybe_images.has_value() || maybe_images.value().empty())
+      return false;
+
+    user_identifier->image = std::move(maybe_images.value()[0]);
+  }
+
+  auto* email = GetProperty(person.get(), schema_org::property::kEmail);
+  if (email) {
+    if (!IsEmail(*email))
+      return false;
+
+    user_identifier->email = email->values->string_values[0];
+  }
+
+  result->user_identifier = std::move(user_identifier);
+
+  return true;
+}
+
 // Validates the provider property of an entity. Outputs the name and images
 // properties.
 bool ValidateProvider(
@@ -358,26 +398,28 @@ bool ValidateProvider(
   if (provider.values->entity_values.empty())
     return false;
 
-  auto organization = std::find_if(
-      provider.values->entity_values.begin(),
-      provider.values->entity_values.end(), [](const EntityPtr& value) {
-        return value->type == schema_org::entity::kOrganization;
-      });
+  auto& organization = provider.values->entity_values[0];
 
-  if (organization == provider.values->entity_values.end())
+  if (organization->type != schema_org::entity::kOrganization)
     return false;
 
-  auto* name = GetProperty(organization->get(), schema_org::property::kName);
+  auto* name = GetProperty(organization.get(), schema_org::property::kName);
   if (!name || !IsNonEmptyString(*name))
     return false;
 
-  auto* logo = GetProperty(organization->get(), schema_org::property::kLogo);
+  auto* logo = GetProperty(organization.get(), schema_org::property::kLogo);
   if (!logo)
     return false;
 
   auto maybe_images = GetLogoImages(*logo);
   if (!maybe_images.has_value() || maybe_images.value().empty())
     return false;
+
+  if (!ConvertProperty(organization.get(), result,
+                       schema_org::property::kMember, /*is_required=*/false,
+                       base::BindOnce(&GetCurrentlyLoggedInUser))) {
+    return false;
+  }
 
   result->display_name = name->values->string_values[0];
   result->logos = std::move(maybe_images.value());
@@ -732,8 +774,8 @@ bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
     auto converted_images = GetMediaImage(*image);
     if (!converted_images.has_value())
       return false;
-    // TODO(sgbowen): Add an images field to TV episodes and store the converted
-    // images here.
+
+    item->tv_episode->images = std::move(converted_images.value());
   }
 
   if (!ConvertProperty<mojom::MediaFeedItem>(
@@ -774,8 +816,8 @@ bool GetPlayNextCandidate(const EpisodeCandidate& candidate,
     auto converted_images = GetMediaImage(*image);
     if (!converted_images.has_value())
       return false;
-    // TODO(sgbowen): Add an images field to TV episodes and store the converted
-    // images here.
+
+    item->play_next_candidate->images = std::move(converted_images.value());
   }
 
   if (!ConvertProperty<mojom::PlayNextCandidate>(

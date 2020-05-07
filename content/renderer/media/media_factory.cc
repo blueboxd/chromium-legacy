@@ -144,9 +144,16 @@ void PostContextProviderToCallback(
                      unwanted_context_provider));
 }
 
-void LogRoughness(int size, base::TimeDelta duration, double roughness) {
+void LogRoughness(media::MediaLog* media_log,
+                  int size,
+                  base::TimeDelta duration,
+                  double roughness) {
+  // This function can be called from any thread. Don't do anything that assumes
+  // a certain task runner.
   double fps = size / duration.InSecondsF();
-  DVLOG(1) << "Video playback roughness: " << roughness << " FPS: " << fps;
+  media_log->SetProperty<media::MediaLogProperty::kVideoPlaybackRoughness>(
+      roughness);
+  media_log->SetProperty<media::MediaLogProperty::kFramerate>(fps);
 }
 
 }  // namespace
@@ -227,7 +234,8 @@ bool UseMediaPlayerRenderer(const GURL& url) {
 std::unique_ptr<blink::WebVideoFrameSubmitter> MediaFactory::CreateSubmitter(
     scoped_refptr<base::SingleThreadTaskRunner>*
         video_frame_compositor_task_runner,
-    const cc::LayerTreeSettings& settings) {
+    const cc::LayerTreeSettings& settings,
+    media::MediaLog* media_log) {
   blink::WebMediaPlayer::SurfaceLayerMode use_surface_layer_for_video =
       GetVideoSurfaceLayerMode();
   content::RenderThreadImpl* render_thread =
@@ -264,11 +272,14 @@ std::unique_ptr<blink::WebVideoFrameSubmitter> MediaFactory::CreateSubmitter(
 
   if (use_surface_layer_for_video !=
       blink::WebMediaPlayer::SurfaceLayerMode::kNever) {
+    auto log_roughness_cb =
+        base::BindRepeating(LogRoughness, base::Owned(media_log->Clone()));
+    auto post_to_context_provider_cb = base::BindRepeating(
+        &PostContextProviderToCallback,
+        RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner());
     submitter = blink::WebVideoFrameSubmitter::Create(
-        base::BindRepeating(
-            &PostContextProviderToCallback,
-            RenderThreadImpl::current()->GetCompositorMainThreadTaskRunner()),
-        base::BindRepeating(LogRoughness), settings, use_sync_primitives);
+        std::move(post_to_context_provider_cb), std::move(log_roughness_cb),
+        settings, use_sync_primitives);
   }
 
   DCHECK(*video_frame_compositor_task_runner);
@@ -393,8 +404,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
-  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
-      CreateSubmitter(&video_frame_compositor_task_runner, settings);
+  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
+      &video_frame_compositor_task_runner, settings, media_log.get());
 
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner =
       render_thread->GetMediaThreadTaskRunner();
@@ -607,8 +618,6 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
 
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
-  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter =
-      CreateSubmitter(&video_frame_compositor_task_runner, settings);
 
   std::unique_ptr<BatchingMediaLog::EventHandler> event_handler;
   if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
@@ -624,6 +633,9 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       url::Origin(security_origin).GetURL(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
       std::move(event_handler));
+
+  std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
+      &video_frame_compositor_task_runner, settings, media_log.get());
 
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),

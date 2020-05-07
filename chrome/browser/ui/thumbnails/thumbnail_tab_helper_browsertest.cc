@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/sessions/tab_loader_tester.h"
@@ -31,7 +32,7 @@ class ThumbnailWaiter : public ThumbnailImage::Observer {
   ThumbnailWaiter() = default;
   ~ThumbnailWaiter() override = default;
 
-  gfx::ImageSkia WaitForThumbnail(ThumbnailImage* thumbnail) {
+  base::Optional<gfx::ImageSkia> WaitForThumbnail(ThumbnailImage* thumbnail) {
     DCHECK(!thumbnail_);
     thumbnail_ = thumbnail;
     scoped_observer_.Add(thumbnail);
@@ -47,15 +48,14 @@ class ThumbnailWaiter : public ThumbnailImage::Observer {
       scoped_observer_.Remove(thumbnail_);
       thumbnail_ = nullptr;
       image_ = thumbnail_image;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    run_loop_.QuitClosure());
+      run_loop_.Quit();
     }
   }
 
  private:
   base::RunLoop run_loop_;
   ThumbnailImage* thumbnail_ = nullptr;
-  gfx::ImageSkia image_;
+  base::Optional<gfx::ImageSkia> image_;
   ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> scoped_observer_{
       this};
 };
@@ -136,11 +136,14 @@ class ThumbnailTabHelperBrowserTest : public InProcessBrowserTest {
         << " tab at index " << tab_index << " already has data.";
 
     ThumbnailWaiter waiter;
-    const gfx::ImageSkia data = waiter.WaitForThumbnail(thumbnail.get());
-    EXPECT_FALSE(data.isNull())
-        << " tab at index " << tab_index << " generated empty thumbnail.";
+    const base::Optional<gfx::ImageSkia> data =
+        waiter.WaitForThumbnail(thumbnail.get());
     EXPECT_TRUE(thumbnail->has_data())
         << " tab at index " << tab_index << " thumbnail has no data.";
+    ASSERT_TRUE(data) << " observer for tab at index " << tab_index
+                      << " received no thumbnail.";
+    EXPECT_FALSE(data->isNull())
+        << " tab at index " << tab_index << " generated empty thumbnail.";
   }
 
   GURL url1_;

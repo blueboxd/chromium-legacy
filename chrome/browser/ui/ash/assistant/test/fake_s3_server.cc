@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/ash/assistant/test/fake_s3_server.h"
+
+#include <memory>
+
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -39,18 +44,11 @@ base::FilePath GetSourceDir() {
 std::string GetSanitizedTestName() {
   std::string test_name = base::ToLowerASCII(base::StringPrintf(
       "%s_%s",
-      testing::UnitTest::GetInstance()->current_test_info()->test_case_name(),
+      testing::UnitTest::GetInstance()->current_test_info()->test_suite_name(),
       testing::UnitTest::GetInstance()->current_test_info()->name()));
   std::string new_test_name;
   base::ReplaceChars(test_name, "/", "_", &new_test_name);
   return new_test_name;
-}
-
-std::string GetTestDataFileName() {
-  return GetSourceDir()
-      .Append(FILE_PATH_LITERAL(kTestDataFolder))
-      .Append(FILE_PATH_LITERAL(GetSanitizedTestName() + ".fake_s3.proto"))
-      .MaybeAsASCII();
 }
 
 const std::string GetAccessTokenFromEnvironmentOrDie() {
@@ -140,8 +138,11 @@ class PortSelector {
   int port_;
 };
 
-FakeS3Server::FakeS3Server()
-    : port_selector_(std::make_unique<PortSelector>()) {}
+FakeS3Server::FakeS3Server(int data_file_version)
+    : data_file_version_(data_file_version),
+      port_selector_(std::make_unique<PortSelector>()) {
+  DCHECK_GT(data_file_version, 0);
+}
 
 FakeS3Server::~FakeS3Server() {
   Teardown();
@@ -196,6 +197,25 @@ void FakeS3Server::StartS3ServerProcess(FakeS3Mode mode) {
 
 void FakeS3Server::StopS3ServerProcess() {
   fake_s3_server_.Terminate(/*exit_code=*/0, /*wait=*/true);
+}
+
+std::string FakeS3Server::GetTestDataFileName() {
+  auto create_file_path = [](const std::string& test_name, int version) {
+    return GetSourceDir()
+        .Append(FILE_PATH_LITERAL(kTestDataFolder))
+        .Append(FILE_PATH_LITERAL(test_name + ".v" +
+                                  base::NumberToString(version) +
+                                  ".fake_s3.proto"));
+  };
+  // Look for the latest version of the data file, if not found, look for older
+  // ones.
+  auto data_file = create_file_path(GetSanitizedTestName(), data_file_version_);
+  for (int version = data_file_version_ - 1;
+       !base::PathExists(data_file) && version > 0; --version) {
+    data_file = create_file_path(GetSanitizedTestName(), version);
+  }
+
+  return data_file.MaybeAsASCII();
 }
 
 int FakeS3Server::port() const {

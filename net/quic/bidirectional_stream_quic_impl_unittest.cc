@@ -1650,18 +1650,10 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructRequestHeadersPacketInner(
-      GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
+      GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length));
-  std::string header = ConstructDataHeader(strlen(kUploadData));
-  if (version_.UsesHttp3()) {
-    AddWrite(ConstructClientDataPacket(kIncludeVersion, kFin,
-                                       header + std::string(kUploadData)));
-  } else {
-    AddWrite(ConstructClientDataPacket(kIncludeVersion, kFin, kUploadData));
-  }
-
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructClientAckPacket(3, 1, 2));
 
   Initialize();
@@ -1670,50 +1662,51 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   request.method = "PUT";
   request.allow_early_data_override = true;
   request.url = GURL("http://www.google.com/");
-  request.end_stream_on_headers = false;
+  request.end_stream_on_headers = true;
   request.priority = DEFAULT_PRIORITY;
 
   scoped_refptr<IOBuffer> read_buffer =
       base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   std::unique_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
+  delegate->set_trailers_expected(true);
   delegate->Start(&request, net_log().bound(),
                   session()->CreateHandle(destination_));
-  ConfirmHandshake();
   delegate->WaitUntilNextCallback(kOnStreamReady);
-
-  // Send a DATA frame.
-  scoped_refptr<StringIOBuffer> buf =
-      base::MakeRefCounted<StringIOBuffer>(kUploadData);
-
-  delegate->SendData(buf, buf->size(), true);
-  delegate->WaitUntilNextCallback(kOnDataSent);
+  ConfirmHandshake();
 
   // Server acks the request.
   ProcessPacket(ConstructServerAckPacket(1, 1, 1, 1));
 
   // Server sends the response headers.
   spdy::SpdyHeaderBlock response_headers = ConstructResponseHeaders("200");
+
   size_t spdy_response_headers_frame_length;
   ProcessPacket(
       ConstructResponseHeadersPacket(2, !kFin, std::move(response_headers),
                                      &spdy_response_headers_frame_length));
 
   delegate->WaitUntilNextCallback(kOnHeadersReceived);
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(delegate->GetLoadTimingInfo(&load_timing_info));
+  ExpectLoadTimingValid(load_timing_info, /*session_reused=*/false);
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_EQ("200", delegate->response_headers().find(":status")->second);
   const char kResponseBody[] = "Hello world!";
   // Server sends data.
-  std::string header2 = ConstructDataHeader(strlen(kResponseBody));
+  std::string header = ConstructDataHeader(strlen(kResponseBody));
   ProcessPacket(ConstructServerDataPacket(3, !kIncludeVersion, !kFin,
-                                          header2 + kResponseBody));
+                                          header + kResponseBody));
+  EXPECT_EQ(12, cb.WaitForResult());
 
-  EXPECT_EQ(static_cast<int>(strlen(kResponseBody)), cb.WaitForResult());
+  EXPECT_EQ(std::string(kResponseBody), delegate->data_received());
+  TestCompletionCallback cb2;
+  EXPECT_THAT(delegate->ReadData(cb2.callback()), IsError(ERR_IO_PENDING));
 
-  size_t spdy_trailers_frame_length;
   spdy::SpdyHeaderBlock trailers;
+  size_t spdy_trailers_frame_length;
   trailers["foo"] = "bar";
   if (!quic::VersionUsesHttp3(version_.transport_version)) {
     trailers[quic::kFinalOffsetHeaderKey] =
@@ -1724,20 +1717,36 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
                                                 &spdy_trailers_frame_length));
 
   delegate->WaitUntilNextCallback(kOnTrailersReceived);
+  EXPECT_THAT(cb2.WaitForResult(), IsOk());
   trailers.erase(quic::kFinalOffsetHeaderKey);
   EXPECT_EQ(trailers, delegate->trailers());
-  EXPECT_THAT(delegate->ReadData(cb.callback()), IsOk());
 
-  EXPECT_EQ(1, delegate->on_data_read_count());
-  EXPECT_EQ(1, delegate->on_data_sent_count());
+  EXPECT_THAT(delegate->ReadData(cb2.callback()), IsOk());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2, delegate->on_data_read_count());
+  EXPECT_EQ(0, delegate->on_data_sent_count());
   EXPECT_EQ(kProtoQUIC, delegate->GetProtocol());
-  EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length +
-                                 strlen(kUploadData) + header.length()),
+  EXPECT_EQ(static_cast<int64_t>(spdy_request_headers_frame_length),
             delegate->GetTotalSentBytes());
   EXPECT_EQ(static_cast<int64_t>(spdy_response_headers_frame_length +
-                                 strlen(kResponseBody) + header2.length() +
+                                 strlen(kResponseBody) + header.length() +
                                  spdy_trailers_frame_length),
             delegate->GetTotalReceivedBytes());
+  // Check that NetLog was filled as expected.
+  auto entries = net_log().GetEntries();
+  size_t pos = ExpectLogContainsSomewhere(
+      entries, /*min_offset=*/0,
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, /*min_offset=*/pos,
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
+  ExpectLogContainsSomewhere(
+      entries, /*min_offset=*/pos,
+      NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLogEventPhase::NONE);
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +24,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+
+namespace plugin_vm {
 
 namespace {
 
@@ -50,61 +53,18 @@ void EnsureDirExists(
 
 base::FilePath GetDefaultSharedDir(Profile* profile) {
   return file_manager::util::GetMyFilesFolderForProfile(profile).Append(
-      plugin_vm::kPluginVmName);
+      kPluginVmName);
 }
 
-}  // namespace
-
-namespace plugin_vm {
-
-void EnsureDefaultSharedDirExists(
-    Profile* profile,
-    base::OnceCallback<void(const base::FilePath&, bool)> callback) {
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&EnsureDirExists, GetDefaultSharedDir(profile),
-                     std::move(callback)));
-}
-
-base::Optional<std::string> ConvertFileSystemURLToPathInsidePluginVmSharedDir(
-    Profile* profile,
-    const storage::FileSystemURL& file_system_url) {
-  auto path = file_system_url.path();
-  if (!GetDefaultSharedDir(profile).IsParent(path)) {
-    return base::nullopt;
+// LaunchPluginVmApp will run before this and try to start Plugin VM.
+void LaunchPluginVmAppImpl(Profile* profile,
+                           std::string app_id,
+                           const std::vector<storage::FileSystemURL>& files,
+                           LaunchPluginVmAppCallback callback,
+                           bool plugin_vm_is_running) {
+  if (!plugin_vm_is_running) {
+    return std::move(callback).Run(false, "Plugin VM could not be started");
   }
-
-  using Components = std::vector<base::FilePath::StringType>;
-
-  Components components;
-  path.GetComponents(&components);
-
-  // TODO(juwa): reuse MyFiles constant from file_manager/path_util.cc.
-  Components::iterator vm_components_start =
-      std::find(components.begin(), components.end(), "MyFiles");
-
-  Components vm_components;
-  vm_components.reserve(3 +
-                        std::distance(vm_components_start, components.end()));
-  vm_components.emplace_back();
-  vm_components.emplace_back();
-  vm_components.emplace_back("ChromeOS");
-  std::copy(std::make_move_iterator(vm_components_start),
-            std::make_move_iterator(components.end()),
-            std::back_inserter(vm_components));
-  return base::JoinString(std::move(vm_components), "\\");
-}
-
-void LaunchPluginVmApp(Profile* profile,
-                       std::string app_id,
-                       const std::vector<storage::FileSystemURL>& files,
-                       LaunchPluginVmAppCallback callback) {
-  if (!plugin_vm::IsPluginVmEnabled(profile)) {
-    return std::move(callback).Run(false,
-                                   "Plugin VM is not enabled for this profile");
-  }
-
-  // TODO(juwa): start Plugin VM if it is not running.
 
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
@@ -159,6 +119,66 @@ void LaunchPluginVmApp(Profile* profile,
                 std::move(callback).Run(/*success=*/true, "");
               },
               std::move(app_id), std::move(callback)));
+}
+
+}  // namespace
+
+void EnsureDefaultSharedDirExists(
+    Profile* profile,
+    base::OnceCallback<void(const base::FilePath&, bool)> callback) {
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&EnsureDirExists, GetDefaultSharedDir(profile),
+                     std::move(callback)));
+}
+
+base::Optional<std::string> ConvertFileSystemURLToPathInsidePluginVmSharedDir(
+    Profile* profile,
+    const storage::FileSystemURL& file_system_url) {
+  auto path = file_system_url.path();
+  if (!GetDefaultSharedDir(profile).IsParent(path)) {
+    return base::nullopt;
+  }
+
+  using Components = std::vector<base::FilePath::StringType>;
+
+  Components components;
+  path.GetComponents(&components);
+
+  // TODO(juwa): reuse MyFiles constant from file_manager/path_util.cc.
+  Components::iterator vm_components_start =
+      std::find(components.begin(), components.end(), "MyFiles");
+
+  Components vm_components;
+  vm_components.reserve(3 +
+                        std::distance(vm_components_start, components.end()));
+  vm_components.emplace_back();
+  vm_components.emplace_back();
+  vm_components.emplace_back("ChromeOS");
+  std::copy(std::make_move_iterator(vm_components_start),
+            std::make_move_iterator(components.end()),
+            std::back_inserter(vm_components));
+  return base::JoinString(std::move(vm_components), "\\");
+}
+
+void LaunchPluginVmApp(Profile* profile,
+                       std::string app_id,
+                       std::vector<storage::FileSystemURL> files,
+                       LaunchPluginVmAppCallback callback) {
+  if (!plugin_vm::IsPluginVmEnabled(profile)) {
+    return std::move(callback).Run(false,
+                                   "Plugin VM is not enabled for this profile");
+  }
+
+  auto* manager = PluginVmManager::GetForProfile(profile);
+
+  if (!manager) {
+    return std::move(callback).Run(false, "Could not get PluginVmManager");
+  }
+
+  manager->LaunchPluginVm(base::BindOnce(&LaunchPluginVmAppImpl, profile,
+                                         std::move(app_id), std::move(files),
+                                         std::move(callback)));
 }
 
 }  // namespace plugin_vm

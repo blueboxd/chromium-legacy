@@ -8,8 +8,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,19 +74,6 @@ ActivityType TypeFromString(NSString* activityString) {
     }
   }
   return UNKNOWN;
-}
-
-NSString* CompletionMessageForActivity(ActivityType type) {
-  // Some activities can be reported as completed even if not successful.
-  // Make sure that the message is meaningful even if the activity completed
-  // unsuccessfully.
-  switch (type) {
-    case COPY:
-    case NATIVE_CLIPBOARD:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_TO_CLIPBOARD_SUCCESS);
-    default:
-      return nil;
-  }
 }
 
 void RecordMetricForActivity(ActivityType type) {

@@ -307,12 +307,6 @@ INSTANTIATE_TEST_SUITE_P(Version,
                          ::testing::PrintToStringParamName());
 
 TEST_P(URLRequestQuicTest, TestGetRequest) {
-  if (version().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TODO(crbug.com/1032263): Make this work with TLS.
-    Init();
-    return;
-  }
-
   Init();
   CheckLoadTimingDelegate delegate(false);
   std::unique_ptr<URLRequest> request =
@@ -328,12 +322,6 @@ TEST_P(URLRequestQuicTest, TestGetRequest) {
 }
 
 TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
-  if (version().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TODO(crbug.com/1032263): Make this work with TLS.
-    Init();
-    return;
-  }
-
   if (VersionUsesHttp3(version().transport_version)) {
     Init();
     return;
@@ -429,12 +417,6 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_SomeCached) {
 }
 
 TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
-  if (version().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TODO(crbug.com/1032263): Make this work with TLS.
-    Init();
-    return;
-  }
-
   if (VersionUsesHttp3(version().transport_version)) {
     Init();
     return;
@@ -540,12 +522,6 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
 }
 
 TEST_P(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
-  if (version().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TODO(crbug.com/1032263): Make this work with TLS.
-    Init();
-    return;
-  }
-
   if (VersionUsesHttp3(version().transport_version)) {
     Init();
     return;
@@ -597,12 +573,6 @@ TEST_P(URLRequestQuicTest, DoNotCancelPushIfNotFoundInCache) {
 // Tests that if two requests use the same QUIC session, the second request
 // should not have |LoadTimingInfo::connect_timing|.
 TEST_P(URLRequestQuicTest, TestTwoRequests) {
-  if (version().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TODO(crbug.com/1032263): Make this work with TLS.
-    Init();
-    return;
-  }
-
   base::RunLoop run_loop;
   WaitForCompletionNetworkDelegate network_delegate(
       run_loop.QuitClosure(), /*num_expected_requests=*/2);
@@ -630,12 +600,6 @@ TEST_P(URLRequestQuicTest, TestTwoRequests) {
 }
 
 TEST_P(URLRequestQuicTest, RequestHeadersCallback) {
-  if (version().handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TODO(crbug.com/1032263): Make this work with TLS.
-    Init();
-    return;
-  }
-
   Init();
   HttpRawRequestHeaders raw_headers;
   TestDelegate delegate;

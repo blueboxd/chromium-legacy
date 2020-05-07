@@ -104,7 +104,7 @@ class PixelIntegrationTest(
         self._DoPageAction(tab, page)
       self._RunSkiaGoldBasedPixelTest(page)
     finally:
-      test_messages = self._TestHarnessMessages(tab)
+      test_messages = _TestHarnessMessages(tab)
       if test_messages:
         logging.info('Logging messages from the test:\n' + test_messages)
       if do_page_action or page.restart_browser_after_test:
@@ -172,9 +172,6 @@ class PixelIntegrationTest(
     tab.action_runner.WaitForJavaScriptCondition(
         'domAutomationController._finished', timeout=300)
 
-  def _TestHarnessMessages(self, tab):
-    return tab.EvaluateJavaScript('domAutomationController._messages')
-
   def _AssertLowPowerGPU(self):
     if self._IsDualGPUMacLaptop():
       if not self._IsIntelGPUActive():
@@ -190,7 +187,7 @@ class PixelIntegrationTest(
   # These are specified as methods taking the tab and the page as
   # arguments.
   #
-  def _CrashGpuProcess(self, tab, page):
+  def _CrashGpuProcess(self, tab, page):  # pylint: disable=no-self-use
     # Crash the GPU process.
     #
     # This used to create a new tab and navigate it to
@@ -285,6 +282,10 @@ class PixelIntegrationTest(
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
             'pixel_expectations.txt')
     ]
+
+
+def _TestHarnessMessages(tab):
+  return tab.EvaluateJavaScript('domAutomationController._messages')
 
 
 def load_tests(loader, tests, pattern):

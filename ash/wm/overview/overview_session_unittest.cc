@@ -6017,23 +6017,26 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
       CreateWindowWithHitTestComponent(HTBOTTOM, bounds));
 
   ToggleOverview();
-  const gfx::Rect overview_full_bounds = GetGridBounds();
+  gfx::Rect overview_full_bounds = GetGridBounds();
   OverviewItem* overview_item1 = GetOverviewItemForWindow(window1.get());
   DragWindowTo(overview_item1, gfx::PointF(0, 0));
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
   EXPECT_EQ(GetGridBounds(), GetSplitViewRightWindowBounds());
-  const gfx::Rect overview_snapped_bounds = GetGridBounds();
+  gfx::Rect overview_snapped_bounds = GetGridBounds();
 
   // Resize that happens on the right edge of the left snapped window will
   // resize the window and overview at the same time.
   ui::test::EventGenerator generator1(Shell::GetPrimaryRootWindow(),
                                       window1.get());
   generator1.PressLeftButton();
-  CheckWindowResizingPerformanceHistograms("BeforeResizingWindow1", 0, 0, 0, 0);
+  CheckWindowResizingPerformanceHistograms("BeforeResizingLeftSnappedWindow1",
+                                           0, 0, 0, 0);
   generator1.MoveMouseBy(50, 50);
-  CheckWindowResizingPerformanceHistograms("WhileResizingWindow1", 0, 0, 1, 0);
+  CheckWindowResizingPerformanceHistograms("WhileResizingLeftSnappedWindow1", 0,
+                                           0, 1, 0);
   generator1.ReleaseLeftButton();
-  CheckWindowResizingPerformanceHistograms("AfterResizingWindow1", 0, 0, 1, 1);
+  CheckWindowResizingPerformanceHistograms("AfterResizingLeftSnappedWindow1", 0,
+                                           0, 1, 1);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_NE(GetGridBounds(), overview_full_bounds);
@@ -6050,7 +6053,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   ui::test::EventGenerator generator2(Shell::GetPrimaryRootWindow(),
                                       window2.get());
   generator2.DragMouseBy(50, 50);
-  CheckWindowResizingPerformanceHistograms("AfterResizingWindow2", 0, 0, 1, 1);
+  CheckWindowResizingPerformanceHistograms("AfterResizingLeftSnappedWindow2", 0,
+                                           0, 1, 1);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -6060,7 +6064,8 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   ui::test::EventGenerator generator3(Shell::GetPrimaryRootWindow(),
                                       window3.get());
   generator3.DragMouseBy(50, 50);
-  CheckWindowResizingPerformanceHistograms("AfterResizingWindow3", 0, 0, 1, 1);
+  CheckWindowResizingPerformanceHistograms("AfterResizingLeftSnappedWindow3", 0,
+                                           0, 1, 1);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 
@@ -6070,7 +6075,68 @@ TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   ui::test::EventGenerator generator4(Shell::GetPrimaryRootWindow(),
                                       window4.get());
   generator4.DragMouseBy(50, 50);
-  CheckWindowResizingPerformanceHistograms("AfterResizingWindow4", 0, 0, 1, 1);
+  CheckWindowResizingPerformanceHistograms("AfterResizingLeftSnappedWindow4", 0,
+                                           0, 1, 1);
+  EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  // Now try snapping on the right.
+  ToggleOverview();
+  overview_full_bounds = GetGridBounds();
+  overview_item2 = GetOverviewItemForWindow(window2.get());
+  DragWindowTo(overview_item2, gfx::PointF(599, 0));
+  EXPECT_NE(GetGridBounds(), overview_full_bounds);
+  EXPECT_EQ(GetGridBounds(), GetSplitViewLeftWindowBounds());
+  overview_snapped_bounds = GetGridBounds();
+
+  ui::test::EventGenerator generator5(Shell::GetPrimaryRootWindow(),
+                                      window2.get());
+  generator5.PressLeftButton();
+  CheckWindowResizingPerformanceHistograms("BeforeResizingRightSnappedWindow2",
+                                           0, 0, 1, 1);
+  generator5.MoveMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("WhileResizingRightSnappedWindow2",
+                                           0, 0, 2, 1);
+  generator5.ReleaseLeftButton();
+  CheckWindowResizingPerformanceHistograms("AfterResizingRightSnappedWindow2",
+                                           0, 0, 2, 2);
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_NE(GetGridBounds(), overview_full_bounds);
+  EXPECT_NE(GetGridBounds(), overview_snapped_bounds);
+  EXPECT_EQ(GetGridBounds(), GetSplitViewLeftWindowBounds());
+
+  overview_item1 = GetOverviewItemForWindow(window1.get());
+  DragWindowTo(overview_item1, gfx::PointF(599, 0));
+  EXPECT_TRUE(overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  ui::test::EventGenerator generator6(Shell::GetPrimaryRootWindow(),
+                                      window1.get());
+  generator6.DragMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("AfterResizingRightSnappedWindow1",
+                                           0, 0, 2, 2);
+  EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  ToggleOverview();
+  overview_item3 = GetOverviewItemForWindow(window3.get());
+  DragWindowTo(overview_item3, gfx::PointF(599, 0));
+  ui::test::EventGenerator generator7(Shell::GetPrimaryRootWindow(),
+                                      window3.get());
+  generator7.DragMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("AfterResizingRightSnappedWindow3",
+                                           0, 0, 2, 2);
+  EXPECT_FALSE(overview_controller()->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  ToggleOverview();
+  overview_item4 = GetOverviewItemForWindow(window4.get());
+  DragWindowTo(overview_item4, gfx::PointF(599, 0));
+  ui::test::EventGenerator generator8(Shell::GetPrimaryRootWindow(),
+                                      window4.get());
+  generator8.DragMouseBy(50, 50);
+  CheckWindowResizingPerformanceHistograms("AfterResizingRightSnappedWindow4",
+                                           0, 0, 2, 2);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }

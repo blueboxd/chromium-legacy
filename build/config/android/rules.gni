@@ -2055,6 +2055,8 @@ if (enable_java_templates) {
   #   resource_exclusion_exceptions: A list of globs used when
   #     resource_exclusion_regex is set. Files that match this list will
   #     still be included.
+  #   resource_values_filter_rules: List of "source_path:name_regex" used to
+  #     filter out unwanted values/ resources.
   #   shared_resources: True if this is a runtime shared library APK, like
   #     the system_webview_apk target. Ensures that its resources can be
   #     used by the loading application process.
@@ -2464,6 +2466,7 @@ if (enable_java_templates) {
                                "r_java_root_package_name",
                                "resource_exclusion_exceptions",
                                "resource_exclusion_regex",
+                               "resource_values_filter_rules",
                                "resources_config_path",
                                "shared_resources",
                                "shared_resources_allowlist_locales",
@@ -3492,6 +3495,7 @@ if (enable_java_templates) {
                                "resource_exclusion_exceptions",
                                "resource_exclusion_regex",
                                "resource_ids_provider_dep",
+                               "resource_values_filter_rules",
                                "resources_config_path",
                                "require_native_mocks",
                                "secondary_abi_loadable_modules",
@@ -3621,6 +3625,7 @@ if (enable_java_templates) {
                                "resource_exclusion_exceptions",
                                "resource_exclusion_regex",
                                "resource_ids_provider_dep",
+                               "resource_values_filter_rules",
                                "resources_config_path",
                                "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",

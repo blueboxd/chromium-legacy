@@ -2149,6 +2149,8 @@ if (enable_java_templates) {
   #
   #   resource_exclusion_exceptions: (optional)
   #
+  #   resource_values_filter_rules: (optional)
+  #
   #   no_xml_namespaces: (optional)
   #
   #   png_to_webp: (optional)
@@ -2423,6 +2425,10 @@ if (enable_java_templates) {
       if (defined(invoker.resource_exclusion_exceptions)) {
         _args += [ "--resource-exclusion-exceptions=${invoker.resource_exclusion_exceptions}" ]
       }
+    }
+    if (defined(invoker.resource_values_filter_rules)) {
+      _args +=
+          [ "--values-filter-rules=${invoker.resource_values_filter_rules}" ]
     }
 
     if (defined(invoker.support_zh_hk) && invoker.support_zh_hk) {

@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -1465,7 +1466,13 @@ class IsolatedPrerenderTabHelperRedirectTest
   }
 };
 
-TEST_F(IsolatedPrerenderTabHelperRedirectTest, NoRedirect_Cookies) {
+// Fails on TSAN builders: https://crbug.com/1078965.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_NoRedirect_Cookies DISABLED_NoRedirect_Cookies
+#else
+#define MAYBE_NoRedirect_Cookies NoRedirect_Cookies
+#endif
+TEST_F(IsolatedPrerenderTabHelperRedirectTest, MAYBE_NoRedirect_Cookies) {
   NavigateSomewhere();
 
   GURL site_with_cookies("https://cookies.com");

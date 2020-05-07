@@ -862,7 +862,7 @@
 
       <ph name="ENTERPRISE_CONNECTOR_BLOCK_PASSWORD_PROTECTED_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許受到密碼保護的檔案。
 
-      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許大小過大而無法分析的檔案 (超過 50 MB 的檔案)。
+      <ph name="ENTERPRISE_CONNECTOR_BLOCK_LARGE_FILES_FIELD" /> 欄位可控制 Chrome 要封鎖還是允許超過檔案大小上限而無法分析的檔案 (超過 50 MB 的檔案)。
 
       你只能透過 Google 管理控制台設定這項政策。</translation>
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
@@ -928,9 +928,9 @@
       如果這項政策設為「True」或未設定，且裝置本機帳戶已設為無延遲自動登入，<ph name="PRODUCT_OS_NAME" /> 會將 Ctrl+Alt+S 設為鍵盤快速鍵，以用來停止自動登入並顯示登入畫面。
 
       如果這項政策設為「False」，且已設定無延遲自動登入的話，則無法停止自動登入程序。</translation>
-<translation id="2449669951136028258">指定下載後應自動開啟的檔案類型清單。列出檔案類型時，不應加入開頭的分隔符，因此請列出「txt」，而非「.txt」。
+<translation id="2449669951136028258">指定下載後應自動開啟的檔案類型清單。列出檔案類型時，請勿加入開頭的分隔符，因此請列出「txt」，而非「.txt」。
 
-      應自動開啟的檔案類型仍須通過已啟用的安全瀏覽檢查，如果未通過檢查，將不會開啟。
+      在啟用安全瀏覽功能的情況下，即便使用者已指定要讓系統自動開啟某些類型的檔案，Chrome 還是會檢查這類檔案，如果未通過檢查，就不會開啟檔案。
 
       如果不設定這項政策，只有使用者已指定要自動開啟的檔案類型會在下載後自動開啟。
 

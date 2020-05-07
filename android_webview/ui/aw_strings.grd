@@ -72,6 +72,7 @@
     <output filename="aw_strings_sl.pak" type="data_package" lang="sl" />
     <output filename="aw_strings_sq.pak" type="data_package" lang="sq" />
     <output filename="aw_strings_sr.pak" type="data_package" lang="sr" />
+    <output filename="aw_strings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
     <output filename="aw_strings_sv.pak" type="data_package" lang="sv" />
     <output filename="aw_strings_sw.pak" type="data_package" lang="sw" />
     <output filename="aw_strings_ta.pak" type="data_package" lang="ta" />

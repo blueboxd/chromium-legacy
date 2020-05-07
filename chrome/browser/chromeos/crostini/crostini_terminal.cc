@@ -130,6 +130,10 @@ void LaunchTerminalSettings(Profile* profile) {
   DCHECK(base::FeatureList::IsEnabled(features::kTerminalSystemApp));
   auto params = web_app::CreateSystemWebAppLaunchParams(
       profile, web_app::SystemAppType::TERMINAL);
+  if (!params.has_value()) {
+    LOG(WARNING) << "Empty launch params for terminal";
+    return;
+  }
   std::string path = "html/terminal_settings.html";
   if (base::FeatureList::IsEnabled(
           features::kTerminalSystemAppLegacySettings)) {

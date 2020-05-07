@@ -85,7 +85,7 @@
     "owners": [ "//content/browser/web_package/OWNERS" ],
     // Used by developers for testing signed exchange loading using normal
     // certs. See https://crbug.com/862003
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "allow-sync-xhr-in-page-dismissal",
@@ -426,7 +426,7 @@
   {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dominickn" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "calculate-native-win-occlusion",
@@ -2063,12 +2063,12 @@
   {
     "name": "enable-sxg-prefetch-cache-for-navigations",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "enable-sxg-subresource-prefetching",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "enable-sync-device-info-in-transport-mode",
@@ -2703,6 +2703,11 @@
     // don't receive server config seeds, we depend on this flag to flip the feature to enabled on
     // test machines for debug purposes.
     "expiry_milestone": -1
+  },
+  {
+    "name": "intent-picker-pwa-persistence",
+    "owners": [ "chromeos-apps-foundation-team@google.com" ],
+    "expiry_milestone": 88
   },
   {
     "name": "interest-feed-content-suggestions",
@@ -4202,12 +4207,12 @@
   {
     "name": "use-xps-for-printing",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "use-xps-for-printing-from-pdf",
     "owners": [ "awscreen", "thestig" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "username-first-flow",

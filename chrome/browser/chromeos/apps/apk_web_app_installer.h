@@ -30,6 +30,7 @@ class ApkWebAppInstaller {
  public:
   using InstallFinishCallback =
       base::OnceCallback<void(const web_app::AppId&,
+                              const bool is_web_only_twa,
                               web_app::InstallResultCode)>;
 
   // Do nothing class purely for the purpose of allowing us to specify
@@ -81,6 +82,7 @@ class ApkWebAppInstaller {
   // installation will be aborted. |weak_owner_|'s lifetime must be equal to or
   // shorter than that of |profile_|.
   Profile* profile_;
+  bool is_web_only_twa_;
   InstallFinishCallback callback_;
   base::WeakPtr<Owner> weak_owner_;
 

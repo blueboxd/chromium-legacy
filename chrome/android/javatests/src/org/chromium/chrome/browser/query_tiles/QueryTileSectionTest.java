@@ -13,8 +13,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.test.espresso.action.ViewActions;
 import android.support.test.filters.SmallTest;
 
@@ -26,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
@@ -235,16 +232,6 @@ public class QueryTileSectionTest {
         @Override
         public void getQueryTiles(Callback<List<QueryTile>> callback) {
             callback.onResult(mTiles);
-        }
-
-        @Override
-        public void getVisuals(String id, Callback<List<Bitmap>> callback) {
-            List<Bitmap> bitmapList = new ArrayList<>();
-            Bitmap bitmap = BitmapFactory.decodeResource(
-                    ContextUtils.getApplicationContext().getResources(),
-                    R.drawable.chrome_sync_logo);
-            bitmapList.add(bitmap);
-            callback.onResult(bitmapList);
         }
 
         public QueryTile getTileAt(int index) {

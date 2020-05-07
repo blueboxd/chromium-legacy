@@ -2112,6 +2112,9 @@ extern const char kImeMozcProtoDescription[];
 extern const char kImeNativeDecoderName[];
 extern const char kImeNativeDecoderDescription[];
 
+extern const char kIntentPickerPWAPersistenceName[];
+extern const char kIntentPickerPWAPersistenceDescription[];
+
 extern const char kLacrosSupportName[];
 extern const char kLacrosSupportDescription[];
 

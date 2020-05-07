@@ -62,6 +62,7 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
       const int item_play_next_count,
       const int item_content_types,
       const std::vector<media_feeds::mojom::MediaImagePtr>& logos,
+      const media_feeds::mojom::UserIdentifier* user_identifier,
       const std::string& display_name,
       const int item_safe_count);
 

@@ -4,8 +4,6 @@
 
 package org.chromium.components.query_tiles.bridges;
 
-import android.graphics.Bitmap;
-
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -42,17 +40,9 @@ public class TileProviderBridge implements TileProvider {
         TileProviderBridgeJni.get().getQueryTiles(mNativeTileProviderBridge, this, callback);
     }
 
-    @Override
-    public void getVisuals(String id, Callback<List<Bitmap>> callback) {
-        if (mNativeTileProviderBridge == 0) return;
-        TileProviderBridgeJni.get().getVisuals(mNativeTileProviderBridge, this, id, callback);
-    }
-
     @NativeMethods
     interface Natives {
         void getQueryTiles(long nativeTileProviderBridge, TileProviderBridge caller,
                 Callback<List<QueryTile>> callback);
-        void getVisuals(long nativeTileProviderBridge, TileProviderBridge caller, String id,
-                Callback<List<Bitmap>> callback);
     }
 }

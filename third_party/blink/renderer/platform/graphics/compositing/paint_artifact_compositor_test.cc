@@ -3862,17 +3862,18 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
                          corner);
   auto c1 = CreateClip(c0(), t0(), rrect);
+  auto c2 = CreateClip(*c1, t0(), FloatRoundedRect(60, 60, 200, 100));
 
   auto t1 = Create2DTranslation(t0(), 10, 20);
   CompositorFilterOperations blur_filter;
   blur_filter.AppendBlurFilter(5);
-  auto e1 = CreateBackdropFilterEffect(e0(), *t1, c1.get(), blur_filter,
+  auto e1 = CreateBackdropFilterEffect(e0(), *t1, c2.get(), blur_filter,
                                        FloatPoint());
 
   TestPaintArtifact artifact;
   artifact.Chunk(*t1, *c1, e0())
       .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
-  artifact.Chunk(*t1, *c1, *e1)
+  artifact.Chunk(*t1, *c2, *e1)
       .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   artifact.Chunk(*t1, *c1, e0())
       .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
@@ -3909,18 +3910,23 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(t0_id, mask_isolation_0.transform_id);
+  EXPECT_EQ(c1_id, mask_isolation_0.clip_id);
   EXPECT_TRUE(mask_isolation_0.backdrop_filters.IsEmpty());
   EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
   EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
             mask_isolation_0.rounded_corner_bounds);
 
   EXPECT_EQ(t1_id, content1->transform_tree_index());
-  EXPECT_EQ(c1_id, content1->clip_tree_index());
+  int c2_id = content1->clip_tree_index();
+  const cc::ClipNode& cc_c2 = *GetPropertyTrees().clip_tree.Node(c2_id);
+  EXPECT_EQ(gfx::RectF(60, 60, 200, 100), cc_c2.clip);
+  EXPECT_EQ(c1_id, cc_c2.parent_id);
+  EXPECT_EQ(t0_id, cc_c2.transform_id);
   int e1_id = content1->effect_tree_index();
   const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
   EXPECT_TRUE(cc_e1.backdrop_filters.IsEmpty());
   EXPECT_EQ(t1_id, cc_e1.transform_id);
-  EXPECT_EQ(c1_id, cc_e1.clip_id);
+  EXPECT_EQ(c2_id, cc_e1.clip_id);
   EXPECT_FALSE(cc_e1.backdrop_mask_element_id);
 
   int mask_isolation_1_id = cc_e1.parent_id;
@@ -3929,13 +3935,13 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
   ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
   EXPECT_EQ(t1_id, mask_isolation_1.transform_id);
-  EXPECT_EQ(c1_id, mask_isolation_1.clip_id);
+  EXPECT_EQ(c2_id, mask_isolation_1.clip_id);
   EXPECT_FALSE(mask_isolation_1.backdrop_filters.IsEmpty());
   EXPECT_FALSE(mask_isolation_1.is_fast_rounded_corner);
   EXPECT_EQ(gfx::RRectF(), mask_isolation_1.rounded_corner_bounds);
 
   EXPECT_EQ(t0_id, clip_mask1->transform_tree_index());
-  EXPECT_EQ(c1_id, clip_mask1->clip_tree_index());
+  EXPECT_EQ(c2_id, clip_mask1->clip_tree_index());
   const cc::EffectNode& mask =
       *GetPropertyTrees().effect_tree.Node(clip_mask1->effect_tree_index());
   ASSERT_EQ(mask_isolation_1_id, mask.parent_id);
@@ -3955,6 +3961,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   EXPECT_NE(mask_isolation_1_id, mask_isolation_2_id);
   ASSERT_EQ(e0_id, mask_isolation_2.parent_id);
   EXPECT_EQ(t0_id, mask_isolation_2.transform_id);
+  EXPECT_EQ(c1_id, mask_isolation_2.clip_id);
   EXPECT_TRUE(mask_isolation_2.backdrop_filters.IsEmpty());
   EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
   EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),

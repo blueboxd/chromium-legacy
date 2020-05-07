@@ -10,6 +10,8 @@ import android.view.Window;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
@@ -84,7 +86,7 @@ public class BottomSheetController implements Destroyable {
     @IntDef({StateChangeReason.NONE, StateChangeReason.SWIPE, StateChangeReason.BACK_PRESS,
             StateChangeReason.TAP_SCRIM, StateChangeReason.NAVIGATION,
             StateChangeReason.COMPOSITED_UI, StateChangeReason.VR, StateChangeReason.PROMOTE_TAB,
-            StateChangeReason.MAX_VALUE})
+            StateChangeReason.OMNIBOX_FOCUS, StateChangeReason.MAX_VALUE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateChangeReason {
         int NONE = 0;
@@ -95,7 +97,8 @@ public class BottomSheetController implements Destroyable {
         int COMPOSITED_UI = 5;
         int VR = 6;
         int PROMOTE_TAB = 7;
-        int MAX_VALUE = PROMOTE_TAB;
+        int OMNIBOX_FOCUS = 8;
+        int MAX_VALUE = OMNIBOX_FOCUS;
     }
 
     /** The initial capacity for the priority queue handling pending content show requests. */
@@ -106,6 +109,12 @@ public class BottomSheetController implements Destroyable {
 
     /** A listener for browser controls offset changes. */
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
+
+    /** A means of accessing the focus state of the omibox. */
+    private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
+
+    /** An observer of the omnibox that suppresses the sheet when the omnibox is focused. */
+    private final Callback<Boolean> mOmniboxFocusObserver;
 
     /** The height of the shadow that sits above the toolbar. */
     private int mToolbarShadowHeight;
@@ -158,12 +167,14 @@ public class BottomSheetController implements Destroyable {
      * @param overlayManager A supplier of the manager for overlay panels to attach listeners to.
      *                       This is a supplier to get around wating for native to be initialized.
      * @param fullscreenManager A fullscreen manager for access to browser controls offsets.
+     * @param omniboxFocusStateSupplier A means of accessing the focused state of the omnibox.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final Supplier<ScrimCoordinator> scrim,
             Supplier<View> bottomSheetViewSupplier, Supplier<OverlayPanelManager> overlayManager,
             ChromeFullscreenManager fullscreenManager, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate) {
+            KeyboardVisibilityDelegate keyboardDelegate,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
         mFullscreenManager = fullscreenManager;
@@ -230,6 +241,15 @@ public class BottomSheetController implements Destroyable {
         };
         mFullscreenManager.addListener(mFullscreenListener);
 
+        mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
+        mOmniboxFocusObserver = (focused) -> {
+            if (focused) {
+                suppressSheet(StateChangeReason.NONE);
+            } else {
+                unsuppressSheet();
+            }
+        };
+
         mSheetInitializer = () -> {
             initializeSheet(
                     lifecycleDispatcher, scrim, bottomSheetViewSupplier, window, keyboardDelegate);
@@ -251,6 +271,7 @@ public class BottomSheetController implements Destroyable {
                 BottomSheet.getTopShadowResourceId());
         mShadowTopOffset = mBottomSheet.getResources().getDimensionPixelOffset(
                 BottomSheet.getShadowTopOffsetResourceId());
+        mOmniboxFocusStateSupplier.addObserver(mOmniboxFocusObserver);
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
@@ -403,6 +424,7 @@ public class BottomSheetController implements Destroyable {
     public void destroy() {
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
         mFullscreenManager.removeListener(mFullscreenListener);
+        mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
         if (mBottomSheet != null) mBottomSheet.destroy();
     }
 
@@ -527,7 +549,7 @@ public class BottomSheetController implements Destroyable {
      */
     private void unsuppressSheet() {
         if (!mIsSuppressed || mTabProvider.get() == null || isOtherUIObscuring()
-                || VrModuleProvider.getDelegate().isInVr()) {
+                || VrModuleProvider.getDelegate().isInVr() || mOmniboxFocusStateSupplier.get()) {
             return;
         }
         mIsSuppressed = false;

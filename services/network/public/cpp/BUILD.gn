@@ -286,6 +286,7 @@ source_set("tests") {
     "site_for_cookies_mojom_traits_unittest.cc",
     "source_stream_to_data_pipe_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
+    "web_sandbox_flags_unittests.cc",
   ]
 
   if (!is_ios) {

@@ -23,8 +23,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/common/user_agent.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -197,26 +195,13 @@ TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes) {
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Success) {
-  // Testing with the Copy activity.
+  // Since mocked_handler_ is a strict mock, any call to its methods would make
+  // the test fail. That is our success condition.
   NSString* copyActivityString = @"com.google.chrome.copyActivity";
-  activity_type_util::ActivityType type =
-      activity_type_util::TypeFromString(copyActivityString);
-  __block NSString* expectedMessage =
-      activity_type_util::CompletionMessageForActivity(type);
-
-  [[mocked_handler_ expect]
-      showSnackbarMessage:[OCMArg checkWithBlock:^BOOL(
-                                      MDCSnackbarMessage* message) {
-        EXPECT_TRUE([expectedMessage isEqualToString:message.text]);
-        return YES;
-      }]];
-
   [mediator_ shareFinishedWithActivityType:copyActivityString
                                  completed:YES
                              returnedItems:@[]
                                      error:nil];
-
-  [mocked_handler_ verify];
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Cancel) {

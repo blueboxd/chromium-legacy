@@ -16,11 +16,13 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -53,14 +55,19 @@ class OmniboxPopupModelTest : public ::testing::Test {
   OmniboxPopupModelTest()
       : view_(&controller_),
         model_(&view_, &controller_, std::make_unique<TestOmniboxClient>()),
-        popup_model_(&popup_view_, &model_) {}
+        popup_model_(&popup_view_, &model_, &pref_service_) {
+    omnibox::RegisterProfilePrefs(pref_service_.registry());
+  }
 
+  TestingPrefServiceSimple* pref_service() { return &pref_service_; }
   OmniboxEditModel* model() { return &model_; }
   OmniboxPopupModel* popup_model() { return &popup_model_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
   TestOmniboxEditController controller_;
+  TestingPrefServiceSimple pref_service_;
+
   TestOmniboxView view_;
   TestOmniboxEditModel model_;
   TestOmniboxPopupView popup_view_;
@@ -254,6 +261,40 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelection) {
                                OmniboxPopupModel::kAllLines);
   EXPECT_EQ(OmniboxPopupModel::Selection(3, OmniboxPopupModel::NORMAL),
             model()->popup_model()->selection());
+}
+
+// TODO(tommycli): This test fails because the implementation is incomplete
+// right now. Fix the implementation and enable this test.
+TEST_F(OmniboxPopupModelTest, DISABLED_PopupStepSelectionWithHiddenGroupIds) {
+  ACMatches matches;
+  for (size_t i = 0; i < 4; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    match.keyword = base::ASCIIToUTF16("match");
+    match.allowed_to_be_default_match = true;
+    matches.push_back(match);
+  }
+
+  // Hide the second two matches.
+  matches[2].suggestion_group_id = 7;
+  matches[3].suggestion_group_id = 7;
+  omnibox::ToggleSuggestionGroupIdVisibility(pref_service(), 7);
+
+  auto* result = &model()->autocomplete_controller()->result_;
+  AutocompleteInput input(base::UTF8ToUTF16("match"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(0u, model()->popup_model()->selected_line());
+
+  // Step by lines forward.
+  for (size_t n : {1, 0}) {
+    popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                                 OmniboxPopupModel::kWholeLine);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
 }
 
 TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {

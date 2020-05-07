@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -74,7 +75,7 @@ class CORE_EXPORT PublicURLManager final
   void Trace(Visitor*) override;
 
   void SetURLStoreForTesting(
-      mojo::AssociatedRemote<mojom::blink::BlobURLStore> url_store) {
+      HeapMojoAssociatedRemote<mojom::blink::BlobURLStore> url_store) {
     url_store_ = std::move(url_store);
   }
 
@@ -87,7 +88,7 @@ class CORE_EXPORT PublicURLManager final
 
   bool is_stopped_;
 
-  mojo::AssociatedRemote<mojom::blink::BlobURLStore> url_store_;
+  HeapMojoAssociatedRemote<mojom::blink::BlobURLStore> url_store_;
 };
 
 }  // namespace blink

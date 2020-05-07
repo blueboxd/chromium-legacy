@@ -157,6 +157,11 @@ enum Setting {
   kTabletNavigationButtons = 1519,
   kMonoAudio = 1520,
   kStartupSound = 1521,
+  kEnableSwitchAccess = 1522,
+  kSwitchActionAssignment = 1523,
+  kSwitchActionAutoScan = 1524,
+  kSwitchActionAutoScanKeyboard = 1525,
+  kGetImageDescriptionsFromGoogle = 1526,
 
   // Reset section.
   kPowerwash = 1600,

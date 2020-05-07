@@ -132,9 +132,16 @@ void MediaFeedsFetcher::OnURLFetchComplete(
   }
 
   // Parse the received data.
-  schema_org::improved::mojom::EntityPtr parsed_entity =
-      extractor_.Extract(*feed_data);
+  extractor_.Extract(*feed_data,
+                     base::BindOnce(&MediaFeedsFetcher::OnParseComplete,
+                                    base::Unretained(this), std::move(callback),
+                                    was_fetched_via_cache));
+}
 
+void MediaFeedsFetcher::OnParseComplete(
+    MediaFeedCallback callback,
+    bool was_fetched_via_cache,
+    schema_org::improved::mojom::EntityPtr parsed_entity) {
   if (!schema_org::ValidateEntity(parsed_entity.get())) {
     std::move(callback).Run(nullptr, Status::kInvalidFeedData,
                             was_fetched_via_cache);

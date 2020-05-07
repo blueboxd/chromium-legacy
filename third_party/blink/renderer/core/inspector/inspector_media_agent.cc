@@ -92,7 +92,7 @@ void InspectorMediaAgent::Restore() {
 
 void InspectorMediaAgent::RegisterAgent() {
   instrumenting_agents_->AddInspectorMediaAgent(this);
-  auto* cache = MediaInspectorContextImpl::FromLocalFrame(local_frame_);
+  auto* cache = MediaInspectorContextImpl::From(*local_frame_->DomWindow());
   Vector<WebString> players = cache->AllPlayerIds();
   PlayersCreated(players);
   for (const auto& player_id : players) {

@@ -194,6 +194,13 @@ const MAX_NUM_TILES_CUSTOM_LINKS = 10;
 const MAX_NUM_TILES_MOST_VISITED = 8;
 
 /**
+ * Indicates a missing suggestion group Id. Based on
+ * SearchSuggestionParser::kNoSuggestionGroupId.
+ * @type {number}
+ */
+const NO_SUGGESTION_GROUP_ID = -1;
+
+/**
  * The period of time (ms) before the Most Visited notification is hidden.
  * @type {number}
  */
@@ -1832,7 +1839,8 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
       realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
     }
 
-    if (match.suggestionGroupId) {
+    if (match.suggestionGroupId &&
+        match.suggestionGroupId !== NO_SUGGESTION_GROUP_ID) {
       const groupEl = createSuggestionGroupEl(match.suggestionGroupId);
       groupEl.append(matchEl);
     } else {

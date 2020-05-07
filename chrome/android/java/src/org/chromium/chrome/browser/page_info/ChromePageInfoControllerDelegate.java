@@ -282,7 +282,7 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
             Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(mContext, permissionDelegate,
                 fullUrl, shouldShowTitle, systemSettingsActivityRequiredListener,
-                displayPermissionsCallback);
+                displayPermissionsCallback, new ChromePermissionParamsListBuilderDelegate());
     }
 
     /**

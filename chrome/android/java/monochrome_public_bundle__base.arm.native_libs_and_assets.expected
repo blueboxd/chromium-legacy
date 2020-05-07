@@ -68,6 +68,7 @@ apk_path=assets/locales/si.pak, compress=False, alignment=4
 apk_path=assets/locales/sk.pak, compress=False, alignment=4
 apk_path=assets/locales/sl.pak, compress=False, alignment=4
 apk_path=assets/locales/sq.pak, compress=False, alignment=4
+apk_path=assets/locales/sr-Latn.pak, compress=False, alignment=4
 apk_path=assets/locales/sr.pak, compress=False, alignment=4
 apk_path=assets/locales/sv.pak, compress=False, alignment=4
 apk_path=assets/locales/sw.pak, compress=False, alignment=4
@@ -150,6 +151,7 @@ apk_path=assets/stored-locales/si.pak, compress=False, alignment=4
 apk_path=assets/stored-locales/sk.pak, compress=False, alignment=4
 apk_path=assets/stored-locales/sl.pak, compress=False, alignment=4
 apk_path=assets/stored-locales/sq.pak, compress=False, alignment=4
+apk_path=assets/stored-locales/sr-Latn.pak, compress=False, alignment=4
 apk_path=assets/stored-locales/sr.pak, compress=False, alignment=4
 apk_path=assets/stored-locales/sv.pak, compress=False, alignment=4
 apk_path=assets/stored-locales/sw.pak, compress=False, alignment=4

@@ -14,6 +14,7 @@
 #include "components/schema_org/common/metadata.mojom.h"
 #include "components/schema_org/schema_org_entity_names.h"
 #include "content/public/browser/storage_partition.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -113,6 +114,7 @@ class MediaFeedsFetcherTest : public ChromeRenderViewHostTestHarness {
 
   ::network::TestURLLoaderFactory url_loader_factory_;
   std::unique_ptr<MediaFeedsFetcher> fetcher_;
+  data_decoder::test::InProcessDataDecoder data_decoder_;
 };
 
 TEST_F(MediaFeedsFetcherTest, SucceedsOnBasicFetch) {

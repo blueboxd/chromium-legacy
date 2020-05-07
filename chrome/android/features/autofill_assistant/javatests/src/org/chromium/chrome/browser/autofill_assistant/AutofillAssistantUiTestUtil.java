@@ -30,7 +30,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -49,16 +48,12 @@ import org.json.JSONArray;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
@@ -475,30 +470,10 @@ class AutofillAssistantUiTestUtil {
     }
 
     /**
-     * Creates a {@link BottomSheetController} for the activity, suitable for testing.
-     *
-     * <p>The returned controller is different from the one returned by {@link
-     * ChromeActivity#getBottomSheetController}.
+     * Get a {@link BottomSheetController} to run the tests with.
      */
-    static BottomSheetController createBottomSheetController(ChromeActivity activity) {
-        // Copied from {@link ChromeActivity#initializeBottomSheet}.
-
-        Supplier<View> sheetSupplier = () -> {
-            ViewGroup coordinator = activity.findViewById(R.id.coordinator);
-            LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
-            View bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-            return bottomSheet;
-        };
-
-        Supplier<OverlayPanelManager> panelManagerProvider = () -> {
-            return activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-        };
-
-        RootUiCoordinator rootCoordinator = activity.getRootUiCoordinatorForTesting();
-        return new BottomSheetController(activity.getLifecycleDispatcher(),
-                activity.getActivityTabProvider(), rootCoordinator::getScrimCoordinatorForTesting,
-                sheetSupplier, panelManagerProvider, activity.getFullscreenManager(),
-                activity.getWindow(), activity.getWindowAndroid().getKeyboardDelegate());
+    static BottomSheetController getBottomSheetController(ChromeActivity activity) {
+        return activity.getRootUiCoordinatorForTesting().getBottomSheetController();
     }
 
     /**

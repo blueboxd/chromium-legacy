@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_banner_overlay_request_cancel_handler.h"
 
 #include "ios/chrome/browser/infobars/infobar_ios.h"
-#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
 #include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_util.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
@@ -21,11 +20,12 @@ InfobarBannerOverlayRequestCancelHandler::
         OverlayRequest* request,
         OverlayRequestQueue* queue,
         InfoBarIOS* infobar,
-        const InfobarOverlayRequestInserter* inserter,
+        InfobarOverlayRequestInserter* inserter,
         InfobarModalCompletionNotifier* modal_completion_notifier)
     : InfobarOverlayRequestCancelHandler(request, queue, infobar),
       inserter_(inserter),
-      modal_completion_observer_(this, modal_completion_notifier, infobar) {
+      modal_completion_observer_(this, modal_completion_notifier, infobar),
+      modal_insertion_observer_(inserter, infobar, this) {
   DCHECK(inserter_);
 }
 
@@ -34,8 +34,11 @@ InfobarBannerOverlayRequestCancelHandler::
 
 #pragma mark Private
 
-void InfobarBannerOverlayRequestCancelHandler::CancelForModalCompletion() {
-  CancelRequest();
+void InfobarBannerOverlayRequestCancelHandler::ModalCompleted() {
+  // Only cancel the banner if the modal being completed was presented from this
+  // banner.
+  if (presenting_modal_)
+    CancelRequest();
 }
 
 #pragma mark InfobarOverlayRequestCancelHandler
@@ -52,8 +55,42 @@ void InfobarBannerOverlayRequestCancelHandler::HandleReplacement(
     ++index;
   }
   DCHECK_LT(index, queue()->size());
-  inserter_->InsertOverlayRequest(replacement, InfobarOverlayType::kBanner,
-                                  index + 1);
+  InsertParams params(replacement);
+  params.overlay_type = InfobarOverlayType::kBanner;
+  params.insertion_index = index + 1;
+  params.source = InfobarOverlayInsertionSource::kInfoBarManager;
+  inserter_->InsertOverlayRequest(params);
+}
+
+#pragma mark - InsertionObserver
+
+InfobarBannerOverlayRequestCancelHandler::InsertionObserver::InsertionObserver(
+    InfobarOverlayRequestInserter* inserter,
+    InfoBarIOS* infobar,
+    InfobarBannerOverlayRequestCancelHandler* cancel_handler)
+    : cancel_handler_(cancel_handler),
+      infobar_(infobar),
+      scoped_observer_(this) {
+  DCHECK(inserter);
+  DCHECK(infobar);
+  DCHECK(cancel_handler);
+  scoped_observer_.Add(inserter);
+}
+
+InfobarBannerOverlayRequestCancelHandler::InsertionObserver::
+    ~InsertionObserver() = default;
+
+void InfobarBannerOverlayRequestCancelHandler::InsertionObserver::
+    InfobarRequestInserted(InfobarOverlayRequestInserter* inserter,
+                           const InsertParams& params) {
+  if (infobar_ == params.infobar &&
+      params.source == InfobarOverlayInsertionSource::kBanner)
+    cancel_handler_->ModalPresentedFromBanner();
+}
+
+void InfobarBannerOverlayRequestCancelHandler::InsertionObserver::
+    InserterDestroyed(InfobarOverlayRequestInserter* inserter) {
+  scoped_observer_.Remove(inserter);
 }
 
 #pragma mark - InfobarBannerOverlayRequestCancelHandler::ModalCompletionObserver
@@ -79,7 +116,7 @@ void InfobarBannerOverlayRequestCancelHandler::ModalCompletionObserver::
     InfobarModalsCompleted(InfobarModalCompletionNotifier* notifier,
                            InfoBarIOS* infobar) {
   if (infobar_ == infobar) {
-    cancel_handler_->CancelForModalCompletion();
+    cancel_handler_->ModalCompleted();
     // The cancel handler is destroyed after CancelForModalCompletion(), so no
     // code can be added after this call.
   }
@@ -89,7 +126,7 @@ void InfobarBannerOverlayRequestCancelHandler::ModalCompletionObserver::
     InfobarModalCompletionNotifierDestroyed(
         InfobarModalCompletionNotifier* notifier) {
   scoped_observer_.Remove(notifier);
-  cancel_handler_->CancelForModalCompletion();
+  cancel_handler_->ModalCompleted();
   // The cancel handler is destroyed after CancelForModalCompletion(), so no
   // code can be added after this call.
 }

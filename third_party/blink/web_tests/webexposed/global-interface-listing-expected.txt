@@ -2061,6 +2061,7 @@ interface Element : Node
     getter nextElementSibling
     getter onbeforecopy
     getter onbeforecut
+    getter onbeforematch
     getter onbeforepaste
     getter onbeforexrselect
     getter onfullscreenchange
@@ -2188,6 +2189,7 @@ interface Element : Node
     setter innerHTML
     setter onbeforecopy
     setter onbeforecut
+    setter onbeforematch
     setter onbeforepaste
     setter onbeforexrselect
     setter onfullscreenchange

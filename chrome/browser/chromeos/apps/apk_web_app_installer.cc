@@ -51,6 +51,7 @@ ApkWebAppInstaller::ApkWebAppInstaller(Profile* profile,
                                        InstallFinishCallback callback,
                                        base::WeakPtr<Owner> weak_owner)
     : profile_(profile),
+      is_web_only_twa_(false),
       callback_(std::move(callback)),
       weak_owner_(weak_owner) {}
 
@@ -92,6 +93,8 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
   web_app_info_->display_mode = blink::mojom::DisplayMode::kStandalone;
   web_app_info_->open_as_window = true;
 
+  is_web_only_twa_ = web_app_info->is_web_only_twa;
+
   // Decode the image in a sandboxed process off the main thread.
   // base::Unretained is safe because this object owns itself.
   data_decoder::DecodeImageIsolated(
@@ -104,7 +107,7 @@ void ApkWebAppInstaller::Start(arc::mojom::WebAppInfoPtr web_app_info,
 
 void ApkWebAppInstaller::CompleteInstallation(const web_app::AppId& id,
                                               web_app::InstallResultCode code) {
-  std::move(callback_).Run(id, code);
+  std::move(callback_).Run(id, is_web_only_twa_, code);
   delete this;
 }
 

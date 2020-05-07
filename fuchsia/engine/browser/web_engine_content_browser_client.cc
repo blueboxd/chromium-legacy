@@ -155,6 +155,7 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     int child_process_id) {
   constexpr char const* kSwitchesToCopy[] = {
       switches::kContentDirectories,
+      switches::kCorsExemptHeaders,
       switches::kDisableSoftwareVideoDecoders,
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
@@ -198,23 +199,22 @@ WebEngineContentBrowserClient::CreateNetworkContext(
     const base::FilePath& relative_partition_path) {
   // Same as ContentBrowserClient::CreateNetworkContext().
   mojo::Remote<network::mojom::NetworkContext> network_context;
-  network::mojom::NetworkContextParamsPtr context_params =
+  network::mojom::NetworkContextParamsPtr params =
       network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetUserAgent();
-  context_params->accept_language = "en-us,en";
+  params->user_agent = GetUserAgent();
+  params->accept_language = "en-us,en";
+
+  // Set the list of cors_exempt_headers which may be specified in a URLRequest,
+  // starting with the headers passed in via
+  // |CreateContextParams.cors_exempt_headers|.
+  params->cors_exempt_header_list = cors_exempt_headers_;
 
   // Exempt the minimal headers needed for CORS preflight checks (Purpose,
   // X-Requested-With).
-  content::UpdateCorsExemptHeader(context_params.get());
+  content::UpdateCorsExemptHeader(params.get());
 
   content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), std::move(context_params));
-
-  if (!cors_exempt_headers_.empty()) {
-    // Exempt any embedder-specified headers from CORS prechecking.
-    network_context->SetCorsExtraSafelistedRequestHeaderNames(
-        cors_exempt_headers_);
-  }
+      network_context.BindNewPipeAndPassReceiver(), std::move(params));
 
   return network_context;
 }

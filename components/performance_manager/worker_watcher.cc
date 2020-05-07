@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "components/performance_manager/frame_node_source.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/worker_node_impl.h"
@@ -16,6 +17,12 @@
 namespace performance_manager {
 
 namespace {
+
+// Emits a boolean value that indicates if the client frame's node was found
+// when trying to connect the worker to a client frame.
+void RecordWorkerClientFound(bool found) {
+  UMA_HISTOGRAM_BOOLEAN("PerformanceManager.WorkerClientFound", found);
+}
 
 // Helper function to add |worker_node| as a child to |frame_node| on the PM
 // sequence.
@@ -132,12 +139,12 @@ void WorkerWatcher::OnWorkerStarted(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
       base::UnguessableToken::Create());
-  bool inserted = dedicated_worker_nodes_
-                      .emplace(dedicated_worker_id, std::move(worker_node))
-                      .second;
-  DCHECK(inserted);
+  auto insertion_result = dedicated_worker_nodes_.emplace(
+      dedicated_worker_id, std::move(worker_node));
+  DCHECK(insertion_result.second);
 
-  // TODO(pmonette): Connect |worker_node| to its client frame.
+  AddClientFrame(insertion_result.first->second.get(),
+                 ancestor_render_frame_host_id);
 }
 
 void WorkerWatcher::OnBeforeWorkerTerminated(
@@ -147,9 +154,12 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
   DCHECK(it != dedicated_worker_nodes_.end());
 
   auto worker_node = std::move(it->second);
-  // TODO(pmonette): Disconnect |worker_node| from its client frame.
+
+  // First disconnect the ancestor's frame node from this worker node.
+  RemoveClientFrame(worker_node.get(), ancestor_render_frame_host_id);
+
 #if DCHECK_IS_ON()
-  DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
+  DCHECK(!base::Contains(detached_frame_count_per_worker_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
   PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 
@@ -182,7 +192,7 @@ void WorkerWatcher::OnBeforeWorkerTerminated(
 
   auto worker_node = std::move(it->second);
 #if DCHECK_IS_ON()
-  DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
+  DCHECK(!base::Contains(detached_frame_count_per_worker_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
   PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 
@@ -227,7 +237,7 @@ void WorkerWatcher::OnVersionStoppedRunning(int64_t version_id) {
 
   auto worker_node = std::move(it->second);
 #if DCHECK_IS_ON()
-  DCHECK(!base::Contains(clients_to_remove_, worker_node.get()));
+  DCHECK(!base::Contains(detached_frame_count_per_worker_, worker_node.get()));
 #endif  // DCHECK_IS_ON()
   PerformanceManagerImpl::DeleteNode(std::move(worker_node));
 
@@ -239,7 +249,20 @@ void WorkerWatcher::AddClientFrame(
     content::GlobalFrameRoutingId client_render_frame_host_id) {
   FrameNodeImpl* frame_node =
       frame_node_source_->GetFrameNode(client_render_frame_host_id);
-  DCHECK(frame_node);
+  // TODO(https://crbug.com/1078161): The client frame's node should always be
+  // accessible. If it isn't, this means there is a missing
+  // CreatePageNodeForWebContents() somewhere.
+  if (!frame_node) {
+    RecordWorkerClientFound(false);
+#if DCHECK_IS_ON()
+    // A call to RemoveClientFrame() is still expected to be received for this
+    // frame and worker pair.
+    detached_frame_count_per_worker_[worker_node]++;
+#endif  // DCHECK_IS_ON()
+    return;
+  }
+
+  RecordWorkerClientFound(true);
 
   // Connect the nodes in the PM graph.
   PerformanceManagerImpl::CallOnGraphImpl(
@@ -265,19 +288,22 @@ void WorkerWatcher::RemoveClientFrame(
   // OnClientRemoved() for all of its child shared worker. Nothing to do in
   // that case because OnBeforeFrameNodeRemoved() took care of removing this
   // client from its child worker nodes.
+  //
+  // TODO(https://crbug.com/1078161): A second possibility is that it wasn't
+  // possible to connect a worker to its client frame.
   if (!frame_node) {
 #if DCHECK_IS_ON()
-    // These debug only checks ensure that this code path is only taken if
-    // OnBeforeFrameNodeRemoved() was already called for that frame.
-    auto it = clients_to_remove_.find(worker_node);
-    DCHECK(it != clients_to_remove_.end());
+    // These debug only checks are used to ensure that this RemoveClientFrame()
+    // was still expected even though the client frame node no longer exist.
+    auto it = detached_frame_count_per_worker_.find(worker_node);
+    DCHECK(it != detached_frame_count_per_worker_.end());
 
     int& count = it->second;
     DCHECK_GT(count, 0);
     --count;
 
     if (count == 0)
-      clients_to_remove_.erase(it);
+      detached_frame_count_per_worker_.erase(it);
 #endif  // DCHECK_IS_ON()
     return;
   }
@@ -311,11 +337,11 @@ void WorkerWatcher::OnBeforeFrameNodeRemoved(
 
 #if DCHECK_IS_ON()
   for (WorkerNodeImpl* worker_node : child_workers) {
-    // Now expect that this frame will be removed as a client for each worker
-    // in |child_workers|.
+    // A call to RemoveClientFrame() is still expected to be received for this
+    // frame to all workers in |child_workers|.
     // Note: the [] operator is intentionally used to default initialize the
     // count to zero if needed.
-    clients_to_remove_[worker_node]++;
+    detached_frame_count_per_worker_[worker_node]++;
   }
 #endif  // DCHECK_IS_ON()
 }

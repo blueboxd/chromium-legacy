@@ -90,6 +90,7 @@
 <translation id="1947424002851288782">જર્મન કીબોર્ડ</translation>
 <translation id="1972984168337863910">ફાઇલોના પ્રતિસાદની પૅનલ મોટી કરો</translation>
 <translation id="1984603991036629094">આર્મેનિયન ધ્વન્યાત્મક કીબોર્ડ</translation>
+<translation id="1995337122023280937">ફાઇલના સ્થાન પર જાઓ</translation>
 <translation id="2001796770603320721">ડ્રાઇવમાં મેનેજ કરો</translation>
 <translation id="2009067268969781306">ડ્રાઇવને ફોર્મેટ કરવાથી તેના પર સ્ટોર કરેલો બધો ડેટા ડિલીટ થઈ જશે. આ છેલ્લા ફેરફારને રદ કરી શકાતો નથી.</translation>
 <translation id="2028997212275086731">RAR આર્કાઇવ</translation>
@@ -141,6 +142,7 @@
 <translation id="2638942478653899953">Google ડ્રાઇવ પર પહોંચી શકાયું નથી. કૃપા કરીને <ph name="BEGIN_LINK" />લૉગ આઉટ કરો<ph name="END_LINK" /> અને પાછા લૉગ ઇન કરો.</translation>
 <translation id="2649120831653069427">રેન્બોફીશ</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2664412712123763093">ફાઇલનું સ્થાન</translation>
 <translation id="2672394958563893062">એક ભૂલ આવી. શરૂઆતથી પુન: પ્રારંભ કરોને ક્લિક કરો.</translation>
 <translation id="2676946222714718093">આ પર ચલાવી રહ્યાં છે</translation>
 <translation id="2735698359135166290">રોમાનિયન માનક કીબોર્ડ</translation>
@@ -349,6 +351,7 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ફાઇલો ડિલીટ કરવામાં આવશે</translation>
 <translation id="509429900233858213">કોઈ ભૂલ આવી છે.</translation>
 <translation id="5098629044894065541">હીબ્રુ</translation>
+<translation id="5112685521274804841">આ ફોલ્ડરમાંની ફોઇલો ફક્ત વાંચી શકાય છે. કેટલીક પ્રવૃત્તિઓને સપોર્ટ કરવામાં આવતી નથી.</translation>
 <translation id="5123433949759960244">બાસ્કેટબૉલ</translation>
 <translation id="5129662217315786329">પોલીશ</translation>
 <translation id="5144820558584035333">હંગુલ 3 સેટ (390)</translation>
@@ -697,6 +700,7 @@
 <translation id="9034924485347205037">Linux ફાઇલો</translation>
 <translation id="9035012421917565900">આઇટમને પાછી '<ph name="DESTINATION_NAME" />'માં ખસેડી શકાતી નથી, તેથી તમે આ ક્રિયાનો છેલ્લો ફેરફાર રદ કરી શકશો નહીંં.</translation>
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" નામની ફાઇલ પહેલાંથી અસ્તિત્વમાં છે. કૃપા કરીને કોઈ અલગ નામ પસંદ કરો.</translation>
+<translation id="9062992083244091966"><ph name="APP_NAME" />માં ફાઇલો ખોલવા માટે, પહેલાં તેમને <ph name="APP_NAME" /> શેર કરેલી ફાઇલોના ફોલ્ડરમાં ખસેડો.</translation>
 <translation id="9064939804718829769">સ્થાનાંતરિત કરી રહ્યાં છે...</translation>
 <translation id="9065203028668620118">ફેરફાર કરો</translation>
 <translation id="9099674669267916096">પેજની સંખ્યા</translation>

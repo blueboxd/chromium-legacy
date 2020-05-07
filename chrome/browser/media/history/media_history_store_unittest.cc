@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
@@ -824,6 +825,19 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     return logos;
   }
 
+  static media_feeds::mojom::UserIdentifierPtr GetExpectedUserIdentifier() {
+    auto identifier = media_feeds::mojom::UserIdentifier::New();
+
+    identifier->name = "Becca Hughes";
+    identifier->email = "test@chromium.org";
+
+    identifier->image = media_feeds::mojom::MediaImage::New();
+    identifier->image->src = GURL("https://www.example.org/image1.png");
+    identifier->image->size = gfx::Size(10, 10);
+
+    return identifier;
+  }
+
   static std::set<url::Origin> ToSet(const std::vector<url::Origin>& origins) {
     std::set<url::Origin> out;
     for (auto& origin : origins)
@@ -914,6 +928,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
       EXPECT_EQ(0, feeds[0]->last_fetch_content_types);
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_TRUE(feeds[0]->display_name.empty());
+      EXPECT_TRUE(feeds[0]->user_identifier.is_null());
 
       EXPECT_EQ(2, feeds[1]->id);
       EXPECT_EQ(url_b, feeds[1]->url);
@@ -962,6 +977,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
     result.logos = GetExpectedLogos();
     result.display_name = kExpectedDisplayName;
     result.associated_origins = GetExpectedAssociatedOrigins();
+    result.user_identifier = GetExpectedUserIdentifier();
     service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
     WaitForDB();
 
@@ -985,6 +1001,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
       EXPECT_EQ(kExpectedFetchContentTypes, feeds[0]->last_fetch_content_types);
       EXPECT_EQ(GetExpectedLogos(), feeds[0]->logos);
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
+      EXPECT_EQ(GetExpectedUserIdentifier(), feeds[0]->user_identifier);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
       EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url),
@@ -1027,6 +1044,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
                 feeds[0]->last_fetch_content_types);
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
+      EXPECT_FALSE(feeds[0]->user_identifier);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(ToSet(feed_url), ToSet(feeds[0]->associated_origins));
 
@@ -2100,6 +2118,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
   result.logos = GetExpectedLogos();
   result.display_name = kExpectedDisplayName;
   result.associated_origins = GetExpectedAssociatedOrigins();
+  result.user_identifier = GetExpectedUserIdentifier();
   service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
   service()->UpdateMediaFeedDisplayTime(feed_id_a);
 
@@ -2139,6 +2158,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
       EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
                 ToSet(feeds[0]->associated_origins));
+      EXPECT_EQ(GetExpectedUserIdentifier(), feeds[0]->user_identifier);
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
@@ -2184,6 +2204,7 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
       EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
                 feeds[0]->reset_reason);
       EXPECT_EQ(ToSet(feed_url_a), ToSet(feeds[0]->associated_origins));
+      EXPECT_FALSE(feeds[0]->user_identifier);
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));

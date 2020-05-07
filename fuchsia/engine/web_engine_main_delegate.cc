@@ -14,8 +14,10 @@
 #include "fuchsia/base/init_logging.h"
 #include "fuchsia/engine/browser/web_engine_browser_main.h"
 #include "fuchsia/engine/browser/web_engine_content_browser_client.h"
+#include "fuchsia/engine/common/cors_exempt_headers.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/renderer/web_engine_content_renderer_client.h"
+#include "fuchsia/engine/switches.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -52,6 +54,12 @@ bool WebEngineMainDelegate::BasicStartupComplete(int* exit_code) {
     *exit_code = 1;
     return true;
   }
+
+  SetCorsExemptHeaders(base::SplitString(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kCorsExemptHeaders),
+      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
+
   return false;
 }
 

@@ -7,6 +7,6 @@
     RuntimeEnabled=RequestVideoFrameCallback,
     ImplementedAs=VideoFrameCallbackRequesterImpl
 ] partial interface HTMLVideoElement {
-    long requestVideoFrameCallback(VideoFrameRequestCallback callback);
-    void cancelVideoFrameCallback(long handle);
+    [Measure] long requestVideoFrameCallback(VideoFrameRequestCallback callback);
+    [Measure] void cancelVideoFrameCallback(long handle);
 };

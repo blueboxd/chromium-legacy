@@ -17,8 +17,9 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.WeakHashMap;
+import java.util.Map;
 
 /**
  * Representation of a Tab-like card in the Grid Tab Switcher.
@@ -26,7 +27,7 @@ import java.util.WeakHashMap;
 public class PseudoTab {
     private final Integer mTabId;
     private final WeakReference<Tab> mTab;
-    private static final WeakHashMap<Integer, PseudoTab> sAllTabs = new WeakHashMap<>();
+    private static final Map<Integer, PseudoTab> sAllTabs = new LinkedHashMap<>();
 
     /**
      * An interface to get the title to be used for a tab.

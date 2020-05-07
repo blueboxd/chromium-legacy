@@ -32,6 +32,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
       <output filename="chromium_strings_pa.pak" type="data_package" lang="pa" />
       <output filename="chromium_strings_si.pak" type="data_package" lang="si" />
       <output filename="chromium_strings_sq.pak" type="data_package" lang="sq" />
+      <output filename="chromium_strings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
       <output filename="chromium_strings_ur.pak" type="data_package" lang="ur" />
       <output filename="chromium_strings_uz.pak" type="data_package" lang="uz" />
       <output filename="chromium_strings_zh-HK.pak" type="data_package" lang="zh-HK" />

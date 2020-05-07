@@ -109,7 +109,7 @@ public class AutofillAssistantUiTest {
     }
 
     protected BottomSheetController initializeBottomSheet() {
-        return AutofillAssistantUiTestUtil.createBottomSheetController(getActivity());
+        return AutofillAssistantUiTestUtil.getBottomSheetController(getActivity());
     }
 
 

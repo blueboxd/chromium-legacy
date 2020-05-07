@@ -125,6 +125,9 @@ class MediaHistoryKeyedService : public KeyedService,
 
     // The reset token for the feed.
     base::Optional<base::UnguessableToken> reset_token;
+
+    // Information about the currently logged in user.
+    media_feeds::mojom::UserIdentifierPtr user_identifier;
   };
   // Replaces the media items in |result.feed_id|. This will delete any old feed
   // items and store the new ones in |result.items|. This will also update the

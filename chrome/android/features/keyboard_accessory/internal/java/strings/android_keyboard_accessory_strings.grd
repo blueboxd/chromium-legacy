@@ -68,6 +68,7 @@
     <output filename="values-sl/android_keyboard_accessory_strings.xml" lang="sl" type="android" />
     <output filename="values-sq/android_keyboard_accessory_strings.xml" lang="sq" type="android" />
     <output filename="values-sr/android_keyboard_accessory_strings.xml" lang="sr" type="android" />
+    <output filename="values-b+sr+Latn/android_keyboard_accessory_strings.xml" lang="sr-Latn" type="android" />
     <output filename="values-sv/android_keyboard_accessory_strings.xml" lang="sv" type="android" />
     <output filename="values-sw/android_keyboard_accessory_strings.xml" lang="sw" type="android" />
     <output filename="values-ta/android_keyboard_accessory_strings.xml" lang="ta" type="android" />

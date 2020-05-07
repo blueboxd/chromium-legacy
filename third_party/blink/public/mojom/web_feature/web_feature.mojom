@@ -2614,6 +2614,8 @@ enum WebFeature {
   kTrustTokenXhr = 3277,
   kTrustTokenIframe = 3278,
   kTrustedTypesPolicyCreated = 3279,
+  kV8HTMLVideoElement_RequestVideoFrameCallback_Method = 3280,
+  kV8HTMLVideoElement_CancelVideoFrameCallback_Method = 3281,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

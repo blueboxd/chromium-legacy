@@ -5,6 +5,7 @@
 #include "services/network/cookie_settings.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
@@ -14,31 +15,49 @@
 namespace network {
 namespace {
 
+constexpr char kDomainURL[] = "http://example.com";
 constexpr char kURL[] = "http://foo.com";
 constexpr char kOtherURL[] = "http://other.com";
+constexpr char kSubDomainURL[] = "http://www.corp.example.com";
 constexpr char kDomain[] = "example.com";
 constexpr char kDotDomain[] = ".example.com";
 constexpr char kSubDomain[] = "www.corp.example.com";
 constexpr char kOtherDomain[] = "not-example.com";
 constexpr char kDomainWildcardPattern[] = "[*.]example.com";
 
-ContentSettingPatternSource CreateSetting(const std::string& primary_pattern,
-                                          const std::string& secondary_pattern,
-                                          ContentSetting setting) {
-  return ContentSettingPatternSource(
-      ContentSettingsPattern::FromString(primary_pattern),
-      ContentSettingsPattern::FromString(secondary_pattern),
-      base::Value(setting), std::string(), false /* incognito */);
-}
+class CookieSettingsTest : public testing::Test {
+ public:
+ public:
+  CookieSettingsTest()
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
-TEST(CookieSettingsTest, GetCookieSettingDefault) {
+  ContentSettingPatternSource CreateSetting(
+      const std::string& primary_pattern,
+      const std::string& secondary_pattern,
+      ContentSetting setting,
+      base::Time expiration = base::Time()) {
+    return ContentSettingPatternSource(
+        ContentSettingsPattern::FromString(primary_pattern),
+        ContentSettingsPattern::FromString(secondary_pattern),
+        base::Value(setting), std::string(), false /* incognito */, expiration);
+  }
+
+  void FastForwardTime(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
+
+ private:
+  base::test::TaskEnvironment task_environment_;
+};
+
+TEST_F(CookieSettingsTest, GetCookieSettingDefault) {
   CookieSettings settings;
   ContentSetting setting;
   settings.GetCookieSetting(GURL(kURL), GURL(kURL), nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
-TEST(CookieSettingsTest, GetCookieSetting) {
+TEST_F(CookieSettingsTest, GetCookieSetting) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting(kURL, kURL, CONTENT_SETTING_BLOCK)});
@@ -47,7 +66,7 @@ TEST(CookieSettingsTest, GetCookieSetting) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingMustMatchBothPatterns) {
+TEST_F(CookieSettingsTest, GetCookieSettingMustMatchBothPatterns) {
   CookieSettings settings;
   // This setting needs kOtherURL as the secondary pattern.
   settings.set_content_settings(
@@ -60,7 +79,7 @@ TEST(CookieSettingsTest, GetCookieSettingMustMatchBothPatterns) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
+TEST_F(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting(kURL, kURL, CONTENT_SETTING_BLOCK),
@@ -70,7 +89,7 @@ TEST(CookieSettingsTest, GetCookieSettingGetsFirstSetting) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
+TEST_F(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
@@ -80,7 +99,7 @@ TEST(CookieSettingsTest, GetCookieSettingDontBlockThirdParty) {
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
+TEST_F(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
@@ -90,7 +109,7 @@ TEST(CookieSettingsTest, GetCookieSettingBlockThirdParty) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingDontBlockThirdPartyWithException) {
+TEST_F(CookieSettingsTest, GetCookieSettingDontBlockThirdPartyWithException) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting(kURL, kOtherURL, CONTENT_SETTING_ALLOW)});
@@ -100,26 +119,153 @@ TEST(CookieSettingsTest, GetCookieSettingDontBlockThirdPartyWithException) {
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
-TEST(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSettings) {
+// The Storage Access API should unblock storage access that would otherwise be
+// blocked.
+TEST_F(CookieSettingsTest, GetCookieSettingSAAUnblocks) {
+  GURL top_level_url = GURL(kURL);
+  GURL url = GURL(kOtherURL);
+  GURL third_url = GURL(kDomainURL);
+
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(true);
+
+  settings.set_storage_access_grants(
+      {CreateSetting(url.host(), top_level_url.host(), CONTENT_SETTING_ALLOW)});
+
+  // When requesting our setting for the embedder/top-level combination our
+  // grant is for access should be allowed. For any other domain pairs access
+  // should still be blocked.
+  ContentSetting setting;
+  settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  // Invalid pair the |top_level_url| granting access to |url| is now
+  // being loaded under |url| as the top level url.
+  settings.GetCookieSetting(top_level_url, url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+
+  // Invalid pairs where a |third_url| is used.
+  settings.GetCookieSetting(url, third_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+  settings.GetCookieSetting(third_url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+// Subdomains of the granted embedding url should not gain access if a valid
+// grant exists.
+TEST_F(CookieSettingsTest, GetCookieSettingSAAResourceWildcards) {
+  GURL top_level_url = GURL(kURL);
+  GURL url = GURL(kDomainURL);
+
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(true);
+
+  settings.set_storage_access_grants(
+      {CreateSetting(kDomain, top_level_url.host(), CONTENT_SETTING_ALLOW)});
+
+  ContentSetting setting;
+  settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  settings.GetCookieSetting(GURL(kSubDomainURL), top_level_url, nullptr,
+                            &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+// Subdomains of the granted top level url should not grant access if a valid
+// grant exists.
+TEST_F(CookieSettingsTest, GetCookieSettingSAATopLevelWildcards) {
+  GURL top_level_url = GURL(kDomainURL);
+  GURL url = GURL(kURL);
+
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(true);
+
+  settings.set_storage_access_grants(
+      {CreateSetting(url.host(), kDomain, CONTENT_SETTING_ALLOW)});
+
+  ContentSetting setting;
+  settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  settings.GetCookieSetting(url, GURL(kSubDomainURL), nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+// Any Storage Access API grant should not override an explicit setting to block
+// cookie access.
+TEST_F(CookieSettingsTest, GetCookieSettingSAARespectsSettings) {
+  GURL top_level_url = GURL(kURL);
+  GURL url = GURL(kOtherURL);
+
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_BLOCK)});
+
+  settings.set_storage_access_grants(
+      {CreateSetting(url.host(), top_level_url.host(), CONTENT_SETTING_ALLOW)});
+
+  ContentSetting setting;
+  settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+// Once a grant expires access should no longer be given.
+TEST_F(CookieSettingsTest, GetCookieSettingSAAExpiredGrant) {
+  GURL top_level_url = GURL(kURL);
+  GURL url = GURL(kOtherURL);
+
+  CookieSettings settings;
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
+  settings.set_block_third_party_cookies(true);
+
+  base::Time expiration_time =
+      base::Time::Now() + base::TimeDelta::FromSeconds(100);
+  settings.set_storage_access_grants(
+      {CreateSetting(url.host(), top_level_url.host(), CONTENT_SETTING_ALLOW,
+                     expiration_time)});
+
+  // When requesting our setting for the embedder/top-level combination our
+  // grant is for access should be allowed. For any other domain pairs access
+  // should still be blocked.
+  ContentSetting setting;
+  settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  // If we fastforward past the expiration of our grant the result should be
+  // CONTENT_SETTING_BLOCK now.
+  FastForwardTime(base::TimeDelta::FromSeconds(101));
+  settings.GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSettings) {
   CookieSettings settings;
   EXPECT_FALSE(settings.CreateDeleteCookieOnExitPredicate());
 }
 
-TEST(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSessionOnly) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateNoSessionOnly) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
   EXPECT_FALSE(settings.CreateDeleteCookieOnExitPredicate());
 }
 
-TEST(CookieSettingsTest, CreateDeleteCookieOnExitPredicateSessionOnly) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateSessionOnly) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_SESSION_ONLY)});
   EXPECT_TRUE(settings.CreateDeleteCookieOnExitPredicate().Run(kURL, false));
 }
 
-TEST(CookieSettingsTest, CreateDeleteCookieOnExitPredicateAllow) {
+TEST_F(CookieSettingsTest, CreateDeleteCookieOnExitPredicateAllow) {
   CookieSettings settings;
   settings.set_content_settings(
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW),
@@ -127,7 +273,7 @@ TEST(CookieSettingsTest, CreateDeleteCookieOnExitPredicateAllow) {
   EXPECT_FALSE(settings.CreateDeleteCookieOnExitPredicate().Run(kURL, false));
 }
 
-TEST(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
+TEST_F(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
   CookieSettings settings;
   settings.set_secure_origin_cookies_allowed_schemes({"chrome"});
   settings.set_block_third_party_cookies(true);
@@ -149,7 +295,7 @@ TEST(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
+TEST_F(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
   CookieSettings settings;
   settings.set_third_party_cookies_allowed_schemes({"chrome-extension"});
   settings.set_block_third_party_cookies(true);
@@ -172,7 +318,7 @@ TEST(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
+TEST_F(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
   CookieSettings settings;
   settings.set_matching_scheme_cookies_allowed_schemes({"chrome-extension"});
   settings.set_block_third_party_cookies(true);
@@ -196,7 +342,7 @@ TEST(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
-TEST(CookieSettingsTest, LegacyCookieAccessDefault) {
+TEST_F(CookieSettingsTest, LegacyCookieAccessDefault) {
   CookieSettings settings;
   ContentSetting setting;
 
@@ -225,8 +371,8 @@ TEST(CookieSettingsTest, LegacyCookieAccessDefault) {
 
 // Test SameSite-by-default disabled (default semantics is LEGACY)
 // TODO(crbug.com/953306): Remove this when legacy code path is removed.
-TEST(CookieSettingsTest,
-     CookieAccessSemanticsForDomain_SameSiteByDefaultDisabled) {
+TEST_F(CookieSettingsTest,
+       CookieAccessSemanticsForDomain_SameSiteByDefaultDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(net::features::kSameSiteByDefaultCookies);
   CookieSettings settings;
@@ -250,8 +396,8 @@ TEST(CookieSettingsTest,
 }
 
 // Test SameSite-by-default enabled (default semantics is NONLEGACY)
-TEST(CookieSettingsTest,
-     CookieAccessSemanticsForDomain_SameSiteByDefaultEnabled) {
+TEST_F(CookieSettingsTest,
+       CookieAccessSemanticsForDomain_SameSiteByDefaultEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
   CookieSettings settings;
@@ -276,8 +422,8 @@ TEST(CookieSettingsTest,
 
 // Test SameSite-by-default disabled (default semantics is LEGACY)
 // TODO(crbug.com/953306): Remove this when legacy code path is removed.
-TEST(CookieSettingsTest,
-     CookieAccessSemanticsForDomainWithWildcard_SameSiteByDefaultDisabled) {
+TEST_F(CookieSettingsTest,
+       CookieAccessSemanticsForDomainWithWildcard_SameSiteByDefaultDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(net::features::kSameSiteByDefaultCookies);
   CookieSettings settings;
@@ -301,8 +447,8 @@ TEST(CookieSettingsTest,
 }
 
 // Test SameSite-by-default enabled (default semantics is NONLEGACY)
-TEST(CookieSettingsTest,
-     CookieAccessSemanticsForDomainWithWildcard_SameSiteByDefaultEnabled) {
+TEST_F(CookieSettingsTest,
+       CookieAccessSemanticsForDomainWithWildcard_SameSiteByDefaultEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
   CookieSettings settings;
@@ -325,7 +471,7 @@ TEST(CookieSettingsTest,
   }
 }
 
-TEST(CookieSettingsTest, CookieAccessSemanticsEmergencyOverride) {
+TEST_F(CookieSettingsTest, CookieAccessSemanticsEmergencyOverride) {
   base::test::ScopedFeatureList feature_list;
 
   feature_list.InitWithFeaturesAndParameters(

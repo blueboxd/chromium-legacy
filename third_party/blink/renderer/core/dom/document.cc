@@ -2933,15 +2933,21 @@ void Document::LayoutUpdated() {
 
   // Plugins can run script inside layout which can detach the page.
   // TODO(dcheng): Does it make sense to do any of this work if detached?
-  if (GetFrame()) {
-    if (GetFrame()->IsMainFrame())
-      GetFrame()->GetPage()->GetChromeClient().MainFrameLayoutUpdated();
+  if (auto* frame = GetFrame()) {
+    if (frame->IsMainFrame())
+      frame->GetPage()->GetChromeClient().MainFrameLayoutUpdated();
 
     // We do attach here, during lifecycle update, because until then we
     // don't have a good place that has access to its local root's FrameWidget.
     // TODO(dcheng): If we create FrameWidget before Frame then we could move
     // this to Document::Initialize().
     AttachCompositorTimeline(Timeline().CompositorTimeline());
+
+    frame->Client()->DidObserveLayoutNg(
+        layout_blocks_counter_, layout_blocks_counter_ng_,
+        layout_calls_counter_, layout_calls_counter_ng_);
+    layout_blocks_counter_ = layout_blocks_counter_ng_ = layout_calls_counter_ =
+        layout_calls_counter_ng_ = 0;
   }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();

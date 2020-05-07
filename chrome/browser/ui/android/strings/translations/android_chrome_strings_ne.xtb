@@ -33,6 +33,7 @@
 <translation id="1208340532756947324">यन्त्रहरूभरि सिंक र वैयक्तीकृत गर्न सिंक गर्ने सुविधा सक्रिय गर्नुहोस्</translation>
 <translation id="1209206284964581585">अहिलेका लागि लुकाउनुहोस्</translation>
 <translation id="1227058898775614466">नेभिगेसनको इतिहास</translation>
+<translation id="1229399675748764149">यो पृष्ठलाई आफ्नो गृहपृष्ठ बनाउनुहोस्</translation>
 <translation id="1231733316453485619">सिंक गर्ने सुविधा सक्रिय गर्ने हो?</translation>
 <translation id="123724288017357924">क्यास गरिएको सामग्रीको बेवास्ता गर्दै हालको पृष्ठलाई पुनःलोड गर्नुहोस्</translation>
 <translation id="124116460088058876">थप भाषाहरू</translation>
@@ -71,6 +72,7 @@
 <translation id="1513352483775369820">बुकमार्कहरू र वेब इतिहास</translation>
 <translation id="1513858653616922153">पासवर्ड मेट्नुहोस्</translation>
 <translation id="1521774566618522728">आज सक्रिय गरिएको समय</translation>
+<translation id="1543538514740974167">यो पृष्ठमा अझ छिटो पुग्नुहोस्</translation>
 <translation id="1544826120773021464">आफ्नो Google खाताको व्यवस्थापन गर्न "खाताको व्यवस्थापन गर्नुहोस्" नामक बटनमा क्लिक गर्नुहोस्</translation>
 <translation id="1549000191223877751">अर्को विन्डोमा सार्नुहोस्</translation>
 <translation id="1553358976309200471">Chrome अद्यावधिक गर्नुहोस्</translation>
@@ -722,11 +724,13 @@
 <translation id="7022756207310403729">ब्राउजरमा खाेल्नुहाेस्</translation>
 <translation id="702463548815491781">TalkBack वा पहुँच स्विच गर्नुहोस् नामक सुविधा सक्रिय हुँदा मात्र सिफारिस गरिन्छ</translation>
 <translation id="7029809446516969842">पासवर्डहरू</translation>
+<translation id="703523980599857277">गृहपृष्ठ परिवर्तन गर्नुहोस्</translation>
 <translation id="7055152154916055070">रिडिरेक्ट नामक सुविधामाथि रोक लगाइयो:</translation>
 <translation id="7063006564040364415">समक्रमण सर्भरमा जडान गर्न सकेन।</translation>
 <translation id="7071521146534760487">खाताको व्यवस्थापन गर्नुहोस्</translation>
 <translation id="7077143737582773186">SD कार्ड</translation>
 <translation id="7121362699166175603">ठेगाना पट्टीका इतिहास र स्वतः पूर्णताहरूलाई खाली गर्छ। तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा अन्य किसिमका ब्राउजिङ इतिहास रहेका हुन सक्छन्।</translation>
+<translation id="7128355412245153445">होम बटनमा ट्याप गरी आफ्ना शीर्ष साइट तथा ताजा समाचार हेर्नुहोस्</translation>
 <translation id="7138678301420049075">अन्य</translation>
 <translation id="7146622961999026732">यी साइट र एपहरू तपाईंका लागि महत्त्वपूर्ण हुन सक्छन्:</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> को <ph name="BEGIN_LINK" />मूल पृष्ठ लोड गर्नुहोस्<ph name="END_LINK" /></translation>
@@ -967,11 +971,13 @@
 <translation id="9155898266292537608">कुनै शब्दमा द्रुत ट्याप गरेर पनि तपाईं खोज्न सक्नुहुन्छ</translation>
 <translation id="9169507124922466868">नेभिगेसनको इतिहास आधा खुला छ</translation>
 <translation id="9204836675896933765">१ फाइल बाँकी</translation>
+<translation id="9205796607887024517">समाचारसम्बन्धी आफ्ना प्राथमिकता व्यवस्थापन गर्न यहाँ जानुहोस्</translation>
 <translation id="9206873250291191720">क</translation>
 <translation id="9209888181064652401">कल गर्न सकिएन</translation>
 <translation id="9219103736887031265">छविहरू</translation>
 <translation id="926205370408745186">आफूले Chrome मा गरेका क्रियाकलाप डिजिटल वेलबिइङबाट हटाउनुहोस्</translation>
 <translation id="932327136139879170">गृहपृष्ठ</translation>
+<translation id="93753284658583800">गृहपृष्ठ परिवर्तन गरियो</translation>
 <translation id="938850635132480979">त्रुटि: <ph name="ERROR_CODE" /></translation>
 <translation id="95817756606698420">Chrome ले चीनमा खोज गर्नका लागि <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> को प्रयोग गर्न सक्छ। तपाईं <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" />मा गई यसलाई बदल्न सक्नुहुन्छ।</translation>
 <translation id="968900484120156207">तपाईंले हेर्नुभएका पृष्ठहरू यहाँ देखिन्छन्</translation>

@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "fuchsia/engine/url_request_rewrite.mojom.h"
 #include "fuchsia/engine/web_engine_export.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 // Implements a URLLoaderThrottle for the WebEngine. Applies network request
@@ -42,6 +44,20 @@ class WEB_ENGINE_EXPORT WebEngineURLLoaderThrottle
   bool makes_unsafe_redirect() override;
 
  private:
+  // Applies transformations specified by |rule| to |request|, conditional on
+  // the matching criteria of |rule|.
+  void ApplyRule(network::ResourceRequest* request,
+                 const mojom::UrlRequestRulePtr& rule);
+
+  // Applies |rewrite| transformations to |request|.
+  void ApplyRewrite(network::ResourceRequest* request,
+                    const mojom::UrlRequestActionPtr& rewrite);
+
+  // Adds HTTP headers from |add_headers| to |request|.
+  void ApplyAddHeaders(
+      network::ResourceRequest* request,
+      const mojom::UrlRequestRewriteAddHeadersPtr& add_headers);
+
   CachedRulesProvider* const cached_rules_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineURLLoaderThrottle);

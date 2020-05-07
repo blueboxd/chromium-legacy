@@ -78,9 +78,6 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
-// Group assignment for suggestions that did not report any group.
-constexpr const int INVALID_GROUP = -1;
-
 // Used for histograms, append only.
 enum class MatchValidationResult {
   VALID_MATCH = 0,
@@ -576,7 +573,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url),
       match.SupportsDeletion(), post_content_type,
       ToJavaByteArray(env, post_content),
-      match.suggestion_group_id.value_or(INVALID_GROUP));
+      match.suggestion_group_id.value_or(
+          SearchSuggestionParser::kNoSuggestionGroupId));
 }
 
 void AutocompleteControllerAndroid::PopulateOmniboxGroupHeaders(

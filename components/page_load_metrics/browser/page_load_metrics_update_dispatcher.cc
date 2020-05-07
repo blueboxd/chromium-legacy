@@ -648,6 +648,15 @@ void PageLoadMetricsUpdateDispatcher::UpdatePageInputTiming(
 void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
     const mojom::FrameRenderDataUpdate& render_data) {
   page_render_data_.layout_shift_score += render_data.layout_shift_delta;
+
+  page_render_data_.all_layout_block_count +=
+      render_data.all_layout_block_count_delta;
+  page_render_data_.ng_layout_block_count +=
+      render_data.ng_layout_block_count_delta;
+  page_render_data_.all_layout_call_count +=
+      render_data.all_layout_call_count_delta;
+  page_render_data_.ng_layout_call_count +=
+      render_data.ng_layout_call_count_delta;
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
@@ -655,6 +664,15 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
   main_frame_render_data_.layout_shift_score += render_data.layout_shift_delta;
   main_frame_render_data_.layout_shift_score_before_input_or_scroll +=
       render_data.layout_shift_delta_before_input_or_scroll;
+
+  main_frame_render_data_.all_layout_block_count +=
+      render_data.all_layout_block_count_delta;
+  main_frame_render_data_.ng_layout_block_count +=
+      render_data.ng_layout_block_count_delta;
+  main_frame_render_data_.all_layout_call_count +=
+      render_data.all_layout_call_count_delta;
+  main_frame_render_data_.ng_layout_call_count +=
+      render_data.ng_layout_call_count_delta;
 }
 
 void PageLoadMetricsUpdateDispatcher::OnSubFrameRenderDataChanged(

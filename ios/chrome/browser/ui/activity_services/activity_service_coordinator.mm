@@ -21,11 +21,8 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,11 +38,9 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 @interface ActivityServiceCoordinator ()
 
-@property(nonatomic, weak) id<BrowserCommands,
-                              FindInPageCommands,
-                              QRGenerationCommands,
-                              SnackbarCommands>
-    handler;
+@property(nonatomic, weak)
+    id<BrowserCommands, FindInPageCommands, QRGenerationCommands>
+        handler;
 
 // The time when the Share Page operation started.
 @property(nonatomic, assign) base::TimeTicks sharePageStartTime;
@@ -61,9 +56,9 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 #pragma mark - Public methods
 
 - (void)start {
-  self.handler =
-      static_cast<id<BrowserCommands, FindInPageCommands, QRGenerationCommands,
-                     SnackbarCommands>>(self.browser->GetCommandDispatcher());
+  self.handler = static_cast<
+      id<BrowserCommands, FindInPageCommands, QRGenerationCommands>>(
+      self.browser->GetCommandDispatcher());
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   bookmarks::BookmarkModel* bookmarkModel =

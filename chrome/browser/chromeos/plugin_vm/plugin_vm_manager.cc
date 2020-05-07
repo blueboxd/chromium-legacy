@@ -86,7 +86,8 @@ void ShowStartVmFailedNotification(Profile* profile,
       NOTREACHED();
       FALLTHROUGH;
     case PluginVmLaunchResult::kError:
-      title = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE);
+      title = l10n_util::GetStringFUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE,
+                                         app_name);
       message_id = IDS_PLUGIN_VM_START_VM_ERROR_MESSAGE;
       break;
     case PluginVmLaunchResult::kInvalidLicense:
@@ -100,7 +101,8 @@ void ShowStartVmFailedNotification(Profile* profile,
       message_id = IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE;
       break;
     case PluginVmLaunchResult::kNetworkError:
-      title = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE);
+      title = l10n_util::GetStringFUTF16(IDS_PLUGIN_VM_START_VM_ERROR_TITLE,
+                                         app_name);
       message_id = IDS_PLUGIN_VM_NETWORK_ERROR_MESSAGE;
       break;
   }
@@ -141,7 +143,13 @@ PluginVmManager::~PluginVmManager() {
       ->RemoveObserver(this);
 }
 
-void PluginVmManager::LaunchPluginVm() {
+void PluginVmManager::LaunchPluginVm(LaunchPluginVmCallback callback) {
+  const bool launch_in_progress = !launch_vm_callbacks_.empty();
+  launch_vm_callbacks_.push_back(std::move(callback));
+  // If a launch is already in progress we don't need to do any more here.
+  if (launch_in_progress)
+    return;
+
   if (!IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "Attempted to launch PluginVm when it is not allowed";
     LaunchFailed();
@@ -217,6 +225,21 @@ void PluginVmManager::UninstallPluginVm() {
                                weak_ptr_factory_.GetWeakPtr()),
                 base::BindOnce(&PluginVmManager::UninstallFailed,
                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmManager::OnVmToolsStateChanged(
+    const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal& signal) {
+  if (signal.owner_id() != owner_id_ || signal.vm_name() != kPluginVmName) {
+    return;
+  }
+
+  vm_tools_state_ = signal.vm_tools_state();
+
+  if (vm_tools_state_ ==
+          vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED &&
+      pending_vm_tools_installed_) {
+    LaunchSuccessful();
+  }
 }
 
 void PluginVmManager::OnVmStateChanged(
@@ -451,6 +474,13 @@ void PluginVmManager::OnShowVm(
 
   VLOG(1) << "ShowVm completed successfully.";
   RecordPluginVmLaunchResultHistogram(PluginVmLaunchResult::kSuccess);
+
+  if (vm_tools_state_ ==
+      vm_tools::plugin_dispatcher::VmToolsState::VM_TOOLS_STATE_INSTALLED) {
+    LaunchSuccessful();
+  } else {
+    pending_vm_tools_installed_ = true;
+  }
 }
 
 void PluginVmManager::OnGetVmInfoForSharing(
@@ -488,6 +518,17 @@ void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
   }
 }
 
+void PluginVmManager::LaunchSuccessful() {
+  pending_start_vm_ = false;
+  pending_vm_tools_installed_ = false;
+
+  std::vector<LaunchPluginVmCallback> observers;
+  observers.swap(launch_vm_callbacks_);  // Ensure reentrancy.
+  for (auto& observer : observers) {
+    std::move(observer).Run(true);
+  }
+}
+
 void PluginVmManager::LaunchFailed(PluginVmLaunchResult result) {
   if (result == PluginVmLaunchResult::kVmMissing) {
     profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
@@ -500,6 +541,15 @@ void PluginVmManager::LaunchFailed(PluginVmLaunchResult result) {
   ChromeLauncherController::instance()
       ->GetShelfSpinnerController()
       ->CloseSpinner(kPluginVmAppId);
+
+  pending_start_vm_ = false;
+  pending_vm_tools_installed_ = false;
+
+  std::vector<LaunchPluginVmCallback> observers;
+  observers.swap(launch_vm_callbacks_);  // Ensure reentrancy.
+  for (auto& observer : observers) {
+    std::move(observer).Run(false);
+  }
 }
 
 void PluginVmManager::OnListVmsForUninstall(bool default_vm_exists) {

@@ -98,6 +98,11 @@ components required for HTML media elements and extensions:
 * [Media Source Extensions](https://www.w3.org/TR/media-source/)
 * [Encrypted Media Extensions](https://www.w3.org/TR/encrypted-media/)
 
+The following diagram provides a simplified overview of the media playback
+pipeline.
+
+![Media Pipeline Overview](/docs/media/media_pipeline_overview.png)
+
 As a case study we'll consider the playback of a video through the `<video>` tag.
 
 `<video>` (and `<audio>`) starts in `blink::HTMLMediaElement` in

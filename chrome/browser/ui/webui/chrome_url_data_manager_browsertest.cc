@@ -311,3 +311,10 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInAccessibility) {
   CheckTrustedTypesViolation("chrome://accessibility");
 }
+
+// Verify that there's no Trusted Types violation in chrome://process-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInProcessInternals) {
+  CheckTrustedTypesViolation("chrome://process-internals");
+}

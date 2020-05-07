@@ -17,20 +17,19 @@ XRSpace::XRSpace(XRSession* session) : session_(session) {}
 
 XRSpace::~XRSpace() = default;
 
-std::unique_ptr<TransformationMatrix> XRSpace::NativeFromViewer(
-    const TransformationMatrix* mojo_from_viewer) {
+base::Optional<TransformationMatrix> XRSpace::NativeFromViewer(
+    const base::Optional<TransformationMatrix>& mojo_from_viewer) {
   if (!mojo_from_viewer)
-    return nullptr;
+    return base::nullopt;
 
-  std::unique_ptr<TransformationMatrix> native_from_mojo = NativeFromMojo();
+  base::Optional<TransformationMatrix> native_from_mojo = NativeFromMojo();
   if (!native_from_mojo)
-    return nullptr;
+    return base::nullopt;
 
   native_from_mojo->Multiply(*mojo_from_viewer);
 
   // This is now native_from_viewer
   return native_from_mojo;
-  ;
 }
 
 TransformationMatrix XRSpace::NativeFromOffsetMatrix() {
@@ -43,10 +42,10 @@ TransformationMatrix XRSpace::OffsetFromNativeMatrix() {
   return identity;
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() {
+base::Optional<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() {
   auto maybe_mojo_from_native = MojoFromNative();
   if (!maybe_mojo_from_native) {
-    return nullptr;
+    return base::nullopt;
   }
 
   // Modifies maybe_mojo_from_native - it becomes mojo_from_offset_matrix.
@@ -55,13 +54,13 @@ std::unique_ptr<TransformationMatrix> XRSpace::MojoFromOffsetMatrix() {
   return maybe_mojo_from_native;
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::TryInvert(
-    std::unique_ptr<TransformationMatrix> matrix) {
+base::Optional<TransformationMatrix> XRSpace::TryInvert(
+    const base::Optional<TransformationMatrix>& matrix) {
   if (!matrix)
-    return nullptr;
+    return base::nullopt;
 
   DCHECK(matrix->IsInvertible());
-  return std::make_unique<TransformationMatrix>(matrix->Inverse());
+  return matrix->Inverse();
 }
 
 bool XRSpace::EmulatedPosition() const {
@@ -71,7 +70,7 @@ bool XRSpace::EmulatedPosition() const {
 XRPose* XRSpace::getPose(XRSpace* other_space) {
   // Named mojo_from_offset because that is what we will leave it as, though it
   // starts mojo_from_native.
-  std::unique_ptr<TransformationMatrix> mojo_from_offset = MojoFromNative();
+  base::Optional<TransformationMatrix> mojo_from_offset = MojoFromNative();
   if (!mojo_from_offset) {
     return nullptr;
   }
@@ -79,7 +78,7 @@ XRPose* XRSpace::getPose(XRSpace* other_space) {
   // Add any origin offset now.
   mojo_from_offset->Multiply(NativeFromOffsetMatrix());
 
-  std::unique_ptr<TransformationMatrix> other_from_mojo =
+  base::Optional<TransformationMatrix> other_from_mojo =
       other_space->NativeFromMojo();
   if (!other_from_mojo)
     return nullptr;
@@ -98,16 +97,15 @@ XRPose* XRSpace::getPose(XRSpace* other_space) {
       EmulatedPosition() || other_space->EmulatedPosition());
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::OffsetFromViewer() {
-  std::unique_ptr<TransformationMatrix> native_from_viewer =
-      NativeFromViewer(base::OptionalOrNullptr(session()->MojoFromViewer()));
+base::Optional<TransformationMatrix> XRSpace::OffsetFromViewer() {
+  base::Optional<TransformationMatrix> native_from_viewer =
+      NativeFromViewer(session()->MojoFromViewer());
 
   if (!native_from_viewer) {
-    return nullptr;
+    return base::nullopt;
   }
 
-  return std::make_unique<TransformationMatrix>(
-      OffsetFromNativeMatrix().Multiply(*native_from_viewer));
+  return OffsetFromNativeMatrix().Multiply(*native_from_viewer);
 }
 
 ExecutionContext* XRSpace::GetExecutionContext() const {

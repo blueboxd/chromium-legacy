@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/ash/assistant/search_and_assistant_enabled_checker.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "chromeos/services/assistant/public/mojom/settings.mojom-forward.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 // AssistantSetup is the class responsible for start Assistant OptIn flow.
@@ -45,9 +44,6 @@ class AssistantSetup : public ash::AssistantSetup,
 
   void SyncSettingsState();
   void OnGetSettingsResponse(const std::string& settings);
-
-  mojo::Remote<chromeos::assistant::mojom::AssistantSettingsManager>
-      settings_manager_;
 
   std::unique_ptr<SearchAndAssistantEnabledChecker>
       search_and_assistant_enabled_checker_;

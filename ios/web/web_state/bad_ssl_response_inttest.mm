@@ -5,6 +5,7 @@
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#import "ios/net/protocol_handler_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
@@ -223,10 +224,13 @@ TEST_P(BadSslResponseTest, ShowSSLErrorPageCommittedInterstitial) {
     base::RunLoop().RunUntilIdle();
     return !web_state()->IsLoading();
   }));
+  NSError* error = testing::CreateErrorWithUnderlyingErrorChain(
+      {{@"NSURLErrorDomain", NSURLErrorServerCertificateUntrusted},
+       {@"kCFErrorDomainCFNetwork", kCFURLErrorServerCertificateUntrusted},
+       {net::kNSErrorDomain, net::ERR_CERT_AUTHORITY_INVALID}});
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state(), testing::GetErrorText(
-                       web_state(), url, "NSURLErrorDomain",
-                       /*error_code=*/NSURLErrorServerCertificateUntrusted,
+                       web_state(), url, error,
                        /*is_post=*/false, /*is_otr=*/false,
                        /*cert_status=*/net::CERT_STATUS_AUTHORITY_INVALID)));
   ASSERT_TRUE(security_state_info());

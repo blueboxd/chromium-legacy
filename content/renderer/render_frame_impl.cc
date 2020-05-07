@@ -4837,6 +4837,15 @@ void RenderFrameImpl::DidObserveLayoutShift(double score,
     observer.DidObserveLayoutShift(score, after_input_or_scroll);
 }
 
+void RenderFrameImpl::DidObserveLayoutNg(uint32_t all_block_count,
+                                         uint32_t ng_block_count,
+                                         uint32_t all_call_count,
+                                         uint32_t ng_call_count) {
+  for (auto& observer : observers_)
+    observer.DidObserveLayoutNg(all_block_count, ng_block_count, all_call_count,
+                                ng_call_count);
+}
+
 void RenderFrameImpl::DidObserveLazyLoadBehavior(
     WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
   for (auto& observer : observers_)

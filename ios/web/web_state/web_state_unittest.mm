@@ -14,6 +14,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#import "ios/net/protocol_handler_util.h"
 #include "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
@@ -53,6 +54,13 @@ const char kTextInTestPageHTML[] = "this_is_a_test_string";
 
 // A test page HTML containing |kTextInTestPageHTML|.
 const char kTestPageHTML[] = "<html><body>this_is_a_test_string</body><html>";
+
+// Returns the NSURLErrorUnsupportedURL error expected for tests.
+NSError* CreateUnsupportedURLError() {
+  return web::testing::CreateErrorWithUnderlyingErrorChain(
+      {{NSURLErrorDomain, NSURLErrorUnsupportedURL},
+       {net::kNSErrorDomain, net::ERR_INVALID_URL}});
+}
 }  // namespace
 
 using wk_navigation_util::IsWKInternalUrl;
@@ -580,11 +588,10 @@ TEST_F(WebStateTest, LoadChromeThenHTML) {
   // Wait for the error loading and check that it corresponds with
   // kUnsupportedUrlErrorPage.
   EXPECT_TRUE(test::WaitForWebViewContainingText(
-      web_state(),
-      testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
-                            /*error_code=*/NSURLErrorUnsupportedURL,
-                            /*is_post=*/false, /*is_otr=*/false,
-                            /*cert_status=*/0)));
+      web_state(), testing::GetErrorText(web_state(), app_specific_url,
+                                         CreateUnsupportedURLError(),
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*cert_status=*/0)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", GURL("https://www.chromium.org"));
@@ -616,11 +623,10 @@ TEST_F(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
     return !web_state()->IsLoading();
   }));
   EXPECT_TRUE(test::WaitForWebViewContainingText(
-      web_state(),
-      testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
-                            /*error_code=*/NSURLErrorUnsupportedURL,
-                            /*is_post=*/false, /*is_otr=*/false,
-                            /*cert_status=*/0)));
+      web_state(), testing::GetErrorText(web_state(), app_specific_url,
+                                         CreateUnsupportedURLError(),
+                                         /*is_post=*/false, /*is_otr=*/false,
+                                         /*cert_status=*/0)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", echo_url);

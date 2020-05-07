@@ -515,7 +515,7 @@ void IntentPickerBubbleView::UpdateCheckboxState() {
   // there is a central Chrome OS apps registry to store persistence.
   // TODO(crbug.com/1000037): allow to persist remote devices too.
   bool should_enable = false;
-  if (base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)) {
+  if (base::FeatureList::IsEnabled(features::kIntentPickerPWAPersistence)) {
     should_enable = true;
   } else {
     auto selected_app_type = app_info_[selected_app_tag_].type;

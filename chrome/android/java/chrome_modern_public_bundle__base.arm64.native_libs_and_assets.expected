@@ -68,6 +68,7 @@ apk_path=assets/locales/si.pak, compress=False, alignment=4
 apk_path=assets/locales/sk.pak, compress=False, alignment=4
 apk_path=assets/locales/sl.pak, compress=False, alignment=4
 apk_path=assets/locales/sq.pak, compress=False, alignment=4
+apk_path=assets/locales/sr-Latn.pak, compress=False, alignment=4
 apk_path=assets/locales/sr.pak, compress=False, alignment=4
 apk_path=assets/locales/sv.pak, compress=False, alignment=4
 apk_path=assets/locales/sw.pak, compress=False, alignment=4

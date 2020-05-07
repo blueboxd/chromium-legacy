@@ -162,7 +162,8 @@ bool PluginVmInstallerView::ShouldShowWindowTitle() const {
 bool PluginVmInstallerView::Accept() {
   if (state_ == State::CREATED || state_ == State::IMPORTED) {
     // Launch button has been clicked.
-    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm();
+    plugin_vm::PluginVmManager::GetForProfile(profile_)->LaunchPluginVm(
+        base::DoNothing());
     return true;
   }
   if (state_ == State::LOW_DISK_SPACE) {

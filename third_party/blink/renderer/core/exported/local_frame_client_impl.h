@@ -146,6 +146,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveNewFeatureUsage(mojom::WebFeature) override;
   void DidObserveNewCssPropertyUsage(mojom::CSSSampleId, bool) override;
   void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
+  void DidObserveLayoutNg(uint32_t all_block_count,
+                          uint32_t ng_block_count,
+                          uint32_t all_call_count,
+                          uint32_t ng_call_count) override;
   void DidObserveLazyLoadBehavior(
       WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   bool ShouldTrackUseCounter(const KURL&) override;

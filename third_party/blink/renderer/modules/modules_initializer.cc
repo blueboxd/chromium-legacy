@@ -185,7 +185,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   DCHECK(WebLocalFrameImpl::FromFrame(&frame)->Client());
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ImageDownloaderImpl::ProvideTo(frame);
-  MediaInspectorContextImpl::ProvideToLocalFrame(frame);
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(
@@ -264,8 +263,8 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
       HTMLMediaElementEncryptedMedia::From(html_media_element);
   WebString sink_id(
       HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
-  MediaInspectorContextImpl* context_impl =
-      MediaInspectorContextImpl::FromHtmlMediaElement(html_media_element);
+  MediaInspectorContextImpl* context_impl = MediaInspectorContextImpl::From(
+      *To<LocalDOMWindow>(html_media_element.GetExecutionContext()));
   return base::WrapUnique(web_frame_client->CreateMediaPlayer(
       source, media_player_client, context_impl, &encrypted_media,
       encrypted_media.ContentDecryptionModule(), sink_id));

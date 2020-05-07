@@ -768,6 +768,16 @@ void LocalFrameClientImpl::DidObserveLayoutShift(double score,
     client->DidObserveLayoutShift(score, after_input_or_scroll);
 }
 
+void LocalFrameClientImpl::DidObserveLayoutNg(uint32_t all_block_count,
+                                              uint32_t ng_block_count,
+                                              uint32_t all_call_count,
+                                              uint32_t ng_call_count) {
+  if (WebLocalFrameClient* client = web_frame_->Client()) {
+    client->DidObserveLayoutNg(all_block_count, ng_block_count, all_call_count,
+                               ng_call_count);
+  }
+}
+
 void LocalFrameClientImpl::DidObserveLazyLoadBehavior(
     WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
   if (WebLocalFrameClient* client = web_frame_->Client())

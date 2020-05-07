@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_FAKE_S3_SERVER_H_
 #define CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_FAKE_S3_SERVER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -34,7 +35,12 @@ enum class FakeS3Mode {
 // |kGenerateTokenInstructions| for information on how to get one.
 class FakeS3Server {
  public:
-  FakeS3Server();
+  // |data_file_version| is used to look for a particular set of test data
+  // files to use. This enables updating tests and checking in test data and
+  // test themselves separately.  If the latest version of the test data file
+  // does not exist, it will automatically looker for an older version of the
+  // file.
+  explicit FakeS3Server(int data_file_version);
   ~FakeS3Server();
 
   // Starts the fake S3 server, and tells the Assistant service to use its URI
@@ -52,11 +58,13 @@ class FakeS3Server {
   void UnsetFakeS3ServerURI();
   void StartS3ServerProcess(FakeS3Mode mode);
   void StopS3ServerProcess();
+  std::string GetTestDataFileName();
 
   int port() const;
 
   std::string access_token_{"FAKE_ACCESS_TOKEN"};
   std::string fake_s3_server_uri_;
+  int data_file_version_;
 
   std::unique_ptr<PortSelector> port_selector_;
 

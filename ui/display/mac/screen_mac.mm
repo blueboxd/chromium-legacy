@@ -34,10 +34,6 @@ Boolean CGDisplayUsesForceToGray(void);
 namespace display {
 namespace {
 
-// The delay to handle the display configuration changes. This is in place to
-// coalesce display update notifications and thereby avoid thrashing.
-const int64_t kConfigureDelayMs = 500;
-
 NSScreen* GetMatchingScreen(const gfx::Rect& match_rect) {
   // Default to the monitor with the current keyboard focus, in case
   // |match_rect| is not on any screen at all.
@@ -212,12 +208,8 @@ CGFloat GetMinimumDistanceToCorner(const NSPoint& point, NSScreen* screen) {
 
 class ScreenMac : public Screen {
  public:
-  ScreenMac()
-      : configure_timer_(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-                         base::BindRepeating(&ScreenMac::ConfigureTimerFired,
-                                             base::Unretained(this))) {
-    old_displays_ = displays_ = BuildDisplaysFromQuartz();
+  ScreenMac() {
+    displays_ = BuildDisplaysFromQuartz();
     CGDisplayRegisterReconfigurationCallback(
         ScreenMac::DisplayReconfigurationCallBack, this);
 
@@ -291,14 +283,11 @@ class ScreenMac : public Screen {
   int GetNumDisplays() const override { return GetAllDisplays().size(); }
 
   const std::vector<Display>& GetAllDisplays() const override {
-    UpdateDisplaysIfNeeded();
     return displays_;
   }
 
   Display GetDisplayNearestWindow(
       gfx::NativeWindow native_window) const override {
-    UpdateDisplaysIfNeeded();
-
     if (displays_.size() == 1)
       return displays_[0];
 
@@ -381,59 +370,32 @@ class ScreenMac : public Screen {
 
  private:
   Display GetCachedDisplayForScreen(NSScreen* screen) const {
-    UpdateDisplaysIfNeeded();
     const CGDirectDisplayID display_id = [[[screen deviceDescription]
         objectForKey:@"NSScreenNumber"] unsignedIntValue];
     for (const Display& display : displays_) {
       if (display_id == display.id())
         return display;
     }
-    // In theory, this should not be reached, because |displays_require_update_|
-    // should have been set prior to -[NSScreen screens] changing. In practice,
-    // on Catalina, it has been observed that -[NSScreen screens] changes before
-    // any notifications are received.
+    // In theory, this should not be reached, but in practice, on Catalina, it
+    // has been observed that -[NSScreen screens] changes before any
+    // notifications are received.
     // https://crbug.com/1021340.
-    // When this happens, do not update |displays_|, because we may be iterating
-    // it higher up in the stack.
-    // https://crbug.com/1033866
     DLOG(ERROR) << "Value of -[NSScreen screens] changed before notification.";
     return BuildDisplayForScreen(screen);
   }
 
-  void UpdateDisplaysIfNeeded() const {
-    if (displays_require_update_) {
-      displays_ = BuildDisplaysFromQuartz();
-      displays_require_update_ = false;
-    }
-  }
-
-  void ConfigureTimerFired() {
-    UpdateDisplaysIfNeeded();
-    change_notifier_.NotifyDisplaysChanged(old_displays_, displays_);
-    old_displays_ = displays_;
-  }
-
-  void OnNSScreensMayHaveChanged() const {
-    // Timer::Reset() ensures at least another interval passes before the
-    // associated task runs, effectively coalescing these events.
-    configure_timer_.Reset();
-    displays_require_update_ = true;
+  void OnNSScreensMayHaveChanged() {
+    auto new_displays = BuildDisplaysFromQuartz();
+    if (displays_ == new_displays)
+      return;
+    auto old_displays = std::move(displays_);
+    displays_ = std::move(new_displays);
+    change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
   }
 
   // The displays currently attached to the device. Updated by
-  // UpdateDisplaysIfNeeded.
-  mutable std::vector<Display> displays_;
-
-  // Whether or not |displays_| might need to be upated. Set in
-  // OnNSScreensMayHaveChanged, and un-set by UpdateDisplaysIfNeeded.
-  mutable bool displays_require_update_ = false;
-
-  // The timer to delay configuring outputs and notifying observers (to coalesce
-  // several updates into one update).
-  mutable base::RetainingOneShotTimer configure_timer_;
-
-  // The displays last communicated to the DisplayChangeNotifier.
-  std::vector<Display> old_displays_;
+  // OnNSScreensMayHaveChanged.
+  std::vector<Display> displays_;
 
   // The observers notified by NSScreenColorSpaceDidChangeNotification and
   // NSApplicationDidChangeScreenParametersNotification.

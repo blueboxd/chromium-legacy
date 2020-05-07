@@ -280,6 +280,11 @@ class DeclarativeNetRequestBrowserTest
     return rules_monitor_service()->ruleset_manager();
   }
 
+  const Extension* last_loaded_extension() {
+    return extension_registry()->GetExtensionById(last_loaded_extension_id(),
+                                                  ExtensionRegistry::ENABLED);
+  }
+
   content::PageType GetPageType() const { return GetPageType(browser()); }
 
   std::string GetPageBody() const {
@@ -2020,8 +2025,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   const GURL unblocked_url = embedded_test_server()->GetURL(
       "yahoo.com", "/pages_with_script/index.html");
 
-  const Extension* extension = extension_registry()->GetExtensionById(
-      extension_id, ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
   std::vector<RulesetSource> static_sources =
       RulesetSource::CreateStatic(*extension);
   ASSERT_EQ(1u, static_sources.size());
@@ -2159,8 +2163,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   const ExtensionId extension_id = last_loaded_extension_id();
   EXPECT_TRUE(ruleset_manager()->GetMatcherForExtension(extension_id));
 
-  const Extension* extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
   ASSERT_TRUE(extension);
 
   std::vector<RulesetSource> sources = RulesetSource::CreateStatic(*extension);
@@ -2293,8 +2296,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
   // Ensure that the new checksum was correctly persisted in prefs.
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  const Extension* extension = extension_registry()->GetExtensionById(
-      extension_id, ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
   std::vector<RulesetSource> static_sources =
       RulesetSource::CreateStatic(*extension);
   ASSERT_EQ(static_cast<size_t>(kNumStaticRulesets), static_sources.size());
@@ -2321,8 +2323,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({} /* rules */));
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const Extension* extension = extension_registry()->GetExtensionById(
-      extension_id, ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
 
   std::vector<RulesetSource> static_sources =
       RulesetSource::CreateStatic(*extension);
@@ -2391,8 +2392,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {rule}, "extension" /* directory */, host_permissions));
 
-  const Extension* extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
   ASSERT_TRUE(extension);
 
   auto verify_script_redirected = [this, extension](
@@ -2517,8 +2517,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {rule}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
-  const Extension* extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
   ASSERT_TRUE(extension);
 
   EXPECT_TRUE(extension->permissions_data()->HasEffectiveAccessToAllHosts());
@@ -2813,8 +2812,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       rules, "test_extension", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_id = last_loaded_extension_id();
-  const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* dnr_extension = last_loaded_extension();
 
   ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(extension_id,
                                                                   true);
@@ -3057,8 +3055,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {rules}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_id = last_loaded_extension_id();
-  const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* dnr_extension = last_loaded_extension();
 
   ExtensionAction* action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -3127,8 +3124,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {rules}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
   const ExtensionId& extension_id = last_loaded_extension_id();
-  const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* dnr_extension = last_loaded_extension();
 
   ExtensionAction* extension_action =
       ExtensionActionManager::Get(web_contents()->GetBrowserContext())
@@ -3198,8 +3194,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   content::WebContents* incognito_contents =
       incognito_browser->tab_strip_model()->GetActiveWebContents();
 
-  const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* dnr_extension = last_loaded_extension();
   ExtensionAction* incognito_action =
       ExtensionActionManager::Get(incognito_contents->GetBrowserContext())
           ->GetExtensionAction(*dnr_extension);
@@ -3265,8 +3260,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       rules, "test_extension", {URLPattern::kAllUrlsPattern}));
 
-  const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
+  const Extension* dnr_extension = last_loaded_extension();
 
   ExtensionPrefs::Get(profile())->SetDNRUseActionCountAsBadgeText(
       last_loaded_extension_id(), true);
@@ -3893,8 +3887,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       tab_helper->active_tab_permission_granter();
   ASSERT_TRUE(active_tab_granter);
 
-  const Extension* dnr_extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* dnr_extension = last_loaded_extension();
 
   // Grant the activeTab permission for the second tab.
   active_tab_granter->GrantIfRequested(dnr_extension);
@@ -3989,8 +3982,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRulesets(rulesets, kDirectory1, {} /* hosts */));
   const ExtensionId extension_id = last_loaded_extension_id();
-  const Extension* extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
 
   // Also add a dynamic rule.
   ASSERT_NO_FATAL_FAILURE(
@@ -4072,8 +4064,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRulesets(rulesets, kDirectory1, {} /* hosts */));
   const ExtensionId extension_id = last_loaded_extension_id();
-  const Extension* extension = extension_registry()->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::ENABLED);
+  const Extension* extension = last_loaded_extension();
 
   CompositeMatcher* composite_matcher =
       ruleset_manager()->GetMatcherForExtension(extension_id);

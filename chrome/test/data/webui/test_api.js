@@ -976,16 +976,9 @@ function preloadJavascriptLibraries(testFixture, testName) {
  */
 function setWaitUser() {
   waitUser = true;
+  exports.go = () => waitUser = false;
   console.log('Waiting for debugger...');
   console.log('Run: go() in the JS console when you are ready.');
-}
-
-/**
- * Sets |waitUser| to false, so |runTest| function stops waiting for user and
- * start running the tests.
- */
-function go() {
-  waitUser = false;
 }
 
 /**
@@ -1478,7 +1471,6 @@ exportExpects();
 exportMock4JsHelpers();
 exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
 exports.setWaitUser = setWaitUser;
-exports.go = go;
 exports.registerMessageCallback = registerMessageCallback;
 exports.resetTestState = resetTestState;
 exports.runAllActions = runAllActions;

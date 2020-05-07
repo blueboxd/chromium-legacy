@@ -3141,7 +3141,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5158983316805876233">Utilizează același server proxy pentru toate protocoalele</translation>
 <translation id="5160857336552977725">Conectează-te la <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Pluginul <ph name="PLUGIN_NAME" /> a fost blocat deoarece este învechit</translation>
-<translation id="5169131225159279624">Se adaugă</translation>
+<translation id="5169131225159279624">Adăugarea</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
 <translation id="5171045022955879922">Caută sau introdu adresa URL</translation>
 <translation id="5171343362375269016">Dimensiunea memoriei de swap</translation>
@@ -3191,7 +3191,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Înlocuiește pagina pe care o vezi la deschiderea unei file noi</translation>
 <translation id="5238278114306905396">Aplicația „<ph name="EXTENSION_NAME" />” a fost eliminată automat.</translation>
-<translation id="5238435043462632060">Părintele tău a dezactivat opțiunea „Permisiuni pentru site-uri, aplicații și extensii” în Chrome. Nu este permis <ph name="ACTION_PARAMETER" /> pentru <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
+<translation id="5238435043462632060">Părintele tău a dezactivat opțiunea „Permisiuni pentru site-uri, aplicații și extensii” în Chrome. <ph name="ACTION_PARAMETER" /> acestei <ph name="EXTENSION_TYPE_PARAMETER" /> nu este permisă.</translation>
 <translation id="5239730228370806996">Aceste date plasate încalcă politicile de securitate ale organizației. Dorești să continui oricum?</translation>
 <translation id="5241128660650683457">Citește toate datele de pe site-urile pe care le vizitezi</translation>
 <translation id="5242724311594467048">Activați extensia „<ph name="EXTENSION_NAME" />”?</translation>
@@ -3842,7 +3842,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6085886413119427067">Stabilește modul de conectare la site-uri printr-o conexiune securizată</translation>
 <translation id="6086846494333236931">Instalată de administrator</translation>
 <translation id="6087960857463881712">Față extraordinară</translation>
-<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> s-a dezactivat</translation>
+<translation id="6088036808197002565"><ph name="ACTION_PARAMETER" /> <ph name="EXTENSION_TYPE_PARAMETER" /> este dezactivată</translation>
 <translation id="6091761513005122595">Dispozitivul de stocare în rețea a fost montat.</translation>
 <translation id="6093888419484831006">Se anulează actualizarea...</translation>
 <translation id="6095984072944024315">−</translation>
@@ -5033,7 +5033,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7701040980221191251">Niciuna</translation>
 <translation id="770157826141786566">A trecut termenul limită pentru returnarea dispozitivului.</translation>
 <translation id="7701869757853594372">Ghidaje UTILIZATOR</translation>
-<translation id="7701928712056789451">Aceste elemente pot fi periculoase</translation>
+<translation id="7701928712056789451">Aceste articole pot fi periculoase</translation>
 <translation id="7702574632857388784">Elimină <ph name="FILE_NAME" /> din listă</translation>
 <translation id="7702907602086592255">Domeniu</translation>
 <translation id="7704305437604973648">Activitate</translation>

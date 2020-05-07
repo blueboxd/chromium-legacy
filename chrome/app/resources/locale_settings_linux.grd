@@ -28,6 +28,7 @@
       <output filename="platform_locale_settings_pa.pak" type="data_package" lang="pa" />
       <output filename="platform_locale_settings_si.pak" type="data_package" lang="si" />
       <output filename="platform_locale_settings_sq.pak" type="data_package" lang="sq" />
+      <output filename="platform_locale_settings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
       <output filename="platform_locale_settings_ur.pak" type="data_package" lang="ur" />
       <output filename="platform_locale_settings_uz.pak" type="data_package" lang="uz" />
       <output filename="platform_locale_settings_zh-HK.pak" type="data_package" lang="zh-HK" />

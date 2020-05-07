@@ -7,7 +7,6 @@
 
 #include "base/component_export.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
-#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace chromeos {
@@ -29,10 +28,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantService {
   // Binds the main assistant backend interface.
   virtual void BindAssistant(
       mojo::PendingReceiver<mojom::Assistant> receiver) = 0;
-
-  // Binds an interface to control assistant settings.
-  virtual void BindSettingsManager(
-      mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) = 0;
 
   // Signals system shutdown, the service could start cleaning up if needed.
   virtual void Shutdown() = 0;

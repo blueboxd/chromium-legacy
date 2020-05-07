@@ -46,8 +46,11 @@ void PlaceholderRequestCancelHandler::TranslateStepChanged(
 
     // Banner UI will be different from initial banner to show the
     // AFTER_TRANSLATE state.
-    inserter_->InsertOverlayRequest(infobar(), InfobarOverlayType::kBanner,
-                                    insert_index);
+    InsertParams params(infobar());
+    params.overlay_type = InfobarOverlayType::kBanner;
+    params.insertion_index = insert_index;
+    params.source = InfobarOverlayInsertionSource::kInfoBarDelegate;
+    inserter_->InsertOverlayRequest(params);
     CancelRequest();
   }
 }

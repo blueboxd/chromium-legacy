@@ -305,15 +305,23 @@ EntityPtr Extractor::ExtractTopLevelEntity(const base::DictionaryValue& val) {
   return entity;
 }
 
-EntityPtr Extractor::Extract(const std::string& content) {
-  base::Optional<base::Value> value(base::JSONReader::Read(content));
+void Extractor::Extract(const std::string& content,
+                        ExtractorCallback callback) {
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      content, base::BindOnce(&Extractor::OnJsonParsed,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void Extractor::OnJsonParsed(ExtractorCallback callback,
+                             data_decoder::DataDecoder::ValueOrError result) {
   const base::DictionaryValue* dict_value = nullptr;
 
-  if (!value || !value.value().GetAsDictionary(&dict_value)) {
-    return nullptr;
+  if (!result.value || !result.value.value().GetAsDictionary(&dict_value)) {
+    std::move(callback).Run(nullptr);
+    return;
   }
 
-  return ExtractTopLevelEntity(*dict_value);
+  std::move(callback).Run(ExtractTopLevelEntity(*dict_value));
 }
 
 }  // namespace schema_org

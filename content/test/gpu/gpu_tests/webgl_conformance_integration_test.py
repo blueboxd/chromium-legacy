@@ -203,15 +203,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     test_name = args[0]
     getattr(self, test_name)(test_path, *args[1:])
 
-  def _GetGPUInfoErrorString(self, gpu_info):
-    primary_gpu = gpu_info.devices[0]
-    error_str = 'primary gpu=' + primary_gpu.device_string
-    if gpu_info.aux_attributes:
-      gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
-      if gl_renderer:
-        error_str += ', gl_renderer=' + gl_renderer
-    return error_str
-
   def _VerifyGLBackend(self, gpu_info):
     # Verify that Chrome's GL backend matches if a specific one was requested
     if self._gl_backend:
@@ -219,7 +210,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           and gpu_helper.GetANGLERenderer(gpu_info) == 'no_angle'):
         self.fail('requested GL backend (' + self._gl_backend + ')' +
                   ' had no effect on the browser: ' +
-                  self._GetGPUInfoErrorString(gpu_info))
+                  _GetGPUInfoErrorString(gpu_info))
         return False
     return True
 
@@ -243,7 +234,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
             known_backend_flag_map[current_angle_backend]):
         self.fail('requested ANGLE backend (' + self._angle_backend + ')' +
                   ' had no effect on the browser: ' +
-                  self._GetGPUInfoErrorString(gpu_info))
+                  _GetGPUInfoErrorString(gpu_info))
         return False
     return True
 
@@ -261,7 +252,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           self._command_decoder):
         self.fail('requested command decoder (' + self._command_decoder + ')' +
                   ' had no effect on the browser: ' +
-                  self._GetGPUInfoErrorString(gpu_info))
+                  _GetGPUInfoErrorString(gpu_info))
         return False
     return True
 
@@ -292,11 +283,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._NavigateTo(test_path, conformance_harness_script)
     self._CheckTestCompletion()
 
-  def _GetExtensionHarnessScript(self):
-    return conformance_harness_script + extension_harness_additional_script
-
   def _RunExtensionCoverageTest(self, test_path, *args):
-    self._NavigateTo(test_path, self._GetExtensionHarnessScript())
+    self._NavigateTo(test_path, _GetExtensionHarnessScript())
     self.tab.action_runner.WaitForJavaScriptCondition(
         'window._loaded', timeout=self._GetTestTimeout())
     extension_list = args[0]
@@ -313,7 +301,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._CheckTestCompletion()
 
   def _RunExtensionTest(self, test_path, *args):
-    self._NavigateTo(test_path, self._GetExtensionHarnessScript())
+    self._NavigateTo(test_path, _GetExtensionHarnessScript())
     self.tab.action_runner.WaitForJavaScriptCondition(
         'window._loaded', timeout=self._GetTestTimeout())
     extension = args[0]
@@ -517,6 +505,20 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
             os.path.dirname(os.path.abspath(__file__)), 'test_expectations',
             file_name)
     ]
+
+
+def _GetGPUInfoErrorString(gpu_info):
+  primary_gpu = gpu_info.devices[0]
+  error_str = 'primary gpu=' + primary_gpu.device_string
+  if gpu_info.aux_attributes:
+    gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
+    if gl_renderer:
+      error_str += ', gl_renderer=' + gl_renderer
+  return error_str
+
+
+def _GetExtensionHarnessScript():
+  return conformance_harness_script + extension_harness_additional_script
 
 
 def load_tests(loader, tests, pattern):

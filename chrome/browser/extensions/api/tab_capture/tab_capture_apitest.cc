@@ -320,12 +320,11 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_ActiveTabPermission) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Flaky: http://crbug.com/675851
 // Tests that fullscreen transitions during a tab capture session dispatch
 // events to the onStatusChange listener.  The test loads a page that toggles
 // fullscreen mode, using the Fullscreen Javascript API, in response to mouse
 // clicks.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_FullscreenEvents) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, FullscreenEvents) {
   AddExtensionToCommandLineWhitelist();
 
   ExtensionTestMessageListener capture_started("tab_capture_started", false);

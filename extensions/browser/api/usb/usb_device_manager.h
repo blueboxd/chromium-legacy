@@ -87,6 +87,7 @@ class UsbDeviceManager : public BrowserContextKeyedAPI,
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "UsbDeviceManager"; }
+  static const bool kServiceHasOwnInstanceInIncognito = true;
 
   // KeyedService implementation.
   void Shutdown() override;

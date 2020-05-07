@@ -103,6 +103,18 @@ struct PageRenderData {
   // How much visible elements on the page shifted (bit.ly/lsm-explainer),
   // before user input or document scroll.
   float layout_shift_score_before_input_or_scroll;
+
+  // How many LayoutBlock instances were created.
+  uint64_t all_layout_block_count = 0;
+
+  // How many LayoutNG-based LayoutBlock instances were created.
+  uint64_t ng_layout_block_count = 0;
+
+  // How many times LayoutObject::UpdateLayout() is called.
+  uint64_t all_layout_call_count = 0;
+
+  // How many times LayoutNG-based LayoutObject::UpdateLayout() is called.
+  uint64_t ng_layout_call_count = 0;
 };
 
 // Container for various information about a completed request within a page

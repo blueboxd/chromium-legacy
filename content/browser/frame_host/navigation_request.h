@@ -208,7 +208,7 @@ class CONTENT_EXPORT NavigationRequest
   bool HasCommittingOrigin(const url::Origin& origin);
   // Returns true if this navigation request is requesting opt-in
   // origin-isolation, via Origin Policy or headers.
-  bool IsOptInIsolationRequested();
+  bool IsOptInIsolationRequested(const GURL& url);
 
   // NavigationHandle implementation:
   int64_t GetNavigationId() override;
@@ -366,6 +366,12 @@ class CONTENT_EXPORT NavigationRequest
   void UpdateSiteURL(RenderProcessHost* post_redirect_process);
 
   int nav_entry_id() const { return nav_entry_id_; }
+
+  bool was_set_overriding_user_agent_called() const {
+    return was_set_overriding_user_agent_called_;
+  }
+
+  bool entry_overrides_ua() const { return entry_overrides_ua_; }
 
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
@@ -983,6 +989,9 @@ class CONTENT_EXPORT NavigationRequest
   int bindings_;
   int nav_entry_id_ = 0;
   bool entry_overrides_ua_ = false;
+
+  // Set to true if SetIsOverridingUserAgent() is called.
+  bool was_set_overriding_user_agent_called_ = false;
 
   scoped_refptr<SiteInstanceImpl> starting_site_instance_;
 

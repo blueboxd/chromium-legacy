@@ -378,10 +378,6 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   } else if (status == REDUNDANT) {
     embedded_worker_->OnWorkerVersionDoomed();
 
-    // TODO(crbug.com/951571): Remove this once we figured out the cause of
-    // invalid controller status.
-    redundant_state_callstack_ = base::debug::StackTrace();
-
     // Tell the storage system that this worker's script resources can now be
     // deleted.
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;

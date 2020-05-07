@@ -34,7 +34,7 @@ InfobarOverlayTabHelper::~InfobarOverlayTabHelper() = default;
 InfobarOverlayTabHelper::OverlayRequestScheduler::OverlayRequestScheduler(
     web::WebState* web_state,
     InfobarOverlayTabHelper* tab_helper)
-    : tab_helper_(tab_helper), scoped_observer_(this) {
+    : tab_helper_(tab_helper), web_state_(web_state), scoped_observer_(this) {
   DCHECK(tab_helper_);
   InfoBarManager* manager = InfoBarManagerImpl::FromWebState(web_state);
   DCHECK(manager);
@@ -50,8 +50,13 @@ void InfobarOverlayTabHelper::OverlayRequestScheduler::OnInfoBarAdded(
   // showing.
   if (static_cast<InfoBarIOS*>(infobar)->skip_banner())
     return;
-  tab_helper_->request_inserter()->AddOverlayRequest(
-      infobar, InfobarOverlayType::kBanner);
+  InsertParams params(static_cast<InfoBarIOS*>(infobar));
+  params.overlay_type = InfobarOverlayType::kBanner;
+  params.insertion_index = OverlayRequestQueue::FromWebState(
+                               web_state_, OverlayModality::kInfobarBanner)
+                               ->size();
+  params.source = InfobarOverlayInsertionSource::kInfoBarManager;
+  tab_helper_->request_inserter()->InsertOverlayRequest(params);
 }
 
 void InfobarOverlayTabHelper::OverlayRequestScheduler::OnManagerShuttingDown(

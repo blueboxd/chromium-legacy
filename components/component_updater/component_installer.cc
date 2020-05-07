@@ -421,6 +421,8 @@ void ComponentInstaller::FinishRegistration(
   if (!cus->RegisterComponent(crx)) {
     LOG(ERROR) << "Component registration failed for "
                << installer_policy_->GetName();
+    if (!callback.is_null())
+      std::move(callback).Run();
     return;
   }
 

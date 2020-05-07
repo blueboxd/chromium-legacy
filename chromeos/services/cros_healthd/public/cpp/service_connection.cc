@@ -102,6 +102,7 @@ class ServiceConnectionImpl : public ServiceConnection {
       override;
   void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) override;
+  void GetProbeService(mojom::CrosHealthdProbeServiceRequest service) override;
 
   // Binds the factory interface |cros_healthd_service_factory_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
@@ -313,6 +314,13 @@ void ServiceConnectionImpl::GetDiagnosticsService(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindCrosHealthdServiceFactoryIfNeeded();
   cros_healthd_service_factory_->GetDiagnosticsService(std::move(service));
+}
+
+void ServiceConnectionImpl::GetProbeService(
+    mojom::CrosHealthdProbeServiceRequest service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceFactoryIfNeeded();
+  cros_healthd_service_factory_->GetProbeService(std::move(service));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdServiceFactoryIfNeeded() {

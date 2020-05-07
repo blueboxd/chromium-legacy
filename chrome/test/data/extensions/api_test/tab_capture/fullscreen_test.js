@@ -34,7 +34,7 @@ chrome.tabCapture.onStatusChanged.addListener(function(info) {
       chrome.test.assertFalse(events[2]);
       mediaStream.getVideoTracks()[0].stop();
       mediaStream.getAudioTracks()[0].stop();
-      chrome.test.succeed();
+      chrome.test.notifyPass();
     }
 
     if (info.fullscreen)

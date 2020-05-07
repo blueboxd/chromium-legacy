@@ -49,7 +49,6 @@ class BeforeTextInsertedEvent;
 class ComputedStyle;
 class Element;
 class Event;
-class FocusOptions;
 class FormControlState;
 class HTMLFormElement;
 class HTMLInputElement;
@@ -57,7 +56,6 @@ class KeyboardEvent;
 class LayoutObject;
 enum class LegacyLayout;
 class MouseEvent;
-enum class SelectionBehaviorOnFocus;
 
 class ClickHandlingState final : public EventDispatchHandlingState {
  public:
@@ -98,9 +96,6 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual void HandleBlurEvent();
   virtual void HandleDOMActivateEvent(Event&);
   virtual void AccessKeyAction(bool send_mouse_events);
-  virtual void UpdateAppearanceOnFocus(
-      SelectionBehaviorOnFocus selection_behavior,
-      const FocusOptions& options);
   virtual void Blur();
   void DispatchSimulatedClickIfActive(KeyboardEvent&) const;
 

@@ -172,6 +172,13 @@ class ServiceConnection {
   virtual void GetDiagnosticsService(
       mojom::CrosHealthdDiagnosticsServiceRequest service) = 0;
 
+  // Binds |service| to an implementation of CrosHealthdProbeService. In
+  // production, this implementation is provided by cros_healthd. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void GetProbeService(
+      mojom::CrosHealthdProbeServiceRequest service) = 0;
+
  protected:
   ServiceConnection() = default;
   virtual ~ServiceConnection() = default;

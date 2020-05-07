@@ -74,6 +74,13 @@ void FakeVmPluginDispatcherClient::WaitForServiceToBeAvailable(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeVmPluginDispatcherClient::NotifyVmToolsStateChanged(
+    const vm_tools::plugin_dispatcher::VmToolsStateChangedSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnVmToolsStateChanged(signal);
+  }
+}
+
 void FakeVmPluginDispatcherClient::NotifyVmStateChanged(
     const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) {
   for (auto& observer : observer_list_) {

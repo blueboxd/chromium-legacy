@@ -63,6 +63,7 @@ source_set("util") {
     ":element_selector",
     "//base",
     "//base/test:test_support",
+    "//ios/net",
     "//ios/web/js_messaging",
     "//ios/web/public:public",
     "//ios/web/public/deprecated",

@@ -84,12 +84,12 @@ void BidirectionalStreamQuicImpl::Start(
   delegate_ = delegate;
   request_info_ = request_info;
 
-  // Only allow SAFE methods to use early data, unless overriden by the caller.
-  bool use_early_data = !HttpUtil::IsMethodSafe(request_info_->method);
+  // Only allow SAFE methods to use early data, unless overridden by the caller.
+  bool use_early_data = HttpUtil::IsMethodSafe(request_info_->method);
   use_early_data |= request_info_->allow_early_data_override;
 
   int rv = session_->RequestStream(
-      use_early_data,
+      !use_early_data,
       base::BindOnce(&BidirectionalStreamQuicImpl::OnStreamReady,
                      weak_factory_.GetWeakPtr()),
       traffic_annotation);

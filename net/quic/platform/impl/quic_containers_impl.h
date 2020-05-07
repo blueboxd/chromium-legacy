@@ -11,7 +11,6 @@
 
 #include "base/containers/queue.h"
 #include "base/containers/small_map.h"
-#include "net/base/interval_set.h"
 #include "net/third_party/quiche/src/common/simple_linked_hash_map.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 
@@ -56,11 +55,6 @@ using QuicLinkedHashMapImpl = quiche::SimpleLinkedHashMap<Key, Value, Hash>;
 // runs out of space.
 template <typename Key, typename Value, int Size>
 using QuicSmallMapImpl = base::small_map<std::unordered_map<Key, Value>, Size>;
-
-// A data structure used to represent a sorted set of non-empty, non-adjacent,
-// and mutually disjoint intervals.
-template <typename T>
-using QuicIntervalSetImpl = net::IntervalSet<T>;
 
 // Represents a simple queue which may be backed by a list or
 // a flat circular buffer.

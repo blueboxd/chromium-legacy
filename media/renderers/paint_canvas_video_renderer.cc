@@ -759,6 +759,22 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoImageGenerator);
 };
 
+class VideoTextureBacking : public cc::TextureBacking {
+ public:
+  explicit VideoTextureBacking(sk_sp<SkImage> sk_image)
+      : sk_image_(std::move(sk_image)) {}
+
+  const SkImageInfo& GetSkImageInfo() override {
+    return sk_image_->imageInfo();
+  }
+  gpu::Mailbox GetMailbox() const override { return mailbox_; }
+  sk_sp<SkImage> GetAcceleratedSkImage() override { return sk_image_; }
+
+ private:
+  const sk_sp<SkImage> sk_image_;
+  const gpu::Mailbox mailbox_;
+};
+
 PaintCanvasVideoRenderer::PaintCanvasVideoRenderer()
     : cache_deleting_timer_(
           FROM_HERE,
@@ -1718,8 +1734,10 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
               kPremul_SkAlphaType, source_image->imageInfo().refColorSpace());
         }
       }
-      paint_image_builder.set_image(source_subset,
-                                    cc::PaintImage::GetNextContentId());
+      paint_image_builder.set_texture_backing(
+          sk_sp<VideoTextureBacking>(
+              new VideoTextureBacking(std::move(source_subset))),
+          cc::PaintImage::GetNextContentId());
     } else {
       cache_.emplace(video_frame->unique_id());
       paint_image_builder.set_paint_image_generator(
@@ -1775,8 +1793,11 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     }
     cache_->coded_size = video_frame->coded_size();
     cache_->visible_rect = video_frame->visible_rect();
-    paint_image_builder.set_image(
-        source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect)),
+    sk_sp<SkImage> sk_image =
+        source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect));
+    paint_image_builder.set_texture_backing(
+        sk_sp<VideoTextureBacking>(
+            new VideoTextureBacking(std::move(sk_image))),
         cc::PaintImage::GetNextContentId());
   } else {
     paint_image_builder.set_paint_image_generator(

@@ -33,10 +33,35 @@ struct IsBaseCallbackImpl<OnceCallback<R(Args...)>> : std::true_type {};
 template <typename R, typename... Args>
 struct IsBaseCallbackImpl<RepeatingCallback<R(Args...)>> : std::true_type {};
 
+template <typename T>
+struct IsOnceCallbackImpl : std::false_type {};
+
+template <typename R, typename... Args>
+struct IsOnceCallbackImpl<OnceCallback<R(Args...)>> : std::true_type {};
+
 }  // namespace internal
 
+// IsBaseCallback<T>::value is true when T is any of the Closure or Callback
+// family of types.
 template <typename T>
 using IsBaseCallback = internal::IsBaseCallbackImpl<std::decay_t<T>>;
+
+// IsOnceCallback<T>::value is true when T is a OnceClosure or OnceCallback
+// type.
+template <typename T>
+using IsOnceCallback = internal::IsOnceCallbackImpl<std::decay_t<T>>;
+
+// MoveIfOnce(cb) is equivalent to:
+//   cb             (when cb is a RepeatingCallback)
+//   std::move(cb)  (when cb is a OnceCallback)
+// Thus a templated function that works on any sort of Callback can safely do:
+//   MoveIfOnce(cb).Run();
+template <typename CB>
+decltype(auto) MoveIfOnce(CB& cb) {
+  static_assert(IsBaseCallback<CB>::value, "");
+  return static_cast<
+      std::conditional_t<IsOnceCallback<CB>::value, CB&&, const CB&>>(cb);
+}
 
 // SFINAE friendly enabler allowing to overload methods for both Repeating and
 // OnceCallbacks.

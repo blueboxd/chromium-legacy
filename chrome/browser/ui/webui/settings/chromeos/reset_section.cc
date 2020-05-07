@@ -24,7 +24,19 @@ namespace {
 
 const std::vector<SearchConcept>& GetResetSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Reset" search concepts.
+      {IDS_OS_SETTINGS_TAG_RESET,
+       mojom::kResetSectionPath,
+       mojom::SearchResultIcon::kReset,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kReset}},
+      {IDS_OS_SETTINGS_TAG_RESET_POWERWASH,
+       mojom::kResetSectionPath,
+       mojom::SearchResultIcon::kReset,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPowerwash},
+       {IDS_OS_SETTINGS_TAG_RESET_POWERWASH_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -73,6 +85,11 @@ void ResetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       "powerwashDescription",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_FACTORY_RESET_DESCRIPTION,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+}
+
+void ResetSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::ResetSettingsHandler>(profile()));
 }
 
 }  // namespace settings

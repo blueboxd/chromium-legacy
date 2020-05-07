@@ -83,7 +83,8 @@ class MediaFactory {
   std::unique_ptr<blink::WebVideoFrameSubmitter> CreateSubmitter(
       scoped_refptr<base::SingleThreadTaskRunner>*
           video_frame_compositor_task_runner,
-      const cc::LayerTreeSettings& settings);
+      const cc::LayerTreeSettings& settings,
+      media::MediaLog* media_log);
 
   // Creates a new WebMediaPlayer for the given |source| (either a stream or
   // URL). All pointers other than |initial_cdm| are required to be non-null.

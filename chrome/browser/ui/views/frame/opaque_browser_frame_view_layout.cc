@@ -278,7 +278,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
   int size = delegate_->GetIconSize();
   bool should_show_icon = delegate_->ShouldShowWindowIcon() && window_icon_;
   bool should_show_title = delegate_->ShouldShowWindowTitle() && window_title_;
-  int icon_y = 0;
+  base::Optional<int> icon_spacing;
 
   if (should_show_icon || should_show_title || web_app_frame_toolbar_) {
     use_hidden_icon_location = false;
@@ -300,14 +300,19 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     const int icon_height =
         unavailable_px_at_top + size + kContentEdgeShadowThickness;
     const int y = unavailable_px_at_top + (available_height - icon_height) / 2;
-    icon_y = y;
 
-    if (web_app_frame_toolbar_)
-      available_space_leading_x_ = y - kIconLeftSpacing;
-    window_icon_bounds_ =
-        gfx::Rect(available_space_leading_x_ + kIconLeftSpacing, y, size, size);
-    available_space_leading_x_ += size + kIconLeftSpacing;
-    minimum_size_for_buttons_ += size + kIconLeftSpacing;
+    // Want same spacing adjacent to the icon as above when the icon is the
+    // first element in the frame. We'll use this spacing again to ensure
+    // appropriate spacing between icon and title.
+    icon_spacing = y;
+    if (web_app_frame_toolbar_ && leading_buttons_.empty())
+      available_space_leading_x_ = FrameSideThickness(false) + *icon_spacing;
+    else
+      available_space_leading_x_ += kIconLeftSpacing;
+
+    window_icon_bounds_ = gfx::Rect(available_space_leading_x_, y, size, size);
+    available_space_leading_x_ += size;
+    minimum_size_for_buttons_ += size;
 
     if (web_app_frame_toolbar_) {
       std::pair<int, int> remaining_bounds =
@@ -327,15 +332,18 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     if (should_show_title) {
       window_title_->SetText(delegate_->GetWindowTitle());
 
-      // Extra space between icon and title.
-      int extra_space = web_app_frame_toolbar_ ? icon_y - kIconTitleSpacing : 0;
-      int text_width = std::max(
-          0, available_space_trailing_x_ - kCaptionSpacing -
-                 available_space_leading_x_ - kIconTitleSpacing - extra_space);
-      window_title_->SetBounds(
-          available_space_leading_x_ + kIconTitleSpacing + extra_space,
-          window_icon_bounds_.y(), text_width, window_icon_bounds_.height());
-      available_space_leading_x_ += text_width + kIconTitleSpacing;
+      // If possible, make space between icon and title symmetrical with space
+      // between icon and frame.
+      const int icon_title_spacing = (web_app_frame_toolbar_ && icon_spacing)
+                                         ? *icon_spacing
+                                         : kIconTitleSpacing;
+      const int text_width =
+          std::max(0, available_space_trailing_x_ - kCaptionSpacing -
+                          available_space_leading_x_ - icon_title_spacing);
+      window_title_->SetBounds(available_space_leading_x_ + icon_title_spacing,
+                               window_icon_bounds_.y(), text_width,
+                               window_icon_bounds_.height());
+      available_space_leading_x_ += text_width + icon_title_spacing;
     }
   }
 

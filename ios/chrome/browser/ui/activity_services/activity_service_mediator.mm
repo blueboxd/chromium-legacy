@@ -31,27 +31,17 @@
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-// Snackbar category for activity services.
-NSString* const kActivityServicesSnackbarCategory =
-    @"ActivityServicesSnackbarCategory";
-
 @interface ActivityServiceMediator ()
 
-@property(nonatomic, weak) id<BrowserCommands,
-                              FindInPageCommands,
-                              QRGenerationCommands,
-                              SnackbarCommands>
-    handler;
+@property(nonatomic, weak)
+    id<BrowserCommands, FindInPageCommands, QRGenerationCommands>
+        handler;
 
 @property(nonatomic, assign) PrefService* prefService;
 
@@ -63,12 +53,11 @@ NSString* const kActivityServicesSnackbarCategory =
 
 #pragma mark - Public
 
-- (instancetype)initWithHandler:(id<BrowserCommands,
-                                    FindInPageCommands,
-                                    QRGenerationCommands,
-                                    SnackbarCommands>)handler
-                    prefService:(PrefService*)prefService
-                  bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
+- (instancetype)
+    initWithHandler:
+        (id<BrowserCommands, FindInPageCommands, QRGenerationCommands>)handler
+        prefService:(PrefService*)prefService
+      bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel {
   if (self = [super init]) {
     _handler = handler;
     _prefService = prefService;
@@ -161,37 +150,12 @@ NSString* const kActivityServicesSnackbarCategory =
     activity_type_util::ActivityType type =
         activity_type_util::TypeFromString(activityType);
     activity_type_util::RecordMetricForActivity(type);
-    NSString* completionMessage =
-        activity_type_util::CompletionMessageForActivity(type);
-    [self shareDidComplete:completed completionMessage:completionMessage];
-  } else {
-    [self shareDidComplete:NO completionMessage:nil];
   }
-}
 
-#pragma mark - Private
-
-- (void)shareDidComplete:(bool)isSuccess completionMessage:(NSString*)message {
-  if (isSuccess) {
-    if ([message length]) {
-      [self showSuccessSnackbar:message];
-    }
-  } else {
+  if (!activityType || !completed) {
     // Share action was cancelled.
     base::RecordAction(base::UserMetricsAction("MobileShareMenuCancel"));
   }
-}
-
-// Shows a snackbar message with the given |text|, and triggers a success
-// haptic feedback.
-- (void)showSuccessSnackbar:(NSString*)text {
-  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-
-  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
-  message.accessibilityLabel = text;
-  message.duration = 2.0;
-  message.category = kActivityServicesSnackbarCategory;
-  [self.handler showSnackbarMessage:message];
 }
 
 @end

@@ -672,10 +672,10 @@ Shell::~Shell() {
   // it before destroying |tablet_mode_controller_|.
   accessibility_controller_->Shutdown();
 
-  // Destroy tablet mode controller early on since it has some observers which
-  // need to be removed.
+  // Shutdown tablet mode controller early on since it has some observers which
+  // need to be removed. It will be destroyed later after all windows are closed
+  // since it might be accessed during this process.
   tablet_mode_controller_->Shutdown();
-  tablet_mode_controller_.reset();
 
   // Destroy UserSettingsEventLogger before |system_tray_model_| and
   // |video_detector_| which it observes.
@@ -721,6 +721,7 @@ Shell::~Shell() {
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
 
+  tablet_mode_controller_.reset();
   login_screen_controller_.reset();
   system_notification_controller_.reset();
   // Should be destroyed after Shelf and |system_notification_controller_|.

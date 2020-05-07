@@ -57,6 +57,9 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
 
 }  // namespace
 
+// Value chosen based on SuggestionGroupIds::INVALID in suggestion_config.proto.
+const int SearchSuggestionParser::kNoSuggestionGroupId = -1;
+
 // SearchSuggestionParser::Result ----------------------------------------------
 
 SearchSuggestionParser::Result::Result(bool from_keyword,

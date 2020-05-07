@@ -288,11 +288,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool ShouldOriginGetOptInIsolation(const IsolationContext& isolation_context,
                                      const url::Origin& origin);
 
-  // Returns true if web-exposed mechanisms for opting in to isolated origins
-  // are enabled (namely, either via origin policy or via the Origin-Isolation
-  // header).
-  static bool IsOptInOriginIsolationEnabled();
-
   // This function adds |origin| to the master list of origins that have
   // ever requested opt-in isolation, either via an OriginPolicy or opt-in
   // header. Returns true if |origin| is not already in the list.

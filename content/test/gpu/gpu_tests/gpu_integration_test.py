@@ -222,7 +222,8 @@ class GpuIntegrationTest(
         if not actual_and_expected_crashes_match:
           raise RuntimeError('Actual and expected crashes did not match')
 
-  def _IsIntel(self, vendor_id):
+  @staticmethod
+  def _IsIntel(vendor_id):
     return vendor_id == 0x8086
 
   def _IsIntelGPUActive(self):
@@ -285,7 +286,7 @@ class GpuIntegrationTest(
         total_expected_crashes, expected_crashes)
     return False
 
-  def GetExpectedCrashes(self, args):
+  def GetExpectedCrashes(self, args):  # pylint: disable=no-self-use
     """Returns which crashes, per process type, to expect for the current test.
 
     Should be overridden by child classes to actually return valid data if

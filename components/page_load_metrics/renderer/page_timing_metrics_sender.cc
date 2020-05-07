@@ -108,6 +108,17 @@ void PageTimingMetricsSender::DidObserveLayoutShift(
   EnsureSendTimer();
 }
 
+void PageTimingMetricsSender::DidObserveLayoutNg(uint32_t all_block_count,
+                                                 uint32_t ng_block_count,
+                                                 uint32_t all_call_count,
+                                                 uint32_t ng_call_count) {
+  render_data_.all_layout_block_count_delta += all_block_count;
+  render_data_.ng_layout_block_count_delta += ng_block_count;
+  render_data_.all_layout_call_count_delta += all_call_count;
+  render_data_.ng_layout_call_count_delta += ng_call_count;
+  EnsureSendTimer();
+}
+
 void PageTimingMetricsSender::DidObserveLazyLoadBehavior(
     blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {
   switch (lazy_load_behavior) {
@@ -303,6 +314,10 @@ void PageTimingMetricsSender::SendNow() {
   modified_resources_.clear();
   render_data_.layout_shift_delta = 0;
   render_data_.layout_shift_delta_before_input_or_scroll = 0;
+  render_data_.all_layout_block_count_delta = 0;
+  render_data_.ng_layout_block_count_delta = 0;
+  render_data_.all_layout_call_count_delta = 0;
+  render_data_.ng_layout_call_count_delta = 0;
 }
 
 void PageTimingMetricsSender::DidObserveInputDelay(

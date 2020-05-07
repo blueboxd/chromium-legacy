@@ -290,6 +290,18 @@ class MediaFeedsTableDelegate {
       });
 
       td.textContent = origins.join(', ');
+    } else if (key === 'userIdentifier') {
+      if (data) {
+        td.textContent = 'Name=' + data.name;
+
+        if (data.email) {
+          td.textContent += ' Email=' + data.email;
+        }
+
+        if (data.image) {
+          td.textContent += ' Image=' + data.image.src.url;
+        }
+      }
     } else {
       td.textContent = data;
     }

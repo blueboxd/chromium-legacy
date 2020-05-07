@@ -22,9 +22,6 @@ class PrefService;
 @class ShareImageData;
 @class ShareToData;
 
-// Snackbar ID for any services that wish to show snackbars.
-extern NSString* const kActivityServicesSnackbarCategory;
-
 // Mediator used to generate activities.
 @interface ActivityServiceMediator : NSObject
 

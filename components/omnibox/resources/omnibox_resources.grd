@@ -32,6 +32,7 @@
       <output filename="omnibox_resources_pa.pak" type="data_package" lang="pa" />
       <output filename="omnibox_resources_si.pak" type="data_package" lang="si" />
       <output filename="omnibox_resources_sq.pak" type="data_package" lang="sq" />
+      <output filename="omnibox_resources_sr-Latn.pak" type="data_package" lang="sr-Latn" />
       <output filename="omnibox_resources_ur.pak" type="data_package" lang="ur" />
       <output filename="omnibox_resources_uz.pak" type="data_package" lang="uz" />
       <output filename="omnibox_resources_zh-HK.pak" type="data_package" lang="zh-HK" />

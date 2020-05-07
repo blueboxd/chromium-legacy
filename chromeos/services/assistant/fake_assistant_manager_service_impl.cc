@@ -55,9 +55,8 @@ AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
   return state_;
 }
 
-AssistantSettingsManager*
-FakeAssistantManagerServiceImpl::GetAssistantSettingsManager() {
-  return &assistant_settings_manager_;
+AssistantSettings* FakeAssistantManagerServiceImpl::GetAssistantSettings() {
+  return &assistant_settings_;
 }
 
 void FakeAssistantManagerServiceImpl::AddAndFireStateObserver(

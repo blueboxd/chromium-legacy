@@ -685,7 +685,7 @@
   'win10_intel_hd_630_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-26.20.100.7870|8086:3e92-26.20.100.7870',
+        'gpu': '8086:5912-26.20.100.7870|8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu.experimental.template',
       },

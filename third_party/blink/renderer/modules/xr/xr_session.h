@@ -287,6 +287,9 @@ class XRSession final
   bool HasPendingActivity() const override;
 
   bool CanReportPoses() const;
+
+  // Returns current transform from mojo space to viewer space. May return
+  // nullopt if poses cannot be reported or if the transform is unknown.
   base::Optional<TransformationMatrix> MojoFromViewer() const;
 
   // Creates presentation frame based on current state of the session.

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.query_tiles;
 
-import android.graphics.Bitmap;
-
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
@@ -173,18 +171,6 @@ public class FakeTileProvider implements TileProvider {
     @Override
     public void getQueryTiles(Callback<List<QueryTile>> callback) {
         callback.onResult(mTiles);
-    }
-
-    @Override
-    public void getVisuals(String id, Callback<List<Bitmap>> callback) {
-        int size = 500;
-        QueryTile tile = findTile(id);
-        String url = ((FakeTile) tile).url;
-        getImageFetcher().fetchImage(url, "ntp_query_tiles", size, size, bitmap -> {
-            List<Bitmap> bitmapList = new ArrayList<>();
-            bitmapList.add(bitmap);
-            callback.onResult(bitmapList);
-        });
     }
 
     private QueryTile findTile(String id) {

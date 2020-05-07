@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_container_host.h"
 
+#include <set>
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
@@ -92,9 +95,9 @@ ServiceWorkerContainerHost::CreateForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context) {
   DCHECK(context);
   auto container_host = std::make_unique<ServiceWorkerContainerHost>(
-      blink::mojom::ServiceWorkerClientType::kWindow, are_ancestors_secure,
-      frame_tree_node_id, std::move(host_receiver), std::move(container_remote),
-      context);
+      context, are_ancestors_secure,
+      blink::mojom::ServiceWorkerClientType::kWindow, frame_tree_node_id,
+      std::move(host_receiver), std::move(container_remote));
 
   std::string client_uuid = container_host->client_uuid();
   base::WeakPtr<ServiceWorkerContainerHost> weak_ptr =
@@ -126,9 +129,9 @@ ServiceWorkerContainerHost::CreateForWebWorker(
     DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
   auto container_host = std::make_unique<ServiceWorkerContainerHost>(
-      client_type, /*is_parent_frame_secure=*/true,
+      context, /*is_parent_frame_secure=*/true, client_type,
       FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
-      std::move(container_remote), context);
+      std::move(container_remote));
   container_host->SetContainerProcessId(process_id);
 
   std::string client_uuid = container_host->client_uuid();
@@ -144,26 +147,25 @@ ServiceWorkerContainerHost::CreateForWebWorker(
 }
 
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
-    base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
+    base::WeakPtr<ServiceWorkerContextCore> context,
     bool is_parent_frame_secure,
+    base::Optional<blink::mojom::ServiceWorkerClientType> client_type,
     int frame_tree_node_id,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        container_remote,
-    base::WeakPtr<ServiceWorkerContextCore> context)
-    : client_type_(client_type),
+        container_remote)
+    : context_(std::move(context)),
       create_time_(base::TimeTicks::Now()),
+      client_uuid_(client_type ? base::GenerateGUID() : std::string()),
       is_parent_frame_secure_(is_parent_frame_secure),
+      client_type_(client_type),
       frame_tree_node_id_(frame_tree_node_id),
       web_contents_getter_(
           frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
               ? base::NullCallback()
               : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                    frame_tree_node_id)),
-      client_uuid_(IsContainerForClient() ? base::GenerateGUID()
-                                          : std::string()),
-      context_(std::move(context)) {
+                                    frame_tree_node_id)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(!client_type_ ||
          *client_type_ != blink::mojom::ServiceWorkerClientType::kAll);
@@ -1305,9 +1307,6 @@ void ServiceWorkerContainerHost::CheckControllerConsistency(
       break;
     case ServiceWorkerVersion::REDUNDANT: {
       if (should_crash) {
-        DEBUG_ALIAS_FOR_CSTR(
-            redundant_callstack_str,
-            controller_->redundant_state_callstack().ToString().c_str(), 1024);
         CHECK(false);
       }
       break;

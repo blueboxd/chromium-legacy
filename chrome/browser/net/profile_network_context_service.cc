@@ -56,6 +56,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "third_party/blink/public/common/features.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
@@ -500,6 +501,15 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       &settings_for_legacy_cookie_access);
   out->settings_for_legacy_cookie_access =
       std::move(settings_for_legacy_cookie_access);
+
+  ContentSettingsForOneType settings_for_storage_access;
+  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+    host_content_settings_map->GetSettingsForOneType(
+        ContentSettingsType::STORAGE_ACCESS, std::string(),
+        &settings_for_storage_access);
+  }
+  out->settings_for_storage_access = std::move(settings_for_storage_access);
+
   out->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
   return out;

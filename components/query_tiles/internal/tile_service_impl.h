@@ -10,15 +10,25 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/background_task_scheduler/background_task_scheduler.h"
-#include "components/query_tiles/internal/config.h"
 #include "components/query_tiles/internal/image_loader.h"
 #include "components/query_tiles/internal/tile_fetcher.h"
 #include "components/query_tiles/internal/tile_manager.h"
+#include "components/query_tiles/internal/tile_types.h"
 #include "components/query_tiles/tile_service.h"
 
 namespace upboarding {
 
-class TileServiceImpl : public TileService {
+// A TileService that needs to be explicitly initialized.
+class InitializableTileService : public TileService {
+ public:
+  // Initializes the tile service.
+  virtual void Initialize(SuccessCallback callback) = 0;
+
+  InitializableTileService() = default;
+  ~InitializableTileService() override = default;
+};
+
+class TileServiceImpl : public InitializableTileService {
  public:
   TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
                   std::unique_ptr<TileManager> tile_manager,
@@ -31,13 +41,15 @@ class TileServiceImpl : public TileService {
   TileServiceImpl& operator=(const TileServiceImpl& other) = delete;
 
  private:
-  // TileService implementation.
+  // InitializableTileService implementation.
+  void Initialize(SuccessCallback callback) override;
   void GetQueryTiles(GetTilesCallback callback) override;
   void GetTile(const std::string& tile_id, TileCallback callback) override;
-  void GetVisuals(const std::string& tile_id,
-                  VisualsCallback callback) override;
   void StartFetchForTiles(BackgroundTaskFinishedCallback callback) override;
 
+  // Called when tile manager is initialized.
+  void OnTileManagerInitialized(SuccessCallback callback,
+                                TileGroupStatus status);
   // TODO(hesen): Use an one-off task solution instead of periodic task.
   // Schedules periodic background task to start fetch.
   void ScheduleDailyTask();

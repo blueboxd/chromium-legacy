@@ -180,3 +180,17 @@ message FeedResetToken {
   uint64 high = 1;
   uint64 low = 2;
 }
+
+// This is returned by the Media Feed so the user can see which account
+// and/or profile they are currently signed into.
+// https://wicg.github.io/media-feeds/#dfn-currently-logged-in-user
+message UserIdentifier {
+  // The name of the user’s account.
+  string name = 1;
+
+  // The email address of the users’ account.
+  string email = 2;
+
+  // The image of the user’s account.
+  Image image = 3;
+}

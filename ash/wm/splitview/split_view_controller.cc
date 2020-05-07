@@ -985,8 +985,8 @@ void SplitViewController::OnWindowBoundsChanged(
       Shell::Get()->overview_controller()->EndOverview();
       return;
     }
-    DCHECK_EQ(WindowResizer::kBoundsChange_Resizes,
-              window_state->drag_details()->bounds_change);
+    DCHECK(window_state->drag_details()->bounds_change &
+           WindowResizer::kBoundsChange_Resizes);
     DCHECK(presentation_time_recorder_);
     presentation_time_recorder_->RequestNext();
   }

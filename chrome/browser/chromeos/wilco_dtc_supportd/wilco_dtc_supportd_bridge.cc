@@ -385,4 +385,10 @@ void WilcoDtcSupportdBridge::GetCrosHealthdDiagnosticsService(
       std::move(service));
 }
 
+void WilcoDtcSupportdBridge::GetCrosHealthdProbeService(
+    cros_healthd::mojom::CrosHealthdProbeServiceRequest service) {
+  cros_healthd::ServiceConnection::GetInstance()->GetProbeService(
+      std::move(service));
+}
+
 }  // namespace chromeos

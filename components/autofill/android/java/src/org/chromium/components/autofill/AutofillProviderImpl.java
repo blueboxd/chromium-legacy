@@ -467,14 +467,11 @@ public class AutofillProviderImpl extends AutofillProvider {
         // frameworks autofill manager, but in the latter case the
         // binder connection has already been dropped in a framework
         // finalizer, and so the methods we call will throw. It's not
-        // possible to know which case we're in, so just catch and
-        // ignore the exception.
-        try {
-            if (mNativeAutofillProvider != 0) mRequest = null;
-            mNativeAutofillProvider = nativeAutofillProvider;
-            if (nativeAutofillProvider == 0) mAutofillManager.destroy();
-        } catch (IllegalStateException e) {
-        }
+        // possible to know which case we're in, so just catch the exception
+        // in AutofillManagerWrapper.destroy().
+        if (mNativeAutofillProvider != 0) mRequest = null;
+        mNativeAutofillProvider = nativeAutofillProvider;
+        if (nativeAutofillProvider == 0) mAutofillManager.destroy();
     }
 
     @Override

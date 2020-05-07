@@ -5,11 +5,9 @@
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 
 #include "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,20 +39,6 @@ TEST_F(ActivityTypeUtilTest, StringToTypeTest) {
   PrintActivity* printActivity = [[PrintActivity alloc] initWithData:nil
                                                              handler:nil];
   StringToTypeTestHelper(printActivity.activityType, activity_type_util::PRINT);
-}
-
-void TypeToMessageTestHelper(activity_type_util::ActivityType type,
-                             NSString* expectedMessage) {
-  EXPECT_NSEQ(activity_type_util::CompletionMessageForActivity(type),
-              expectedMessage);
-}
-
-TEST_F(ActivityTypeUtilTest, TypeToMessageTest) {
-  TypeToMessageTestHelper(activity_type_util::UNKNOWN, nil);
-  TypeToMessageTestHelper(activity_type_util::PRINT, nil);
-  TypeToMessageTestHelper(
-      activity_type_util::NATIVE_CLIPBOARD,
-      l10n_util::GetNSString(IDS_IOS_SHARE_TO_CLIPBOARD_SUCCESS));
 }
 
 }  // namespace

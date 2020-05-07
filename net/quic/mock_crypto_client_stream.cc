@@ -310,8 +310,8 @@ void MockCryptoClientStream::SetConfigNegotiated() {
       PROTOCOL_TLS1_3) {
     TransportParameters params;
     ASSERT_TRUE(config.FillTransportParameters(&params));
-    error = session()->config()->ProcessTransportParameters(params, CLIENT,
-                                                            &error_details);
+    error = session()->config()->ProcessTransportParameters(
+        params, CLIENT, /*is_resumption=*/false, &error_details);
   } else {
     CryptoHandshakeMessage msg;
     config.ToHandshakeMessage(

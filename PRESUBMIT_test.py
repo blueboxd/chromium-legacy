@@ -2091,6 +2091,127 @@ class FuchsiaSecurityOwnerTest(unittest.TestCase):
     self.assertEqual([], errors)
 
 
+class SecurityChangeTest(unittest.TestCase):
+  class _MockOwnersDB(object):
+    def __init__(self):
+      self.email_regexp = '.*'
+
+    def owners_rooted_at_file(self, f):
+      return ['apple@chromium.org', 'orange@chromium.org']
+
+  def _mockChangeOwnerAndReviewers(self, input_api, owner, reviewers):
+    def __MockOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
+      return [owner, reviewers]
+    input_api.canned_checks.GetCodereviewOwnerAndReviewers = \
+        __MockOwnerAndReviewers
+
+  def testDiffWithSandboxType(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockAffectedFile(
+          'services/goat/teleporter_host.cc',
+          [
+            'content::ServiceProcessHost::Launch<mojom::GoatTeleporter>(',
+            '    content::ServiceProcessHost::LaunchOptions()',
+            '        .WithSandboxType(content::SandboxType::kGoaty)',
+            '        .WithDisplayName("goat_teleporter")',
+            '        .Build())'
+          ]
+        ),
+    ]
+    files_to_functions = PRESUBMIT._GetFilesUsingSecurityCriticalFunctions(
+        mock_input_api)
+    self.assertEqual({
+        'services/goat/teleporter_host.cc': set([
+            'content::ServiceProcessHost::LaunchOptions::WithSandboxType'
+        ])},
+        files_to_functions)
+
+  def testDiffRemovingLine(self):
+    mock_input_api = MockInputApi()
+    mock_file = MockAffectedFile('services/goat/teleporter_host.cc', '')
+    mock_file._scm_diff = """--- old 2020-05-04 14:08:25.000000000 -0400
++++ new 2020-05-04 14:08:32.000000000 -0400
+@@ -1,5 +1,4 @@
+ content::ServiceProcessHost::Launch<mojom::GoatTeleporter>(
+     content::ServiceProcessHost::LaunchOptions()
+-        .WithSandboxType(content::SandboxType::kGoaty)
+         .WithDisplayName("goat_teleporter")
+         .Build())
+"""
+    mock_input_api.files = [mock_file]
+    files_to_functions = PRESUBMIT._GetFilesUsingSecurityCriticalFunctions(
+        mock_input_api)
+    self.assertEqual({
+        'services/goat/teleporter_host.cc': set([
+            'content::ServiceProcessHost::LaunchOptions::WithSandboxType'
+        ])},
+        files_to_functions)
+
+  def testChangeOwnersMissing(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.is_committing = False
+    mock_input_api.files = [
+        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+    ]
+    mock_output_api = MockOutputApi()
+    self._mockChangeOwnerAndReviewers(
+        mock_input_api, 'owner@chromium.org', ['banana@chromium.org'])
+    result = PRESUBMIT._CheckSecurityChanges(mock_input_api, mock_output_api)
+    self.assertEquals(1, len(result))
+    self.assertEquals(result[0].type, 'notify')
+    self.assertEquals(result[0].message,
+        'The following files change calls to security-sensive functions\n' \
+        'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
+        '  file.cc\n'
+        '    content::ServiceProcessHost::LaunchOptions::WithSandboxType\n\n')
+
+  def testChangeOwnersMissingAtCommit(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.is_committing = True
+    mock_input_api.files = [
+        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+    ]
+    mock_output_api = MockOutputApi()
+    self._mockChangeOwnerAndReviewers(
+        mock_input_api, 'owner@chromium.org', ['banana@chromium.org'])
+    result = PRESUBMIT._CheckSecurityChanges(mock_input_api, mock_output_api)
+    self.assertEquals(1, len(result))
+    self.assertEquals(result[0].type, 'error')
+    self.assertEquals(result[0].message,
+        'The following files change calls to security-sensive functions\n' \
+        'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
+        '  file.cc\n'
+        '    content::ServiceProcessHost::LaunchOptions::WithSandboxType\n\n')
+
+  def testChangeOwnersPresent(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.files = [
+        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+    ]
+    mock_output_api = MockOutputApi()
+    self._mockChangeOwnerAndReviewers(
+        mock_input_api, 'owner@chromium.org',
+        ['apple@chromium.org', 'banana@chromium.org'])
+    result = PRESUBMIT._CheckSecurityChanges(mock_input_api, mock_output_api)
+    self.assertEquals(0, len(result))
+
+  def testChangeOwnerIsSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.owners_db = self._MockOwnersDB()
+    mock_input_api.files = [
+        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+    ]
+    mock_output_api = MockOutputApi()
+    self._mockChangeOwnerAndReviewers(
+        mock_input_api, 'orange@chromium.org', ['pear@chromium.org'])
+    result = PRESUBMIT._CheckSecurityChanges(mock_input_api, mock_output_api)
+    self.assertEquals(1, len(result))
+
+
 class BannedTypeCheckTest(unittest.TestCase):
 
   def testBannedCppFunctions(self):

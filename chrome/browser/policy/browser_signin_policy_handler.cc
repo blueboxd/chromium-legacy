@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/syslog_logging.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/credential_provider/common/gcp_strings.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
@@ -26,6 +28,17 @@ BrowserSigninPolicyHandler::~BrowserSigninPolicyHandler() {}
 
 void BrowserSigninPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                      PrefValueMap* prefs) {
+#if defined(OS_WIN)
+  // Browser sign in policies shouldn't be enforced on gcpw signin
+  // mode as gcpw is invoked in windows login UI screen.
+  // Also note that GCPW launches chrome in incognito mode using a
+  // special user's logon_token. So the end user won't have access
+  // to this session after user logs in via GCPW.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::credential_provider::kGcpwSigninSwitch))
+    return;
+#endif
+
   const base::Value* value = policies.GetValue(policy_name());
   int int_value;
   if (value && value->GetAsInteger(&int_value)) {

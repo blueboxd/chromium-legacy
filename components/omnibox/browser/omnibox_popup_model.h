@@ -21,6 +21,7 @@
 class OmniboxPopupModelObserver;
 class OmniboxPopupView;
 class GURL;
+class PrefService;
 
 namespace gfx {
 class Image;
@@ -34,18 +35,20 @@ class OmniboxPopupModel {
 
   // When changing selections, these are the possible stepping behaviors.
   enum Step {
-    // Step by an entire line regardless of line state.
+    // Step by an entire line regardless of line state. Usually used for the
+    // Up and Down arrow keys.
     kWholeLine,
 
     // Step by a state if another one is available on the current line;
-    // otherwise step by line.
+    // otherwise step by line. Usually used for the Tab and Shift+Tab keys.
     kStateOrLine,
 
     // Step by a state if another one is available on the current line;
-    // otherwise do not step.
+    // otherwise do not step. Usually used for the Left and Right arrow keys.
     kStateOrNothing,
 
-    // Step across all lines to the first or last line.
+    // Step across all lines to the first or last line. Usually used for the
+    // PgUp and PgDn keys.
     kAllLines
   };
 
@@ -107,7 +110,11 @@ class OmniboxPopupModel {
     Selection With(LineState new_state) const;
   };
 
-  OmniboxPopupModel(OmniboxPopupView* popup_view, OmniboxEditModel* edit_model);
+  // |pref_service| can be nullptr, in which case OmniboxPopupModel won't
+  // account for collapsed headers.
+  OmniboxPopupModel(OmniboxPopupView* popup_view,
+                    OmniboxEditModel* edit_model,
+                    PrefService* pref_service);
   ~OmniboxPopupModel();
 
   // Computes the maximum width, in pixels, that can be allocated for the two
@@ -256,6 +263,9 @@ class OmniboxPopupModel {
   OmniboxPopupView* view_;
 
   OmniboxEditModel* edit_model_;
+
+  // Non-owning reference to the pref service. Can be nullptr in tests or iOS.
+  PrefService* const pref_service_;
 
   Selection selection_;
 

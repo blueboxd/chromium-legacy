@@ -29,7 +29,7 @@
 //
 // class MyWidget {
 //  public:
-//   using CallbackList = base::CallbackList<void(const Foo&)>;
+//   using CallbackList = base::RepeatingCallbackList<void(const Foo&)>;
 //
 //   // Registers |cb| to be called whenever NotifyFoo() is executed.
 //   std::unique_ptr<CallbackList::Subscription>
@@ -110,11 +110,11 @@ class CallbackListBase {
 
   // Registers |cb| for future notifications. Returns a Subscription that can be
   // used to cancel |cb|.
-  std::unique_ptr<Subscription> Add(const CallbackType& cb) WARN_UNUSED_RESULT {
+  std::unique_ptr<Subscription> Add(CallbackType cb) WARN_UNUSED_RESULT {
     DCHECK(!cb.is_null());
     return std::make_unique<Subscription>(base::BindOnce(
         &CallbackListBase::CancelCallback, weak_ptr_factory_.GetWeakPtr(),
-        callbacks_.insert(callbacks_.end(), cb)));
+        callbacks_.insert(callbacks_.end(), std::move(cb))));
   }
 
   // Registers |removal_callback| to be run after elements are removed from the
@@ -152,9 +152,15 @@ class CallbackListBase {
       // Skip any callbacks that are canceled during iteration.
       for (auto it = callbacks_.begin(); it != callbacks_.end();
            it = std::find_if(it, callbacks_.end(), callback_valid)) {
+        const auto current = it++;  // Must increment before splice() below.
+
+        // OnceCallbacks still have Subscriptions with outstanding iterators;
+        // splice() removes them from |callbacks_| without invalidating those.
+        if (IsOnceCallback<CallbackType>::value)
+          null_callbacks_.splice(null_callbacks_.end(), callbacks_, current);
+
         // Run the current callback, which may cancel it or any other callbacks.
-        DCHECK(!it->is_null());
-        (it++)->Run(args...);
+        MoveIfOnce(*current).Run(args...);
       }
     }
 
@@ -166,8 +172,11 @@ class CallbackListBase {
     // Run |removal_callback_| if any callbacks were canceled. Note that we
     // cannot simply compare list sizes before and after iterating, since
     // notification may result in Add()ing new callbacks as well as canceling
-    // them.
-    if (removal_callback_ && erased_callbacks)
+    // them. Also note that if this is a OnceCallbackList, the OnceCallbacks
+    // that were executed above have all been removed regardless of whether
+    // they're counted in |erased_callbacks_|.
+    if (removal_callback_ &&
+        (erased_callbacks || IsOnceCallback<CallbackType>::value))
       removal_callback_.Run();  // May delete |this|!
   }
 
@@ -176,7 +185,13 @@ class CallbackListBase {
 
   // Cancels the callback pointed to by |it|, which is guaranteed to be valid.
   void CancelCallback(const typename Callbacks::iterator& it) {
-    if (iterating_) {
+    if (it->is_null()) {
+      // Because at most one Subscription can point to a given callback, and
+      // RepeatingCallbacks are only reset by this function, *it must be a
+      // OnceCallback.  Therefore, it must have already been splice()d to
+      // |null_callbacks_|, and it is safe to erase any time.
+      null_callbacks_.erase(it);
+    } else if (iterating_) {
       // Calling erase() here is unsafe, since the loop in Notify() may be
       // referencing this same iterator, e.g. if adjacent callbacks'
       // Subscriptions are both destroyed when the first one is Run().  Just
@@ -192,6 +207,12 @@ class CallbackListBase {
   // Holds non-null callbacks, which will be called during Notify().
   Callbacks callbacks_;
 
+  // Holds null callbacks whose Subscriptions are still alive, so the
+  // Subscriptions will still contain valid iterators.  Only needed for
+  // OnceCallbacks, since RepeatingCallbacks are not canceled except by
+  // Subscription destruction.
+  Callbacks null_callbacks_;
+
   // Set while Notify() is traversing |callbacks_|.  Used primarily to avoid
   // invalidating iterators that may be in use.
   bool iterating_ = false;
@@ -205,7 +226,17 @@ class CallbackListBase {
 }  // namespace internal
 
 template <typename Signature>
-using CallbackList = internal::CallbackListBase<RepeatingCallback<Signature>>;
+using OnceCallbackList = internal::CallbackListBase<OnceCallback<Signature>>;
+template <typename Signature>
+using RepeatingCallbackList =
+    internal::CallbackListBase<RepeatingCallback<Signature>>;
+template <typename Signature>
+using CallbackList = RepeatingCallbackList<Signature>;
+
+// Syntactic sugar to parallel that used for Callbacks.
+using OnceClosureList = OnceCallbackList<void()>;
+using RepeatingClosureList = RepeatingCallbackList<void()>;
+using ClosureList = CallbackList<void()>;
 
 }  // namespace base
 

@@ -120,7 +120,8 @@ std::vector<search::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
                                                     description_class.style));
     }
     mojom_match->destination_url = match.destination_url;
-    mojom_match->suggestion_group_id = match.suggestion_group_id.value_or(0);
+    mojom_match->suggestion_group_id = match.suggestion_group_id.value_or(
+        SearchSuggestionParser::kNoSuggestionGroupId);
     mojom_match->icon_url =
         AutocompleteMatchVectorIconToResourceName(match.GetVectorIcon(false));
     mojom_match->image_dominant_color = match.image_dominant_color;

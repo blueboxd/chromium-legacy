@@ -208,6 +208,7 @@ bool CrossOriginOpenerPolicyMatch(
 // This function returns whether the BrowsingInstance should change following
 // COOP rules defined in:
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
+// TODO(ahemery): This should be a member of NavigationRequest.
 bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
     network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
     network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
@@ -2436,16 +2437,37 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
                    request->common_params().navigation_type ==
                        mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
 
+  // Retrieve COOP and COEP from the response headers. If we don't have the
+  // headers yet we try to inherit the current page COOP/COEP to have a
+  // relevant speculative RFH.
+  network::mojom::CrossOriginOpenerPolicyValue coop;
+  network::mojom::CrossOriginEmbedderPolicyValue coep;
+  if (auto* response = request->response()) {
+    coop = response->parsed_headers->cross_origin_opener_policy.value;
+    coep = response->parsed_headers->cross_origin_embedder_policy.value;
+  } else {
+    // The heuristic for inheriting is to have the most conservative approach
+    // towards BrowsingInstance switching. Every same-origin navigation should
+    // yield a no swap decision. This is done to work with the renderer crash
+    // optimization that instantly commits the speculative RenderFrameHost.
+    bool inherit_coop =
+        render_frame_host_->has_committed_any_navigation() ||
+        render_frame_host_->cross_origin_opener_policy().value ==
+            network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin;
+    coop = inherit_coop
+               ? render_frame_host_->cross_origin_opener_policy().value
+               : network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
+    coep = render_frame_host_->cross_origin_embedder_policy().value;
+  }
+
   bool cross_origin_policy_swap =
-      request->response() && frame_tree_node_->IsMainFrame() &&
+      frame_tree_node_->IsMainFrame() &&
+      !request->common_params().url.IsAboutBlank() &&
       ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
           render_frame_host_->cross_origin_opener_policy().value,
           render_frame_host_->cross_origin_embedder_policy().value,
           render_frame_host_->GetLastCommittedOrigin(),
-          !render_frame_host_->has_committed_any_navigation(),
-          request->response()->parsed_headers->cross_origin_opener_policy.value,
-          request->response()
-              ->parsed_headers->cross_origin_embedder_policy.value,
+          !render_frame_host_->has_committed_any_navigation(), coop, coep,
           url::Origin::Create(request->common_params().url));
 
   if (cross_origin_policy_swap)

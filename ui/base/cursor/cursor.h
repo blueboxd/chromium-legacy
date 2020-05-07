@@ -8,7 +8,7 @@
 #include "base/component_export.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/geometry/point.h"
 
 #if defined(OS_WIN)

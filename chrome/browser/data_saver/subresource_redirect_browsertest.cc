@@ -30,6 +30,7 @@
 #include "components/optimization_guide/proto/public_image_metadata.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "crypto/sha2.h"

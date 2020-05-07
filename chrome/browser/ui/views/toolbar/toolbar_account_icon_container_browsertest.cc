@@ -13,6 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "content/public/test/browser_test.h"
 
 // TODO(crbug.com/1061637): Clean this and the same code in ukm_browsertest.
 // Maybe move them to InProcessBrowserTest.

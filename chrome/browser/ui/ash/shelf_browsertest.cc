@@ -12,6 +12,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/browser_test.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 

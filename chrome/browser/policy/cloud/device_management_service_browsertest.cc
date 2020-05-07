@@ -20,6 +20,7 @@
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"

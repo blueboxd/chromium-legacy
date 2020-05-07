@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "content/public/test/browser_test.h"
 
 using printers_helper::AddPrinter;
 using printers_helper::CreateTestPrinter;

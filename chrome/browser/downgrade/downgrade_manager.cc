@@ -238,7 +238,7 @@ bool DowngradeManager::PrepareUserDataDirectoryForCurrentVersion(
 
   auto current_milestone = current_version.components()[0];
   int max_number_of_snapshots = g_browser_process->local_state()->GetInteger(
-      prefs::kUserDataSnapshotRentionLimit);
+      prefs::kUserDataSnapshotRetentionLimit);
   base::Optional<uint32_t> purge_milestone;
   if (current_milestone == last_version->components()[0]) {
     // Mid-milestone snapshots are only taken on canary installs.

@@ -11,6 +11,7 @@
 #include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "content/public/test/browser_test.h"
 
 namespace payments {
 

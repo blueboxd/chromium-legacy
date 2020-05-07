@@ -39,6 +39,11 @@ const std::vector<InteractionsStats>& FakeFormFetcher::GetInteractionsStats()
   return stats_;
 }
 
+base::span<const CompromisedCredentials>
+FakeFormFetcher::GetCompromisedCredentials() const {
+  return base::span<const CompromisedCredentials>();
+}
+
 std::vector<const PasswordForm*> FakeFormFetcher::GetNonFederatedMatches()
     const {
   return non_federated_;
@@ -90,6 +95,10 @@ const PasswordForm* FakeFormFetcher::GetPreferredMatch() const {
   return preferred_match_;
 }
 
+std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
+  return std::make_unique<FakeFormFetcher>();
+}
+
 void FakeFormFetcher::SetNonFederated(
     const std::vector<const PasswordForm*>& non_federated) {
   non_federated_ = non_federated;
@@ -107,9 +116,4 @@ void FakeFormFetcher::NotifyFetchCompleted() {
   for (Consumer& consumer : consumers_)
     consumer.OnFetchCompleted();
 }
-
-std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
-  return std::make_unique<FakeFormFetcher>();
-}
-
 }  // namespace password_manager

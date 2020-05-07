@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
+#include "content/public/test/browser_test.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 

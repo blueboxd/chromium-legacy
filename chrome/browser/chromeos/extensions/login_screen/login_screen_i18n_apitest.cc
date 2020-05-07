@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_apitest_base.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

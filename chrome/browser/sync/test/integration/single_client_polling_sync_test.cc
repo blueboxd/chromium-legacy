@@ -15,6 +15,7 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/protocol/client_commands.pb.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Eq;

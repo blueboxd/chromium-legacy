@@ -35,6 +35,7 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "extensions/browser/extension_system.h"
 #include "net/cert/nss_cert_database.h"

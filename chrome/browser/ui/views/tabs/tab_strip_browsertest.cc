@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
 // Integration tests for interactions between TabStripModel and TabStrip.

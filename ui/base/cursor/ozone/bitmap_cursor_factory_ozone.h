@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"

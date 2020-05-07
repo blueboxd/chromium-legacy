@@ -22,6 +22,7 @@
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
 #include "components/viz/common/features.h"
+#include "content/public/test/browser_test.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_client.h"

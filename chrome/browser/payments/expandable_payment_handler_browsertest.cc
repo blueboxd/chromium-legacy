@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
+#include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_ANDROID)

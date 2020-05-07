@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/buildflags.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"

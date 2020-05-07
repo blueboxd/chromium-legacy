@@ -7,6 +7,7 @@
 // service.
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "content/public/test/browser_test.h"
 
 #include <map>
 #include <set>

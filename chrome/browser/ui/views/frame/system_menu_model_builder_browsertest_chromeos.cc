@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/models/menu_model.h"
 
 using chrome::SettingsWindowManager;

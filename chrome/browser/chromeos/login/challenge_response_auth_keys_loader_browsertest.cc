@@ -19,6 +19,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/pref_names.h"
 
 namespace chromeos {

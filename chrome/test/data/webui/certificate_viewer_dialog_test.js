@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Find the first tree item (in the certificate fields tree) with a value.
  * @param {!Element} tree Certificate fields subtree to search.

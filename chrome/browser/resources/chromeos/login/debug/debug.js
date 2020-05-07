@@ -204,6 +204,47 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'gaia-signin',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          // Generic offline GAIA
+          id: 'offline-gaia',
+          trigger: (screen) => {
+            screen.loadAuthExtension({
+              screenMode: 1,  // Offline
+            });
+          }
+        },
+        {
+          // kAccountsPrefLoginScreenDomainAutoComplete value is set
+          id: 'offline-gaia-domain',
+          trigger: (screen) => {
+            screen.loadAuthExtension({
+              screenMode: 1,  // Offline
+              emailDomain: 'somedomain.com',
+            });
+          }
+        },
+        {
+          // Device is enterprise-managed.
+          id: 'offline-gaia-enterprise',
+          trigger: (screen) => {
+            screen.loadAuthExtension({
+              screenMode: 1,  // Offline
+              enterpriseDisplayDomain: 'example.com',
+            });
+          }
+        },
+        {
+          // Retry after incorrect password attempt, user name is already known.
+          id: 'offline-gaia-user',
+          trigger: (screen) => {
+            screen.loadAuthExtension({
+              screenMode: 1,  // Offline
+              email: 'someone@example.com',
+            });
+          }
+        },
+      ]
     },
     {
       id: 'tpm-error-message',
@@ -319,16 +360,32 @@ cr.define('cr.ui.login.debug', function() {
 
   class ToolPanel {
     constructor(parent, title) {
-      let titleDiv =
+      this.titleDiv =
           /** @type {!HTMLElement} */ (document.createElement('h2'));
-      titleDiv.textContent = title;
+      this.titleDiv.textContent = title;
 
       let panel = /** @type {!HTMLElement} */ (document.createElement('div'));
       panel.className = 'debug-tool-panel';
 
-      parent.appendChild(titleDiv);
+      parent.appendChild(this.titleDiv);
       parent.appendChild(panel);
       this.content = panel;
+    }
+
+    show() {
+      this.titleDiv.removeAttribute('hidden');
+      this.content.removeAttribute('hidden');
+    }
+
+    clearContent() {
+      let range = document.createRange();
+      range.selectNodeContents(this.content);
+      range.deleteContents();
+    }
+
+    hide() {
+      this.titleDiv.setAttribute('hidden', true);
+      this.content.setAttribute('hidden', true);
     }
   }
 
@@ -383,6 +440,12 @@ cr.define('cr.ui.login.debug', function() {
       this.screensPanel = panel;
     }
 
+    createStatesPanel(parent) {
+      let panel = new ToolPanel(this.debuggerOverlay_, 'Screen States');
+      // List of states is rebuilt every time to reflect current screen.
+      this.statesPanel = panel;
+    }
+
     switchToScreen(screen) {
       var data = {};
       if (screen.data) {
@@ -390,21 +453,29 @@ cr.define('cr.ui.login.debug', function() {
       }
       /** @suppress {visibility} */
       cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
+      this.lastScreenState = undefined;
+    }
+
+    triggerScreenState(stateId, toggleFn) {
+      this.lastScreenState = stateId;
+      /** @suppress {visibility} */
+      let displayManager = cr.ui.Oobe.instance_;
+      toggleFn(displayManager.currentScreen);
     }
 
     createScreensList() {
-      var screenMap = {};
+      this.screenMap = {};
       // Ordering of the screens.
-      KNOWN_SCREENS.forEach(function(screen, index) {
+      KNOWN_SCREENS.forEach((screen, index) => {
         screen.index = index;
-        screenMap[screen.id] = screen;
+        this.screenMap[screen.id] = screen;
       });
       this.knownScreens = [];
       this.screenButtons = {};
       /** @suppress {visibility} */
       for (var id of cr.ui.Oobe.instance_.screens_) {
-        if (id in screenMap) {
-          this.knownScreens.push(screenMap[id]);
+        if (id in this.screenMap) {
+          this.knownScreens.push(this.screenMap[id]);
         } else {
           console.error('### Screen not registered in debug overlay ' + id);
           let unknownScreen = {
@@ -414,20 +485,20 @@ cr.define('cr.ui.login.debug', function() {
             index: this.knownScreens.length + 1000,
           };
           this.knownScreens.push(unknownScreen);
+          this.screenMap[id] = unknownScreen;
         }
       }
       this.knownScreens = this.knownScreens.sort((a, b) => a.index - b.index);
       let content = this.screensPanel.content;
-      let debugThis = this;
-      this.knownScreens.forEach(function(screen) {
+      this.knownScreens.forEach((screen) => {
         var name = screen.id;
         if (screen.suffix) {
           name = name + ' (' + screen.suffix + ')';
         }
         var button = new DebugButton(
-            content, name, debugThis.switchToScreen.bind(debugThis, screen));
+            content, name, this.switchToScreen.bind(this, screen));
         button.element.classList.add('debug-button-' + screen.kind);
-        debugThis.screenButtons[screen.id] = button;
+        this.screenButtons[screen.id] = button;
       });
     }
 
@@ -446,6 +517,24 @@ cr.define('cr.ui.login.debug', function() {
         this.screenButtons[this.lastScreenId].element.classList.add(
             'debug-button-selected');
       }
+
+      var states = [];
+
+      if (this.screenMap[this.lastScreenId].states) {
+        states = states.concat(this.screenMap[this.lastScreenId].states);
+      }
+
+      this.statesPanel.clearContent();
+      states.forEach(state => {
+        var button = new DebugButton(
+            this.statesPanel.content, state.id,
+            this.triggerScreenState.bind(this, state.id, state.trigger));
+      });
+
+      if (states.length > 0)
+        this.statesPanel.show();
+      else
+        this.statesPanel.hide();
     }
 
     createCssStyle(name, styleSpec) {
@@ -490,6 +579,7 @@ cr.define('cr.ui.login.debug', function() {
       }
       this.createLanguagePanel(this.debuggerOverlay_);
       this.createScreensPanel(this.debuggerOverlay_);
+      this.createStatesPanel(this.debuggerOverlay_);
 
       element.appendChild(this.debuggerButton_);
       element.appendChild(this.debuggerOverlay_);

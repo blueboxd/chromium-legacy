@@ -19,6 +19,7 @@
 #include "chrome/test/ppapi/ppapi_test_select_file_dialog_factory.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/quarantine/test_support.h"
+#include "content/public/test/browser_test.h"
 #include "ppapi/shared_impl/test_utils.h"
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

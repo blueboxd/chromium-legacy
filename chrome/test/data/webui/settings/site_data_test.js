@@ -46,7 +46,7 @@ suite('SiteDataTest', function() {
               assertEquals('Hello', path);
             });
     const sites = [
-      {site: 'Hello', id: '1', localData: 'Cookiez!'},
+      {site: 'Hello', localData: 'Cookiez!'},
     ];
     testBrowserProxy.setCookieList(sites);
     document.body.appendChild(siteData);
@@ -67,8 +67,8 @@ suite('SiteDataTest', function() {
                           assertEquals(1, siteData.$.list.items.length);
                         });
     const sites = [
-      {site: 'Hello', id: '1', localData: 'Cookiez!'},
-      {site: 'World', id: '2', localData: 'Cookiez!'},
+      {site: 'Hello', localData: 'Cookiez!'},
+      {site: 'World', localData: 'Cookiez!'},
     ];
     testBrowserProxy.setCookieList(sites);
     document.body.appendChild(siteData);

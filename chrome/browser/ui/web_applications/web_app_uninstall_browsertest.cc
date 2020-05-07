@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 

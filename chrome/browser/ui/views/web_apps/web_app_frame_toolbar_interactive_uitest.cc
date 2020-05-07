@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/view.h"

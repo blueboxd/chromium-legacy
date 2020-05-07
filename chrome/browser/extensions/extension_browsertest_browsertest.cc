@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "components/version_info/channel.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host_queue.h"
 #include "extensions/browser/test_extension_registry_observer.h"

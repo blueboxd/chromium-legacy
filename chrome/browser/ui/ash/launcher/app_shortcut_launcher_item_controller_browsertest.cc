@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "ui/events/event_constants.h"
 
 // Unit tests for the left click menu and interaction with the menu items. There

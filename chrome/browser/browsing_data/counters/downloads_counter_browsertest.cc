@@ -23,6 +23,7 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/buildflags/buildflags.h"
 #include "url/origin.h"
 

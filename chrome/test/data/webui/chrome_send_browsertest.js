@@ -9,6 +9,7 @@
  */
 
 GEN('#include "chrome/test/data/webui/chrome_send_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Test fixture for chrome send WebUI testing.

@@ -17,6 +17,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/protocol/sync_protocol_error.h"
+#include "content/public/test/browser_test.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 using bookmarks::BookmarkNode;

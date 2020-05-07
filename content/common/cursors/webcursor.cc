@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "build/build_config.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace content {
 

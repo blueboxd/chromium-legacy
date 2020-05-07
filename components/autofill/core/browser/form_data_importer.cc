@@ -463,11 +463,36 @@ bool FormDataImporter::ImportAddressProfileForSection(
     // Reject profiles with invalid country information.
     if (server_field_type == ADDRESS_HOME_COUNTRY &&
         candidate_profile.GetRawInfo(ADDRESS_HOME_COUNTRY).empty()) {
-      if (import_log_buffer) {
-        *import_log_buffer << LogMessage::kImportAddressProfileFromFormFailed
-                           << "Missing country." << CTag{};
+      // TODO(crbug.com/1075604): Remove branch with disabled feature.
+      if (!base::FeatureList::IsEnabled(
+              features::kAutofillUsePageLanguageToTranslateCountryNames)) {
+        if (import_log_buffer) {
+          *import_log_buffer << LogMessage::kImportAddressProfileFromFormFailed
+                             << "Missing country." << CTag{};
+        }
+        return false;
+      } else {
+        // The country code was not successfully determined from the value in
+        // the country field. This can be caused by a localization that does not
+        // match the |app_locale|. Try setting the value again using the
+        // language of the page. Note, there should be a locale associated with
+        // every language code.
+        std::string page_language = client_->GetPageLanguage();
+        // Abort, if there is no known page language.
+        if (page_language.empty())
+          return false;
+        // Otherwise try to set it again.
+        candidate_profile.SetInfo(field_type, value, page_language);
+        // Abort, if the country code was still not determined correctly.
+        if (candidate_profile.GetRawInfo(ADDRESS_HOME_COUNTRY).empty()) {
+          if (import_log_buffer) {
+            *import_log_buffer
+                << LogMessage::kImportAddressProfileFromFormFailed
+                << "Missing country." << CTag{};
+          }
+          return false;
+        }
       }
-      return false;
     }
   }
 
@@ -494,7 +519,6 @@ bool FormDataImporter::ImportAddressProfileForSection(
   if (!IsValidLearnableProfile(candidate_profile, variation_country_code,
                                app_locale_, import_log_buffer))
     return false;
-
   std::string guid =
       personal_data_manager_->SaveImportedProfile(candidate_profile);
   return !guid.empty();

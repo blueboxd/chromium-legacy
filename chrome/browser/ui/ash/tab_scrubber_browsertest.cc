@@ -24,6 +24,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_utils.h"

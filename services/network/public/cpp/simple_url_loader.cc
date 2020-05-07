@@ -1713,6 +1713,14 @@ void SimpleURLLoaderImpl::MaybeComplete() {
   if (request_state_->body_started && !request_state_->body_completed)
     return;
 
+  // DNS errors can be transient, and due to other issues, especially with
+  // DoH. If required, retry.
+  if (request_state_->net_error == net::ERR_NAME_NOT_RESOLVED &&
+      remaining_retries_ > 0 && (retry_mode_ & RETRY_ON_NAME_NOT_RESOLVED)) {
+    Retry();
+    return;
+  }
+
   // Retry on network change errors. Waiting for body complete isn't strictly
   // necessary, but it guarantees a consistent situation, with no reads pending
   // on the body pipe.

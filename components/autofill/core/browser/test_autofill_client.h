@@ -48,6 +48,7 @@ class TestAutofillClient : public AutofillClient {
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
+  std::string GetPageLanguage() const override;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   std::vector<std::string> GetMerchantWhitelistForVirtualCards() override;
   std::vector<std::string> GetBinRangeWhitelistForVirtualCards() override;
@@ -157,6 +158,11 @@ class TestAutofillClient : public AutofillClient {
     payments_client_ = std::move(payments_client);
   }
 
+  // Sets the page language that is retrieved by |GetPageLanguage()|.
+  void set_page_language(std::string page_language) {
+    page_language_ = page_language;
+  }
+
   void set_test_form_data_importer(
       std::unique_ptr<TestFormDataImporter> form_data_importer) {
     form_data_importer_ = std::move(form_data_importer);
@@ -247,6 +253,9 @@ class TestAutofillClient : public AutofillClient {
   base::Optional<SaveCreditCardOptions> save_credit_card_options_;
 
   std::vector<std::string> migration_card_selection_;
+
+  // The language that is returned by |GetPageLanguage()|.
+  std::string page_language_;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   std::vector<std::string> merchant_whitelist_;

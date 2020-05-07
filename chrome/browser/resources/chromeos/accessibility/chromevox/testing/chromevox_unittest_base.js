@@ -19,6 +19,13 @@ ChromeVoxUnitTestBase = class extends testing.Test {
     }
   }
 
+  /** @override */
+  testGenCppIncludes() {
+    GEN(`
+  #include "content/public/test/browser_test.h"
+      `);
+  }
+
   /**
    * Loads some inlined html into the body of the current document, replacing
    * whatever was there previously.

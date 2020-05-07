@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -17,6 +17,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_web_ui.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -209,75 +210,71 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsModes) {
   std::vector<std::string> secure_dns_templates;
   int management_mode;
 
-  local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeOff);
+  local_state->SetString(prefs::kDnsOverHttpsMode, SecureDnsConfig::kModeOff);
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
+  EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeAutomatic);
+                         SecureDnsConfig::kModeAutomatic);
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeAutomatic, secure_dns_mode);
+  EXPECT_EQ(SecureDnsConfig::kModeAutomatic, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeSecure, secure_dns_mode);
+  EXPECT_EQ(SecureDnsConfig::kModeSecure, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode, "unknown");
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
+  EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicy) {
   policy::PolicyMap policy_map;
-  SetPolicyForPolicyKey(&policy_map, policy::key::kDnsOverHttpsMode,
-                        std::make_unique<base::Value>(
-                            chrome_browser_net::kDnsOverHttpsModeAutomatic));
+  SetPolicyForPolicyKey(
+      &policy_map, policy::key::kDnsOverHttpsMode,
+      std::make_unique<base::Value>(SecureDnsConfig::kModeAutomatic));
 
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
 
   std::string secure_dns_mode;
   std::vector<std::string> secure_dns_templates;
   int management_mode;
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeAutomatic, secure_dns_mode);
-  EXPECT_EQ(static_cast<int>(
-                chrome_browser_net::SecureDnsUiManagementMode::kNoOverride),
+  EXPECT_EQ(SecureDnsConfig::kModeAutomatic, secure_dns_mode);
+  EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kNoOverride),
             management_mode);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicyChange) {
   policy::PolicyMap policy_map;
-  SetPolicyForPolicyKey(&policy_map, policy::key::kDnsOverHttpsMode,
-                        std::make_unique<base::Value>(
-                            chrome_browser_net::kDnsOverHttpsModeAutomatic));
+  SetPolicyForPolicyKey(
+      &policy_map, policy::key::kDnsOverHttpsMode,
+      std::make_unique<base::Value>(SecureDnsConfig::kModeAutomatic));
 
   std::string secure_dns_mode;
   std::vector<std::string> secure_dns_templates;
   int management_mode;
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeAutomatic, secure_dns_mode);
-  EXPECT_EQ(static_cast<int>(
-                chrome_browser_net::SecureDnsUiManagementMode::kNoOverride),
+  EXPECT_EQ(SecureDnsConfig::kModeAutomatic, secure_dns_mode);
+  EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kNoOverride),
             management_mode);
 
   SetPolicyForPolicyKey(
       &policy_map, policy::key::kDnsOverHttpsMode,
-      std::make_unique<base::Value>(chrome_browser_net::kDnsOverHttpsModeOff));
+      std::make_unique<base::Value>(SecureDnsConfig::kModeOff));
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
-  EXPECT_EQ(static_cast<int>(
-                chrome_browser_net::SecureDnsUiManagementMode::kNoOverride),
+  EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
+  EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kNoOverride),
             management_mode);
 }
 
@@ -291,18 +288,16 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, OtherPoliciesSet) {
 
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
 
   std::string secure_dns_mode;
   std::vector<std::string> secure_dns_templates;
   int management_mode;
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(chrome_browser_net::kDnsOverHttpsModeOff, secure_dns_mode);
-  EXPECT_EQ(
-      static_cast<int>(
-          chrome_browser_net::SecureDnsUiManagementMode::kDisabledManaged),
-      management_mode);
+  EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
+  EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kDisabledManaged),
+            management_mode);
 }
 #endif
 

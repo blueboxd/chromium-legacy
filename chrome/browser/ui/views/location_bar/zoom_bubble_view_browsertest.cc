@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_zoom_request_client.h"
 #include "extensions/common/extension_builder.h"
 #include "ui/events/base_event_utils.h"

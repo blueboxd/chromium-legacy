@@ -814,10 +814,28 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
 
   params.OverrideContentType(factory.ContentType());
 
-  // Don't send security violation reports for speculative preloads.
+  // No CSP reports are sent for:
+  //
+  // Speculative preload
+  // ===================
+  // This avoids sending 2 reports for a single resource (preload + real load).
+  // Moreover the speculative preload are 'speculative', it might not even be
+  // possible to issue a real request.
+  //
+  // Stale revalidations
+  // ===================
+  // Web browser should not send violation reports for stale revalidations. The
+  // initial request was allowed. In theory, the revalidation request should be
+  // allowed as well. However, some <meta> CSP header might have been added in
+  // the meantime. See https://crbug.com/1070117.
+  //
+  // Note: Ideally, stale revalidations should bypass every checks. In practise,
+  // they are run and block the request. Bypassing all security checks could be
+  // risky and probably doesn't really worth it. They are very rarely blocked.
   ReportingDisposition reporting_disposition =
-      params.IsSpeculativePreload() ? ReportingDisposition::kSuppressReporting
-                                    : ReportingDisposition::kReport;
+      params.IsSpeculativePreload() || params.IsStaleRevalidation()
+          ? ReportingDisposition::kSuppressReporting
+          : ReportingDisposition::kReport;
 
   // Note that resource_request.GetRedirectStatus() may return kFollowedRedirect
   // here since e.g. ThreadableLoader may create a new Resource from
@@ -829,6 +847,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
   Context().CheckCSPForRequest(
       resource_request.GetRequestContext(),
+      resource_request.GetRequestDestination(),
       MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url()), options,
       reporting_disposition, resource_request.GetRedirectStatus());
 

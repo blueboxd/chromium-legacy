@@ -29,6 +29,7 @@
 #include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"

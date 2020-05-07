@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -223,12 +224,12 @@ void DnsProbeServiceImpl::OnDnsConfigChanged() {
 }
 
 void DnsProbeServiceImpl::SetUpCurrentConfigRunner() {
-  bool insecure_stub_resolver_enabled;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
-  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &current_config_secure_dns_mode_,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(
+              false /* force_check_parental_controls_for_automatic_mode */);
+
+  current_config_secure_dns_mode_ = secure_dns_config.mode();
 
   net::DnsConfigOverrides current_config_overrides;
   current_config_overrides.search = std::vector<std::string>();
@@ -237,12 +238,9 @@ void DnsProbeServiceImpl::SetUpCurrentConfigRunner() {
 
   if (current_config_secure_dns_mode_ ==
       net::DnsConfig::SecureDnsMode::SECURE) {
-    if (!dns_over_https_servers.empty()) {
-      current_config_overrides.dns_over_https_servers.emplace();
-      for (auto& doh_server : dns_over_https_servers) {
-        current_config_overrides.dns_over_https_servers.value().push_back(
-            std::move(doh_server));
-      }
+    if (!secure_dns_config.servers().empty()) {
+      current_config_overrides.dns_over_https_servers.emplace(
+          secure_dns_config.servers());
     }
     current_config_overrides.secure_dns_mode =
         net::DnsConfig::SecureDnsMode::SECURE;

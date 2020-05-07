@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"

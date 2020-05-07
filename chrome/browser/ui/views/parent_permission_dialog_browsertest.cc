@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/parent_permission_dialog_view.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "google_apis/gaia/fake_gaia.h"

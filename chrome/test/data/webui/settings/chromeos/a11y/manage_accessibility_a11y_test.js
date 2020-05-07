@@ -13,6 +13,8 @@ GEN_INCLUDE([
   'os_settings_accessibility_test.js',
 ]);
 
+GEN('#include "content/public/test/browser_test.h"');
+
 // eslint-disable-next-line no-var
 var ManageAccessibilityA11yTest = class extends OSSettingsAccessibilityTest {};
 

@@ -10,6 +10,7 @@
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/security_state/content/android/security_state_client.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 
 class ChromeSecurityStateClientTest : public PlatformBrowserTest {
  public:

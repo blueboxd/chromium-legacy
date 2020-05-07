@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
 #include "url/gurl.h"

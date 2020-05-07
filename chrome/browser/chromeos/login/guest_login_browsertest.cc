@@ -10,6 +10,7 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 

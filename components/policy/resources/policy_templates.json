@@ -20599,7 +20599,7 @@
       If this policy is left unset, the Click to Call feature is enabled by default.''',
     },
     {
-      'name': 'UserDataSnapshotRentionLimit',
+      'name': 'UserDataSnapshotRetentionLimit',
       'owners': ['ydago@chromium.org', 'grt@chromium.org'],
       'type': 'int',
       'schema': { 'type': 'integer', 'minimum': 0 },

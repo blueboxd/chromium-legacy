@@ -59,6 +59,7 @@ extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
 extern const base::Feature kAutofillUseNewSectioningMethod;
+extern const base::Feature kAutofillUsePageLanguageToTranslateCountryNames;
 extern const base::Feature kAutofillUseParseCityStateCountryZipCodeInHeuristic;
 extern const base::Feature kAutofillUseVariationCountryCode;
 

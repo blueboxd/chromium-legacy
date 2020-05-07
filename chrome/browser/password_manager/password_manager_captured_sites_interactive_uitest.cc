@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
 using captured_sites_test_utils::CapturedSiteParams;

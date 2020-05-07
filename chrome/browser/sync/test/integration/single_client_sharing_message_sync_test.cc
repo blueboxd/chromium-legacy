@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

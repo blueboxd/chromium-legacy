@@ -27,7 +27,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-blink.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CopyCursor

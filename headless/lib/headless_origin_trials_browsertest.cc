@@ -4,6 +4,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "headless/public/headless_browser.h"

@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "content/public/test/browser_test.h"
 
 namespace autofill {
 

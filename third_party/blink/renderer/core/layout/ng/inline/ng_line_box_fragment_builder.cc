@@ -52,7 +52,6 @@ void NGLineBoxFragmentBuilder::ChildList::CreateTextFragments(
              item.Type() == NGInlineItem::kControl);
       DCHECK(item.TextType() == NGTextType::kNormal ||
              item.TextType() == NGTextType::kSymbolMarker);
-      text_builder.SetIsFirstForNode(item_result->IsFirstForNode());
       text_builder.SetItem(text_content, item_result,
                            child.rect.size.block_size);
       DCHECK(!child.fragment);

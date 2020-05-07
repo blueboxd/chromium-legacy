@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace vr {

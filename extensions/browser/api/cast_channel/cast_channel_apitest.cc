@@ -24,6 +24,7 @@
 #include "components/cast_channel/logger.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
 #include "extensions/common/api/cast_channel.h"
 #include "extensions/common/extension_builder.h"

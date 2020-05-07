@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_apitest_base.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

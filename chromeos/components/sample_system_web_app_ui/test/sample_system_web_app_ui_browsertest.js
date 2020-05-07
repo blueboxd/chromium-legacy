@@ -6,6 +6,8 @@
  * @fileoverview Test suite for chrome://sample-system-web-app.
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 const HOST_ORIGIN = 'chrome://sample-system-web-app';
 const UNTRUSTED_HOST_ORIGIN = 'chrome-untrusted://sample-system-web-app';
 

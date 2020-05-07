@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/view.h"
 
 class InvertBubbleViewBrowserTest : public DialogBrowserTest {

@@ -5,6 +5,8 @@
 // Include test fixture.
 GEN_INCLUDE(['net_internals_test.js']);
 
+GEN('#include "content/public/test/browser_test.h"');
+
 // Anonymous namespace
 (function() {
 

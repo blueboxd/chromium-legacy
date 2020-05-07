@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/test/media_router/media_router_integration_browsertest.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"

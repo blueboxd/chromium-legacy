@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/test/browser_test.h"
 
 using base::ASCIIToUTF16;
 

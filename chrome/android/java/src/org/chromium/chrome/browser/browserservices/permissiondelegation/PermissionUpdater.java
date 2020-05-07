@@ -54,12 +54,11 @@ public class PermissionUpdater {
         mPermissionManager.addDelegateApp(origin, packageName);
 
         mNotificationPermissionUpdater.onOriginVerified(origin, packageName);
-        mLocationPermissionUpdater.onOriginVerified(origin, packageName);
     }
 
     public void onClientAppUninstalled(Origin origin) {
         mNotificationPermissionUpdater.onClientAppUninstalled(origin);
-        // TODO(crbug.com/1069506): Add update location permission on uninstalled.
+        mLocationPermissionUpdater.onClientAppUninstalled(origin);
     }
 
     private boolean appHandlesBrowsableIntent(String packageName, Uri uri) {

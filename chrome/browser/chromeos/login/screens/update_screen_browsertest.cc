@@ -32,6 +32,7 @@
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

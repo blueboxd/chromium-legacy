@@ -194,23 +194,18 @@ class NGInlineItemsBuilderTemplate {
   // as its String version does.
   // See the String version for using nullptr for ComputedStyle and
   // LayoutObject.
-  NGInlineItem& Append(NGInlineItem::NGInlineItemType,
-                       UChar,
-                       LayoutObject*,
-                       bool is_first_for_node);
+  NGInlineItem& Append(NGInlineItem::NGInlineItemType, UChar, LayoutObject*);
 
   void AppendCollapseWhitespace(const StringView,
                                 const ComputedStyle*,
-                                LayoutText*,
-                                bool is_first_for_node = true);
+                                LayoutText*);
   void AppendPreserveWhitespace(const String&,
                                 const ComputedStyle*,
                                 LayoutText*);
   void AppendPreserveNewline(const String&, const ComputedStyle*, LayoutText*);
 
-  void AppendForcedBreakCollapseWhitespace(LayoutObject*,
-                                           bool is_first_for_node);
-  void AppendForcedBreak(LayoutObject*, bool is_first_for_node);
+  void AppendForcedBreakCollapseWhitespace(LayoutObject*);
+  void AppendForcedBreak(LayoutObject*);
 
   void RemoveTrailingCollapsibleSpaceIfExists();
   void RemoveTrailingCollapsibleSpace(NGInlineItem*);
@@ -218,13 +213,10 @@ class NGInlineItemsBuilderTemplate {
   void RestoreTrailingCollapsibleSpaceIfRemoved();
   void RestoreTrailingCollapsibleSpace(NGInlineItem*);
 
-  void AppendTextItem(const StringView,
-                      LayoutText* layout_object,
-                      bool is_first_for_node);
+  void AppendTextItem(const StringView, LayoutText* layout_object);
   NGInlineItem& AppendTextItem(NGInlineItem::NGInlineItemType type,
                                const StringView,
-                               LayoutText* layout_object,
-                               bool is_first_for_node);
+                               LayoutText* layout_object);
   void AppendEmptyTextItem(LayoutText* layout_object);
 
   void AppendGeneratedBreakOpportunity(LayoutObject*);

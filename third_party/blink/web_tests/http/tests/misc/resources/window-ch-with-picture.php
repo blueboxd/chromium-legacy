@@ -5,15 +5,15 @@
 <body>
 <script>
     var fail = function(num) {
-        parent.postMessage("fail "+ num, "*");
+        opener.postMessage("fail "+ num, "*");
     };
 
     var success = function() {
-        parent.postMessage("success", "*");
+        opener.postMessage("success", "*");
     };
 
     var resize = function() {
-        parent.postMessage("resize", "*");
+        opener.postMessage("resize", "*");
     };
 
     var counter = 1;

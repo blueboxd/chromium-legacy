@@ -2042,19 +2042,6 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
   core_frame->GetPage()->GetFocusController().SetFocusedFrame(core_frame);
 }
 
-void WebViewImpl::SetInitialFocus(bool reverse) {
-  if (!AsView().page)
-    return;
-  Frame* frame = GetPage()->GetFocusController().FocusedOrMainFrame();
-  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-    if (Document* document = local_frame->GetDocument())
-      document->ClearFocusedElement();
-  }
-  GetPage()->GetFocusController().SetInitialFocus(
-      reverse ? mojom::blink::FocusType::kBackward
-              : mojom::blink::FocusType::kForward);
-}
-
 // TODO(dglazkov): Remove and replace with Node:hasEditableStyle.
 // http://crbug.com/612560
 static bool IsElementEditable(const Element* element) {
@@ -2274,15 +2261,6 @@ void WebViewImpl::AdvanceFocus(bool reverse) {
   GetPage()->GetFocusController().AdvanceFocus(
       reverse ? mojom::blink::FocusType::kBackward
               : mojom::blink::FocusType::kForward);
-}
-
-void WebViewImpl::AdvanceFocusAcrossFrames(mojom::blink::FocusType type,
-                                           WebRemoteFrame* from,
-                                           WebLocalFrame* to) {
-  // TODO(alexmos): Pass in proper with sourceCapabilities.
-  GetPage()->GetFocusController().AdvanceFocusAcrossFrames(
-      type, To<WebRemoteFrameImpl>(from)->GetFrame(),
-      To<WebLocalFrameImpl>(to)->GetFrame());
 }
 
 double WebViewImpl::ZoomLevel() {

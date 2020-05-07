@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/content_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace {

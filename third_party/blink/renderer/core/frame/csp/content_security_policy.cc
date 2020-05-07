@@ -650,13 +650,15 @@ bool ContentSecurityPolicy::AllowPluginTypeForDocument(
 
 bool ContentSecurityPolicy::AllowRequestWithoutIntegrity(
     mojom::RequestContextType context,
+    network::mojom::RequestDestination request_destination,
     const KURL& url,
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   for (const auto& policy : policies_) {
     if (CheckHeaderTypeMatches(check_header_type, policy->HeaderType()) &&
-        !policy->AllowRequestWithoutIntegrity(context, url, redirect_status,
+        !policy->AllowRequestWithoutIntegrity(context, request_destination, url,
+                                              redirect_status,
                                               reporting_disposition))
       return false;
   }
@@ -730,6 +732,7 @@ GetDirectiveTypeFromRequestContextType(mojom::RequestContextType context) {
 
 bool ContentSecurityPolicy::AllowRequest(
     mojom::RequestContextType context,
+    network::mojom::RequestDestination request_destination,
     const KURL& url,
     const String& nonce,
     const IntegrityMetadataSet& integrity_metadata,
@@ -738,13 +741,15 @@ bool ContentSecurityPolicy::AllowRequest(
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   if (integrity_metadata.IsEmpty() &&
-      !AllowRequestWithoutIntegrity(context, url, redirect_status,
-                                    reporting_disposition, check_header_type)) {
+      !AllowRequestWithoutIntegrity(context, request_destination, url,
+                                    redirect_status, reporting_disposition,
+                                    check_header_type)) {
     return false;
   }
 
   base::Optional<ContentSecurityPolicy::DirectiveType> type =
       GetDirectiveTypeFromRequestContextType(context);
+
   if (!type)
     return true;
   return AllowFromSource(*type, url, redirect_status, reporting_disposition,

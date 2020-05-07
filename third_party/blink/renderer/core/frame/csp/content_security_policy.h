@@ -332,14 +332,20 @@ class CORE_EXPORT ContentSecurityPolicy final
       ReportingDisposition = ReportingDisposition::kReport) const;
   bool IsFrameAncestorsEnforced() const;
 
+  // TODO(crbug.com/889751): Remove "mojom::RequestContextType" once
+  // all the code migrates.
   bool AllowRequestWithoutIntegrity(
       mojom::RequestContextType,
+      network::mojom::RequestDestination,
       const KURL&,
       RedirectStatus = RedirectStatus::kNoRedirect,
       ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
+  // TODO(crbug.com/889751): Remove "mojom::RequestContextType" once
+  // all the code migrates.
   bool AllowRequest(mojom::RequestContextType,
+                    network::mojom::RequestDestination,
                     const KURL&,
                     const String& nonce,
                     const IntegrityMetadataSet&,

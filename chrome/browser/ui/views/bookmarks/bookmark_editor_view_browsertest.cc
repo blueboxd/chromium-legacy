@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "content/public/test/browser_test.h"
 
 // Test harness for integration tests using BookmarkEditorView.
 class BookmarkEditorViewBrowserTest : public DialogBrowserTest {

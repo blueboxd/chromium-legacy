@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "content/public/test/browser_test.h"
 
 using base::StartsWith;
 

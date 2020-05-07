@@ -1047,7 +1047,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();
   void OnUpdateOpener(int opener_routing_id);
-  void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,

@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/files/scoped_temp_dir.h"
-#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
 // A base class for browser tests run on Android. It exposes very little API

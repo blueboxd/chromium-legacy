@@ -30,8 +30,14 @@ struct CheckedPtrNoOpImpl {
   }
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
-  // hasn't been freed.
+  // hasn't been freed. The function is allowed to crash on nullptr.
   static inline void* SafelyUnwrapPtr(uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Unwraps the pointer's uintptr_t representation, while asserting that memory
+  // hasn't been freed. The function must handle nullptr gracefully.
+  static inline void* SafelyUnwrapPtrMayBeNull(uintptr_t wrapped_ptr) {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
@@ -39,7 +45,27 @@ struct CheckedPtrNoOpImpl {
   static uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     return wrapped_ptr + delta;
   }
+
+  // Checks if wrapped pointers are equal. The pointers can be nullptr.
+  static inline bool AreEqual(uintptr_t wrapped_ptr1, uintptr_t wrapped_ptr2) {
+    return wrapped_ptr1 == wrapped_ptr2;
+  }
+
+  // Checks if a wrapped pointer is equal to a raw pointer. The pointers
+  // can be nullptr.
+  static inline bool AreEqual(uintptr_t wrapped_ptr, const void* ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr) == ptr;
+  }
 };
+
+template <typename T>
+struct DereferencedPointerType {
+  using Type = decltype(*std::declval<T*>());
+};
+// This explicitly doesn't define any type aliases, since dereferencing void is
+// invalid.
+template <>
+struct DereferencedPointerType<void> {};
 
 }  // namespace internal
 
@@ -71,7 +97,7 @@ class CheckedPtr {
   // NOLINTNEXTLINE(runtime/explicit)
   CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
 
-  // In addition to nullptr_t constructor above, CheckedPtr needs to have these
+  // In addition to nullptr_t ctor above, CheckedPtr needs to have these
   // as |=default| or |constexpr| to avoid hitting -Wglobal-constructors in
   // cases like this:
   //     struct SomeStruct { int int_field; CheckedPtr<int> ptr_field; };
@@ -90,28 +116,48 @@ class CheckedPtr {
 
   // Avoid using. The goal of CheckedPtr is to be as close to raw pointer as
   // possible, so use it only if absolutely necessary (e.g. for const_cast).
-  T* get() const {
-    return static_cast<T*>(Impl::SafelyUnwrapPtr(wrapped_ptr_));
-  }
+  T* get() const { return GetMayBeNull(); }
 
   explicit operator bool() const {
     return wrapped_ptr_ != Impl::GetWrappedNullPtr();
   }
 
-  T* operator->() const { return get(); }
+  // Use SFINAE to avoid defining |operator*| for T=void, which wouldn't compile
+  // due to |void&|.
+  template <typename U = T,
+            typename V = typename internal::DereferencedPointerType<U>::Type>
+  V& operator*() const {
+    return *GetOkToCrashOnNull();
+  }
+  T* operator->() const { return GetOkToCrashOnNull(); }
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  operator T*() const { return get(); }
+  operator T*() const { return GetMayBeNull(); }
   template <typename U>
   explicit operator U*() const {
-    return static_cast<U*>(get());
+    return static_cast<U*>(GetMayBeNull());
   }
-  // Note: |T& operator*()| isn't needed, because |operator T*()| will take care
-  // of |*ptr| dereferences. Better to go this way, to avoid |void&| problem.
 
   CheckedPtr& operator++() {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, sizeof(T));
     return *this;
+  }
+
+  bool operator==(T* p) const { return Impl::AreEqual(wrapped_ptr_, p); }
+  bool operator!=(T* p) const { return !operator==(p); }
+  bool operator==(const CheckedPtr& other) const {
+    return Impl::AreEqual(wrapped_ptr_, other.wrapped_ptr_);
+  }
+  bool operator!=(const CheckedPtr& other) const { return !operator==(other); }
+  template <typename U>
+  bool operator==(const CheckedPtr<U>& other) const {
+    // TODO(bartekn): Eliminate unwrapping |other| (which cast does), because it
+    // may check if the pointer was freed.
+    return Impl::AreEqual(wrapped_ptr_, static_cast<T*>(other));
+  }
+  template <typename U>
+  bool operator!=(const CheckedPtr<U>& other) const {
+    return !operator==(other);
   }
 
   void swap(CheckedPtr& other) noexcept {
@@ -119,6 +165,18 @@ class CheckedPtr {
   }
 
  private:
+  // This getter is meant for situations where the pointers is merely read, not
+  // necessarily with intention to dereference. It doesn't crash on nullptr.
+  T* GetMayBeNull() const {
+    return static_cast<T*>(Impl::SafelyUnwrapPtrMayBeNull(wrapped_ptr_));
+  }
+  // This getter is meant for situations where the pointers is meant to be
+  // dereferenced. It is allowed to crash on nullptr (it may or may not),
+  // because it knows that the caller will crash on nullptr.
+  T* GetOkToCrashOnNull() const {
+    return static_cast<T*>(Impl::SafelyUnwrapPtr(wrapped_ptr_));
+  }
+
   // Store the pointer as |uintptr_t|, because depending on implementation, its
   // unused bits may be re-purposed to store extra information.
   uintptr_t wrapped_ptr_ = Impl::GetWrappedNullPtr();

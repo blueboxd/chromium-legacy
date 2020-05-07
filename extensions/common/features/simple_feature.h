@@ -107,6 +107,7 @@ class SimpleFeature : public Feature {
   void set_contexts(std::initializer_list<Context> contexts);
   void set_dependencies(std::initializer_list<const char* const> dependencies);
   void set_extension_types(std::initializer_list<Manifest::Type> types);
+  void set_feature_flag(base::StringPiece feature_flag);
   void set_session_types(std::initializer_list<FeatureSessionType> types);
   void set_internal(bool is_internal) { is_internal_ = is_internal; }
   void set_disallow_for_service_workers(bool disallow) {
@@ -237,6 +238,7 @@ class SimpleFeature : public Feature {
   base::Optional<int> min_manifest_version_;
   base::Optional<int> max_manifest_version_;
   base::Optional<std::string> command_line_switch_;
+  base::Optional<std::string> feature_flag_;
   base::Optional<version_info::Channel> channel_;
   // Whether to ignore channel-based restrictions (such as because the user has
   // enabled experimental extension APIs). Note: this is lazily calculated, and

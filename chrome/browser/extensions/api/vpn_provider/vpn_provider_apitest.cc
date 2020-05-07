@@ -20,6 +20,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/vpn_provider/vpn_provider_api.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"

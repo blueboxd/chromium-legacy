@@ -185,6 +185,7 @@ test("cast_runner_browsertests") {
     ":cast_runner_test_core",
     "//base/test:test_support",
     "//content/public/browser",
+    "//content/test:test_support",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
     "//fuchsia/engine:browsertest_core",

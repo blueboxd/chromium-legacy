@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 GEN('#include "components/sync/driver/sync_driver_switches.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Test fixture for sync internals WebUI testing.

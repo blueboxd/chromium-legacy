@@ -23,6 +23,7 @@
 #include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

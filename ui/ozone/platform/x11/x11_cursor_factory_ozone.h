@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"

@@ -4,7 +4,6 @@
 
 // https://github.com/WICG/is-input-pending
 [
-    Exposed=Window,
     ImplementedAs=NavigatorScheduling,
     RuntimeEnabled=ExperimentalIsInputPending
 ] partial interface Navigator {

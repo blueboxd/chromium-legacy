@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
+#include "content/public/test/browser_test.h"
 
 using ServiceWorkerAppTest = extensions::PlatformAppBrowserTest;
 

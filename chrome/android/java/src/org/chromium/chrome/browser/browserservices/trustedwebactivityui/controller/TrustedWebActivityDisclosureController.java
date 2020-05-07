@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_DISMISSED_BY_USER;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.PACKAGE_NAME;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesStore;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
@@ -45,6 +46,7 @@ public class TrustedWebActivityDisclosureController implements NativeInitObserve
         mRecorder = recorder;
         mClientPackageNameProvider = clientPackageNameProvider;
         model.set(DISCLOSURE_EVENTS_CALLBACK, this);
+        model.set(PACKAGE_NAME, mClientPackageNameProvider.get());
         currentPageVerifier.addVerificationObserver(this::onVerificationStatusChanged);
         lifecycleDispatcher.register(this);
     }

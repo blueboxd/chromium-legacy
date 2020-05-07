@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/search_engines/template_url.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007

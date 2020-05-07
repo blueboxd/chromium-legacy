@@ -14,6 +14,7 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/test/browser_test.h"
 
 namespace arc {
 

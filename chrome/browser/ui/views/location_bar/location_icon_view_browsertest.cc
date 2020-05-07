@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 // TODO (spqchan): Refine tests. See crbug.com/770873.

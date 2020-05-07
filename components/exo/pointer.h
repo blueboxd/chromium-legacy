@@ -18,7 +18,7 @@
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"

@@ -20,6 +20,7 @@
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/input_device.h"

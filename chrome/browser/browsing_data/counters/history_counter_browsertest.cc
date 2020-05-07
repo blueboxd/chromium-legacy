@@ -18,6 +18,7 @@
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
 

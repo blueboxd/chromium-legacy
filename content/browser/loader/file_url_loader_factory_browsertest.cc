@@ -5,6 +5,7 @@
 // This must be before Windows headers
 #include "base/bind_helpers.h"
 #include "build/build_config.h"
+#include "content/public/test/browser_test.h"
 
 #if defined(OS_WIN)
 #include <objbase.h>

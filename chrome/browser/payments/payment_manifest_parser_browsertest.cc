@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/payments/content/utility/payment_manifest_parser.h"
+#include "content/public/test/browser_test.h"
 
 #include <utility>
 

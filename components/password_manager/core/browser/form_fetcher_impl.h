@@ -11,6 +11,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/password_manager/core/browser/compromised_credentials_consumer.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/http_password_store_migrator.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -25,6 +27,7 @@ class PasswordManagerClient;
 // update the Clone() method accordingly.
 class FormFetcherImpl : public FormFetcher,
                         public PasswordStoreConsumer,
+                        public CompromisedCredentialsConsumer,
                         public HttpPasswordStoreMigrator::Consumer {
  public:
   // |form_digest| describes what credentials need to be retrieved and
@@ -48,6 +51,8 @@ class FormFetcherImpl : public FormFetcher,
   void Fetch() override;
   State GetState() const override;
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
+  base::span<const CompromisedCredentials> GetCompromisedCredentials()
+      const override;
   std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
       const override;
   std::vector<const autofill::PasswordForm*> GetFederatedMatches()
@@ -63,21 +68,12 @@ class FormFetcherImpl : public FormFetcher,
   const autofill::PasswordForm* GetPreferredMatch() const override;
   std::unique_ptr<FormFetcher> Clone() override;
 
-  // PasswordStoreConsumer:
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-  void OnGetSiteStatistics(std::vector<InteractionsStats> stats) override;
-
-  // HttpPasswordStoreMigrator::Consumer:
-  void ProcessMigratedForms(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
-
  protected:
   // Processes password form results and forwards them to the |consumers_|.
   void ProcessPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
-  // Splits |results| into |federated_|, |non_federated_| and |blacklisted_|.
+  // Splits |results| into |federated_|, |non_federated_| and |is_blacklisted_|.
   virtual void SplitResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
@@ -103,6 +99,19 @@ class FormFetcherImpl : public FormFetcher,
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
 
  private:
+  // PasswordStoreConsumer:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+  void OnGetSiteStatistics(std::vector<InteractionsStats> stats) override;
+
+  // HttpPasswordStoreMigrator::Consumer:
+  void ProcessMigratedForms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
+
+  // CompromisedCredentialsConsumer:
+  void OnGetCompromisedCredentials(
+      std::vector<CompromisedCredentials> compromised_credentials) override;
+
   // Non-federated credentials of the same scheme as the observed form.
   std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;
 
@@ -122,6 +131,9 @@ class FormFetcherImpl : public FormFetcher,
 
   // Statistics for the current domain.
   std::vector<InteractionsStats> interactions_stats_;
+
+  // List of compromised credentials for the current domain.
+  std::vector<CompromisedCredentials> compromised_credentials_;
 
   // Consumers of the fetcher, all are assumed to either outlive |this| or
   // remove themselves from the list during their destruction.

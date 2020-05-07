@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/download_test_observer.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"

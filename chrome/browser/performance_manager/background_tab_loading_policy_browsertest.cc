@@ -15,6 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/test/browser_test.h"
 
 namespace performance_manager {
 

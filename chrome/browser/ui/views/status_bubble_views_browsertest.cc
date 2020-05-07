@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/status_bubble_views_browsertest_mac.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/views/widget/widget.h"
 

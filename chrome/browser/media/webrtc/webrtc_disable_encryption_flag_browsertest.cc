@@ -10,6 +10,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 

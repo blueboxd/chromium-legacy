@@ -19,17 +19,7 @@ import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
-
-/**
- * @typedef {{
- *   site: string,
- *   id: string,
- *   localData: string,
- * }}
- */
-export let CookieDataSummaryItem;
-
+import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './local_data_browser_proxy.js';
 
 Polymer({
   is: 'site-data-entry',
@@ -42,7 +32,7 @@ Polymer({
   ],
 
   properties: {
-    /** @type {!CookieDataSummaryItem} */
+    /** @type {!LocalDataItem} */
     model: Object,
   },
 

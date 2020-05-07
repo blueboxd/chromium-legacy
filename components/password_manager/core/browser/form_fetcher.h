@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/observer_list_types.h"
 #include "base/strings/string16.h"
@@ -19,6 +20,7 @@ struct PasswordForm;
 
 namespace password_manager {
 
+struct CompromisedCredentials;
 struct InteractionsStats;
 
 // This is an API for providing stored credentials to PasswordFormManager (PFM),
@@ -64,6 +66,10 @@ class FormFetcher {
 
   // Statistics for recent password bubble usage.
   virtual const std::vector<InteractionsStats>& GetInteractionsStats()
+      const = 0;
+
+  // Compromised records for the current site.
+  virtual base::span<const CompromisedCredentials> GetCompromisedCredentials()
       const = 0;
 
   // Non-federated matches obtained from the backend. Valid only if GetState()

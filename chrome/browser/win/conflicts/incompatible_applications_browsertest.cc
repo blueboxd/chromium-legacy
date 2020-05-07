@@ -29,6 +29,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
+#include "content/public/test/browser_test.h"
 
 // This class allows to wait until the kIncompatibleApplications preference is
 // modified. This can only happen if a new incompatible application is found,

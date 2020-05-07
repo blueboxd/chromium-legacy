@@ -9,6 +9,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/service_worker_test_helpers.h"
 #include "extensions/browser/service_worker/service_worker_test_utils.h"
 #include "extensions/common/scoped_worker_based_extensions_channel.h"

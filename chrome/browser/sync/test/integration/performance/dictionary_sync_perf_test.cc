@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "content/public/test/browser_test.h"
 #include "testing/perf/perf_result_reporter.h"
 
 using sync_timing_helper::TimeMutualSyncCycle;

@@ -31,6 +31,7 @@
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/test/browser_test.h"
 #include "crypto/signature_verifier.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

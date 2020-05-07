@@ -462,7 +462,6 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
   text_builder.SetItem(line_info.ItemsData().text_content, item_result,
                        box->text_height);
-  text_builder.SetIsFirstForNode(item_result->IsFirstForNode());
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                      item_result->inline_size, item.BidiLevel());
 }

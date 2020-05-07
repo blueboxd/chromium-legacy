@@ -793,6 +793,9 @@
         android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.browserservices.trustedwebactivityui.DisclosureAcceptanceBroadcastReceiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.locale.LocaleChangedBroadcastReceiver">
       <intent-filter>
         <action android:name="android.intent.action.LOCALE_CHANGED"/>

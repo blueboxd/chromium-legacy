@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

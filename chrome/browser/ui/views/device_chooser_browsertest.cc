@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

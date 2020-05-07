@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/test_image_loader.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/image/image.h"

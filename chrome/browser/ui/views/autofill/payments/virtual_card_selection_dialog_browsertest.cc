@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/autofill/payments/virtual_card_selection_dialog_view_impl.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace autofill {

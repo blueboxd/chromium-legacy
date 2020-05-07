@@ -7163,11 +7163,11 @@
       }
     ]
   },
-  "UserDataSnapshotRentionLimit" : {
+  "UserDataSnapshotRetentionLimit" : {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [
       {
-        "policies": { "UserDataSnapshotRentionLimit": 2 },
+        "policies": { "UserDataSnapshotRetentionLimit": 2 },
         "prefs": {
           "downgrade.snapshot_retention_limit": { "value": 2, "local_state": true }
         }

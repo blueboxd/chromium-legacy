@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_tokenizer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"

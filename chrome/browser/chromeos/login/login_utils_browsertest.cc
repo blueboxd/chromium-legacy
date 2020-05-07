@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "rlz/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_RLZ)

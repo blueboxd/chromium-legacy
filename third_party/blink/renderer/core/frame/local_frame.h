@@ -541,6 +541,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void MediaPlayerActionAt(
       const gfx::Point& window_point,
       blink::mojom::blink::MediaPlayerActionPtr action) final;
+  void AdvanceFocusInFrame(
+      mojom::blink::FocusType focus_type,
+      const base::Optional<base::UnguessableToken>& source_frame_token) final;
   void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
   void ReportContentSecurityPolicyViolation(
       network::mojom::blink::CSPViolationPtr csp_violation) final;

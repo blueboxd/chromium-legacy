@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_NOT_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
+import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.PACKAGE_NAME;
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE;
 
@@ -17,6 +18,7 @@ import android.content.Context;
 import android.content.res.Resources;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.trustedwebactivityui.DisclosureAcceptanceBroadcastReceiver;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
@@ -27,6 +29,7 @@ import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyObservable;
 
@@ -63,10 +66,11 @@ public class DisclosureNotification implements
     }
 
     private void show() {
-        String mCurrentScope = mModel.get(DISCLOSURE_SCOPE);
+        mCurrentScope = mModel.get(DISCLOSURE_SCOPE);
         boolean firstTime = mModel.get(DISCLOSURE_FIRST_TIME);
+        String packageName = mModel.get(PACKAGE_NAME);
 
-        ChromeNotification notification = createNotification(firstTime, mCurrentScope);
+        ChromeNotification notification = createNotification(firstTime, mCurrentScope, packageName);
         mNotificationManager.notify(notification);
 
         mModel.get(DISCLOSURE_EVENTS_CALLBACK).onDisclosureShown();
@@ -77,7 +81,8 @@ public class DisclosureNotification implements
         mCurrentScope = null;
     }
 
-    private ChromeNotification createNotification(boolean firstTime, String scope) {
+    private ChromeNotification createNotification(boolean firstTime, String scope,
+            String packageName) {
         int umaType;
         int preOPriority;
         String channelId;
@@ -103,15 +108,16 @@ public class DisclosureNotification implements
         // The notification is being displayed by Chrome, so we don't need to provide a
         // remoteAppPackageName.
         String remoteAppPackageName = null;
+        PendingIntentProvider intent = DisclosureAcceptanceBroadcastReceiver.createPendingIntent(
+                mContext, scope, NOTIFICATION_ID_TWA_DISCLOSURE, packageName);
 
-        // TODO(https://crbug.com/1068106): Add intent for tapping on the content.
-        // TODO(https://crbug.com/1068106): Add actions.
         return NotificationBuilderFactory
                 .createChromeNotificationBuilder(
                         preferCompat, channelId, remoteAppPackageName, metadata)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(title)
                 .setContentText(text)
+                .setContentIntent(intent)
                 .setShowWhen(false)
                 .setAutoCancel(false)
                 .setOngoing(!firstTime)

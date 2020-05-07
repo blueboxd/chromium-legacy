@@ -9,6 +9,7 @@ GEN_INCLUDE([
 
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 // TODO(crbug.com/1002627): This block prevents generation of a
 // link-in-text-block browser-test. This can be removed once the bug is

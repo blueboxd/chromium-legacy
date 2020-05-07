@@ -15,7 +15,7 @@
 namespace mojo {
 
 // DEPRECATED: Do not introduce new uses of this type. Instead use the
-// AssociatedPendingReceiver type defined in associated_pending_receiver.h.
+// PendingAssociatedReceiver type defined in pending_associated_receiver.h.
 // Mojom files which pass associated interface requests (i.e.,
 // "associated Interface&" syntax) should be updated to instead pass a
 // "pending_associated_receiver<Interface>".

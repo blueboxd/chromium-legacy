@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/native_theme/test_native_theme.h"

@@ -16,6 +16,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared_css.m.js';
+import './site_data_entry.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
@@ -29,8 +30,7 @@ import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
 
-import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl} from './local_data_browser_proxy.js';
-import {CookieDataSummaryItem} from './site_data_entry.js';
+import {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './local_data_browser_proxy.js';
 import {SiteSettingsBehavior} from './site_settings_behavior.js';
 
 /**
@@ -72,7 +72,7 @@ Polymer({
 
     isLoading_: Boolean,
 
-    /** @type {!Array<!CookieDataSummaryItem>} */
+    /** @type {!Array<!LocalDataItem>} */
     sites: {
       type: Array,
       value() {
@@ -103,7 +103,7 @@ Polymer({
    * When navigating to site data details sub-page, |lastSelected_| holds the
    * site name as well as the index of the selected site. This is used when
    * navigating back to site data in order to focus on the correct site.
-   * @private {!{item: CookieDataSummaryItem, index: number}|null}
+   * @private {!{item: !LocalDataItem, index: number}|null}
    */
   lastSelected_: null,
 
@@ -299,7 +299,7 @@ Polymer({
   },
 
   /**
-   * @param {!{model: !{item: CookieDataSummaryItem, index: number}}} event
+   * @param {!{model: !{item: !LocalDataItem, index: number}}} event
    * @private
    */
   onSiteClick_(event) {

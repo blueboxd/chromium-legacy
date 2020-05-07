@@ -11,6 +11,7 @@
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 #include "testing/perf/perf_test.h"
 #include "ui/gl/gl_switches.h"

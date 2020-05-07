@@ -19,7 +19,7 @@
 
   // navigate there again over http to see that the cookie was not sent
   var {requestExtraInfo, responseExtraInfo} = await helper.navigateWithExtraInfo(setCookieInsecureUrl);
-  testRunner.log(`RequestWillBeSentExtraInfo blocked cookies: ${JSON.stringify(requestExtraInfo.params.blockedCookies, null, 2)}\n`);
+  testRunner.log(`RequestWillBeSentExtraInfo blocked cookies: ${JSON.stringify(requestExtraInfo.params.associatedCookies, null, 2)}\n`);
 
   testRunner.completeTest();
 })

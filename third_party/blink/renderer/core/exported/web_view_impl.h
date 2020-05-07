@@ -90,7 +90,6 @@ class WebElement;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebLocalFrameImpl;
-class WebRemoteFrame;
 class WebSettingsImpl;
 class WebViewClient;
 class WebFrameWidgetBase;
@@ -147,14 +146,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebFrame* MainFrame() override;
   WebLocalFrame* FocusedFrame() override;
   void SetFocusedFrame(WebFrame*) override;
-  void SetInitialFocus(bool reverse) override;
   void SmoothScroll(int target_x,
                     int target_y,
                     base::TimeDelta duration) override;
   void AdvanceFocus(bool reverse) override;
-  void AdvanceFocusAcrossFrames(mojom::blink::FocusType,
-                                WebRemoteFrame* from,
-                                WebLocalFrame* to) override;
   void ZoomAndScrollToFocusedEditableElementRect(
       const WebRect& element_bounds_in_document,
       const WebRect& caret_bounds_in_document,

@@ -166,9 +166,6 @@ class CORE_EXPORT NGPhysicalFragment
   // |LayoutNGBlockFlow::UpdateBlockLayout()| and crbug.com/788590
   bool IsPlacedByLayoutNG() const;
 
-  // Return true if this is the first fragment generated from a node.
-  bool IsFirstForNode() const { return is_first_for_node_; }
-
   // The accessors in this class shouldn't be used by layout code directly,
   // instead should be accessed by the NGFragmentBase classes. These accessors
   // exist for paint, hit-testing, etc.
@@ -396,7 +393,6 @@ class CORE_EXPORT NGPhysicalFragment
   const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
   const unsigned style_variant_ : 2;  // NGStyleVariant
   const unsigned is_hidden_for_paint_ : 1;
-  unsigned is_first_for_node_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
@@ -421,6 +417,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
   unsigned is_math_fraction_ : 1;
+  unsigned is_first_for_node_ : 1;
 
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.

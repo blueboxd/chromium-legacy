@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/test/browser_test.h"
 
 // These tests don't apply to the Mac version; see GetCommandLineForRelaunch
 // for details.

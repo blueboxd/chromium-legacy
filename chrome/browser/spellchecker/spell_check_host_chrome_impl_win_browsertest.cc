@@ -19,6 +19,7 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 

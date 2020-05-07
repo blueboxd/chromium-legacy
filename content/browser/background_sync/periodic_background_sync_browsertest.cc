@@ -8,6 +8,7 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/background_sync_test_util.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

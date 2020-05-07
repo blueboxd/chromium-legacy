@@ -16,6 +16,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #import "testing/gtest_mac.h"
 
 using WebContentsViewMacInteractiveTest = InProcessBrowserTest;

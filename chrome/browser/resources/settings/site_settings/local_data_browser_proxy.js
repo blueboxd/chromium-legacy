@@ -23,11 +23,11 @@ export let CookieList;
 
 /**
  * @typedef {{
- *   data: !Object,
- *   id: string,
+ *   localData: string,
+ *   site: string,
  * }}
  */
-let LocalDataItem;
+export let LocalDataItem;
 
 /**
  * TODO(dschuyler): add |filter| and |order|.

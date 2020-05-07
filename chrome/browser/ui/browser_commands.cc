@@ -419,7 +419,7 @@ void NewEmptyWindow(Profile* profile) {
 
   if (incognito) {
     base::RecordAction(UserMetricsAction("NewIncognitoWindow"));
-    OpenEmptyWindow(profile->GetOffTheRecordProfile());
+    OpenEmptyWindow(profile->GetPrimaryOTRProfile());
   } else {
     base::RecordAction(UserMetricsAction("NewWindow"));
     SessionService* session_service =
@@ -448,7 +448,7 @@ void OpenWindowWithRestoredTabs(Profile* profile) {
 }
 
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
-  ScopedTabbedBrowserDisplayer displayer(profile->GetOffTheRecordProfile());
+  ScopedTabbedBrowserDisplayer displayer(profile->GetPrimaryOTRProfile());
   AddSelectedTabWithURL(displayer.browser(), url, ui::PAGE_TRANSITION_LINK);
 }
 
@@ -644,7 +644,7 @@ void NewIncognitoWindow(Profile* profile) {
       ->GetForProfile(profile)
       ->OnIncognitoWindowOpened();
 #endif
-  NewEmptyWindow(profile->GetOffTheRecordProfile());
+  NewEmptyWindow(profile->GetPrimaryOTRProfile());
 }
 
 void CloseWindow(Browser* browser) {

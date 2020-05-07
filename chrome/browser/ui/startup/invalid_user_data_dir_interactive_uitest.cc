@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/simple_message_box_internal.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 
 // https://crbug.com/833624
 class InvalidUserDataDirTest : public InProcessBrowserTest {

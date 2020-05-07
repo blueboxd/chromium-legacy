@@ -47,6 +47,7 @@
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "content/public/test/browser_test.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/extension_registry.h"

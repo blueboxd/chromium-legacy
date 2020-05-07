@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -51,6 +52,16 @@
 namespace blink {
 
 namespace {
+
+// Maintain a global (statically-allocated) hash map indexed by the the result
+// of hashing the |frame_token| passed on creation of a RemoteFrame object.
+typedef HeapHashMap<uint64_t, WeakMember<RemoteFrame>> RemoteFramesByTokenMap;
+static RemoteFramesByTokenMap& GetRemoteFramesMap() {
+  DEFINE_STATIC_LOCAL(Persistent<RemoteFramesByTokenMap>, map,
+                      (MakeGarbageCollected<RemoteFramesByTokenMap>()));
+  return *map;
+}
+
 FloatRect DeNormalizeRect(const gfx::RectF& normalized, const IntRect& base) {
   FloatRect result(normalized);
   result.Scale(base.Width(), base.Height());
@@ -59,6 +70,14 @@ FloatRect DeNormalizeRect(const gfx::RectF& normalized, const IntRect& base) {
 }
 
 }  // namespace
+
+// static
+RemoteFrame* RemoteFrame::FromFrameToken(
+    const base::UnguessableToken& frame_token) {
+  RemoteFramesByTokenMap& remote_frames_map = GetRemoteFramesMap();
+  auto it = remote_frames_map.find(base::UnguessableTokenHash()(frame_token));
+  return it == remote_frames_map.end() ? nullptr : it->value.Get();
+}
 
 RemoteFrame::RemoteFrame(
     RemoteFrameClient* client,
@@ -74,6 +93,10 @@ RemoteFrame::RemoteFrame(
             frame_token,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this),
             inheriting_agent_factory) {
+  auto frame_tracking_result = GetRemoteFramesMap().insert(
+      base::UnguessableTokenHash()(frame_token), this);
+  CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
+
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
 
   interface_registry->AddAssociatedInterface(WTF::BindRepeating(

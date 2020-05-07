@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "content/public/test/browser_test.h"
 #include "testing/perf/perf_result_reporter.h"
 
 using bookmarks_helper::AddURL;

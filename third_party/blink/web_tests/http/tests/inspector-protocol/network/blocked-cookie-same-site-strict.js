@@ -16,17 +16,17 @@
   // navigate to a different domain and back from the browser and see that the cookie is not blocked
   await helper.navigateWithExtraInfo(thirdPartyUrl);
   var {requestExtraInfo, responseExtraInfo} = await helper.navigateWithExtraInfo(firstPartyUrl);
-  testRunner.log(`Browser initiated navigation blocked cookies: ${JSON.stringify(requestExtraInfo.params.blockedCookies, null, 2)}\n`);
+  testRunner.log(`Browser initiated navigation blocked cookies: ${JSON.stringify(requestExtraInfo.params.associatedCookies, null, 2)}\n`);
 
   // navigate to a different domain and back from javascript and see that the cookie is blocked
   await helper.navigateWithExtraInfo(thirdPartyUrl);
   var {requestExtraInfo, responseExtraInfo} = await helper.jsNavigateWithExtraInfo(firstPartyUrl);
-  testRunner.log(`Javascript initiated navigation blocked cookies: ${JSON.stringify(requestExtraInfo.params.blockedCookies, null, 2)}\n`);
+  testRunner.log(`Javascript initiated navigation blocked cookies: ${JSON.stringify(requestExtraInfo.params.associatedCookies, null, 2)}\n`);
 
   // navigate away and make a subresource request from javascript, see that the cookie is blocked
   await helper.navigateWithExtraInfo(thirdPartyUrl);
   await helper.fetchWithExtraInfo(firstPartyUrl);
-  testRunner.log(`Javascript initiated subresource blocked cookies: ${JSON.stringify(requestExtraInfo.params.blockedCookies, null, 2)}`);
+  testRunner.log(`Javascript initiated subresource blocked cookies: ${JSON.stringify(requestExtraInfo.params.associatedCookies, null, 2)}`);
 
   testRunner.completeTest();
 })

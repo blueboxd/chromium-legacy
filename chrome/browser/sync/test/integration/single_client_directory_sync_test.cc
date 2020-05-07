@@ -16,6 +16,7 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/syncable/directory.h"
+#include "content/public/test/browser_test.h"
 #include "sql/test/test_helpers.h"
 #include "url/gurl.h"
 

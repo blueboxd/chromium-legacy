@@ -2,26 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/mojom/cursor_mojom_traits.h"
+#include "ui/base/cursor/mojom/cursor_mojom_traits.h"
 
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/mojom/cursor.mojom.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace mojo {
-
-// static
-gfx::Point StructTraits<ui::mojom::CursorDataView, ui::Cursor>::hotspot(
-    const ui::Cursor& c) {
-  return c.custom_hotspot();
-}
-
-// static
-SkBitmap StructTraits<ui::mojom::CursorDataView, ui::Cursor>::bitmap(
-    const ui::Cursor& c) {
-  return c.custom_bitmap();
-}
 
 // static
 bool StructTraits<ui::mojom::CursorDataView, ui::Cursor>::Read(

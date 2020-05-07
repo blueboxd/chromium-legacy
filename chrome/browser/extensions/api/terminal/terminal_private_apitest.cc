@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 
 class ExtensionTerminalPrivateApiTest : public extensions::ExtensionApiTest {

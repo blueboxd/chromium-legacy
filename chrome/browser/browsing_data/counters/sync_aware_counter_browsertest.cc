@@ -25,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 
 using browsing_data::BrowsingDataCounter;
 

@@ -114,139 +114,156 @@ def ListContainsOnlySha1Hashes(l):
 #       setting an option.
 # If a type definition does not have any restrictions (beyond the type itself),
 # an empty definition ({}) is used.
-FEATURE_GRAMMAR = (
-  {
+FEATURE_GRAMMAR = ({
     'alias': {
-      str: {},
-      'shared': True
+        str: {},
+        'shared': True
     },
     'blacklist': {
-      list: {
-        'subtype': str,
-        'validators': [
-          (ListContainsOnlySha1Hashes,
-           'list should only have hex-encoded SHA1 hashes of extension ids')
-        ]
-      }
+        list: {
+            'subtype':
+            str,
+            'validators':
+            [(ListContainsOnlySha1Hashes,
+              'list should only have hex-encoded SHA1 hashes of extension ids')]
+        }
     },
     'channel': {
-      str: {
-        'enum_map': {
-          'trunk': 'version_info::Channel::UNKNOWN',
-          'canary': 'version_info::Channel::CANARY',
-          'dev': 'version_info::Channel::DEV',
-          'beta': 'version_info::Channel::BETA',
-          'stable': 'version_info::Channel::STABLE',
+        str: {
+            'enum_map': {
+                'trunk': 'version_info::Channel::UNKNOWN',
+                'canary': 'version_info::Channel::CANARY',
+                'dev': 'version_info::Channel::DEV',
+                'beta': 'version_info::Channel::BETA',
+                'stable': 'version_info::Channel::STABLE',
+            }
         }
-      }
     },
     'command_line_switch': {
-      str: {}
+        str: {}
     },
     'component_extensions_auto_granted': {
-      bool: {}
+        bool: {}
     },
     'contexts': {
-      list: {
-        'enum_map': {
-          'blessed_extension': 'Feature::BLESSED_EXTENSION_CONTEXT',
-          'blessed_web_page': 'Feature::BLESSED_WEB_PAGE_CONTEXT',
-          'content_script': 'Feature::CONTENT_SCRIPT_CONTEXT',
-          'lock_screen_extension': 'Feature::LOCK_SCREEN_EXTENSION_CONTEXT',
-          'web_page': 'Feature::WEB_PAGE_CONTEXT',
-          'webui': 'Feature::WEBUI_CONTEXT',
-          'webui_untrusted': 'Feature::WEBUI_UNTRUSTED_CONTEXT',
-          'unblessed_extension': 'Feature::UNBLESSED_EXTENSION_CONTEXT',
+        list: {
+            'enum_map': {
+                'blessed_extension': 'Feature::BLESSED_EXTENSION_CONTEXT',
+                'blessed_web_page': 'Feature::BLESSED_WEB_PAGE_CONTEXT',
+                'content_script': 'Feature::CONTENT_SCRIPT_CONTEXT',
+                'lock_screen_extension':
+                'Feature::LOCK_SCREEN_EXTENSION_CONTEXT',
+                'web_page': 'Feature::WEB_PAGE_CONTEXT',
+                'webui': 'Feature::WEBUI_CONTEXT',
+                'webui_untrusted': 'Feature::WEBUI_UNTRUSTED_CONTEXT',
+                'unblessed_extension': 'Feature::UNBLESSED_EXTENSION_CONTEXT',
+            },
+            'allow_all': True
         },
-        'allow_all': True
-      },
     },
     'default_parent': {
-      bool: {'values': [True]}
+        bool: {
+            'values': [True]
+        }
     },
     'dependencies': {
-      list: {
-        # We allow an empty list of dependencies for child features that want
-        # to override their parents' dependency set.
-        'allow_empty': True,
-        'subtype': str
-      }
+        list: {
+            # We allow an empty list of dependencies for child features that want
+            # to override their parents' dependency set.
+            'allow_empty': True,
+            'subtype': str
+        }
     },
     'disallow_for_service_workers': {
-      bool: {}
+        bool: {}
     },
     'extension_types': {
-      list: {
-        'enum_map': {
-          'extension': 'Manifest::TYPE_EXTENSION',
-          'hosted_app': 'Manifest::TYPE_HOSTED_APP',
-          'legacy_packaged_app': 'Manifest::TYPE_LEGACY_PACKAGED_APP',
-          'platform_app': 'Manifest::TYPE_PLATFORM_APP',
-          'shared_module': 'Manifest::TYPE_SHARED_MODULE',
-          'theme': 'Manifest::TYPE_THEME',
-          'login_screen_extension': 'Manifest::TYPE_LOGIN_SCREEN_EXTENSION',
+        list: {
+            'enum_map': {
+                'extension': 'Manifest::TYPE_EXTENSION',
+                'hosted_app': 'Manifest::TYPE_HOSTED_APP',
+                'legacy_packaged_app': 'Manifest::TYPE_LEGACY_PACKAGED_APP',
+                'platform_app': 'Manifest::TYPE_PLATFORM_APP',
+                'shared_module': 'Manifest::TYPE_SHARED_MODULE',
+                'theme': 'Manifest::TYPE_THEME',
+                'login_screen_extension':
+                'Manifest::TYPE_LOGIN_SCREEN_EXTENSION',
+            },
+            'allow_all': True
         },
-        'allow_all': True
-      },
+    },
+    'feature_flag': {
+        str: {}
     },
     'location': {
-      str: {
-        'enum_map': {
-          'component': 'SimpleFeature::COMPONENT_LOCATION',
-          'external_component': 'SimpleFeature::EXTERNAL_COMPONENT_LOCATION',
-          'policy': 'SimpleFeature::POLICY_LOCATION',
-          'unpacked': 'SimpleFeature::UNPACKED_LOCATION',
+        str: {
+            'enum_map': {
+                'component': 'SimpleFeature::COMPONENT_LOCATION',
+                'external_component':
+                'SimpleFeature::EXTERNAL_COMPONENT_LOCATION',
+                'policy': 'SimpleFeature::POLICY_LOCATION',
+                'unpacked': 'SimpleFeature::UNPACKED_LOCATION',
+            }
         }
-      }
     },
     'internal': {
-      bool: {'values': [True]}
+        bool: {
+            'values': [True]
+        }
     },
     'matches': {
-      list: {'subtype': str}
+        list: {
+            'subtype': str
+        }
     },
     'max_manifest_version': {
-      int: {'values': [1, 2]}
+        int: {
+            'values': [1, 2]
+        }
     },
     'min_manifest_version': {
-      int: {'values': [2, 3]}
+        int: {
+            'values': [2, 3]
+        }
     },
     'noparent': {
-      bool: {'values': [True]}
+        bool: {
+            'values': [True]
+        }
     },
     'platforms': {
-      list: {
-        'enum_map': {
-          'chromeos': 'Feature::CHROMEOS_PLATFORM',
-          'linux': 'Feature::LINUX_PLATFORM',
-          'mac': 'Feature::MACOSX_PLATFORM',
-          'win': 'Feature::WIN_PLATFORM',
+        list: {
+            'enum_map': {
+                'chromeos': 'Feature::CHROMEOS_PLATFORM',
+                'linux': 'Feature::LINUX_PLATFORM',
+                'mac': 'Feature::MACOSX_PLATFORM',
+                'win': 'Feature::WIN_PLATFORM',
+            }
         }
-      }
     },
     'session_types': {
-      list: {
-        'enum_map': {
-          'regular': 'FeatureSessionType::REGULAR',
-          'kiosk': 'FeatureSessionType::KIOSK',
-          'kiosk.autolaunched': 'FeatureSessionType::AUTOLAUNCHED_KIOSK',
+        list: {
+            'enum_map': {
+                'regular': 'FeatureSessionType::REGULAR',
+                'kiosk': 'FeatureSessionType::KIOSK',
+                'kiosk.autolaunched': 'FeatureSessionType::AUTOLAUNCHED_KIOSK',
+            }
         }
-      }
     },
     'source': {
-      str: {},
-      'shared': True
+        str: {},
+        'shared': True
     },
     'whitelist': {
-      list: {
-        'subtype': str,
-        'validators': [
-          (ListContainsOnlySha1Hashes,
-           'list should only have hex-encoded SHA1 hashes of extension ids')
-        ]
-      }
+        list: {
+            'subtype':
+            str,
+            'validators':
+            [(ListContainsOnlySha1Hashes,
+              'list should only have hex-encoded SHA1 hashes of extension ids')]
+        }
     },
-  })
+})
 
 FEATURE_TYPES = ['APIFeature', 'BehaviorFeature',
                  'ManifestFeature', 'PermissionFeature']

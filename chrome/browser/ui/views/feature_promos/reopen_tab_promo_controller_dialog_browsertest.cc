@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "content/public/test/browser_test.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/animation/ink_drop.h"
 #include "url/gurl.h"

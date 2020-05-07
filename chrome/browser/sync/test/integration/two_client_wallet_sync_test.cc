@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -166,10 +166,17 @@ class ConsumerWrapper final : public AudioDestinationConsumer {
 
  private:
   explicit ConsumerWrapper(WebAudioDestinationConsumer* consumer)
-      : consumer_(consumer) {}
+      : consumer_(consumer) {
+    // To avoid reallocation in ConsumeAudio, reserve initial capacity for most
+    // common known layouts.
+    bus_vector_.ReserveInitialCapacity(8);
+  }
 
   // m_consumer is not owned by this class.
   WebAudioDestinationConsumer* consumer_;
+  // bus_vector_ must only be used in ConsumeAudio. The only reason it's a
+  // member variable is to not have to reallocate it for each call.
+  Vector<const float*> bus_vector_;
 };
 
 void ConsumerWrapper::SetFormat(size_t number_of_channels, float sample_rate) {
@@ -185,11 +192,13 @@ void ConsumerWrapper::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
 
   // Wrap AudioBus.
   size_t number_of_channels = bus->NumberOfChannels();
-  Vector<const float*> bus_vector(number_of_channels);
+  if (bus_vector_.size() != number_of_channels) {
+    bus_vector_.resize(number_of_channels);
+  }
   for (size_t i = 0; i < number_of_channels; ++i)
-    bus_vector[i] = bus->Channel(i)->Data();
+    bus_vector_[i] = bus->Channel(i)->Data();
 
-  consumer_->ConsumeAudio(bus_vector, number_of_frames);
+  consumer_->ConsumeAudio(bus_vector_, number_of_frames);
 }
 
 void WebMediaStreamSource::AddAudioConsumer(

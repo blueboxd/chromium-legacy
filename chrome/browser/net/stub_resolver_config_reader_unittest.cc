@@ -9,7 +9,7 @@
 
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "components/prefs/pref_service.h"
@@ -68,21 +68,15 @@ class StubResolverConfigReaderTest : public testing::Test {
       std::make_unique<MockedStubResolverConfigReader>(&local_state_);
 };
 
-TEST_F(StubResolverConfigReaderTest, GetConfiguration) {
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
-
+TEST_F(StubResolverConfigReaderTest, GetSecureDnsConfiguration) {
   // |force_check_parental_controls_for_automatic_mode = true| is not the main
   // default case, but the specific behavior involved is tested separately.
-  config_reader_->GetConfiguration(
-      true /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      true /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_FALSE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::OFF);
-  EXPECT_TRUE(dns_over_https_servers.empty());
+  EXPECT_FALSE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_config.mode());
+  EXPECT_TRUE(secure_dns_config.servers().empty());
 
   // Parental controls should not be checked when DoH otherwise disabled.
   EXPECT_FALSE(config_reader_->parental_controls_checked());
@@ -91,23 +85,17 @@ TEST_F(StubResolverConfigReaderTest, GetConfiguration) {
 TEST_F(StubResolverConfigReaderTest, DohEnabled) {
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeAutomatic);
+                         SecureDnsConfig::kModeAutomatic);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
-
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
 
   // |force_check_parental_controls_for_automatic_mode = true| is not the main
   // default case, but the specific behavior involved is tested separately.
-  config_reader_->GetConfiguration(
-      true /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      true /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::AUTOMATIC);
-  EXPECT_THAT(dns_over_https_servers,
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_config.mode());
+  EXPECT_THAT(secure_dns_config.servers(),
               testing::ElementsAre(
                   net::DnsOverHttpsServerConfig("https://doh1.test",
                                                 true /* use_post */),
@@ -120,23 +108,17 @@ TEST_F(StubResolverConfigReaderTest, DohEnabled) {
 TEST_F(StubResolverConfigReaderTest, DohEnabled_Secure) {
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
-
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
 
   // |force_check_parental_controls_for_automatic_mode| should have no effect on
   // SECURE mode, so set to false to ensure check is not deferred.
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::SECURE);
-  EXPECT_THAT(dns_over_https_servers,
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE, secure_dns_config.mode());
+  EXPECT_THAT(secure_dns_config.servers(),
               testing::ElementsAre(
                   net::DnsOverHttpsServerConfig("https://doh1.test",
                                                 true /* use_post */),
@@ -151,23 +133,17 @@ TEST_F(StubResolverConfigReaderTest, DisabledForManaged) {
 
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeAutomatic);
+                         SecureDnsConfig::kModeAutomatic);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
-
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
 
   // |force_check_parental_controls_for_automatic_mode = true| is not the main
   // default case, but the specific behavior involved is tested separately.
-  config_reader_->GetConfiguration(
-      true /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      true /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::OFF);
-  EXPECT_TRUE(dns_over_https_servers.empty());
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_config.mode());
+  EXPECT_TRUE(secure_dns_config.servers().empty());
 
   // Parental controls should not be checked when DoH otherwise disabled.
   EXPECT_FALSE(config_reader_->parental_controls_checked());
@@ -178,21 +154,15 @@ TEST_F(StubResolverConfigReaderTest, DisabledForManaged_Secure) {
 
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
 
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
-
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::OFF);
-  EXPECT_TRUE(dns_over_https_servers.empty());
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_config.mode());
+  EXPECT_TRUE(secure_dns_config.servers().empty());
 
   // Parental controls should not be checked when DoH otherwise disabled.
   EXPECT_FALSE(config_reader_->parental_controls_checked());
@@ -203,23 +173,17 @@ TEST_F(StubResolverConfigReaderTest, DisabledForParentalControls) {
 
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeAutomatic);
+                         SecureDnsConfig::kModeAutomatic);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
-
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
 
   // |force_check_parental_controls_for_automatic_mode = true| is not the main
   // default case, but the specific behavior involved is tested separately.
-  config_reader_->GetConfiguration(
-      true /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      true /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::OFF);
-  EXPECT_TRUE(dns_over_https_servers.empty());
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_config.mode());
+  EXPECT_TRUE(secure_dns_config.servers().empty());
 
   EXPECT_TRUE(config_reader_->parental_controls_checked());
 }
@@ -229,23 +193,17 @@ TEST_F(StubResolverConfigReaderTest, DisabledForParentalControls_Secure) {
 
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
-
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
 
   // |force_check_parental_controls_for_automatic_mode| should have no effect on
   // SECURE mode, so set to false to ensure check is not deferred.
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::OFF);
-  EXPECT_TRUE(dns_over_https_servers.empty());
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_config.mode());
+  EXPECT_TRUE(secure_dns_config.servers().empty());
 
   EXPECT_TRUE(config_reader_->parental_controls_checked());
 }
@@ -255,22 +213,16 @@ TEST_F(StubResolverConfigReaderTest, DeferredParentalControlsCheck) {
 
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeAutomatic);
+                         SecureDnsConfig::kModeAutomatic);
   local_state_.SetString(prefs::kDnsOverHttpsTemplates, kDohServerTemplate);
 
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
-
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
   // Parental controls check initially skipped.
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::AUTOMATIC);
-  EXPECT_THAT(dns_over_https_servers,
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_config.mode());
+  EXPECT_THAT(secure_dns_config.servers(),
               testing::ElementsAre(
                   net::DnsOverHttpsServerConfig("https://doh1.test",
                                                 true /* use_post */),
@@ -284,15 +236,12 @@ TEST_F(StubResolverConfigReaderTest, DeferredParentalControlsCheck) {
 
   EXPECT_TRUE(config_reader_->parental_controls_checked());
 
-  dns_over_https_servers.clear();
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::OFF);
-  EXPECT_TRUE(dns_over_https_servers.empty());
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF, secure_dns_config.mode());
+  EXPECT_TRUE(secure_dns_config.servers().empty());
 }
 
 TEST_F(StubResolverConfigReaderTest, DeferredParentalControlsCheck_Managed) {
@@ -302,26 +251,19 @@ TEST_F(StubResolverConfigReaderTest, DeferredParentalControlsCheck_Managed) {
   local_state_.SetBoolean(prefs::kBuiltInDnsClientEnabled, true);
   local_state_.SetManagedPref(
       prefs::kDnsOverHttpsMode,
-      std::make_unique<base::Value>(
-          chrome_browser_net::kDnsOverHttpsModeAutomatic));
+      std::make_unique<base::Value>(SecureDnsConfig::kModeAutomatic));
   local_state_.SetManagedPref(
       prefs::kDnsOverHttpsTemplates,
       std::make_unique<base::Value>(kDohServerTemplate));
 
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
-
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  SecureDnsConfig secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
   // Parental controls check initially skipped, and managed prefs take
   // precedence over disables.
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::AUTOMATIC);
-  EXPECT_THAT(dns_over_https_servers,
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_config.mode());
+  EXPECT_THAT(secure_dns_config.servers(),
               testing::ElementsAre(
                   net::DnsOverHttpsServerConfig("https://doh1.test",
                                                 true /* use_post */),
@@ -335,17 +277,14 @@ TEST_F(StubResolverConfigReaderTest, DeferredParentalControlsCheck_Managed) {
 
   EXPECT_TRUE(config_reader_->parental_controls_checked());
 
-  dns_over_https_servers.clear();
-  config_reader_->GetConfiguration(
-      false /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers);
+  secure_dns_config = config_reader_->GetSecureDnsConfiguration(
+      false /* force_check_parental_controls_for_automatic_mode */);
 
   // Expect DoH still enabled after parental controls check because managed
   // prefs have precedence.
-  EXPECT_TRUE(insecure_stub_resolver_enabled);
-  EXPECT_EQ(secure_dns_mode, net::DnsConfig::SecureDnsMode::AUTOMATIC);
-  EXPECT_THAT(dns_over_https_servers,
+  EXPECT_TRUE(config_reader_->GetInsecureStubResolverEnabled());
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::AUTOMATIC, secure_dns_config.mode());
+  EXPECT_THAT(secure_dns_config.servers(),
               testing::ElementsAre(
                   net::DnsOverHttpsServerConfig("https://doh1.test",
                                                 true /* use_post */),

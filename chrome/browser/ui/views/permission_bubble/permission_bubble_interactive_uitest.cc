@@ -14,6 +14,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/views/test/widget_test.h"
 

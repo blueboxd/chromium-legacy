@@ -21,6 +21,7 @@
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "components/captive_portal/core/captive_portal_testing_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/net_errors.h"

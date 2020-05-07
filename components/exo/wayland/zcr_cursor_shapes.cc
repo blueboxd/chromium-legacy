@@ -10,7 +10,7 @@
 
 #include "components/exo/pointer.h"
 #include "components/exo/wayland/server_util.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace exo {
 namespace wayland {

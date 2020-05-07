@@ -6,7 +6,7 @@
 #define UI_BASE_CURSOR_CURSORS_AURA_H_
 
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/ui_base_export.h"
 
 class SkBitmap;

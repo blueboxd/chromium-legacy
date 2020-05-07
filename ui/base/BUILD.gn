@@ -427,7 +427,7 @@ jumbo_component("base") {
     "//base",
     "//skia",
     "//ui/base/cursor",
-    "//ui/base/mojom:cursor_type",
+    "//ui/base/cursor/mojom:cursor_type",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -984,7 +984,7 @@ test("ui_base_unittests") {
     ]
     deps += [
       "//components/system_media_controls:test_support",
-      "//ui/base/mojom:cursor_type",
+      "//ui/base/cursor/mojom:cursor_type",
     ]
 
     if (is_linux) {
@@ -1082,7 +1082,7 @@ test("ui_base_unittests") {
   } else {
     deps += [
       "//ui/base/accelerators/mojom:unittests",
-      "//ui/base/mojom:unittests",
+      "//ui/base/cursor/mojom:unittests",
     ]
   }
 

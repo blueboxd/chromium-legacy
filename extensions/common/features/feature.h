@@ -68,6 +68,7 @@ class Feature {
     UNSUPPORTED_CHANNEL,
     FOUND_IN_BLACKLIST,
     MISSING_COMMAND_LINE_SWITCH,
+    FEATURE_FLAG_DISABLED,
   };
 
   // Container for AvailabiltyResult that also exposes a user-visible error

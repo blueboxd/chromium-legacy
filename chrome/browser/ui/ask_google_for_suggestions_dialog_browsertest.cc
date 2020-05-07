@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "content/public/test/browser_test.h"
 
 class AskGoogleForSuggestionsDialogTest : public DialogBrowserTest {
  public:

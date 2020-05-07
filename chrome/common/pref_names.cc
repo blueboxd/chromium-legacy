@@ -1367,7 +1367,7 @@ const char kPrintPreviewUseSystemDefaultPrinter[] =
 // be on the disk at any time. Following each major version update, Chrome will
 // create a snapshot of certain portions of the user's browsing data for use in
 // case of a later emergency version rollback.
-const char kUserDataSnapshotRentionLimit[] =
+const char kUserDataSnapshotRetentionLimit[] =
     "downgrade.snapshot_retention_limit";
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 

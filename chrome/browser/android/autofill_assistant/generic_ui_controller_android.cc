@@ -121,7 +121,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaTextView(
       env, jcontext, jdelegate, jidentifier,
       base::android::ConvertUTF8ToJavaString(
           env, proto.has_text() ? proto.text() : std::string()),
-      jtext_appearance);
+      jtext_appearance, proto.text_alignment());
 }
 
 base::android::ScopedJavaLocalRef<jobject> CreateJavaVerticalExpander(

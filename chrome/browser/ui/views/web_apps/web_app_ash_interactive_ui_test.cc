@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/browser_test.h"
 
 class WebAppAshInteractiveUITest : public web_app::WebAppControllerBrowserTest {
  public:

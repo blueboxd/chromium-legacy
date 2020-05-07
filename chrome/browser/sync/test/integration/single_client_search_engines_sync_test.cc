@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "content/public/test/browser_test.h"
 
 class SingleClientSearchEnginesSyncTest : public SyncTest {
  public:

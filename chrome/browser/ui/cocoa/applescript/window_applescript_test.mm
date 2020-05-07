@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"

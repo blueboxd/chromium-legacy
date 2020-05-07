@@ -121,6 +121,10 @@ void FormFetcherImpl::Fetch() {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // The statistics is needed for the "Save password?" bubble.
   password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
+
+  // The desktop bubble needs this information.
+  password_store->GetMatchingCompromisedCredentials(form_digest_.signon_realm,
+                                                    this);
 #endif
 }
 
@@ -131,6 +135,11 @@ FormFetcherImpl::State FormFetcherImpl::GetState() const {
 const std::vector<InteractionsStats>& FormFetcherImpl::GetInteractionsStats()
     const {
   return interactions_stats_;
+}
+
+base::span<const CompromisedCredentials>
+FormFetcherImpl::GetCompromisedCredentials() const {
+  return compromised_credentials_;
 }
 
 std::vector<const PasswordForm*> FormFetcherImpl::GetNonFederatedMatches()
@@ -166,48 +175,6 @@ const PasswordForm* FormFetcherImpl::GetPreferredMatch() const {
   return preferred_match_;
 }
 
-void FormFetcherImpl::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<PasswordForm>> results) {
-  DCHECK_EQ(State::WAITING, state_);
-
-  if (need_to_refetch_) {
-    // The received results are no longer up to date, need to re-request.
-    state_ = State::NOT_WAITING;
-    Fetch();
-    need_to_refetch_ = false;
-    return;
-  }
-
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
-    logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
-    logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
-  }
-
-  if (should_migrate_http_passwords_ && results.empty() &&
-      form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
-    http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
-        form_digest_.origin, client_, this);
-    return;
-  }
-
-  ProcessPasswordStoreResults(std::move(results));
-}
-
-void FormFetcherImpl::OnGetSiteStatistics(
-    std::vector<InteractionsStats> stats) {
-  // On Windows the password request may be resolved after the statistics due to
-  // importing from IE.
-  interactions_stats_ = std::move(stats);
-}
-
-void FormFetcherImpl::ProcessMigratedForms(
-    std::vector<std::unique_ptr<PasswordForm>> forms) {
-  ProcessPasswordStoreResults(std::move(forms));
-}
-
 std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   // Create the copy without the "HTTPS migration" activated. If it was needed,
   // then it was done by |this| already.
@@ -216,7 +183,7 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   if (state_ != State::NOT_WAITING) {
     // There are no store results to copy, trigger a Fetch on the clone instead.
     result->Fetch();
-    return std::move(result);
+    return result;
   }
 
   result->non_federated_ = MakeCopies(non_federated_);
@@ -228,10 +195,11 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
       &result->preferred_match_);
 
   result->interactions_stats_ = interactions_stats_;
+  result->compromised_credentials_ = compromised_credentials_;
   result->state_ = state_;
   result->need_to_refetch_ = need_to_refetch_;
 
-  return std::move(result);
+  return result;
 }
 
 void FormFetcherImpl::ProcessPasswordStoreResults(
@@ -265,6 +233,51 @@ void FormFetcherImpl::SplitResults(
       non_federated_.push_back(std::move(form));
     }
   }
+}
+
+void FormFetcherImpl::OnGetPasswordStoreResults(
+    std::vector<std::unique_ptr<PasswordForm>> results) {
+  DCHECK_EQ(State::WAITING, state_);
+
+  if (need_to_refetch_) {
+    // The received results are no longer up to date, need to re-request.
+    state_ = State::NOT_WAITING;
+    Fetch();
+    need_to_refetch_ = false;
+    return;
+  }
+
+  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (password_manager_util::IsLoggingActive(client_)) {
+    logger.reset(
+        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
+    logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
+  }
+
+  if (should_migrate_http_passwords_ && results.empty() &&
+      form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
+    http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
+        form_digest_.origin, client_, this);
+    return;
+  }
+
+  ProcessPasswordStoreResults(std::move(results));
+}
+
+void FormFetcherImpl::OnGetSiteStatistics(
+    std::vector<InteractionsStats> stats) {
+  interactions_stats_ = std::move(stats);
+}
+
+void FormFetcherImpl::ProcessMigratedForms(
+    std::vector<std::unique_ptr<PasswordForm>> forms) {
+  ProcessPasswordStoreResults(std::move(forms));
+}
+
+void FormFetcherImpl::OnGetCompromisedCredentials(
+    std::vector<CompromisedCredentials> compromised_credentials) {
+  compromised_credentials_ = std::move(compromised_credentials);
 }
 
 }  // namespace password_manager

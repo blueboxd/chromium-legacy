@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"

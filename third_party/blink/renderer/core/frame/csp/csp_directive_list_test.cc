@@ -446,101 +446,141 @@ TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity) {
     const char* list;
     const char* url;
     const mojom::RequestContextType context;
+    const network::mojom::RequestDestination request_destination;
     bool expected;
   } cases[] = {
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
 
       // Extra WSP
       {"require-sri-for  script     script  ", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for      style    script", "https://example.com/file",
-       mojom::RequestContextType::STYLE, false},
+       mojom::RequestContextType::STYLE,
+       network::mojom::RequestDestination::kStyle, false},
 
       {"require-sri-for style script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for style script", "https://example.com/file",
-       mojom::RequestContextType::IMPORT, false},
+       mojom::RequestContextType::IMPORT,
+       network::mojom::RequestDestination::kEmpty, false},
       {"require-sri-for style script", "https://example.com/file",
-       mojom::RequestContextType::IMAGE, true},
+       mojom::RequestContextType::IMAGE,
+       network::mojom::RequestDestination::kImage, true},
 
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::AUDIO, true},
+       mojom::RequestContextType::AUDIO,
+       network::mojom::RequestDestination::kAudio, true},
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::IMPORT, false},
+       mojom::RequestContextType::IMPORT,
+       network::mojom::RequestDestination::kEmpty, false},
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SERVICE_WORKER, false},
+       mojom::RequestContextType::SERVICE_WORKER,
+       network::mojom::RequestDestination::kServiceWorker, false},
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::SHARED_WORKER, false},
+       mojom::RequestContextType::SHARED_WORKER,
+       network::mojom::RequestDestination::kSharedWorker, false},
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::WORKER, false},
+       mojom::RequestContextType::WORKER,
+       network::mojom::RequestDestination::kWorker, false},
       {"require-sri-for script", "https://example.com/file",
-       mojom::RequestContextType::STYLE, true},
+       mojom::RequestContextType::STYLE,
+       network::mojom::RequestDestination::kStyle, true},
 
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::AUDIO, true},
+       mojom::RequestContextType::AUDIO,
+       network::mojom::RequestDestination::kAudio, true},
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, true},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, true},
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::IMPORT, true},
+       mojom::RequestContextType::IMPORT,
+       network::mojom::RequestDestination::kEmpty, true},
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::SERVICE_WORKER, true},
+       mojom::RequestContextType::SERVICE_WORKER,
+       network::mojom::RequestDestination::kServiceWorker, true},
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::SHARED_WORKER, true},
+       mojom::RequestContextType::SHARED_WORKER,
+       network::mojom::RequestDestination::kSharedWorker, true},
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::WORKER, true},
+       mojom::RequestContextType::WORKER,
+       network::mojom::RequestDestination::kWorker, true},
       {"require-sri-for style", "https://example.com/file",
-       mojom::RequestContextType::STYLE, false},
+       mojom::RequestContextType::STYLE,
+       network::mojom::RequestDestination::kStyle, false},
 
       // Multiple tokens
       {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::STYLE, false},
+       mojom::RequestContextType::STYLE,
+       network::mojom::RequestDestination::kStyle, false},
       {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::IMPORT, false},
+       mojom::RequestContextType::IMPORT,
+       network::mojom::RequestDestination::kEmpty, false},
       {"require-sri-for script style", "https://example.com/file",
-       mojom::RequestContextType::IMAGE, true},
+       mojom::RequestContextType::IMAGE,
+       network::mojom::RequestDestination::kImage, true},
 
       // Matching is case-insensitive
       {"require-sri-for Script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
 
       // Unknown tokens do not affect result
       {"require-sri-for blabla12 as", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, true},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, true},
       {"require-sri-for blabla12 as  script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::IMPORT, false},
+       mojom::RequestContextType::IMPORT,
+       network::mojom::RequestDestination::kEmpty, false},
       {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::STYLE, false},
+       mojom::RequestContextType::STYLE,
+       network::mojom::RequestDestination::kStyle, false},
       {"require-sri-for script style img", "https://example.com/file",
-       mojom::RequestContextType::IMAGE, true},
+       mojom::RequestContextType::IMAGE,
+       network::mojom::RequestDestination::kImage, true},
 
       // Empty token list has no effect
       {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, true},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, true},
       {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::IMPORT, true},
+       mojom::RequestContextType::IMPORT,
+       network::mojom::RequestDestination::kEmpty, true},
       {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::STYLE, true},
+       mojom::RequestContextType::STYLE,
+       network::mojom::RequestDestination::kStyle, true},
       {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::SERVICE_WORKER, true},
+       mojom::RequestContextType::SERVICE_WORKER,
+       network::mojom::RequestDestination::kServiceWorker, true},
       {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::SHARED_WORKER, true},
+       mojom::RequestContextType::SHARED_WORKER,
+       network::mojom::RequestDestination::kSharedWorker, true},
       {"require-sri-for      ", "https://example.com/file",
-       mojom::RequestContextType::WORKER, true},
+       mojom::RequestContextType::WORKER,
+       network::mojom::RequestDestination::kWorker, true},
 
       // Order does not matter
       {"require-sri-for a b script", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
       {"require-sri-for a script b", "https://example.com/file",
-       mojom::RequestContextType::SCRIPT, false},
+       mojom::RequestContextType::SCRIPT,
+       network::mojom::RequestDestination::kScript, false},
   };
 
   for (const auto& test : cases) {
@@ -549,16 +589,17 @@ TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity) {
     Member<CSPDirectiveList> directive_list =
         CreateList(test.list, ContentSecurityPolicyType::kReport);
     EXPECT_EQ(true, directive_list->AllowRequestWithoutIntegrity(
-                        test.context, resource,
+                        test.context, test.request_destination, resource,
                         ResourceRequest::RedirectStatus::kNoRedirect,
                         ReportingDisposition::kSuppressReporting));
 
     // Enforce
     directive_list = CreateList(test.list, ContentSecurityPolicyType::kEnforce);
-    EXPECT_EQ(test.expected, directive_list->AllowRequestWithoutIntegrity(
-                                 test.context, resource,
-                                 ResourceRequest::RedirectStatus::kNoRedirect,
-                                 ReportingDisposition::kSuppressReporting));
+    EXPECT_EQ(test.expected,
+              directive_list->AllowRequestWithoutIntegrity(
+                  test.context, test.request_destination, resource,
+                  ResourceRequest::RedirectStatus::kNoRedirect,
+                  ReportingDisposition::kSuppressReporting));
   }
 }
 

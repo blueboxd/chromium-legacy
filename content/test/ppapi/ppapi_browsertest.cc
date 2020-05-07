@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
+#include "content/public/test/browser_test.h"
 #include "content/test/ppapi/ppapi_test.h"
 #include "ppapi/shared_impl/test_utils.h"
 

@@ -17,6 +17,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "content/public/test/browser_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"

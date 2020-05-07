@@ -467,6 +467,13 @@ interface LocalFrame {
   // at the given point in the view coordinate space.
   MediaPlayerActionAt(gfx.mojom.Point location, blink.mojom.MediaPlayerAction action);
 
+  // Request to continue running the sequential focus navigation algorithm in
+  // this frame. |source_frame_token| identifies the frame that issued this
+  // request. This message is sent when finding the next focusable element would
+  // require moving onto a frame from a different process.
+  AdvanceFocusInFrame(blink.mojom.FocusType focus_type,
+                      mojo_base.mojom.UnguessableToken? source_frame_token);
+
   // Notifies this Frame to advance the focus to next input node in the form by
   // moving in specified direction if the currently focused node is a Text node
   // (textfield, text area or content editable nodes).

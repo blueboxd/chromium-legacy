@@ -87,7 +87,7 @@ blink_core_sources("exported") {
 
   deps = [
     "//ui/base/cursor",
-    "//ui/base/mojom:cursor_type_blink",
+    "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 
   defines = [ "BLINK_IMPLEMENTATION=1" ]

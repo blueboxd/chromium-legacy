@@ -10,6 +10,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/embedder_support/switches.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

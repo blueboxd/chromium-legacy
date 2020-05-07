@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/eye_dropper.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "ui/display/display_switches.h"
 
 #if defined(OS_WIN)

@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/quirks/quirks_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

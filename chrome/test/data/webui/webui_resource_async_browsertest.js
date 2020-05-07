@@ -6,6 +6,8 @@
  * @fileoverview Framework for running async JS tests for cr.js utility methods.
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /** @const {string} Name of the chrome.send() message to be used in tests. */
 var CHROME_SEND_NAME = 'echoMessage';
 

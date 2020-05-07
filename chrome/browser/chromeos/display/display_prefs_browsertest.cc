@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 

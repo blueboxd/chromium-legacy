@@ -7,6 +7,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/http_request.h"

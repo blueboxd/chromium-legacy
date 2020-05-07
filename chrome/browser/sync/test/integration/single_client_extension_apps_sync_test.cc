@@ -10,6 +10,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "content/public/test/browser_test.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/sync/test/integration/os_sync_test.h"

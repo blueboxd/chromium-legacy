@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "ui/base/cursor/cursor_lookup.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/gfx/icon_util.h"
 
 namespace content {

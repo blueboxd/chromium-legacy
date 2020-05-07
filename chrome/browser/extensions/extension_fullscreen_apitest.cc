@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/types/display_constants.h"
 

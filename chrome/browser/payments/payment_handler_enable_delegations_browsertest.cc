@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
+#include "content/public/test/browser_test.h"
 
 namespace payments {
 namespace {

@@ -64,6 +64,7 @@ public class BrowserImpl extends IBrowser.Stub {
     // Cache the value instead of querying system every time.
     private Boolean mPasswordEchoEnabled;
     private Boolean mDarkThemeEnabled;
+    private Float mFontScale;
 
     // Created in the constructor from saved state and used in setClient().
     private PersistenceInfo mPersistenceInfo;
@@ -240,6 +241,12 @@ public class BrowserImpl extends IBrowser.Stub {
             boolean newEnabled = getDarkThemeEnabled();
             changed = changed || oldEnabled != newEnabled;
         }
+        if (mFontScale != null) {
+            float oldFontScale = mFontScale;
+            mFontScale = null;
+            float newFontScale = getFontScale();
+            changed = changed || oldFontScale != newFontScale;
+        }
         if (changed) {
             BrowserImplJni.get().webPreferencesChanged(mNativeBrowser);
         }
@@ -267,6 +274,16 @@ public class BrowserImpl extends IBrowser.Stub {
                     (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
         }
         return mDarkThemeEnabled;
+    }
+
+    @CalledByNative
+    private float getFontScale() {
+        Context context = getContext();
+        if (context == null) return 1.0f;
+        if (mFontScale == null) {
+            mFontScale = context.getResources().getConfiguration().fontScale;
+        }
+        return mFontScale;
     }
 
     Context getEmbedderActivityContext() {

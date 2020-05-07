@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/history/core/browser/top_sites.h"
+#include "content/public/test/browser_test.h"
 
 namespace utils = extension_function_test_utils;
 

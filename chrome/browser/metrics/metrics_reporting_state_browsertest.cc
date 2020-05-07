@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service_accessor.h"
+#include "content/public/test/browser_test.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"

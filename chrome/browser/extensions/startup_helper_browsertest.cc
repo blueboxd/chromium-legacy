@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/extension.h"
 
 class StartupHelperBrowserTest : public InProcessBrowserTest {

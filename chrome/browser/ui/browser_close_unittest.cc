@@ -123,7 +123,7 @@ class BrowserCloseTest : public testing::Test {
   Profile* CreateIncognitoProfile(Profile* profile,
                                   int windows,
                                   int downloads) {
-    Profile* otr_profile = profile->GetOffTheRecordProfile();
+    Profile* otr_profile = profile->GetPrimaryOTRProfile();
 
     ConfigureCreatedProfile(otr_profile, windows, downloads);
 
@@ -132,7 +132,7 @@ class BrowserCloseTest : public testing::Test {
 
   Profile* CreateGuestProfile(int windows, int downloads) {
     TestingProfile* profile = profile_manager_.CreateGuestProfile();
-    Profile* incognito_profile = profile->GetOffTheRecordProfile();
+    Profile* incognito_profile = profile->GetPrimaryOTRProfile();
     ConfigureCreatedProfile(incognito_profile, windows, downloads);
 
     return incognito_profile;

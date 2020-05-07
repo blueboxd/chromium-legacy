@@ -98,7 +98,7 @@ public class AssistantViewFactory {
     /** Creates a {@code android.widget.TextView} widget. */
     @CalledByNative
     public static TextView createTextView(Context context, AssistantGenericUiDelegate delegate,
-            String identifier, String text, @Nullable String textAppearance) {
+            String identifier, String text, @Nullable String textAppearance, int textGravity) {
         TextView textView = new TextView(context);
         AssistantViewInteractions.setViewText(textView, text, delegate);
         textView.setTag(identifier);
@@ -109,6 +109,7 @@ public class AssistantViewFactory {
                 ApiCompatibilityUtils.setTextAppearance(textView, styleId);
             }
         }
+        textView.setGravity(textGravity);
         return textView;
     }
 

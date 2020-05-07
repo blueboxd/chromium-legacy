@@ -10,6 +10,7 @@
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 
 namespace first_run {
 

@@ -31,7 +31,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -71,6 +71,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
@@ -2854,7 +2855,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsCaptivePortal) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          "https://bar.test/dns-query{?dns}");
 
@@ -2891,7 +2892,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SecureDnsErrorTriggersCheck) {
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          "https://bar.test/dns-query{?dns}");
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   WebContents* broken_tab_contents = tab_strip_model->GetActiveWebContents();
@@ -2928,7 +2929,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          "https://bar.test/dns-query{?dns}");
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
 
   SlowLoadBehindCaptivePortal(browser(), true /* expect_open_login_tab */,
                               true /* expect_new_login_browser */);
@@ -2958,7 +2959,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          "https://bar.test/dns-query{?dns}");
   local_state->SetString(prefs::kDnsOverHttpsMode,
-                         chrome_browser_net::kDnsOverHttpsModeSecure);
+                         SecureDnsConfig::kModeSecure);
 
   SlowLoadBehindCaptivePortal(browser(), true /* expect_open_login_tab */,
                               true /* expect_new_login_browser */);

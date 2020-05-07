@@ -19,11 +19,13 @@
         value: false,
       },
 
+      /** @type {?string} */
       domain: {
         type: String,
         value: null,
       },
 
+      /** @type {?string} */
       emailDomain: String,
 
       activeSection: {
@@ -56,6 +58,12 @@
           behavior.onBeforeShow.call(this);
       });
       this.$$('#dialog').onBeforeShow();
+    },
+
+    reset() {
+      this.disabled = false;
+      this.emailDomain = null;
+      this.domain = null;
     },
 
     onForgotPasswordClicked_() {

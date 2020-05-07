@@ -325,6 +325,23 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
+    static Matcher<View> withTextGravity(int gravity) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View view) {
+                if (!(view instanceof TextView)) {
+                    return false;
+                }
+                return ((TextView) view).getGravity() == gravity;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("withTextGravity " + gravity);
+            }
+        };
+    }
+
     static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override

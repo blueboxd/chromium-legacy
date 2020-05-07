@@ -36,6 +36,7 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"

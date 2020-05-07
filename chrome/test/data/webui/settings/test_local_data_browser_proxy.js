@@ -30,7 +30,7 @@ export class TestLocalDataBrowserProxy extends TestBrowserProxy {
     /** @private {?CookieList} */
     this.cookieDetails_ = null;
 
-    /** @private {Array<!CookieList>} */
+    /** @private {Array<!LocalDataItem>} */
     this.cookieList_ = [];
   }
 
@@ -44,7 +44,7 @@ export class TestLocalDataBrowserProxy extends TestBrowserProxy {
 
   /**
    * Test-only helper.
-   * @param {!CookieList} cookieList
+   * @param {!Array<!LocalDataItem>} cookieList
    */
   setCookieList(cookieList) {
     this.cookieList_ = cookieList;

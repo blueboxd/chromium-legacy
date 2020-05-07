@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/history/core/browser/history_types.h"
+#include "content/public/test/browser_test.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkNode;

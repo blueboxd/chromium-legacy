@@ -13,6 +13,7 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "content/public/test/browser_test.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/identity_manager_factory.h"

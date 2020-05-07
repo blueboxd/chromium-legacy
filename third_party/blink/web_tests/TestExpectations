@@ -4616,7 +4616,7 @@ crbug.com/1067477 [ Fuchsia ] css3/selectors3/xhtml/css3-modsel-18.xml [ Skip ]
 crbug.com/1067477 [ Fuchsia ] css3/selectors3/xml/css3-modsel-17.xml [ Skip ]
 crbug.com/1067477 [ Fuchsia ] css3/selectors3/xml/css3-modsel-18.xml [ Skip ]
 crbug.com/1067477 [ Fuchsia ] css3/selectors3/xml/css3-modsel-61.xml [ Skip ]
-crbug.com/1067477 [ Fuchsia ] editing/execCommand/5190926.html [ Skip ]
+crbug.com/1067477 [ Fuchsia ] editing/execCommand/insert_list_with_underline.html.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] editing/pasteboard/paste-line-endings-001.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] editing/pasteboard/paste-line-endings-002.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] editing/pasteboard/paste-line-endings-003.html [ Skip ]
@@ -5695,9 +5695,6 @@ crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
-# COOP timeout failure.
-crbug.com/1046698 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]
-
 # Broken in https://chromium-review.googlesource.com/c/chromium/src/+/1636716
 crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure Timeout ]
 
@@ -6103,6 +6100,9 @@ crbug.com/1042694 fast/forms/form-control-with-state-eager-tracing-crashTest.htm
 
 # QUIC reordered versions to prefer IETF QUIC
 crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
+
+# Stale revalidation shouldn't be blocked:
+crbug.com/1079188 external/wpt/fetch/stale-while-revalidate/revalidate-not-blocked-by-csp.html [ Timeout ]
 
 # Web Audio active processing tests
 crbug.com/1073247 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/active-processing.https.html [ Pass Failure ]

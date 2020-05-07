@@ -34,6 +34,7 @@
 #include "chromeos/test/chromeos_test_utils.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
 // Disabled due to flakiness: https://crbug.com/997685.

@@ -276,18 +276,24 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc) {
   csp->DidReceiveHeader("object-src 'none';",
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kMeta);
-  EXPECT_FALSE(csp->AllowRequest(
-      mojom::RequestContextType::OBJECT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(csp->AllowRequest(
-      mojom::RequestContextType::EMBED, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(csp->AllowRequest(
-      mojom::RequestContextType::PLUGIN, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                 network::mojom::RequestDestination::kEmpty,
+                                 url, String(), IntegrityMetadataSet(),
+                                 kParserInserted,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::EMBED,
+                                 network::mojom::RequestDestination::kEmbed,
+                                 url, String(), IntegrityMetadataSet(),
+                                 kParserInserted,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::PLUGIN,
+                                network::mojom::RequestDestination::kEmpty, url,
+                                String(), IntegrityMetadataSet(),
+                                kParserInserted,
+                                ResourceRequest::RedirectStatus::kNoRedirect,
+                                ReportingDisposition::kSuppressReporting));
 }
 
 TEST_F(ContentSecurityPolicyTest, ConnectSrc) {
@@ -296,28 +302,36 @@ TEST_F(ContentSecurityPolicyTest, ConnectSrc) {
   csp->DidReceiveHeader("connect-src 'none';",
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kMeta);
-  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE, url,
-                                 String(), IntegrityMetadataSet(),
-                                 kParserInserted,
-                                 ResourceRequest::RedirectStatus::kNoRedirect,
-                                 ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::XML_HTTP_REQUEST,
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE,
+                                 network::mojom::RequestDestination::kEmpty,
                                  url, String(), IntegrityMetadataSet(),
                                  kParserInserted,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(csp->AllowRequest(
-      mojom::RequestContextType::BEACON, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(csp->AllowRequest(
-      mojom::RequestContextType::FETCH, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(csp->AllowRequest(
-      mojom::RequestContextType::PLUGIN, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::XML_HTTP_REQUEST,
+                                 network::mojom::RequestDestination::kEmpty,
+                                 url, String(), IntegrityMetadataSet(),
+                                 kParserInserted,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::BEACON,
+                                 network::mojom::RequestDestination::kEmpty,
+                                 url, String(), IntegrityMetadataSet(),
+                                 kParserInserted,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::FETCH,
+                                 network::mojom::RequestDestination::kEmpty,
+                                 url, String(), IntegrityMetadataSet(),
+                                 kParserInserted,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::PLUGIN,
+                                network::mojom::RequestDestination::kEmpty, url,
+                                String(), IntegrityMetadataSet(),
+                                kParserInserted,
+                                ResourceRequest::RedirectStatus::kNoRedirect,
+                                ReportingDisposition::kSuppressReporting));
 }
 // Tests that requests for scripts and styles are blocked
 // if `require-sri-for` delivered in HTTP header requires integrity be present
@@ -330,72 +344,96 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kEnforce,
                            ContentSecurityPolicySource::kHTTP);
-  EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(
-      policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER, url,
+      policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                           network::mojom::RequestDestination::kScript, url,
                            String(), IntegrityMetadataSet(), kParserInserted,
                            ResourceRequest::RedirectStatus::kNoRedirect,
                            ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(
-      policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER, url,
+      policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                           network::mojom::RequestDestination::kEmpty, url,
+                           String(), IntegrityMetadataSet(), kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(
+      policy->AllowRequest(mojom::RequestContextType::STYLE,
+                           network::mojom::RequestDestination::kStyle, url,
                            String(), IntegrityMetadataSet(), kParserInserted,
                            ResourceRequest::RedirectStatus::kNoRedirect,
                            ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::SERVICE_WORKER,
+      network::mojom::RequestDestination::kServiceWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+  EXPECT_FALSE(policy->AllowRequest(
+      mojom::RequestContextType::SHARED_WORKER,
+      network::mojom::RequestDestination::kSharedWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(
+      policy->AllowRequest(mojom::RequestContextType::WORKER,
+                           network::mojom::RequestDestination::kWorker, url,
+                           String(), IntegrityMetadataSet(), kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
   // Report
   policy = MakeGarbageCollected<ContentSecurityPolicy>();
   policy->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kReport,
                            ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                   network::mojom::RequestDestination::kScript,
                                    url, String(), IntegrityMetadataSet(),
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                                   network::mojom::RequestDestination::kEmpty,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::STYLE,
+                                   network::mojom::RequestDestination::kStyle,
                                    url, String(), IntegrityMetadataSet(),
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::SERVICE_WORKER,
+      network::mojom::RequestDestination::kServiceWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::SHARED_WORKER,
+      network::mojom::RequestDestination::kSharedWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::WORKER,
+                                   network::mojom::RequestDestination::kWorker,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
 }
 
 // Tests that requests for scripts and styles are allowed
@@ -413,36 +451,48 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kEnforce,
                            ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                   network::mojom::RequestDestination::kScript,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                                   network::mojom::RequestDestination::kEmpty,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::STYLE,
+                                   network::mojom::RequestDestination::kStyle,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+                           network::mojom::RequestDestination::kServiceWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+                           network::mojom::RequestDestination::kSharedWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::WORKER,
+                                   network::mojom::RequestDestination::kWorker,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = MakeGarbageCollected<ContentSecurityPolicy>();
@@ -450,36 +500,48 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kReport,
                            ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                   network::mojom::RequestDestination::kScript,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                                   network::mojom::RequestDestination::kEmpty,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::STYLE,
+                                   network::mojom::RequestDestination::kStyle,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+                           network::mojom::RequestDestination::kServiceWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+                           network::mojom::RequestDestination::kSharedWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::WORKER,
+                                   network::mojom::RequestDestination::kWorker,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
 }
 
 // Tests that requests for scripts and styles are blocked
@@ -493,36 +555,48 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kEnforce,
                            ContentSecurityPolicySource::kMeta);
-  EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(
-      policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER, url,
+      policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                           network::mojom::RequestDestination::kScript, url,
                            String(), IntegrityMetadataSet(), kParserInserted,
                            ResourceRequest::RedirectStatus::kNoRedirect,
                            ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(
-      policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER, url,
+      policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                           network::mojom::RequestDestination::kEmpty, url,
+                           String(), IntegrityMetadataSet(), kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(
+      policy->AllowRequest(mojom::RequestContextType::STYLE,
+                           network::mojom::RequestDestination::kStyle, url,
                            String(), IntegrityMetadataSet(), kParserInserted,
                            ResourceRequest::RedirectStatus::kNoRedirect,
                            ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::SERVICE_WORKER,
+      network::mojom::RequestDestination::kServiceWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+  EXPECT_FALSE(policy->AllowRequest(
+      mojom::RequestContextType::SHARED_WORKER,
+      network::mojom::RequestDestination::kSharedWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(
+      policy->AllowRequest(mojom::RequestContextType::WORKER,
+                           network::mojom::RequestDestination::kWorker, url,
+                           String(), IntegrityMetadataSet(), kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = MakeGarbageCollected<ContentSecurityPolicy>();
@@ -530,36 +604,48 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kReport,
                            ContentSecurityPolicySource::kMeta);
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                   network::mojom::RequestDestination::kScript,
                                    url, String(), IntegrityMetadataSet(),
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                                   network::mojom::RequestDestination::kEmpty,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::STYLE,
+                                   network::mojom::RequestDestination::kStyle,
                                    url, String(), IntegrityMetadataSet(),
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::SERVICE_WORKER,
+      network::mojom::RequestDestination::kServiceWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::SHARED_WORKER,
+      network::mojom::RequestDestination::kSharedWorker, url, String(),
+      IntegrityMetadataSet(), kParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::WORKER,
+                                   network::mojom::RequestDestination::kWorker,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), IntegrityMetadataSet(),
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
 }
 
 // Tests that requests for scripts and styles are allowed
@@ -577,36 +663,48 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kEnforce,
                            ContentSecurityPolicySource::kMeta);
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                   network::mojom::RequestDestination::kScript,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                                   network::mojom::RequestDestination::kEmpty,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::STYLE,
+                                   network::mojom::RequestDestination::kStyle,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+                           network::mojom::RequestDestination::kServiceWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+                           network::mojom::RequestDestination::kSharedWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::WORKER,
+                                   network::mojom::RequestDestination::kWorker,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
   // Content-Security-Policy-Report-Only is not supported in meta element,
   // so nothing should be blocked
   policy = MakeGarbageCollected<ContentSecurityPolicy>();
@@ -614,36 +712,48 @@ TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity) {
   policy->DidReceiveHeader("require-sri-for script style",
                            ContentSecurityPolicyType::kReport,
                            ContentSecurityPolicySource::kMeta);
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::SCRIPT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMPORT, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::STYLE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                   network::mojom::RequestDestination::kScript,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMPORT,
+                                   network::mojom::RequestDestination::kEmpty,
                                    url, String(), integrity_metadata,
                                    kParserInserted,
                                    ResourceRequest::RedirectStatus::kNoRedirect,
                                    ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::WORKER, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(policy->AllowRequest(
-      mojom::RequestContextType::IMAGE, url, String(), integrity_metadata,
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::STYLE,
+                                   network::mojom::RequestDestination::kStyle,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SERVICE_WORKER,
+                           network::mojom::RequestDestination::kServiceWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      policy->AllowRequest(mojom::RequestContextType::SHARED_WORKER,
+                           network::mojom::RequestDestination::kSharedWorker,
+                           url, String(), integrity_metadata, kParserInserted,
+                           ResourceRequest::RedirectStatus::kNoRedirect,
+                           ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::WORKER,
+                                   network::mojom::RequestDestination::kWorker,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(policy->AllowRequest(mojom::RequestContextType::IMAGE,
+                                   network::mojom::RequestDestination::kImage,
+                                   url, String(), integrity_metadata,
+                                   kParserInserted,
+                                   ResourceRequest::RedirectStatus::kNoRedirect,
+                                   ReportingDisposition::kSuppressReporting));
 }
 
 TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
@@ -1062,30 +1172,34 @@ TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
                         ContentSecurityPolicySource::kHTTP);
 
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                network::mojom::RequestDestination::kEmpty,
                                 KURL(base, "https://example.com/"), String(),
                                 IntegrityMetadataSet(), kParserInserted,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 
   EXPECT_FALSE(csp->AllowRequest(
-      mojom::RequestContextType::OBJECT, KURL(base, "https://not-example.com/"),
-      String(), IntegrityMetadataSet(), kParserInserted,
-      ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty,
+      KURL(base, "https://not-example.com/"), String(), IntegrityMetadataSet(),
+      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   // Register "https" as bypassing CSP, which should now bypass it entirely
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy("https");
 
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                network::mojom::RequestDestination::kEmpty,
                                 KURL(base, "https://example.com/"), String(),
                                 IntegrityMetadataSet(), kParserInserted,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 
   EXPECT_TRUE(csp->AllowRequest(
-      mojom::RequestContextType::OBJECT, KURL(base, "https://not-example.com/"),
-      String(), IntegrityMetadataSet(), kParserInserted,
-      ResourceRequest::RedirectStatus::kNoRedirect,
+      mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty,
+      KURL(base, "https://not-example.com/"), String(), IntegrityMetadataSet(),
+      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
@@ -1104,6 +1218,7 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
 
   EXPECT_FALSE(
       csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                        network::mojom::RequestDestination::kEmpty,
                         KURL(base, "filesystem:https://example.com/file.txt"),
                         String(), IntegrityMetadataSet(), kParserInserted,
                         ResourceRequest::RedirectStatus::kNoRedirect,
@@ -1111,6 +1226,7 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
 
   EXPECT_FALSE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty,
       KURL(base, "filesystem:https://not-example.com/file.txt"), String(),
       IntegrityMetadataSet(), kParserInserted,
       ResourceRequest::RedirectStatus::kNoRedirect,
@@ -1121,6 +1237,7 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
 
   EXPECT_TRUE(
       csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                        network::mojom::RequestDestination::kEmpty,
                         KURL(base, "filesystem:https://example.com/file.txt"),
                         String(), IntegrityMetadataSet(), kParserInserted,
                         ResourceRequest::RedirectStatus::kNoRedirect,
@@ -1128,6 +1245,7 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
 
   EXPECT_TRUE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty,
       KURL(base, "filesystem:https://not-example.com/file.txt"), String(),
       IntegrityMetadataSet(), kParserInserted,
       ResourceRequest::RedirectStatus::kNoRedirect,
@@ -1150,11 +1268,13 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
 
   EXPECT_FALSE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty,
       KURL(base, "blob:https://example.com/"), String(), IntegrityMetadataSet(),
       kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                 network::mojom::RequestDestination::kEmpty,
                                  KURL(base, "blob:https://not-example.com/"),
                                  String(), IntegrityMetadataSet(),
                                  kParserInserted,
@@ -1166,11 +1286,13 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
 
   EXPECT_TRUE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty,
       KURL(base, "blob:https://example.com/"), String(), IntegrityMetadataSet(),
       kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                network::mojom::RequestDestination::kEmpty,
                                 KURL(base, "blob:https://not-example.com/"),
                                 String(), IntegrityMetadataSet(),
                                 kParserInserted,
@@ -1649,9 +1771,11 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowAncestors(document->GetFrame(), example_url));
   EXPECT_FALSE(csp->IsFrameAncestorsEnforced());
   EXPECT_TRUE(csp->AllowRequestWithoutIntegrity(
-      mojom::RequestContextType::SCRIPT, example_url));
-  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SCRIPT, example_url,
-                                nonce, IntegrityMetadataSet(),
+      mojom::RequestContextType::SCRIPT,
+      network::mojom::RequestDestination::kScript, example_url));
+  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SCRIPT,
+                                network::mojom::RequestDestination::kScript,
+                                example_url, nonce, IntegrityMetadataSet(),
                                 kParserInserted));
   EXPECT_FALSE(csp->IsActive());
   EXPECT_FALSE(csp->IsActiveForConnections());
@@ -1677,7 +1801,8 @@ TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {
   csp->DidReceiveHeader("default-src 'self';",
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kMeta);
-  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE, url,
+  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE,
+                                network::mojom::RequestDestination::kEmpty, url,
                                 String(), IntegrityMetadataSet(),
                                 kParserInserted,
                                 ResourceRequest::RedirectStatus::kNoRedirect,

@@ -16,7 +16,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/image_cursors.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"

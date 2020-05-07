@@ -5,6 +5,8 @@
 /** @fileoverview Test suite for the WebUI new tab page page. */
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
+
+GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 class NewTabPageInteractiveTest extends PolymerInteractiveUITest {

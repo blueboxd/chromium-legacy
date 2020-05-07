@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_ERROR_NOTIFIER_ASH_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_ERROR_NOTIFIER_ASH_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_SIGNIN_ERROR_NOTIFIER_ASH_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_SIGNIN_ERROR_NOTIFIER_ASH_H_
 
 #include <string>
 #include <vector>
@@ -84,4 +84,4 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   DISALLOW_COPY_AND_ASSIGN(SigninErrorNotifier);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_ERROR_NOTIFIER_ASH_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_SIGNIN_SIGNIN_ERROR_NOTIFIER_ASH_H_

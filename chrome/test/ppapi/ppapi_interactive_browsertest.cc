@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/test/browser_test.h"
 #include "ppapi/shared_impl/test_utils.h"
 
 // Disable tests under ASAN.  http://crbug.com/104832.

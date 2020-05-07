@@ -45,6 +45,6 @@ blink_core_sources("input") {
     "//third_party/blink/public:buildflags",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
-    "//ui/base/mojom:cursor_type_blink",
+    "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 }

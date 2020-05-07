@@ -6,6 +6,7 @@ GEN('#include "chrome/browser/ui/browser.h"');
 GEN('#include "chrome/browser/ui/browser_commands.h"');
 GEN('#include "chrome/browser/ui/exclusive_access/' +
     'fullscreen_controller_test.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Fixture for ChromeOs WebUI OOBE testing.

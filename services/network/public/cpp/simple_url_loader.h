@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
     RETRY_ON_5XX = 0x1,
     // Retries on net::ERR_NETWORK_CHANGED.
     RETRY_ON_NETWORK_CHANGE = 0x2,
+    // Retries on net::ERR_NAME_NOT_RESOLVED.
+    RETRY_ON_NAME_NOT_RESOLVED = 0x4,
   };
 
   // The maximum size DownloadToString will accept.

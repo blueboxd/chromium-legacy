@@ -35,7 +35,7 @@ source_set("chromeos") {
     "//ui/views",
   ]
 
-  deps = [ "//ui/base/mojom:cursor_type" ]
+  deps = [ "//ui/base/cursor/mojom:cursor_type" ]
 }
 
 # The host portions of the remoting unit tests.

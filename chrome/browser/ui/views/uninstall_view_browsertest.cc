@@ -8,6 +8,7 @@
 
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
+#include "content/public/test/browser_test.h"
 
 class UninstallViewBrowserTest : public DialogBrowserTest {
  public:

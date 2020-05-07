@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 #include "media/base/supported_types.h"
 #include "media/base/test_data_util.h"

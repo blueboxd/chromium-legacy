@@ -13,6 +13,7 @@ const ROOT_PATH = '../../../../../';
 const expectedValue = '1234.4321';
 
 GEN('#include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 var MachineLearningInternalsWebUIBrowserTest = class extends testing.Test {
   /** @override */

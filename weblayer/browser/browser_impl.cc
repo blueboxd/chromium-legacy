@@ -218,6 +218,8 @@ void BrowserImpl::SetWebPreferences(content::WebPreferences* prefs) {
       Java_BrowserImpl_getDarkThemeEnabled(AttachCurrentThread(), java_impl_)
           ? blink::PreferredColorScheme::kDark
           : blink::PreferredColorScheme::kLight;
+  prefs->font_scale_factor =
+      Java_BrowserImpl_getFontScale(AttachCurrentThread(), java_impl_);
 #endif
 }
 

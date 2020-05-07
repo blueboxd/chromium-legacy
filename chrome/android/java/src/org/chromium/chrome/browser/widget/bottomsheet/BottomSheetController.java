@@ -158,6 +158,13 @@ public class BottomSheetController implements Destroyable {
     /** A token held while the bottom sheet is obscuring all visible tabs. */
     private int mTabObscuringToken;
 
+    /** The state of the sheet so it can be returned to what it was prior to suppression. */
+    @SheetState
+    private int mSheetStateBeforeSuppress;
+
+    /** The content being shown prior to the sheet being suppressed. */
+    private BottomSheetContent mContentWhenSuppressed;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
@@ -538,7 +545,10 @@ public class BottomSheetController implements Destroyable {
      * the content displayed by the sheet.
      * @param reason The reason the sheet was suppressed.
      */
-    private void suppressSheet(@StateChangeReason int reason) {
+    @VisibleForTesting
+    void suppressSheet(@StateChangeReason int reason) {
+        mSheetStateBeforeSuppress = getSheetState();
+        mContentWhenSuppressed = getCurrentSheetContent();
         mIsSuppressed = true;
         mBottomSheet.setSheetState(SheetState.HIDDEN, false, reason);
     }
@@ -547,7 +557,8 @@ public class BottomSheetController implements Destroyable {
      * Unsuppress the bottom sheet. This may or may not affect the sheet depending on the state of
      * the browser (i.e. the tab switcher may be showing).
      */
-    private void unsuppressSheet() {
+    @VisibleForTesting
+    void unsuppressSheet() {
         if (!mIsSuppressed || mTabProvider.get() == null || isOtherUIObscuring()
                 || VrModuleProvider.getDelegate().isInVr() || mOmniboxFocusStateSupplier.get()) {
             return;
@@ -555,11 +566,17 @@ public class BottomSheetController implements Destroyable {
         mIsSuppressed = false;
 
         if (mBottomSheet.getCurrentSheetContent() != null) {
-            mBottomSheet.setSheetState(mBottomSheet.getOpeningState(), true);
+            @SheetState
+            int openState = mContentWhenSuppressed == getCurrentSheetContent()
+                    ? mSheetStateBeforeSuppress
+                    : mBottomSheet.getOpeningState();
+            mBottomSheet.setSheetState(openState, true);
         } else {
             // In the event the previous content was hidden, try to show the next one.
             showNextContent(true);
         }
+        mContentWhenSuppressed = null;
+        mSheetStateBeforeSuppress = SheetState.NONE;
     }
 
     @VisibleForTesting
@@ -730,6 +747,8 @@ public class BottomSheetController implements Destroyable {
 
             hideContent(currentContent, /* animate= */ true);
         }
+        mContentWhenSuppressed = null;
+        mSheetStateBeforeSuppress = SheetState.NONE;
     }
 
     /**

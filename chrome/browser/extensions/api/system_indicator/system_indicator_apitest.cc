@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "components/version_info/channel.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"

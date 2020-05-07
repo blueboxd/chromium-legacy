@@ -11,6 +11,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/embedder_support/switches.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 

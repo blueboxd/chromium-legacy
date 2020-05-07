@@ -15,6 +15,7 @@
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_switches.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,7 +69,31 @@ TEST(CountryNamesTest, GetCountryCode_EnUsFallback) {
   EXPECT_EQ("US", es_names.GetCountryCode(ASCIIToUTF16("USA")));
 }
 
-// Test mapping of empty country name to country code.
+TEST(CountryNamesTest, GetCountryCodeForLocalizedCountryName) {
+  // Initialize with the default locale.
+  TestCountryNames names("en_US");
+  EXPECT_EQ("AM", names.GetCountryCodeForLocalizedCountryName(
+                      ASCIIToUTF16("Armenien"), "de"));
+  EXPECT_EQ("AZ", names.GetCountryCodeForLocalizedCountryName(
+                      ASCIIToUTF16("Azerbeidzjan"), "nl"));
+}
+
+TEST(CountryNamesTest, GetCachedCountryCodeForLocalizedCountryName) {
+  // Initialize with the default locale.
+  TestCountryNames names("en_US");
+
+  // Verify that the entry is not cached.
+  EXPECT_FALSE(names.IsCountryNamesForLocaleCachedForTesting("de"));
+
+  // Make a lookup of the entry that should result in a cache write.
+  EXPECT_EQ("AM", names.GetCountryCodeForLocalizedCountryName(
+                      ASCIIToUTF16("Armenien"), "de"));
+
+  // Verify that the entry is cached.
+  EXPECT_TRUE(names.IsCountryNamesForLocaleCachedForTesting("de"));
+}
+
+// Test mapping of an empty country name to an country code.
 TEST(CountryNamesTest, EmptyCountryNameHasEmptyCountryCode) {
   std::string country_code =
       TestCountryNames("en").GetCountryCode(base::string16());

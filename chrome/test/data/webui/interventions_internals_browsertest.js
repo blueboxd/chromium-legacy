@@ -6,6 +6,8 @@
  * @fileoverview Tests for interventions_internals.js
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Test fixture for InterventionsInternals WebUI testing.
  * @constructor

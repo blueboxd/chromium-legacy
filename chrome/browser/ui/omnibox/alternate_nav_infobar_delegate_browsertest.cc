@@ -8,6 +8,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
 namespace {

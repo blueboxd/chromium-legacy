@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/test/browser_test.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 #include "base/memory/ref_counted_memory.h"

@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
@@ -156,6 +157,7 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -213,6 +215,13 @@ HitTestResult HitTestResultForRootFramePos(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
+}
+
+RemoteFrame* SourceFrameForOptionalToken(
+    const base::Optional<base::UnguessableToken>& source_frame_token) {
+  if (!source_frame_token)
+    return nullptr;
+  return RemoteFrame::FromFrameToken(source_frame_token.value());
 }
 
 class WebBundleGenerationDelegate
@@ -2519,6 +2528,19 @@ void LocalFrame::MediaPlayerActionAt(
   IntPoint location(viewport_position.x, viewport_position.y);
 
   MediaPlayerActionAtViewportPoint(location, action->type, action->enable);
+}
+
+void LocalFrame::AdvanceFocusInFrame(
+    mojom::blink::FocusType focus_type,
+    const base::Optional<base::UnguessableToken>& source_frame_token) {
+  RemoteFrame* source_frame = SourceFrameForOptionalToken(source_frame_token);
+  if (!source_frame) {
+    SetInitialFocus(focus_type == mojom::blink::FocusType::kBackward);
+    return;
+  }
+
+  GetPage()->GetFocusController().AdvanceFocusAcrossFrames(focus_type,
+                                                           source_frame, this);
 }
 
 void LocalFrame::AdvanceFocusInForm(mojom::blink::FocusType focus_type) {

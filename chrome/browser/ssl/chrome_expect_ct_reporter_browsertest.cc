@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/cert_test_util.h"

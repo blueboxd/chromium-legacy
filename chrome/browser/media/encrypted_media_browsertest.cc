@@ -26,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_switches.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/key_system_names.h"
 #include "media/base/media_switches.h"

@@ -22,13 +22,22 @@ static_assert(std::is_trivially_copyable<CheckedPtr<std::string>>::value,
 namespace {
 
 struct MyStruct {
-  explicit MyStruct(int x) : x(x) {}
   int x;
 };
 
-struct Derived : MyStruct {
-  Derived(int x, int y) : MyStruct(x), y(y) {}
-  int y;
+struct Base1 {
+  explicit Base1(int b1) : b1(b1) {}
+  int b1;
+};
+
+struct Base2 {
+  explicit Base2(int b2) : b2(b2) {}
+  int b2;
+};
+
+struct Derived : Base1, Base2 {
+  Derived(int b1, int b2, int d) : Base1(b1), Base2(b2), d(d) {}
+  int d;
 };
 
 TEST(CheckedPtr, NullStarDereference) {
@@ -54,15 +63,21 @@ TEST(CheckedPtr, StarDereference) {
 }
 
 TEST(CheckedPtr, ArrowDereference) {
-  MyStruct foo(42);
+  MyStruct foo = {42};
   CheckedPtr<MyStruct> ptr = &foo;
   EXPECT_EQ(ptr->x, 42);
 }
 
-TEST(CheckedPtr, VoidPtr) {
-  const char foo[] = {0, 0, 1, 0};
+TEST(CheckedPtr, ConstVoidPtr) {
+  int32_t foo[] = {1234567890};
   CheckedPtr<const void> ptr = foo;
-  EXPECT_EQ(*static_cast<const int32_t*>(ptr), 65536);
+  EXPECT_EQ(*static_cast<const int32_t*>(ptr), 1234567890);
+}
+
+TEST(CheckedPtr, VoidPtr) {
+  int32_t foo[] = {1234567890};
+  CheckedPtr<void> ptr = foo;
+  EXPECT_EQ(*static_cast<int32_t*>(ptr), 1234567890);
 }
 
 TEST(CheckedPtr, OperatorEQ) {
@@ -101,31 +116,94 @@ TEST(CheckedPtr, OperatorNE) {
   EXPECT_FALSE(ptr3 != ptr1);
 }
 
+TEST(CheckedPtr, OperatorEQCast) {
+  int foo = 42;
+  CheckedPtr<int> int_ptr = &foo;
+  CheckedPtr<void> void_ptr = &foo;
+  EXPECT_TRUE(int_ptr == int_ptr);
+  EXPECT_TRUE(void_ptr == void_ptr);
+  EXPECT_TRUE(int_ptr == void_ptr);
+  EXPECT_TRUE(void_ptr == int_ptr);
+
+  Derived derived_val(42, 84, 1024);
+  CheckedPtr<Derived> derived_ptr = &derived_val;
+  CheckedPtr<Base1> base1_ptr = &derived_val;
+  CheckedPtr<Base2> base2_ptr = &derived_val;
+  EXPECT_TRUE(derived_ptr == derived_ptr);
+  EXPECT_TRUE(derived_ptr == base1_ptr);
+  EXPECT_TRUE(base1_ptr == derived_ptr);
+  // |base2_ptr| points to the second base class of |derived|, so will be
+  // located at an offset. While the stored raw uinptr_t values shouldn't match,
+  // ensure that the internal pointer manipulation correctly offsets when
+  // casting up and down the class hierarchy.
+  EXPECT_NE(reinterpret_cast<uintptr_t>(base2_ptr.get()),
+            reinterpret_cast<uintptr_t>(derived_ptr.get()));
+  EXPECT_TRUE(derived_ptr == base2_ptr);
+  EXPECT_TRUE(base2_ptr == derived_ptr);
+}
+
+TEST(CheckedPtr, OperatorNECast) {
+  int foo = 42;
+  CheckedPtr<int> int_ptr = &foo;
+  CheckedPtr<void> void_ptr = &foo;
+  EXPECT_FALSE(int_ptr != void_ptr);
+  EXPECT_FALSE(void_ptr != int_ptr);
+
+  Derived derived_val(42, 84, 1024);
+  CheckedPtr<Derived> derived_ptr = &derived_val;
+  CheckedPtr<Base1> base1_ptr = &derived_val;
+  CheckedPtr<Base2> base2_ptr = &derived_val;
+  EXPECT_FALSE(derived_ptr != base1_ptr);
+  EXPECT_FALSE(base1_ptr != derived_ptr);
+  // base2_ptr is pointing in the middle of derived_ptr, thus having a different
+  // underlying address. Yet, they still should be equal.
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(base2_ptr.get()),
+            reinterpret_cast<uintptr_t>(derived_ptr.get()) + 4);
+  EXPECT_FALSE(derived_ptr != base2_ptr);
+  EXPECT_FALSE(base2_ptr != derived_ptr);
+}
+
 TEST(CheckedPtr, Cast) {
-  Derived derived_val(42, 1024);
+  Derived derived_val(42, 84, 1024);
   CheckedPtr<Derived> checked_derived_ptr = &derived_val;
-  MyStruct* raw_base_ptr = checked_derived_ptr;
-  EXPECT_EQ(raw_base_ptr->x, 42);
+  Base1* raw_base1_ptr = checked_derived_ptr;
+  EXPECT_EQ(raw_base1_ptr->b1, 42);
+  Base2* raw_base2_ptr = checked_derived_ptr;
+  EXPECT_EQ(raw_base2_ptr->b2, 84);
 
-  Derived* raw_derived_ptr = static_cast<Derived*>(raw_base_ptr);
-  EXPECT_EQ(raw_derived_ptr->x, 42);
-  EXPECT_EQ(raw_derived_ptr->y, 1024);
+  Derived* raw_derived_ptr = static_cast<Derived*>(raw_base1_ptr);
+  EXPECT_EQ(raw_derived_ptr->b1, 42);
+  EXPECT_EQ(raw_derived_ptr->b2, 84);
+  EXPECT_EQ(raw_derived_ptr->d, 1024);
+  raw_derived_ptr = static_cast<Derived*>(raw_base2_ptr);
+  EXPECT_EQ(raw_derived_ptr->b1, 42);
+  EXPECT_EQ(raw_derived_ptr->b2, 84);
+  EXPECT_EQ(raw_derived_ptr->d, 1024);
 
-  CheckedPtr<MyStruct> checked_base_ptr = raw_derived_ptr;
-  EXPECT_EQ(checked_base_ptr->x, 42);
+  CheckedPtr<Base1> checked_base1_ptr = raw_derived_ptr;
+  EXPECT_EQ(checked_base1_ptr->b1, 42);
+  CheckedPtr<Base2> checked_base2_ptr = raw_derived_ptr;
+  EXPECT_EQ(checked_base2_ptr->b2, 84);
 
   CheckedPtr<Derived> checked_derived_ptr2 =
-      static_cast<Derived*>(checked_base_ptr);
-  EXPECT_EQ(checked_derived_ptr2->x, 42);
-  EXPECT_EQ(checked_derived_ptr2->y, 1024);
+      static_cast<Derived*>(checked_base1_ptr);
+  EXPECT_EQ(checked_derived_ptr2->b1, 42);
+  EXPECT_EQ(checked_derived_ptr2->b2, 84);
+  EXPECT_EQ(checked_derived_ptr2->d, 1024);
+  checked_derived_ptr2 = static_cast<Derived*>(checked_base2_ptr);
+  EXPECT_EQ(checked_derived_ptr2->b1, 42);
+  EXPECT_EQ(checked_derived_ptr2->b2, 84);
+  EXPECT_EQ(checked_derived_ptr2->d, 1024);
 
   const Derived* raw_const_derived_ptr = checked_derived_ptr2;
-  EXPECT_EQ(raw_const_derived_ptr->x, 42);
-  EXPECT_EQ(raw_const_derived_ptr->y, 1024);
+  EXPECT_EQ(raw_const_derived_ptr->b1, 42);
+  EXPECT_EQ(raw_const_derived_ptr->b2, 84);
+  EXPECT_EQ(raw_const_derived_ptr->d, 1024);
 
   CheckedPtr<const Derived> checked_const_derived_ptr = raw_const_derived_ptr;
-  EXPECT_EQ(checked_const_derived_ptr->x, 42);
-  EXPECT_EQ(checked_const_derived_ptr->y, 1024);
+  EXPECT_EQ(checked_const_derived_ptr->b1, 42);
+  EXPECT_EQ(checked_const_derived_ptr->b2, 84);
+  EXPECT_EQ(checked_const_derived_ptr->d, 1024);
 
   void* raw_void_ptr = checked_derived_ptr;
   CheckedPtr<void> checked_void_ptr = raw_derived_ptr;
@@ -133,10 +211,12 @@ TEST(CheckedPtr, Cast) {
       static_cast<Derived*>(raw_void_ptr);
   CheckedPtr<Derived> checked_derived_ptr4 =
       static_cast<Derived*>(checked_void_ptr);
-  EXPECT_EQ(checked_derived_ptr3->x, 42);
-  EXPECT_EQ(checked_derived_ptr3->y, 1024);
-  EXPECT_EQ(checked_derived_ptr4->x, 42);
-  EXPECT_EQ(checked_derived_ptr4->y, 1024);
+  EXPECT_EQ(checked_derived_ptr3->b1, 42);
+  EXPECT_EQ(checked_derived_ptr3->b2, 84);
+  EXPECT_EQ(checked_derived_ptr3->d, 1024);
+  EXPECT_EQ(checked_derived_ptr4->b1, 42);
+  EXPECT_EQ(checked_derived_ptr4->b2, 84);
+  EXPECT_EQ(checked_derived_ptr4->d, 1024);
 }
 
 TEST(CheckedPtr, CustomSwap) {

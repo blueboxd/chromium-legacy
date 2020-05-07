@@ -4,8 +4,9 @@
 
 // Include test fixture.
 GEN_INCLUDE(['../testing/chromevox_unittest_base.js']);
-
 GEN_INCLUDE(['../testing/fake_objects.js']);
+
+GEN('#include "content/public/test/browser_test.h"');
 
 // Fake out the Chrome API namespace we depend on.
 var chrome = {};

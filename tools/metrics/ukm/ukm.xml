@@ -8369,12 +8369,20 @@ be describing additional metrics about the same event.
       enum ManagerAutofillEvent.
     </summary>
   </metric>
-  <metric name="ManagerFill.Assistance">
+  <metric name="ManagerFill.Assistance" enum="PasswordManagerFillingAssistance">
     <summary>
       Records for each successful submission the degree to which the user has
-      been assisted by the password manager. Recorded values correspond to the
-      enum password_manager::PasswordFormMetricsRecorder::FillingAssistance.
+      been assisted by the password manager.
+
+      This is replicated as PasswordManager.FillingAssistance in UMA.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ParsingComparison">
     <obsolete>

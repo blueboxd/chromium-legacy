@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager_base.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 

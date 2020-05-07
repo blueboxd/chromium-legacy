@@ -16,6 +16,10 @@ class ManifestFeature : public SimpleFeature {
   ManifestFeature();
   ~ManifestFeature() override;
 
+  // TODO(crbug.com/1078984): This should also override IsAvailableToManifest so
+  // that a permission or manifest feature can declare dependency on other
+  // manifest features.
+
   Feature::Availability IsAvailableToContext(
       const Extension* extension,
       Feature::Context context,

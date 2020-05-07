@@ -279,10 +279,14 @@ void BinaryUploadService::OnGetResponse(Request* request,
     return;
 
   if (response.has_dlp_scan_verdict()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " finished DLP scanning";
     received_dlp_verdicts_[request].reset(response.release_dlp_scan_verdict());
   }
 
   if (response.has_malware_scan_verdict()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " finished malware scanning";
     received_malware_verdicts_[request].reset(
         response.release_malware_scan_verdict());
   }
@@ -296,6 +300,8 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
   auto received_dlp_response = received_dlp_verdicts_.find(request);
   if (requested_dlp_scan_response &&
       received_dlp_response == received_dlp_verdicts_.end()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " is waiting for DLP scanning to complete.";
     return;
   }
 
@@ -304,6 +310,8 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
   auto received_malware_response = received_malware_verdicts_.find(request);
   if (requested_malware_scan_response &&
       received_malware_response == received_malware_verdicts_.end()) {
+    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+            << " is waiting for malware scanning to complete.";
     return;
   }
 

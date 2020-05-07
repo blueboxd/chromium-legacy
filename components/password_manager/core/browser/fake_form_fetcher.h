@@ -34,7 +34,6 @@ class FakeFormFetcher : public FormFetcher {
   // has to first call AddConsumer, then setters and finally
   // NotifyFetchCompleted().
   void AddConsumer(Consumer* consumer) override;
-
   void RemoveConsumer(Consumer* consumer) override;
 
   // Only sets the internal state to WAITING, no call to PasswordStore.
@@ -44,8 +43,23 @@ class FakeFormFetcher : public FormFetcher {
   // State::NOT_WAITING otherwise.
   State GetState() const override;
 
-  // Statistics for recent password bubble usage.
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
+  base::span<const CompromisedCredentials> GetCompromisedCredentials()
+      const override;
+  std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
+      const override;
+  std::vector<const autofill::PasswordForm*> GetFederatedMatches()
+      const override;
+  bool IsBlacklisted() const override;
+  bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
+                       const base::string16& username) const override;
+  const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
+      const override;
+  const std::vector<const autofill::PasswordForm*>& GetBestMatches()
+      const override;
+  const autofill::PasswordForm* GetPreferredMatch() const override;
+  // Returns a new FakeFormFetcher.
+  std::unique_ptr<FormFetcher> Clone() override;
 
   void set_stats(const std::vector<InteractionsStats>& stats) {
     state_ = State::NOT_WAITING;
@@ -53,24 +67,6 @@ class FakeFormFetcher : public FormFetcher {
   }
 
   void set_scheme(autofill::PasswordForm::Scheme scheme) { scheme_ = scheme; }
-
-  std::vector<const autofill::PasswordForm*> GetNonFederatedMatches()
-      const override;
-
-  std::vector<const autofill::PasswordForm*> GetFederatedMatches()
-      const override;
-
-  bool IsBlacklisted() const override;
-  bool IsMovingBlocked(const autofill::GaiaIdHash& destination,
-                       const base::string16& username) const override;
-
-  const std::vector<const autofill::PasswordForm*>& GetAllRelevantMatches()
-      const override;
-
-  const std::vector<const autofill::PasswordForm*>& GetBestMatches()
-      const override;
-
-  const autofill::PasswordForm* GetPreferredMatch() const override;
 
   void set_federated(
       const std::vector<const autofill::PasswordForm*>& federated) {
@@ -84,9 +80,6 @@ class FakeFormFetcher : public FormFetcher {
   void SetBlacklisted(bool is_blacklisted);
 
   void NotifyFetchCompleted();
-
-  // Returns a new FakeFormFetcher.
-  std::unique_ptr<FormFetcher> Clone() override;
 
  private:
   base::ObserverList<Consumer> consumers_;

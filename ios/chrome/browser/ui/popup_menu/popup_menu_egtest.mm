@@ -171,8 +171,12 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
   // Navigate to a mock pdf and verify that the find button is disabled.
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGreyUI openToolsMenu];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kToolsMenuFindInPageId)]
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(kToolsMenuFindInPageId),
+                                   grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
       assertWithMatcher:grey_accessibilityTrait(
                             UIAccessibilityTraitNotEnabled)];
 }

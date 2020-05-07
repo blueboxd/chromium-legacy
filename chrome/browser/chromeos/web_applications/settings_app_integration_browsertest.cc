@@ -9,6 +9,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 
 class SettingsAppIntegrationTest : public SystemWebAppIntegrationTest {};

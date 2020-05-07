@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip_reader.h"

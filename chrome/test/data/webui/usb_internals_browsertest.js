@@ -6,6 +6,8 @@
  * @fileoverview Tests for chrome://usb-internals
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Test fixture for testing async methods of cr.js.
  * @constructor

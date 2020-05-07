@@ -114,6 +114,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    const NGLogicalStaticPosition&,
                                    const LayoutInline* inline_container);
 
+  // Specify whether this will be the first fragment generated for the node.
+  void SetIsFirstForNode(bool is_first) { is_first_for_node_ = is_first; }
+
   // Set how much of the block-size we've used so far for this box. This will be
   // the sum of the block-size of all previous fragments PLUS the one we're
   // building now.
@@ -338,6 +341,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_fieldset_container_ = false;
   bool is_initial_block_size_indefinite_ = false;
   bool is_inline_formatting_context_;
+  bool is_first_for_node_ = true;
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;

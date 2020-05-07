@@ -9,6 +9,7 @@
 GEN('#include "chromeos/components/help_app_ui/test/help_app_ui_browsertest.h"');
 
 GEN('#include "chromeos/constants/chromeos_features.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 const HOST_ORIGIN = 'chrome://help-app';
 

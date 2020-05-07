@@ -12,6 +12,7 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 
 using content::RenderFrameHost;
 using content::WebContents;

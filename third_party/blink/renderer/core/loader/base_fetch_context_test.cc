@@ -192,7 +192,8 @@ TEST_F(BaseFetchContextTest, CheckCSPForRequest) {
 
   EXPECT_EQ(base::nullopt,
             fetch_context_->CheckCSPForRequest(
-                mojom::RequestContextType::SCRIPT, url, options,
+                mojom::RequestContextType::SCRIPT,
+                network::mojom::RequestDestination::kScript, url, options,
                 ReportingDisposition::kReport,
                 ResourceRequest::RedirectStatus::kFollowedRedirect));
   EXPECT_EQ(1u, policy->violation_reports_sent_.size());

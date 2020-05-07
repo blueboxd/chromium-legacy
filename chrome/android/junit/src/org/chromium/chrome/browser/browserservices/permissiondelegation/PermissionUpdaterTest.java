@@ -107,12 +107,10 @@ public class PermissionUpdaterTest {
     private void verifyPermissionNotUpdated() {
         verify(mPermissionManager, never()).addDelegateApp(any(), anyString());
         verify(mNotificationsPermissionUpdater, never()).onOriginVerified(any(), anyString());
-        verify(mLocationPermissionUpdater, never()).onOriginVerified(any(), anyString());
     }
 
     private void verifyPermissionWillUpdate() {
         verify(mPermissionManager).addDelegateApp(eq(ORIGIN), eq(PACKAGE_NAME));
         verify(mNotificationsPermissionUpdater).onOriginVerified(eq(ORIGIN), eq(PACKAGE_NAME));
-        verify(mLocationPermissionUpdater).onOriginVerified(eq(ORIGIN), eq(PACKAGE_NAME));
     }
 }

@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/web_application_info.h"
 #include "components/embedder_support/switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"

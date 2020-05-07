@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -36,39 +37,21 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
   // the secure DNS prefs directly since the host resolver configuration takes
   // other factors into account such as whether a managed environment or
   // parental controls have been detected.
-  bool insecure_stub_resolver_enabled = false;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  std::vector<net::DnsOverHttpsServerConfig> dns_over_https_servers;
-  chrome_browser_net::SecureDnsUiManagementMode management_mode;
-  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
-      true /* force_check_parental_controls_for_automatic_mode */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      &dns_over_https_servers, &management_mode);
-
-  std::string secure_dns_mode_str;
-  switch (secure_dns_mode) {
-    case net::DnsConfig::SecureDnsMode::SECURE:
-      secure_dns_mode_str = chrome_browser_net::kDnsOverHttpsModeSecure;
-      break;
-    case net::DnsConfig::SecureDnsMode::AUTOMATIC:
-      secure_dns_mode_str = chrome_browser_net::kDnsOverHttpsModeAutomatic;
-      break;
-    case net::DnsConfig::SecureDnsMode::OFF:
-      secure_dns_mode_str = chrome_browser_net::kDnsOverHttpsModeOff;
-      break;
-    default:
-      NOTREACHED();
-  }
+  SecureDnsConfig config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(
+              true /* force_check_parental_controls_for_automatic_mode */);
 
   auto secure_dns_templates = std::make_unique<base::ListValue>();
-  for (const auto& doh_server : dns_over_https_servers) {
+  for (const auto& doh_server : config.servers()) {
     secure_dns_templates->Append(doh_server.server_template);
   }
 
   auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("mode", secure_dns_mode_str);
+  dict->SetString("mode", SecureDnsConfig::ModeToString(config.mode()));
   dict->SetList("templates", std::move(secure_dns_templates));
-  dict->SetInteger("managementMode", static_cast<int>(management_mode));
+  dict->SetInteger("managementMode",
+                   static_cast<int>(config.management_mode()));
   return dict;
 }
 

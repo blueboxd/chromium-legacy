@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/browser/cast_web_view.h"
-#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 
 namespace content {

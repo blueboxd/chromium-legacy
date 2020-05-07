@@ -15,6 +15,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/views/controls/webview/web_dialog_view.h"

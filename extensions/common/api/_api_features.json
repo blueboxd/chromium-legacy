@@ -153,8 +153,6 @@
   },
   "declarativeNetRequest.onRuleMatchedDebug": {
     "dependencies": ["permission:declarativeNetRequest", "permission:declarativeNetRequestFeedback"],
-    "contexts": ["blessed_extension"],
-    "channel": "beta",
     "location": "unpacked"
   },
   "declarativeWebRequest": {

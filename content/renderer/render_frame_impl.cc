@@ -2188,7 +2188,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
-    IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
@@ -2678,20 +2677,6 @@ void RenderFrameImpl::ExtractSmartClipData(
 void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
   WebFrame* opener = ResolveWebFrame(opener_routing_id);
   frame_->SetOpener(opener);
-}
-
-void RenderFrameImpl::OnAdvanceFocus(blink::mojom::FocusType type,
-                                     int32_t source_routing_id) {
-  RenderFrameProxy* source_frame =
-      RenderFrameProxy::FromRoutingID(source_routing_id);
-  if (!source_frame) {
-    render_view_->GetWebView()->SetInitialFocus(
-        type == blink::mojom::FocusType::kBackward);
-    return;
-  }
-
-  render_view_->GetWebView()->AdvanceFocusAcrossFrames(
-      type, source_frame->web_frame(), frame_);
 }
 
 void RenderFrameImpl::PostMessageEvent(int32_t source_routing_id,

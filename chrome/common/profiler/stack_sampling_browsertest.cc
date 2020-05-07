@@ -15,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/version_info/channel.h"
+#include "content/public/test/browser_test.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace {

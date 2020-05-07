@@ -4,6 +4,7 @@
 
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"

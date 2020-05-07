@@ -7,6 +7,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_browser_test.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 

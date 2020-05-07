@@ -18,6 +18,7 @@
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 
 using bookmarks::BookmarkModel;
 

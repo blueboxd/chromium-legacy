@@ -624,7 +624,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 }
             }
             try {
-                if (cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE)) {
+                Boolean awb_lock_available =
+                        cameraCharacteristics.get(CameraCharacteristics.CONTROL_AWB_LOCK_AVAILABLE);
+                if (awb_lock_available != null && awb_lock_available.booleanValue()) {
                     whiteBalanceModes.add(Integer.valueOf(AndroidMeteringMode.FIXED));
                 }
             } catch (NoSuchFieldError e) {

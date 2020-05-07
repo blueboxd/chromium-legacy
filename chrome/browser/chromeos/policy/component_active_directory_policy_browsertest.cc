@@ -21,6 +21,7 @@
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"

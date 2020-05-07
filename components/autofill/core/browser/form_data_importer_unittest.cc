@@ -1286,6 +1286,81 @@ TEST_F(FormDataImporterTest, ImportAddressProfiles_UnrecognizedCountry) {
   ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
 }
 
+// Tests that a profile is imported if the country can be translated using the
+// page language.
+TEST_F(FormDataImporterTest, ImportAddressProfiles_LocalizedCountryName) {
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+
+  // Create a form with all important fields.
+  FormFieldData field;
+  test::CreateTestFormField("First name:", "first_name", "George", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Last name:", "last_name", "Washington", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Address:", "address1", "21 Laussat St", "text",
+                            &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("City:", "city", "San Francisco", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("State:", "state", "California", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Zip:", "zip", "94102", "text", &field);
+  form.fields.push_back(field);
+  // The country field has a localized value.
+  test::CreateTestFormField("Country:", "country", "Armenien", "text", &field);
+  form.fields.push_back(field);
+
+  // Verify that the country code is not determined from the country value if
+  // the page language is not set.
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
+
+  ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
+  ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
+  ASSERT_EQ(autofill_client_->GetPageLanguage(), std::string());
+
+  // Set the page language to match the localized country value and try again.
+  autofill_client_->set_page_language("de");
+
+  // TODO(crbug.com/1075604): Remove test with disabled feature.
+  // Verify that nothing is changed if using the page language feature is not
+  // enabled.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUsePageLanguageToTranslateCountryNames);
+  ImportAddressProfiles(/*extraction_success=*/false, form_structure);
+
+  // There should be no imported address profile.
+  ASSERT_EQ(0U, personal_data_manager_->GetProfiles().size());
+  ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
+  ASSERT_EQ(autofill_client_->GetPageLanguage(), std::string("de"));
+
+  // Enable the feature and to test if the profile can now be imported.
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUsePageLanguageToTranslateCountryNames);
+  ImportAddressProfiles(/*extraction_success=*/true, form_structure);
+
+  // There should be one imported address profile.
+  ASSERT_EQ(1U, personal_data_manager_->GetProfiles().size());
+  ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
+
+  // Check that the correct profile was stored.
+  AutofillProfile expected(base::GenerateGUID(), test::kEmptyOrigin);
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "21 Laussat St", nullptr,
+                       "San Francisco", "California", "94102", "AM", nullptr);
+  const std::vector<AutofillProfile*>& results =
+      personal_data_manager_->GetProfiles();
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+}
+
 // Tests that a profile is created for countries with composed names.
 TEST_F(FormDataImporterTest,
        ImportAddressProfiles_CompleteComposedCountryName) {

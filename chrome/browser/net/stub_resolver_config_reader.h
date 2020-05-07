@@ -5,22 +5,15 @@
 #ifndef CHROME_BROWSER_NET_STUB_RESOLVER_CONFIG_READER_H_
 #define CHROME_BROWSER_NET_STUB_RESOLVER_CONFIG_READER_H_
 
-#include <vector>
-
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "net/dns/dns_config.h"
-#include "net/dns/public/dns_over_https_server_config.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 
 class PrefRegistrySimple;
 class PrefService;
-
-namespace chrome_browser_net {
-enum class SecureDnsUiManagementMode;
-}  // namespace chrome_browser_net
+class SecureDnsConfig;
 
 // Retriever for Chrome configuration for the built-in DNS stub resolver.
 class StubResolverConfigReader {
@@ -39,7 +32,7 @@ class StubResolverConfigReader {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Returns the current host resolver configuration.
+  // Returns the current secure DNS resolver configuration.
   //
   // Initial checks for parental controls (which cause DoH to be disabled) may
   // be deferred for performance if called early during startup, if the
@@ -50,16 +43,10 @@ class StubResolverConfigReader {
   // previously been deferred, and the check discovers that DoH should be
   // disabled, the network service will be updated to disable DoH and ensure the
   // service behavior matches the config returned by this method.
-  //
-  // |forced_management_mode| is an optional param that will be set to indicate
-  // the type of override applied by Chrome if provided.
-  void GetConfiguration(
-      bool force_check_parental_controls_for_automatic_mode,
-      bool* insecure_stub_resolver_enabled,
-      net::DnsConfig::SecureDnsMode* secure_dns_mode,
-      std::vector<net::DnsOverHttpsServerConfig>* dns_over_https_servers,
-      chrome_browser_net::SecureDnsUiManagementMode* forced_management_mode =
-          nullptr);
+  SecureDnsConfig GetSecureDnsConfiguration(
+      bool force_check_parental_controls_for_automatic_mode);
+
+  bool GetInsecureStubResolverEnabled();
 
   // Updates the network service with the current configuration.
   void UpdateNetworkService(bool record_metrics);
@@ -79,14 +66,10 @@ class StubResolverConfigReader {
 
   // Updates network service if |update_network_service| or if necessary due to
   // first read of parental controls.
-  void GetAndUpdateConfiguration(
+  SecureDnsConfig GetAndUpdateConfiguration(
       bool force_check_parental_controls_for_automatic_mode,
       bool record_metrics,
-      bool update_network_service,
-      bool* insecure_stub_resolver_enabled,
-      net::DnsConfig::SecureDnsMode* secure_dns_mode,
-      std::vector<net::DnsOverHttpsServerConfig>* dns_over_https_servers,
-      chrome_browser_net::SecureDnsUiManagementMode* forced_management_mode);
+      bool update_network_service);
 
   PrefService* const local_state_;
 

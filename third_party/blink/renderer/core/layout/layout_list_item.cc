@@ -242,9 +242,12 @@ bool LayoutListItem::UpdateMarkerLocation() {
 
   // Make sure a marker originated by a ::before or ::after precedes the
   // generated contents.
-  if (IsPseudoElement() && marker != FirstChild()) {
-    marker->Remove();
-    AddChild(marker, FirstChild());
+  if (IsPseudoElement()) {
+    LayoutObject* first_child = marker_parent->SlowFirstChild();
+    if (marker != first_child) {
+      marker->Remove();
+      AddChild(marker, first_child);
+    }
   }
 
   if (marker->IsOutsideListMarker())

@@ -18,6 +18,7 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "content/public/test/browser_test.h"
 #include "crypto/ec_private_key.h"
 
 namespace {

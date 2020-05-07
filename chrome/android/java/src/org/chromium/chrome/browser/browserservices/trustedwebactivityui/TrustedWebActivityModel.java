@@ -39,6 +39,10 @@ public class TrustedWebActivityModel extends PropertyModel {
     public static final WritableObjectPropertyKey<DisclosureEventsCallback>
             DISCLOSURE_EVENTS_CALLBACK = new WritableObjectPropertyKey<>();
 
+    /** The name of the package that is running the TWA. */
+    public static final WritableObjectPropertyKey<String> PACKAGE_NAME =
+            new WritableObjectPropertyKey<>();
+
     /**
      * A callback for when the disclosure is accepted.
      */
@@ -53,6 +57,6 @@ public class TrustedWebActivityModel extends PropertyModel {
     @Inject
     public TrustedWebActivityModel() {
         super(DISCLOSURE_STATE, DISCLOSURE_FIRST_TIME, DISCLOSURE_SCOPE,
-                DISCLOSURE_EVENTS_CALLBACK);
+                DISCLOSURE_EVENTS_CALLBACK, PACKAGE_NAME);
     }
 }

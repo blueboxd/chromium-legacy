@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

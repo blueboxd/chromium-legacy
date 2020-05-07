@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/external_install_manager.h"
 #include "chrome/browser/ui/global_error/global_error_waiter.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"

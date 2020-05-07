@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "content/public/test/browser_test.h"
 #include "third_party/blink/public/common/features.h"
 
 class NativeFileSystemUsageBubbleViewTest : public DialogBrowserTest {

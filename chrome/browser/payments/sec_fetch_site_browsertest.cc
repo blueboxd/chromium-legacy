@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
+#include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

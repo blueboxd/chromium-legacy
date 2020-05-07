@@ -99,6 +99,7 @@ class CORE_EXPORT CSPDirectiveList final
   bool AllowDynamicWorker() const;
 
   bool AllowRequestWithoutIntegrity(mojom::RequestContextType,
+                                    network::mojom::RequestDestination,
                                     const KURL&,
                                     ResourceRequest::RedirectStatus,
                                     ReportingDisposition) const;
@@ -265,7 +266,8 @@ class CORE_EXPORT CSPDirectiveList final
                       const String& type,
                       const String& type_attribute) const;
   bool CheckAncestors(SourceListDirective*, LocalFrame*) const;
-  bool CheckRequestWithoutIntegrity(mojom::RequestContextType) const;
+  bool CheckRequestWithoutIntegrity(mojom::RequestContextType,
+                                    network::mojom::RequestDestination) const;
 
   void SetEvalDisabledErrorMessage(const String& error_message) {
     eval_disabled_error_message_ = error_message;
@@ -303,6 +305,7 @@ class CORE_EXPORT CSPDirectiveList final
                                         const KURL&) const;
   bool CheckRequestWithoutIntegrityAndReportViolation(
       mojom::RequestContextType,
+      network::mojom::RequestDestination,
       const KURL&,
       ResourceRequest::RedirectStatus) const;
 

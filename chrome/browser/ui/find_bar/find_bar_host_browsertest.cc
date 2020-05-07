@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -1310,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoIncognitoPrepopulate) {
       find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Open a new incognito window and navigate to the same page.
-  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
+  Profile* incognito_profile = browser()->profile()->GetPrimaryOTRProfile();
   Browser* incognito_browser =
       new Browser(Browser::CreateParams(incognito_profile, true));
   content::WindowedNotificationObserver observer(

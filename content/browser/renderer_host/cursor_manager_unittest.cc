@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 // CursorManager is only instantiated on Aura and Mac.
 #if defined(USE_AURA) || defined(OS_MACOSX)

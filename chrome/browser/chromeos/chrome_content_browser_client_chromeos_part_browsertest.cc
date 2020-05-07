@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/test/browser_test.h"
 
 using ChromeContentBrowserClientChromeOsPartTest = InProcessBrowserTest;
 

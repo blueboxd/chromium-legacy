@@ -8,6 +8,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/trace_event_analyzer.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 using trace_analyzer::Query;

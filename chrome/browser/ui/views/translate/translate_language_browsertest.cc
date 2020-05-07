@@ -32,6 +32,7 @@
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "url/gurl.h"
 

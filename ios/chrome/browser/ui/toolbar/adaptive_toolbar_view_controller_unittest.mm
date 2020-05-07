@@ -49,8 +49,8 @@ class AdaptiveToolbarViewControllerTest : public PlatformTest {
 };
 
 TEST_F(AdaptiveToolbarViewControllerTest, DetectForceTouch) {
-  // TODO(crbug.com/1079165): This test fails on ipad since iOS 13.4.
-  if (base::ios::IsRunningOnOrLater(13, 4, 0) && IsIPadIdiom()) {
+  if (IsIPadIdiom()) {
+    // IPad doesn't have force touch.
     return;
   }
 

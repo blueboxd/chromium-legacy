@@ -36,6 +36,7 @@ SwitchAccessE2ETest.prototype = {
 #include "base/callback.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/test/browser_test.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ash/keyboard/ui/keyboard_util.h"
     `);

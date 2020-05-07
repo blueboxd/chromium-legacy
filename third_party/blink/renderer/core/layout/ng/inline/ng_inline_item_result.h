@@ -38,14 +38,6 @@ struct CORE_EXPORT NGInlineItemResult {
     return end_offset - start_offset;
   }
 
-  // Return true if the fragment to be generated for the specified item is going
-  // to be the first fragment for the node.
-  bool IsFirstForNode() const {
-    DCHECK(item->Type() == NGInlineItem::kText ||
-           item->Type() == NGInlineItem::kControl);
-    return item->IsFirstForNode() && start_offset == item->StartOffset();
-  }
-
   LayoutUnit HyphenInlineSize() const {
     return hyphen_shape_result->SnappedWidth().ClampNegativeToZero();
   }

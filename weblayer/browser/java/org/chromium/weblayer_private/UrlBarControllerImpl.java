@@ -156,25 +156,23 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                                 ContextCompat.getColor(embedderContext, mUrlIconColor)));
             }
 
-            mSecurityButton.setOnClickListener(v -> { showPageInfoUi(); });
+            mSecurityButton.setOnClickListener(v -> { showPageInfoUi(v); });
             if (mShowPageInfoWhenUrlTextClicked) {
-                mUrlTextView.setOnClickListener(v -> { showPageInfoUi(); });
+                mUrlTextView.setOnClickListener(v -> { showPageInfoUi(v); });
             }
         }
 
-        private void showPageInfoUi() {
-            mSecurityButton.setOnClickListener(view -> {
-                PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(),
-                        mBrowserImpl.getActiveTab().getWebContents(),
-                        /* contentPublisher= */ null, PageInfoController.OpenedFromSource.TOOLBAR,
-                        new PageInfoControllerDelegate(
-                                ((FragmentWindowAndroid) mBrowserImpl
-                                                .getWindowAndroid())::getModalDialogManager,
-                                new AutocompleteSchemeClassifierImpl(),
-                                /** vrHandler= */ null,
-                                /** isSiteSettingsAvailable= */ false,
-                                /** cookieControlsShown= */ false));
-            });
+        private void showPageInfoUi(View v) {
+            PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(),
+                    mBrowserImpl.getActiveTab().getWebContents(),
+                    /* contentPublisher= */ null, PageInfoController.OpenedFromSource.TOOLBAR,
+                    new PageInfoControllerDelegate(
+                            ((FragmentWindowAndroid)
+                                            mBrowserImpl.getWindowAndroid())::getModalDialogManager,
+                            new AutocompleteSchemeClassifierImpl(),
+                            /** vrHandler= */ null,
+                            /** isSiteSettingsAvailable= */ false,
+                            /** cookieControlsShown= */ false));
         }
 
         @DrawableRes

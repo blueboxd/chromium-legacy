@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/input_method/ime_window.h"
 #include "chrome/browser/ui/input_method/ime_window_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/widget/widget.h"
 
 namespace ui {

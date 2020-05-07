@@ -38,11 +38,13 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withMinimumSize;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withTextGravity;
 
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
+import android.view.Gravity;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.RadioButton;
@@ -2418,5 +2420,70 @@ public class AutofillAssistantGenericUiTest {
                                            .setValue(ValueProto.newBuilder().setInts(
                                                    IntList.newBuilder().addValues(2)))
                                            .build()));
+    }
+
+    /**
+     * Tests text alignments.
+     */
+    @Test
+    @MediumTest
+    public void testTextAlignment() {
+        ViewProto defaultAlignedView =
+                (ViewProto) ViewProto.newBuilder()
+                        .setLayoutParams(ViewLayoutParamsProto.newBuilder().setLayoutWidth(
+                                ViewLayoutParamsProto.Size.MATCH_PARENT_VALUE))
+                        .setTextView(TextViewProto.newBuilder().setText("default-aligned text"))
+                        .build();
+        ViewProto centerAlignedView =
+                (ViewProto) ViewProto.newBuilder()
+                        .setLayoutParams(ViewLayoutParamsProto.newBuilder().setLayoutWidth(
+                                ViewLayoutParamsProto.Size.MATCH_PARENT_VALUE))
+                        .setTextView(TextViewProto.newBuilder()
+                                             .setText("center-aligned text")
+                                             .setTextAlignment(
+                                                     ViewLayoutParamsProto.Gravity.CENTER_VALUE))
+                        .build();
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(
+                                ViewProto.newBuilder()
+                                        .setLayoutParams(
+                                                ViewLayoutParamsProto.newBuilder().setLayoutWidth(
+                                                        ViewLayoutParamsProto.Size
+                                                                .MATCH_PARENT_VALUE))
+                                        .setViewContainer(
+                                                ViewContainerProto.newBuilder()
+                                                        .setLinearLayout(
+                                                                LinearLayoutProto.newBuilder()
+                                                                        .setOrientation(
+                                                                                LinearLayoutProto
+                                                                                        .Orientation
+                                                                                        .VERTICAL))
+                                                        .addViews(defaultAlignedView)
+                                                        .addViews(centerAlignedView)))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("default-aligned text"), isCompletelyDisplayed());
+        onView(withText("default-aligned text"))
+                .check(matches(withTextGravity(Gravity.START | Gravity.TOP)));
+        onView(withText("center-aligned text")).check(matches(withTextGravity(Gravity.CENTER)));
     }
 }

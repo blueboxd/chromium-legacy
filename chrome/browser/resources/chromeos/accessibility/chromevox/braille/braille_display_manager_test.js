@@ -6,6 +6,8 @@
 GEN_INCLUDE(
     ['../testing/chromevox_unittest_base.js', '../testing/fake_objects.js']);
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Test fixture.
  */

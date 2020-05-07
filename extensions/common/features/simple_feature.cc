@@ -19,6 +19,7 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_flags.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/switches.h"
@@ -355,6 +356,11 @@ std::string SimpleFeature::GetAvailabilityMessage(
       return base::StringPrintf(
           "'%s' requires the '%s' command line switch to be enabled.",
           name().c_str(), command_line_switch_->c_str());
+    case FEATURE_FLAG_DISABLED:
+      DCHECK(feature_flag_);
+      return base::StringPrintf(
+          "'%s' requires the '%s' feature flag to be enabled.", name().c_str(),
+          feature_flag_->c_str());
   }
 
   NOTREACHED();
@@ -536,6 +542,10 @@ void SimpleFeature::set_extension_types(
   extension_types_ = types;
 }
 
+void SimpleFeature::set_feature_flag(base::StringPiece feature_flag) {
+  feature_flag_ = feature_flag.as_string();
+}
+
 void SimpleFeature::set_session_types(
     std::initializer_list<FeatureSessionType> types) {
   session_types_ = types;
@@ -580,6 +590,9 @@ Feature::Availability SimpleFeature::GetEnvironmentAvailability(
       !IsCommandLineSwitchEnabled(command_line, *command_line_switch_)) {
     return CreateAvailability(MISSING_COMMAND_LINE_SWITCH);
   }
+
+  if (feature_flag_ && !IsFeatureFlagEnabled(*feature_flag_))
+    return CreateAvailability(FEATURE_FLAG_DISABLED);
 
   if (!MatchesSessionTypes(session_type))
     return CreateAvailability(INVALID_SESSION_TYPE, session_type);

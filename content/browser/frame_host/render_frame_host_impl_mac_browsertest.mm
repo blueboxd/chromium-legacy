@@ -7,6 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"

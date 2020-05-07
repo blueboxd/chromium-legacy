@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
+#include "content/public/test/browser_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"

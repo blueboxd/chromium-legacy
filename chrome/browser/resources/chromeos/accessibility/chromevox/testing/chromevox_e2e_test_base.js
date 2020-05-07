@@ -25,6 +25,7 @@ ChromeVoxE2ETest = class extends testing.Test {
   #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
   #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
   #include "chrome/common/extensions/extension_constants.h"
+  #include "content/public/test/browser_test.h"
   #include "extensions/common/extension_l10n_util.h"
       `);
   }

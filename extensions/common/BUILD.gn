@@ -163,6 +163,8 @@ if (enable_extensions) {
       "features/feature.h",
       "features/feature_channel.cc",
       "features/feature_channel.h",
+      "features/feature_flags.cc",
+      "features/feature_flags.h",
       "features/feature_provider.cc",
       "features/feature_provider.h",
       "features/feature_session_type.cc",

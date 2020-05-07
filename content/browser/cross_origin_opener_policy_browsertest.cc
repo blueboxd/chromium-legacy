@@ -8,6 +8,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -802,6 +803,128 @@ IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), final_page));
   EXPECT_EQ(current_frame_host()->GetProcess(),
             popup_webcontents->GetMainFrame()->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_F(CrossOriginOpenerPolicyBrowserTest,
+                       SpeculativeRfhsAndCoop) {
+  GURL non_coop_page(https_server()->GetURL("/title1.html"));
+  GURL coop_page(https_server()->GetURL("/page_with_coop_and_coep.html"));
+
+  // Non-COOP into non-COOP.
+  {
+    // Start on a non COOP page.
+    EXPECT_TRUE(NavigateToURL(shell(), non_coop_page));
+    scoped_refptr<SiteInstance> initial_site_instance(
+        current_frame_host()->GetSiteInstance());
+
+    // Navigate to a non COOP page.
+    TestNavigationManager non_coop_navigation(web_contents(), non_coop_page);
+    shell()->LoadURL(non_coop_page);
+    EXPECT_TRUE(non_coop_navigation.WaitForRequestStart());
+
+    // TODO(ahemery): RenderDocument will always create a Speculative RFH.
+    // Update these expectations to test the speculative RFH's SI relation when
+    // RenderDocument lands.
+    EXPECT_FALSE(web_contents()
+                     ->GetFrameTree()
+                     ->root()
+                     ->render_manager()
+                     ->speculative_frame_host());
+
+    non_coop_navigation.WaitForNavigationFinished();
+
+    EXPECT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+        initial_site_instance.get()));
+    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+              network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+  }
+
+  // Non-COOP into COOP.
+  {
+    // Start on a non COOP page.
+    EXPECT_TRUE(NavigateToURL(shell(), non_coop_page));
+    scoped_refptr<SiteInstance> initial_site_instance(
+        current_frame_host()->GetSiteInstance());
+
+    // Navigate to a COOP page.
+    TestNavigationManager coop_navigation(web_contents(), coop_page);
+    shell()->LoadURL(coop_page);
+    EXPECT_TRUE(coop_navigation.WaitForRequestStart());
+
+    // TODO(ahemery): RenderDocument will always create a Speculative RFH.
+    // Update these expectations to test the speculative RFH's SI relation when
+    // RenderDocument lands.
+    EXPECT_FALSE(web_contents()
+                     ->GetFrameTree()
+                     ->root()
+                     ->render_manager()
+                     ->speculative_frame_host());
+
+    coop_navigation.WaitForNavigationFinished();
+
+    EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+        initial_site_instance.get()));
+    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+              network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin);
+  }
+
+  // COOP into non-COOP.
+  {
+    // Start on a COOP page.
+    EXPECT_TRUE(NavigateToURL(shell(), coop_page));
+    scoped_refptr<SiteInstance> initial_site_instance(
+        current_frame_host()->GetSiteInstance());
+
+    // Navigate to a non COOP page.
+    TestNavigationManager non_coop_navigation(web_contents(), non_coop_page);
+    shell()->LoadURL(non_coop_page);
+    EXPECT_TRUE(non_coop_navigation.WaitForRequestStart());
+
+    // TODO(ahemery): RenderDocument will always create a Speculative RFH.
+    // Update these expectations to test the speculative RFH's SI relation when
+    // RenderDocument lands.
+    EXPECT_FALSE(web_contents()
+                     ->GetFrameTree()
+                     ->root()
+                     ->render_manager()
+                     ->speculative_frame_host());
+
+    non_coop_navigation.WaitForNavigationFinished();
+
+    EXPECT_FALSE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+        initial_site_instance.get()));
+    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+              network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+  }
+
+  // COOP into COOP.
+  {
+    // Start on a COOP page.
+    EXPECT_TRUE(NavigateToURL(shell(), coop_page));
+    scoped_refptr<SiteInstance> initial_site_instance(
+        current_frame_host()->GetSiteInstance());
+
+    // Navigate to a COOP page.
+    TestNavigationManager coop_navigation(web_contents(), coop_page);
+    shell()->LoadURL(coop_page);
+    EXPECT_TRUE(coop_navigation.WaitForRequestStart());
+
+    // TODO(ahemery): RenderDocument will always create a Speculative RFH.
+    // Update these expectations to test the speculative RFH's SI relation when
+    // RenderDocument lands.
+    EXPECT_FALSE(web_contents()
+                     ->GetFrameTree()
+                     ->root()
+                     ->render_manager()
+                     ->speculative_frame_host());
+
+    coop_navigation.WaitForNavigationFinished();
+
+    EXPECT_TRUE(current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+        initial_site_instance.get()));
+    EXPECT_EQ(current_frame_host()->cross_origin_opener_policy().value,
+              network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin);
+  }
 }
 
 }  // namespace

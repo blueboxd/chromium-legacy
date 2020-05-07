@@ -22,6 +22,7 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "url/gurl.h"

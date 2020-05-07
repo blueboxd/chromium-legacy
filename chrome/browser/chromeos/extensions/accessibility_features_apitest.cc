@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/result_catcher.h"
 
 // API tests for chrome.accessibilityFeatures API.

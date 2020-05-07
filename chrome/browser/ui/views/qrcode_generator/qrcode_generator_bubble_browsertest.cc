@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 class QRCodeGeneratorBubbleBrowserTest : public DialogBrowserTest {

@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/point.h"

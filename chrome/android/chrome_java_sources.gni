@@ -179,6 +179,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/PermissionUpdater.java",
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/TrustedWebActivityPermissionManager.java",
   "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/TrustedWebActivityPermissionStore.java",
+  "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/DisclosureAcceptanceBroadcastReceiver.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/DisclosureUiPicker.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/TrustedWebActivityCoordinator.java",
   "java/src/org/chromium/chrome/browser/browserservices/trustedwebactivityui/TrustedWebActivityModel.java",

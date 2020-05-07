@@ -5,6 +5,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/test/scoped_command_line.h"
+#include "content/public/test/browser_test.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/switches.h"

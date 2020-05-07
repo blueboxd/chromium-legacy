@@ -122,7 +122,8 @@
   "declarative_net_request": {
     "channel": "beta",
     "extension_types": ["extension"],
-    "min_manifest_version": 2
+    "min_manifest_version": 2,
+    "feature_flag": "DeclarativeNetRequest"
   },
   "default_locale": {
     "channel": "stable",

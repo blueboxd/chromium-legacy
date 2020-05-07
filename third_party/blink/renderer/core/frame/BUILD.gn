@@ -217,6 +217,6 @@ blink_core_sources("frame") {
   deps = [
     "//skia",
     "//ui/base/cursor",
-    "//ui/base/mojom:cursor_type_blink",
+    "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 }

@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "content/public/test/browser_test.h"
 
 using ResourcesPrivateApiTest = extensions::ExtensionApiTest;
 

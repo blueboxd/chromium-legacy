@@ -30,6 +30,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 
 namespace policy {
 

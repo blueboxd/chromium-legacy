@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/perf/performance_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 
 static const int kNumTabs = 4;
 

@@ -5,7 +5,7 @@
 #include "ui/views/native_cursor.h"
 
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace views {
 

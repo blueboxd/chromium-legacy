@@ -3215,6 +3215,7 @@ test("unit_tests") {
     "../browser/net/net_error_tab_helper_unittest.cc",
     "../browser/net/probe_message_unittest.cc",
     "../browser/net/referrer_policy_policy_handler_unittest.cc",
+    "../browser/net/secure_dns_config_unittest.cc",
     "../browser/net/secure_dns_policy_handler_unittest.cc",
     "../browser/net/stub_resolver_config_reader_unittest.cc",
     "../browser/nfc/nfc_permission_context_unittest.cc",
@@ -4414,7 +4415,6 @@ test("unit_tests") {
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/notifications/web_page_notifier_controller_unittest.cc",
       "../browser/policy/printing_restrictions_policy_handler_unittest.cc",
-      "../browser/signin/signin_error_notifier_ash_unittest.cc",
       "../browser/speech/tts_chromeos_unittest.cc",
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
       "../browser/ui/app_list/app_context_menu_unittest.cc",
@@ -5609,6 +5609,7 @@ if (!is_android) {
     public_deps = [
       "//chrome/browser:test_support_ui",
       "//content/public/browser",
+      "//content/test:test_support",
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/system",
     ]

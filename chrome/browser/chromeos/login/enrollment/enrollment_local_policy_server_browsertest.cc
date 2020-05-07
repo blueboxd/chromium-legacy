@@ -43,6 +43,7 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
 namespace chromeos {

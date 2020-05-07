@@ -15,6 +15,7 @@
 #include "chromecast/browser/test/cast_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/test/browser_test.h"
 
 // PLEASE READ:
 // 1) These tests are run in groups to simulate a restart of cast_shell. Each

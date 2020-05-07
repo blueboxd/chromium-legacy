@@ -237,6 +237,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                                             .GetFetchClientSettingsObject()
                                             .GetSecurityOrigin());
     ResourceLoaderOptions options;
+    // DJKim
     return GetFetchContext()->CanRequest(
         ResourceType::kImage, resource_request, input_url, options,
         reporting_disposition, ResourceRequest::RedirectStatus::kNoRedirect);

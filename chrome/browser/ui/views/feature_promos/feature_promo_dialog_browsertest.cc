@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/test/browser_test.h"
 
 class FeaturePromoDialogTest : public DialogBrowserTest {
  public:

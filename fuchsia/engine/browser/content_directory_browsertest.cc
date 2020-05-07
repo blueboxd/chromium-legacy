@@ -14,6 +14,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"

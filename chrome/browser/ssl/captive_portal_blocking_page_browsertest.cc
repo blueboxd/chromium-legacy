@@ -42,6 +42,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"

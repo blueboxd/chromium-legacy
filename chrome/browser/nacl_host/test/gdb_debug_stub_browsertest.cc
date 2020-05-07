@@ -15,6 +15,7 @@
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 
 class NaClGdbDebugStubTest : public PPAPINaClNewlibTest {

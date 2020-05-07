@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

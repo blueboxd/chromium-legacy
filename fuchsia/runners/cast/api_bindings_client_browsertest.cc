@@ -6,6 +6,7 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/test/bind_test_util.h"
+#include "content/public/test/browser_test.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"

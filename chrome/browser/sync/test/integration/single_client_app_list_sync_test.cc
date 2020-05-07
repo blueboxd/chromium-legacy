@@ -22,6 +22,7 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "content/public/test/browser_test.h"
 
 using syncer::UserSelectableOsType;
 using syncer::UserSelectableOsTypeSet;

@@ -380,7 +380,8 @@ bool CSPDirectiveList::CheckAncestors(SourceListDirective* directive,
 }
 
 bool CSPDirectiveList::CheckRequestWithoutIntegrity(
-    mojom::RequestContextType context) const {
+    mojom::RequestContextType context,
+    network::mojom::RequestDestination request_destination) const {
   if (require_sri_for_ == RequireSRIForToken::kNone)
     return true;
   // SRI specification
@@ -392,7 +393,13 @@ bool CSPDirectiveList::CheckRequestWithoutIntegrity(
        context == mojom::RequestContextType::IMPORT ||
        context == mojom::RequestContextType::SERVICE_WORKER ||
        context == mojom::RequestContextType::SHARED_WORKER ||
-       context == mojom::RequestContextType::WORKER)) {
+       context == mojom::RequestContextType::WORKER ||
+       request_destination == network::mojom::RequestDestination::kScript ||
+       request_destination ==
+           network::mojom::RequestDestination::kServiceWorker ||
+       request_destination ==
+           network::mojom::RequestDestination::kSharedWorker ||
+       request_destination == network::mojom::RequestDestination::kWorker)) {
     return false;
   }
   if ((require_sri_for_ & RequireSRIForToken::kStyle) &&
@@ -403,9 +410,10 @@ bool CSPDirectiveList::CheckRequestWithoutIntegrity(
 
 bool CSPDirectiveList::CheckRequestWithoutIntegrityAndReportViolation(
     mojom::RequestContextType context,
+    network::mojom::RequestDestination request_destination,
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status) const {
-  if (CheckRequestWithoutIntegrity(context))
+  if (CheckRequestWithoutIntegrity(context, request_destination))
     return true;
   String resource_type;
   switch (context) {
@@ -443,13 +451,16 @@ bool CSPDirectiveList::CheckRequestWithoutIntegrityAndReportViolation(
 
 bool CSPDirectiveList::AllowRequestWithoutIntegrity(
     mojom::RequestContextType context,
+    network::mojom::RequestDestination request_destination,
     const KURL& url,
     ResourceRequest::RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition) const {
-  if (reporting_disposition == ReportingDisposition::kReport)
-    return CheckRequestWithoutIntegrityAndReportViolation(context, url,
-                                                          redirect_status);
-  return DenyIfEnforcingPolicy() || CheckRequestWithoutIntegrity(context);
+  if (reporting_disposition == ReportingDisposition::kReport) {
+    return CheckRequestWithoutIntegrityAndReportViolation(
+        context, request_destination, url, redirect_status);
+  }
+  return DenyIfEnforcingPolicy() ||
+         CheckRequestWithoutIntegrity(context, request_destination);
 }
 
 bool CSPDirectiveList::CheckMediaType(MediaListDirective* directive,

@@ -12566,7 +12566,7 @@ bool TestSelectAll(const std::string& html) {
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
   RunPendingTasks();
-  web_view->SetInitialFocus(false);
+  web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
   RunPendingTasks();
 
   WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
@@ -12604,7 +12604,7 @@ TEST_F(WebFrameTest, ContextMenuDataSelectedText) {
   web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
-  web_view->SetInitialFocus(false);
+  web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
   RunPendingTasks();
 
   web_view->MainFrameImpl()->ExecuteCommand(WebString::FromUTF8("SelectAll"));
@@ -12633,7 +12633,7 @@ TEST_F(WebFrameTest, ContextMenuDataPasswordSelectedText) {
   web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
-  web_view->SetInitialFocus(false);
+  web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
   RunPendingTasks();
 
   web_view->MainFrameImpl()->ExecuteCommand(WebString::FromUTF8("SelectAll"));
@@ -12667,7 +12667,7 @@ TEST_F(WebFrameTest, ContextMenuDataNonLocatedMenu) {
   web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
-  web_view->SetInitialFocus(false);
+  web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
   RunPendingTasks();
 
   WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,

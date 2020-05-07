@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/view_type.h"
 
 namespace extensions {

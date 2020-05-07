@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/screen_info.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"

@@ -30,6 +30,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"

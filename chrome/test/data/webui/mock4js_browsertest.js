@@ -9,6 +9,8 @@
  * @see test_api.js
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Test fixture for Mock4JS testing.
  * @constructor

@@ -8,7 +8,10 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "net/dns/dns_config_overrides.h"
+
+namespace net {
+struct DnsConfigOverrides;
+}  // namespace net
 
 class PrefRegistrySimple;
 class PrefService;
@@ -26,21 +29,6 @@ bool IsValidDohTemplateGroup(base::StringPiece group);
 // Modifies |overrides| to use the DoH server specified by |server_template|.
 void ApplyDohTemplate(net::DnsConfigOverrides* overrides,
                       base::StringPiece server_template);
-
-const char kDnsOverHttpsModeOff[] = "off";
-const char kDnsOverHttpsModeAutomatic[] = "automatic";
-const char kDnsOverHttpsModeSecure[] = "secure";
-
-// Forced management description types. We will check for the override cases in
-// the order they are listed in the enum.
-enum class SecureDnsUiManagementMode {
-  // Chrome did not override the secure DNS settings.
-  kNoOverride,
-  // Secure DNS was disabled due to detection of a managed environment.
-  kDisabledManaged,
-  // Secure DNS was disabled due to detection of OS-level parental controls.
-  kDisabledParentalControls,
-};
 
 // Registers the backup preference required for the DNS probes setting reset.
 // TODO(crbug.com/1062698): Remove this once the privacy settings redesign

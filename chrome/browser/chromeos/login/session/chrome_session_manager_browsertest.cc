@@ -28,6 +28,7 @@
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/browser_test.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "rlz/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"

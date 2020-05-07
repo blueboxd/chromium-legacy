@@ -12,6 +12,7 @@ GEN('#include "base/run_loop.h"');
 GEN('#include "chrome/browser/media/history/media_history_keyed_service.h"');
 GEN('#include "chrome/browser/media/history/media_history_test_utils.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
+GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "media/base/media_switches.h"');
 
 function MediaFeedsWebUIBrowserTest() {}

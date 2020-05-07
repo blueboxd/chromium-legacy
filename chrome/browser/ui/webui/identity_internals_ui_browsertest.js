@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 GEN('#include "chrome/browser/ui/webui/identity_internals_ui_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Test C++ fixture for downloads WebUI testing.

@@ -19,7 +19,7 @@ constexpr int kDefaultMaxNumberOfSnapshots = 3;
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kUserDataSnapshotRentionLimit,
+  registry->RegisterIntegerPref(prefs::kUserDataSnapshotRetentionLimit,
                                 kDefaultMaxNumberOfSnapshots);
 }
 

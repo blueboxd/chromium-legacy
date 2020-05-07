@@ -28,6 +28,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/ssl/ssl_info.h"

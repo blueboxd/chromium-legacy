@@ -36,7 +36,7 @@ source_set("x11") {
     "x11_window_ozone.h",
   ]
 
-  public_deps = [ "//ui/base/mojom:cursor_type" ]
+  public_deps = [ "//ui/base/cursor/mojom:cursor_type" ]
 
   deps = [
     "//base",

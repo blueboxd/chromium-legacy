@@ -8,6 +8,8 @@
  */
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_interactive_ui_test.js']);
+
+GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
 const BookmarksFocusTest = class extends PolymerInteractiveUITest {

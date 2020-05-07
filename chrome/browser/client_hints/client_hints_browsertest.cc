@@ -34,6 +34,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -1225,8 +1226,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
 
 // Loads a HTTPS webpage that does not request persisting of client hints.
 // A same-origin iframe loaded by the webpage requests persistence of client
-// hints. Verify that the request from the iframe is honored, and client hints
-// preference is persisted.
+// hints. Since that's not a main frame, persistence should not happen.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
                        PersistenceRequestIframe_SameOrigin) {
   const GURL gurl = accept_ch_without_lifetime_with_iframe_url();
@@ -1240,17 +1240,16 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), gurl);
 
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 1);
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // accept_ch_without_lifetime_with_iframe_url() loads
   // accept_ch_with_lifetime() in an iframe. The request to persist client
-  // hints from accept_ch_with_lifetime() should be persisted.
-  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 1);
-  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                      3600 * 1000, 1);
+  // hints from accept_ch_with_lifetime() should not be persisted.
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
 }
 
 // Loads a HTTPS webpage that does not request persisting of client hints.

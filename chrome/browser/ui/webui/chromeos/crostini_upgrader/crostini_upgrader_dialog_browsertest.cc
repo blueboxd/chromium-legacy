@@ -21,6 +21,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)

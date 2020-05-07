@@ -235,7 +235,7 @@ source_set("common") {
     "//ui/accessibility",
     "//ui/accessibility/mojom",
     "//ui/base/cursor",
-    "//ui/base/mojom:cursor_type",
+    "//ui/base/cursor/mojom:cursor_type",
     "//ui/events/ipc",
   ]
   deps = [

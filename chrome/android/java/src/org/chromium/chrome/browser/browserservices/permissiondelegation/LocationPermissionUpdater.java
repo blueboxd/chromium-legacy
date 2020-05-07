@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 
@@ -35,13 +34,11 @@ public class LocationPermissionUpdater {
     }
 
     /**
-     * To be called when an origin is verified with a package.
+     * If the uninstalled client app results in there being no more TrustedWebActivityService
+     * for the origin, or the client app does not support location delegation, return the
+     * origin's location permission to what it was before any client app was installed.
      */
-    public void onOriginVerified(Origin origin, String packageName) {
-        if (!ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.TRUSTED_WEB_ACTIVITY_LOCATION_DELEGATION)) {
-            return;
-        }
-        // TODO(crbug.com/1069506): add implementations here.
+    void onClientAppUninstalled(Origin origin) {
+        mPermissionManager.resetStoredPermission(origin, TYPE);
     }
 }

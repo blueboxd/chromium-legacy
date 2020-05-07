@@ -10,6 +10,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/language_detection/public/cpp/language_detection_service.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class LanguageDetectionServiceTest : public InProcessBrowserTest {};

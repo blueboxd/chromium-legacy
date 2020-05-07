@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/platform_apps/api/browser/browser_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"

@@ -13,8 +13,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
 namespace ash {

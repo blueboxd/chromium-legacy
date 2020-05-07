@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/test/browser_test.h"
 #include "testing/perf/perf_result_reporter.h"
 
 using content::OpenURLParams;

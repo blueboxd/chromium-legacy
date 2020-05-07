@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/resources/grit/ui_unscaled_resources.h"
 
 namespace ui {

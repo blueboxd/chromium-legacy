@@ -169,7 +169,9 @@ void Address::GetMatchingTypes(const base::string16& text,
   FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
   // Check to see if the |text| canonicalized as a country name is a match.
-  std::string country_code = CountryNames::GetInstance()->GetCountryCode(text);
+  std::string country_code =
+      CountryNames::GetInstance()->GetCountryCodeForLocalizedCountryName(
+          text, app_locale);
   if (!country_code.empty() && country_code_ == country_code)
     matching_types->insert(ADDRESS_HOME_COUNTRY);
 
@@ -208,20 +210,20 @@ void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
 }
 
 base::string16 Address::GetInfoImpl(const AutofillType& type,
-                                    const std::string& app_locale) const {
+                                    const std::string& locale) const {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE)
     return base::ASCIIToUTF16(country_code_);
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
-    return AutofillCountry(country_code_, app_locale).name();
+    return AutofillCountry(country_code_, locale).name();
 
   return GetRawInfo(storable_type);
 }
 
 bool Address::SetInfoImpl(const AutofillType& type,
                           const base::string16& value,
-                          const std::string& app_locale) {
+                          const std::string& locale) {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     if (!data_util::IsValidCountryCode(base::i18n::ToUpper(value))) {
       // Some popular websites use the HTML_TYPE_COUNTRY_CODE attribute for
@@ -231,8 +233,11 @@ bool Address::SetInfoImpl(const AutofillType& type,
               features::kAutofillAllowHtmlTypeCountryCodesWithFullNames)) {
         CountryNames* country_names =
             !value.empty() ? CountryNames::GetInstance() : nullptr;
-        country_code_ = country_names ? country_names->GetCountryCode(value)
-                                      : std::string();
+        country_code_ =
+            country_names
+                ? country_names->GetCountryCodeForLocalizedCountryName(value,
+                                                                       locale)
+                : std::string();
         return !country_code_.empty();
       } else {
         country_code_ = std::string();
@@ -249,7 +254,9 @@ bool Address::SetInfoImpl(const AutofillType& type,
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
-    country_code_ = CountryNames::GetInstance()->GetCountryCode(value);
+    country_code_ =
+        CountryNames::GetInstance()->GetCountryCodeForLocalizedCountryName(
+            value, locale);
     return !country_code_.empty();
   }
 

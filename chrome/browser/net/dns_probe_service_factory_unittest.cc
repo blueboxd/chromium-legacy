@@ -17,7 +17,7 @@
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/dns_probe_test_util.h"
-#include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/pref_names.h"
@@ -187,8 +187,7 @@ TEST_F(DnsProbeServiceTest, Probe_FAIL_OK_automatic) {
   // being downgraded to off if the test environment is managed.
   local_state()->SetManagedPref(
       prefs::kDnsOverHttpsMode,
-      std::make_unique<base::Value>(
-          chrome_browser_net::kDnsOverHttpsModeAutomatic));
+      std::make_unique<base::Value>(SecureDnsConfig::kModeAutomatic));
   ConfigureTest({{net::ERR_NAME_NOT_RESOLVED,
                   net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
                   FakeHostResolver::kNoResponse}},
@@ -202,8 +201,7 @@ TEST_F(DnsProbeServiceTest, Probe_FAIL_OK_secure) {
   // being downgraded to off if the test environment is managed.
   local_state()->SetManagedPref(
       prefs::kDnsOverHttpsMode,
-      std::make_unique<base::Value>(
-          chrome_browser_net::kDnsOverHttpsModeSecure));
+      std::make_unique<base::Value>(SecureDnsConfig::kModeSecure));
   ConfigureTest({{net::ERR_NAME_NOT_RESOLVED,
                   net::ResolveErrorInfo(
                       net::ERR_DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED),
@@ -305,8 +303,7 @@ TEST_F(DnsProbeServiceTest, CurrentConfig_Automatic) {
   // being downgraded to off if the test environment is managed.
   local_state()->SetManagedPref(
       prefs::kDnsOverHttpsMode,
-      std::make_unique<base::Value>(
-          chrome_browser_net::kDnsOverHttpsModeAutomatic));
+      std::make_unique<base::Value>(SecureDnsConfig::kModeAutomatic));
   local_state()->SetManagedPref(
       prefs::kDnsOverHttpsTemplates,
       std::make_unique<base::Value>(kDohTemplateGet + " " + kDohTemplatePost));
@@ -332,8 +329,7 @@ TEST_F(DnsProbeServiceTest, CurrentConfig_Secure) {
   // being downgraded to off if the test environment is managed.
   local_state()->SetManagedPref(
       prefs::kDnsOverHttpsMode,
-      std::make_unique<base::Value>(
-          chrome_browser_net::kDnsOverHttpsModeSecure));
+      std::make_unique<base::Value>(SecureDnsConfig::kModeSecure));
   local_state()->SetManagedPref(
       prefs::kDnsOverHttpsTemplates,
       std::make_unique<base::Value>(kDohTemplateGet + " " + kDohTemplatePost));

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_browsertest.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/extension.h"
 
 class ExtensionsToolbarContainerBrowserTest

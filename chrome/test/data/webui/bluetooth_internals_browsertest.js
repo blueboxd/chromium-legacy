@@ -6,6 +6,8 @@
  * @fileoverview Tests for chrome://bluetooth-internals
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /**
  * Test fixture for BluetoothInternals WebUI testing.
  * @constructor

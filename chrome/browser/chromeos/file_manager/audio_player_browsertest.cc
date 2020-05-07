@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
-
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/file_manager/file_manager_browsertest_base.h"
+#include "content/public/test/browser_test.h"
 #include "media/base/media_switches.h"
 
 namespace file_manager {

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 

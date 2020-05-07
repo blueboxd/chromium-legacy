@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using SensitiveDirectoryResult =

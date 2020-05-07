@@ -18,7 +18,7 @@ component("cursor") {
   public_deps = [
     "//base",
     "//skia",
-    "//ui/base/mojom:cursor_type",
+    "//ui/base/cursor/mojom:cursor_type",
     "//ui/gfx/geometry",
   ]
 

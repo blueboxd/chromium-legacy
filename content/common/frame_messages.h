@@ -513,14 +513,6 @@ IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
                     FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap,
                     bool /* save_with_empty_url */)
 
-// Request to continue running the sequential focus navigation algorithm in
-// this frame.  |source_routing_id| identifies the frame that issued this
-// request.  This message is sent when pressing <tab> or <shift-tab> needs to
-// find the next focusable element in a cross-process frame.
-IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
-                    blink::mojom::FocusType /* type */,
-                    int32_t /* source_routing_id */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin allowlist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginAllowlist,

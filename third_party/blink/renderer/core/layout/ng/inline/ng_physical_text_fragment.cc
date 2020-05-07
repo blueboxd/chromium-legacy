@@ -53,7 +53,6 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(
   DCHECK(shape_result_ || IsFlowControl()) << *this;
   base_or_resolved_direction_ = source.base_or_resolved_direction_;
   ink_overflow_computed_ = false;
-  is_first_for_node_ = source.is_first_for_node_;
 }
 
 NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
@@ -67,7 +66,6 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
   base_or_resolved_direction_ =
       static_cast<unsigned>(builder->ResolvedDirection());
   ink_overflow_computed_ = false;
-  is_first_for_node_ = builder->is_first_for_node_;
 }
 
 bool NGPhysicalTextFragment::IsGeneratedText() const {

@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_TEST_FAKE_LOCAL_FRAME_H_
 #define CONTENT_PUBLIC_TEST_FAKE_LOCAL_FRAME_H_
 
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -60,6 +61,9 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) override;
   void MediaPlayerActionAt(const gfx::Point& location,
                            blink::mojom::MediaPlayerActionPtr action) override;
+  void AdvanceFocusInFrame(blink::mojom::FocusType focus_type,
+                           const base::Optional<base::UnguessableToken>&
+                               source_frame_token) override;
   void AdvanceFocusInForm(blink::mojom::FocusType focus_type) override;
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation) override;

@@ -14,7 +14,7 @@
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursor_theme_manager_linux.h"
 #include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
-#include "ui/base/mojom/cursor_type.mojom-forward.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11.h"

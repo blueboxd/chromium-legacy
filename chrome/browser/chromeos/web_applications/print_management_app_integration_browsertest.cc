@@ -7,6 +7,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PrintManagementAppIntegrationTest : public SystemWebAppIntegrationTest {

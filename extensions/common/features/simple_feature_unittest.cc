@@ -14,11 +14,13 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/complex_feature.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_flags.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -713,6 +715,33 @@ TEST_F(SimpleFeatureTest, CommandLineSwitch) {
     EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
               feature.IsAvailableToEnvironment().result());
   }
+}
+
+TEST_F(SimpleFeatureTest, FeatureFlags) {
+  const std::vector<const base::Feature> features(
+      {{"stub_feature_1", base::FEATURE_ENABLED_BY_DEFAULT},
+       {"stub_feature_2", base::FEATURE_DISABLED_BY_DEFAULT}});
+  auto scoped_feature_override =
+      CreateScopedFeatureFlagsOverrideForTesting(&features);
+
+  SimpleFeature simple_feature_1;
+  simple_feature_1.set_feature_flag(features[0].name);
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            simple_feature_1.IsAvailableToEnvironment().result());
+
+  SimpleFeature simple_feature_2;
+  simple_feature_2.set_feature_flag(features[1].name);
+  EXPECT_EQ(Feature::FEATURE_FLAG_DISABLED,
+            simple_feature_2.IsAvailableToEnvironment().result());
+
+  // Ensure we take any base::Feature overrides into account.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features[1]} /* enabled_features */,
+                                       {features[0]} /* disabled_features */);
+  EXPECT_EQ(Feature::FEATURE_FLAG_DISABLED,
+            simple_feature_1.IsAvailableToEnvironment().result());
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            simple_feature_2.IsAvailableToEnvironment().result());
 }
 
 TEST_F(SimpleFeatureTest, IsIdInArray) {

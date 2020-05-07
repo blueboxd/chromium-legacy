@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/file_manager/file_manager_jstest_base.h"
+#include "content/public/test/browser_test.h"
 
 class VideoPlayerJsTest : public FileManagerJsTestBase {
  protected:

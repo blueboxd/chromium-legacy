@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/net/dns_util.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -45,9 +46,7 @@ bool SecureDnsPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     if (mode_str.size() == 0) {
       errors->AddError(key::kDnsOverHttpsMode, IDS_POLICY_NOT_SPECIFIED_ERROR);
       mode_is_applicable = false;
-    } else if (mode_str != chrome_browser_net::kDnsOverHttpsModeOff &&
-               mode_str != chrome_browser_net::kDnsOverHttpsModeAutomatic &&
-               mode_str != chrome_browser_net::kDnsOverHttpsModeSecure) {
+    } else if (!SecureDnsConfig::ParseMode(mode_str)) {
       errors->AddError(key::kDnsOverHttpsMode,
                        IDS_POLICY_INVALID_SECURE_DNS_MODE_ERROR);
       mode_is_applicable = false;
@@ -75,7 +74,7 @@ bool SecureDnsPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
       errors->AddError(key::kDnsOverHttpsTemplates,
                        IDS_POLICY_SECURE_DNS_TEMPLATES_INVALID_MODE_ERROR);
     } else if (templates_str.size() != 0 &&
-               mode_str == chrome_browser_net::kDnsOverHttpsModeOff) {
+               mode_str == SecureDnsConfig::kModeOff) {
       errors->AddError(key::kDnsOverHttpsTemplates,
                        IDS_POLICY_SECURE_DNS_TEMPLATES_IRRELEVANT_MODE_ERROR);
     } else if (!chrome_browser_net::IsValidDohTemplateGroup(templates_str)) {
@@ -93,13 +92,11 @@ void SecureDnsPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   base::StringPiece mode_str;
   if (mode && mode->is_string()) {
     mode_str = mode->GetString();
-    if (mode_str == chrome_browser_net::kDnsOverHttpsModeAutomatic ||
-        mode_str == chrome_browser_net::kDnsOverHttpsModeSecure) {
+    if (SecureDnsConfig::ParseMode(mode_str)) {
       prefs->SetString(prefs::kDnsOverHttpsMode, mode_str.as_string());
     } else {
-      // Captures "off".
-      prefs->SetString(prefs::kDnsOverHttpsMode,
-                       chrome_browser_net::kDnsOverHttpsModeOff);
+      // Default to "off".
+      prefs->SetString(prefs::kDnsOverHttpsMode, SecureDnsConfig::kModeOff);
     }
   }
 
@@ -115,7 +112,7 @@ void SecureDnsPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
 bool SecureDnsPolicyHandler::IsTemplatesPolicyNotSpecified(
     const base::Value* templates,
     base::StringPiece mode_str) {
-  if (mode_str == chrome_browser_net::kDnsOverHttpsModeSecure) {
+  if (mode_str == SecureDnsConfig::kModeSecure) {
     if (!templates)
       return true;
 

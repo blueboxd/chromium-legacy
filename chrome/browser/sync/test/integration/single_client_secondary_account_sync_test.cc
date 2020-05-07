@@ -19,6 +19,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

@@ -251,8 +251,6 @@ IpcPacketSocket::~IpcPacketSocket() {
     Close();
   }
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.ApplicationMaxConsecutiveBytesDiscard.v2",
-                              max_discard_bytes_sequence_, 1, 1000000, 200);
   if (total_packets_ > 0) {
     UMA_HISTOGRAM_PERCENTAGE("WebRTC.ApplicationPercentPacketsDiscarded",
                              (packets_discarded_ * 100) / total_packets_);

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "content/public/test/browser_test.h"
 
 using StartupMetricsTest = InProcessBrowserTest;
 

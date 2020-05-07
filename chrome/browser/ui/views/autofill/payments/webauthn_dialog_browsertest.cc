@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/autofill/payments/webauthn_dialog_view_impl.h"
+#include "content/public/test/browser_test.h"
 
 namespace autofill {
 

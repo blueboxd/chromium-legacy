@@ -16,14 +16,15 @@ SelectToSpeakE2ETest = class extends testing.Test {
   /** @override */
   testGenCppIncludes() {
     GEN(`
-  #include "ash/accessibility/accessibility_delegate.h"
-  #include "ash/shell.h"
-  #include "base/bind.h"
-  #include "base/callback.h"
-  #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-  #include "chrome/common/extensions/extension_constants.h"
-  #include "ash/keyboard/ui/keyboard_util.h"
-      `);
+#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/shell.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "content/public/test/browser_test.h"
+    `);
   }
 
   /** @override */

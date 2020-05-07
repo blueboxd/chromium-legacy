@@ -231,6 +231,15 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string GetEncryptedPasswordById(int id) const;
 #endif
 
+  void ReportNumberOfAccountsMetrics(bool custom_passphrase_sync_enabled);
+  void RecordTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
+  void ReportSyncingAccountStateMetrics(const std::string& sync_username);
+  void ReportEmptyUsernamesMetrics();
+  void ReportLoginsWithSchemesMetrics();
+  void ReportBubbleSuppressionMetrics();
+  void ReportInaccessiblePasswordsMetrics();
+  void ReportDuplicateCredentialsMetrics();
+
   // Result values for encryption/decryption actions.
   enum EncryptionResult {
     // Success.

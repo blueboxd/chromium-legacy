@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/window.h"
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 

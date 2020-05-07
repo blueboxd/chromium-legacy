@@ -1870,17 +1870,9 @@ void DocumentLoader::ParseAndPersistClientHints(
   const KURL& url = response.CurrentRequestUrl();
 
   // The accept-ch header is honored only on the navigation responses from a top
-  // level frame or with an origin matching the origin of the to level frame.
-  if (!frame_->IsMainFrame()) {
-    bool is_first_party_origin =
-        frame_->Tree()
-            .Top()
-            .GetSecurityContext()
-            ->GetSecurityOrigin()
-            ->IsSameOriginWith(SecurityOrigin::Create(url).get());
-    if (!is_first_party_origin)
-      return;
-  }
+  // level frame.
+  if (!frame_->IsMainFrame())
+    return;
 
   if (!response.HttpHeaderFields().Contains(http_names::kAcceptCH))
     return;

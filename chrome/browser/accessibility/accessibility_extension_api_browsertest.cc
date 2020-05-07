@@ -11,6 +11,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/webui_url_constants.h"
+#include "content/public/test/browser_test.h"
 #include "ui/base/ui_base_features.h"
 
 namespace extensions {

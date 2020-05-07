@@ -9,6 +9,7 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
+#include "content/public/test/browser_test.h"
 
 class WebrtcLoggingPrivateApiBrowserTest
     : public extensions::PlatformAppBrowserTest {

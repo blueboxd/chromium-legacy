@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 namespace {

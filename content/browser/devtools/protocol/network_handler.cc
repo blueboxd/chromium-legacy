@@ -683,20 +683,22 @@ BuildProtocolBlockedSetCookies(const net::CookieAndLineStatusList& net_list) {
 }
 
 std::unique_ptr<Array<Network::BlockedCookieWithReason>>
-BuildProtocolBlockedCookies(const net::CookieStatusList& net_list) {
-  std::unique_ptr<Array<Network::BlockedCookieWithReason>> protocol_list =
+BuildProtocolAssociatedCookies(const net::CookieStatusList& net_list) {
+  auto protocol_list =
       std::make_unique<Array<Network::BlockedCookieWithReason>>();
 
   for (const net::CookieWithStatus& cookie : net_list) {
     std::unique_ptr<Array<Network::CookieBlockedReason>> blocked_reasons =
         GetProtocolBlockedCookieReason(cookie.status);
-    if (!blocked_reasons->size())
-      continue;
-
-    protocol_list->push_back(Network::BlockedCookieWithReason::Create()
-                                 .SetBlockedReasons(std::move(blocked_reasons))
-                                 .SetCookie(BuildCookie(cookie.cookie))
-                                 .Build());
+    // Note that the condition below is not always true,
+    // as there might be blocked reasons that we do not report.
+    if (blocked_reasons->size() || cookie.status.IsInclude()) {
+      protocol_list->push_back(
+          Network::BlockedCookieWithReason::Create()
+              .SetBlockedReasons(std::move(blocked_reasons))
+              .SetCookie(BuildCookie(cookie.cookie))
+              .Build());
+    }
   }
   return protocol_list;
 }
@@ -2099,7 +2101,7 @@ void NetworkHandler::OnRequestWillBeSentExtraInfo(
     return;
 
   frontend_->RequestWillBeSentExtraInfo(
-      devtools_request_id, BuildProtocolBlockedCookies(request_cookie_list),
+      devtools_request_id, BuildProtocolAssociatedCookies(request_cookie_list),
       GetRawHeaders(request_headers));
 }
 

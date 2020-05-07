@@ -8,7 +8,9 @@
 // We only want to use ViewEventTestBase in test targets which properly
 // isolate each test case by running each test in a separate process.
 // This way if a test hangs the test launcher can reliably terminate it.
-#if defined(HAS_OUT_OF_PROC_TEST_RUNNER)
+#if !defined(HAS_OUT_OF_PROC_TEST_RUNNER)
+#error Can't reliably terminate hanging event tests without OOP test runner.
+#endif
 
 #include <memory>
 
@@ -135,7 +137,5 @@ class ViewEventTestBase : public ChromeViewsTestBase {
 // of ViewEventTestBase for details.
 #define VIEW_TEST(test_class, name) \
   TEST_F(test_class, name) { StartMessageLoopAndRunTest(); }
-
-#endif  // defined(HAS_OUT_OF_PROC_TEST_RUNNER)
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TEST_VIEW_EVENT_TEST_BASE_H_

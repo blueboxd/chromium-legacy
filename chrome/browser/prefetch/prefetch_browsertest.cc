@@ -18,6 +18,7 @@
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/network_change_notifier.h"
 #include "net/dns/mock_host_resolver.h"

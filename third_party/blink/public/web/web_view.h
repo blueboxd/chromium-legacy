@@ -166,9 +166,6 @@ class WebView {
   virtual WebLocalFrame* FocusedFrame() = 0;
   virtual void SetFocusedFrame(WebFrame*) = 0;
 
-  // Focus the first (last if reverse is true) focusable node.
-  virtual void SetInitialFocus(bool reverse) = 0;
-
   // Smooth scroll the root layer to |targetX|, |targetY| in |duration|.
   virtual void SmoothScroll(int target_x,
                             int target_y,
@@ -177,13 +174,6 @@ class WebView {
   // Advance the focus of the WebView forward to the next element or to the
   // previous element in the tab sequence (if reverse is true).
   virtual void AdvanceFocus(bool reverse) {}
-
-  // Advance the focus from the frame |from| to the next in sequence
-  // (determined by mojom::FocusType) focusable element in frame |to|. Used when
-  // focus needs to advance to/from a cross-process frame.
-  virtual void AdvanceFocusAcrossFrames(mojom::FocusType,
-                                        WebRemoteFrame* from,
-                                        WebLocalFrame* to) {}
 
   // Changes the zoom and scroll for zooming into an editable element
   // with bounds |element_bounds_in_document| and caret bounds

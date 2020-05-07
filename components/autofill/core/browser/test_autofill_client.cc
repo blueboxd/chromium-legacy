@@ -71,6 +71,10 @@ TestAutofillClient::GetSecurityLevelForUmaHistograms() {
   return security_level_;
 }
 
+std::string TestAutofillClient::GetPageLanguage() const {
+  return page_language_;
+}
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 std::vector<std::string>
 TestAutofillClient::GetMerchantWhitelistForVirtualCards() {

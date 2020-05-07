@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/base/cursor/cursor_size.h"
-#include "ui/base/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 

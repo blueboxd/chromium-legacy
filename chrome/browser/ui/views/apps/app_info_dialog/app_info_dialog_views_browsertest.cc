@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_test.h"
 
 class AppInfoDialogBrowserTest : public DialogBrowserTest {
  public:

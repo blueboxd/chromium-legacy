@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace apps {

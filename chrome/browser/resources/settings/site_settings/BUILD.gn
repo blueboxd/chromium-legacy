@@ -169,7 +169,6 @@ js_library("protocol_handlers") {
 js_library("site_data") {
   deps = [
     ":local_data_browser_proxy",
-    ":site_data_entry",
     ":site_settings_behavior",
     "..:global_scroll_target_behavior.m",
     "..:route",

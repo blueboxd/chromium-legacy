@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "chrome/browser/ui/views/crostini/crostini_package_install_failure_view.h"
+#include "content/public/test/browser_test.h"
 
 namespace crostini {
 namespace {

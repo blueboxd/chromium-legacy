@@ -138,7 +138,7 @@ template <typename Interface>
 using InterfacePtrSet = internal::PtrSet<Interface, InterfacePtr>;
 
 // DEPRECATED: Do not introduce new uses of this type. Instead use the
-// AssociatedRemoteSet type defined in remote_set.h.
+// AssociatedRemoteSet type defined in associated_remote_set.h.
 template <typename Interface>
 using AssociatedInterfacePtrSet =
     internal::PtrSet<Interface, AssociatedInterfacePtr>;

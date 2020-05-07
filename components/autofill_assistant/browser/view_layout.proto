@@ -211,6 +211,10 @@ message TextViewProto {
     string model_identifier = 3;
   }
   optional string text_appearance = 2;
+  // The text alignment as a bit-wise OR of ViewLayoutParamsProto.Gravity
+  // values. The default is START|TOP (i.e., top-left-aligned for western
+  // locales).
+  optional int32 text_alignment = 4 [default = 8388659];
 }
 
 message DividerViewProto {}

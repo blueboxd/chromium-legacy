@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "net/dns/public/resolve_error_info.h"

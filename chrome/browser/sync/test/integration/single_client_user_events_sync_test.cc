@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync_user_events/user_event_service.h"
+#include "content/public/test/browser_test.h"
 
 using sync_pb::CommitResponse;
 using sync_pb::SyncEntity;

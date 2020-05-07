@@ -17,6 +17,7 @@
 #include "components/payments/core/journey_logger.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"

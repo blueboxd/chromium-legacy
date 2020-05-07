@@ -59,6 +59,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "dbus/object_path.h"
 #include "extensions/browser/api/networking_private/networking_private_chromeos.h"

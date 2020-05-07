@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"

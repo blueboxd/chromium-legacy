@@ -9,6 +9,7 @@ GEN_INCLUDE([
 ]);
 
 GEN('#include "chrome/browser/ui/webui/management_a11y_browsertest.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /**
  * Test fixture for Accessibility of Chrome Management page.

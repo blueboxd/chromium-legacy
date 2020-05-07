@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {

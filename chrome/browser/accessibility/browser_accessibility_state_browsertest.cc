@@ -6,6 +6,7 @@
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/test/browser_test.h"
 
 namespace content {
 

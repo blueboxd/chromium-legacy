@@ -2616,6 +2616,7 @@ enum WebFeature {
   kTrustedTypesPolicyCreated = 3279,
   kV8HTMLVideoElement_RequestVideoFrameCallback_Method = 3280,
   kV8HTMLVideoElement_CancelVideoFrameCallback_Method = 3281,
+  kRubyElementWithDisplayBlock = 3282,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

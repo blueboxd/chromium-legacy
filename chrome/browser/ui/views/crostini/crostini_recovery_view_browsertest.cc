@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
+#include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 constexpr crostini::CrostiniUISurface kUiSurface =

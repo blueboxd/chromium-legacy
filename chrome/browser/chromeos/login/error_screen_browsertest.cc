@@ -30,6 +30,7 @@
 #include "chromeos/network/network_state_test_helper.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"

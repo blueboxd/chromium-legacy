@@ -11,15 +11,15 @@
     });
 
     var fail = function(num) {
-        parent.postMessage("fail "+ num, "*");
+        opener.postMessage("fail "+ num, "*");
     };
 
     var success = function() {
-        parent.postMessage("success", "*");
+        opener.postMessage("success", "*");
     };
 
     var remove = function() {
-        parent.postMessage("remove", "*");
+        opener.postMessage("remove", "*");
     };
 
     var counter = 1;

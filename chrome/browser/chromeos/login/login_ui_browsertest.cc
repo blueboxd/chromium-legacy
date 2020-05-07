@@ -25,6 +25,7 @@
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 

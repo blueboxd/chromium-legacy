@@ -26,6 +26,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "content/public/test/browser_test.h"
 
 namespace chromeos {
 

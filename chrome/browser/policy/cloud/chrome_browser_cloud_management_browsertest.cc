@@ -50,6 +50,7 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/test_support/local_policy_test_server.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"

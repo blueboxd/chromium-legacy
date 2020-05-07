@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
@@ -317,18 +318,14 @@ void ChromeSecurityBlockingPageFactory::OpenLoginTabForWebContents(
   if (!browser)
     return;
 
-  bool insecure_stub_resolver_enabled;
-  net::DnsConfig::SecureDnsMode secure_dns_mode;
-  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
-      dns_over_https_servers;
-  SystemNetworkContextManager::GetStubResolverConfigReader()->GetConfiguration(
-      false /* force_check_parental_controls */,
-      &insecure_stub_resolver_enabled, &secure_dns_mode,
-      nullptr /* dns_over_https_servers */);
+  SecureDnsConfig secure_dns_config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(
+              false /* force_check_parental_controls */);
 
   // If the DNS mode is SECURE, captive portal login tabs should be opened in
   // new popup windows where secure DNS will be disabled.
-  if (secure_dns_mode == net::DnsConfig::SecureDnsMode::SECURE) {
+  if (secure_dns_config.mode() == net::DnsConfig::SecureDnsMode::SECURE) {
     // If there is already a captive portal popup window, do not create another.
     for (auto* contents : AllTabContentses()) {
       captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper =

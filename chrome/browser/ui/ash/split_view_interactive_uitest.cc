@@ -17,6 +17,7 @@
 #include "chrome/test/base/perf/drag_event_generator.h"
 #include "chrome/test/base/perf/performance_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/display.h"

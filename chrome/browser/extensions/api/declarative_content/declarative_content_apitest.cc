@@ -21,6 +21,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_registry.h"

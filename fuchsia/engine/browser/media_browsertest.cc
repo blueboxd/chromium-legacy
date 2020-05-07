@@ -5,6 +5,7 @@
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 
 #include "base/files/file_path.h"
+#include "content/public/test/browser_test.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/switches.h"

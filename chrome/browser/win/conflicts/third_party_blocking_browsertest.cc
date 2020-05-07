@@ -25,6 +25,7 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
+#include "content/public/test/browser_test.h"
 
 namespace {
 

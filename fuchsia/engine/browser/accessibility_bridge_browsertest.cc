@@ -15,6 +15,7 @@
 #include "base/notreached.h"
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"

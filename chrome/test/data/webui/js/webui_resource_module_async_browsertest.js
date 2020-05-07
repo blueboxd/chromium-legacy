@@ -6,6 +6,8 @@
  * @fileoverview JS tests for various chrome://resources JS modules.
  */
 
+GEN('#include "content/public/test/browser_test.h"');
+
 /** Test fixture for testing shared JS module resources. */
 var WebUIResourceModuleAsyncTest = class extends testing.Test {
   /** @override */

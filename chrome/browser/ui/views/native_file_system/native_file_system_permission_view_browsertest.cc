@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "components/permissions/permission_util.h"
+#include "content/public/test/browser_test.h"
 #include "ui/views/controls/button/label_button.h"
 
 using AccessType = NativeFileSystemPermissionRequestManager::Access;

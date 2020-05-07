@@ -62,6 +62,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"

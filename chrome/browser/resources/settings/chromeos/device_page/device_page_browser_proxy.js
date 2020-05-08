@@ -88,7 +88,10 @@ cr.define('settings', function() {
 
   /**
    * @typedef {{
-   *   dlcId: string,
+   *   id: string,
+   *   name: string,
+   *   description: string,
+   *   diskUsageLabel: string,
    * }}
    */
   let DlcMetadata;

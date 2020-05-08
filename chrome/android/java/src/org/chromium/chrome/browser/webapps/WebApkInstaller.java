@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 
 /**
@@ -86,12 +87,13 @@ public class WebApkInstaller {
                         new WebappRegistry.FetchWebappDataStorageCallback() {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                                WebappInfo webApkInfo = WebApkInfo.create(packageName, null, source,
-                                        false /* forceNavigation */,
-                                        false /* canUseSplashFromContentProvider */,
-                                        null /* shareData */,
-                                        null /* shareDataActivityClassName */);
-                                storage.updateFromWebappInfo(webApkInfo);
+                                BrowserServicesIntentDataProvider intentDataProvider =
+                                        WebApkIntentDataProviderFactory.create(packageName, null,
+                                                source, false /* forceNavigation */,
+                                                false /* canUseSplashFromContentProvider */,
+                                                null /* shareData */,
+                                                null /* shareDataActivityClassName */);
+                                storage.updateFromWebappIntentDataProvider(intentDataProvider);
                                 storage.updateSource(source);
                                 storage.updateTimeOfLastCheckForUpdatedWebManifest();
                             }

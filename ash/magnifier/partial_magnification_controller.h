@@ -9,25 +9,26 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/widget/widget_observer.h"
+
+namespace aura {
+class Window;
+}
 
 namespace ui {
-class Layer;
 class LocatedEvent;
 struct PointerDetails;
 }  // namespace ui
 
 namespace ash {
 
+class MagnifierGlass;
+
 // Controls the partial screen magnifier, which is a small area of the screen
 // which is zoomed in.  The zoomed area follows the mouse cursor when enabled.
-class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
-                                                  public aura::WindowObserver,
-                                                  public views::WidgetObserver {
+class ASH_EXPORT PartialMagnificationController : public ui::EventHandler {
  public:
   PartialMagnificationController();
   ~PartialMagnificationController() override;
@@ -46,17 +47,9 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
 
  private:
   friend class PartialMagnificationControllerTestApi;
-  class BorderMask;
-  class BorderRenderer;
 
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
-
-  // WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-
-  // WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
 
   // Enables or disables the actual magnifier window.
   void SetActive(bool active);
@@ -65,32 +58,10 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
   void OnLocatedEvent(ui::LocatedEvent* event,
                       const ui::PointerDetails& pointer_details);
 
-  // Create or close the magnifier window.
-  void CreateMagnifierWindow(aura::Window* root_window);
-  void CloseMagnifierWindow();
-
-  // Removes this as an observer of the zoom widget and the root window.
-  void RemoveZoomWidgetObservers();
-
   bool is_enabled_ = false;
   bool is_active_ = false;
 
-  // The host widget is the root parent for all of the layers. The widget's
-  // location follows the mouse, which causes the layers to also move.
-  views::Widget* host_widget_ = nullptr;
-
-  // Draws the background with a zoom filter applied.
-  std::unique_ptr<ui::Layer> zoom_layer_;
-  // Draws an outline that is overlayed on top of |zoom_layer_|.
-  std::unique_ptr<ui::Layer> border_layer_;
-  // Draws a multicolored black/white/black border on top of |border_layer_|.
-  // Also draws a shadow around the border. This must be ordered after
-  // |border_layer_| so that it gets destroyed after |border_layer_|, otherwise
-  // |border_layer_| will have a pointer to a deleted delegate.
-  std::unique_ptr<BorderRenderer> border_renderer_;
-  // Masks the content of |border_layer_| so that only a circle outline is
-  // drawn.
-  std::unique_ptr<BorderMask> border_mask_;
+  std::unique_ptr<MagnifierGlass> magnifier_glass_;
 
   DISALLOW_COPY_AND_ASSIGN(PartialMagnificationController);
 };

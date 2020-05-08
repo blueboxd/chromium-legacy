@@ -161,7 +161,8 @@ public class DeveloperUiTest {
                 IntentMatchers.hasData(hasHost("bugs.chromium.org")),
                 IntentMatchers.hasData(hasPath("/p/chromium/issues/entry")),
                 IntentMatchers.hasData(hasParamWithValue("template", "Webview+Bugs")),
-                IntentMatchers.hasData(hasParamWithValue("labels", "Via-WebView-DevTools"))));
+                IntentMatchers.hasData(hasParamWithValue(
+                        "labels", "Via-WebView-DevTools,Pri-3,Type-Bug,OS-Android"))));
     }
 
     @Test

@@ -196,7 +196,8 @@ public class MainActivity extends FragmentActivity {
                                     .authority("bugs.chromium.org")
                                     .path("/p/chromium/issues/entry")
                                     .appendQueryParameter("template", "Webview+Bugs")
-                                    .appendQueryParameter("labels", "Via-WebView-DevTools")
+                                    .appendQueryParameter("labels",
+                                            "Via-WebView-DevTools,Pri-3,Type-Bug,OS-Android")
                                     .build();
             startActivity(new Intent(Intent.ACTION_VIEW, reportUri));
             return true;

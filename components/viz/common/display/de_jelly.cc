@@ -19,11 +19,11 @@
 namespace viz {
 
 bool DeJellyEnabled() {
-  if (base::FeatureList::IsEnabled(features::kDisableDeJelly))
-    return false;
-
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDeJelly);
+  static bool enabled =
+      !base::FeatureList::IsEnabled(features::kDisableDeJelly) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDeJelly);
+  return enabled;
 }
 
 bool DeJellyActive() {

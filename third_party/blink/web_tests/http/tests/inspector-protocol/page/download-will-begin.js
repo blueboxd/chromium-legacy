@@ -32,5 +32,61 @@
     a.click();
   `);
   await waitForDownloadAndDump();
+  testRunner.log(
+      'Downloading by clicking a link (no HTTP Content-Disposition header, a[download=""]): ');
+  session.evaluate(`
+    const blankDownloadAttr = document.createElement('a');
+    blankDownloadAttr.href = '/devtools/network/resources/download.zzz';
+    blankDownloadAttr.download = ''; // Intentionally left blank to trigger unamed download
+    document.body.appendChild(blankDownloadAttr);
+    blankDownloadAttr.click();
+  `);
+  await waitForDownloadAndDump();
+  testRunner.log(
+      'Downloading by clicking a link (HTTP Content-Disposition header with filename=foo.txt, no a[download]): ');
+  session.evaluate(`
+    const headerButNoDownloadAttr = document.createElement('a');
+    headerButNoDownloadAttr.href = '/devtools/network/resources/resource.php?named_download=foo.txt';
+    document.body.appendChild(headerButNoDownloadAttr);
+    headerButNoDownloadAttr.click();
+  `);
+  await waitForDownloadAndDump();
+  testRunner.log(
+      'Downloading by clicking a link (HTTP Content-Disposition header with filename=override.txt, a[download="foo.txt"]): ');
+  session.evaluate(`
+    const headerAndConflictingDownloadAttr = document.createElement('a');
+    headerAndConflictingDownloadAttr.href = '/devtools/network/resources/resource.php?named_download=override.txt';
+    headerAndConflictingDownloadAttr.download = 'foo.txt';
+    document.body.appendChild(headerAndConflictingDownloadAttr);
+    headerAndConflictingDownloadAttr.click();
+  `);
+  await waitForDownloadAndDump();
+  testRunner.log(
+      'Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download]): ');
+  session.evaluate(`
+    const unnamedDownload = document.createElement('a');
+    unnamedDownload.href = '/devtools/network/resources/resource.php?named_download';
+    document.body.appendChild(unnamedDownload);
+    unnamedDownload.click();
+  `);
+  await waitForDownloadAndDump();
+  testRunner.log(
+      'Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], js): ');
+  session.evaluate(`
+    const jsDownload = document.createElement('a');
+    jsDownload.href = '/devtools/network/resources/resource.php?named_download&type=js';
+    document.body.appendChild(jsDownload);
+    jsDownload.click();
+  `);
+  await waitForDownloadAndDump();
+  testRunner.log(
+      'Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], image): ');
+  session.evaluate(`
+    const imageDownload = document.createElement('a');
+    imageDownload.href = '/devtools/network/resources/resource.php?named_download&type=image';
+    document.body.appendChild(imageDownload);
+    imageDownload.click();
+  `);
+  await waitForDownloadAndDump();
   testRunner.completeTest();
 })

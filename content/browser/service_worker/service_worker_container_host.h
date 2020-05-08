@@ -45,7 +45,6 @@ class ServiceWorkerProviderHost;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 class WebContents;
-struct ServiceWorkerRegistrationInfo;
 
 // ServiceWorkerContainerHost is the host of a service worker client (a window,
 // dedicated worker, or shared worker) or service worker execution context in
@@ -148,8 +147,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // ServiceWorkerRegistration::Listener overrides.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-      const ServiceWorkerRegistrationInfo& info) override;
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask) override;
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
   void OnRegistrationFinishedUninstalling(
       ServiceWorkerRegistration* registration) override;

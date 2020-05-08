@@ -42,8 +42,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
    public:
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
-        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-        const ServiceWorkerRegistrationInfo& info) {}
+        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask) {}
     virtual void OnUpdateViaCacheChanged(
         ServiceWorkerRegistration* registation) {}
     virtual void OnRegistrationFailed(

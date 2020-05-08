@@ -33,6 +33,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/animation/bounds_animator.h"
 
 namespace ash {
 
@@ -114,6 +115,36 @@ class HomeButtonTest
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeButtonTest);
+};
+
+// Tests home button visibility animations.
+class HomeButtonAnimationTest : public AshTestBase {
+ public:
+  HomeButtonAnimationTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kShelfHotseat,
+         features::kHideShelfControlsInTabletMode},
+        {});
+  }
+  ~HomeButtonAnimationTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+
+    animation_duration_.emplace(
+        ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  }
+
+  void TearDown() override {
+    animation_duration_.reset();
+    AshTestBase::TearDown();
+  }
+
+ private:
+  base::Optional<ui::ScopedAnimationDurationScaleMode> animation_duration_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 enum class TestAccessibilityFeature {
@@ -343,6 +374,155 @@ TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
   EXPECT_EQ(ShelfConfig::Get()->control_button_edge_spacing(
                 true /* is_primary_axis_edge */),
             home_button()->bounds().x());
+}
+
+// Verifies that home button visibility updates are animated.
+TEST_F(HomeButtonAnimationTest, VisibilityAnimation) {
+  views::View* const home_button_view =
+      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+  ASSERT_TRUE(home_button_view);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Switch to tablet mode changes the button visibility.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  // Verify that the button view is still visible, and animating to 0 opacity.
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(0.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Once the opacity animation finishes, the button should not be visible.
+  home_button_view->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(home_button_view->GetVisible());
+
+  // Tablet mode exit should schedule animation to the visible state.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(0.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  home_button_view->layer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+}
+
+// Verifies that home button visibility updates if the button gets hidden while
+// it's still being shown.
+TEST_F(HomeButtonAnimationTest, HideWhileAnimatingToShow) {
+  views::View* const home_button_view =
+      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+  ASSERT_TRUE(home_button_view);
+
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Switch to tablet mode to initiate home button hide animation.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(0.0f, home_button_view->layer()->GetTargetOpacity());
+  home_button_view->layer()->GetAnimator()->StopAnimating();
+
+  // Tablet mode exit should schedule an animation to the visible state.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(0.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Enter tablet mode immediately, to interrupt the show animation.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(0.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(0.0f, home_button_view->layer()->GetTargetOpacity());
+
+  home_button_view->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(home_button_view->GetVisible());
+}
+
+// Verifies that home button becomes visible if reshown while a hide animation
+// is still in progress.
+TEST_F(HomeButtonAnimationTest, ShowWhileAnimatingToHide) {
+  views::View* const home_button_view =
+      GetPrimaryShelf()->shelf_widget()->navigation_widget()->GetHomeButton();
+  ASSERT_TRUE(home_button_view);
+
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Switch to tablet mode to initiate the home button hide animation.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(0.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Tablet mode exit should schedule an animation to the visible state.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Verify that the button ends up in the visible state.
+  home_button_view->layer()->GetAnimator()->StopAnimating();
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+}
+
+// Verifies that unanimated navigation widget layout update interrupts in
+// progress button animation.
+TEST_F(HomeButtonAnimationTest, NonAnimatedLayoutDuringAnimation) {
+  Shelf* const shelf = GetPrimaryShelf();
+  views::View* const home_button_view =
+      shelf->shelf_widget()->navigation_widget()->GetHomeButton();
+  ASSERT_TRUE(home_button_view);
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Switch to tablet mode changes the button visibility.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  ShelfViewTestAPI shelf_test_api(shelf->GetShelfViewForTesting());
+  ShelfNavigationWidget::TestApi test_api(shelf->navigation_widget());
+
+  // Verify the button bounds are animating.
+  EXPECT_TRUE(test_api.GetBoundsAnimator()->IsAnimating(home_button_view));
+
+  // Verify that the button visibility is animating.
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(0.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Request non-animated navigation widget layout, and verify the button is not
+  // animating any longer.
+  shelf->navigation_widget()->UpdateLayout(/*animate=*/false);
+
+  EXPECT_FALSE(home_button_view->GetVisible());
+  EXPECT_FALSE(home_button_view->layer()->GetAnimator()->is_animating());
+  EXPECT_FALSE(test_api.GetBoundsAnimator()->IsAnimating(home_button_view));
+
+  // Tablet mode exit should schedule animation to the visible state.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+
+  EXPECT_TRUE(test_api.GetBoundsAnimator()->IsAnimating(home_button_view));
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_EQ(0.0f, home_button_view->layer()->opacity());
+  EXPECT_EQ(1.0f, home_button_view->layer()->GetTargetOpacity());
+
+  // Request non-animated navigation widget layout, and verify the button is not
+  // animating any longer.
+  shelf->navigation_widget()->UpdateLayout(/*animate=*/false);
+
+  EXPECT_FALSE(test_api.GetBoundsAnimator()->IsAnimating(home_button_view));
+  EXPECT_TRUE(home_button_view->GetVisible());
+  EXPECT_FALSE(home_button_view->layer()->GetAnimator()->is_animating());
+  EXPECT_EQ(1.0f, home_button_view->layer()->opacity());
 }
 
 TEST_P(HomeButtonTest, LongPressGesture) {

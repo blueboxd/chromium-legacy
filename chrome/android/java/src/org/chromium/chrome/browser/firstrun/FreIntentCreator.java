@@ -17,7 +17,9 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.webapps.WebappInfo;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.webapps.WebApkExtras;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -38,14 +40,23 @@ public class FreIntentCreator {
     public Intent create(Context caller, Intent fromIntent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
         @Nullable
-        WebappInfo webApkInfo =
-                WebappLauncherActivity.maybeSlowlyGenerateWebApkInfoFromIntent(fromIntent);
-        Intent intentToLaunchAfterFreComplete = (webApkInfo == null)
-                ? fromIntent
-                : WebappLauncherActivity.createRelaunchWebApkIntent(
-                        fromIntent, webApkInfo.webApkPackageName(), webApkInfo.url());
+        BrowserServicesIntentDataProvider webApkIntentDataProvider =
+                WebappLauncherActivity.maybeSlowlyGenerateWebApkIntentDataProviderFromIntent(
+                        fromIntent);
 
-        Intent result = createInternal(caller, fromIntent, preferLightweightFre, webApkInfo);
+        String associatedAppName = null;
+        Intent intentToLaunchAfterFreComplete = fromIntent;
+        if (webApkIntentDataProvider != null
+                && webApkIntentDataProvider.getWebApkExtras() != null) {
+            WebappExtras webappExtras = webApkIntentDataProvider.getWebappExtras();
+            associatedAppName = webappExtras.shortName;
+
+            WebApkExtras webApkExtras = webApkIntentDataProvider.getWebApkExtras();
+            intentToLaunchAfterFreComplete = WebappLauncherActivity.createRelaunchWebApkIntent(
+                    fromIntent, webApkExtras.webApkPackageName, webappExtras.url);
+        }
+
+        Intent result = createInternal(caller, fromIntent, preferLightweightFre, associatedAppName);
         addPendingIntent(caller, result, intentToLaunchAfterFreComplete, requiresBroadcast);
         return result;
     }
@@ -57,16 +68,16 @@ public class FreIntentCreator {
      * @param caller               Activity instance that is requesting the first run.
      * @param fromIntent           Intent used to launch the caller.
      * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
-     * @param webApkInfo           An optional WebappInfo if this FRE flow was triggered
-     *                             by launching a WebAPK.
+     * @param associatedAppName    WebAPK short name if this FRE flow was triggered by launching a
+     *                             WebAPK. Null otherwise.
      * @return Intent to launch First Run Experience.
      */
     protected Intent createInternal(Context caller, Intent fromIntent, boolean preferLightweightFre,
-            @Nullable WebappInfo webApkInfo) {
+            @Nullable String associatedAppName) {
         // Launch the Generic First Run Experience if it was previously active.
         boolean isGenericFreActive = checkIsGenericFreActive();
         if (preferLightweightFre && !isGenericFreActive) {
-            return createLightweightFirstRunIntent(caller, webApkInfo);
+            return createLightweightFirstRunIntent(caller, associatedAppName);
         } else {
             return createGenericFirstRunIntent(caller, fromIntent);
         }
@@ -75,15 +86,15 @@ public class FreIntentCreator {
     /**
      * Returns an intent to show the lightweight first run activity.
      * @param context                        The context.
-     * @param webApkInfo                     An optional WebappInfo if this FRE flow was triggered
-     *                                       by launching a WebAPK.
+     * @param associatedAppName              WebAPK short name if this FRE flow was triggered by
+     *                                       launching a WebAPK. Null otherwise.
      */
     private static Intent createLightweightFirstRunIntent(
-            Context context, @Nullable WebappInfo webApkInfo) {
+            Context context, @Nullable String associatedAppName) {
         Intent intent = new Intent(context, LightweightFirstRunActivity.class);
-        String webApkShortName = webApkInfo == null ? null : webApkInfo.shortName();
-        if (webApkShortName != null) {
-            intent.putExtra(LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, webApkShortName);
+        if (associatedAppName != null) {
+            intent.putExtra(
+                    LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, associatedAppName);
         }
         return intent;
     }

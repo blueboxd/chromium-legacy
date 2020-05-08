@@ -204,11 +204,10 @@ class ServiceWorkerRegistrationTest : public testing::Test {
 
     void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
-        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-        const ServiceWorkerRegistrationInfo& info) override {
+        blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask)
+        override {
       observed_registration_ = registration;
       observed_changed_mask_ = std::move(changed_mask);
-      observed_info_ = info;
     }
 
     void OnRegistrationFailed(
@@ -223,12 +222,10 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     void Reset() {
       observed_registration_ = nullptr;
       observed_changed_mask_ = nullptr;
-      observed_info_ = ServiceWorkerRegistrationInfo();
     }
 
     scoped_refptr<ServiceWorkerRegistration> observed_registration_;
     blink::mojom::ChangedServiceWorkerObjectsMaskPtr observed_changed_mask_;
-    ServiceWorkerRegistrationInfo observed_info_;
   };
 
  protected:
@@ -266,24 +263,25 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(version_1.get(), registration->active_version());
   EXPECT_EQ(registration, listener.observed_registration_);
   EXPECT_TRUE(listener.observed_changed_mask_->active);
-  EXPECT_EQ(kScope, listener.observed_info_.scope);
-  EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
-  EXPECT_EQ(kScript, listener.observed_info_.active_version.script_url);
-  EXPECT_EQ(listener.observed_info_.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  EXPECT_EQ(kScope, listener.observed_registration_->scope());
+  EXPECT_EQ(version_1_id,
+            listener.observed_registration_->active_version()->version_id());
+  EXPECT_EQ(kScript,
+            listener.observed_registration_->active_version()->script_url());
+  EXPECT_FALSE(listener.observed_registration_->installing_version());
+  EXPECT_FALSE(listener.observed_registration_->waiting_version());
   listener.Reset();
 
   registration->SetInstallingVersion(version_2);
 
   EXPECT_EQ(version_2.get(), registration->installing_version());
   EXPECT_TRUE(listener.observed_changed_mask_->installing);
-  EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
-  EXPECT_EQ(version_2_id,
-            listener.observed_info_.installing_version.version_id);
-  EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  EXPECT_EQ(version_1_id,
+            listener.observed_registration_->active_version()->version_id());
+  EXPECT_EQ(
+      version_2_id,
+      listener.observed_registration_->installing_version()->version_id());
+  EXPECT_FALSE(listener.observed_registration_->waiting_version());
   listener.Reset();
 
   registration->SetWaitingVersion(version_2);
@@ -292,21 +290,21 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_FALSE(registration->installing_version());
   EXPECT_TRUE(listener.observed_changed_mask_->waiting);
   EXPECT_TRUE(listener.observed_changed_mask_->installing);
-  EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
-  EXPECT_EQ(version_2_id, listener.observed_info_.waiting_version.version_id);
-  EXPECT_EQ(listener.observed_info_.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  EXPECT_EQ(version_1_id,
+            listener.observed_registration_->active_version()->version_id());
+  EXPECT_EQ(version_2_id,
+            listener.observed_registration_->waiting_version()->version_id());
+  EXPECT_FALSE(listener.observed_registration_->installing_version());
   listener.Reset();
 
   registration->UnsetVersion(version_2.get());
 
   EXPECT_FALSE(registration->waiting_version());
   EXPECT_TRUE(listener.observed_changed_mask_->waiting);
-  EXPECT_EQ(version_1_id, listener.observed_info_.active_version.version_id);
-  EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(listener.observed_info_.installing_version.version_id,
-            blink::mojom::kInvalidServiceWorkerVersionId);
+  EXPECT_EQ(version_1_id,
+            listener.observed_registration_->active_version()->version_id());
+  EXPECT_FALSE(listener.observed_registration_->waiting_version());
+  EXPECT_FALSE(listener.observed_registration_->installing_version());
 }
 
 TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {

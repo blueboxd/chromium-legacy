@@ -368,7 +368,7 @@ class QuicNetworkTransactionTest
       uint64_t smallest_received,
       uint64_t least_unacked) {
     return client_maker_->MakeAckPacket(packet_number, largest_received,
-                                        smallest_received, least_unacked, true);
+                                        smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientAckAndRstPacket(
@@ -378,9 +378,9 @@ class QuicNetworkTransactionTest
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked) {
-    return client_maker_->MakeAckAndRstPacket(
-        num, false, stream_id, error_code, largest_received, smallest_received,
-        least_unacked, true);
+    return client_maker_->MakeAckAndRstPacket(num, false, stream_id, error_code,
+                                              largest_received,
+                                              smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientRstPacket(
@@ -397,7 +397,7 @@ class QuicNetworkTransactionTest
                                              uint64_t smallest_received,
                                              uint64_t least_unacked) {
     return client_maker_->MakeAckPacket(packet_number, largest_received,
-                                        smallest_received, least_unacked, true);
+                                        smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
@@ -434,7 +434,7 @@ class QuicNetworkTransactionTest
       uint64_t smallest_received,
       uint64_t least_unacked) {
     return server_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked, false);
+                                       smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructClientPriorityPacket(
@@ -7614,7 +7614,7 @@ class QuicNetworkTransactionWithDestinationTest
       uint64_t least_unacked,
       QuicTestPacketMaker* maker) {
     return maker->MakeAckPacket(packet_number, largest_received,
-                                smallest_received, least_unacked, true);
+                                smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket(
@@ -9268,8 +9268,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
     }
     server_data_offset += 10;
 
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS, client_maker.MakeAckPacket(packet_num++, 2, 1, 1, true));
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            client_maker.MakeAckPacket(packet_num++, 2, 1, 1));
 
     if (VersionUsesHttp3(version_.transport_version)) {
       mock_quic_data.AddWrite(
@@ -9337,7 +9337,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
                               client_maker.MakeAckAndRstPacket(
                                   packet_num++, false,
                                   GetNthClientInitiatedBidirectionalStreamId(1),
-                                  quic::QUIC_STREAM_CANCELLED, 3, 3, 1, true));
+                                  quic::QUIC_STREAM_CANCELLED, 3, 3, 1));
     }
 
     mock_quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -9769,8 +9769,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
                      2, GetNthClientInitiatedBidirectionalStreamId(0), false,
                      true, ConstructDataHeader(1) + "1"));
       partitioned_mock_quic_data1.AddWrite(
-          SYNCHRONOUS,
-          client_maker2.MakeAckPacket(packet_num2++, 2, 1, 1, true));
+          SYNCHRONOUS, client_maker2.MakeAckPacket(packet_num2++, 2, 1, 1));
 
       partitioned_mock_quic_data1.AddWrite(
           SYNCHRONOUS,
@@ -9788,8 +9787,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
                      4, GetNthClientInitiatedBidirectionalStreamId(1), false,
                      true, ConstructDataHeader(1) + "3"));
       partitioned_mock_quic_data1.AddWrite(
-          SYNCHRONOUS,
-          client_maker2.MakeAckPacket(packet_num2++, 4, 3, 1, true));
+          SYNCHRONOUS, client_maker2.MakeAckPacket(packet_num2++, 4, 3, 1));
 
       partitioned_mock_quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
 
@@ -9831,8 +9829,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
                      2, GetNthClientInitiatedBidirectionalStreamId(0), false,
                      true, ConstructDataHeader(1) + "2"));
       partitioned_mock_quic_data2.AddWrite(
-          SYNCHRONOUS,
-          client_maker3.MakeAckPacket(packet_num3++, 2, 1, 1, true));
+          SYNCHRONOUS, client_maker3.MakeAckPacket(packet_num3++, 2, 1, 1));
 
       partitioned_mock_quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
 
@@ -9989,7 +9986,7 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
             3, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
             ConstructDataHeader(10) + std::string("0123456789")));
     mock_quic_data[index]->AddWrite(
-        SYNCHRONOUS, client_maker.MakeAckPacket(packet_num++, 3, 2, 1, true));
+        SYNCHRONOUS, client_maker.MakeAckPacket(packet_num++, 3, 2, 1));
     mock_quic_data[index]->AddRead(SYNCHRONOUS,
                                    ERR_IO_PENDING);  // No more data to read
 

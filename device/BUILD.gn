@@ -177,7 +177,10 @@ test("device_unittests") {
   }
 
   if (use_udev) {
-    sources += [ "udev_linux/udev_unittest.cc" ]
+    sources += [
+      "udev_linux/udev_unittest.cc",
+      "udev_linux/udev_watcher_unittest.cc",
+    ]
     deps += [
       "//device/udev_linux",
       "//device/udev_linux:test_support",

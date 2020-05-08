@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
+#include "third_party/blink/public/mojom/clipboard/raw_clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
@@ -122,6 +123,12 @@ class ClipboardRawDataWriter final : public ClipboardWriter {
   void Write(DOMArrayBuffer* raw_data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+    if (raw_data->ByteLengthAsSizeT() >=
+        mojom::blink::RawClipboardHost::kMaxDataSize) {
+      promise_->RejectFromReadOrDecodeFailure();
+      return;
+    }
+
     uint8_t* raw_data_pointer = static_cast<uint8_t*>(raw_data->Data());
     mojo_base::BigBuffer buffer(std::vector<uint8_t>(
         raw_data_pointer, raw_data_pointer + raw_data->ByteLengthAsSizeT()));
@@ -186,8 +193,12 @@ ClipboardWriter::ClipboardWriter(SystemClipboard* system_clipboard,
 ClipboardWriter::~ClipboardWriter() = default;
 
 // static
-bool ClipboardWriter::IsValidType(const String& type) {
-  // TODO(https://crbug.com/931839): Add support for text/html and other types.
+bool ClipboardWriter::IsValidType(const String& type, bool is_raw) {
+  if (is_raw)
+    return type.length() < mojom::blink::RawClipboardHost::kMaxFormatSize;
+
+  // TODO(https://crbug.com/931839): Add support for text/html and other
+  // types.
   return type == kMimeTypeImagePng || type == kMimeTypeTextPlain;
 }
 

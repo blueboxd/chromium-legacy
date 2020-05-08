@@ -5,7 +5,6 @@
 #import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
-#include "base/ios/ios_util.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -32,24 +31,15 @@
 
 // Tests that a tab can be opened.
 - (void)testOpenTab {
-// TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
-  }
-#endif
-
   // Open tools menu.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openToolsMenu];
 
   // Open new tab.
   // TODO(crbug.com/917114): Calling the string directly is temporary while we
   // roll out a solution to access constants across the code base for EG2.
   id<GREYMatcher> newTabButtonMatcher =
       grey_accessibilityID(@"kToolsMenuNewTabId");
-  [[EarlGrey selectElementWithMatcher:newTabButtonMatcher]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI tapToolsMenuButton:newTabButtonMatcher];
 
   // Wait until tab opened and test if there're 2 tabs in total.
   [ChromeEarlGrey waitForMainTabCount:2];
@@ -67,20 +57,9 @@
 
 // Tests that helpers from chrome_actions.h are available for use in tests.
 - (void)testToggleSettingsSwitch {
-// TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
-  }
-#endif
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsMenuButton()]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::SettingsMenuPasswordsButton()]
-      performAction:grey_tap()];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsMenuPasswordsButton()];
 
   // Toggle the passwords switch off and on.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -173,14 +152,7 @@
 
 // Tests waitForSufficientlyVisibleElementWithMatcher in chrome_earl_grey.h
 - (void)testWaitForSufficientlyVisibleElementWithMatcher {
-// TODO(crbug.com/1078140): Test fails on iOS 13+ iPad devices.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom] && base::ios::IsRunningOnIOS13OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"This test fails on iOS 13+ iPad device.");
-  }
-#endif
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];

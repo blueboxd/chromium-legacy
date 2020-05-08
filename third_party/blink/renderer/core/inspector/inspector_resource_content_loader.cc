@@ -98,10 +98,7 @@ void InspectorResourceContentLoader::Start() {
       // context document for getting origin and ResourceFetcher to use the
       // main Document's origin, while using the element document for
       // CompleteURL() to use imported Documents' base URLs.
-      if (!document->ContextDocument()) {
-        continue;
-      }
-      fetcher = document->ContextDocument()->Fetcher();
+      fetcher = document->GetExecutionContext()->Fetcher();
     }
     if (!resource_request.Url().GetString().IsEmpty()) {
       urls_to_fetch.insert(resource_request.Url().GetString());

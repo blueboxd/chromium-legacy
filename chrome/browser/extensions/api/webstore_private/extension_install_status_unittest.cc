@@ -48,6 +48,13 @@ constexpr char kExtensionSettingsWithIdAllowed[] = R"({
   }
 })";
 
+constexpr char kExtensionSettingsWithIdForced[] = R"({
+  "abcdefghijklmnopabcdefghijklmnop": {
+    "installation_mode": "force_installed",
+    "update_url":"https://clients2.google.com/service/update2/crx"
+  }
+})";
+
 }  // namespace
 
 class ExtensionInstallStatusTest : public BrowserWithTestWindowTest {
@@ -128,6 +135,13 @@ TEST_F(ExtensionInstallStatusTest, ExtensionBlacklisted) {
 
 TEST_F(ExtensionInstallStatusTest, ExtensionAllowed) {
   EXPECT_EQ(ExtensionInstallStatus::kInstallable,
+            GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
+}
+
+TEST_F(ExtensionInstallStatusTest, ExtensionForceInstalledByPolicy) {
+  SetExtensionSettings(kExtensionSettingsWithIdForced);
+  ExtensionRegistry::Get(profile())->AddEnabled(CreateExtension(kExtensionId));
+  EXPECT_EQ(ExtensionInstallStatus::kForceInstalled,
             GetWebstoreExtensionInstallStatus(kExtensionId, profile()));
 }
 

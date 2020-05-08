@@ -19,6 +19,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -80,9 +81,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
      * Checks whether the WebAPK's Web Manifest has changed. Requests an updated WebAPK if the Web
      * Manifest has changed. Skips the check if the check was done recently.
      */
-    public void updateIfNeeded(WebappDataStorage storage, WebappInfo info) {
+    public void updateIfNeeded(
+            WebappDataStorage storage, BrowserServicesIntentDataProvider intentDataProvider) {
         mStorage = storage;
-        mInfo = info;
+        mInfo = WebappInfo.create(intentDataProvider);
 
         Tab tab = mActivity.getActivityTab();
 
@@ -112,8 +114,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
     }
 
     @Override
-    public void onGotManifestData(
-            WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
+    public void onGotManifestData(BrowserServicesIntentDataProvider fetchedIntentDataProvider,
+            String primaryIconUrl, String splashIconUrl) {
+        WebappInfo fetchedInfo = WebappInfo.create(fetchedIntentDataProvider);
+
         mStorage.updateTimeOfLastCheckForUpdatedWebManifest();
         if (mUpdateFailureHandler != null) {
             mUpdateFailureHandler.removeCallbacksAndMessages(null);

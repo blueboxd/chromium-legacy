@@ -163,6 +163,8 @@ suite('OSSettingsSearchBox', () => {
   test('Search result rows are selected correctly', async () => {
     settingsSearchHandler.setFakeResults([fakeResult('a'), fakeResult('b')]);
     await simulateSearch('query');
+    await waitForListUpdate();
+
     assertTrue(dropDown.opened);
     assertEquals(resultList.items.length, 2);
 

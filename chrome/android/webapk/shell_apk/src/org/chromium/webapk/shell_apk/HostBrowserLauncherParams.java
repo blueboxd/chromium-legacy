@@ -22,6 +22,7 @@ import java.util.Locale;
 
 /** Convenience wrapper for parameters to {@link HostBrowserLauncher} methods. */
 public class HostBrowserLauncherParams {
+    private boolean mIsNewStyleWebApk;
     private String mHostBrowserPackageName;
     private int mHostBrowserMajorChromiumVersion;
     private boolean mDialogShown;
@@ -90,7 +91,9 @@ public class HostBrowserLauncherParams {
         // Ignore deep links which came with non HTTP/HTTPS schemes and which were not rewritten.
         if (!doesUrlUseHttpOrHttpsScheme(startUrl)) return null;
 
-        return new HostBrowserLauncherParams(hostBrowserPackageName,
+        boolean isNewStyleWebApk = metadata.getBoolean(WebApkMetaDataKeys.IS_NEW_STYLE_WEBAPK);
+
+        return new HostBrowserLauncherParams(isNewStyleWebApk, hostBrowserPackageName,
                 hostBrowserMajorChromiumVersion, dialogShown, intent, startUrl, source,
                 forceNavigation, launchTimeMs, splashShownTimeMs,
                 selectedShareTargetActivityClassName);
@@ -202,10 +205,11 @@ public class HostBrowserLauncherParams {
         return url != null && (url.startsWith("http:") || url.startsWith("https:"));
     }
 
-    private HostBrowserLauncherParams(String hostBrowserPackageName,
+    private HostBrowserLauncherParams(boolean isNewStyleWebApk, String hostBrowserPackageName,
             int hostBrowserMajorChromiumVersion, boolean dialogShown, Intent originalIntent,
             String startUrl, int source, boolean forceNavigation, long launchTimeMs,
             long splashShownTimeMs, String selectedShareTargetActivityClassName) {
+        mIsNewStyleWebApk = isNewStyleWebApk;
         mHostBrowserPackageName = hostBrowserPackageName;
         mHostBrowserMajorChromiumVersion = hostBrowserMajorChromiumVersion;
         mDialogShown = dialogShown;
@@ -216,6 +220,14 @@ public class HostBrowserLauncherParams {
         mLaunchTimeMs = launchTimeMs;
         mSplashShownTimeMs = splashShownTimeMs;
         mSelectedShareTargetActivityClassName = selectedShareTargetActivityClassName;
+    }
+
+    /**
+     * Returns whether the WebAPK is a new-style WebAPK. {@link H2OOpaqueMainActivity} can be
+     * enabled for new-style WebAPKs.
+     */
+    public boolean isNewStyleWebApk() {
+        return mIsNewStyleWebApk;
     }
 
     /** Returns the chosen host browser. */

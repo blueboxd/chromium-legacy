@@ -10,6 +10,7 @@
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
@@ -63,7 +64,9 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
     rt_service_ = std::make_unique<RealTimeUrlLookupService>(
         test_shared_loader_factory_, cache_manager_.get(),
         identity_test_env_->identity_manager(), &test_sync_service_,
-        &test_pref_service_, /* is_off_the_record */ false);
+        &test_pref_service_, ChromeUserPopulation::NOT_MANAGED,
+        /*is_under_advanced_protection=*/true,
+        /*is_off_the_record=*/false);
   }
 
   void TearDown() override {
@@ -206,6 +209,12 @@ TEST_F(RealTimeUrlLookupServiceTest, TestFillRequestProto) {
     EXPECT_EQ(RTLookupRequest::NAVIGATION, result->lookup_type());
     EXPECT_EQ(ChromeUserPopulation::SAFE_BROWSING,
               result->population().user_population());
+    EXPECT_TRUE(result->population().is_history_sync_enabled());
+    EXPECT_EQ(ChromeUserPopulation::NOT_MANAGED,
+              result->population().profile_management_status());
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+    EXPECT_TRUE(result->population().is_under_advanced_protection());
+#endif
   }
 }
 

@@ -297,11 +297,12 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
   }
 }
 
-// Verify that a payment handler from https://bobpay.com/webpay can use the
+// Verify that a payment handler from https://bobpay.com/webpay can not use the
 // payment method name https://frankpay.com/webpay, because
-// https://frankpay.com/payment-manifest.json contains "supported_origins": "*".
+// https://frankpay.com/payment-manifest.json does not explicitly authorize
+// any payment app.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
-                       BobPayHandlerCanUseMethodThatSupportsAllOrigins) {
+                       BobPayHandlerCanNotUseMethodWithOriginWildcard) {
   {
     content::PaymentAppProvider::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
@@ -310,9 +311,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
     Verify(std::move(apps));
 
-    EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"https://frankpay.com/webpay"},
-              false);
+    EXPECT_TRUE(verified_apps().empty());
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
@@ -324,18 +323,17 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     apps[0]->enabled_methods.push_back("https://frankpay.com/webpay");
     Verify(std::move(apps));
 
-    EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"https://frankpay.com/webpay"},
-              false);
+    EXPECT_TRUE(verified_apps().empty());
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
 
-// Verify that a payment handler from an unreachable website can use the payment
-// method name https://frankpay.com/webpay, because
-// https://frankpay.com/payment-manifest.json contains "supported_origins": "*".
+// Verify that a payment handler from an unreachable website can not use the
+// payment method name https://frankpay.com/webpay, because
+// https://frankpay.com/payment-manifest.json does not explicitly authorize
+// any payment app.
 IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
-                       Handler404CanUseMethodThatSupportsAllOrigins) {
+                       Handler404CanNotUseMethodWithOriginWildcard) {
   {
     content::PaymentAppProvider::PaymentApps apps;
     apps[0] = std::make_unique<content::StoredPaymentApp>();
@@ -344,9 +342,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
     Verify(std::move(apps));
 
-    EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://404.com/webpay", {"https://frankpay.com/webpay"},
-              false);
+    EXPECT_TRUE(verified_apps().empty());
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
@@ -358,9 +354,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     apps[0]->enabled_methods.push_back("https://frankpay.com/webpay");
     Verify(std::move(apps));
 
-    EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://404.com/webpay", {"https://frankpay.com/webpay"},
-              false);
+    EXPECT_TRUE(verified_apps().empty());
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }

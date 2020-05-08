@@ -332,10 +332,46 @@ std::unique_ptr<protocol::DictionaryValue> BuildTextNodeInfo(Text* text_node) {
   return text_info;
 }
 
+std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
+    const InspectorGridHighlightConfig& grid_config) {
+  std::unique_ptr<protocol::DictionaryValue> grid_config_info =
+      protocol::DictionaryValue::create();
+  grid_config_info->setBoolean("gridBorderDash", grid_config.grid_border_dash);
+  grid_config_info->setBoolean("cellBorderDash", grid_config.cell_border_dash);
+  grid_config_info->setBoolean("showGridExtensionLines",
+                               grid_config.show_grid_extension_lines);
+
+  if (grid_config.grid_color != Color::kTransparent) {
+    grid_config_info->setString("gridBorderColor",
+                                grid_config.grid_color.Serialized());
+  }
+  if (grid_config.cell_color != Color::kTransparent) {
+    grid_config_info->setString("cellBorderColor",
+                                grid_config.cell_color.Serialized());
+  }
+  if (grid_config.row_gap_color != Color::kTransparent) {
+    grid_config_info->setString("rowGapColor",
+                                grid_config.row_gap_color.Serialized());
+  }
+  if (grid_config.column_gap_color != Color::kTransparent) {
+    grid_config_info->setString("columnGapColor",
+                                grid_config.column_gap_color.Serialized());
+  }
+  if (grid_config.row_hatch_color != Color::kTransparent) {
+    grid_config_info->setString("rowHatchColor",
+                                grid_config.row_hatch_color.Serialized());
+  }
+  if (grid_config.column_hatch_color != Color::kTransparent) {
+    grid_config_info->setString("columnHatchColor",
+                                grid_config.column_hatch_color.Serialized());
+  }
+  return grid_config_info;
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     LocalFrameView* containing_view,
     LayoutGrid* layout_grid,
-    Color color,
+    const InspectorHighlightConfig& highlight_config,
     float scale,
     bool isPrimary) {
   std::unique_ptr<protocol::DictionaryValue> grid_info =
@@ -350,9 +386,11 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
                     layout_grid->GridItemOffset(kForColumns);
 
   PathBuilder row_builder;
+  PathBuilder row_gap_builder;
   LayoutUnit row_left = columns.front();
   LayoutUnit row_width = columns.back() - columns.front();
   for (size_t i = 1; i < rows.size(); ++i) {
+    // Rows
     PhysicalOffset position(row_left, rows.at(i - 1));
     PhysicalSize size(row_width, rows.at(i) - rows.at(i - 1));
     if (i != rows.size() - 1)
@@ -361,10 +399,21 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     FloatQuad row_quad = layout_grid->LocalRectToAbsoluteQuad(row);
     FrameQuadToViewport(containing_view, row_quad);
     row_builder.AppendPath(QuadToPath(row_quad), scale);
+    // Row Gaps
+    if (i != rows.size() - 1) {
+      PhysicalOffset gap_position(row_left, rows.at(i) - row_gap);
+      PhysicalSize gap_size(row_width, row_gap);
+      PhysicalRect gap(gap_position, gap_size);
+      FloatQuad gap_quad = layout_grid->LocalRectToAbsoluteQuad(gap);
+      FrameQuadToViewport(containing_view, gap_quad);
+      row_gap_builder.AppendPath(QuadToPath(gap_quad), scale);
+    }
   }
   grid_info->setValue("rows", row_builder.Release());
+  grid_info->setValue("rowGaps", row_gap_builder.Release());
 
   PathBuilder column_builder;
+  PathBuilder column_gap_builder;
   LayoutUnit column_top = rows.front();
   LayoutUnit column_height = rows.back() - rows.front();
   for (size_t i = 1; i < columns.size(); ++i) {
@@ -376,10 +425,43 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     FloatQuad column_quad = layout_grid->LocalRectToAbsoluteQuad(column);
     FrameQuadToViewport(containing_view, column_quad);
     column_builder.AppendPath(QuadToPath(column_quad), scale);
+    // Column Gaps
+    if (i != columns.size() - 1) {
+      PhysicalOffset gap_position(columns.at(i) - column_gap, column_top);
+      PhysicalSize gap_size(column_gap, column_height);
+      PhysicalRect gap(gap_position, gap_size);
+      FloatQuad gap_quad = layout_grid->LocalRectToAbsoluteQuad(gap);
+      FrameQuadToViewport(containing_view, gap_quad);
+      column_gap_builder.AppendPath(QuadToPath(gap_quad), scale);
+    }
   }
   grid_info->setValue("columns", column_builder.Release());
+  grid_info->setValue("columnGaps", column_gap_builder.Release());
 
-  grid_info->setString("color", color.Serialized());
+  // Grid border
+  PathBuilder grid_border_builder;
+  PhysicalOffset grid_position(row_left, column_top);
+  PhysicalSize grid_size(row_width, column_height);
+  PhysicalRect grid_rect(grid_position, grid_size);
+  FloatQuad grid_quad = layout_grid->LocalRectToAbsoluteQuad(grid_rect);
+  FrameQuadToViewport(containing_view, grid_quad);
+  grid_border_builder.AppendPath(QuadToPath(grid_quad), scale);
+  grid_info->setValue("gridBorder", grid_border_builder.Release());
+
+  if (highlight_config.css_grid != Color::kTransparent) {
+    // Legacy support for highlight_config.css_grid
+    std::unique_ptr<protocol::DictionaryValue> grid_config_info =
+        protocol::DictionaryValue::create();
+    grid_config_info->setString("cellBorderColor",
+                                highlight_config.css_grid.Serialized());
+    grid_config_info->setBoolean("cellBorderDash", true);
+    grid_info->setValue("gridHighlightConfig", grid_config_info->clone());
+  } else {
+    grid_info->setValue(
+        "gridHighlightConfig",
+        BuildGridHighlightConfigInfo(*highlight_config.grid_highlight_config));
+  }
+
   grid_info->setBoolean("isPrimaryGrid", isPrimary);
   return grid_info;
 }
@@ -458,6 +540,11 @@ InspectorHighlight::InspectorHighlight(float scale)
       show_extension_lines_(false),
       scale_(scale),
       color_format_(ColorFormat::HEX) {}
+
+InspectorGridHighlightConfig::InspectorGridHighlightConfig()
+    : show_grid_extension_lines(false),
+      grid_border_dash(false),
+      cell_border_dash(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -673,22 +760,24 @@ void InspectorHighlight::AppendNodeHighlight(
   AppendQuad(border, highlight_config.border, Color::kTransparent, "border");
   AppendQuad(margin, highlight_config.margin, Color::kTransparent, "margin");
 
-  if (highlight_config.css_grid == Color::kTransparent)
+  if (highlight_config.css_grid == Color::kTransparent &&
+      !highlight_config.grid_highlight_config) {
     return;
+  }
   grid_info_ = protocol::ListValue::create();
   if (layout_object->IsLayoutGrid()) {
-    grid_info_->pushValue(
-        BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(layout_object),
-                      highlight_config.css_grid, scale_, true));
+    grid_info_->pushValue(BuildGridInfo(node->GetDocument().View(),
+                                        ToLayoutGrid(layout_object),
+                                        highlight_config, scale_, true));
   }
   LayoutObject* parent = layout_object->Parent();
   if (!parent || !parent->IsLayoutGrid())
     return;
   if (!BuildNodeQuads(parent->GetNode(), &content, &padding, &border, &margin))
     return;
-  grid_info_->pushValue(
-      BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(parent),
-                    highlight_config.css_grid, scale_, false));
+  grid_info_->pushValue(BuildGridInfo(node->GetDocument().View(),
+                                      ToLayoutGrid(parent), highlight_config,
+                                      scale_, false));
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
@@ -961,8 +1050,25 @@ InspectorHighlightConfig InspectorHighlight::DefaultConfig() {
   config.show_styles = false;
   config.show_rulers = true;
   config.show_extension_lines = true;
-  config.css_grid = Color(128, 128, 128, 0);
+  config.css_grid = Color::kTransparent;
   config.color_format = ColorFormat::HEX;
+  config.grid_highlight_config = std::make_unique<InspectorGridHighlightConfig>(
+      InspectorHighlight::DefaultGridConfig());
+  return config;
+}
+
+// static
+InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
+  InspectorGridHighlightConfig config;
+  config.grid_color = Color(255, 0, 0, 0);
+  config.cell_color = Color(128, 0, 0, 0);
+  config.row_gap_color = Color(0, 255, 0, 0);
+  config.column_gap_color = Color(0, 0, 255, 0);
+  config.row_hatch_color = Color(255, 255, 255, 0);
+  config.column_hatch_color = Color(128, 128, 128, 0);
+  config.show_grid_extension_lines = true;
+  config.grid_border_dash = false;
+  config.cell_border_dash = true;
   return config;
 }
 

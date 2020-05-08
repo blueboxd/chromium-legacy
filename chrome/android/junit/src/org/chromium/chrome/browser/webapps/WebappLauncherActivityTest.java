@@ -27,8 +27,8 @@ public class WebappLauncherActivityTest {
     private static final String START_URL = "https://www.google.com/scope/a_is_for_apple";
 
     /**
-     * Test that WebappLauncherActivity#tryCreateWebappInfo() modifies the passed-in intent so
-     * that WebApkInfo#create() returns null if the intent does not refer to a valid
+     * Test that WebappLauncherActivity modifies the passed-in intent so that
+     * WebApkIntentDataProviderFactory#create() returns null if the intent does not refer to a valid
      * WebAPK.
      */
     @Test
@@ -42,8 +42,8 @@ public class WebappLauncherActivityTest {
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
-        Assert.assertNotNull(WebApkInfo.create(intent));
+        Assert.assertNotNull(WebApkIntentDataProviderFactory.create(intent));
         Robolectric.buildActivity(WebappLauncherActivity.class, intent).create();
-        Assert.assertNull(WebApkInfo.create(intent));
+        Assert.assertNull(WebApkIntentDataProviderFactory.create(intent));
     }
 }

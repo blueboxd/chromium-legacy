@@ -13,6 +13,8 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
+namespace weblayer {
+
 class PageInfoDelegateImpl : public PageInfoDelegate {
  public:
   explicit PageInfoDelegateImpl(content::WebContents* web_contents);
@@ -56,5 +58,7 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
 
   content::WebContents* web_contents_;
 };
+
+}  //  namespace weblayer
 
 #endif  // WEBLAYER_BROWSER_URL_BAR_PAGE_INFO_DELEGATE_IMPL_H_

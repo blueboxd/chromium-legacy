@@ -35,7 +35,6 @@ class WidgetsWindow : public views::WidgetDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
   // Overridden from views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
   bool CanResize() const override;
 
  private:
@@ -70,6 +69,7 @@ WidgetsWindow::WidgetsWindow()
       radio_button_selected_disabled_(new views::RadioButton(
           base::ASCIIToUTF16("Radio button selected disabled"),
           1)) {
+  SetTitle(base::ASCIIToUTF16("Examples: Widgets"));
   button_ = AddChildView(
       views::MdTextButton::Create(nullptr, base::ASCIIToUTF16("Button")));
   disabled_button_ = AddChildView(views::MdTextButton::Create(
@@ -112,10 +112,6 @@ void WidgetsWindow::Layout() {
 
 gfx::Size WidgetsWindow::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
-}
-
-base::string16 WidgetsWindow::GetWindowTitle() const {
-  return base::ASCIIToUTF16("Examples: Widgets");
 }
 
 bool WidgetsWindow::CanResize() const {

@@ -351,6 +351,8 @@ KeyboardShortcutView::KeyboardShortcutView() {
   DCHECK_EQ(g_ksv_view, nullptr);
   g_ksv_view = this;
 
+  SetShowTitle(false);
+
   // Default background is transparent.
   SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   InitViews();
@@ -596,10 +598,6 @@ bool KeyboardShortcutView::CanMinimize() const {
 }
 
 bool KeyboardShortcutView::CanResize() const {
-  return false;
-}
-
-bool KeyboardShortcutView::ShouldShowWindowTitle() const {
   return false;
 }
 

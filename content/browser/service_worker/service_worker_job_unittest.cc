@@ -1364,12 +1364,11 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
   // ServiceWorkerRegistration::Listener overrides
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
-      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-      const ServiceWorkerRegistrationInfo& info) override {
+      blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask) override {
     AttributeChangeLogEntry entry;
     entry.registration_id = registration->id();
     entry.mask = std::move(changed_mask);
-    entry.info = info;
+    entry.info = registration->GetInfo();
     attribute_change_log_.push_back(std::move(entry));
   }
 

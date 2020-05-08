@@ -36,7 +36,8 @@ class CONTENT_EXPORT RawClipboardHostImpl
   // mojom::RawClipboardHost.
   void ReadAvailableFormatNames(
       ReadAvailableFormatNamesCallback callback) override;
-  void Write(const base::string16&, mojo_base::BigBuffer) override;
+  void Read(const base::string16& format, ReadCallback callback) override;
+  void Write(const base::string16& format, mojo_base::BigBuffer data) override;
   void CommitWrite() override;
 
   mojo::Receiver<blink::mojom::RawClipboardHost> receiver_;

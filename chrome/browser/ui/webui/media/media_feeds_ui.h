@@ -36,11 +36,17 @@ class MediaFeedsUI : public ui::MojoWebUIController,
                             GetItemsForMediaFeedCallback callback) override;
   void FetchMediaFeed(int64_t feed_id,
                       FetchMediaFeedCallback callback) override;
+  void GetDebugInformation(GetDebugInformationCallback callback) override;
+  void SetSafeSearchEnabledPref(
+      bool value,
+      SetSafeSearchEnabledPrefCallback callback) override;
 
  private:
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
 
   media_feeds::MediaFeedsService* GetMediaFeedsService();
+
+  Profile* GetProfile();
 
   mojo::ReceiverSet<media_feeds::mojom::MediaFeedsStore> receiver_;
 

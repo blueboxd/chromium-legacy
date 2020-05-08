@@ -1683,10 +1683,6 @@ def main(argv):
       # is not proguarded, but it's easy enough to support.
       deps_info['proguard_under_test_mapping'] = ''
 
-    expected_tested_package = tested_apk_config['package_name']
-    AndroidManifest(options.android_manifest).CheckInstrumentationElements(
-        expected_tested_package)
-
     # Add all tested classes to the test's classpath to ensure that the test's
     # java code is a superset of the tested apk's java code
     java_full_classpath.extend(

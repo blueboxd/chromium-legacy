@@ -2170,6 +2170,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(
             network::switches::kForceToDisableOutOfBlinkCors);
       }
+
+      if (prefs->HasPrefPath(prefs::kAppCacheForceEnabled) &&
+          prefs->GetBoolean(prefs::kAppCacheForceEnabled)) {
+        command_line->AppendSwitch(switches::kAppCacheForceEnabled);
+      }
     }
 
     if (IsAutoReloadEnabled())
@@ -5547,3 +5552,20 @@ ChromeContentBrowserClient::GetXrIntegrationClient() {
   return xr_integration_client_.get();
 }
 #endif  // BUILDFLAG(ENABLE_VR)
+
+bool ChromeContentBrowserClient::IsOriginTrialRequiredForAppCache(
+    content::BrowserContext* browser_context) {
+  auto* profile = Profile::FromBrowserContext(browser_context);
+  auto* prefs = profile->GetPrefs();
+
+  if (prefs->HasPrefPath(prefs::kAppCacheForceEnabled) &&
+      prefs->GetBoolean(prefs::kAppCacheForceEnabled)) {
+    return false;
+  }
+  if (base::FeatureList::IsEnabled(
+          blink::features::kAppCacheRequireOriginTrial)) {
+    return true;
+  }
+
+  return false;
+}

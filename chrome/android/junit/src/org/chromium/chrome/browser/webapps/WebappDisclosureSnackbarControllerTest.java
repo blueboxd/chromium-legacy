@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -59,9 +59,8 @@ public class WebappDisclosureSnackbarControllerTest {
 
     private WebappDisclosureSnackbarController buildControllerForWebApk(String webApkPackageName) {
         BrowserServicesIntentDataProvider intentDataProvider =
-                new WebApkInfoBuilder(webApkPackageName, "https://pwa.rocks/")
-                        .build()
-                        .getProvider();
+                new WebApkIntentDataProviderBuilder(webApkPackageName, "https://pwa.rocks/")
+                        .build();
         return new WebappDisclosureSnackbarController(mActivity, intentDataProvider,
                 mock(WebappDeferredStartupWithStorageHandler.class),
                 mock(ActivityLifecycleDispatcher.class));

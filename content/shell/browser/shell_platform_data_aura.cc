@@ -77,6 +77,8 @@ class FillLayout : public aura::LayoutManager {
 
 }
 
+ShellPlatformDataAura* Shell::platform_ = nullptr;
+
 ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   CHECK(aura::Env::GetInstance());
 

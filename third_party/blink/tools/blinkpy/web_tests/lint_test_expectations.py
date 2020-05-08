@@ -159,11 +159,28 @@ def _check_expectations_file_content(content):
     return failures
 
 
-def _check_expectations(host, port, path, test_expectations):
+def _check_existence(host, port, path, expectations):
     failures = []
-    for exp in test_expectations.get_updated_lines(path):
-        if (exp.is_glob or not exp.to_string().strip()
-                or exp.to_string().strip().startswith('#')):
+    for exp in expectations:
+        if not exp.test:
+            continue
+        test = exp.test
+        if exp.is_glob:
+            # This is ensured in typ.Expectation.
+            assert test.endswith('*')
+            test = test[:-1]
+        if not port.test_exists(test):
+            error = "{}:{} Test does not exist: {}".format(
+                host.filesystem.basename(path), exp.lineno, exp.test)
+            _log.error(error)
+            failures.append(error)
+    return failures
+
+
+def _check_directory_glob(host, port, path, expectations):
+    failures = []
+    for exp in expectations:
+        if not exp.test or exp.is_glob:
             continue
 
         test_name, _ = port.split_webdriver_test_name(exp.test)
@@ -180,6 +197,57 @@ def _check_expectations(host, port, path, test_expectations):
             failures.append(error)
             _log.error('')
 
+    return failures
+
+
+def _check_redundant_virtual_expectations(host, port, path, expectations):
+    # FlagExpectations are not checked because something like the following in
+    # a flag-specific expectations file looks redundant but is needed to
+    # override the virtual expectations in TestExpectations. For example, in
+    # the main TestExpectations:
+    #   foo/bar/test.html [ Failure ]
+    #   virtual/suite/foo/bar/test.html [ Timeout ]
+    # and in a flag expectation file, we want to override both to [ Crash ]:
+    #   foo/bar/test.html [ Crash ]
+    #   virtual/suite/foo/bar/test.html [ Crash ]
+    if 'FlagExpectations' in path:
+        return []
+
+    failures = []
+    expectations_by_test = {}
+    for exp in expectations:
+        if exp.test:
+            expectations_by_test.setdefault(exp.test, []).append(exp)
+
+    for exp in expectations:
+        if not exp.test:
+            continue
+
+        base_test = port.lookup_virtual_test_base(exp.test)
+        if not base_test:
+            continue
+
+        for base_exp in expectations_by_test.get(base_test, []):
+            if (base_exp.results == exp.results
+                    and base_exp.is_slow_test == exp.is_slow_test
+                    and base_exp.tags.issubset(exp.tags)):
+                error = "{}:{} Expectation '{}' is redundant with '{}' in line {}".format(
+                    host.filesystem.basename(path), exp.lineno, exp.test,
+                    base_test, base_exp.lineno)
+                _log.error(error)
+                failures.append(error)
+
+    return failures
+
+
+def _check_expectations(host, port, path, test_expectations):
+    # Check for original expectation lines (from get_updated_lines) instead of
+    # expectations filtered for the current port (test_expectations).
+    expectations = test_expectations.get_updated_lines(path)
+    failures = _check_existence(host, port, path, expectations)
+    failures.extend(_check_directory_glob(host, port, path, expectations))
+    failures.extend(
+        _check_redundant_virtual_expectations(host, port, path, expectations))
     return failures
 
 

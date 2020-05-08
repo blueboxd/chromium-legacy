@@ -28,13 +28,17 @@ const char ScreenOrientationController::kSupplementName[] =
 
 ScreenOrientationController* ScreenOrientationController::From(
     LocalDOMWindow& window) {
-  auto* controller =
-      Supplement<LocalDOMWindow>::From<ScreenOrientationController>(window);
+  auto* controller = FromIfExists(window);
   if (!controller) {
     controller = MakeGarbageCollected<ScreenOrientationController>(window);
     Supplement<LocalDOMWindow>::ProvideTo(window, controller);
   }
   return controller;
+}
+
+ScreenOrientationController* ScreenOrientationController::FromIfExists(
+    LocalDOMWindow& window) {
+  return Supplement<LocalDOMWindow>::From<ScreenOrientationController>(window);
 }
 
 ScreenOrientationController::ScreenOrientationController(LocalDOMWindow& window)
@@ -171,8 +175,8 @@ void ScreenOrientationController::NotifyOrientationChanged() {
 
   // ... and child frames.
   for (LocalFrame* child_frame : child_frames) {
-    ScreenOrientationController::From(*child_frame->DomWindow())
-        ->NotifyOrientationChanged();
+    if (auto* controller = FromIfExists(*child_frame->DomWindow()))
+      controller->NotifyOrientationChanged();
   }
 }
 

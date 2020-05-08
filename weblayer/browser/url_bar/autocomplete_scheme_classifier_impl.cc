@@ -19,14 +19,13 @@ namespace weblayer {
 #if defined(OS_ANDROID)
 static jlong JNI_AutocompleteSchemeClassifierImpl_CreateAutocompleteClassifier(
     JNIEnv* env) {
-  return reinterpret_cast<intptr_t>(
-      new weblayer::AutocompleteSchemeClassifierImpl());
+  return reinterpret_cast<intptr_t>(new AutocompleteSchemeClassifierImpl());
 }
 
 static void JNI_AutocompleteSchemeClassifierImpl_DeleteAutocompleteClassifier(
     JNIEnv* env,
     jlong autocomplete_scheme_classifier_impl) {
-  delete reinterpret_cast<weblayer::AutocompleteSchemeClassifierImpl*>(
+  delete reinterpret_cast<AutocompleteSchemeClassifierImpl*>(
       autocomplete_scheme_classifier_impl);
 }
 #endif

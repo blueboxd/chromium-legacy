@@ -11,6 +11,8 @@ namespace blink {
 enum class FontInvalidationReason {
   // The default reason without any specific details.
   kGeneralInvalidation,
+  // A custom font has finished loading and is ready for use.
+  kFontFaceLoaded,
   // TODO(xiaochengh): Add more detailed entries for different callers, and
   // implement different behaviors on FontSelectorClient.
 };

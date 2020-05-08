@@ -51,6 +51,7 @@ public class ContentView extends RelativeLayout
 
     private TabImpl mTab;
     private WebContents mWebContents;
+    private boolean mIsObscuredForAccessibility;
     private final ObserverList<OnHierarchyChangeListener> mHierarchyChangeListeners =
             new ObserverList<>();
     private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
@@ -135,13 +136,27 @@ public class ContentView extends RelativeLayout
         boolean wasFocused = isFocused();
         boolean wasWindowFocused = hasWindowFocus();
         boolean wasAttached = isAttachedToWindow();
+        boolean wasObscured = mIsObscuredForAccessibility;
         if (wasFocused) onFocusChanged(false, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(false);
         if (wasAttached) onDetachedFromWindow();
+        if (wasObscured) setIsObscuredForAccessibility(false);
         mWebContents = mTab != null ? mTab.getWebContents() : null;
         if (wasFocused) onFocusChanged(true, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(true);
         if (wasAttached) onAttachedToWindow();
+        if (wasObscured) setIsObscuredForAccessibility(true);
+    }
+
+    /**
+     * Control whether WebContentsAccessibility will respond to accessibility requests.
+     */
+    public void setIsObscuredForAccessibility(boolean isObscured) {
+        if (mIsObscuredForAccessibility == isObscured) return;
+        mIsObscuredForAccessibility = isObscured;
+        WebContentsAccessibility wcax = getWebContentsAccessibility();
+        if (wcax == null) return;
+        wcax.setObscuredByAnotherView(mIsObscuredForAccessibility);
     }
 
     @Override

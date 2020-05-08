@@ -478,6 +478,7 @@ public class NewTabPageTest {
     }
 
     @Test
+    @DisabledTest(message = "Test is flaky. crbug.com/1077724")
     @SmallTest
     @Feature("NewTabPage")
     public void testNewTabPageCanBeGarbageCollected() throws IOException {

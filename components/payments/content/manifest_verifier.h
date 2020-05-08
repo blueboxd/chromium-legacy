@@ -103,8 +103,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   void OnPaymentMethodManifestParsed(
       const GURL& method_manifest_url,
       const std::vector<GURL>& default_applications,
-      const std::vector<url::Origin>& supported_origins,
-      bool all_origins_supported);
+      const std::vector<url::Origin>& supported_origins);
 
   // Called immediately preceding the verification callback invocation.
   void RemoveInvalidPaymentApps();

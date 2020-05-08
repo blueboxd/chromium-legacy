@@ -200,9 +200,10 @@ class AppsGridViewTest : public views::ViewsTestBase,
     // Ensure that parent is big enough to show the full AppListView.
     parent->SetBounds(gfx::Rect(gfx::Point(0, 0), gfx::Size(1024, 768)));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
+    delegate_->SetIsTabletModeEnabled(create_as_tablet_mode_);
     app_list_view_ = new AppListView(delegate_.get());
-    app_list_view_->InitView(create_as_tablet_mode_, parent);
-    app_list_view_->Show(false /*is_side_shelf*/, create_as_tablet_mode_);
+    app_list_view_->InitView(parent);
+    app_list_view_->Show(false /*is_side_shelf*/);
     contents_view_ = app_list_view_->app_list_main_view()->contents_view();
     apps_grid_view_ = contents_view_->apps_container_view()->apps_grid_view();
     app_list_view_->GetWidget()->Show();

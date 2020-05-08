@@ -20,9 +20,9 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
   ~MockClipboardHost() override;
 
   void Bind(mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
+  // Clears all clipboard data.
   void Reset();
 
- private:
   // blink::mojom::ClipboardHost
   void GetSequenceNumber(ui::ClipboardBuffer clipboard_buffer,
                          GetSequenceNumberCallback callback) override;
@@ -54,7 +54,7 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
 #if defined(OS_MACOSX)
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
-
+ private:
   mojo::ReceiverSet<blink::mojom::ClipboardHost> receivers_;
   uint64_t sequence_number_ = 0;
   base::string16 plain_text_;

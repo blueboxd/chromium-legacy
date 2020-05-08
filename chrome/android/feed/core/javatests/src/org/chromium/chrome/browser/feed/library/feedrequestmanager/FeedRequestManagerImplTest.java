@@ -248,7 +248,8 @@ public class FeedRequestManagerImplTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
     public void testTriggerRefresh_enableFeedActions() throws Exception {
-        testCapabilityAdded(Capability.CLICK_ACTION, Capability.VIEW_ACTION);
+        testCapabilityAdded(Capability.CLICK_ACTION, Capability.VIEW_ACTION,
+                Capability.REPORT_FEED_USER_ACTIONS_NOTICE_CARD);
     }
 
     @Test

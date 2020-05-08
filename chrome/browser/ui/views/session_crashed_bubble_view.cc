@@ -171,6 +171,8 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       ignored_(true) {
   DCHECK(anchor_view);
 
+  SetTitle(l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE));
+
   const SessionStartupPref session_startup_pref =
       SessionStartupPref::GetStartupPref(browser_->profile());
   // Offer the option to open the startup pages using the cancel button, but
@@ -198,18 +200,6 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
 }
 
 SessionCrashedBubbleView::~SessionCrashedBubbleView() {
-}
-
-base::string16 SessionCrashedBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_TITLE);
-}
-
-bool SessionCrashedBubbleView::ShouldShowWindowTitle() const {
-  return true;
-}
-
-bool SessionCrashedBubbleView::ShouldShowCloseButton() const {
-  return true;
 }
 
 void SessionCrashedBubbleView::OnWidgetDestroying(views::Widget* widget) {

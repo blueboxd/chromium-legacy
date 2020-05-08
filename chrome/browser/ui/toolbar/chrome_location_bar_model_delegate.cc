@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 
 #include "base/check.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -74,19 +75,12 @@ bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
   return true;
 }
 
-bool ChromeLocationBarModelDelegate::ShouldPreventElision() const {
-  Profile* const profile = GetProfile();
-  if (profile &&
-      profile->GetPrefs()->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox)) {
+bool ChromeLocationBarModelDelegate::ShouldPreventElision() {
+  RecordElisionConfig();
+  if (GetElisionConfig() != ELISION_CONFIG_DEFAULT) {
     return true;
   }
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return profile && extensions::ExtensionRegistry::Get(profile)
-                        ->enabled_extensions()
-                        .Contains(kPreventElisionExtensionId);
-#else
   return false;
-#endif
 }
 
 bool ChromeLocationBarModelDelegate::ShouldDisplayURL() const {
@@ -221,6 +215,35 @@ Profile* ChromeLocationBarModelDelegate::GetProfile() const {
   return controller
              ? Profile::FromBrowserContext(controller->GetBrowserContext())
              : nullptr;
+}
+
+ChromeLocationBarModelDelegate::ElisionConfig
+ChromeLocationBarModelDelegate::GetElisionConfig() const {
+  Profile* const profile = GetProfile();
+  if (profile &&
+      profile->GetPrefs()->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox)) {
+    return ELISION_CONFIG_TURNED_OFF_BY_PREF;
+  }
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (profile && extensions::ExtensionRegistry::Get(profile)
+                     ->enabled_extensions()
+                     .Contains(kPreventElisionExtensionId)) {
+    return ELISION_CONFIG_TURNED_OFF_BY_EXTENSION;
+  }
+#endif
+  return ELISION_CONFIG_DEFAULT;
+}
+
+void ChromeLocationBarModelDelegate::RecordElisionConfig() {
+  Profile* const profile = GetProfile();
+  // Only record metrics once for this object, and only record if the profile
+  // has already been created to avoid false logging of the default config.
+  if (elision_config_recorded_ || !profile) {
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Omnibox.ElisionConfig", GetElisionConfig(),
+                            ELISION_CONFIG_MAX);
+  elision_config_recorded_ = true;
 }
 
 AutocompleteClassifier*

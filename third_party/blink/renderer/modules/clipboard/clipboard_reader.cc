@@ -20,7 +20,7 @@ namespace {  // anonymous namespace for ClipboardReader's derived classes.
 // Reads an image from the System Clipboard as a blob with image/png content.
 class ClipboardImageReader final : public ClipboardReader {
  public:
-  ClipboardImageReader(SystemClipboard* system_clipboard)
+  explicit ClipboardImageReader(SystemClipboard* system_clipboard)
       : ClipboardReader(system_clipboard) {}
   ~ClipboardImageReader() override = default;
 
@@ -28,6 +28,7 @@ class ClipboardImageReader final : public ClipboardReader {
     SkBitmap bitmap =
         system_clipboard()->ReadImage(mojom::ClipboardBuffer::kStandard);
 
+    // TODO(huangdarwin): Move encoding off the main thread.
     // Encode bitmap to Vector<uint8_t> on the main thread.
     SkPixmap pixmap;
     bitmap.peekPixels(&pixmap);
@@ -48,7 +49,7 @@ class ClipboardImageReader final : public ClipboardReader {
 // Reads an image from the System Clipboard as a blob with text/plain content.
 class ClipboardTextReader final : public ClipboardReader {
  public:
-  ClipboardTextReader(SystemClipboard* system_clipboard)
+  explicit ClipboardTextReader(SystemClipboard* system_clipboard)
       : ClipboardReader(system_clipboard) {}
   ~ClipboardTextReader() override = default;
 

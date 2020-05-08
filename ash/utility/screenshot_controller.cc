@@ -9,6 +9,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/magnifier/magnifier_glass.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screenshot_delegate.h"
@@ -460,6 +461,14 @@ class ScreenshotController::MovableScreenshotLayer
         gfx::Rect(std::min(anchor.x(), ref.x()), std::min(anchor.y(), ref.y()),
                   ::abs(anchor.x() - ref.x()), ::abs(anchor.y() - ref.y())));
 
+    if (!magnifier_glass_) {
+      MagnifierGlass::Params params{2.0f, 64};
+      magnifier_glass_ = std::make_unique<MagnifierGlass>(std::move(params));
+    }
+    aura::Window* event_root =
+        static_cast<aura::Window*>(event.target())->GetRootWindow();
+    magnifier_glass_->ShowFor(event_root, event.root_location());
+
     // TODO(crbug.com/1076605): Create/update a magnifier glass to allow
     // better alignment for selected region.
   }
@@ -475,6 +484,7 @@ class ScreenshotController::MovableScreenshotLayer
     drag_pointer_.reset();
     start_region_ = gfx::Rect();
     start_hit_ = HTNOWHERE;
+    magnifier_glass_->Close();
 
     MaybeChangeCursor(ui::mojom::CursorType::kCross);
   }
@@ -554,13 +564,18 @@ class ScreenshotController::MovableScreenshotLayer
     gfx::Vector2dF width(kCursorSize / 2, 0);
     gfx::Vector2dF height(0, kCursorSize / 2);
 
+    // If the cursor is above/before region, use negative offset to move
+    // towards outside of the region.
+    const int x_dir = pseudo_cursor_point.x() == region().x() ? -1 : 1;
+    const int y_dir = pseudo_cursor_point.y() == region().y() ? -1 : 1;
+
     gfx::ScopedCanvas scoped_canvas(canvas);
     float scale = canvas->UndoDeviceScaleFactor();
 
     pseudo_cursor_point.Scale(scale);
     pseudo_cursor_point = gfx::PointF(gfx::ToCeiledPoint(pseudo_cursor_point));
-    pseudo_cursor_point.Offset(kBorderStrokePx / 2 + kBorderShadowPx,
-                               kBorderStrokePx / 2 + kBorderShadowPx);
+    pseudo_cursor_point.Offset(x_dir * (kBorderStrokePx / 2 + kBorderShadowPx),
+                               y_dir * (kBorderStrokePx / 2 + kBorderShadowPx));
 
     width.Scale(scale);
     height.Scale(scale);
@@ -590,6 +605,10 @@ class ScreenshotController::MovableScreenshotLayer
   base::Optional<PointerInfo> drag_pointer_;
   gfx::Rect start_region_;
   int start_hit_ = HTNOWHERE;
+
+  // Shows a magnifier glass centered at mouse/touch location when changing
+  // the screenshot region.
+  std::unique_ptr<MagnifierGlass> magnifier_glass_;
 };
 
 class ScreenshotController::ScopedCursorSetter {

@@ -442,17 +442,14 @@ WindowAgentFactory* DocumentInit::GetWindowAgentFactory() const {
   // If we are a page popup in LayoutTests ensure we use the popup
   // owner's frame for looking up the Agent so the tests can possibly
   // access the document via internals API.
-  if (IsPagePopupRunningInWebTest(GetFrame())) {
-    auto* frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
-    return &frame->window_agent_factory();
-  }
-  if (GetFrame())
-    return &GetFrame()->window_agent_factory();
-  if (Document* context_document = ContextDocument())
+  LocalFrame* frame = nullptr;
+  if (IsPagePopupRunningInWebTest(GetFrame()))
+    frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
+  else if (GetFrame())
+    frame = GetFrame();
+  else if (Document* context_document = ContextDocument())
     return context_document->GetWindowAgentFactory();
-  if (const Document* owner_document = OwnerDocument())
-    return owner_document->GetWindowAgentFactory();
-  return nullptr;
+  return frame ? &frame->window_agent_factory() : nullptr;
 }
 
 Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
@@ -463,8 +460,6 @@ Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
     frame = GetFrame();
   else if (Document* context_document = ContextDocument())
     frame = context_document->GetFrame();
-  else if (const Document* owner_document = OwnerDocument())
-    frame = owner_document->GetFrame();
   return frame ? frame->GetSettings() : nullptr;
 }
 

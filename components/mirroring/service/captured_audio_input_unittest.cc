@@ -35,7 +35,7 @@ class MockDelegate final : public media::AudioInputIPCDelegate {
   MockDelegate() {}
   ~MockDelegate() override {}
 
-  MOCK_METHOD1(StreamCreated, void(bool initially_muted));
+  MOCK_METHOD0(StreamCreated, void());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnMuted, void(bool muted));
   MOCK_METHOD0(OnIPCClosed, void());
@@ -43,7 +43,7 @@ class MockDelegate final : public media::AudioInputIPCDelegate {
   void OnStreamCreated(base::ReadOnlySharedMemoryRegion shared_memory_region,
                        base::SyncSocket::ScopedHandle socket_handle,
                        bool initially_muted) override {
-    StreamCreated(initially_muted);
+    StreamCreated();
   }
 };
 
@@ -56,7 +56,6 @@ class CapturedAudioInputTest : public ::testing::Test {
   ~CapturedAudioInputTest() override { task_environment_.RunUntilIdle(); }
 
   void CreateMockStream(
-      bool initially_muted,
       mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
       const media::AudioParameters& params,
       uint32_t total_segments) {
@@ -77,17 +76,15 @@ class CapturedAudioInputTest : public ::testing::Test {
     audio_client->StreamCreated(
         std::move(pending_stream), stream_client_.BindNewPipeAndPassReceiver(),
         {base::in_place, base::ReadOnlySharedMemoryRegion::Create(1024).region,
-         mojo::PlatformHandle(foreign_socket.Take())},
-        initially_muted);
+         mojo::PlatformHandle(foreign_socket.Take())});
   }
 
  protected:
-  void CreateStream(bool initially_muted) {
-    audio_input_ = std::make_unique<CapturedAudioInput>(
-        base::BindRepeating(&CapturedAudioInputTest::CreateMockStream,
-                            base::Unretained(this), initially_muted));
+  void CreateStream() {
+    audio_input_ = std::make_unique<CapturedAudioInput>(base::BindRepeating(
+        &CapturedAudioInputTest::CreateMockStream, base::Unretained(this)));
     base::RunLoop run_loop;
-    EXPECT_CALL(delegate_, StreamCreated(initially_muted))
+    EXPECT_CALL(delegate_, StreamCreated())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     audio_input_->CreateStream(&delegate_, media::AudioParameters(), false, 10);
     run_loop.Run();
@@ -150,33 +147,31 @@ class CapturedAudioInputTest : public ::testing::Test {
 };
 
 TEST_F(CapturedAudioInputTest, CreateStream) {
-  // Test that the initial muted state can be propagated to |delegate_|.
-  CreateStream(false);
-  CloseStream();
-  CreateStream(true);
+  // Test that |delegate_| runs OnStreamCreated().
+  CreateStream();
   CloseStream();
 }
 
 TEST_F(CapturedAudioInputTest, PropagatesStreamError) {
-  CreateStream(false);
+  CreateStream();
   SignalStreamError();
   CloseStream();
 }
 
 TEST_F(CapturedAudioInputTest, PropagatesMutedStateChange) {
-  CreateStream(false);
+  CreateStream();
   SignalMutedStateChanged(true);
   CloseStream();
 }
 
 TEST_F(CapturedAudioInputTest, SetVolume) {
-  CreateStream(false);
+  CreateStream();
   SetVolume(0.8);
   CloseStream();
 }
 
 TEST_F(CapturedAudioInputTest, Record) {
-  CreateStream(false);
+  CreateStream();
   Record();
   CloseStream();
 }

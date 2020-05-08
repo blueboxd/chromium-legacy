@@ -1,7 +1,7 @@
 # tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
 #         Mac10.13 Win Win7 Win10 ]
 # tags: [ Release Debug ]
-# results: [ Timeout Crash Pass Failure Slow Skip ]
+# results: [ Slow ]
 
 # This file should only mark tests as Slow. If they are failing in some other way, that listing should be in TestExpectations.
 # Lines listed in both files will have the *union* of the expectations.
@@ -140,12 +140,9 @@ crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.htm
 crbug.com/372424 http/tests/serviceworker/registration-stress.html [ Slow ]
 crbug.com/448670 http/tests/serviceworker/register-different-script-many-times.html [ Slow ]
 crbug.com/516319 [ Win ] http/tests/fetch/* [ Slow ]
-crbug.com/516319 [ Win ] virtual/streaming-preload/http/tests/fetch/* [ Slow ]
 
 # Most crypto/subtle tests are slow some or most of the time.
 crbug.com/459009 crypto/subtle/* [ Slow ]
-
-
 
 crbug.com/802029 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 
@@ -216,11 +213,8 @@ crbug.com/826957 fast/peerconnection/RTCPeerConnection-manyCandidates.html [ Slo
 # These tests take 90 seconds on MSAN due to a large amount of JS execution.
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
 crbug.com/853977 [ Linux ] http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
-crbug.com/853977 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
 
 crbug.com/864887 [ Mac ] fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
-crbug.com/864887 [ Mac ] virtual/threaded/fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Slow ]
 
 crbug.com/865262 [ Mac ] media/controls/text-track-menu-pointer-selection.html [ Slow ]
 
@@ -535,3 +529,5 @@ crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictio
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-004.html [ Slow ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-005.html [ Slow ]
 crbug.com/6606 external/wpt/mathml/presentation-markup/operators/operator-dictionary-006.html [ Slow ]
+
+crbug.com/1043669 [ Mac ] inspector-protocol/emulation/set-vision-deficiency.js [ Slow ]

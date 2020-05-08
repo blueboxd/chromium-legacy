@@ -7,12 +7,14 @@ package org.chromium.chrome.test.util.browser.webapps;
 import android.content.Intent;
 
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.webapps.WebappInfo;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.webapps.WebappIntentDataProviderFactory;
 
 /** Helper class for webapp tests. */
 public class WebappTestHelper {
     /**
-     * Returns simplest intent which builds valid WebappInfo via {@link WebappInfo#create()}.
+     * Returns simplest intent which builds valid WebappInfo via
+     * {@link WebappIntentDataProviderFactory#create()}.
      */
     public static Intent createMinimalWebappIntent(String id, String url) {
         Intent intent = new Intent();
@@ -21,7 +23,8 @@ public class WebappTestHelper {
         return intent;
     }
 
-    public static WebappInfo createWebappInfo(String id, String url) {
-        return WebappInfo.create(createMinimalWebappIntent(id, url));
+    public static BrowserServicesIntentDataProvider createIntentDataProvider(
+            String id, String url) {
+        return WebappIntentDataProviderFactory.create(createMinimalWebappIntent(id, url));
     }
 }

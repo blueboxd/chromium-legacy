@@ -132,14 +132,11 @@ void ExpectAllContainers() {
 
 class ModalWindow : public views::WidgetDelegateView {
  public:
-  ModalWindow() = default;
+  ModalWindow() { SetTitle(base::ASCIIToUTF16("Modal Window")); }
   ~ModalWindow() override = default;
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override { return true; }
-  base::string16 GetWindowTitle() const override {
-    return base::ASCIIToUTF16("Modal Window");
-  }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:

@@ -51,7 +51,7 @@ public class WebApkActivityCoordinator implements Destroyable {
         assert storage != null;
         storage.incrementLaunchCount();
 
-        mWebApkUpdateManager.get().updateIfNeeded(storage, mActivity.getWebappInfo());
+        mWebApkUpdateManager.get().updateIfNeeded(storage, mActivity.getIntentDataProvider());
     }
 
     @Override

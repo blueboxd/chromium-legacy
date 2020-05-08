@@ -220,7 +220,9 @@ class NetErrorHelperCore {
 
   int auto_reload_count() const { return auto_reload_count_; }
 
-  bool ShouldSuppressErrorPage(FrameType frame_type, const GURL& url);
+  bool ShouldSuppressErrorPage(FrameType frame_type,
+                               const GURL& url,
+                               int error_code);
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer) {
     auto_reload_timer_ = std::move(timer);

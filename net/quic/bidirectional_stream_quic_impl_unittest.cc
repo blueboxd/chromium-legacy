@@ -425,7 +425,6 @@ class BidirectionalStreamQuicImplTest
  protected:
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
-  static const bool kIncludeCongestionFeedback = true;
 
   // Holds a packet to be written to the wire, and the IO mode that should
   // be used by the mock socket when performing the write.
@@ -742,7 +741,7 @@ class BidirectionalStreamQuicImplTest
     return client_maker_.MakeAckAndRstPacket(
         ++packet_number_, !kIncludeVersion, stream_id_,
         quic::QUIC_STREAM_CANCELLED, largest_received, smallest_received,
-        least_unacked, !kIncludeCongestionFeedback);
+        least_unacked);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructAckAndDataPacket(
@@ -768,8 +767,7 @@ class BidirectionalStreamQuicImplTest
       uint64_t smallest_received,
       uint64_t least_unacked) {
     return client_maker_.MakeAckPacket(++packet_number_, largest_received,
-                                       smallest_received, least_unacked,
-                                       !kIncludeCongestionFeedback);
+                                       smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerAckPacket(
@@ -778,8 +776,7 @@ class BidirectionalStreamQuicImplTest
       uint64_t smallest_received,
       uint64_t least_unacked) {
     return server_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked,
-                                       !kIncludeCongestionFeedback);
+                                       smallest_received, least_unacked);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructInitialSettingsPacket() {

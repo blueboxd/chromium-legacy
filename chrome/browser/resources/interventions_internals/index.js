@@ -80,10 +80,8 @@ function addMoreDetailsButton(element, pageId) {
  */
 function pushRowToTopOfLogsTable(row, table) {
   const newRow = table.insertRow(1);
-  newRow.className = row.className;
-  newRow.id = row.id;
-  newRow.innerHTML = row.innerHTML;
-  row.remove();
+  table.querySelector('tbody').insertBefore(row, newRow);
+  newRow.remove();
 }
 
 /**

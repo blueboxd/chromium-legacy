@@ -21,6 +21,7 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
   ~MockClipboardHost() override;
 
   void Bind(mojo::PendingReceiver<mojom::blink::ClipboardHost> receiver);
+  // Clears all clipboard data.
   void Reset();
 
  private:

@@ -3617,6 +3617,54 @@
       "features": [
         "disable_direct_composition_video_overlays"
       ]
+    },
+    {
+      "id": 339,
+      "description": "NV12 textures trigger crash on Intel driver 20.19.15.*",
+      "cr_bugs": [971952],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "10"
+        }
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "skylake"
+      ],
+      "driver_version": {
+        "op": "between",
+        "value": "20.19.15.4285",
+        "value2": "20.19.15.4380"
+      },
+      "features": [
+        "disable_nv12_dxgi_video"
+      ]
+    },
+    {
+      "id": 340,
+      "description": "NV12 textures trigger crash on Intel driver 10.18.15.*",
+      "cr_bugs": [971952],
+      "os": {
+        "type": "win",
+        "version": {
+          "op": "=",
+          "value": "10"
+        }
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "skylake"
+      ],
+      "driver_version": {
+        "op": "between",
+        "value": "10.18.15.4256",
+        "value2": "10.18.15.4293"
+      },
+      "features": [
+        "disable_nv12_dxgi_video"
+      ]
     }
   ]
 }

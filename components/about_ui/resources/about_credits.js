@@ -11,7 +11,16 @@ function $(id) {
 document.addEventListener('DOMContentLoaded', function() {
   if (cr.isChromeOS) {
     const keyboardUtils = document.createElement('script');
-    keyboardUtils.src = 'chrome://credits/keyboard_utils.js';
+
+    const staticURLPolicy = trustedTypes.createPolicy('credits-static', {
+      createScriptURL: () => {
+        return 'chrome://credits/keyboard_utils.js';
+      },
+    });
+
+    // TODO remove an empty string argument once supported
+    // https://github.com/w3c/webappsec-trusted-types/issues/278
+    keyboardUtils.src = staticURLPolicy.createScriptURL('');
     document.body.appendChild(keyboardUtils);
   }
 

@@ -28,6 +28,19 @@ ExtensionInstallStatus GetWebstoreExtensionInstallStatus(
           extension_id, disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED)) {
     return kCustodianApprovalRequired;
   }
+  ExtensionManagement* extension_management =
+      ExtensionManagementFactory::GetForBrowserContext(profile);
+  // Always use webstore update url to check the installation mode because this
+  // function is used by webstore private API only and there may not be any
+  // |Extension| instance. Note that we don't handle the case where an offstore
+  // extension with an identical ID is installed.
+  ExtensionManagement::InstallationMode mode =
+      extension_management->GetInstallationMode(
+          extension_id, extension_urls::GetWebstoreUpdateUrl().spec());
+
+  if (mode == ExtensionManagement::INSTALLATION_FORCED ||
+      mode == ExtensionManagement::INSTALLATION_RECOMMENDED)
+    return kForceInstalled;
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   if (registry->enabled_extensions().Contains(extension_id))
@@ -39,19 +52,11 @@ ExtensionInstallStatus GetWebstoreExtensionInstallStatus(
   if (registry->blacklisted_extensions().Contains(extension_id))
     return kBlacklisted;
 
-  ExtensionManagement* extension_management =
-      ExtensionManagementFactory::GetForBrowserContext(profile);
-  ExtensionManagement::InstallationMode mode =
-      extension_management->GetInstallationMode(
-          extension_id, extension_urls::GetDefaultWebstoreUpdateUrl().spec());
-
   // If an installed extension is disabled due to policy, returns
   // kBlockedByPolicy, kCanRequest or kRequestPending instead of kDisabled.
   // By doing so, user can still request an installed and policy blocked
   // extension.
-  if (mode == ExtensionManagement::INSTALLATION_FORCED ||
-      mode == ExtensionManagement::INSTALLATION_RECOMMENDED ||
-      mode == ExtensionManagement::INSTALLATION_ALLOWED) {
+  if (mode == ExtensionManagement::INSTALLATION_ALLOWED) {
     if (registry->disabled_extensions().Contains(extension_id))
       return kDisabled;
     return kInstallable;

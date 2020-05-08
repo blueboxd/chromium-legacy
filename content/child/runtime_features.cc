@@ -362,8 +362,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
           {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},
-          {"OriginIsolationHeader", features::kOriginIsolationHeader,
-           kUseFeatureState},
           {"RawClipboard", blink::features::kRawClipboard, kEnableOnly},
           {"ShadowDOMV0", blink::features::kWebComponentsV0Enabled,
            kEnableOnly},

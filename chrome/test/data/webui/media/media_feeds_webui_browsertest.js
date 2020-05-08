@@ -279,3 +279,42 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
 
   mocha.run();
 });
+
+TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
+  suiteSetup(function() {
+    return whenConfigTableIsPopulatedForTest();
+  });
+
+  test('check config table is loaded', function() {
+    const configRows =
+        Array.from(document.querySelectorAll('#config-table-body td'));
+
+    assertDeepEquals(
+        [
+          'Safe Search Enabled (value)',
+          'Disabled',
+          'Safe Search Enabled (pref)',
+          'Disabled (Toggle)',
+        ],
+        configRows.map(x => x.textContent.trim()));
+
+    const toggle = document.querySelector('#config-table-body a');
+    toggle.click();
+
+    return whenConfigTableIsUpdatedForTest().then(() => {
+      const configRows =
+          Array.from(document.querySelectorAll('#config-table-body td'));
+
+      assertDeepEquals(
+          [
+            'Safe Search Enabled (value)',
+            'Disabled',
+            'Safe Search Enabled (pref)',
+            'Enabled (Toggle)',
+          ],
+          configRows.map(x => x.textContent.trim()));
+    });
+  });
+
+  mocha.run();
+});

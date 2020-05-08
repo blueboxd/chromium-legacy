@@ -132,6 +132,11 @@ void FakeCrosHealthdService::AddBluetoothObserver(
   bluetooth_observers_.Add(observer.PassInterface());
 }
 
+void FakeCrosHealthdService::AddLidObserver(
+    mojom::CrosHealthdLidObserverPtr observer) {
+  lid_observers_.Add(observer.PassInterface());
+}
+
 void FakeCrosHealthdService::AddPowerObserver(
     mojom::CrosHealthdPowerObserverPtr observer) {
   power_observers_.Add(observer.PassInterface());
@@ -171,6 +176,11 @@ void FakeCrosHealthdService::EmitAcInsertedEventForTesting() {
 void FakeCrosHealthdService::EmitAdapterAddedEventForTesting() {
   for (auto& observer : bluetooth_observers_)
     observer->OnAdapterAdded();
+}
+
+void FakeCrosHealthdService::EmitLidClosedEventForTesting() {
+  for (auto& observer : lid_observers_)
+    observer->OnLidClosed();
 }
 
 }  // namespace cros_healthd

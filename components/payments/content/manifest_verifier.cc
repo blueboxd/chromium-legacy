@@ -27,15 +27,11 @@
 namespace payments {
 namespace {
 
-const char* const kAllOriginsSupportedIndicator = "*";
-
 // Enables |method_manifest_url| in the subset of |apps| specified by |app_ids|,
-// if either |all_origins_supported| is true or |supported_origin_strings|
-// contains the origin of the app.
+// if |supported_origin_strings| contains the origin of the app.
 void EnableMethodManifestUrlForSupportedApps(
     const GURL& method_manifest_url,
     const std::vector<std::string>& supported_origin_strings,
-    bool all_origins_supported,
     content::PaymentAppProvider::PaymentApps* apps,
     std::vector<int64_t> app_ids,
     std::map<GURL, std::set<GURL>>* prohibited_payment_methods) {
@@ -44,7 +40,7 @@ void EnableMethodManifestUrlForSupportedApps(
     app->has_explicitly_verified_methods =
         base::Contains(supported_origin_strings,
                        url::Origin::Create(app->scope.GetOrigin()).Serialize());
-    if (all_origins_supported || app->has_explicitly_verified_methods) {
+    if (app->has_explicitly_verified_methods) {
       app->enabled_methods.emplace_back(method_manifest_url.spec());
       prohibited_payment_methods->at(app->scope).erase(method_manifest_url);
     }
@@ -166,17 +162,9 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
       (static_cast<const WDResult<std::vector<std::string>>*>(result.get()))
           ->GetValue();
 
-  bool all_origins_supported = false;
   std::vector<std::string> native_app_ids;
   std::vector<std::string> supported_origin_strings;
   for (const auto& origin_or_id : cached_strings) {
-    // The string could be "*", origin or native payment app package Id on
-    // Android.
-    if (origin_or_id == kAllOriginsSupportedIndicator) {
-      all_origins_supported = true;
-      continue;
-    }
-
     if (base::IsStringUTF8(origin_or_id) && GURL(origin_or_id).is_valid()) {
       supported_origin_strings.emplace_back(origin_or_id);
     } else if (base::IsStringASCII(origin_or_id)) {
@@ -186,8 +174,8 @@ void ManifestVerifier::OnWebDataServiceRequestDone(
   cached_supported_native_app_ids_[method_manifest_url] = native_app_ids;
 
   EnableMethodManifestUrlForSupportedApps(
-      method_manifest_url, supported_origin_strings, all_origins_supported,
-      &apps_, manifest_url_to_app_id_map_[method_manifest_url],
+      method_manifest_url, supported_origin_strings, &apps_,
+      manifest_url_to_app_id_map_[method_manifest_url],
       &prohibited_payment_methods_);
 
   if (!supported_origin_strings.empty()) {
@@ -238,8 +226,7 @@ void ManifestVerifier::OnPaymentMethodManifestDownloaded(
 void ManifestVerifier::OnPaymentMethodManifestParsed(
     const GURL& method_manifest_url,
     const std::vector<GURL>& default_applications,
-    const std::vector<url::Origin>& supported_origins,
-    bool all_origins_supported) {
+    const std::vector<url::Origin>& supported_origins) {
   DCHECK_LT(0U, number_of_manifests_to_download_);
 
   std::vector<std::string> supported_origin_strings(supported_origins.size());
@@ -250,8 +237,8 @@ void ManifestVerifier::OnPaymentMethodManifestParsed(
   if (cached_manifest_urls_.find(method_manifest_url) ==
       cached_manifest_urls_.end()) {
     EnableMethodManifestUrlForSupportedApps(
-        method_manifest_url, supported_origin_strings, all_origins_supported,
-        &apps_, manifest_url_to_app_id_map_[method_manifest_url],
+        method_manifest_url, supported_origin_strings, &apps_,
+        manifest_url_to_app_id_map_[method_manifest_url],
         &prohibited_payment_methods_);
 
     if (--number_of_manifests_to_verify_ == 0) {
@@ -260,9 +247,6 @@ void ManifestVerifier::OnPaymentMethodManifestParsed(
           .Run(std::move(apps_), first_error_message_);
     }
   }
-
-  if (all_origins_supported)
-    supported_origin_strings.emplace_back(kAllOriginsSupportedIndicator);
 
   // Keep Android native payment app Ids in cache.
   std::map<GURL, std::vector<std::string>>::const_iterator it =

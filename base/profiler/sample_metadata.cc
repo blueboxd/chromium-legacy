@@ -10,6 +10,25 @@
 
 namespace base {
 
+SampleMetadata::SampleMetadata(StringPiece name)
+    : name_hash_(HashMetricName(name)) {}
+
+void SampleMetadata::Set(int64_t value) {
+  GetSampleMetadataRecorder()->Set(name_hash_, nullopt, value);
+}
+
+void SampleMetadata::Set(int64_t key, int64_t value) {
+  GetSampleMetadataRecorder()->Set(name_hash_, key, value);
+}
+
+void SampleMetadata::Remove() {
+  GetSampleMetadataRecorder()->Remove(name_hash_, nullopt);
+}
+
+void SampleMetadata::Remove(int64_t key) {
+  GetSampleMetadataRecorder()->Remove(name_hash_, key);
+}
+
 ScopedSampleMetadata::ScopedSampleMetadata(StringPiece name, int64_t value)
     : name_hash_(HashMetricName(name)) {
   GetSampleMetadataRecorder()->Set(name_hash_, nullopt, value);
@@ -24,22 +43,6 @@ ScopedSampleMetadata::ScopedSampleMetadata(StringPiece name,
 
 ScopedSampleMetadata::~ScopedSampleMetadata() {
   GetSampleMetadataRecorder()->Remove(name_hash_, key_);
-}
-
-void SetSampleMetadata(StringPiece name, int64_t value) {
-  GetSampleMetadataRecorder()->Set(HashMetricName(name), nullopt, value);
-}
-
-void SetSampleMetadata(StringPiece name, int64_t key, int64_t value) {
-  GetSampleMetadataRecorder()->Set(HashMetricName(name), key, value);
-}
-
-void RemoveSampleMetadata(StringPiece name) {
-  GetSampleMetadataRecorder()->Remove(HashMetricName(name), nullopt);
-}
-
-void RemoveSampleMetadata(StringPiece name, int64_t key) {
-  GetSampleMetadataRecorder()->Remove(HashMetricName(name), key);
 }
 
 // This function is friended by StackSamplingProfiler so must live directly in

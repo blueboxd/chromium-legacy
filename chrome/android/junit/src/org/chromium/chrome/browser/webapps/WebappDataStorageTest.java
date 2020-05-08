@@ -26,7 +26,8 @@ import org.chromium.base.task.test.BackgroundShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -195,11 +196,12 @@ public class WebappDataStorageTest {
         Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, url, scope, name,
                 shortName, encodedIcon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
                 orientation, themeColor, backgroundColor, isIconGenerated, isIconAdaptive);
-        WebappInfo info = WebappInfo.create(shortcutIntent);
-        assertNotNull(info);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                WebappIntentDataProviderFactory.create(shortcutIntent);
+        assertNotNull(intentDataProvider);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
-        storage.updateFromWebappInfo(info);
+        storage.updateFromWebappIntentDataProvider(intentDataProvider);
 
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(scope, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
@@ -248,7 +250,7 @@ public class WebappDataStorageTest {
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_ADAPTIVE, true));
 
         // Update again from the WebappInfo and ensure that the data is restored.
-        storage.updateFromWebappInfo(info);
+        storage.updateFromWebappIntentDataProvider(intentDataProvider);
 
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(scope, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
@@ -270,8 +272,8 @@ public class WebappDataStorageTest {
 
     /**
      * Test that the WebAPK's shared preferences are populated as result of calling
-     * {@link WebappDataStorage#updateFromWebappInfo()} when the shared preferences are initiially
-     * unset.
+     * {@link WebappDataStorage#updateFromWebappIntentDataProvider()} when the shared preferences
+     * are initiially unset.
      */
     @Test
     @Feature({"Webapp"})
@@ -282,13 +284,14 @@ public class WebappDataStorageTest {
         String manifestUrl = "manifest_url";
         int webApkVersionCode = 5;
 
-        WebApkInfoBuilder webApkInfoBuilder = new WebApkInfoBuilder(webApkPackageName, url);
-        webApkInfoBuilder.setScope(scopeUrl);
-        webApkInfoBuilder.setManifestUrl(manifestUrl);
-        webApkInfoBuilder.setWebApkVersionCode(webApkVersionCode);
+        WebApkIntentDataProviderBuilder intentDataProviderBuilder =
+                new WebApkIntentDataProviderBuilder(webApkPackageName, url);
+        intentDataProviderBuilder.setScope(scopeUrl);
+        intentDataProviderBuilder.setManifestUrl(manifestUrl);
+        intentDataProviderBuilder.setWebApkVersionCode(webApkVersionCode);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
-        storage.updateFromWebappInfo(webApkInfoBuilder.build());
+        storage.updateFromWebappIntentDataProvider(intentDataProviderBuilder.build());
 
         assertEquals(webApkPackageName, storage.getWebApkPackageName());
         assertEquals(scopeUrl, storage.getScope());

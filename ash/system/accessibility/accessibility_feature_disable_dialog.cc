@@ -26,8 +26,8 @@ AccessibilityFeatureDisableDialog::AccessibilityFeatureDisableDialog(
     int dialog_text_id,
     base::OnceClosure on_accept_callback,
     base::OnceClosure on_cancel_callback)
-    : window_title_(l10n_util::GetStringUTF16(window_title_text_id)),
-      on_cancel_callback_(std::move(on_cancel_callback)) {
+    : on_cancel_callback_(std::move(on_cancel_callback)) {
+  SetTitle(l10n_util::GetStringUTF16(window_title_text_id));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_YES_BUTTON));
   DialogDelegate::SetAcceptCallback(std::move(on_accept_callback));
@@ -71,10 +71,6 @@ AccessibilityFeatureDisableDialog::~AccessibilityFeatureDisableDialog() =
 
 ui::ModalType AccessibilityFeatureDisableDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
-}
-
-base::string16 AccessibilityFeatureDisableDialog::GetWindowTitle() const {
-  return window_title_;
 }
 
 base::WeakPtr<AccessibilityFeatureDisableDialog>

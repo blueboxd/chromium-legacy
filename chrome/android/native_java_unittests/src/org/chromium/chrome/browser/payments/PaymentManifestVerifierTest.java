@@ -100,7 +100,7 @@ public class PaymentManifestVerifierTest {
                     URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
                 try {
                     callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0], false);
+                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0]);
                 } catch (URISyntaxException e) {
                     assert false;
                 }
@@ -223,7 +223,7 @@ public class PaymentManifestVerifierTest {
                         try {
                             callback.onPaymentMethodManifestParseSuccess(
                                     new URI[] {new URI("https://alicepay.com/app.json")},
-                                    new URI[0], false);
+                                    new URI[0]);
                         } catch (URISyntaxException e) {
                             Assert.assertTrue(false);
                         }
@@ -277,7 +277,7 @@ public class PaymentManifestVerifierTest {
                     callback.onPaymentMethodManifestParseSuccess(
                             new URI[] {new URI("https://alicepay.com/app.json"),
                                     new URI("https://bobpay.com/app.json")},
-                            new URI[0], false);
+                            new URI[0]);
                 } catch (URISyntaxException e) {
                     Assert.assertTrue(false);
                 }
@@ -333,7 +333,7 @@ public class PaymentManifestVerifierTest {
                     callback.onPaymentMethodManifestParseSuccess(
                             new URI[] {new URI("https://alicepay.com/app.json"),
                                     new URI("https://bobpay.com/app.json")},
-                            new URI[0], false);
+                            new URI[0]);
                 } catch (URISyntaxException e) {
                     Assert.assertTrue(false);
                 }

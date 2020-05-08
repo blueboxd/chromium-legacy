@@ -220,8 +220,7 @@ void UdpTransportImpl::ReceiveNextPacket(int length_or_status) {
   }
 }
 
-bool UdpTransportImpl::SendPacket(PacketRef packet,
-                                  const base::RepeatingClosure& cb) {
+bool UdpTransportImpl::SendPacket(PacketRef packet, base::OnceClosure cb) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
   if (!udp_socket_)
     return true;
@@ -252,8 +251,9 @@ bool UdpTransportImpl::SendPacket(PacketRef packet,
       reinterpret_cast<char*>(&packet->data.front()));
 
   int result;
-  base::RepeatingCallback<void(int)> callback = base::BindRepeating(
-      &UdpTransportImpl::OnSent, weak_factory_.GetWeakPtr(), buf, packet, cb);
+  net::CompletionOnceCallback callback =
+      base::BindOnce(&UdpTransportImpl::OnSent, weak_factory_.GetWeakPtr(), buf,
+                     packet, std::move(cb));
   if (client_connected_) {
     // If we called Connect() before we must call Write() instead of
     // SendTo(). Otherwise on some platforms we might get
@@ -288,11 +288,11 @@ bool UdpTransportImpl::SendPacket(PacketRef packet,
 
     result =
         udp_socket_->Write(buf.get(), static_cast<int>(packet->data.size()),
-                           callback, traffic_annotation);
+                           std::move(callback), traffic_annotation);
   } else if (!IsEmpty(remote_addr_)) {
     result =
         udp_socket_->SendTo(buf.get(), static_cast<int>(packet->data.size()),
-                            remote_addr_, callback);
+                            remote_addr_, std::move(callback));
   } else {
     VLOG(1) << "Failed to send packet; socket is neither bound nor "
             << "connected.";
@@ -313,7 +313,7 @@ int64_t UdpTransportImpl::GetBytesSent() {
 
 void UdpTransportImpl::OnSent(const scoped_refptr<net::IOBuffer>& buf,
                               PacketRef packet,
-                              const base::RepeatingClosure& cb,
+                              base::OnceClosure cb,
                               int result) {
   DCHECK(io_thread_proxy_->RunsTasksInCurrentSequence());
 
@@ -324,7 +324,7 @@ void UdpTransportImpl::OnSent(const scoped_refptr<net::IOBuffer>& buf,
   ScheduleReceiveNextPacket();
 
   if (!cb.is_null()) {
-    cb.Run();
+    std::move(cb).Run();
   }
 }
 

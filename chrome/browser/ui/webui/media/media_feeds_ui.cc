@@ -16,14 +16,17 @@
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/history/media_history_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/dev_ui_browser_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "media/base/media_switches.h"
 
 MediaFeedsUI::MediaFeedsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
@@ -70,23 +73,44 @@ void MediaFeedsUI::FetchMediaFeed(int64_t feed_id,
   GetMediaFeedsService()->FetchMediaFeed(feed_id, std::move(callback));
 }
 
+void MediaFeedsUI::GetDebugInformation(GetDebugInformationCallback callback) {
+  auto info = media_feeds::mojom::DebugInformation::New();
+
+  info->safe_search_feature_enabled =
+      base::FeatureList::IsEnabled(media::kMediaFeedsSafeSearch);
+  info->safe_search_pref_value =
+      GetProfile()->GetPrefs()->GetBoolean(prefs::kMediaFeedsSafeSearchEnabled);
+
+  std::move(callback).Run(std::move(info));
+}
+
+void MediaFeedsUI::SetSafeSearchEnabledPref(
+    bool value,
+    SetSafeSearchEnabledPrefCallback callback) {
+  GetProfile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsSafeSearchEnabled,
+                                       value);
+
+  std::move(callback).Run();
+}
+
 media_history::MediaHistoryKeyedService*
 MediaFeedsUI::GetMediaHistoryService() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  DCHECK(profile);
-
   media_history::MediaHistoryKeyedService* service =
-      media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile);
+      media_history::MediaHistoryKeyedServiceFactory::GetForProfile(
+          GetProfile());
   DCHECK(service);
   return service;
 }
 
 media_feeds::MediaFeedsService* MediaFeedsUI::GetMediaFeedsService() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  DCHECK(profile);
-
   media_feeds::MediaFeedsService* service =
-      media_feeds::MediaFeedsService::Get(profile);
+      media_feeds::MediaFeedsService::Get(GetProfile());
   DCHECK(service);
   return service;
+}
+
+Profile* MediaFeedsUI::GetProfile() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DCHECK(profile);
+  return profile;
 }

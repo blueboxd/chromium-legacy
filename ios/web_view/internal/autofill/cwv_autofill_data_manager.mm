@@ -187,16 +187,6 @@ class WebViewPasswordStoreConsumer
   }
 }
 
-- (void)updateCreditCard:(CWVCreditCard*)creditCard {
-  DCHECK(!creditCard.fromGooglePay);
-  _personalDataManager->UpdateCreditCard(*creditCard.internalCard);
-}
-
-- (void)deleteCreditCard:(CWVCreditCard*)creditCard {
-  DCHECK(!creditCard.fromGooglePay);
-  _personalDataManager->RemoveByGUID(creditCard.internalCard->guid());
-}
-
 - (void)fetchPasswordsWithCompletionHandler:
     (void (^)(NSArray<CWVPassword*>* passwords))completionHandler {
   [_fetchPasswordsCompletionHandlers addObject:completionHandler];

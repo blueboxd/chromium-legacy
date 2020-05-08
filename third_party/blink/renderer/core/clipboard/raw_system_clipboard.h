@@ -29,7 +29,15 @@ class CORE_EXPORT RawSystemClipboard final
   RawSystemClipboard(const RawSystemClipboard&) = delete;
   RawSystemClipboard& operator=(const RawSystemClipboard&) = delete;
 
+  void ReadAvailableFormatNames(
+      mojom::blink::RawClipboardHost::ReadAvailableFormatNamesCallback
+          callback);
+
+  void Read(const String& type,
+            mojom::blink::RawClipboardHost::ReadCallback callback);
+
   void Write(const String& type, mojo_base::BigBuffer data);
+
   void CommitWrite();
   void Trace(Visitor*);
 

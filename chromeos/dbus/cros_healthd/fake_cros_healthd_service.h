@@ -85,6 +85,7 @@ class FakeCrosHealthdService final
   // CrosHealthdEventService overrides:
   void AddBluetoothObserver(
       mojom::CrosHealthdBluetoothObserverPtr observer) override;
+  void AddLidObserver(mojom::CrosHealthdLidObserverPtr observer) override;
   void AddPowerObserver(mojom::CrosHealthdPowerObserverPtr observer) override;
 
   // CrosHealthdProbeService overrides:
@@ -117,6 +118,9 @@ class FakeCrosHealthdService final
   // observers.
   void EmitAdapterAddedEventForTesting();
 
+  // Calls the lid event OnLidClosed for all registered lid observers.
+  void EmitLidClosedEventForTesting();
+
  private:
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
@@ -137,6 +141,8 @@ class FakeCrosHealthdService final
 
   // Collection of registered Bluetooth observers.
   mojo::RemoteSet<mojom::CrosHealthdBluetoothObserver> bluetooth_observers_;
+  // Collection of registered lid observers.
+  mojo::RemoteSet<mojom::CrosHealthdLidObserver> lid_observers_;
   // Collection of registered power observers.
   mojo::RemoteSet<mojom::CrosHealthdPowerObserver> power_observers_;
 

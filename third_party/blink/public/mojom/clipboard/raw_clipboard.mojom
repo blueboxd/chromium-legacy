@@ -22,10 +22,18 @@ import "mojo/public/mojom/base/big_buffer.mojom";
 // Please be careful about endpoints that use this interface, as unsanitized
 // content reaching the platform clipboard may lead to remote code execution.
 interface RawClipboardHost {
+  // Conservative limits to maximum format name and data sizes, to avoid
+  // potential attacks with long strings.
+  const int32 kMaxFormatSize = 1024;
+  const int32 kMaxDataSize = 1073741824; // 1 GB, or 1 << 30
+
   // Reads unsanitized/raw platform-specific types.
   ReadAvailableFormatNames() => (array<mojo_base.mojom.String16> raw_types);
 
-  // Arbitrary unsanitized data from renderer.
+  // Reads unsanitized/raw data from the platform.
+  Read(mojo_base.mojom.String16 format) => (mojo_base.mojom.BigBuffer data);
+
+  // Writes unsanitized/raw data from renderer.
   Write(mojo_base.mojom.String16 format, mojo_base.mojom.BigBuffer data);
 
   // Writes must call CommitWrite for changes to reach the underlying platform.

@@ -62,11 +62,8 @@ class LayoutProviderTest : public testing::Test {
 // Check whether the system is in the default configuration. This test will fail
 // if some system-wide settings are changed. Other tests rely on these default
 // settings and were the cause of many flaky tests.
-//
-// TODO(https://crbug.com/963868): Reenable this test for official builds once
-// the bots have been fixed.
-#if defined(OS_WIN) && !defined(OFFICIAL_BUILD)
 TEST_F(LayoutProviderTest, EnsuresDefaultSystemSettings) {
+#if defined(OS_WIN)
   // Ensures anti-aliasing is activated.
   BOOL antialiasing = TRUE;
   BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
@@ -111,16 +108,14 @@ TEST_F(LayoutProviderTest, EnsuresDefaultSystemSettings) {
   EXPECT_EQ(menu_font.GetFontSize(), 12);
   EXPECT_EQ(status_font.GetFontSize(), 12);
   EXPECT_EQ(message_font.GetFontSize(), 12);
-}
 #endif
+}
 
 // Check legacy font sizes. No new code should be using these constants, but if
 // these tests ever fail it probably means something in the old UI will have
 // changed by mistake.
-//
-// TODO(https://crbug.com/963868): Reenable this test for official builds once
-// the bots have been fixed.
-#if defined(OS_MACOSX) || defined(OFFICIAL_BUILD)
+// https://crbug.com/961938
+#if defined(OS_MACOSX)
 #define MAYBE_LegacyFontSizeConstants DISABLED_LegacyFontSizeConstants
 #else
 #define MAYBE_LegacyFontSizeConstants LegacyFontSizeConstants
@@ -202,15 +197,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
 // platform starts returning 18 in a standard configuration then the
 // TypographyProvider must add 4 instead. We do this so that Chrome adapts
 // correctly to _non-standard_ system font configurations on user machines.
-//
-// TODO(https://crbug.com/963868): Reenable this test for official builds once
-// the bots have been fixed.
-#if defined(OS_MACOSX) || defined(OFFICIAL_BUILD)
-#define MAYBE_RequestFontBySize DISABLED_RequestFontBySize
-#else
-#define MAYBE_RequestFontBySize RequestFontBySize
-#endif
-TEST_F(LayoutProviderTest, MAYBE_RequestFontBySize) {
+TEST_F(LayoutProviderTest, RequestFontBySize) {
 #if defined(OS_MACOSX)
   constexpr int kBase = 13;
 #else

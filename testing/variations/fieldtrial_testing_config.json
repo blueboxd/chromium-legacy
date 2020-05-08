@@ -1568,6 +1568,36 @@
             ]
         }
     ],
+    "ContextualSearchLongpressResolve": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextualSearchLongpressResolve",
+                    "enable_features": [
+                        "ContextualSearchLongpressResolve"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ContextualSearchTranslations": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextualSearchTranslations",
+                    "enable_features": [
+                        "ContextualSearchTranslations"
+                    ]
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [

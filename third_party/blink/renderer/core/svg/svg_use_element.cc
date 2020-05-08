@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/svg/svg_g_element.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
@@ -208,11 +209,8 @@ void SVGUseElement::UpdateTargetReference() {
     // context document for getting origin and ResourceFetcher to use the
     // main Document's origin, while using the element document for
     // CompleteURL() to use imported Documents' base URLs.
-    if (!GetDocument().ContextDocument()) {
-      cache_entry_ = nullptr;
-      return;
-    }
-    context_document = GetDocument().ContextDocument();
+    context_document =
+        To<LocalDOMWindow>(GetDocument().GetExecutionContext())->document();
   }
   cache_entry_ = SVGExternalDocumentCache::From(*context_document)
                      ->Get(this, element_url_, localName());

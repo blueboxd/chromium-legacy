@@ -611,16 +611,16 @@ void AppListView::SetSkipPageResetTimerForTesting(bool enabled) {
   skip_page_reset_timer_for_testing = enabled;
 }
 
-void AppListView::InitView(bool is_tablet_mode, gfx::NativeView parent) {
+void AppListView::InitView(gfx::NativeView parent) {
   base::AutoReset<bool> auto_reset(&is_building_, true);
   time_shown_ = base::Time::Now();
   UpdateAppListConfig(parent);
-  InitContents(is_tablet_mode);
+  InitContents();
   InitWidget(parent);
   InitChildWidget();
 }
 
-void AppListView::InitContents(bool is_tablet_mode) {
+void AppListView::InitContents() {
   DCHECK(!app_list_background_shield_);
   DCHECK(!app_list_main_view_);
   DCHECK(!search_box_view_);
@@ -629,15 +629,15 @@ void AppListView::InitContents(bool is_tablet_mode) {
   auto app_list_background_shield =
       std::make_unique<AppListBackgroundShieldView>(delegate_->GetShelfSize() /
                                                     2);
-  app_list_background_shield->UpdateBackground(/*use_blur*/ !is_tablet_mode &&
-                                               is_background_blur_enabled_);
+  app_list_background_shield->UpdateBackground(
+      /*use_blur*/ !delegate_->IsInTabletMode() && is_background_blur_enabled_);
   app_list_background_shield_ =
       AddChildView(std::move(app_list_background_shield));
 
   auto app_list_main_view = std::make_unique<AppListMainView>(delegate_, this);
   search_box_view_ =
       new SearchBoxView(app_list_main_view.get(), delegate_, this);
-  search_box_view_->Init(is_tablet_mode);
+  search_box_view_->Init(delegate_->IsInTabletMode());
 
   // Assign |app_list_main_view_| here since it is accessed during Init().
   app_list_main_view_ = app_list_main_view.get();
@@ -715,7 +715,7 @@ void AppListView::InitChildWidget() {
   GetViewAccessibility().OverridePreviousFocus(search_box_widget);
 }
 
-void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
+void AppListView::Show(bool is_side_shelf) {
   if (!time_shown_.has_value())
     time_shown_ = base::Time::Now();
   // The opacity of the AppListView may have been manipulated by overview mode,
@@ -729,7 +729,7 @@ void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
   UpdateWidget();
 
   app_list_main_view_->contents_view()->ResetForShow();
-  if (!is_tablet_mode)
+  if (!delegate_->IsInTabletMode())
     SelectInitialAppsPage();
 
   // The initial state is kPeeking. If tablet mode is enabled, a fullscreen
@@ -739,7 +739,7 @@ void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {
   // Ensures that the launcher won't open underneath the a11y keyboard.
   CloseKeyboardIfVisible();
 
-  OnTabletModeChanged(is_tablet_mode);
+  OnTabletModeChanged(delegate_->IsInTabletMode());
   app_list_main_view_->ShowAppListWhenReady();
 
   UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
@@ -802,7 +802,7 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
     case ui::VKEY_BROWSER_BACK:
       // If the ContentsView does not handle the back action, then this is the
       // top level, so we close the app list.
-      if (!Back() && !is_tablet_mode())
+      if (!Back() && !delegate_->IsInTabletMode())
         Dismiss();
       break;
     default:
@@ -863,7 +863,7 @@ bool AppListView::IsShowingEmbeddedAssistantUI() const {
 }
 
 void AppListView::UpdatePageResetTimer(bool app_list_visibility) {
-  if (app_list_visibility || !is_tablet_mode()) {
+  if (app_list_visibility || !delegate_->IsInTabletMode()) {
     page_reset_timer_.Stop();
     return;
   }
@@ -951,7 +951,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
       (event->IsMouseEvent() &&
        event->AsMouseEvent()->IsOnlyRightMouseButton())) {
     // Don't show menus on empty areas of the AppListView in clamshell mode.
-    if (!is_tablet_mode())
+    if (!delegate_->IsInTabletMode())
       return;
 
     // Home launcher is shown on top of wallpaper with transparent background.
@@ -966,7 +966,7 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
 
   if (!search_box_view_->is_search_box_active() &&
       model_->state() != AppListState::kStateEmbeddedAssistant) {
-    if (!is_tablet_mode())
+    if (!delegate_->IsInTabletMode())
       Dismiss();
     return;
   }
@@ -1069,7 +1069,7 @@ void AppListView::EndDrag(const gfx::PointF& location_in_root) {
       switch (app_list_state_) {
         case AppListViewState::kFullscreenAllApps:
           if (drag_delta < -app_list_threshold) {
-            if (is_tablet_mode_ || is_side_shelf_)
+            if (delegate_->IsInTabletMode() || is_side_shelf_)
               Dismiss();
             else
               SetState(AppListViewState::kPeeking);
@@ -1151,7 +1151,7 @@ void AppListView::SetChildViewsForStateTransition(
 
 void AppListView::ConvertAppListStateToFullscreenEquivalent(
     AppListViewState* state) {
-  if (!(is_side_shelf_ || is_tablet_mode_))
+  if (!(is_side_shelf_ || delegate_->IsInTabletMode()))
     return;
 
   // If side shelf or tablet mode are active, all transitions should be
@@ -1386,7 +1386,7 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
       break;
     case ui::ET_MOUSE_DRAGGED:
       event->SetHandled();
-      if (is_side_shelf_ || is_tablet_mode_)
+      if (is_side_shelf_ || delegate_->IsInTabletMode())
         return;
       if (!is_in_drag_ && event->IsOnlyLeftMouseButton()) {
         // Calculate the mouse drag offset to determine whether AppListView is
@@ -1455,7 +1455,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       }
 
       // Avoid scrolling events for the app list in tablet mode.
-      if (is_side_shelf_ || is_tablet_mode())
+      if (is_side_shelf_ || delegate_->IsInTabletMode())
         return;
       // There may be multiple scroll begin events in one drag because the
       // relative location of the finger and widget is almost unchanged and
@@ -1475,7 +1475,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       }
 
       // Avoid scrolling events for the app list in tablet mode.
-      if (is_side_shelf_ || is_tablet_mode())
+      if (is_side_shelf_ || delegate_->IsInTabletMode())
         return;
       SetIsInDrag(true);
       last_fling_velocity_ = event->details().scroll_y();
@@ -1493,7 +1493,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       if (!is_in_drag_)
         break;
       // Avoid scrolling events for the app list in tablet mode.
-      if (is_side_shelf_ || is_tablet_mode())
+      if (is_side_shelf_ || delegate_->IsInTabletMode())
         return;
       EndDrag(event->root_location_f());
       event->SetHandled();
@@ -1514,8 +1514,6 @@ void AppListView::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void AppListView::OnTabletModeChanged(bool started) {
-  is_tablet_mode_ = started;
-
   search_box_view_->OnTabletModeChanged(started);
   search_model_->SetTabletMode(started);
   GetAppsContainerView()->OnTabletModeChanged(started);
@@ -1566,7 +1564,7 @@ bool AppListView::HandleScroll(const gfx::Vector2d& offset,
   }
 
   // The AppList should not be dismissed with scroll in tablet mode.
-  if (is_tablet_mode())
+  if (delegate_->IsInTabletMode())
     return true;
 
   // If the event is a mousewheel event, the offset is always large enough,
@@ -1704,7 +1702,8 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
   // Reset animation metrics reporter when animation is started.
   ResetTransitionMetricsReporter();
 
-  if (is_tablet_mode_ && target_state != AppListViewState::kClosed) {
+  if (delegate_->IsInTabletMode() &&
+      target_state != AppListViewState::kClosed) {
     DCHECK(target_state == AppListViewState::kFullscreenAllApps ||
            target_state == AppListViewState::kFullscreenSearch);
     TabletModeAnimationTransition transition_type =
@@ -1865,7 +1864,7 @@ gfx::Rect AppListView::GetAppInfoDialogBounds() const {
 void AppListView::SetIsInDrag(bool is_in_drag) {
   // In tablet mode, |presentation_time_recorder_| is constructed/reset by
   // HomeLauncherGestureHandler.
-  if (!is_in_drag && !is_tablet_mode_)
+  if (!is_in_drag && !delegate_->IsInTabletMode())
     presentation_time_recorder_.reset();
 
   if (is_in_drag == is_in_drag_)
@@ -1882,7 +1881,7 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
 
   is_in_drag_ = is_in_drag;
 
-  if (is_in_drag && !is_tablet_mode_) {
+  if (is_in_drag && !delegate_->IsInTabletMode()) {
     presentation_time_recorder_.reset();
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         GetWidget()->GetCompositor(), kAppListDragInClamshellHistogram,
@@ -1919,7 +1918,7 @@ float AppListView::GetAppListTransitionProgress(int flags) const {
   // the app list layout should match the current app list state, so return
   // the progress for the current app list state.
   const gfx::Transform transform = GetWidget()->GetLayer()->transform();
-  if (is_tablet_mode_ && transform.IsScaleOrTranslation() &&
+  if (delegate_->IsInTabletMode() && transform.IsScaleOrTranslation() &&
       !transform.IsIdentityOrTranslation()) {
     return GetTransitionProgressForState(app_list_state_);
   }
@@ -1992,7 +1991,7 @@ AppListViewState AppListView::CalculateStateAfterShelfDrag(
   } else {
     // Snap the app list to corresponding state according to the snapping
     // thresholds.
-    if (is_tablet_mode_) {
+    if (delegate_->IsInTabletMode()) {
       app_list_state =
           launcher_above_shelf_bottom_amount > kDragSnapToFullscreenThreshold
               ? AppListViewState::kFullscreenAllApps
@@ -2022,7 +2021,7 @@ AppListViewState AppListView::CalculateStateAfterShelfDrag(
 }
 
 ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
-  state_animation_metrics_reporter_->Start(is_tablet_mode_);
+  state_animation_metrics_reporter_->Start(delegate_->IsInTabletMode());
   return state_animation_metrics_reporter_.get();
 }
 
@@ -2238,7 +2237,7 @@ void AppListView::SetBackgroundShieldColor() {
   // of the layer changes opacity of the blur effect, which is not desired.
   float color_opacity = kAppListOpacity;
 
-  if (is_tablet_mode_) {
+  if (delegate_->IsInTabletMode()) {
     // The Homecher background should have an opacity of 0.
     color_opacity = 0;
   } else if (is_in_drag_) {

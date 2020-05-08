@@ -15,6 +15,7 @@ import org.chromium.components.browser_ui.modaldialog.R;
 import org.chromium.components.browser_ui.modaldialog.TabModalPresenter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * The presenter that displays a single tab modal dialog.
@@ -39,9 +40,16 @@ public class WebLayerTabModalPresenter extends TabModalPresenter {
 
     @Override
     protected void showDialogContainer() {
+        mBrowserView.setWebContentIsObscured(true);
         // TODO(estade): to match Chrome, don't show the dialog container before browser controls
         // are guaranteed fully visible.
         runEnterAnimation();
+    }
+
+    @Override
+    protected void removeDialogView(PropertyModel model) {
+        mBrowserView.setWebContentIsObscured(false);
+        super.removeDialogView(model);
     }
 
     private FrameLayout loadDialogContainer() {

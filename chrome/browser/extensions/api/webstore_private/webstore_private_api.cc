@@ -225,6 +225,9 @@ ConvertExtensionInstallStatusForAPI(ExtensionInstallStatus status) {
     case kCustodianApprovalRequired:
       return api::webstore_private::ExtensionInstallStatus::
           EXTENSION_INSTALL_STATUS_CUSTODIAN_APPROVAL_REQUIRED;
+    case kForceInstalled:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_FORCE_INSTALLED;
   }
   return api::webstore_private::EXTENSION_INSTALL_STATUS_NONE;
 }
@@ -249,7 +252,7 @@ ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
   // |id| will be removed from the pending list once the notification is
   // confirmed or closed by the user.
   if (status != kCanRequest && status != kInstallable &&
-      status != kBlockedByPolicy) {
+      status != kBlockedByPolicy && status != kForceInstalled) {
     return status;
   }
 

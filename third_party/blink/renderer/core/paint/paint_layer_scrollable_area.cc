@@ -2383,9 +2383,18 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
             features::kAssumeOverlapAfterFixedOrStickyPosition)) {
       if (Layer()->IsRootLayer()) {
         LocalFrame* frame = GetLayoutBox()->GetFrame();
-        if (frame && frame->View() &&
-            frame->View()->HasViewportConstrainedObjects()) {
-          Layer()->SetNeedsCompositingInputsUpdate();
+        if (frame && frame->View()) {
+          LocalFrameView* view = frame->View();
+          // When kMaxOverlapBoundsForFixed is enabled, the maximum possible
+          // overlap (for all possible scroll offsets) of the fixed content has
+          // been included in the overlap test, so we can skip the compositing
+          // update on scroll changes for fixed content.
+          bool requires_compositing_inputs_update =
+              !base::FeatureList::IsEnabled(features::kMaxOverlapBoundsForFixed)
+                  ? view->HasViewportConstrainedObjects()
+                  : view->HasStickyViewportConstrainedObject();
+          if (requires_compositing_inputs_update)
+            Layer()->SetNeedsCompositingInputsUpdate();
         }
       }
     }

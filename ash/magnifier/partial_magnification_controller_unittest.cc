@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
+
+#include "ash/magnifier/magnification_controller.h"
+#include "ash/magnifier/magnifier_glass.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/display/manager/display_manager.h"
@@ -23,7 +25,9 @@ class PartialMagnificationControllerTestApi {
 
   bool is_enabled() const { return controller_->is_enabled_; }
   bool is_active() const { return controller_->is_active_; }
-  views::Widget* host_widget() const { return controller_->host_widget_; }
+  views::Widget* host_widget() const {
+    return controller_->magnifier_glass_->host_widget_;
+  }
 
   gfx::Point GetWidgetOrigin() const {
     return host_widget()->GetWindowBoundsInScreen().origin();

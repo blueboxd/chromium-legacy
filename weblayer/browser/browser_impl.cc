@@ -68,7 +68,7 @@ BrowserImpl::~BrowserImpl() {
 
 #if defined(OS_ANDROID)
   if (browser_count_ == 0) {
-    weblayer::BrowserProcess::GetInstance()->StopSafeBrowsingService();
+    BrowserProcess::GetInstance()->StopSafeBrowsingService();
   }
 #endif
 }

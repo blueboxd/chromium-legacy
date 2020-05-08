@@ -21,6 +21,7 @@ namespace {
 class BrowserWidgetDelegateView : public views::WidgetDelegateView {
  public:
   BrowserWidgetDelegateView(content::BrowserContext* context, const GURL& url) {
+    SetTitle(base::ASCIIToUTF16("WebView Browser"));
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* webview = new views::WebView(context);
     AddChildView(webview);
@@ -30,10 +31,6 @@ class BrowserWidgetDelegateView : public views::WidgetDelegateView {
   ~BrowserWidgetDelegateView() override = default;
 
   // views::WidgetDelegateView:
-  base::string16 GetWindowTitle() const override {
-    const static base::string16 title = base::ASCIIToUTF16("WebView Browser");
-    return title;
-  }
   bool CanResize() const override { return true; }
   bool CanMaximize() const override { return true; }
   bool CanMinimize() const override { return true; }

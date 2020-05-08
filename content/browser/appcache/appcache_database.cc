@@ -214,14 +214,6 @@ std::string SerializeOrigin(const url::Origin& origin) {
 
 }  // anon namespace
 
-bool AppCacheDatabase::CacheRecord::HasValidOriginTrialToken() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kAppCacheRequireOriginTrial)) {
-    return token_expires > base::Time::Now();
-  }
-  return true;
-}
-
 // AppCacheDatabase ----------------------------------------------------------
 
 AppCacheDatabase::GroupRecord::GroupRecord()
@@ -579,12 +571,12 @@ bool AppCacheDatabase::FindCachesForOrigin(const url::Origin& origin,
   if (!FindGroupsForOrigin(origin, &group_records))
     return false;
 
-  CacheRecord cache_record;
   for (const auto& record : group_records) {
-    if (FindCacheForGroup(record.group_id, &cache_record) &&
-        cache_record.HasValidOriginTrialToken()) {
+    CacheRecord cache_record;
+    if (!FindCacheForGroup(record.group_id, &cache_record))
+      continue;
+    if (HasValidOriginTrialToken(&cache_record))
       records->push_back(cache_record);
-    }
   }
   return true;
 }
@@ -958,6 +950,12 @@ bool AppCacheDatabase::DeleteDeletableResponseIds(
   static const char kSql[] =
       "DELETE FROM DeletableResponseIds WHERE response_id = ?";
   return RunCachedStatementWithIds(SQL_FROM_HERE, kSql, response_ids);
+}
+
+bool AppCacheDatabase::HasValidOriginTrialToken(CacheRecord* cache_record) {
+  if (!is_origin_trial_required_)
+    return true;
+  return cache_record->token_expires > base::Time::Now();
 }
 
 bool AppCacheDatabase::RunCachedStatementWithIds(

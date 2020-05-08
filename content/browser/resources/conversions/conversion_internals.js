@@ -145,12 +145,22 @@ function updatePageData() {
   });
 }
 
+/**
+ * Deletes all data stored by the conversions backend, and refreshes
+ * page data once this operation has finished.
+ */
+function clearStorage() {
+  pageHandler.clearStorage().then(() => {
+    updatePageData();
+  });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup the mojo interface.
   pageHandler = mojom.ConversionInternalsHandler.getRemote();
 
   $('refresh').addEventListener('click', updatePageData);
+  $('clear-data').addEventListener('click', clearStorage);
 
   // Automatically refresh every 2 minutes.
   setInterval(updatePageData, 2 * 60 * 1000);

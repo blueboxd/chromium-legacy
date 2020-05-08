@@ -53,7 +53,7 @@ TEST_F(CrostiniStartupStatusTest, TestVerbose) {
   startup_status->OnStageStarted(InstallerState::kInstallImageLoader);
   startup_status->OnCrostiniRestarted(crostini::CrostiniResult::SUCCESS);
 
-  EXPECT_EQ(output_.size(), 5u);
+  ASSERT_EQ(output_.size(), 5u);
   // Hide cursor, init progress.
   EXPECT_EQ(output_[0], "\x1b[?25l\x1b[35m[         ] ");
 
@@ -62,11 +62,11 @@ TEST_F(CrostiniStartupStatusTest, TestVerbose) {
 
   // CR, purple, progress, forward 10, erase, yellow, stage.
   EXPECT_EQ(output_[2],
-            "\r\x1b[35m[=\x1b[10C\x1b[K\x1b[33mChecking cros-termina component "
-            "installed ");
+            "\r\x1b[35m[=\x1b[10C\x1b[K\x1b[33mChecking the virtual machine ");
 
   // CR, purple, progress, forward 2, erase, green, done, symbol, CRLF.
-  EXPECT_EQ(output_[3], "\r\x1b[35m[=========\x1b[2C\x1b[K\x1b[1;32mdone\r\n ");
+  EXPECT_EQ(output_[3],
+            "\r\x1b[35m[=========\x1b[2C\x1b[K\x1b[1;32mReady\r\n ");
 
   // CR, delete line, default color, show cursor;
   EXPECT_EQ(output_[4], "\r\x1b[K\x1b[0m\x1b[?25h");

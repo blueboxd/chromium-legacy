@@ -49,16 +49,14 @@ void ToplevelWindow::ClearSavedStateForTest() {
   saved_state = NULL;
 }
 
-ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {}
+ToplevelWindow::ToplevelWindow(const CreateParams& params) : params_(params) {
+  SetTitle(base::ASCIIToUTF16("Examples: Toplevel Window"));
+}
 
 ToplevelWindow::~ToplevelWindow() = default;
 
 void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorDKGRAY);
-}
-
-base::string16 ToplevelWindow::GetWindowTitle() const {
-  return base::ASCIIToUTF16("Examples: Toplevel Window");
 }
 
 void ToplevelWindow::SaveWindowPlacement(const gfx::Rect& bounds,

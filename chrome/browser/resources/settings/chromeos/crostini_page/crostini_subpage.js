@@ -156,6 +156,24 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private {string} */
+    diskSizeLabel_: {
+      type: String,
+      value: loadTimeData.getString('crostiniDiskSizeCalculating'),
+    },
+
+    /** @private {string} */
+    diskResizeButtonLabel_: {
+      type: String,
+      value: loadTimeData.getString('crostiniDiskResizeShowButton'),
+    },
+
+    /** @private {string} */
+    diskResizeButtonAriaLabel_: {
+      type: String,
+      value: loadTimeData.getString('crostiniDiskResizeShowButtonAriaLabel'),
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -239,12 +257,36 @@ Polymer({
         .then(
             diskInfo => {
               if (diskInfo.succeeded) {
-                this.isDiskUserChosenSize_ = diskInfo.isUserChosenSize;
+                this.setResizeLabels_(diskInfo);
               }
             },
             reason => {
               console.log(`Unable to get info: ${reason}`);
             });
+  },
+
+  /**
+   * @param {!CrostiniDiskInfo} diskInfo
+   * @private
+   */
+  setResizeLabels_(diskInfo) {
+    this.isDiskUserChosenSize_ = diskInfo.isUserChosenSize;
+    if (this.isDiskUserChosenSize_) {
+      if (diskInfo.ticks) {
+        this.diskSizeLabel_ = diskInfo.ticks[diskInfo.defaultIndex].label;
+      }
+      this.diskResizeButtonLabel_ =
+          loadTimeData.getString('crostiniDiskResizeShowButton');
+      this.diskResizeButtonAriaLabel_ =
+          loadTimeData.getString('crostiniDiskResizeShowButtonAriaLabel');
+    } else {
+      this.diskSizeLabel_ = loadTimeData.getString(
+          'crostiniDiskResizeDynamicallyAllocatedSubtext');
+      this.diskResizeButtonLabel_ =
+          loadTimeData.getString('crostiniDiskReserveSizeButton');
+      this.diskResizeButtonAriaLabel_ =
+          loadTimeData.getString('crostiniDiskReserveSizeButtonAriaLabel');
+    }
   },
 
   /** @private */

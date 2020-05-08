@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappExtras;
-import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappIntentUtils;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
@@ -251,15 +250,16 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         private void bringActivityToForegroundWebapp() {
             WebappActivity webappActivity = (WebappActivity) mActivity;
+            BrowserServicesIntentDataProvider intentDataProvider =
+                    webappActivity.getIntentDataProvider();
 
             // Create an Intent that will be fired toward the WebappLauncherActivity, which in turn
             // will fire an Intent to launch the correct WebappActivity. On L+ this could probably
             // be changed to call AppTask.moveToFront(), but for backwards compatibility we relaunch
             // it the hard way.
-            String startUrl = webappActivity.getWebappInfo().url();
+            String startUrl = intentDataProvider.getUrlToLoad();
 
-            WebappInfo webappInfo = webappActivity.getWebappInfo();
-            if (webappInfo.isForWebApk()) {
+            if (intentDataProvider.isWebApkActivity()) {
                 Intent activateIntent = null;
                 activateIntent = new Intent(ACTION_ACTIVATE_WEBAPK);
                 activateIntent.setPackage(ContextUtils.getApplicationContext().getPackageName());

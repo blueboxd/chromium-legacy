@@ -18,6 +18,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -93,8 +94,8 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        public void onGotManifestData(
-                WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl) {
+        public void onGotManifestData(BrowserServicesIntentDataProvider fetchedInfo,
+                String primaryIconUrl, String splashIconUrl) {
             super.onGotManifestData(fetchedInfo, primaryIconUrl, splashIconUrl);
             mWaiter.notifyCalled();
         }
@@ -168,17 +169,19 @@ public class WebApkUpdateManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebappDataStorage storage =
                     WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID);
-            WebappInfo info = WebApkInfo.create("", creationData.scope, null, null,
-                    creationData.name, creationData.shortName, creationData.displayMode,
-                    creationData.orientation, 0, creationData.themeColor,
-                    creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable,
-                    false /* isSplashIconMaskable */, "",
-                    WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
-                    creationData.startUrl, WebApkDistributor.BROWSER,
-                    creationData.iconUrlToMurmur2HashMap, null, false /* forceNavigation */,
-                    false /* isSplashProvidedByWebApk */, null /* shareData */,
-                    creationData.shortcuts, 1 /* webApkVersionCode */);
-            updateManager.updateIfNeeded(storage, info);
+            BrowserServicesIntentDataProvider intentDataProvider =
+                    WebApkIntentDataProviderFactory.create("", creationData.scope, null, null,
+                            creationData.name, creationData.shortName, creationData.displayMode,
+                            creationData.orientation, 0, creationData.themeColor,
+                            creationData.backgroundColor, 0, creationData.isPrimaryIconMaskable,
+                            false /* isSplashIconMaskable */, "",
+                            WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION,
+                            creationData.manifestUrl, creationData.startUrl,
+                            WebApkDistributor.BROWSER, creationData.iconUrlToMurmur2HashMap, null,
+                            false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                            null /* shareData */, creationData.shortcuts,
+                            1 /* webApkVersionCode */);
+            updateManager.updateIfNeeded(storage, intentDataProvider);
         });
         waiter.waitForCallback(0);
 

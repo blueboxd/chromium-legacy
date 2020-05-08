@@ -133,7 +133,7 @@ void ServiceWorkerRegistration::NotifyUpdateFound() {
 void ServiceWorkerRegistration::NotifyVersionAttributesChanged(
     blink::mojom::ChangedServiceWorkerObjectsMaskPtr mask) {
   for (auto& observer : listeners_)
-    observer.OnVersionAttributesChanged(this, mask.Clone(), GetInfo());
+    observer.OnVersionAttributesChanged(this, mask.Clone());
   if (mask->active || mask->waiting)
     NotifyRegistrationFinished();
 }

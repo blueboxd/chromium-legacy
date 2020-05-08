@@ -130,11 +130,7 @@ class OriginIsolationOptInServerTest : public IsolatedOriginTestBase {
     //  --site-per-process isn't the default, such as Android.
     IsolateAllSitesForTesting(command_line);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-
-    const base::Optional<base::Feature> feature = feature_switch();
-    if (feature) {
-      feature_list_.InitAndEnableFeature(*feature);
-    }
+    feature_list_.InitAndEnableFeature(feature_switch());
   }
 
   void SetUpOnMainThread() override {
@@ -143,11 +139,7 @@ class OriginIsolationOptInServerTest : public IsolatedOriginTestBase {
     https_server()->RegisterRequestHandler(
         base::BindRepeating(&OriginIsolationOptInServerTest::HandleResponse,
                             base::Unretained(this)));
-
-    // Using a fixed port is important since that's what the origin trial token
-    // (in OriginIsolationOptInHeaderOriginTrialTest) is generated for.
-    ASSERT_TRUE(https_server()->Start(54443));
-
+    ASSERT_TRUE(https_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->StartAcceptingConnections();
   }
@@ -172,10 +164,7 @@ class OriginIsolationOptInServerTest : public IsolatedOriginTestBase {
   }
 
  protected:
-  virtual const base::Optional<base::Feature> feature_switch() {
-    return base::nullopt;
-  }
-
+  virtual const base::Feature& feature_switch() = 0;
   virtual std::unique_ptr<net::test_server::HttpResponse> HandleResponse(
       const net::test_server::HttpRequest& request) = 0;
 
@@ -200,7 +189,7 @@ class OriginIsolationOptInOriginPolicyTest
   }
 
  protected:
-  const base::Optional<base::Feature> feature_switch() override {
+  const base::Feature& feature_switch() override {
     return features::kOriginPolicy;
   }
 
@@ -248,7 +237,7 @@ class OriginIsolationOptInHeaderTest : public OriginIsolationOptInServerTest {
   }
 
  protected:
-  const base::Optional<base::Feature> feature_switch() override {
+  const base::Feature& feature_switch() override {
     return features::kOriginIsolationHeader;
   }
 
@@ -277,69 +266,12 @@ class OriginIsolationOptInHeaderTest : public OriginIsolationOptInServerTest {
   DISALLOW_COPY_AND_ASSIGN(OriginIsolationOptInHeaderTest);
 };
 
-// Tests that verify headers can be used to opt-in to origin isolation, via the
-// origin trial.
-class OriginIsolationOptInHeaderOriginTrialTest
-    : public OriginIsolationOptInServerTest {
- public:
-  OriginIsolationOptInHeaderOriginTrialTest() = default;
-
-  enum class Order {
-    // The Origin-Trial header appears before the Origin-Isolation header
-    kOTThenOI,
-    // The Origin-Isolation header appears before the Origin-Trial header
-    kOIThenOT
-  };
-
-  void SetOrder(const Order order) { order_ = order; }
-
- protected:
-  std::unique_ptr<net::test_server::HttpResponse> HandleResponse(
-      const net::test_server::HttpRequest& request) override {
-    if (request.relative_url == "/isolate_origin") {
-      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_code(net::HTTP_OK);
-      response->set_content_type("text/html");
-
-      // Generated with the command:
-      // python tools/origin_trials/generate_token.py
-      // https://isolated.foo.example:54443 OriginIsolationHeader
-      // --expire-timestamp=2000000000
-      const std::string token =
-          "Aj7/"
-          "AipTYmmqFlQsW4POnAwaoaj6m0+"
-          "Jt7ngtmlYWSslujJ3ScItHTemvCnDyfYpzBbIHLLjoBnTOnDRWaRD1gIAAABqeyJvcml"
-          "naW4iOiAiaHR0cHM6Ly9pc29sYXRlZC5mb28uZXhhbXBsZTo1NDQ0MyIsICJmZWF0dXJ"
-          "lIjogIk9yaWdpbklzb2xhdGlvbkhlYWRlciIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ="
-          "=";
-      if (order_ == Order::kOTThenOI) {
-        response->AddCustomHeader("Origin-Trial", token);
-        response->AddCustomHeader("Origin-Isolation", "?1");
-      } else {
-        response->AddCustomHeader("Origin-Isolation", "?1");
-        response->AddCustomHeader("Origin-Trial", token);
-      }
-
-      response->set_content("isolate me!");
-      return std::move(response);
-    }
-
-    // If we return nullptr, then the server will go ahead and actually serve
-    // the file.
-    return nullptr;
-  }
-
-  Order order_;
-
-  DISALLOW_COPY_AND_ASSIGN(OriginIsolationOptInHeaderOriginTrialTest);
-};
-
 // This tests that origin policy opt-in causes the origin to end up in the
 // isolated origins list.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest, Basic) {
   SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
 
-  GURL url(https_server()->GetURL("isolated.foo.example", "/isolate_origin"));
+  GURL url(https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   url::Origin origin(url::Origin::Create(url));
 
   EXPECT_FALSE(ShouldOriginGetOptInIsolation(origin));
@@ -352,39 +284,13 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest, Basic) {
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, Basic) {
   SetHeaderValue("?1");
 
-  GURL url(https_server()->GetURL("isolated.foo.example", "/isolate_origin"));
+  GURL url(https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   url::Origin origin(url::Origin::Create(url));
 
   EXPECT_FALSE(ShouldOriginGetOptInIsolation(origin));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   EXPECT_TRUE(ShouldOriginGetOptInIsolation(origin));
 }
-
-// https://crbug.com/1078874: Android browsertests do not enable origin trials
-#if !defined(OS_ANDROID)
-// These test that header-based opt-in via origin trial causes the origin to end
-// up in the isolated origins list.
-IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderOriginTrialTest, OIThenOT) {
-  SetOrder(Order::kOIThenOT);
-
-  GURL url(https_server()->GetURL("isolated.foo.example", "/isolate_origin"));
-  url::Origin origin(url::Origin::Create(url));
-
-  EXPECT_FALSE(ShouldOriginGetOptInIsolation(origin));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_TRUE(ShouldOriginGetOptInIsolation(origin));
-}
-IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderOriginTrialTest, OTThenOI) {
-  SetOrder(Order::kOTThenOI);
-
-  GURL url(https_server()->GetURL("isolated.foo.example", "/isolate_origin"));
-  url::Origin origin(url::Origin::Create(url));
-
-  EXPECT_FALSE(ShouldOriginGetOptInIsolation(origin));
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_TRUE(ShouldOriginGetOptInIsolation(origin));
-}
-#endif
 
 // Further tests deep-dive into various scenarios for the isolation opt-ins.
 // They use the origin policy mechanism, under the assumption that it will be

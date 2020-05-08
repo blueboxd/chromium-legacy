@@ -868,6 +868,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // unimportant.
   bool suppress_destruction_errors_ = false;
 
+  // TODO(dalecurtis): The following comment is inaccurate as this value is also
+  // used for, for example, data URLs.
   // Used for HLS playback and in certain fallback paths (e.g. on older devices
   // that can't support the unified media pipeline).
   GURL loaded_url_;
@@ -1046,10 +1048,13 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 
   // State for simplified watch time reporting.
-  RendererFactoryType reported_renderer_type_;
+  RendererFactoryType reported_renderer_type_ = RendererFactoryType::kDefault;
   SimpleWatchTimer simple_watch_timer_;
 
   LearningExperimentHelper will_play_helper_;
+
+  // Stores the optional override Demuxer until it is used in DoLoad().
+  std::unique_ptr<Demuxer> demuxer_override_;
 
   std::unique_ptr<PowerStatusHelper> power_status_helper_;
 

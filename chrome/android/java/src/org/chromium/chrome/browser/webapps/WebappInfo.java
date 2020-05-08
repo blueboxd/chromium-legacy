@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.Intent;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.browser.trusted.sharing.ShareData;
 
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -23,21 +23,20 @@ import java.util.Map;
  */
 public class WebappInfo {
     private final @NonNull BrowserServicesIntentDataProvider mProvider;
-    private final @NonNull WebApkExtras mWebApkExtras;
+
+    // Initialized lazily by {@link getWebApkExtras()}.
+    private @Nullable WebApkExtras mWebApkExtras;
 
     /**
      * Construct a WebappInfo.
      * @param intent Intent containing info about the app.
      */
-    public static WebappInfo create(Intent intent) {
-        BrowserServicesIntentDataProvider provider = WebappIntentDataProviderFactory.create(intent);
+    public static WebappInfo create(@Nullable BrowserServicesIntentDataProvider provider) {
         return (provider == null) ? null : new WebappInfo(provider);
     }
 
-    protected WebappInfo(@NonNull BrowserServicesIntentDataProvider provider) {
+    private WebappInfo(@NonNull BrowserServicesIntentDataProvider provider) {
         mProvider = provider;
-        WebApkExtras webApkExtras = provider.getWebApkExtras();
-        mWebApkExtras = (webApkExtras != null) ? webApkExtras : WebApkExtras.createEmpty();
     }
 
     @NonNull
@@ -82,7 +81,7 @@ public class WebappInfo {
     }
 
     public String webApkPackageName() {
-        return mWebApkExtras.webApkPackageName;
+        return getWebApkExtras().webApkPackageName;
     }
 
     public int orientation() {
@@ -162,7 +161,7 @@ public class WebappInfo {
      * and (2) has a content provider which provides a screenshot of the splash screen.
      */
     public boolean isSplashProvidedByWebApk() {
-        return mWebApkExtras.isSplashProvidedByWebApk;
+        return getWebApkExtras().isSplashProvidedByWebApk;
     }
 
     /**
@@ -170,45 +169,45 @@ public class WebappInfo {
      */
     @NonNull
     public WebappIcon splashIcon() {
-        return mWebApkExtras.splashIcon;
+        return getWebApkExtras().splashIcon;
     }
 
     public boolean isSplashIconMaskable() {
-        return mWebApkExtras.isSplashIconMaskable;
+        return getWebApkExtras().isSplashIconMaskable;
     }
 
     /** Returns data about the WebAPK's share intent handlers. */
     @NonNull
     public WebApkShareTarget shareTarget() {
-        return mWebApkExtras.shareTarget;
+        return getWebApkExtras().shareTarget;
     }
 
     /**
      * Returns the WebAPK's version code.
      */
     public int webApkVersionCode() {
-        return mWebApkExtras.webApkVersionCode;
+        return getWebApkExtras().webApkVersionCode;
     }
 
     public int shellApkVersion() {
-        return mWebApkExtras.shellApkVersion;
+        return getWebApkExtras().shellApkVersion;
     }
 
     public String manifestUrl() {
-        return mWebApkExtras.manifestUrl;
+        return getWebApkExtras().manifestUrl;
     }
 
     public String manifestStartUrl() {
-        return mWebApkExtras.manifestStartUrl;
+        return getWebApkExtras().manifestStartUrl;
     }
 
     public @WebApkDistributor int distributor() {
-        return mWebApkExtras.distributor;
+        return getWebApkExtras().distributor;
     }
 
     @NonNull
     public Map<String, String> iconUrlToMurmur2HashMap() {
-        return mWebApkExtras.iconUrlToMurmur2HashMap;
+        return getWebApkExtras().iconUrlToMurmur2HashMap;
     }
 
     public ShareData shareData() {
@@ -217,7 +216,7 @@ public class WebappInfo {
 
     @NonNull
     public List<ShortcutItem> shortcutItems() {
-        return mWebApkExtras.shortcutItems;
+        return getWebApkExtras().shortcutItems;
     }
 
     /**
@@ -236,5 +235,15 @@ public class WebappInfo {
         WebappExtras extras = mProvider.getWebappExtras();
         assert extras != null;
         return extras;
+    }
+
+    private @NonNull WebApkExtras getWebApkExtras() {
+        if (mWebApkExtras != null) return mWebApkExtras;
+
+        mWebApkExtras = mProvider.getWebApkExtras();
+        if (mWebApkExtras == null) {
+            mWebApkExtras = WebApkExtras.createEmpty();
+        }
+        return mWebApkExtras;
     }
 }

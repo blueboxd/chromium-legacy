@@ -80,6 +80,10 @@ extern const char kHttpStatusCodeNotAllowed[];
 // install feature to work.
 extern const char kInstallingMultipleDefaultAppsNotSupported[];
 
+// PaymentRequest::Init() is called when the initiating RenderFrameHost no
+// longer exists.
+extern const char kInvalidInitiatorFrame[];
+
 // Used to let the web developer know about an invalid payment manifest URL A.
 // This format should be used with base::ReplaceStringPlaceholders(fmt, {A},
 // nullptr).

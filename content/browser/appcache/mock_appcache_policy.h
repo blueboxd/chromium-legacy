@@ -20,6 +20,7 @@ class MockAppCachePolicy : public AppCachePolicy {
                        const GURL& first_party) override;
   bool CanCreateAppCache(const GURL& manifest_url,
                          const GURL& first_party) override;
+  bool IsOriginTrialRequiredForAppCache() override;
 
   bool can_load_return_value_;
   bool can_create_return_value_;

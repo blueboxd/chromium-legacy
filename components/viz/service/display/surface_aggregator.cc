@@ -1829,7 +1829,8 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   // Now that we've handled our main surface aggregation, apply de-jelly effect
   // if enabled.
-  HandleDeJelly(surface);
+  if (de_jelly_enabled_)
+    HandleDeJelly(surface);
 
   AddColorConversionPass();
 

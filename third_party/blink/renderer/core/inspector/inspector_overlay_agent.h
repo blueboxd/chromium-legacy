@@ -130,6 +130,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 
  public:
+  static std::unique_ptr<InspectorGridHighlightConfig> ToGridHighlightConfig(
+      protocol::Overlay::GridHighlightConfig*);
   static std::unique_ptr<InspectorHighlightConfig> ToHighlightConfig(
       protocol::Overlay::HighlightConfig*);
   InspectorOverlayAgent(WebLocalFrameImpl*,

@@ -8,6 +8,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/features.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_features.h"
 
 namespace content {
@@ -24,6 +25,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     // State to override the feature with.
     base::FeatureList::OverrideState override_state;
   } override_info[] = {
+      {switches::kAppCacheForceEnabled,
+       std::cref(blink::features::kAppCacheRequireOriginTrial),
+       base::FeatureList::OVERRIDE_DISABLE_FEATURE},
       // Overrides for --enable-experimental-web-platform-features.
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kCookieDeprecationMessages),

@@ -3,6 +3,7 @@ Downloading via a navigation:
 {
     method : Page.downloadWillBegin
     params : {
+        filename : hello.txt
         frameId : <string>
         guid : <string>
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?download=1
@@ -33,6 +34,7 @@ Downloading by clicking a link:
 {
     method : Page.downloadWillBegin
     params : {
+        filename : hello.text
         frameId : <string>
         guid : <string>
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php
@@ -56,6 +58,192 @@ Downloading by clicking a link:
         receivedBytes : <number>
         state : completed
         totalBytes : 11
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link (no HTTP Content-Disposition header, a[download=""]): 
+{
+    method : Page.downloadWillBegin
+    params : {
+        filename : download.zzz
+        frameId : <string>
+        guid : <string>
+        url : http://127.0.0.1:8000/devtools/network/resources/download.zzz
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 40
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 40
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link (HTTP Content-Disposition header with filename=foo.txt, no a[download]): 
+{
+    method : Page.downloadWillBegin
+    params : {
+        filename : foo.txt
+        frameId : <string>
+        guid : <string>
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download=foo.txt
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link (HTTP Content-Disposition header with filename=override.txt, a[download="foo.txt"]): 
+{
+    method : Page.downloadWillBegin
+    params : {
+        filename : override.txt
+        frameId : <string>
+        guid : <string>
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download=override.txt
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download]): 
+{
+    method : Page.downloadWillBegin
+    params : {
+        filename : resource.txt
+        frameId : <string>
+        guid : <string>
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], js): 
+{
+    method : Page.downloadWillBegin
+    params : {
+        filename : resource.js
+        frameId : <string>
+        guid : <string>
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download&type=js
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 17
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 17
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], image): 
+{
+    method : Page.downloadWillBegin
+    params : {
+        filename : resource.png
+        frameId : <string>
+        guid : <string>
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download&type=image
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 179
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 179
     }
     sessionId : <string>
 }

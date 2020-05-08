@@ -650,8 +650,9 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
     bool visible,
     bool animate,
     ui::AnimationMetricsReporter* reporter) {
-  if (button->GetVisible() == visible)
+  if (animate && button->layer()->GetTargetOpacity() == visible)
     return;
+
   // Update visibility immediately only if making the button visible. When
   // hiding the button, the visibility will be updated when the animations
   // complete (by AnimationObserverToHideView).
@@ -666,9 +667,8 @@ void ShelfNavigationWidget::UpdateButtonVisibility(
       animate ? kButtonOpacityAnimationDuration : base::TimeDelta());
   opacity_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  if (animate) {
+  if (animate)
     opacity_settings.SetAnimationMetricsReporter(reporter);
-  }
   if (!visible)
     opacity_settings.AddObserver(new AnimationObserverToHideView(button));
 

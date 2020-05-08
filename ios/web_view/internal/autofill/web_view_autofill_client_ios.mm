@@ -188,10 +188,7 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     SaveCreditCardOptions options,
     LocalSaveCardPromptCallback callback) {
-  DCHECK(options.show_prompt);
-  [bridge_ confirmSaveCreditCardLocally:card
-                  saveCreditCardOptions:options
-                               callback:std::move(callback)];
+  // No op. ios/web_view does not support local saves of autofill data.
 }
 
 void WebViewAutofillClientIOS::ConfirmAccountNameFixFlow(

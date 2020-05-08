@@ -64,14 +64,6 @@ public class PaymentManifestVerifier
         void onValidSupportedOrigin(URI methodName, URI supportedOrigin);
 
         /**
-         * Enables all native Android payment apps to use  the given <code>methodName</code> as
-         * their payment method name.
-         *
-         * @param methodName The payment method name that can be used by all payment apps.
-         */
-        void onAllOriginsSupported(URI methodName);
-
-        /**
          * Called when a part of verification has failed.
          *
          * @param errorMessage Developer facing error message.
@@ -107,7 +99,6 @@ public class PaymentManifestVerifier
     }
 
     private static final String TAG = "PaymentManifest";
-    private static final String ALL_ORIGINS_SUPPORTED_INDICATOR = "*";
 
     /**
      * The origin of the iframe that invoked the PaymentRequest API. Used by security features like
@@ -285,18 +276,12 @@ public class PaymentManifestVerifier
     public void onPaymentMethodManifestFetched(String[] appIdentifiers) {
         Set<String> cachedDefaultAppPackageNames = new HashSet<>();
         Set<URI> cachedSupportedOrigins = new HashSet<>();
-        boolean cachedAllOriginsSupported = false;
         for (int i = 0; i < appIdentifiers.length; i++) {
             if (appIdentifiers[i] == null) {
                 // The cache is stale. Download the manifest from the web instead.
                 mIsManifestCacheStaleOrUnusable = true;
                 mDownloader.downloadPaymentMethodManifest(mMerchantOrigin, mMethodName, this);
                 return;
-            }
-
-            if (appIdentifiers[i].equals(ALL_ORIGINS_SUPPORTED_INDICATOR)) {
-                cachedAllOriginsSupported = true;
-                continue;
             }
 
             if (UriUtils.looksLikeUriMethod(appIdentifiers[i])) {
@@ -312,20 +297,15 @@ public class PaymentManifestVerifier
         // manifest from the web instead.
         if (appIdentifiers.length == 0
                 || !cachedDefaultAppPackageNames.containsAll(mDefaultApplications.keySet())
-                || (!cachedSupportedOrigins.containsAll(mSupportedOrigins)
-                           && !cachedAllOriginsSupported)) {
+                || !cachedSupportedOrigins.containsAll(mSupportedOrigins)) {
             mIsManifestCacheStaleOrUnusable = true;
             mDownloader.downloadPaymentMethodManifest(mMerchantOrigin, mMethodName, this);
             return;
         }
 
-        if (cachedAllOriginsSupported) {
-            mCallback.onAllOriginsSupported(mMethodName);
-        } else {
-            cachedSupportedOrigins.retainAll(mSupportedOrigins);
-            for (URI validSupportedOrigin : cachedSupportedOrigins) {
-                mCallback.onValidSupportedOrigin(mMethodName, validSupportedOrigin);
-            }
+        cachedSupportedOrigins.retainAll(mSupportedOrigins);
+        for (URI validSupportedOrigin : cachedSupportedOrigins) {
+            mCallback.onValidSupportedOrigin(mMethodName, validSupportedOrigin);
         }
 
         if (mDefaultApplications.isEmpty()) {
@@ -383,27 +363,22 @@ public class PaymentManifestVerifier
 
     @Override
     public void onPaymentMethodManifestParseSuccess(
-            URI[] webAppManifestUris, URI[] supportedOrigins, boolean allOriginsSupported) {
+            URI[] webAppManifestUris, URI[] supportedOrigins) {
         assert webAppManifestUris != null;
         assert supportedOrigins != null;
-        assert webAppManifestUris.length > 0 || supportedOrigins.length > 0 || allOriginsSupported;
+        assert webAppManifestUris.length > 0 || supportedOrigins.length > 0;
         assert !mAtLeastOneManifestFailedToDownloadOrParse;
         assert mPendingWebAppManifestsCount == 0;
 
-        if (allOriginsSupported) {
-            if (mIsManifestCacheStaleOrUnusable) mCallback.onAllOriginsSupported(mMethodName);
-            mAppIdentifiersToCache.add(ALL_ORIGINS_SUPPORTED_INDICATOR);
-        } else {
-            Set<URI> downloadedSupportedOrigins = new HashSet<>();
-            for (int i = 0; i < supportedOrigins.length; i++) {
-                downloadedSupportedOrigins.add(supportedOrigins[i]);
-                mAppIdentifiersToCache.add(supportedOrigins[i].toString());
-            }
-            if (mIsManifestCacheStaleOrUnusable) {
-                downloadedSupportedOrigins.retainAll(mSupportedOrigins);
-                for (URI validSupportedOrigin : downloadedSupportedOrigins) {
-                    mCallback.onValidSupportedOrigin(mMethodName, validSupportedOrigin);
-                }
+        Set<URI> downloadedSupportedOrigins = new HashSet<>();
+        for (int i = 0; i < supportedOrigins.length; i++) {
+            downloadedSupportedOrigins.add(supportedOrigins[i]);
+            mAppIdentifiersToCache.add(supportedOrigins[i].toString());
+        }
+        if (mIsManifestCacheStaleOrUnusable) {
+            downloadedSupportedOrigins.retainAll(mSupportedOrigins);
+            for (URI validSupportedOrigin : downloadedSupportedOrigins) {
+                mCallback.onValidSupportedOrigin(mMethodName, validSupportedOrigin);
             }
         }
 

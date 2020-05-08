@@ -322,6 +322,13 @@ Consider the following when choosing between them:
   in the suite or `virtual/blocking_repaint/fast/repaint/dir` to run real
   or virtual tests in the suite under a specific directory.
 
+*** note
+We can run a virtual test with additional flags. Both the virtual args and the
+additional flags will be applied. The fallback order of baselines and
+expectations will be: 1) flag-specific virtual, 2) non-flag-specific virtual,
+3) flag-specific base, 4) non-flag-specific base
+***
+
 ## Tracking Test Failures
 
 All bugs, associated with web test failures must have the

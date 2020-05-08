@@ -15,10 +15,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
-import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -69,11 +69,12 @@ public class BrowsingDataRemoverIntegrationTest {
     }
 
     private void registerWebapp(final String webappId, final String webappUrl) throws Exception {
-        WebappInfo webappInfo = WebappTestHelper.createWebappInfo(webappId, webappUrl);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                WebappTestHelper.createIntentDataProvider(webappId, webappUrl);
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
-        WebappRegistry.getInstance().register(webappInfo.id(), callback);
+        WebappRegistry.getInstance().register(webappId, callback);
         callback.waitForCallback(0);
-        callback.getStorage().updateFromWebappInfo(webappInfo);
+        callback.getStorage().updateFromWebappIntentDataProvider(intentDataProvider);
     }
 
     /**

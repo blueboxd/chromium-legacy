@@ -76,7 +76,7 @@ void DisableFeaturesIfNotSet(
   auto* cl = base::CommandLine::ForCurrentProcess();
   std::vector<std::string> enabled_features;
   std::string enabled_features_str =
-      cl->GetSwitchValueASCII(switches::kEnableFeatures);
+      cl->GetSwitchValueASCII(::switches::kEnableFeatures);
   for (const auto& f :
        base::FeatureList::SplitFeatureListString(enabled_features_str)) {
     enabled_features.emplace_back(f);
@@ -84,7 +84,7 @@ void DisableFeaturesIfNotSet(
 
   std::vector<std::string> disabled_features;
   std::string disabled_features_str =
-      cl->GetSwitchValueASCII(switches::kDisableFeatures);
+      cl->GetSwitchValueASCII(::switches::kDisableFeatures);
   for (const auto& f :
        base::FeatureList::SplitFeatureListString(disabled_features_str)) {
     disabled_features.emplace_back(f);
@@ -97,7 +97,7 @@ void DisableFeaturesIfNotSet(
     }
   }
 
-  cl->AppendSwitchASCII(switches::kDisableFeatures,
+  cl->AppendSwitchASCII(::switches::kDisableFeatures,
                         base::JoinString(disabled_features, ","));
 }
 
@@ -127,18 +127,18 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // implemented features.
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   // TODO(crbug.com/1025610): make notifications work with WebLayer.
-  cl->AppendSwitch(switches::kDisableNotifications);
+  cl->AppendSwitch(::switches::kDisableNotifications);
   // TODO(crbug.com/1025626): and crbug.com/1051752, make speech work with
   // WebLayer.
-  cl->AppendSwitch(switches::kDisableSpeechSynthesisAPI);
-  cl->AppendSwitch(switches::kDisableSpeechAPI);
+  cl->AppendSwitch(::switches::kDisableSpeechSynthesisAPI);
+  cl->AppendSwitch(::switches::kDisableSpeechAPI);
   // TODO(crbug.com/1057099): make presentation-api work with WebLayer.
-  cl->AppendSwitch(switches::kDisablePresentationAPI);
+  cl->AppendSwitch(::switches::kDisablePresentationAPI);
   // TODO(crbug.com/1057100): make remote-playback-api work with WebLayer.
-  cl->AppendSwitch(switches::kDisableRemotePlaybackAPI);
+  cl->AppendSwitch(::switches::kDisableRemotePlaybackAPI);
 #if defined(OS_ANDROID)
   // TODO(crbug.com/1066263): make MediaSession work with WebLayer.
-  cl->AppendSwitch(switches::kDisableMediaSessionAPI);
+  cl->AppendSwitch(::switches::kDisableMediaSessionAPI);
 #endif
   DisableFeaturesIfNotSet({
     // TODO(crbug.com/1025619): make web-payments work with WebLayer.
@@ -183,7 +183,7 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   const bool is_browser_process =
-      command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+      command_line.GetSwitchValueASCII(::switches::kProcessType).empty();
   if (is_browser_process &&
       command_line.HasSwitch(switches::kWebLayerUserDataDir)) {
     base::FilePath path =
@@ -197,14 +197,14 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
       LOG(ERROR) << "Unable to create data-path directory: " << path.value();
     }
     CHECK(base::PathService::OverrideAndCreateIfNeeded(
-        weblayer::DIR_USER_DATA, path, true /* is_absolute */,
-        false /* create */));
+        DIR_USER_DATA, path, true /* is_absolute */, false /* create */));
   }
 
   InitializeResourceBundle();
 
 #if defined(OS_ANDROID)
-  EnableCrashReporter(command_line.GetSwitchValueASCII(switches::kProcessType));
+  EnableCrashReporter(
+      command_line.GetSwitchValueASCII(::switches::kProcessType));
   if (is_browser_process) {
     base::android::SetJavaExceptionFilter(
         base::BindRepeating(&WebLayerJavaExceptionFilter));
@@ -254,7 +254,7 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
       *base::CommandLine::ForCurrentProcess();
 
   bool is_browser_process =
-      command_line.GetSwitchValueASCII(switches::kProcessType).empty();
+      command_line.GetSwitchValueASCII(::switches::kProcessType).empty();
   if (is_browser_process) {
     // If we're not being loaded from a bundle, locales will be loaded from the
     // webview stored-locales directory. Otherwise, we are in Monochrome, and
@@ -293,7 +293,7 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
     }
   } else {
     base::i18n::SetICUDefaultLocale(
-        command_line.GetSwitchValueASCII(switches::kLang));
+        command_line.GetSwitchValueASCII(::switches::kLang));
 
     auto* global_descriptors = base::GlobalDescriptors::GetInstance();
     int pak_fd = global_descriptors->Get(kWebLayerLocalePakDescriptor);

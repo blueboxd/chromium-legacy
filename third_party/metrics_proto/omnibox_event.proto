@@ -208,6 +208,9 @@ message OmniboxEventProto {
     ON_DEVICE_HEAD = 17;
     // Zero-prefix query suggestions based on device local history.
     ZERO_SUGGEST_LOCAL_HISTORY = 18;
+    // Only used by Android Chrome. Represents a suggestion showing query tiles
+    // that users can tap on for bulding queries.
+    QUERY_TILE = 19;
   }
 
   // The result set displayed on the completion popup

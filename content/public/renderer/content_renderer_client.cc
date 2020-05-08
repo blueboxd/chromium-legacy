@@ -5,6 +5,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 #include "build/build_config.h"
+#include "media/base/demuxer.h"
 #include "media/base/renderer_factory.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
@@ -53,7 +54,8 @@ bool ContentRendererClient::HasErrorPage(int http_status_code) {
 }
 
 bool ContentRendererClient::ShouldSuppressErrorPage(RenderFrame* render_frame,
-                                                    const GURL& url) {
+                                                    const GURL& url,
+                                                    int error_code) {
   return false;
 }
 
@@ -66,6 +68,13 @@ bool ContentRendererClient::DeferMediaLoad(RenderFrame* render_frame,
                                            base::OnceClosure closure) {
   std::move(closure).Run();
   return false;
+}
+
+std::unique_ptr<media::Demuxer> ContentRendererClient::OverrideDemuxerForUrl(
+    RenderFrame* render_frame,
+    const GURL& url,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return nullptr;
 }
 
 blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {

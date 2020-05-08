@@ -44,14 +44,16 @@ using mojom::blink::PermissionService;
 
 // static
 ScriptPromise ClipboardPromise::CreateForRead(ExecutionContext* context,
-                                              ScriptState* script_state) {
+                                              ScriptState* script_state,
+                                              ClipboardItemOptions* options) {
   if (!script_state->ContextIsValid())
     return ScriptPromise();
   ClipboardPromise* clipboard_promise =
       MakeGarbageCollected<ClipboardPromise>(context, script_state);
   clipboard_promise->GetTaskRunner()->PostTask(
-      FROM_HERE, WTF::Bind(&ClipboardPromise::HandleRead,
-                           WrapPersistent(clipboard_promise)));
+      FROM_HERE,
+      WTF::Bind(&ClipboardPromise::HandleRead,
+                WrapPersistent(clipboard_promise), WrapPersistent(options)));
   return clipboard_promise->script_promise_resolver_->Promise();
 }
 
@@ -115,10 +117,10 @@ void ClipboardPromise::CompleteWriteRepresentation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   clipboard_writer_.Clear();  // The previous write is done.
   ++clipboard_representation_index_;
-  StartWriteRepresentation();
+  WriteNextRepresentation();
 }
 
-void ClipboardPromise::StartWriteRepresentation() {
+void ClipboardPromise::WriteNextRepresentation() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!GetExecutionContext())
     return;
@@ -134,6 +136,8 @@ void ClipboardPromise::StartWriteRepresentation() {
     script_promise_resolver_->Resolve();
     return;
   }
+
+  // We currently write the ClipboardItem type, but don't use the blob.type.
   const String& type =
       clipboard_item_data_[clipboard_representation_index_].first;
   const Member<Blob>& blob =
@@ -161,9 +165,12 @@ void ClipboardPromise::RejectFromReadOrDecodeFailure() {
           clipboard_item_data_[clipboard_representation_index_].first + "."));
 }
 
-void ClipboardPromise::HandleRead() {
+void ClipboardPromise::HandleRead(ClipboardItemOptions* options) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ, false,
+  if (base::FeatureList::IsEnabled(features::kRawClipboard) && options &&
+      options->hasRaw())
+    is_raw_ = options->raw();
+  RequestPermission(mojom::blink::PermissionName::CLIPBOARD_READ, is_raw_,
                     WTF::Bind(&ClipboardPromise::HandleReadWithPermission,
                               WrapPersistent(this)));
 }
@@ -224,29 +231,93 @@ void ClipboardPromise::HandleReadWithPermission(PermissionStatus status) {
     return;
   }
 
+  if (is_raw_) {
+    RawSystemClipboard* raw_system_clipboard =
+        GetLocalFrame()->GetRawSystemClipboard();
+    raw_system_clipboard->ReadAvailableFormatNames(
+        WTF::Bind(&ClipboardPromise::OnReadAvailableRawFormatNames,
+                  WrapPersistent(this)));
+    return;
+  }
   SystemClipboard* system_clipboard = GetLocalFrame()->GetSystemClipboard();
   Vector<String> available_types = system_clipboard->ReadAvailableTypes();
-  HeapVector<std::pair<String, Member<Blob>>> items;
-  items.ReserveInitialCapacity(available_types.size());
+  clipboard_item_data_.ReserveInitialCapacity(available_types.size());
   for (String& type_to_read : available_types) {
     ClipboardReader* reader =
         ClipboardReader::Create(system_clipboard, type_to_read);
-    if (reader)
-      items.emplace_back(std::move(type_to_read), reader->ReadFromSystem());
+    if (reader) {
+      clipboard_item_data_.emplace_back(std::move(type_to_read),
+                                        reader->ReadFromSystem());
+    }
   }
+  ResolveRead();
+}
 
-  if (!items.size()) {
+void ClipboardPromise::ResolveRead() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(GetExecutionContext());
+  if (!clipboard_item_data_.size()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kDataError, "No valid data on clipboard."));
     return;
   }
 
   ClipboardItemOptions* options = ClipboardItemOptions::Create();
-  options->setRaw(false);
+  options->setRaw(is_raw_);
 
   HeapVector<Member<ClipboardItem>> clipboard_items = {
-      MakeGarbageCollected<ClipboardItem>(items, options)};
+      MakeGarbageCollected<ClipboardItem>(clipboard_item_data_, options)};
   script_promise_resolver_->Resolve(clipboard_items);
+}
+
+void ClipboardPromise::OnReadAvailableRawFormatNames(
+    const Vector<String>& format_names) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
+
+  clipboard_item_data_.ReserveInitialCapacity(format_names.size());
+  for (const String& format_name : format_names) {
+    clipboard_item_data_.emplace_back(format_name,
+                                      /* Placeholder value. */ nullptr);
+  }
+  ReadNextRawRepresentation();
+}
+
+void ClipboardPromise::ReadNextRawRepresentation() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
+  if (clipboard_representation_index_ == clipboard_item_data_.size()) {
+    ResolveRead();
+    return;
+  }
+
+  String format_name =
+      clipboard_item_data_[clipboard_representation_index_].first;
+  GetLocalFrame()->GetRawSystemClipboard()->Read(
+      format_name,
+      WTF::Bind(&ClipboardPromise::OnRawRead, WrapPersistent(this)));
+}
+
+void ClipboardPromise::OnRawRead(mojo_base::BigBuffer data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!GetExecutionContext())
+    return;
+  String format_name =
+      clipboard_item_data_[clipboard_representation_index_].first;
+  Blob* blob = Blob::Create(reinterpret_cast<const uint8_t*>(data.data()),
+                            data.size(), format_name);
+  if (!blob) {
+    script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kDataError,
+        "Failed to read or decode clipboard data for type " +
+            clipboard_item_data_[clipboard_representation_index_].first + "."));
+    return;
+  }
+  clipboard_item_data_[clipboard_representation_index_].second = blob;
+  ++clipboard_representation_index_;
+  ReadNextRawRepresentation();
 }
 
 void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
@@ -274,30 +345,31 @@ void ClipboardPromise::HandleWriteWithPermission(PermissionStatus status) {
     return;
   }
 
-  // Check that all blobs have valid MIME types.
-  // Also, Blobs may have a full MIME type with args
-  // (ex. 'text/plain;charset=utf-8'), whereas the type must not have args
-  // (ex. 'text/plain' only), so ensure that Blob->type is contained in type.
+  // Check that all blobs have valid types.
   for (const auto& type_and_blob : clipboard_item_data_) {
     String type = type_and_blob.first;
     String type_with_args = type_and_blob.second->type();
-    if (!is_raw_ && !ClipboardWriter::IsValidType(type)) {
+    if (!ClipboardWriter::IsValidType(type, is_raw_)) {
       script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
-          "Sanitized MIME type " + type + " not supported on write."));
+          "Type " + type + " not supported on write."));
       return;
     }
-    if (!type_with_args.Contains(type)) {
+    // For normal (not-raw) write, blobs may have a full MIME type with args
+    // (ex. 'text/plain;charset=utf-8'), whereas the type must not have args
+    // (ex. 'text/plain' only), so ensure that Blob->type is contained in type.
+    // For raw clipboard, Blobs convert their type to lowercase.
+    if (!type_with_args.Contains(type.LowerASCII())) {
       script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
-          "MIME type " + type + " does not match the blob type's MIME type " +
+          "Type " + type + " does not match the blob's type " +
               type_with_args));
       return;
     }
   }
 
   DCHECK(!clipboard_representation_index_);
-  StartWriteRepresentation();
+  WriteNextRepresentation();
 }
 
 void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {

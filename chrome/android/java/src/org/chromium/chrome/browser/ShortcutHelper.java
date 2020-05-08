@@ -40,13 +40,14 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
-import org.chromium.chrome.browser.webapps.WebappInfo;
+import org.chromium.chrome.browser.webapps.WebappIntentDataProviderFactory;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
@@ -229,10 +230,11 @@ public class ShortcutHelper {
                 // process is complete, call back to native code to start the splash image
                 // download.
                 WebappRegistry.getInstance().register(id, storage -> {
-                    WebappInfo webappInfo = WebappInfo.create(resultIntent);
-                    assert webappInfo != null;
-                    if (webappInfo != null) {
-                        storage.updateFromWebappInfo(webappInfo);
+                    BrowserServicesIntentDataProvider intentDataProvider =
+                            WebappIntentDataProviderFactory.create(resultIntent);
+                    assert intentDataProvider != null;
+                    if (intentDataProvider != null) {
+                        storage.updateFromWebappIntentDataProvider(intentDataProvider);
                         if (callbackPointer != 0) {
                             ShortcutHelperJni.get().onWebappDataStored(callbackPointer);
                         }

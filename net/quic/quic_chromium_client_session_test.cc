@@ -1995,8 +1995,8 @@ TEST_P(QuicChromiumClientSessionTest, RetransmittableOnWireTimeout) {
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakePingPacket(packet_num++, true));
 
-  quic_data.AddRead(
-      ASYNC, server_maker_.MakeAckPacket(1, packet_num - 1, 1, 1, false));
+  quic_data.AddRead(ASYNC,
+                    server_maker_.MakeAckPacket(1, packet_num - 1, 1, 1));
 
   quic_data.AddWrite(SYNCHRONOUS,
                      client_maker_.MakePingPacket(packet_num++, false));

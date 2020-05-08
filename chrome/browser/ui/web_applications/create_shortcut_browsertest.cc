@@ -144,6 +144,29 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest, WorksAfterDelayedIFrameLoad) {
   InstallShortcutAppForCurrentUrl();
 }
 
+// Tests that Create Shortcut on non-promotable sites still uses available
+// manifest data.
+IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
+                       UseNonPromotableManifestData) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURLAndWait(browser(),
+                       embedded_test_server()->GetURL(
+                           "/web_apps/theme_color_only_manifest.html"));
+  AppId app_id = InstallShortcutAppForCurrentUrl();
+  EXPECT_EQ(registrar().GetAppThemeColor(app_id),
+            SkColorSetRGB(0x12, 0x34, 0x56));
+}
+
+// Tests that Create Shortcut won't use manifest data that's invalid.
+IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest, IgnoreInvalidManifestData) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/web_apps/invalid_start_url_manifest.html");
+  NavigateToURLAndWait(browser(), url);
+  AppId app_id = InstallShortcutAppForCurrentUrl();
+  EXPECT_EQ(registrar().GetAppLaunchURL(app_id), url);
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     CreateShortcutBrowserTest,

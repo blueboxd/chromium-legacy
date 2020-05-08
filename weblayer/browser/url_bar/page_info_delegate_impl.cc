@@ -19,6 +19,8 @@
 #include "weblayer/browser/weblayer_impl_android.h"
 #endif
 
+namespace weblayer {
+
 PageInfoDelegateImpl::PageInfoDelegateImpl(content::WebContents* web_contents)
     : web_contents_(web_contents) {
   DCHECK(web_contents_);
@@ -54,8 +56,7 @@ base::string16 PageInfoDelegateImpl::GetWarningDetailText() {
 permissions::PermissionResult PageInfoDelegateImpl::GetPermissionStatus(
     ContentSettingsType type,
     const GURL& site_url) {
-  return weblayer::PermissionManagerFactory::GetForBrowserContext(
-             GetBrowserContext())
+  return PermissionManagerFactory::GetForBrowserContext(GetBrowserContext())
       ->GetPermissionStatus(type, site_url, site_url);
 }
 
@@ -74,18 +75,18 @@ void PageInfoDelegateImpl::ShowSiteSettings(const GURL& site_url) {
 
 permissions::PermissionDecisionAutoBlocker*
 PageInfoDelegateImpl::GetPermissionDecisionAutoblocker() {
-  return weblayer::PermissionDecisionAutoBlockerFactory::GetForBrowserContext(
+  return PermissionDecisionAutoBlockerFactory::GetForBrowserContext(
       GetBrowserContext());
 }
 
 StatefulSSLHostStateDelegate*
 PageInfoDelegateImpl::GetStatefulSSLHostStateDelegate() {
-  return weblayer::StatefulSSLHostStateDelegateFactory::GetInstance()
+  return StatefulSSLHostStateDelegateFactory::GetInstance()
       ->GetForBrowserContext(GetBrowserContext());
 }
 
 HostContentSettingsMap* PageInfoDelegateImpl::GetContentSettings() {
-  return weblayer::HostContentSettingsMapFactory::GetForBrowserContext(
+  return HostContentSettingsMapFactory::GetForBrowserContext(
       GetBrowserContext());
 }
 
@@ -109,8 +110,7 @@ PageInfoDelegateImpl::GetVisibleSecurityState() {
 
 std::unique_ptr<content_settings::TabSpecificContentSettings::Delegate>
 PageInfoDelegateImpl::GetTabSpecificContentSettingsDelegate() {
-  return std::make_unique<weblayer::TabSpecificContentSettingsDelegate>(
-      web_contents_);
+  return std::make_unique<TabSpecificContentSettingsDelegate>(web_contents_);
 }
 
 #if defined(OS_ANDROID)
@@ -122,3 +122,5 @@ const base::string16 PageInfoDelegateImpl::GetClientApplicationName() {
 content::BrowserContext* PageInfoDelegateImpl::GetBrowserContext() const {
   return web_contents_->GetBrowserContext();
 }
+
+}  //  namespace weblayer

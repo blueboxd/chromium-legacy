@@ -72,7 +72,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     views::test::WidgetTest::SetUp();
 
     app_list_view_ = new AppListView(&view_delegate_);
-    app_list_view_->InitView(/*is_tablet_mode=*/false, GetContext());
+    app_list_view_->InitView(GetContext());
 
     widget_ = CreateTopLevelPlatformWidget();
     view_ =

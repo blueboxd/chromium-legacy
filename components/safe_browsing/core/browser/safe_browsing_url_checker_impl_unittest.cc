@@ -13,6 +13,7 @@
 #include "components/safe_browsing/core/common/test_task_environment.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -160,6 +161,8 @@ class MockRealTimeUrlLookupService : public RealTimeUrlLookupService {
                                  /*identity_manager=*/nullptr,
                                  /*sync_service=*/nullptr,
                                  /*pref_service=*/nullptr,
+                                 ChromeUserPopulation::NOT_MANAGED,
+                                 /*is_under_advanced_protection=*/false,
                                  /*is_off_the_record=*/false) {}
   // Returns the threat type previously set by |SetThreatTypeForUrl|. It crashes
   // if the threat type for the |gurl| is not set in advance.

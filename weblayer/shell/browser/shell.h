@@ -56,7 +56,7 @@ class Shell : public TabObserver,
   // Do one time initialization at application startup.
   static void Initialize();
 
-  static Shell* CreateNewWindow(weblayer::Profile* web_profile,
+  static Shell* CreateNewWindow(Profile* web_profile,
                                 const GURL& url,
                                 const gfx::Size& initial_size);
 

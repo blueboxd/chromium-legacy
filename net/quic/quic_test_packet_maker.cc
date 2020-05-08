@@ -306,11 +306,9 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     quic::QuicRstStreamErrorCode error_code,
     uint64_t largest_received,
     uint64_t smallest_received,
-    uint64_t least_unacked,
-    bool send_feedback) {
+    uint64_t least_unacked) {
   return MakeAckAndRstPacket(num, include_version, stream_id, error_code,
                              largest_received, smallest_received, least_unacked,
-                             send_feedback,
                              /*include_stop_sending_if_v99=*/true);
 }
 
@@ -323,7 +321,6 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
     uint64_t largest_received,
     uint64_t smallest_received,
     uint64_t least_unacked,
-    bool send_feedback,
     bool include_stop_sending_if_v99) {
   InitializeHeader(num, include_version);
 
@@ -479,10 +476,9 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     uint64_t packet_number,
     uint64_t largest_received,
     uint64_t smallest_received,
-    uint64_t least_unacked,
-    bool send_feedback) {
+    uint64_t least_unacked) {
   return MakeAckPacket(packet_number, 1, largest_received, smallest_received,
-                       least_unacked, send_feedback);
+                       least_unacked);
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
@@ -490,8 +486,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
     uint64_t first_received,
     uint64_t largest_received,
     uint64_t smallest_received,
-    uint64_t least_unacked,
-    bool send_feedback) {
+    uint64_t least_unacked) {
   InitializeHeader(packet_number, /*include_version=*/false);
   AddQuicAckFrame(first_received, largest_received, smallest_received);
   return BuildPacket();

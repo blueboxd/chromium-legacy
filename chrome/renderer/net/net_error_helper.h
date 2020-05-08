@@ -99,9 +99,9 @@ class NetErrorHelper
                         bool is_failed_post,
                         std::string* error_html);
 
-  // Returns whether a load for |url| in the |frame| the NetErrorHelper is
-  // attached to should have its error page suppressed.
-  bool ShouldSuppressErrorPage(const GURL& url);
+  // Returns whether a load for |url| with |error_code| in the |frame| the
+  // NetErrorHelper is attached to should have its error page suppressed.
+  bool ShouldSuppressErrorPage(const GURL& url, int error_code);
 
  private:
   // Returns ResourceRequest filled with |url|. It has request_initiator from

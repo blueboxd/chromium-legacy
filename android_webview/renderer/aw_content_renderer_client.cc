@@ -183,7 +183,8 @@ bool AwContentRendererClient::HasErrorPage(int http_status_code) {
 
 bool AwContentRendererClient::ShouldSuppressErrorPage(
     content::RenderFrame* render_frame,
-    const GURL& url) {
+    const GURL& url,
+    int error_code) {
   DCHECK(render_frame != nullptr);
 
   AwRenderFrameExt* render_frame_ext =

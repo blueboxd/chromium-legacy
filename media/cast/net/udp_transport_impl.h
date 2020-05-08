@@ -49,7 +49,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
   ~UdpTransportImpl() final;
 
   // PacketTransport implementations.
-  bool SendPacket(PacketRef packet, const base::RepeatingClosure& cb) final;
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final;
   int64_t GetBytesSent() final;
   // Start receiving packets. Packets are submitted to |packet_receiver|.
   void StartReceiving(PacketReceiverCallbackWithStatus packet_receiver) final;
@@ -97,7 +97,7 @@ class UdpTransportImpl final : public PacketTransport, public UdpTransport {
 
   void OnSent(const scoped_refptr<net::IOBuffer>& buf,
               PacketRef packet,
-              const base::RepeatingClosure& cb,
+              base::OnceClosure cb,
               int result);
 
   // Called by |reader_| when it completes reading a packet from the data pipe.

@@ -20,10 +20,17 @@ class Profile;
 
 class TerminalSource : public content::URLDataSource {
  public:
-  explicit TerminalSource(Profile* profile);
+  static std::unique_ptr<TerminalSource> ForCrosh(Profile* profile);
+
+  static std::unique_ptr<TerminalSource> ForTerminal(Profile* profile);
+
   ~TerminalSource() override;
 
  private:
+  explicit TerminalSource(Profile* profile,
+                          std::string source,
+                          std::string default_file);
+
   // content::URLDataSource:
   std::string GetSource() override;
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
@@ -38,6 +45,8 @@ class TerminalSource : public content::URLDataSource {
   const ui::TemplateReplacements* GetReplacements() override;
 
   Profile* profile_;
+  std::string source_;
+  std::string default_file_;
   ui::TemplateReplacements replacements_;
 
   DISALLOW_COPY_AND_ASSIGN(TerminalSource);

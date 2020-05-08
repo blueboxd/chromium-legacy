@@ -129,14 +129,6 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 
 #pragma mark - Public Methods
 
-- (BOOL)canStoreLocally {
-  return _unmaskingController->CanStoreLocally();
-}
-
-- (BOOL)lastStoreLocallyValue {
-  return _unmaskingController->GetStoreLocallyStartState();
-}
-
 - (NSString*)navigationTitle {
   return base::SysUTF16ToNSString(_unmaskingController->GetWindowTitle());
 }
@@ -168,7 +160,6 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 - (void)verifyWithCVC:(NSString*)CVC
       expirationMonth:(nullable NSString*)expirationMonth
        expirationYear:(nullable NSString*)expirationYear
-         storeLocally:(BOOL)storeLocally
              riskData:(NSString*)riskData
     completionHandler:(void (^)(NSError* _Nullable error))completionHandler {
   _verificationAttempted = YES;
@@ -182,8 +173,23 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
 
   _unmaskingController->OnUnmaskPromptAccepted(
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
-      base::SysNSStringToUTF16(expirationYear), storeLocally,
+      base::SysNSStringToUTF16(expirationYear), /*should_store_pan=*/false,
       /*enable_fido_auth=*/false);
+}
+
+- (void)verifyWithCVC:(NSString*)CVC
+      expirationMonth:(nullable NSString*)expirationMonth
+       expirationYear:(nullable NSString*)expirationYear
+         storeLocally:(BOOL)storeLocally
+             riskData:(NSString*)riskData
+    completionHandler:(void (^)(NSError* _Nullable error))completionHandler {
+  DCHECK(!storeLocally) << "|storeLocally| is deprecated, please call the "
+                           "method without this parameter.";
+  [self verifyWithCVC:CVC
+        expirationMonth:expirationMonth
+         expirationYear:expirationYear
+               riskData:riskData
+      completionHandler:completionHandler];
 }
 
 - (BOOL)isCVCValid:(NSString*)CVC {

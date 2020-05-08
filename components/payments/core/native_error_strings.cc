@@ -61,6 +61,9 @@ const char kInstallingMultipleDefaultAppsNotSupported[] =
     "Installing multiple payment handlers from a single payment method "
     "manifest is not supported.";
 
+const char kInvalidInitiatorFrame[] =
+    "Cannot initialize PaymentRequest in an invalid frame.";
+
 const char kInvalidManifestUrl[] =
     "\"$1\" is not a valid payment manifest URL with HTTPS scheme (or HTTP "
     "scheme for localhost).";

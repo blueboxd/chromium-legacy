@@ -56,6 +56,9 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   // Sets whether the search engine is Google or not.
   void SetSearchEngineIsGoogle(bool is_google);
 
+  // Set whether tablet mode is enabled.
+  void SetIsTabletModeEnabled(bool is_tablet_mode);
+
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
   SearchModel* GetSearchModel() override;
@@ -116,6 +119,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfSize() override;
+  bool IsInTabletMode() override;
   AppListNotifier* GetNotifier() override;
 
   // Do a bulk replacement of the items in the model.
@@ -137,6 +141,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   int open_assistant_ui_count_ = 0;
   int next_profile_app_count_ = 0;
   int show_wallpaper_context_menu_count_ = 0;
+  bool is_tablet_mode_ = false;
   std::map<size_t, int> open_search_result_counts_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;

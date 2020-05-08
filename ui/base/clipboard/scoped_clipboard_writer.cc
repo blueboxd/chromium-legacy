@@ -134,14 +134,6 @@ void ScopedClipboardWriter::WritePickledData(
 
 void ScopedClipboardWriter::WriteData(const base::string16& format,
                                       mojo_base::BigBuffer data) {
-  // Conservative limit to maximum format and data string size, to avoid
-  // potential attacks with long strings. Callers should implement similar
-  // checks.
-  constexpr size_t kMaxFormatSize = 1024;
-  constexpr size_t kMaxDataSize = 1 << 30;  // 1 GB
-  DCHECK_LT(format.size(), kMaxFormatSize);
-  DCHECK_LT(data.size(), kMaxDataSize);
-
   platform_representations_.push_back(
       {base::UTF16ToUTF8(format), std::move(data)});
 }

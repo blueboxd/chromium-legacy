@@ -127,7 +127,7 @@ class VirtualExpectationsTest(Base):
             'virtual/virtual_failures/failures/expected/crash.html',
             ResultType.Crash)
         self.assert_exp('virtual/virtual_passes/passes/image.html',
-                        ResultType.Pass)
+                        ResultType.Skip)
         # Non existence virtual suite doesn't fallback.
         self.assert_exp('virtual/xyz/failures/expected/crash.html',
                         ResultType.Pass)

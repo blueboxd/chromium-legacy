@@ -248,6 +248,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
 
   void OnContentBlocked(const GURL& manifest_url);
 
+  bool IsOriginTrialRequiredForAppCache();
+
  private:
   friend class content::AppCacheStorageImplTest;
   friend class content::AppCacheRequestHandlerTest;
@@ -411,6 +413,8 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // To be used in policy checks.
   net::SiteForCookies site_for_cookies_;
   bool site_for_cookies_initialized_ = false;
+
+  bool is_origin_trial_required_ = false;
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);

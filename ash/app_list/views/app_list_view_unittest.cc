@@ -181,14 +181,13 @@ class AppListViewTest : public views::ViewsTestBase,
   }
 
  protected:
-  void Show(bool is_tablet_mode = false, bool is_side_shelf = false) {
-    view_->Show(is_side_shelf, is_tablet_mode);
-  }
+  void Show(bool is_side_shelf = false) { view_->Show(is_side_shelf); }
 
   void Initialize(bool is_tablet_mode) {
     delegate_ = std::make_unique<AppListTestViewDelegate>();
+    delegate_->SetIsTabletModeEnabled(is_tablet_mode);
     view_ = new AppListView(delegate_.get());
-    view_->InitView(is_tablet_mode, GetContext());
+    view_->InitView(GetContext());
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     EXPECT_FALSE(view_->GetWidget()->IsVisible());
   }
@@ -444,7 +443,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             "weather", "Unimportant Title"));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
-    view_->InitView(false /*is_tablet_mode*/, GetContext());
+    view_->InitView(GetContext());
     Show();
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     suggestions_container_ = contents_view()
@@ -493,9 +492,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     view_->SetState(state);
   }
 
-  void Show(bool is_tablet_mode = false, bool is_side_shelf = false) {
-    view_->Show(is_side_shelf, is_tablet_mode);
-  }
+  void Show(bool is_side_shelf = false) { view_->Show(is_side_shelf); }
 
   AppsGridViewTestApi* test_api() { return test_api_.get(); }
 
@@ -1695,7 +1692,7 @@ TEST_F(AppListViewTest, ShowPeekingByDefault) {
 TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   Initialize(false /*is_tablet_mode*/);
 
-  Show(false /*is_tablet_mode*/, true /*is_side_shelf*/);
+  Show(true /*is_side_shelf*/);
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   // The rounded corners should be off screen in side shelf.
   gfx::Transform translation;
@@ -1709,7 +1706,7 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
 TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
   Initialize(true /*is_tablet_mode*/);
 
-  Show(true /*is_tablet_mode*/);
+  Show();
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 }
@@ -1789,7 +1786,7 @@ TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
 
-  Show(true /*is_tablet_mode*/);
+  Show();
   search_box->SetText(base::string16());
   search_box->InsertText(base::UTF8ToUTF16("cool!"));
 
@@ -1844,7 +1841,7 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeStayFullscreen) {
   // Put into fullscreen by using tablet mode.
   Initialize(true /*is_tablet_mode*/);
 
-  Show(true /*is_tablet_mode*/);
+  Show();
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
@@ -1867,7 +1864,7 @@ TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
   // Put into fullscreen using side-shelf.
   Initialize(false /*is_tablet_mode*/);
 
-  Show(false /*is_tablet_mode*/, true /*is_side_shelf*/);
+  Show(true /*is_side_shelf*/);
   SetTextInSearchBox("kitty");
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
@@ -1889,7 +1886,7 @@ TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   // Put into fullscreen using tablet mode.
   Initialize(true /*is_tablet_mode*/);
 
-  Show(true /*is_tablet_mode*/);
+  Show();
   SetTextInSearchBox("yay");
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
@@ -2293,7 +2290,7 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
 TEST_F(AppListViewTest, ShowContextMenuBetweenAppsInTabletMode) {
   Initialize(true /*is_tablet_mode*/);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
-  Show(true /*is_tablet_mode*/);
+  Show();
 
   // Tap between two apps in tablet mode.
   const gfx::Point middle = GetPointBetweenTwoApps();
@@ -2361,7 +2358,7 @@ TEST_F(AppListViewTest, BackAction) {
   model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
 
   // Show the app list
-  Show(true /*is_tablet_mode*/);
+  Show();
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   EXPECT_EQ(2, apps_grid_view()->pagination_model()->total_pages());
 
@@ -2407,7 +2404,7 @@ TEST_F(AppListViewTest, InitialPageResetClamshellModeTest) {
   const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
   model->PopulateApps(kAppListItemNum);
 
-  Show(false /*is_tablet_mode*/);
+  Show();
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   apps_grid_view()->pagination_model()->SelectPage(1, false /* animate */);
@@ -2429,14 +2426,14 @@ TEST_F(AppListViewTest, PagePersistanceTabletModeTest) {
   const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
   model->PopulateApps(kAppListItemNum);
 
-  Show(true /*is_tablet_mode*/);
+  Show();
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 
   apps_grid_view()->pagination_model()->SelectPage(1, false /* animate */);
 
   // Close and re-open the app list to ensure the current page persists.
   view_->SetState(ash::AppListViewState::kClosed);
-  Show(true);
+  Show();
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
 
   // The current page should not be reset for the tablet mode app list.
@@ -2481,7 +2478,7 @@ TEST_F(AppListViewFocusTest, ShowEmbeddedAssistantUI) {
 // reshowing. See b/142069648 for the details.
 TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
   Initialize(true /*is_tablet_mode*/);
-  Show(true /*is_tablet_mode*/);
+  Show();
 
   contents_view()->ShowEmbeddedAssistantUI(true);
   EXPECT_FALSE(contents_view()->apps_container_view()->GetVisible());
@@ -2489,7 +2486,7 @@ TEST_F(AppListViewTest, AppsGridVisibilityOnResetForShow) {
   EXPECT_TRUE(assistant_page_view()->GetVisible());
 
   view_->OnTabletModeChanged(false);
-  Show(false /*is_tablet_mode*/);
+  Show();
   EXPECT_TRUE(contents_view()->apps_container_view()->GetVisible());
   EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
   EXPECT_FALSE(assistant_page_view()->GetVisible());

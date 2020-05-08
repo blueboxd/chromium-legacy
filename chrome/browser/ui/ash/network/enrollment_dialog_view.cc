@@ -57,7 +57,6 @@ class EnrollmentDialogView : public views::DialogDelegateView {
 
   // views::WidgetDelegate overrides
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
   // views::View overrides
@@ -91,6 +90,7 @@ EnrollmentDialogView::EnrollmentDialogView(const std::string& network_name,
       target_uri_(target_uri),
       connect_(connect),
       added_cert_(false) {
+  SetTitle(l10n_util::GetStringUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_TITLE));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_BUTTON));
@@ -128,10 +128,6 @@ bool EnrollmentDialogView::Accept() {
 
 ui::ModalType EnrollmentDialogView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
-}
-
-base::string16 EnrollmentDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_TITLE);
 }
 
 void EnrollmentDialogView::WindowClosing() {

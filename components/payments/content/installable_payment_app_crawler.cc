@@ -143,8 +143,7 @@ void InstallablePaymentAppCrawler::OnPaymentMethodManifestParsed(
     const GURL& method_manifest_url_after_redirects,
     const std::string& content,
     const std::vector<GURL>& default_applications,
-    const std::vector<url::Origin>& supported_origins,
-    bool all_origins_supported) {
+    const std::vector<url::Origin>& supported_origins) {
   number_of_payment_method_manifest_to_parse_--;
 
   if (web_contents() == nullptr)

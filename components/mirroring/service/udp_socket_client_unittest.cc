@@ -22,8 +22,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::InvokeWithoutArgs;
 using media::cast::Packet;
+using ::testing::InvokeWithoutArgs;
 
 namespace mirroring {
 
@@ -77,11 +77,11 @@ TEST_F(UdpSocketClientTest, SendAndReceive) {
   {
     // Request to send one packet.
     base::RunLoop run_loop;
-    base::RepeatingClosure cb;
+    base::OnceClosure cb;
     EXPECT_CALL(*socket, OnSend())
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
     EXPECT_TRUE(udp_transport_client_->SendPacket(
-        new base::RefCountedData<Packet>(packet), cb));
+        new base::RefCountedData<Packet>(packet), std::move(cb)));
     run_loop.Run();
   }
 
@@ -112,7 +112,7 @@ TEST_F(UdpSocketClientTest, SendBeforeConnected) {
   Packet packet(data.begin(), data.end());
 
   // Request to send one packet.
-  base::MockCallback<base::RepeatingClosure> resume_send_cb;
+  base::MockCallback<base::OnceClosure> resume_send_cb;
   {
     EXPECT_CALL(resume_send_cb, Run()).Times(0);
     EXPECT_FALSE(udp_transport_client_->SendPacket(

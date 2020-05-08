@@ -92,8 +92,7 @@ void AppListPresenterDelegateImpl::SetPresenter(
 
 void AppListPresenterDelegateImpl::Init(AppListView* view, int64_t display_id) {
   view_ = view;
-  view->InitView(IsTabletMode(),
-                 controller_->GetContainerForDisplayId(display_id));
+  view->InitView(controller_->GetContainerForDisplayId(display_id));
 
   // By setting us as DnD recipient, the app list knows that we can
   // handle items.
@@ -120,7 +119,7 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
 
   view_->SetShelfHasRoundedCorners(
       IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
-  view_->Show(IsSideShelf(shelf), IsTabletMode());
+  view_->Show(IsSideShelf(shelf));
 
   SnapAppListBoundsToDisplayEdge();
 

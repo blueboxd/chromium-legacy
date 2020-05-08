@@ -445,8 +445,6 @@ component("net") {
       "base/host_mapping_rules.cc",
       "base/host_mapping_rules.h",
       "base/http_user_agent_settings.h",
-      "base/ip_pattern.cc",
-      "base/ip_pattern.h",
       "base/isolation_info.cc",
       "base/isolation_info.h",
       "base/load_flags.h",
@@ -4125,7 +4123,6 @@ test("net_unittests") {
     "base/interval_test.cc",
     "base/ip_address_unittest.cc",
     "base/ip_endpoint_unittest.cc",
-    "base/ip_pattern_unittest.cc",
     "base/isolation_info_unittest.cc",
     "base/lookup_string_in_fixed_set_unittest.cc",
     "base/mime_sniffer_unittest.cc",
@@ -4983,14 +4980,6 @@ fuzzer_test("net_parse_proxy_rules_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_parse_proxy_bypass_rules_fuzzer.dict"
-}
-
-fuzzer_test("net_parse_ip_pattern_fuzzer") {
-  sources = [ "base/parse_ip_pattern_fuzzer.cc" ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//net",
-  ]
 }
 
 fuzzer_test("net_get_domain_and_registry_fuzzer") {

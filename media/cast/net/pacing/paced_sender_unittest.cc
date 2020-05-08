@@ -42,7 +42,7 @@ class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender() : bytes_sent_(0) {}
 
-  bool SendPacket(PacketRef packet, const base::Closure& cb) final {
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final {
     EXPECT_FALSE(expected_packet_sizes_.empty());
     size_t expected_packet_size = expected_packet_sizes_.front();
     expected_packet_sizes_.pop_front();
@@ -184,16 +184,14 @@ TEST_F(PacedSenderTest, PassThroughRtcp) {
 
   mock_transport_.AddExpectedSizesAndPacketIds(kSize2, kRtcpPacketIdMagic, 1);
   Packet tmp(kSize2, kValue);
-  EXPECT_TRUE(paced_sender_->SendRtcpPacket(
-      1,
-      new base::RefCountedData<Packet>(tmp)));
+  EXPECT_TRUE(
+      paced_sender_->SendRtcpPacket(1, new base::RefCountedData<Packet>(tmp)));
 }
 
 TEST_F(PacedSenderTest, BasicPace) {
   int num_of_packets = 27;
-  SendPacketVector packets = CreateSendPacketVector(kSize1,
-                                                    num_of_packets,
-                                                    false);
+  SendPacketVector packets =
+      CreateSendPacketVector(kSize1, num_of_packets, false);
   const base::TimeTicks earliest_event_timestamp = testing_clock_.NowTicks();
 
   mock_transport_.AddExpectedSizesAndPacketIds(kSize1, UINT16_C(0), 10);
@@ -294,7 +292,7 @@ TEST_F(PacedSenderTest, PaceWithNack) {
 
   int expected_video_network_event_count = num_of_packets_in_frame;
   int expected_video_retransmitted_event_count = 2 * num_of_packets_in_nack;
-  expected_video_retransmitted_event_count -= 2; // 2 packets deduped
+  expected_video_retransmitted_event_count -= 2;  // 2 packets deduped
   int expected_audio_network_event_count = num_of_packets_in_frame;
   EXPECT_EQ(expected_video_network_event_count +
                 expected_video_retransmitted_event_count +
@@ -412,26 +410,24 @@ TEST_F(PacedSenderTest, SendPriority) {
   paced_sender_->RegisterPrioritySsrc(kAudioSsrc);
 
   // Retransmission packets with the earlier timestamp.
-  SendPacketVector resend_packets =
-      CreateSendPacketVector(kSize4, 10, false);
+  SendPacketVector resend_packets = CreateSendPacketVector(kSize4, 10, false);
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Send 20 normal video packets. Only 10 will be sent in this
   // call, the rest will be sitting in the queue waiting for pacing.
-  EXPECT_TRUE(paced_sender_->SendPackets(
-      CreateSendPacketVector(kSize2, 20, false)));
+  EXPECT_TRUE(
+      paced_sender_->SendPackets(CreateSendPacketVector(kSize2, 20, false)));
 
   testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
 
   // Send normal audio packet. This is queued and will be sent
   // earlier than video packets.
-  EXPECT_TRUE(paced_sender_->SendPackets(
-      CreateSendPacketVector(kSize1, 1, true)));
+  EXPECT_TRUE(
+      paced_sender_->SendPackets(CreateSendPacketVector(kSize1, 1, true)));
 
   // Send RTCP packet. This is queued and will be sent first.
   EXPECT_TRUE(paced_sender_->SendRtcpPacket(
-      kVideoSsrc,
-      new base::RefCountedData<Packet>(Packet(kSize3, kValue))));
+      kVideoSsrc, new base::RefCountedData<Packet>(Packet(kSize3, kValue))));
 
   // Resend video packets. This is queued and will be sent
   // earlier than normal video packets.

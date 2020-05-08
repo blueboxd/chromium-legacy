@@ -29,8 +29,6 @@ crbug.com/166932 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 # These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):
 crbug.com/231357 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 
-crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1b.svg [ Pass Failure ]
-crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1d.svg [ Pass Failure ]
 crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
 crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]

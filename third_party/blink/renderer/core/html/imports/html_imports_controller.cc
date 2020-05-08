@@ -121,12 +121,9 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
 
   if (parent->GetDocument()->ImportsController()) {
-    Document* context_document = parent->GetDocument()->ContextDocument();
-    if (!context_document)
-      return nullptr;
-
-    security_origin = context_document->GetSecurityOrigin();
-    fetcher = context_document->Fetcher();
+    ExecutionContext* context = parent->GetDocument()->GetExecutionContext();
+    security_origin = context->GetSecurityOrigin();
+    fetcher = context->Fetcher();
   }
 
   params.SetCrossOriginAccessControl(security_origin.get(),

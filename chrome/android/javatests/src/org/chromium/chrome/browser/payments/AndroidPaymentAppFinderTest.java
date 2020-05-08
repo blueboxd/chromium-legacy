@@ -257,13 +257,11 @@ public class AndroidPaymentAppFinderTest
     }
 
     /**
-     * Payment apps without default payment method name in metadata should still be able to use
-     * URL payment method names that support all origins.
+     * Payment apps cannot use a payment method without explicit authorization.
      */
     @Test
     @Feature({"Payments"})
-    public void testNoDefaultPaymentMethodNameWithUrlPaymentMethodNameThatSupportsAllOrigins()
-            throws Throwable {
+    public void testPaymentAppsRequireExplicitAuthorizationForPaymentMethods() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://frankpay.com/webpay");
         mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
@@ -273,22 +271,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
-        Assert.assertEquals(1, mPaymentApps.get(0).getInstrumentMethodNames().size());
-        Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getIdentifier());
-        Assert.assertEquals(1, mPaymentApps.get(0).getInstrumentMethodNames().size());
-        Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
+        Assert.assertTrue("No apps should still match the query", mPaymentApps.isEmpty());
     }
 
     /** Payment apps without a human-readable name should be filtered out. */
@@ -740,13 +730,12 @@ public class AndroidPaymentAppFinderTest
     }
 
     /**
-     * Test https://frankpay.com/webpay payment method, which supports all apps without signature
-     * verification because https://frankpay.com/payment-manifest.json contains
-     * {"supported_origins": "*"}. Repeated app look ups should be successful.
+     * Test https://frankpay.com/webpay payment method, which is invalid because it contains
+     * {"supported_origins": "*"}. Repeated app look ups should find no payment apps.
      */
     @Test
     @Feature({"Payments"})
-    public void testFrankPaySupportsPaymentAppsFromAllOrigins() throws Throwable {
+    public void testFrankPayDoesNotMatchAnyPaymentApps() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://frankpay.com/webpay");
         mPackageManager.installPaymentApp(
@@ -763,31 +752,24 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("3 apps should match the query", 3, mPaymentApps.size());
-        Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(2).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.alicepay"));
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
-        Assert.assertTrue(appIdentifiers.contains("com.charliepay"));
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        assertPaymentAppsCreated("com.alicepay", "com.bobpay", "com.charliepay");
+        assertPaymentAppsCreated(/*no identifiers*/);
     }
 
     /**
-     * Verify that a payment app with an incorrect signature can support only
-     * {"supported_origins": "*"} payment methods, e.g., https://frankpay.com/webpay. Repeated app
-     * look ups should be successful.
+     * Verify unable to use a payment app that has wrong signature for default
+     * payment method and is not explicitly authorized to use any other method
+     * either.
      */
     @Test
     @Feature({"Payments"})
-    public void testMatchOnlyValidPaymentMethods() throws Throwable {
+    public void testInvalidSignatureAndPaymentMethodDoesNotMatchAnyPaymentApps() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://frankpay.com/webpay");
         methods.add("https://bobpay.com/webpay");
@@ -799,24 +781,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
-        Assert.assertEquals("1 payment method should be enabled", 1,
-                mPaymentApps.get(0).getInstrumentMethodNames().size());
-        Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
-        Assert.assertEquals("1 payment method should still be enabled", 1,
-                mPaymentApps.get(0).getInstrumentMethodNames().size());
-        Assert.assertEquals("https://frankpay.com/webpay",
-                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
+        Assert.assertTrue("No apps should still match the query", mPaymentApps.isEmpty());
     }
 
     /**
@@ -930,15 +902,14 @@ public class AndroidPaymentAppFinderTest
     }
 
     /**
-     * Verify that HenryPay can use https://henrypay.com/webpay payment method name because it's
-     * a default application and BobPay can use it because
-     * https://henrypay.com/payment-manifest.json contains "supported_origins": "*". Repeated app
-     * look ups should succeed.
+     * Verify that HenryPay can not use https://henrypay.com/webpay payment method name
+     * and BobPay can not use it because https://henrypay.com/payment-manifest.json
+     * contains invalid "supported_origins": "*". Repeated app look ups should
+     * find no payment apps.
      */
     @Test
     @Feature({"Payments"})
-    public void testUrlPaymentMethodWithDefaultApplicationAndAllSupportedOrigins()
-            throws Throwable {
+    public void testUrlPaymentMethodWithDefaultApplication() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://henrypay.com/webpay");
         mPackageManager.installPaymentApp("HenryPay", "com.henrypay", "https://henrypay.com/webpay",
@@ -950,31 +921,23 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("2 apps should match the query", 2, mPaymentApps.size());
-        Set<String> appIdentifiers = new HashSet<>();
-        appIdentifiers.add(mPaymentApps.get(0).getIdentifier());
-        appIdentifiers.add(mPaymentApps.get(1).getIdentifier());
-        Assert.assertTrue(appIdentifiers.contains("com.henrypay"));
-        Assert.assertTrue(appIdentifiers.contains("com.bobpay"));
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        assertPaymentAppsCreated("com.henrypay", "com.bobpay");
+        assertPaymentAppsCreated(/*no identifiers*/);
     }
 
     /**
-     * Verify that a payment app with a non-URI payment method name can use
-     * https://henrypay.com/webpay payment method name because
-     * https://henrypay.com/payment-manifest.json contains "supported_origins": "*". Repeated app
-     * look ups should succeed.
+     * Verify that no payment app can use https://henrypay.com/webpay, because it
+     * does not explicitly authorize any payment app.
      */
     @Test
     @Feature({"Payments"})
-    public void testNonUriDefaultPaymentMethodAppCanUseMethodThatSupportsAllOrigins()
-            throws Throwable {
+    public void testNonUriDefaultPaymentMethodAppCanUseMethod() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://henrypay.com/webpay");
         mPackageManager.installPaymentApp("BobPay", "com.bobpay", "basic-card", /*signature=*/"AA");
@@ -983,24 +946,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
-        Assert.assertEquals("1 payment method should be enabled", 1,
-                mPaymentApps.get(0).getInstrumentMethodNames().size());
-        Assert.assertEquals("https://henrypay.com/webpay",
-                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.bobpay", mPaymentApps.get(0).getIdentifier());
-        Assert.assertEquals("1 payment method should still be enabled", 1,
-                mPaymentApps.get(0).getInstrumentMethodNames().size());
-        Assert.assertEquals("https://henrypay.com/webpay",
-                mPaymentApps.get(0).getInstrumentMethodNames().iterator().next());
+        Assert.assertTrue("No apps should still match the query", mPaymentApps.isEmpty());
     }
 
     /**
@@ -1039,13 +992,12 @@ public class AndroidPaymentAppFinderTest
     }
 
     /**
-     * Verify that a payment app with duplicate default and supported method can use its own
-     * default payment method, which supports all origins.
-     * Repeated app look ups should succeed.
+     * Verify that no payment app can use https://henrypay.com/webpay, because it
+     * does not explicitly authorize any payment app.
      */
     @Test
     @Feature({"Payments"})
-    public void testDuplicateDefaultAndSupportedMethodAndAllOriginsSupported() throws Throwable {
+    public void testDuplicateDefaultAndSupportedMethod() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://henrypay.com/webpay");
         mPackageManager.installPaymentApp("HenryPay", "com.henrypay", "https://henrypay.com/webpay",
@@ -1055,15 +1007,14 @@ public class AndroidPaymentAppFinderTest
 
         findApps(methods);
 
-        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
-        Assert.assertEquals("com.henrypay", mPaymentApps.get(0).getIdentifier());
+        Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
 
         mPaymentApps.clear();
         mAllPaymentAppsCreated = false;
 
         findApps(methods);
 
-        assertPaymentAppsCreated("com.henrypay");
+        assertPaymentAppsCreated(/*no identifiers*/);
     }
 
     /**

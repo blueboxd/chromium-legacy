@@ -4,7 +4,7 @@
 
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 
-bool LocationBarModelDelegate::ShouldPreventElision() const {
+bool LocationBarModelDelegate::ShouldPreventElision() {
   return false;
 }
 

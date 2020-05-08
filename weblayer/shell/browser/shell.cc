@@ -158,7 +158,7 @@ gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
   return GetShellDefaultSize();
 }
 
-Shell* Shell::CreateNewWindow(weblayer::Profile* web_profile,
+Shell* Shell::CreateNewWindow(Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
 #if defined(OS_ANDROID)

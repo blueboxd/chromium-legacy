@@ -39,6 +39,8 @@ import org.chromium.chrome.browser.feed.StreamLifecycleManager;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
+import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
+import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -86,8 +88,7 @@ import java.util.List;
  */
 public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvider,
                                    TemplateUrlServiceObserver,
-                                   ChromeFullscreenManager.FullscreenListener,
-                                   FeedSurfaceCoordinator.FeedSurfaceDelegate {
+                                   ChromeFullscreenManager.FullscreenListener, FeedSurfaceDelegate {
     private static final String TAG = "NewTabPage";
 
     // Key for the scroll position data that may be stored in a navigation entry.
@@ -106,7 +107,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private final ChromeFullscreenManager mFullscreenManager;
     private final NewTabPageUma mNewTabPageUma;
     private final ContextMenuManager mContextMenuManager;
-    private FeedSurfaceCoordinator mCoordinator;
+    private FeedSurfaceProvider mFeedSurfaceProvider;
 
     private NewTabPageLayout mNewTabPageLayout;
     private TabObserver mTabObserver;
@@ -387,15 +388,16 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
         Runnable closeContextMenuCallback = activity::closeContextMenu;
         mContextMenuManager = new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(),
-                mCoordinator.getTouchEnabledDelegate(), closeContextMenuCallback,
+                mFeedSurfaceProvider.getTouchEnabledDelegate(), closeContextMenuCallback,
                 NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         mNewTabPageLayout.initialize(mNewTabPageManager, activity, mTileGroupDelegate,
                 mSearchProviderHasLogo,
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
-                mCoordinator.getScrollDelegate(), mContextMenuManager, mCoordinator.getUiConfig(),
-                activityTabProvider, lifecycleDispatcher, overviewModeBehavior, uma);
+                mFeedSurfaceProvider.getScrollDelegate(), mContextMenuManager,
+                mFeedSurfaceProvider.getUiConfig(), activityTabProvider, lifecycleDispatcher,
+                overviewModeBehavior, uma);
         TraceEvent.end(TAG);
     }
 
@@ -430,13 +432,14 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                     R.layout.new_tab_page_snippets_expandable_header, null, false);
         }
 
-        mCoordinator = new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector,
-                tabProvider, new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
-                mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
-                mNewTabPageManager.getNavigationDelegate(), profile);
+        mFeedSurfaceProvider =
+                new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector, tabProvider,
+                        new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
+                        mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
+                        mNewTabPageManager.getNavigationDelegate(), profile);
 
         // Record the timestamp at which the new tab page's construction started.
-        uma.trackTimeToFirstDraw(mCoordinator.getView(), mConstructedTimeNs);
+        uma.trackTimeToFirstDraw(mFeedSurfaceProvider.getView(), mConstructedTimeNs);
     }
 
     /**
@@ -737,7 +740,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityLifecycleDispatcher.unregister(mLifecycleObserver);
         mLifecycleObserver = null;
         mFullscreenManager.removeListener(this);
-        mCoordinator.destroy();
+        mFeedSurfaceProvider.destroy();
         mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         mIsDestroyed = true;
     }
@@ -764,7 +767,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @Override
     public View getView() {
-        return mCoordinator.getView();
+        return mFeedSurfaceProvider.getView();
     }
 
     @Override
@@ -780,13 +783,14 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @Override
     public boolean shouldCaptureThumbnail() {
-        return mNewTabPageLayout.shouldCaptureThumbnail() || mCoordinator.shouldCaptureThumbnail();
+        return mNewTabPageLayout.shouldCaptureThumbnail()
+                || mFeedSurfaceProvider.shouldCaptureThumbnail();
     }
 
     @Override
     public void captureThumbnail(Canvas canvas) {
         mNewTabPageLayout.onPreCaptureThumbnail();
-        mCoordinator.captureThumbnail(canvas);
+        mFeedSurfaceProvider.captureThumbnail(canvas);
     }
     // Implements FeedSurfaceDelegate
     @Override
@@ -802,6 +806,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @VisibleForTesting
     public FeedSurfaceCoordinator getCoordinatorForTesting() {
-        return mCoordinator;
+        return (FeedSurfaceCoordinator) mFeedSurfaceProvider;
     }
 }

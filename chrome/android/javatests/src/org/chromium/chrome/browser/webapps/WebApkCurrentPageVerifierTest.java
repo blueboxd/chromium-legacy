@@ -15,10 +15,11 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -38,8 +39,9 @@ public final class WebApkCurrentPageVerifierTest {
     }
 
     private WebappActivity launchWebApk(String url) {
-        WebappInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
-        return mActivityTestRule.startWebApkActivity(webApkInfo);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                new WebApkIntentDataProviderBuilder("org.chromium.webapk.random", url).build();
+        return mActivityTestRule.startWebApkActivity(intentDataProvider);
     }
 
     private @VerificationStatus int getCurrentPageVerifierStatus() {
@@ -60,7 +62,7 @@ public final class WebApkCurrentPageVerifierTest {
                 mTestServer.getURL("/chrome/test/data/android/customtabs/cct_header_frame.html");
         String expectedScope = mTestServer.getURL("/chrome/test/data/android/customtabs/");
         WebappActivity webappActivity = launchWebApk(page);
-        assertEquals(expectedScope, webappActivity.getWebappInfo().scopeUrl());
+        assertEquals(expectedScope, getWebappExtras(webappActivity).scopeUrl);
 
         mActivityTestRule.loadUrl(otherPageInScope);
         assertEquals(VerificationStatus.SUCCESS, getCurrentPageVerifierStatus());
@@ -79,9 +81,13 @@ public final class WebApkCurrentPageVerifierTest {
                 mTestServer.getURL("/chrome/test/data/android/simple.html");
         String expectedScope = mTestServer.getURL("/chrome/test/data/android/customtabs/");
         WebappActivity webappActivity = launchWebApk(page);
-        assertEquals(expectedScope, webappActivity.getWebappInfo().scopeUrl());
+        assertEquals(expectedScope, getWebappExtras(webappActivity).scopeUrl);
 
         mActivityTestRule.loadUrl(pageOutsideScopeSameOrigin);
         assertEquals(VerificationStatus.FAILURE, getCurrentPageVerifierStatus());
+    }
+
+    private WebappExtras getWebappExtras(WebappActivity activity) {
+        return activity.getIntentDataProvider().getWebappExtras();
     }
 }

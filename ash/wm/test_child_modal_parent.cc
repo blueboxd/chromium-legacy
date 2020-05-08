@@ -48,6 +48,7 @@ const SkColor kChildColor = SK_ColorWHITE;
 class ChildModalWindow : public views::WidgetDelegateView {
  public:
   ChildModalWindow() {
+    SetTitle(base::ASCIIToUTF16("Examples: Child Modal Window"));
     SetBackground(views::CreateSolidBackground(kChildColor));
     views::Textfield* modal_child_textfield = new views::Textfield;
     AddChildView(modal_child_textfield);
@@ -65,9 +66,6 @@ class ChildModalWindow : public views::WidgetDelegateView {
   }
 
   // Overridden from WidgetDelegate:
-  base::string16 GetWindowTitle() const override {
-    return base::ASCIIToUTF16("Examples: Child Modal Window");
-  }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
 
   DISALLOW_COPY_AND_ASSIGN(ChildModalWindow);
@@ -91,6 +89,7 @@ TestChildModalParent::TestChildModalParent(aura::Window* context)
     : modal_parent_(std::make_unique<Widget>()),
       textfield_(new views::Textfield),
       host_(new views::NativeViewHost) {
+  SetTitle(base::ASCIIToUTF16("Examples: Child Modal Parent"));
   textfield_->SetPlaceholderText(base::ASCIIToUTF16("top level window"));
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -128,10 +127,6 @@ aura::Window* TestChildModalParent::ShowModalChild() {
   modal_child_->GetNativeView()->SetName("ChildModalWindow");
   modal_child_->Show();
   return modal_child_->GetNativeView();
-}
-
-base::string16 TestChildModalParent::GetWindowTitle() const {
-  return base::ASCIIToUTF16("Examples: Child Modal Parent");
 }
 
 void TestChildModalParent::Layout() {

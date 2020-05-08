@@ -273,8 +273,9 @@ void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
                           error_html);
 }
 
-bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {
-  return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url);
+bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url, int error_code) {
+  return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url,
+                                        error_code);
 }
 
 std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -22,7 +23,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /** The coordinator to control the explore surface. */
-class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDelegate {
+class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
     private final ChromeActivity mActivity;
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
     private final FeedSurfaceCreator mFeedSurfaceCreator;
@@ -65,7 +66,7 @@ class ExploreSurfaceCoordinator implements FeedSurfaceCoordinator.FeedSurfaceDel
         return mFeedSurfaceCreator;
     }
 
-    // Implements FeedSurfaceCoordinator.FeedSurfaceDelegate.
+    // Implements FeedSurfaceDelegate.
     @Override
     public StreamLifecycleManager createStreamLifecycleManager(Stream stream, Activity activity) {
         return new ExploreSurfaceStreamLifecycleManager(stream, activity, mHasHeader);

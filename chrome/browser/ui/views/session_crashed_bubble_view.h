@@ -48,9 +48,6 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   ~SessionCrashedBubbleView() override;
 
   // WidgetDelegateView methods.
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::BubbleDialogDelegateView methods.

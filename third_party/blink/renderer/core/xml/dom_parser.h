@@ -27,16 +27,18 @@
 namespace blink {
 
 class Document;
+class LocalDOMWindow;
+class ScriptState;
 
 class DOMParser final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static DOMParser* Create(Document& document) {
-    return MakeGarbageCollected<DOMParser>(document);
+  static DOMParser* Create(ScriptState* script_state) {
+    return MakeGarbageCollected<DOMParser>(script_state);
   }
 
-  explicit DOMParser(Document&);
+  explicit DOMParser(ScriptState*);
 
   Document* parseFromString(const String&, const String& type);
 
@@ -45,7 +47,7 @@ class DOMParser final : public ScriptWrappable {
   Document* GetDocument() const;
 
  private:
-  WeakMember<Document> context_document_;
+  WeakMember<LocalDOMWindow> window_;
 };
 
 }  // namespace blink

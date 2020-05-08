@@ -59,9 +59,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     protected static final String BUNDLE_TAB_ID = "tabId";
 
-    private WebappInfo mWebappInfo;
-
-    private static WebappInfo sWebappInfoOverride;
+    private static BrowserServicesIntentDataProvider sIntentDataProviderOverride;
 
     private BrowserServicesIntentDataProvider mIntentDataProvider;
     private WebappActivityTabController mTabController;
@@ -75,12 +73,21 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
             Intent intent, @CustomTabsIntent.ColorScheme int colorScheme) {
-        return createWebappInfo(intent).getProvider();
+        if (intent == null) return null;
+
+        if (sIntentDataProviderOverride != null) {
+            return sIntentDataProviderOverride;
+        }
+
+        return TextUtils.isEmpty(WebappIntentUtils.getWebApkPackageName(intent))
+                ? WebappIntentDataProviderFactory.create(intent)
+                : WebApkIntentDataProviderFactory.create(intent);
     }
 
     @VisibleForTesting
-    public static void setWebappInfoForTesting(WebappInfo webappInfo) {
-        sWebappInfoOverride = webappInfo;
+    public static void setIntentDataProviderForTesting(
+            BrowserServicesIntentDataProvider intentDataProvider) {
+        sIntentDataProviderOverride = intentDataProvider;
     }
 
     @Override
@@ -88,21 +95,9 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return mIntentDataProvider;
     }
 
-    protected WebappInfo createWebappInfo(Intent intent) {
-        if (intent == null) return null;
-
-        if (sWebappInfoOverride != null) {
-            return sWebappInfoOverride;
-        }
-
-        return TextUtils.isEmpty(WebappIntentUtils.getWebApkPackageName(intent))
-                ? WebappInfo.create(intent)
-                : WebApkInfo.create(intent);
-    }
-
     @Override
     public boolean shouldPreferLightweightFre(Intent intent) {
-        // We cannot use WebappInfo#webApkPackageName() because
+        // We cannot get WebAPK package name from BrowserServicesIntentDataProvider because
         // {@link WebappActivity#performPreInflationStartup()} may not have been called yet.
         String webApkPackageName =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
@@ -180,16 +175,16 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     @Override
     public void performPreInflationStartup() {
-        Intent intent = getIntent();
-        WebappInfo info = createWebappInfo(intent);
+        mIntentDataProvider =
+                buildIntentDataProvider(getIntent(), CustomTabsIntent.COLOR_SCHEME_LIGHT);
 
-        if (info == null) {
+        if (mIntentDataProvider == null) {
             // If {@link info} is null, there isn't much we can do, abort.
             ApiCompatibilityUtils.finishAndRemoveTask(this);
             return;
         }
 
-        mWebappInfo = info;
+        WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
 
         // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
         // if the registry and this web app are already initialized. Must override Strict Mode to
@@ -197,14 +192,14 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             WebappRegistry.getInstance();
-            WebappRegistry.warmUpSharedPrefsForId(info.id());
+            WebappRegistry.warmUpSharedPrefsForId(webappExtras.id);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
         super.performPreInflationStartup();
 
-        if (mWebappInfo.displayMode() == WebDisplayMode.FULLSCREEN) {
+        if (webappExtras.displayMode == WebDisplayMode.FULLSCREEN) {
             new ImmersiveModeController(getLifecycleDispatcher(), this)
                     .enterImmersiveMode(LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
         }
@@ -217,7 +212,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         IntentIgnoringCriterion intentIgnoringCriterion =
                 (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
 
-        mIntentDataProvider = mWebappInfo.getProvider();
         BaseCustomTabActivityModule baseCustomTabModule = new BaseCustomTabActivityModule(
                 mIntentDataProvider, mNightModeStateController, intentIgnoringCriterion);
         WebappActivityModule webappModule = new WebappActivityModule();
@@ -276,14 +270,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 true /* is opened by Chrome */, true /* should show share */,
                 false /* should show star (bookmarking) */, false /* should show download */,
                 false /* is incognito */);
-    }
-
-    /**
-     * @return Structure containing data about the webapp currently displayed.
-     *         The return value should not be cached.
-     */
-    public WebappInfo getWebappInfo() {
-        return mWebappInfo;
     }
 
     protected CustomTabTabObserver createTabObserver() {
@@ -362,8 +348,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
         boolean isWindowInitiallyTranslucent =
                 BaseCustomTabActivity.isWindowInitiallyTranslucent(this);
-        mSplashController.setConfig(
-                new WebappSplashDelegate(this, mTabObserverRegistrar, mWebappInfo),
+        mSplashController.setConfig(new WebappSplashDelegate(this, mTabObserverRegistrar,
+                                            WebappInfo.create(mIntentDataProvider)),
                 isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
     }
 

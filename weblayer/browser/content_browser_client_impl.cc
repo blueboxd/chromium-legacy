@@ -164,9 +164,9 @@ void HandleSSLErrorWrapper(
   SSLErrorHandler::HandleSSLError(
       web_contents, cert_error, ssl_info, request_url,
       std::move(ssl_cert_reporter), std::move(blocking_page_ready_callback),
-      weblayer::BrowserProcess::GetInstance()->GetNetworkTimeTracker(),
+      BrowserProcess::GetInstance()->GetNetworkTimeTracker(),
       captive_portal_service,
-      std::make_unique<weblayer::WebLayerSecurityBlockingPageFactory>());
+      std::make_unique<WebLayerSecurityBlockingPageFactory>());
 }
 
 #if defined(OS_ANDROID)
@@ -318,14 +318,14 @@ ContentBrowserClientImpl::CreateNetworkContext(
         ProfileImpl::GetCachePath(context).Append(FILE_PATH_LITERAL("Cache"));
   }
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kProxyServer)) {
+  if (command_line->HasSwitch(::switches::kProxyServer)) {
     std::string proxy_server =
-        command_line->GetSwitchValueASCII(switches::kProxyServer);
+        command_line->GetSwitchValueASCII(::switches::kProxyServer);
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules().ParseFromString(proxy_server);
-    if (command_line->HasSwitch(switches::kProxyBypassList)) {
+    if (command_line->HasSwitch(::switches::kProxyBypassList)) {
       std::string bypass_list =
-          command_line->GetSwitchValueASCII(switches::kProxyBypassList);
+          command_line->GetSwitchValueASCII(::switches::kProxyBypassList);
       proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
     }
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
@@ -605,8 +605,7 @@ void ContentBrowserClientImpl::CreateFeatureListAndFieldTrials() {
 
 #if defined(OS_ANDROID)
 SafeBrowsingService* ContentBrowserClientImpl::GetSafeBrowsingService() {
-  return weblayer::BrowserProcess::GetInstance()->GetSafeBrowsingService(
-      GetUserAgent());
+  return BrowserProcess::GetInstance()->GetSafeBrowsingService(GetUserAgent());
 }
 #endif
 

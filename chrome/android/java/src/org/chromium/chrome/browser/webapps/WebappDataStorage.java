@@ -22,6 +22,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -231,11 +232,14 @@ public class WebappDataStorage {
     }
 
     /**
-     * Updates the data stored in this object to match that in the supplied {@link WebappInfo}.
+     * Updates the data stored in this object to match that in the supplied
+     * {@link BrowserServicesIntentDataProvider}.
      * @param info The WebappInfo to pull web app data from.
      */
-    public void updateFromWebappInfo(WebappInfo info) {
-        if (info == null) return;
+    public void updateFromWebappIntentDataProvider(
+            BrowserServicesIntentDataProvider intentDataProvider) {
+        if (intentDataProvider == null) return;
+        WebappInfo info = WebappInfo.create(intentDataProvider);
 
         SharedPreferences.Editor editor = mPreferences.edit();
         boolean updated = false;

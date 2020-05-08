@@ -28,7 +28,6 @@ IcuEnvironment* env = new IcuEnvironment();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<GURL> web_app_manifest_urls;
   std::vector<url::Origin> supported_origins;
-  bool all_origins_supported;
 
   base::StringPiece json_data(reinterpret_cast<const char*>(data), size);
   std::unique_ptr<base::Value> value =
@@ -40,6 +39,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   log.DisableInTest();
   payments::PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
       GURL("https://chromium.org/pmm.json"), std::move(value), log,
-      &web_app_manifest_urls, &supported_origins, &all_origins_supported);
+      &web_app_manifest_urls, &supported_origins);
   return 0;
 }

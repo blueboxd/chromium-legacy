@@ -91,9 +91,7 @@ Resource* PreloadRequest::Start(Document* document) {
   FetchParameters params(std::move(resource_request), options);
 
   if (resource_type_ == ResourceType::kImportResource) {
-    const SecurityOrigin* security_origin =
-        document->ContextDocument()->GetSecurityOrigin();
-    params.SetCrossOriginAccessControl(security_origin,
+    params.SetCrossOriginAccessControl(document->GetSecurityOrigin(),
                                        kCrossOriginAttributeAnonymous);
   }
 

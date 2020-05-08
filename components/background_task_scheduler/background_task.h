@@ -9,7 +9,10 @@
 #include "base/macros.h"
 #include "components/background_task_scheduler/task_parameters.h"
 #include "components/keyed_service/core/simple_factory_key.h"
-#include "content/public/browser/browser_context.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace background_task {
 

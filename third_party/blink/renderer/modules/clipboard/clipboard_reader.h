@@ -12,8 +12,8 @@ namespace blink {
 
 class SystemClipboard;
 
-// Interface for reading async-clipboard-compatible types from the System
-// Clipboard as a Blob.
+// Interface for reading async-clipboard-compatible types from the sanitized
+// System Clipboard as a Blob.
 //
 // Reading a type from the system clipboard to a Blob is accomplished by:
 // (1) Reading the item from the system clipboard.
@@ -36,7 +36,7 @@ class ClipboardReader : public GarbageCollected<ClipboardReader> {
   SystemClipboard* system_clipboard() { return system_clipboard_; }
 
  private:
-  // Access to the global system clipboard.
+  // Access to the global sanitized system clipboard.
   Member<SystemClipboard> system_clipboard_;
 };
 

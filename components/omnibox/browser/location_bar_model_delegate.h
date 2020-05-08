@@ -41,7 +41,7 @@ class LocationBarModelDelegate {
   // query in omnibox. Based on whether user has a specified extension or pref
   // enabled. If true, the only elisions should be username/password and
   // trailing slash on bare hostname.
-  virtual bool ShouldPreventElision() const;
+  virtual bool ShouldPreventElision();
 
   // Returns whether everything after the hostname should be trimmed from the
   // display URL.

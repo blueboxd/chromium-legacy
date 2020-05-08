@@ -1205,9 +1205,18 @@ void LayoutObject::ClearIntrinsicLogicalWidthsDirty() {
   bitfields_.SetIntrinsicLogicalWidthsDirty(false);
 }
 
+bool LayoutObject::IsFontFallbackValid() const {
+  return StyleRef().GetFont().IsFallbackValid() &&
+         FirstLineStyle()->GetFont().IsFallbackValid();
+}
+
 void LayoutObject::InvalidateSubtreeLayoutForFontUpdates() {
-  SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
-      layout_invalidation_reason::kFontsChanged);
+  if (!RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled() ||
+      !IsFontFallbackValid()) {
+    SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kFontsChanged);
+  }
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
     child->InvalidateSubtreeLayoutForFontUpdates();

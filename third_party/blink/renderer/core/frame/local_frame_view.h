@@ -277,16 +277,25 @@ class CORE_EXPORT LocalFrameView final
   DisplayShape GetDisplayShape() { return display_shape_; }
   void SetDisplayShape(DisplayShape);
 
-  // Fixed-position objects.
+  // For any viewport-constrained object, we need to know if it's due to fixed
+  // or sticky so that we can support HasStickyViewportConstrainedObject().
+  enum ViewportConstrainedType { kFixed = 0, kSticky = 1 };
+  // Fixed-position and viewport-constrained sticky-position objects.
   typedef HashSet<LayoutObject*> ObjectSet;
-  void AddViewportConstrainedObject(LayoutObject&);
-  void RemoveViewportConstrainedObject(LayoutObject&);
+  void AddViewportConstrainedObject(LayoutObject&, ViewportConstrainedType);
+  void RemoveViewportConstrainedObject(LayoutObject&, ViewportConstrainedType);
   const ObjectSet* ViewportConstrainedObjects() const {
     return viewport_constrained_objects_.get();
   }
   bool HasViewportConstrainedObjects() const {
     return viewport_constrained_objects_ &&
            viewport_constrained_objects_->size() > 0;
+  }
+  // Returns true if any of the objects in viewport_constrained_objects_ are
+  // sticky position.
+  bool HasStickyViewportConstrainedObject() const {
+    DCHECK(!sticky_position_object_count_ || HasViewportConstrainedObjects());
+    return sticky_position_object_count_ > 0;
   }
 
   // Objects with background-attachment:fixed.
@@ -893,6 +902,7 @@ class CORE_EXPORT LocalFrameView final
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
   std::unique_ptr<ObjectSet> viewport_constrained_objects_;
+  // Number of entries in viewport_constrained_objects_ that are sticky.
   unsigned sticky_position_object_count_;
   ObjectSet background_attachment_fixed_objects_;
   Member<FrameViewAutoSizeInfo> auto_size_info_;

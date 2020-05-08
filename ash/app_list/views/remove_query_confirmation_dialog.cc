@@ -29,6 +29,9 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
     : confirm_callback_(std::move(confirm_callback)),
       event_flags_(event_flags),
       contents_view_(contents_view) {
+  SetTitle(l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE));
+  SetShowCloseButton(false);
+
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL));
@@ -73,16 +76,8 @@ const char* RemoveQueryConfirmationDialog::GetClassName() const {
   return "RemoveQueryConfirmationDialog";
 }
 
-base::string16 RemoveQueryConfirmationDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE);
-}
-
 ui::ModalType RemoveQueryConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
-}
-
-bool RemoveQueryConfirmationDialog::ShouldShowCloseButton() const {
-  return false;
 }
 
 gfx::Size RemoveQueryConfirmationDialog::CalculatePreferredSize() const {

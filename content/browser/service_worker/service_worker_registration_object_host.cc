@@ -125,8 +125,7 @@ ServiceWorkerRegistrationObjectHost::CreateObjectInfo() {
 
 void ServiceWorkerRegistrationObjectHost::OnVersionAttributesChanged(
     ServiceWorkerRegistration* registration,
-    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
-    const ServiceWorkerRegistrationInfo& info) {
+    blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask) {
   DCHECK_EQ(registration->id(), registration_->id());
   SetServiceWorkerObjects(
       std::move(changed_mask), registration->installing_version(),

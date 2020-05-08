@@ -34,7 +34,6 @@ class ASH_EXPORT DisplayChangeDialog : public views::DialogDelegateView {
   DisplayChangeDialog& operator=(const DisplayChangeDialog&) = delete;
 
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -60,7 +59,6 @@ class ASH_EXPORT DisplayChangeDialog : public views::DialogDelegateView {
   // The remaining timeout in seconds.
   uint16_t timeout_count_ = kDefaultTimeoutInSeconds;
 
-  const base::string16 window_title_;
   const base::string16 timeout_message_with_placeholder_;
 
   views::Label* label_ = nullptr;  // Not owned.

@@ -125,40 +125,18 @@ bool ParseDefaultApplications(const GURL& manifest_url,
   return true;
 }
 
-// Parses the "supported_origins": "*" (or ["https://some.origin"]) from |dict|
-// into |supported_origins| and |all_origins_supported|. Returns 'false' for
-// invalid data.
+// Parses the "supported_origins": "https://some.origin" from |dict|
+// into |supported_origins|. Returns 'false' for invalid data.
 bool ParseSupportedOrigins(base::DictionaryValue* dict,
                            std::vector<url::Origin>* supported_origins,
-                           bool* all_origins_supported,
                            const ErrorLogger& log) {
   DCHECK(dict);
   DCHECK(supported_origins);
-  DCHECK(all_origins_supported);
-
-  *all_origins_supported = false;
-
-  {
-    std::string item;
-    if (dict->GetString(kSupportedOrigins, &item)) {
-      if (item != "*") {
-        log.Error(
-            base::StringPrintf("Invalid value for \"%s\". Must be either \"*\" "
-                               "or a list of RFC6454 origins.",
-                               kSupportedOrigins));
-        return false;
-      }
-
-      *all_origins_supported = true;
-      return true;
-    }
-  }
 
   base::ListValue* list = nullptr;
   if (!dict->GetList(kSupportedOrigins, &list)) {
-    log.Error(
-        base::StringPrintf("\"%s\" must be either \"*\" or a list of origins.",
-                           kSupportedOrigins));
+    log.Error(base::StringPrintf("\"%s\" must be a list of origins.",
+                                 kSupportedOrigins));
     return false;
   }
 
@@ -393,13 +371,9 @@ void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
     std::unique_ptr<base::Value> value,
     const ErrorLogger& log,
     std::vector<GURL>* web_app_manifest_urls,
-    std::vector<url::Origin>* supported_origins,
-    bool* all_origins_supported) {
+    std::vector<url::Origin>* supported_origins) {
   DCHECK(web_app_manifest_urls);
   DCHECK(supported_origins);
-  DCHECK(all_origins_supported);
-
-  *all_origins_supported = false;
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(value));
@@ -415,8 +389,7 @@ void PaymentManifestParser::ParsePaymentMethodManifestIntoVectors(
   }
 
   if (dict->HasKey(kSupportedOrigins) &&
-      !ParseSupportedOrigins(dict.get(), supported_origins,
-                             all_origins_supported, log)) {
+      !ParseSupportedOrigins(dict.get(), supported_origins, log)) {
     web_app_manifest_urls->clear();
   }
 }
@@ -655,21 +628,18 @@ void PaymentManifestParser::OnPaymentMethodParse(
 
   std::vector<GURL> web_app_manifest_urls;
   std::vector<url::Origin> supported_origins;
-  bool all_origins_supported = false;
 
   if (result.value) {
     ParsePaymentMethodManifestIntoVectors(
         manifest_url, base::Value::ToUniquePtrValue(std::move(*result.value)),
-        *log_, &web_app_manifest_urls, &supported_origins,
-        &all_origins_supported);
+        *log_, &web_app_manifest_urls, &supported_origins);
   } else {
     log_->Error(*result.error);
   }
 
   // Can trigger synchronous deletion of this object, so can't access any of
   // the member variables after this statement.
-  std::move(callback).Run(web_app_manifest_urls, supported_origins,
-                          all_origins_supported);
+  std::move(callback).Run(web_app_manifest_urls, supported_origins);
 }
 
 void PaymentManifestParser::OnWebAppParse(

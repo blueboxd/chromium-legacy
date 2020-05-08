@@ -68,7 +68,7 @@ bool PathProvider(int key, base::FilePath* result) {
       return rv;
     }
 #if defined(OS_ANDROID)
-    case weblayer::DIR_CRASH_DUMPS:
+    case DIR_CRASH_DUMPS:
       if (!base::android::GetCacheDirectory(&cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("Crashpad"));

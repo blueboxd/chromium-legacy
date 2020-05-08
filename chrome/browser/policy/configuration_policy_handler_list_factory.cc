@@ -1270,8 +1270,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kRequiredClientCertificateForDevice,
     base::Value::Type::LIST },
 #endif  // defined(OS_CHROMEOS)
+
   { key::kScrollToTextFragmentEnabled,
     prefs::kScrollToTextFragmentEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kAppCacheForceEnabled,
+    prefs::kAppCacheForceEnabled,
     base::Value::Type::BOOLEAN },
 };
 // clang-format on

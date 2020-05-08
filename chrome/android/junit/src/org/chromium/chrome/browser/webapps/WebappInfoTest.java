@@ -34,7 +34,7 @@ public class WebappInfoTest {
         Intent intent = WebappTestHelper.createMinimalWebappIntent(id, url);
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertNotNull(info);
     }
 
@@ -48,7 +48,7 @@ public class WebappInfoTest {
         Intent intent = WebappTestHelper.createMinimalWebappIntent(id, url);
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertNotNull(info);
     }
 
@@ -65,7 +65,7 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
         intent.putExtra(ShortcutHelper.EXTRA_URL, bustedUrl);
 
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertNotNull(info);
     }
 
@@ -76,7 +76,7 @@ public class WebappInfoTest {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
 
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(title, info.name());
         Assert.assertEquals(title, info.shortName());
     }
@@ -88,7 +88,7 @@ public class WebappInfoTest {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
 
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals("", info.name());
         Assert.assertEquals(shortName, info.shortName());
     }
@@ -102,7 +102,7 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
 
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(title, info.name());
         Assert.assertEquals(shortName, info.shortName());
     }
@@ -116,7 +116,7 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
 
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(name, info.name());
         Assert.assertEquals(shortName, info.shortName());
     }
@@ -132,7 +132,7 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.FULLSCREEN);
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.DEFAULT);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -150,7 +150,7 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
         intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(toolbarColor, info.toolbarColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -163,7 +163,7 @@ public class WebappInfoTest {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_NAME, name);
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.toolbarColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
@@ -178,7 +178,7 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, toolbarColor);
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
 
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(toolbarColor, info.toolbarColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -188,7 +188,7 @@ public class WebappInfoTest {
         String scope = "https://www.foo.com";
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(scope, info.scopeUrl());
     }
 
@@ -197,7 +197,7 @@ public class WebappInfoTest {
         String url = "https://www.foo.com/homepage.html";
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_URL, url);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(ShortcutHelper.getScopeFromUrl(url), info.scopeUrl());
     }
 
@@ -205,7 +205,7 @@ public class WebappInfoTest {
     public void testIntentDisplayMode() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(WebDisplayMode.MINIMAL_UI, info.displayMode());
     }
 
@@ -213,7 +213,7 @@ public class WebappInfoTest {
     public void testIntentOrientation() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
-        WebappInfo info = WebappInfo.create(intent);
+        WebappInfo info = createWebappInfo(intent);
         Assert.assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
     }
 
@@ -232,7 +232,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
-            Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertFalse(name, createWebappInfo(intent).isIconGenerated());
         }
 
         // Set to true.
@@ -244,7 +244,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, true);
 
-            Assert.assertTrue(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertTrue(name, createWebappInfo(intent).isIconGenerated());
         }
 
         // Set to false.
@@ -256,7 +256,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, false);
 
-            Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertFalse(name, createWebappInfo(intent).isIconGenerated());
         }
 
         // Set to something else than a boolean.
@@ -268,7 +268,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, "true");
 
-            Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertFalse(name, createWebappInfo(intent).isIconGenerated());
         }
     }
 
@@ -287,7 +287,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
-            Assert.assertFalse(name, WebappInfo.create(intent).isIconAdaptive());
+            Assert.assertFalse(name, createWebappInfo(intent).isIconAdaptive());
         }
 
         // Set to true.
@@ -299,7 +299,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, true);
 
-            Assert.assertTrue(name, WebappInfo.create(intent).isIconAdaptive());
+            Assert.assertTrue(name, createWebappInfo(intent).isIconAdaptive());
         }
 
         // Set to false.
@@ -311,7 +311,7 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, false);
 
-            Assert.assertFalse(name, WebappInfo.create(intent).isIconAdaptive());
+            Assert.assertFalse(name, createWebappInfo(intent).isIconAdaptive());
         }
 
         // Set to something else than a boolean.
@@ -323,8 +323,12 @@ public class WebappInfoTest {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_ADAPTIVE, "true");
 
-            Assert.assertFalse(name, WebappInfo.create(intent).isIconAdaptive());
+            Assert.assertFalse(name, createWebappInfo(intent).isIconAdaptive());
         }
+    }
+
+    private WebappInfo createWebappInfo(Intent intent) {
+        return WebappInfo.create(WebappIntentDataProviderFactory.create(intent));
     }
 
     /**
@@ -334,11 +338,11 @@ public class WebappInfoTest {
     @Test
     public void testForceNavigationNotSpecified() {
         Intent intent = createIntentWithUrlAndId();
-        Assert.assertFalse(WebappInfo.create(intent).shouldForceNavigation());
+        Assert.assertFalse(createWebappInfo(intent).shouldForceNavigation());
     }
 
     /**
-     * Creates intent with url and id. If the url or id are not set WebappInfo#create() returns
+     * Creates intent with url and id. If the url or id are not set createWebappInfo() returns
      * null.
      */
     private Intent createIntentWithUrlAndId() {

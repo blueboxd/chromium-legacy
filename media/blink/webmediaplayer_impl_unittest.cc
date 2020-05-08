@@ -350,6 +350,30 @@ class WebMediaPlayerImplTest
   }
 
   void InitializeWebMediaPlayerImpl() {
+    InitializeWebMediaPlayerImplInternal(nullptr);
+  }
+
+  ~WebMediaPlayerImplTest() override {
+    if (!wmpi_)
+      return;
+    EXPECT_CALL(client_, SetCcLayer(nullptr));
+    EXPECT_CALL(client_, MediaRemotingStopped(_));
+
+    // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
+    // objects passed to the message loop for destruction are released.
+    //
+    // NOTE: This should be done before any other member variables are
+    // destructed since WMPI may reference them during destruction.
+    wmpi_.reset();
+
+    CycleThreads();
+
+    web_view_->Close();
+  }
+
+ protected:
+  void InitializeWebMediaPlayerImplInternal(
+      std::unique_ptr<media::Demuxer> demuxer_override) {
     auto media_log = std::make_unique<NiceMock<MockMediaLog>>();
     InitializeSurfaceLayerBridge();
 
@@ -412,7 +436,7 @@ class WebMediaPlayerImplTest
         viz::TestContextProvider::Create(),
         blink::WebMediaPlayer::SurfaceLayerMode::kAlways,
         is_background_suspend_enabled_, is_background_video_playback_enabled_,
-        true, false, nullptr);
+        true, false, std::move(demuxer_override), nullptr);
 
     auto compositor = std::make_unique<NiceMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -424,25 +448,6 @@ class WebMediaPlayerImplTest
         std::move(params));
   }
 
-  ~WebMediaPlayerImplTest() override {
-    if (!wmpi_)
-      return;
-    EXPECT_CALL(client_, SetCcLayer(nullptr));
-    EXPECT_CALL(client_, MediaRemotingStopped(_));
-
-    // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
-    // objects passed to the message loop for destruction are released.
-    //
-    // NOTE: This should be done before any other member variables are
-    // destructed since WMPI may reference them during destruction.
-    wmpi_.reset();
-
-    CycleThreads();
-
-    web_view_->Close();
-  }
-
- protected:
   std::unique_ptr<blink::WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
       blink::WebSurfaceLayerBridgeObserver*,
       cc::UpdateSubmissionStateCB) {
@@ -2186,6 +2191,33 @@ TEST_F(WebMediaPlayerImplTest, MemDumpReporting) {
 
   CycleThreads();
   EXPECT_EQ(dump_count, 3);
+}
+
+// Verify that a demuxer override is used when specified.
+TEST_F(WebMediaPlayerImplTest, DemuxerOverride) {
+  std::unique_ptr<MockDemuxer> demuxer =
+      std::make_unique<NiceMock<MockDemuxer>>();
+  StrictMock<MockDemuxerStream> stream(DemuxerStream::AUDIO);
+  stream.set_audio_decoder_config(TestAudioConfig::Normal());
+  std::vector<DemuxerStream*> streams;
+  streams.push_back(&stream);
+
+  EXPECT_CALL(stream, SupportsConfigChanges()).WillRepeatedly(Return(false));
+
+  EXPECT_CALL(*demuxer.get(), OnInitialize(_, _))
+      .WillOnce(RunOnceCallback<1>(PIPELINE_OK));
+  EXPECT_CALL(*demuxer.get(), GetAllStreams()).WillRepeatedly(Return(streams));
+  // Called when WebMediaPlayerImpl is destroyed.
+  EXPECT_CALL(*demuxer.get(), Stop());
+
+  InitializeWebMediaPlayerImplInternal(std::move(demuxer));
+
+  EXPECT_FALSE(IsSuspended());
+  wmpi_->Load(blink::WebMediaPlayer::kLoadTypeURL,
+              blink::WebMediaPlayerSource(blink::WebURL(GURL("data://test"))),
+              blink::WebMediaPlayer::kCorsModeUnspecified);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsSuspended());
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

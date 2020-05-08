@@ -62,13 +62,13 @@ UdpSocketClient::UdpSocketClient(const net::IPEndPoint& remote_endpoint,
 UdpSocketClient::~UdpSocketClient() {}
 
 bool UdpSocketClient::SendPacket(media::cast::PacketRef packet,
-                                 const base::RepeatingClosure& cb) {
+                                 base::OnceClosure cb) {
   DVLOG(3) << __func__;
   DCHECK(resume_send_callback_.is_null());
 
   bytes_sent_ += packet->data.size();
   if (!allow_sending_) {
-    resume_send_callback_ = cb;
+    resume_send_callback_ = std::move(cb);
     return false;
   }
 

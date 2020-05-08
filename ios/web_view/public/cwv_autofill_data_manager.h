@@ -42,12 +42,6 @@ CWV_EXPORT
 - (void)fetchCreditCardsWithCompletionHandler:
     (void (^)(NSArray<CWVCreditCard*>* creditCards))completionHandler;
 
-// Updates the card.
-- (void)updateCreditCard:(CWVCreditCard*)creditCard;
-
-// Deletes the card.
-- (void)deleteCreditCard:(CWVCreditCard*)creditCard;
-
 // Returns all saved passwords for password autofill in |completionHandler|.
 - (void)fetchPasswordsWithCompletionHandler:
     (void (^)(NSArray<CWVPassword*>* passwords))completionHandler;

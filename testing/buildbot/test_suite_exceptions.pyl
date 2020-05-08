@@ -435,7 +435,8 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          'shards': 32,
+          # TODO(crbug.com/1071693): Drop back down to 32 shards.
+          'shards': 40,
         },
       },
       'Linux Tests (dbg)(1)': {
@@ -1463,6 +1464,11 @@
             },
           ],
         },
+      },
+      'android-10-arm64-rel': {
+        'args': [
+          '--replace-system-package=com.google.ar.core,//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk'
+        ]
       },
       'android-pie-arm64-dbg': {
         'args': [

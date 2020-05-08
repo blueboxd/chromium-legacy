@@ -375,6 +375,8 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/sharedstream/scroll/ScrollRestoreHelper.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/sharedstream/scroll/ScrollTracker.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/library/sharedstream/ui/MaterialSpinnerView.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/shared/FeedSurfaceDelegate.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/shared/FeedSurfaceProvider.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/tooltip/BasicTooltipApi.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/tooltip/BasicTooltipSupportedApi.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/tooltip/FeedTooltipUtils.java",

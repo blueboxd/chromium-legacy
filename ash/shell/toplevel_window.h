@@ -34,7 +34,6 @@ class ToplevelWindow : public views::WidgetDelegateView {
   void OnPaint(gfx::Canvas* canvas) override;
 
   // Overridden from views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
   void SaveWindowPlacement(const gfx::Rect& bounds,
                            ui::WindowShowState show_state) override;
   bool GetSavedWindowPlacement(const views::Widget* widget,

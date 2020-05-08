@@ -19,7 +19,7 @@
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif
 
@@ -213,16 +213,14 @@ void AutoThread::ThreadMain() {
   // startup_data_ can't be touched anymore since the starting thread is now
   // unlocked.
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher.
   std::unique_ptr<base::FileDescriptorWatcher> file_descriptor_watcher;
   if (single_thread_task_executor.type() == base::MessagePumpType::IO) {
     file_descriptor_watcher.reset(new base::FileDescriptorWatcher(
         single_thread_task_executor.task_runner()));
   }
-#endif
-
-#if defined(OS_WIN)
+#elif defined(OS_WIN)
   // Initialize COM on the thread, if requested.
   std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer(
       CreateComInitializer(com_init_type_));

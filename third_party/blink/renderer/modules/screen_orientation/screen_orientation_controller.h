@@ -44,6 +44,7 @@ class MODULES_EXPORT ScreenOrientationController final
 
   static const char kSupplementName[];
   static ScreenOrientationController* From(LocalDOMWindow&);
+  static ScreenOrientationController* FromIfExists(LocalDOMWindow&);
 
   void SetScreenOrientationAssociatedRemoteForTests(
       mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>);

@@ -26,8 +26,8 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
     int window_title_text_id,
     int dialog_text_id,
     base::OnceClosure on_accept_callback,
-    base::OnceClosure on_cancel_callback)
-    : window_title_(l10n_util::GetStringUTF16(window_title_text_id)) {
+    base::OnceClosure on_cancel_callback) {
+  SetTitle(l10n_util::GetStringUTF16(window_title_text_id));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON));
   DialogDelegate::SetAcceptCallback(std::move(on_accept_callback));
@@ -61,10 +61,6 @@ AcceleratorConfirmationDialog::~AcceleratorConfirmationDialog() = default;
 
 ui::ModalType AcceleratorConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
-}
-
-base::string16 AcceleratorConfirmationDialog::GetWindowTitle() const {
-  return window_title_;
 }
 
 base::WeakPtr<AcceleratorConfirmationDialog>

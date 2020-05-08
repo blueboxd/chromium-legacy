@@ -417,7 +417,6 @@ enum AuthenticationButtonType {
 - (void)addConfirmationButton {
   DCHECK(self.unifiedConsentViewController);
   self.confirmationButton = [[UIButton alloc] init];
-  self.confirmationButton.accessibilityIdentifier = @"ic_close";
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {

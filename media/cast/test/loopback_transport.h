@@ -29,11 +29,10 @@ class PacketPipe;
 // Class that sends the packet to a receiver through a stack of PacketPipes.
 class LoopBackTransport : public PacketTransport {
  public:
-  explicit LoopBackTransport(
-      scoped_refptr<CastEnvironment> cast_environment);
+  explicit LoopBackTransport(scoped_refptr<CastEnvironment> cast_environment);
   ~LoopBackTransport() final;
 
-  bool SendPacket(PacketRef packet, const base::Closure& cb) final;
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final;
 
   int64_t GetBytesSent() final;
 

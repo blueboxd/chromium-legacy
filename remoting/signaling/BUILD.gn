@@ -71,38 +71,6 @@ static_library("signaling") {
     "//remoting/proto/remoting/v1:telemetry_messages",
     "//third_party/grpc:grpcpp",
   ]
-
-  if (is_nacl) {
-    sources -= [
-      "ftl_client_uuid_device_id_provider.cc",
-      "ftl_client_uuid_device_id_provider.h",
-      "ftl_grpc_context.cc",
-      "ftl_grpc_context.h",
-      "ftl_host_device_id_provider.cc",
-      "ftl_host_device_id_provider.h",
-      "ftl_message_reception_channel.cc",
-      "ftl_message_reception_channel.h",
-      "ftl_messaging_client.cc",
-      "ftl_messaging_client.h",
-      "ftl_registration_manager.cc",
-      "ftl_registration_manager.h",
-      "ftl_signal_strategy.cc",
-      "ftl_signal_strategy.h",
-      "remoting_log_to_server.cc",
-      "remoting_log_to_server.h",
-      "server_log_entry.cc",
-      "xmpp_log_to_server.cc",
-    ]
-    deps -= [
-      "//google_apis",
-      "//remoting/base/grpc_support",
-      "//third_party/grpc:grpcpp",
-    ]
-    public_deps -= [
-      "//remoting/proto/ftl/v1:ftl_grpc_library",
-      "//remoting/proto/remoting/v1:telemetry_grpc_library",
-    ]
-  }
 }
 
 static_library("test_support") {

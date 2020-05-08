@@ -1969,6 +1969,12 @@ void LayoutText::TextDidChangeWithoutInvalidation() {
 }
 
 void LayoutText::InvalidateSubtreeLayoutForFontUpdates() {
+  if (RuntimeEnabledFeatures::
+          CSSReducedFontLoadingLayoutInvalidationsEnabled() &&
+      IsFontFallbackValid()) {
+    return;
+  }
+
   known_to_have_no_overflow_and_no_fallback_fonts_ = false;
   valid_ng_items_ = false;
   SetNeedsCollectInlines();

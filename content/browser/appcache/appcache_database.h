@@ -76,8 +76,6 @@ class CONTENT_EXPORT AppCacheDatabase {
     CacheRecord(const CacheRecord& other);
     ~CacheRecord();
 
-    bool HasValidOriginTrialToken();
-
     int64_t cache_id = 0;
     int64_t group_id = 0;
     bool online_wildcard = false;
@@ -210,11 +208,15 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool InsertDeletableResponseIds(const std::vector<int64_t>& response_ids);
   bool DeleteDeletableResponseIds(const std::vector<int64_t>& response_ids);
 
+  void SetOriginTrialRequired(bool req) { is_origin_trial_required_ = req; }
+
   // So our callers can wrap operations in transactions.
   sql::Database* db_connection() {
     LazyOpen(true);
     return db_.get();
   }
+
+  bool HasValidOriginTrialToken(CacheRecord* record);
 
  private:
   bool RunCachedStatementWithIds(sql::StatementID statement_id,
@@ -261,6 +263,7 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool is_disabled_;
   bool is_recreating_;
   bool was_corruption_detected_;
+  bool is_origin_trial_required_ = false;
 
   friend class content::AppCacheDatabaseTest;
   friend class content::AppCacheStorageImplTest;

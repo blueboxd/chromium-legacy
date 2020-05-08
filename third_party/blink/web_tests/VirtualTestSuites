@@ -96,10 +96,8 @@
               "http/tests/serviceworker/webexposed",
               "inspector-protocol/dom-snapshot",
               "media/stable",
-              "webexposed",
-              "wpt_internal/origin-isolation"],
-    "args": ["--stable-release-mode",
-             "--disable-auto-wpt-origin-isolation"]
+              "webexposed"],
+    "args": ["--stable-release-mode"]
   },
   {
     "prefix": "feature-policy-permissions",

@@ -1393,6 +1393,10 @@ int AppListControllerImpl::GetShelfSize() {
   return ShelfConfig::Get()->system_shelf_size();
 }
 
+bool AppListControllerImpl::IsInTabletMode() {
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
+
 void AppListControllerImpl::RecordAppLaunched(
     AppListLaunchedFrom launched_from) {
   RecordAppListAppLaunched(launched_from, GetAppListViewState(), IsTabletMode(),

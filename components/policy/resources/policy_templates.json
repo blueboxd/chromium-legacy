@@ -2708,6 +2708,24 @@
       If not set, no limitations are applied and user can print any documents.''',
     },
     {
+      'name': 'AppCacheForceEnabled',
+      'owners': ['enne@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:84-', 'chrome_os:84-', 'android:84-', 'webview_android:84-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 704,
+      'caption': '''Allows the AppCache feature to be re-enabled even if it is off by default.''',
+      'tags': [],
+      'desc': '''If set to true, this will force AppCache to be enabled, even when AppCache in Chrome is not available by default.
+
+      If unset or set to false, AppCache will follow Chrome's defaults.''',
+    },
+    {
       'name': 'PrintJobHistoryExpirationPeriod',
       'owners': ['nikitapodguzov@chromium.org'],
       'type': 'int',
@@ -22058,6 +22076,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 703,
+  'highest_id_currently_used': 704,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -373,6 +373,8 @@ public final class FeedRequestManagerImpl implements FeedRequestManager {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
                 feedRequestBuilder.addClientCapability(Capability.CLICK_ACTION);
                 feedRequestBuilder.addClientCapability(Capability.VIEW_ACTION);
+                feedRequestBuilder.addClientCapability(
+                        Capability.REPORT_FEED_USER_ACTIONS_NOTICE_CARD);
             }
 
             feedRequestBuilder.addClientCapability(Capability.BASE_UI);

@@ -25,13 +25,10 @@ class AcceleratorConfirmationDialog : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
 
   base::WeakPtr<AcceleratorConfirmationDialog> GetWeakPtr();
 
  private:
-  const base::string16 window_title_;
-
   base::WeakPtrFactory<AcceleratorConfirmationDialog> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorConfirmationDialog);

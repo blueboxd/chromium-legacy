@@ -17074,8 +17074,8 @@
       },
       {
         "args": [
-          "--deqp-egl-display-type=angle-metal",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-batch-limit=0",
+          "--deqp-egl-display-type=angle-metal"
         ],
         "merge": {
           "args": [],
@@ -17129,7 +17129,7 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=400",
+          "--test-launcher-batch-limit=0",
           "--deqp-egl-display-type=angle-metal"
         ],
         "merge": {
@@ -17214,8 +17214,8 @@
       },
       {
         "args": [
-          "--deqp-egl-display-type=angle-metal",
-          "--test-launcher-batch-limit=400"
+          "--test-launcher-batch-limit=0",
+          "--deqp-egl-display-type=angle-metal"
         ],
         "merge": {
           "args": [],
@@ -17265,7 +17265,7 @@
       },
       {
         "args": [
-          "--test-launcher-batch-limit=400",
+          "--test-launcher-batch-limit=0",
           "--deqp-egl-display-type=angle-metal"
         ],
         "merge": {

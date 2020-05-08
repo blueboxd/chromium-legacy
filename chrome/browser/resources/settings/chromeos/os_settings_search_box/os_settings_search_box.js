@@ -427,6 +427,10 @@ Polymer({
       // containing the attribute 'focus-row-control'.
       this.getSelectedOsSearchResultRow_().focus();
     }
+
+    // The newly selected item might not be visible because the list needs
+    // to be scrolled. So scroll the dropdown if necessary.
+    this.getSelectedOsSearchResultRow_().scrollIntoViewIfNeeded();
   },
 
   /**

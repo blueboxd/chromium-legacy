@@ -242,7 +242,9 @@ static int gAnyContext = 0;
   //   - is a readwrite property
   //   - AND is supposed to be modified directly, considering it's a scroll
   //     view of a web view. e.g., |frame| and |subviews| do not meet this
-  //     condition because they are managed by the web view.
+  //     condition because they are managed by the web view.  |backgroundColor|
+  //     is also managed by WKWebView to match the page's background color, and
+  //     should not be set directly (see crbug.com/1078790).
   //
   // Properties not explicitly declared in CRWWebViewScrollViewProxy can still
   // be accessed via -asUIScrollView, so they should be preserved as well.
@@ -266,7 +268,6 @@ static int gAnyContext = 0;
   newScrollView.indicatorStyle = oldScrollView.indicatorStyle;
 
   // UIView properties.
-  newScrollView.backgroundColor = oldScrollView.backgroundColor;
   newScrollView.hidden = oldScrollView.hidden;
   newScrollView.alpha = oldScrollView.alpha;
   newScrollView.opaque = oldScrollView.opaque;

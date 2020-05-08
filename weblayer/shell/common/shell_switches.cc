@@ -4,9 +4,11 @@
 
 #include "weblayer/shell/common/shell_switches.h"
 
+namespace weblayer {
 namespace switches {
 
 // Stops new Shell objects from navigating to a default url.
 const char kNoInitialNavigation[] = "no-initial-navigation";
 
 }  // namespace switches
+}  //  namespace weblayer

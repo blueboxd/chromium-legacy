@@ -530,6 +530,8 @@ component("ash") {
     "magnifier/docked_magnifier_controller_impl.h",
     "magnifier/magnification_controller.cc",
     "magnifier/magnification_controller.h",
+    "magnifier/magnifier_glass.cc",
+    "magnifier/magnifier_glass.h",
     "magnifier/magnifier_utils.cc",
     "magnifier/magnifier_utils.h",
     "magnifier/partial_magnification_controller.cc",

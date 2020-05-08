@@ -56,7 +56,6 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override;
-  base::string16 GetWindowTitle() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
 

@@ -123,8 +123,7 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode error_code,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool send_feedback);
+      uint64_t least_unacked);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
       uint64_t num,
@@ -134,7 +133,6 @@ class QuicTestPacketMaker {
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked,
-      bool send_feedback,
       bool include_stop_sending_if_v99);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAckAndConnectionClosePacket(
@@ -205,16 +203,14 @@ class QuicTestPacketMaker {
       uint64_t packet_number,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool send_feedback);
+      uint64_t least_unacked);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
       uint64_t packet_number,
       uint64_t first_received,
       uint64_t largest_received,
       uint64_t smallest_received,
-      uint64_t least_unacked,
-      bool send_feedback);
+      uint64_t least_unacked);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
       uint64_t packet_number,

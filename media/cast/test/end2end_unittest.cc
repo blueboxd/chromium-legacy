@@ -101,7 +101,9 @@ void ExpectSuccessOperationalStatus(OperationalStatus status) {
 }
 
 // This is wrapped in a struct because it needs to be put into a std::map.
-typedef struct { int counter[kNumOfLoggingEvents]; } LoggingEventCounts;
+typedef struct {
+  int counter[kNumOfLoggingEvents];
+} LoggingEventCounts;
 
 // Constructs a map from each frame (RTP timestamp) to counts of each event
 // type logged for that frame.
@@ -190,7 +192,7 @@ class LoopBackTransport : public PacketTransport {
     packet_pipe_->InitOnIOThread(task_runner, clock);
   }
 
-  bool SendPacket(PacketRef packet, const base::Closure& cb) final {
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final {
     DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
     if (!send_packets_)
       return true;
@@ -279,18 +281,15 @@ class TestReceiverAudioCallback
     EXPECT_EQ(audio_bus->channels(), kAudioChannels);
     EXPECT_EQ(audio_bus->frames(), expected_audio_frame->audio_bus->frames());
     for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-      EXPECT_NEAR(CountZeroCrossings(
-                      expected_audio_frame->audio_bus->channel(ch),
-                      expected_audio_frame->audio_bus->frames()),
-                  CountZeroCrossings(audio_bus->channel(ch),
-                                     audio_bus->frames()),
-                  1);
+      EXPECT_NEAR(
+          CountZeroCrossings(expected_audio_frame->audio_bus->channel(ch),
+                             expected_audio_frame->audio_bus->frames()),
+          CountZeroCrossings(audio_bus->channel(ch), audio_bus->frames()), 1);
     }
 
     EXPECT_NEAR(
         (playout_time - expected_audio_frame->playout_time).InMillisecondsF(),
-        0.0,
-        kMaxAllowedPlayoutErrorMs);
+        0.0, kMaxAllowedPlayoutErrorMs);
     VLOG_IF(1, !last_playout_time_.is_null())
         << "Audio frame playout time delta (compared to last frame) is "
         << (playout_time - last_playout_time_).InMicroseconds() << " usec.";
@@ -368,8 +367,7 @@ class TestReceiverVideoCallback
 
     EXPECT_NEAR(
         (playout_time - expected_video_frame.playout_time).InMillisecondsF(),
-        0.0,
-        kMaxAllowedPlayoutErrorMs);
+        0.0, kMaxAllowedPlayoutErrorMs);
     VLOG_IF(1, !last_playout_time_.is_null())
         << "Video frame playout time delta (compared to last frame) is "
         << (playout_time - last_playout_time_).InMicroseconds() << " usec.";
@@ -444,8 +442,7 @@ class End2EndTest : public ::testing::Test {
     audio_sender_config_.aes_key =
         ConvertFromBase16String("deadbeefcafecafedeadbeefb0b0b0b0");
 
-    audio_receiver_config_.receiver_ssrc =
-        audio_sender_config_.receiver_ssrc;
+    audio_receiver_config_.receiver_ssrc = audio_sender_config_.receiver_ssrc;
     audio_receiver_config_.sender_ssrc = audio_sender_config_.sender_ssrc;
     audio_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     audio_receiver_config_.rtp_payload_type =
@@ -479,8 +476,7 @@ class End2EndTest : public ::testing::Test {
     video_sender_config_.aes_key =
         ConvertFromBase16String("deadbeefcafeb0b0b0b0cafedeadbeef");
 
-    video_receiver_config_.receiver_ssrc =
-        video_sender_config_.receiver_ssrc;
+    video_receiver_config_.receiver_ssrc = video_sender_config_.receiver_ssrc;
     video_receiver_config_.sender_ssrc = video_sender_config_.sender_ssrc;
     video_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     video_receiver_config_.rtp_payload_type =
@@ -519,9 +515,8 @@ class End2EndTest : public ::testing::Test {
           i * base::TimeDelta::FromMilliseconds(kAudioFrameDurationMs);
       if (will_be_checked) {
         test_receiver_audio_callback_->AddExpectedResult(
-            *audio_bus,
-            reference_time +
-                base::TimeDelta::FromMilliseconds(kTargetPlayoutDelayMs));
+            *audio_bus, reference_time + base::TimeDelta::FromMilliseconds(
+                                             kTargetPlayoutDelayMs));
       }
       audio_frame_input_->InsertAudio(std::move(audio_bus), reference_time);
     }
@@ -545,8 +540,8 @@ class End2EndTest : public ::testing::Test {
   void RequestAudioFrames(int count, bool with_check) {
     for (int i = 0; i < count; ++i) {
       cast_receiver_->RequestDecodedAudioFrame(
-          base::Bind(with_check ? &TestReceiverAudioCallback::CheckAudioFrame :
-                                  &TestReceiverAudioCallback::IgnoreAudioFrame,
+          base::Bind(with_check ? &TestReceiverAudioCallback::CheckAudioFrame
+                                : &TestReceiverAudioCallback::IgnoreAudioFrame,
                      test_receiver_audio_callback_));
     }
   }
@@ -797,9 +792,8 @@ class End2EndTest : public ::testing::Test {
 
     video_ticks_.push_back(
         std::make_pair(testing_clock_receiver_.NowTicks(), playout_time));
-    cast_receiver_->RequestDecodedVideoFrame(
-        base::Bind(&End2EndTest::BasicPlayerGotVideoFrame,
-                   base::Unretained(this)));
+    cast_receiver_->RequestDecodedVideoFrame(base::Bind(
+        &End2EndTest::BasicPlayerGotVideoFrame, base::Unretained(this)));
   }
 
   void BasicPlayerGotAudioFrame(std::unique_ptr<AudioBus> audio_bus,
@@ -813,18 +807,15 @@ class End2EndTest : public ::testing::Test {
 
     audio_ticks_.push_back(
         std::make_pair(testing_clock_receiver_.NowTicks(), playout_time));
-    cast_receiver_->RequestDecodedAudioFrame(
-        base::Bind(&End2EndTest::BasicPlayerGotAudioFrame,
-                   base::Unretained(this)));
+    cast_receiver_->RequestDecodedAudioFrame(base::Bind(
+        &End2EndTest::BasicPlayerGotAudioFrame, base::Unretained(this)));
   }
 
   void StartBasicPlayer() {
-    cast_receiver_->RequestDecodedVideoFrame(
-        base::Bind(&End2EndTest::BasicPlayerGotVideoFrame,
-                   base::Unretained(this)));
-    cast_receiver_->RequestDecodedAudioFrame(
-        base::Bind(&End2EndTest::BasicPlayerGotAudioFrame,
-                   base::Unretained(this)));
+    cast_receiver_->RequestDecodedVideoFrame(base::Bind(
+        &End2EndTest::BasicPlayerGotVideoFrame, base::Unretained(this)));
+    cast_receiver_->RequestDecodedAudioFrame(base::Bind(
+        &End2EndTest::BasicPlayerGotAudioFrame, base::Unretained(this)));
   }
 
   FrameReceiverConfig audio_receiver_config_;
@@ -873,8 +864,8 @@ class End2EndTest : public ::testing::Test {
 
   SimpleEventSubscriber event_subscriber_sender_;
 
-  std::vector<std::pair<base::TimeTicks, base::TimeTicks> > audio_ticks_;
-  std::vector<std::pair<base::TimeTicks, base::TimeTicks> > video_ticks_;
+  std::vector<std::pair<base::TimeTicks, base::TimeTicks>> audio_ticks_;
+  std::vector<std::pair<base::TimeTicks, base::TimeTicks>> video_ticks_;
 
   // |transport_sender_| has a RepeatingTimer which needs a MessageLoop.
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -1256,12 +1247,9 @@ TEST_F(End2EndTest, MAYBE_OldPacketNetwork) {
   sender_to_receiver_->SetPacketPipe(test::NewRandomDrop(0.01));
   std::unique_ptr<test::PacketPipe> echo_chamber(
       test::NewDuplicateAndDelay(1, 10 * kFrameTimerMs));
-  echo_chamber->AppendToPipe(
-      test::NewDuplicateAndDelay(1, 20 * kFrameTimerMs));
-  echo_chamber->AppendToPipe(
-      test::NewDuplicateAndDelay(1, 40 * kFrameTimerMs));
-  echo_chamber->AppendToPipe(
-      test::NewDuplicateAndDelay(1, 80 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(test::NewDuplicateAndDelay(1, 20 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(test::NewDuplicateAndDelay(1, 40 * kFrameTimerMs));
+  echo_chamber->AppendToPipe(test::NewDuplicateAndDelay(1, 80 * kFrameTimerMs));
   echo_chamber->AppendToPipe(
       test::NewDuplicateAndDelay(1, 160 * kFrameTimerMs));
 

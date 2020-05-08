@@ -340,18 +340,8 @@ class TestExpectations(object):
                                    fallback_for_test))
         base_test = self.port.lookup_virtual_test_base(test)
         if base_test:
-            base_expectations = self.get_expectations(base_test, test)
-            if ResultType.Skip in base_expectations.results:
-                # TODO(crbug.com/1072015#c9): Temporarily remove Skip from the
-                # inherited expectations to avoid unexpected Skip.
-                base_expectations = typ_types.Expectation(
-                    test=base_expectations.test,
-                    results=base_expectations.results - set([ResultType.Skip]),
-                    is_slow_test=base_expectations.is_slow_test,
-                    reason=base_expectations.reason,
-                    trailing_comments=base_expectations.trailing_comments)
             return self._override_or_fallback_expectations(
-                expectations, base_expectations)
+                expectations, self.get_expectations(base_test, test))
         return expectations
 
     def get_flag_expectations(self, test):

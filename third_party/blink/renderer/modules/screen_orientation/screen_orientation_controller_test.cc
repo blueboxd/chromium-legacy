@@ -8,8 +8,12 @@
 
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -191,6 +195,35 @@ TEST_F(ScreenOrientationControllerTest, RaceScenario) {
   // Second request is still pending.
   EXPECT_FALSE(callback_results2.succeeded_);
   EXPECT_FALSE(callback_results2.failed_);
+}
+
+TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
+  std::string base_url("http://internal.test/");
+  std::string test_url("single_iframe.html");
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url), test::CoreTestDataPath(),
+      WebString::FromUTF8(test_url));
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url), test::CoreTestDataPath(),
+      WebString::FromUTF8("visible_iframe.html"));
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url + test_url);
+
+  Page* page = web_view_helper.GetWebView()->GetPage();
+  LocalFrame* frame = To<LocalFrame>(page->MainFrame());
+
+  // Fully set up on an orientation and a controller in the main frame, but not
+  // the iframe. Prepare an orientation change, then toggle visibility. When
+  // set to visible, propagating the orientation change events shouldn't crash
+  // just because the ScreenOrientationController in the iframe was never
+  // referenced before this.
+  auto* controller = ScreenOrientationController::From(*frame->DomWindow());
+  auto* orientation = ScreenOrientation::Create(frame->DomWindow());
+  controller->SetOrientation(orientation);
+  orientation->SetAngle(1234);
+  page->SetVisibilityState(PageVisibilityState::kHidden, false);
+  page->SetVisibilityState(PageVisibilityState::kVisible, false);
 }
 
 }  // namespace blink

@@ -37,6 +37,9 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
     LogoutConfirmationController* controller,
     base::TimeTicks logout_time)
     : controller_(controller), logout_time_(logout_time) {
+  SetTitle(l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_TITLE));
+  SetShowCloseButton(false);
+
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON));
@@ -82,14 +85,6 @@ void LogoutConfirmationDialog::ControllerGone() {
 
 ui::ModalType LogoutConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
-}
-
-base::string16 LogoutConfirmationDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_TITLE);
-}
-
-bool LogoutConfirmationDialog::ShouldShowCloseButton() const {
-  return false;
 }
 
 void LogoutConfirmationDialog::WindowClosing() {

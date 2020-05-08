@@ -129,10 +129,8 @@ class BrowserControlsContainerView extends FrameLayout {
         BrowserControlsContainerViewJni.get().setWebContents(
                 mNativeBrowserControlsContainerView, webContents);
 
+        cancelDelayedFullscreenRunnable();
         if (mWebContents == null) return;
-        if (mSystemUiFullscreenResizeRunnable != null) {
-            removeCallbacks(mSystemUiFullscreenResizeRunnable);
-        }
         processFullscreenChanged(mWebContents.isFullscreenForCurrentTab());
     }
 
@@ -140,10 +138,7 @@ class BrowserControlsContainerView extends FrameLayout {
         clearViewAndDestroyResources();
         BrowserControlsContainerViewJni.get().deleteBrowserControlsContainerView(
                 mNativeBrowserControlsContainerView);
-        if (mSystemUiFullscreenResizeRunnable != null) {
-            removeCallbacks(mSystemUiFullscreenResizeRunnable);
-            mSystemUiFullscreenResizeRunnable = null;
-        }
+        cancelDelayedFullscreenRunnable();
     }
 
     public long getNativeHandle() {
@@ -284,6 +279,20 @@ class BrowserControlsContainerView extends FrameLayout {
                 }
             }
         }
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // Cancel the runnable when detached as calls to removeCallback() after this completes will
+        // attempt to remove from the wrong handler.
+        cancelDelayedFullscreenRunnable();
+    }
+
+    private void cancelDelayedFullscreenRunnable() {
+        if (mSystemUiFullscreenResizeRunnable == null) return;
+        removeCallbacks(mSystemUiFullscreenResizeRunnable);
+        mSystemUiFullscreenResizeRunnable = null;
     }
 
     /**

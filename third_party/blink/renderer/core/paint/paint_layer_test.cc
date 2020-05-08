@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -2613,6 +2615,273 @@ TEST_P(PaintLayerTest, InlineWithBackdropFilterHasPaintLayer) {
 
   EXPECT_NE(nullptr, root_layer);
   EXPECT_NE(nullptr, paint_layer);
+}
+
+TEST_P(PaintLayerTest, FixedDoesNotUseExpandedBoundingBoxForOverlap) {
+  // TODO(samfort): Remove this test after kMaxOverlapBoundsForFixed ships.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
+                                    false);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0;
+      }
+      body {
+        height: 610px;
+        width: 820px;
+      }
+      #fixed {
+        height: 10px;
+        left: 50px;
+        position: fixed;
+        top: 50px;
+        width: 10px;
+      }
+    </style>
+    <div id=fixed></div>
+  )HTML");
+
+  PaintLayer* fixed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"))->Layer();
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 10, 10));
+
+  // Modify the scroll offset and ensure that the bounding box is still the
+  // same.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(10, 10), mojom::blink::ScrollType::kProgrammatic);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 10, 10));
+}
+
+TEST_P(PaintLayerTest, FixedUsesExpandedBoundingBoxForOverlap) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
+                                    true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0;
+      }
+      body {
+        height: 610px;
+        width: 820px;
+      }
+      #fixed {
+        height: 10px;
+        left: 50px;
+        position: fixed;
+        top: 50px;
+        width: 10px;
+      }
+    </style>
+    <div id=fixed></div>
+  )HTML");
+
+  PaintLayer* fixed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"))->Layer();
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 30, 20));
+
+  // Modify the viewport scroll offset and ensure that the bounding box is still
+  // adjusted by the new amount the viewport can scroll in any direction.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(10, 10), mojom::blink::ScrollType::kProgrammatic);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(-10, -10, 30, 20));
+}
+
+TEST_P(PaintLayerTest, FixedInScrollerUsesExpandedBoundingBoxForOverlap) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
+                                    true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0;
+      }
+      body {
+        height: 610px;
+        width: 820px;
+      }
+      #scroller {
+        height: 100px;
+        left: 100px;
+        overflow: scroll;
+        position: absolute;
+        top: 100px;
+        width: 100px;
+      }
+      #spacer {
+        height: 500px;
+      }
+      #fixed {
+        height: 10px;
+        left: 50px;
+        position: fixed;
+        top: 50px;
+        width: 10px;
+      }
+    </style>
+    <div id=scroller>
+      <div id=fixed></div>
+      <div id=spacer></div>
+    </div>
+  )HTML");
+
+  PaintLayer* fixed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"))->Layer();
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 30, 20));
+
+  // Modify the inner scroll offset and ensure that the bounding box is still
+  // the same.
+  PaintLayerScrollableArea* scrollable_area =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"))
+          ->Layer()
+          ->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(FloatPoint(10, 10));
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 30, 20));
+
+  // Modify the viewport scroll offset and ensure that the bounding box is still
+  // adjusted by the newamount the viewport can scroll in any direction.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(10, 10), mojom::blink::ScrollType::kProgrammatic);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(-10, -10, 30, 20));
+}
+
+TEST_P(PaintLayerTest, FixedUnderTransformDoesNotExpandBoundingBoxForOverlap) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
+                                    true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .anim {
+        animation: pulse 5s infinite;
+      }
+      @keyframes pulse {
+        0% { opacity: 0.1; }
+        100% { opacity: 0.9; }
+      }
+      .xform {
+        height: 100px;
+        left: 100px;
+        position: absolute;
+        top: 100px;
+        transform: rotate(20deg);
+        width: 100px;
+      }
+      .fixed {
+        height: 50px;
+        left: 25px;
+        position: fixed;
+        top: 25px;
+        width: 50px;
+      }
+      .spacer {
+        height: 2000px;
+      }
+    </style>
+    <div id=fixed-cb class=xform>
+      <div id=fixed class='fixed anim'></div>
+    </div>
+    <div class=spacer></div>
+  )HTML");
+
+  // The animation is to cause the fixed to be composited. However, even with
+  // fixed composited, it shouldn't have expanded bounds because its containing
+  // block isn't the viewport.
+  PaintLayer* fixed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("fixed"))->Layer();
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 50, 50));
+}
+
+TEST_P(PaintLayerTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(blink::features::kMaxOverlapBoundsForFixed,
+                                    true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0;
+      }
+      body {
+        height: 610px;
+        width: 820px;
+      }
+      #iframe1 {
+        height: 100px;
+        left: 50px;
+        position: fixed;
+        top: 50px;
+        width: 100px;
+      }
+    </style>
+    <iframe id=iframe1></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      * {
+        margin: 0;
+      }
+      body {
+        height: 500px;
+        width: 500px;
+      }
+      #fixed {
+        height: 10px;
+        left: 50px;
+        position: fixed;
+        top: 50px;
+        width: 10px;
+      }
+    </style>
+    <div id=fixed></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  PaintLayer* fixed =
+      ToLayoutBoxModelObject(
+          ChildDocument().getElementById("fixed")->GetLayoutObject())
+          ->Layer();
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 410, 410));
+
+  // Modify the top-most viewport's scroll offset and ensure that the bounding
+  // box is still the same. This shows that we're not considering the wrong
+  // viewport's scroll offset when computing the bounding box.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(10, 10), mojom::blink::ScrollType::kProgrammatic);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(0, 0, 410, 410));
+
+  // Now modify the iframe's scroll offset. This one should affect the fixed's
+  // bounding box.
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(10, 10), mojom::blink::ScrollType::kProgrammatic);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(fixed->BoundingBoxForCompositingOverlapTest(),
+            PhysicalRect(-10, -10, 410, 410));
 }
 
 }  // namespace blink

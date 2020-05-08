@@ -115,8 +115,6 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   static const bool kFin = true;
   static const bool kIncludeVersion = true;
   static const bool kIncludeDiversificationNonce = true;
-  static const bool kIncludeCongestionFeedback = true;
-  static const bool kSendFeedback = true;
 
   static size_t GetStreamFrameDataLengthFromPacketLength(
       quic::QuicByteCount packet_length,
@@ -340,7 +338,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
       uint64_t least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
-        largest_received, smallest_received, least_unacked, kSendFeedback,
+        largest_received, smallest_received, least_unacked,
         /*include_stop_sending=*/false);
   }
 
@@ -352,7 +350,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
       uint64_t least_unacked) {
     return client_maker_.MakeAckAndRstPacket(
         packet_number, !kIncludeVersion, client_data_stream_id1_, error_code,
-        largest_received, smallest_received, least_unacked, kSendFeedback,
+        largest_received, smallest_received, least_unacked,
         /*include_stop_sending_if_v99=*/true);
   }
 
@@ -437,8 +435,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
       uint64_t smallest_received,
       uint64_t least_unacked) {
     return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       smallest_received, least_unacked,
-                                       kSendFeedback);
+                                       smallest_received, least_unacked);
   }
 
   // Helper functions for constructing packets sent by the server

@@ -407,9 +407,24 @@ struct MediaFeedItem {
   SafeSearchResult safe_search_result;
 };
 
+// Information for debugging Media Feeds for the internal WebUI.
+struct DebugInformation {
+  // Whether the MediaFeedsSafeSearch feature is enabled.
+  bool safe_search_feature_enabled;
+
+  // The value of the Media Feeds Safe Search checking consent pref.
+  bool safe_search_pref_value;
+};
+
 // MediaFeedStore allows the Media Feeds WebUI to access data from the Media
 // Feeds backend in the browser process for diagnostic purposes.
 interface MediaFeedsStore {
+  // Gets debugging information for media feeds.
+  GetDebugInformation() => (DebugInformation info);
+
+  // Updates the Safe Search checking enabled pref to |value|.
+  SetSafeSearchEnabledPref(bool value) => ();
+
   // Gets all the discovered media feeds.
   GetMediaFeeds() => (array<MediaFeed> feeds);
 

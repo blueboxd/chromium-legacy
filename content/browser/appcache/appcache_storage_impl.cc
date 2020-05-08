@@ -28,6 +28,7 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -359,7 +360,7 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
     for (const auto& group : groups) {
       AppCacheDatabase::CacheRecord cache_record;
       database_->FindCacheForGroup(group.group_id, &cache_record);
-      if (!cache_record.HasValidOriginTrialToken())
+      if (!database_->HasValidOriginTrialToken(&cache_record))
         continue;
 
       blink::mojom::AppCacheInfo info;
@@ -515,7 +516,7 @@ void AppCacheStorageImpl::CacheLoadTask::Run() {
   success_ = database_->FindCache(cache_id_, &cache_record_);
   if (!success_)
     return;
-  if (!cache_record_.HasValidOriginTrialToken()) {
+  if (!database_->HasValidOriginTrialToken(&cache_record_)) {
     success_ = false;
     return;
   }
@@ -570,7 +571,7 @@ void AppCacheStorageImpl::GroupLoadTask::Run() {
 
   if (!success_)
     return;
-  if (!cache_record_.HasValidOriginTrialToken()) {
+  if (!database_->HasValidOriginTrialToken(&cache_record_)) {
     success_ = false;
     return;
   }
@@ -968,7 +969,7 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
                                            &preferred_group) &&
         database_->FindCacheForGroup(preferred_group.group_id,
                                      &preferred_cache) &&
-        preferred_cache.HasValidOriginTrialToken()) {
+        database_->HasValidOriginTrialToken(&preferred_cache)) {
       preferred_cache_id = preferred_cache.cache_id;
     }
   }
@@ -1002,7 +1003,7 @@ bool AppCacheStorageImpl::FindMainResponseTask::FindExactMatch(
       if ((entry.flags & AppCacheEntry::FOREIGN) ||
           !database_->FindGroupForCache(entry.cache_id, &group_record) ||
           !database_->FindCache(entry.cache_id, &cache_record) ||
-          !cache_record.HasValidOriginTrialToken()) {
+          !database_->HasValidOriginTrialToken(&cache_record)) {
         continue;
       }
 
@@ -1096,7 +1097,7 @@ FindMainResponseTask::FindFirstValidNamespace(
         continue;
       if (!database_->FindCache(entry_record.cache_id, &cache_record))
         continue;
-      if (!cache_record.HasValidOriginTrialToken()) {
+      if (!database_->HasValidOriginTrialToken(&cache_record)) {
         continue;
       }
       manifest_url_ = group_record.manifest_url;
@@ -1433,6 +1434,10 @@ void AppCacheStorageImpl::Initialize(
   if (!is_incognito_)
     db_file_path = cache_directory_.Append(kAppCacheDatabaseName);
   database_ = std::make_unique<AppCacheDatabase>(db_file_path);
+  DCHECK(service_);
+  DCHECK(service_->appcache_policy());
+  database_->SetOriginTrialRequired(
+      service_->appcache_policy()->IsOriginTrialRequiredForAppCache());
 
   db_task_runner_ = db_task_runner;
 

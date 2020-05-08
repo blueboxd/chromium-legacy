@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
-import org.chromium.chrome.browser.webapps.WebApkInfo;
+import org.chromium.chrome.browser.webapps.WebApkIntentDataProviderFactory;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -287,11 +287,12 @@ public final class FirstRunIntegrationUnitTest {
         bundle.putString(WebApkMetaDataKeys.START_URL, startUrl);
         WebApkTestHelper.registerWebApkWithMetaData(
                 webApkPackageName, bundle, null /* shareTargetMetaData */);
-        // Cause WebApkValidator#canWebApkHandleUrl() to fail (but not WebApkInfo#create()) by not
-        // registering the intent handlers for the WebAPK.
+        // Cause WebApkValidator#canWebApkHandleUrl() to fail (but not
+        // WebApkIntentDataProviderFactory#create()) by not registering the intent handlers for the
+        // WebAPK.
 
         Intent intent = WebApkTestHelper.createMinimalWebApkIntent(webApkPackageName, startUrl);
-        Assert.assertNotNull(WebApkInfo.create(intent));
+        Assert.assertNotNull(WebApkIntentDataProviderFactory.create(intent));
 
         launchWebappLauncherActivityProcessRelaunch(intent);
 

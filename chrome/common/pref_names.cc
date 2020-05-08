@@ -2992,4 +2992,9 @@ extern const char kCertificateProvisioningStateForDevice[] =
 // This pref enables checking of Media Feed items against the Safe Search API.
 const char kMediaFeedsSafeSearchEnabled[] = "media_feeds_safe_search_enabled";
 
+// This pref reenables AppCache temporarily during its deprecation process.
+// In particular, this sets the AppcacheRequireOriginTrial feature to false.
+// TODO(enne): Remove this once AppCache has been removed.
+const char kAppCacheForceEnabled[] = "app_cache_force_enabled";
+
 }  // namespace prefs

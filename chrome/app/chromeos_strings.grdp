@@ -4175,6 +4175,39 @@
   <message name="IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS" desc="Additional search terms for the 'Terminal' app, which provides access to a Linux virtual machine.">
     Linux
   </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_START" desc="Text shown in the crostini terminal when it was just started">
+    Initializing
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_INSTALL_IMAGE_LOADER" desc="Text shown in the crostini terminal when it is checking whether the virtual machine component is installed">
+    Checking the virtual machine
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_START_CONCIERGE" desc="Text shown in the crostini terminal when it is starting the VM controller">
+    Starting the virtual machine controller
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_CREATE_DISK_IMAGE" desc="Text shown in the crostini terminal when it is checking whether the VM image is installed">
+    Checking the virtual machine image
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_START_TERMINA_VM" desc="Text shown in the crostini terminal when it is starting the termina VM">
+    Starting the virtual machine
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_CREATE_CONTAINER" desc="Text shown in the crostini terminal when it is checking whether the Linux container is installed">
+    Checking the Linux container
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_SETUP_CONTAINER" desc="Text shown in the crostini terminal when it is checking Linux container setup">
+    Checking the Linux container setup
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_START_CONTAINER" desc="Text shown in the crostini terminal when it is starting the Linux container">
+    Starting the Linux container
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_FETCH_SSH_KEYS" desc="Text shown in the crostini terminal when it is fetching the Linux container ssh keys">
+    Fetching the Linux container ssh keys
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_MOUNT_CONTAINER" desc="Text shown in the crostini terminal when it is mounting container sshfs (ssh filesystem)">
+    Mounting the Linux container sshfs
+  </message>
+  <message name="IDS_CROSTINI_TERMINAL_STATUS_READY" desc="Text shown in the crostini terminal when it just finished the initialization and it is ready to use.">
+    Ready
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing Linux.">
     Set up Linux (Beta) on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>

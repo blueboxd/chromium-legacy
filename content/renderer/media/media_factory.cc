@@ -31,6 +31,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/decoder_factory.h"
+#include "media/base/demuxer.h"
 #include "media/base/media_switches.h"
 #include "media/base/renderer_factory_selector.h"
 #include "media/blink/remote_playback_client_wrapper_impl.h"
@@ -447,6 +448,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
               .is_background_video_track_optimization_supported,
           render_frame_->GetRenderFrameMediaPlaybackOptions()
               .is_remoting_renderer_enabled(),
+          GetContentClient()->renderer()->OverrideDemuxerForUrl(
+              render_frame_, url, media_task_runner),
           std::move(power_status_helper)));
 
   std::unique_ptr<media::VideoFrameCompositor> vfc =

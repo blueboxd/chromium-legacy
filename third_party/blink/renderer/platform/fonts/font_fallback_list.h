@@ -109,6 +109,8 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
     can_shape_word_by_word_computed_ = true;
   }
 
+  bool HasLoadingFallback() const { return has_loading_fallback_; }
+
  private:
   explicit FontFallbackList(FontSelector* font_selector);
 

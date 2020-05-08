@@ -212,35 +212,6 @@ TEST_F(CWVAutofillDataManagerTest, ReturnCreditCard) {
   }));
 }
 
-// Tests CWVAutofillDataManager properly deletes credit cards.
-TEST_F(CWVAutofillDataManagerTest, DeleteCreditCard) {
-  personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard());
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    for (CWVCreditCard* cwv_credit_card in credit_cards) {
-      [autofill_data_manager_ deleteCreditCard:cwv_credit_card];
-    }
-  }));
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    EXPECT_EQ(0ul, credit_cards.count);
-  }));
-}
-
-// Tests CWVAutofillDataManager properly updates credit cards.
-TEST_F(CWVAutofillDataManagerTest, UpdateCreditCard) {
-  personal_data_manager_->AddCreditCard(autofill::test::GetCreditCard());
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    CWVCreditCard* cwv_credit_card = credit_cards.firstObject;
-    cwv_credit_card.cardHolderFullName = kNewName;
-    [autofill_data_manager_ updateCreditCard:cwv_credit_card];
-  }));
-
-  EXPECT_TRUE(FetchCreditCards(^(NSArray<CWVCreditCard*>* credit_cards) {
-    EXPECT_NSEQ(kNewName, credit_cards.firstObject.cardHolderFullName);
-  }));
-}
-
 // Tests CWVAutofillDataManager properly returns passwords.
 TEST_F(CWVAutofillDataManagerTest, ReturnPassword) {
   autofill::PasswordForm test_password = GetTestPassword();

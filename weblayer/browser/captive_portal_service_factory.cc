@@ -9,6 +9,8 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
+namespace weblayer {
+
 // static
 captive_portal::CaptivePortalService*
 CaptivePortalServiceFactory::GetForBrowserContext(
@@ -39,3 +41,5 @@ content::BrowserContext* CaptivePortalServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return context;
 }
+
+}  //  namespace weblayer

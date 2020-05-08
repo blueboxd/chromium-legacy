@@ -1437,10 +1437,8 @@
     'gpu_angle_deqp_egl_metal_gtests': {
       'angle_deqp_egl_metal_tests': {
         'args': [
+          '--test-launcher-batch-limit=0',
           '--deqp-egl-display-type=angle-metal',
-        ],
-        'desktop_args': [
-          '--test-launcher-batch-limit=400',
         ],
         'should_retry_with_patch': False,
         'swarming': {
@@ -1503,7 +1501,7 @@
     'gpu_angle_deqp_gles2_metal_gtests': {
       'angle_deqp_gles2_metal_tests': {
         'args': [
-          '--test-launcher-batch-limit=400',
+          '--test-launcher-batch-limit=0',
           '--deqp-egl-display-type=angle-metal',
         ],
         'should_retry_with_patch': False,
@@ -4072,6 +4070,7 @@
   'compound_suites': {
     'android_10_rel_gtests': [
       'android_trichrome_smoke_tests',
+      'android_ar_gtests',
     ],
 
     'android_lollipop_marshmallow_gtests': [

@@ -26,6 +26,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -108,18 +109,20 @@ public class WebappModeTest {
                     WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            WebappInfo webappInfo = WebappInfo.create(createIntent(
-                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                            storage.updateFromWebappInfo(webappInfo);
+                            BrowserServicesIntentDataProvider intentDataProvider =
+                                    WebappIntentDataProviderFactory.create(createIntent(WEBAPP_1_ID,
+                                            WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappIntentDataProvider(intentDataProvider);
                         }
                     });
             WebappRegistry.getInstance().register(
                     WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            WebappInfo webappInfo = WebappInfo.create(createIntent(
-                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                            storage.updateFromWebappInfo(webappInfo);
+                            BrowserServicesIntentDataProvider intentDataProvider =
+                                    WebappIntentDataProviderFactory.create(createIntent(WEBAPP_1_ID,
+                                            WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappIntentDataProvider(intentDataProvider);
                         }
                     });
         });

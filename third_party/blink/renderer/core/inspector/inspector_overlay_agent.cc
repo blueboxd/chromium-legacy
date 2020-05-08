@@ -1311,6 +1311,34 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
 }
 
 // static
+std::unique_ptr<InspectorGridHighlightConfig>
+InspectorOverlayAgent::ToGridHighlightConfig(
+    protocol::Overlay::GridHighlightConfig* config) {
+  if (!config) {
+    return nullptr;
+  }
+  std::unique_ptr<InspectorGridHighlightConfig> highlight_config =
+      std::make_unique<InspectorGridHighlightConfig>();
+  highlight_config->show_grid_extension_lines =
+      config->getShowGridExtensionLines(false);
+  highlight_config->grid_border_dash = config->getGridBorderDash(false);
+  highlight_config->cell_border_dash = config->getCellBorderDash(false);
+  highlight_config->grid_color =
+      InspectorDOMAgent::ParseColor(config->getGridBorderColor(nullptr));
+  highlight_config->cell_color =
+      InspectorDOMAgent::ParseColor(config->getCellBorderColor(nullptr));
+  highlight_config->row_gap_color =
+      InspectorDOMAgent::ParseColor(config->getRowGapColor(nullptr));
+  highlight_config->column_gap_color =
+      InspectorDOMAgent::ParseColor(config->getColumnGapColor(nullptr));
+  highlight_config->row_hatch_color =
+      InspectorDOMAgent::ParseColor(config->getRowHatchColor(nullptr));
+  highlight_config->column_hatch_color =
+      InspectorDOMAgent::ParseColor(config->getColumnHatchColor(nullptr));
+  return highlight_config;
+}
+
+// static
 std::unique_ptr<InspectorHighlightConfig>
 InspectorOverlayAgent::ToHighlightConfig(
     protocol::Overlay::HighlightConfig* config) {
@@ -1349,6 +1377,9 @@ InspectorOverlayAgent::ToHighlightConfig(
     highlight_config->color_format = ColorFormat::HEX;
   }
 
+  highlight_config->grid_highlight_config =
+      InspectorOverlayAgent::ToGridHighlightConfig(
+          config->getGridHighlightConfig(nullptr));
   return highlight_config;
 }
 

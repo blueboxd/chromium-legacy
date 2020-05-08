@@ -5,18 +5,24 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_dlc_handler.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace chromeos {
 namespace settings {
 namespace {
 
-base::ListValue DlcModuleListToListValue(
-    const dlcservice::DlcModuleList& dlc_list) {
+base::ListValue DlcsWithContentToListValue(
+    const dlcservice::DlcsWithContent& dlcs_with_content) {
   base::ListValue dlc_metadata_list;
-  for (int i = 0; i < dlc_list.dlc_module_infos_size(); i++) {
-    const dlcservice::DlcModuleInfo& dlc_info = dlc_list.dlc_module_infos(i);
+  for (int i = 0; i < dlcs_with_content.dlc_infos_size(); i++) {
+    const auto& dlc_info = dlcs_with_content.dlc_infos(i);
     base::Value dlc_metadata(base::Value::Type::DICTIONARY);
-    dlc_metadata.SetKey("dlcId", base::Value(dlc_info.dlc_id()));
+    dlc_metadata.SetKey("id", base::Value(dlc_info.id()));
+    dlc_metadata.SetKey("name", base::Value(dlc_info.name()));
+    dlc_metadata.SetKey("description", base::Value(dlc_info.description()));
+    dlc_metadata.SetKey(
+        "diskUsageLabel",
+        base::Value(ui::FormatBytes(dlc_info.used_bytes_on_disk())));
     dlc_metadata_list.Append(std::move(dlc_metadata));
   }
   return dlc_metadata_list;
@@ -49,7 +55,7 @@ void DlcHandler::HandleGetDlcList(const base::ListValue* args) {
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  DlcserviceClient::Get()->GetInstalled(
+  DlcserviceClient::Get()->GetExistingDlcs(
       base::BindOnce(&DlcHandler::GetDlcListCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));
 }
@@ -71,10 +77,10 @@ void DlcHandler::HandlePurgeDlc(const base::ListValue* args) {
 void DlcHandler::GetDlcListCallback(
     const base::Value& callback_id,
     const std::string& err,
-    const dlcservice::DlcModuleList& dlc_module_list) {
+    const dlcservice::DlcsWithContent& dlcs_with_content) {
   if (err == dlcservice::kErrorNone) {
     ResolveJavascriptCallback(callback_id,
-                              DlcModuleListToListValue(dlc_module_list));
+                              DlcsWithContentToListValue(dlcs_with_content));
     return;
   }
   ResolveJavascriptCallback(callback_id, base::ListValue());

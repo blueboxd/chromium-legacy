@@ -141,10 +141,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   static float GetTransitionProgressForState(AppListViewState state);
 
   // Initializes the view, only done once per session.
-  void InitView(bool is_tablet_mode, gfx::NativeView parent);
+  void InitView(gfx::NativeView parent);
 
   // Initializes the contents of the view.
-  void InitContents(bool is_tablet_mode);
+  void InitContents();
 
   // Initializes this view's widget.
   void InitWidget(gfx::NativeView parent);
@@ -153,7 +153,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void InitChildWidget();
 
   // Sets the state of all child views to be re-shown, then shows the view.
-  void Show(bool is_side_shelf, bool is_tablet_mode);
+  void Show(bool is_side_shelf);
 
   // If |drag_and_drop_host| is not nullptr it will be called upon drag and drop
   // operations outside the application list. This has to be called after
@@ -348,7 +348,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
            app_list_state_ == AppListViewState::kFullscreenSearch;
   }
 
-  bool is_tablet_mode() const { return is_tablet_mode_; }
+  bool is_tablet_mode() const { return delegate_->IsInTabletMode(); }
 
   bool is_side_shelf() const { return is_side_shelf_; }
 

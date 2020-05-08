@@ -42,7 +42,7 @@ class WebAppDataRetriever : content::WebContentsObserver {
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
   // |is_installable| represents installability check result.
   // If |is_installable| then |valid_manifest_for_web_app| is true.
-  // If |valid_manifest_for_web_app| then manifest is present and non-empty.
+  // If manifest is present then it is non-empty.
   using CheckInstallabilityCallback =
       base::OnceCallback<void(base::Optional<blink::Manifest> manifest,
                               bool valid_manifest_for_web_app,

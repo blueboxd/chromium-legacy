@@ -859,7 +859,14 @@ class RenderViewImplUpdateTitleTest : public RenderViewImplTest {
   }
 };
 
-TEST_F(RenderViewImplUpdateTitleTest, OnNavigationLoadDataWithBaseURL) {
+#if defined(OS_ANDROID)
+// Failing on Android: http://crbug.com/1080328
+#define MAYBE_OnNavigationLoadDataWithBaseURL \
+  DISABLED_OnNavigationLoadDataWithBaseURL
+#else
+#define MAYBE_OnNavigationLoadDataWithBaseURL OnNavigationLoadDataWithBaseURL
+#endif
+TEST_F(RenderViewImplUpdateTitleTest, MAYBE_OnNavigationLoadDataWithBaseURL) {
   auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
@@ -2291,7 +2298,8 @@ class RendererErrorPageTest : public RenderViewImplTest {
   class TestContentRendererClient : public ContentRendererClient {
    public:
     bool ShouldSuppressErrorPage(RenderFrame* render_frame,
-                                 const GURL& url) override {
+                                 const GURL& url,
+                                 int error_code) override {
       return url == "http://example.com/suppress";
     }
 

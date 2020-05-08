@@ -44,9 +44,23 @@ void FontFallbackMap::InvalidateAll() {
   fallback_list_for_description_.clear();
 }
 
+void FontFallbackMap::InvalidateForLoadingFallback() {
+  Vector<FontDescription> invalidated;
+  for (auto& entry : fallback_list_for_description_) {
+    if (entry.value->HasLoadingFallback()) {
+      invalidated.push_back(entry.key);
+      entry.value->MarkInvalid();
+    }
+  }
+  fallback_list_for_description_.RemoveAll(invalidated);
+}
+
 void FontFallbackMap::FontsNeedUpdate(FontSelector*,
                                       FontInvalidationReason reason) {
-  // TODO(xiaochengh): Perform partial invalidation based on |reason|.
+  if (reason == FontInvalidationReason::kFontFaceLoaded) {
+    InvalidateForLoadingFallback();
+    return;
+  }
   InvalidateAll();
 }
 

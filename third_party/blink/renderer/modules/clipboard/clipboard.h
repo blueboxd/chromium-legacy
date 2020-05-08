@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class ClipboardItemOptions;
 class ScriptState;
 
 class Clipboard : public EventTargetWithInlineData,
@@ -27,6 +28,7 @@ class Clipboard : public EventTargetWithInlineData,
   explicit Clipboard(ExecutionContext* execution_context);
 
   ScriptPromise read(ScriptState*);
+  ScriptPromise read(ScriptState*, ClipboardItemOptions*);
   ScriptPromise readText(ScriptState*);
 
   ScriptPromise write(ScriptState*, const HeapVector<Member<ClipboardItem>>&);

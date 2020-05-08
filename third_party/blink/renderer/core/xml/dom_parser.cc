@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -30,28 +31,26 @@ namespace blink {
 Document* DOMParser::parseFromString(const String& str, const String& type) {
   Document* doc = DOMImplementation::createDocument(
       DocumentInit::Create()
+          .WithURL(GetDocument()->Url())
           .WithTypeFrom(type)
-          .WithContextDocument(context_document_)
-          .WithOwnerDocument(context_document_)
+          .WithContextDocument(GetDocument())
+          .WithOwnerDocument(GetDocument())
           .WithContentSecurityPolicyFromContextDoc());
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
-  if (context_document_) {
-    doc->SetURL(context_document_->Url());
-  }
   return doc;
 }
 
-DOMParser::DOMParser(Document& document)
-    : context_document_(document.ContextDocument()) {}
+DOMParser::DOMParser(ScriptState* script_state)
+    : window_(LocalDOMWindow::From(script_state)) {}
 
 void DOMParser::Trace(Visitor* visitor) {
-  visitor->Trace(context_document_);
+  visitor->Trace(window_);
   ScriptWrappable::Trace(visitor);
 }
 
 Document* DOMParser::GetDocument() const {
-  return context_document_.Get();
+  return window_->document();
 }
 
 }  // namespace blink

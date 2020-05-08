@@ -24,12 +24,13 @@
         --separator-height: 8px;
         display: flex;
         flex-basis: var(--cr-toolbar-field-width);
-        flex-direction: row;
         transition: width 150ms cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       /* Only search icon is visible in this mode */
       :host([narrow]:not([showing-search])) {
+        /* Row flex keeps magnifying glass on the rightmost edge. */
+        flex-direction: row;
         justify-content: flex-end;
       }
 
@@ -70,6 +71,10 @@
         right: 0;
       }
 
+      iron-dropdown {
+        margin-top: 60px;
+      }
+
       iron-dropdown [slot='dropdown-content'] {
         background-color: var(--cr-menu-background-color);
         border-radius: 0 0 20px 20px;
@@ -84,6 +89,10 @@
 
       :host(:not([narrow])) iron-dropdown [slot='dropdown-content'] {
         width: var(--cr-toolbar-field-width);
+      }
+
+      iron-list {
+        max-height: 50vh;
       }
 
       :host([narrow]) os-search-result-row {
@@ -122,7 +131,7 @@
         showing-search="{{showingSearch}}" spinner-active="[[spinnerActive]]">
     </cr-toolbar-search-field>
     <iron-dropdown id="searchResults" opened="[[shouldShowDropdown_]]"
-        no-overlap allow-outside-scroll no-cancel-on-outside-click>
+        allow-outside-scroll no-cancel-on-outside-click>
       <!--  As part of iron-dropdown's behavior, the slot 'dropdown-content' is
             hidden until iron-dropdown's opened attribute is set true, or when
             iron-dropdown's open() is called on the JS side. -->

@@ -48,6 +48,7 @@
 #include "content/test/mock_badge_service.h"
 #include "content/test/mock_clipboard_host.h"
 #include "content/test/mock_platform_notification_service.h"
+#include "content/test/mock_raw_clipboard_host.h"
 #include "device/bluetooth/public/mojom/test/fake_bluetooth.mojom.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
 #include "gpu/config/gpu_switches.h"
@@ -183,9 +184,11 @@ void WebTestContentBrowserClient::SetPopupBlockingEnabled(bool block_popups) {
   block_popups_ = block_popups;
 }
 
-void WebTestContentBrowserClient::ResetMockClipboardHost() {
+void WebTestContentBrowserClient::ResetMockClipboardHosts() {
   if (mock_clipboard_host_)
     mock_clipboard_host_->Reset();
+  if (mock_raw_clipboard_host_)
+    mock_raw_clipboard_host_->Reset();
 }
 
 void WebTestContentBrowserClient::SetScreenOrientationChanged(
@@ -410,6 +413,9 @@ void WebTestContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
   map->Add<mojom::MojoWebTestHelper>(base::BindRepeating(&BindWebTestHelper));
   map->Add<blink::mojom::ClipboardHost>(base::BindRepeating(
       &WebTestContentBrowserClient::BindClipboardHost, base::Unretained(this)));
+  map->Add<blink::mojom::RawClipboardHost>(
+      base::BindRepeating(&WebTestContentBrowserClient::BindRawClipboardHost,
+                          base::Unretained(this)));
   map->Add<blink::mojom::BadgeService>(base::BindRepeating(
       &WebTestContentBrowserClient::BindBadgeService, base::Unretained(this)));
 }
@@ -447,6 +453,18 @@ void WebTestContentBrowserClient::BindClipboardHost(
   if (!mock_clipboard_host_)
     mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
   mock_clipboard_host_->Bind(std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindRawClipboardHost(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::RawClipboardHost> receiver) {
+  if (!mock_clipboard_host_)
+    mock_clipboard_host_ = std::make_unique<MockClipboardHost>();
+  if (!mock_raw_clipboard_host_) {
+    mock_raw_clipboard_host_ =
+        std::make_unique<MockRawClipboardHost>(mock_clipboard_host_.get());
+  }
+  mock_raw_clipboard_host_->Bind(std::move(receiver));
 }
 
 void WebTestContentBrowserClient::BindBadgeService(

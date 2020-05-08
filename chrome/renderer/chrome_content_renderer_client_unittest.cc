@@ -234,10 +234,10 @@ TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
 TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   ChromeContentRendererClient client;
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL("http://example.com/n"));
-  EXPECT_FALSE(client.ShouldSuppressErrorPage(nullptr,
-                                              GURL("http://example.com")));
-  EXPECT_TRUE(client.ShouldSuppressErrorPage(nullptr,
-                                             GURL("http://example.com/n")));
+  EXPECT_FALSE(client.ShouldSuppressErrorPage(
+      nullptr, GURL("http://example.com"), net::OK));
+  EXPECT_TRUE(client.ShouldSuppressErrorPage(
+      nullptr, GURL("http://example.com/n"), net::OK));
   SearchBouncer::GetInstance()->SetNewTabPageURL(GURL::EmptyGURL());
 }
 

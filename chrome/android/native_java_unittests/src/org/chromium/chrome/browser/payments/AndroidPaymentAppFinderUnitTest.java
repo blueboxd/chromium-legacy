@@ -386,7 +386,7 @@ public class AndroidPaymentAppFinderUnitTest {
                     URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
                 try {
                     callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0], false);
+                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0]);
                 } catch (URISyntaxException e) {
                     Assert.assertTrue(false);
                 }

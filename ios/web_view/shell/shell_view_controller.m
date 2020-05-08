@@ -382,22 +382,6 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
     NSString* message = [descriptions componentsJoinedByString:@"\n\n"];
     UIAlertController* alertController =
         [self actionSheetWithTitle:@"Credit cards" message:message];
-    for (CWVCreditCard* creditCard in creditCards) {
-      // Cards from Google Play can only be deleted on the Google Pay website.
-      if (creditCard.fromGooglePay) {
-        continue;
-      }
-      NSString* title =
-          [NSString stringWithFormat:@"Delete %@",
-                                     @([creditCards indexOfObject:creditCard])];
-      UIAlertAction* action =
-          [UIAlertAction actionWithTitle:title
-                                   style:UIAlertActionStyleDefault
-                                 handler:^(UIAlertAction* action) {
-                                   [dataManager deleteCreditCard:creditCard];
-                                 }];
-      [alertController addAction:action];
-    }
     __weak ShellViewController* weakSelf = self;
     [alertController
         addAction:[UIAlertAction

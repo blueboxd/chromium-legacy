@@ -181,6 +181,24 @@ class MockCrosHealthdBluetoothObserver
   mojo::Receiver<mojom::CrosHealthdBluetoothObserver> receiver_;
 };
 
+class MockCrosHealthdLidObserver : public mojom::CrosHealthdLidObserver {
+ public:
+  MockCrosHealthdLidObserver() : receiver_{this} {}
+  MockCrosHealthdLidObserver(const MockCrosHealthdLidObserver&) = delete;
+  MockCrosHealthdLidObserver& operator=(const MockCrosHealthdLidObserver&) =
+      delete;
+
+  MOCK_METHOD(void, OnLidClosed, (), (override));
+  MOCK_METHOD(void, OnLidOpened, (), (override));
+
+  mojo::PendingRemote<mojom::CrosHealthdLidObserver> pending_remote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<mojom::CrosHealthdLidObserver> receiver_;
+};
+
 class MockCrosHealthdPowerObserver : public mojom::CrosHealthdPowerObserver {
  public:
   MockCrosHealthdPowerObserver() : receiver_{this} {}
@@ -479,6 +497,21 @@ TEST_F(CrosHealthdServiceConnectionTest, AddBluetoothObserver) {
     run_loop.Quit();
   }));
   FakeCrosHealthdClient::Get()->EmitAdapterAddedEventForTesting();
+
+  run_loop.Run();
+}
+
+// Test that we can add a lid observer.
+TEST_F(CrosHealthdServiceConnectionTest, AddLidObserver) {
+  MockCrosHealthdLidObserver observer;
+  ServiceConnection::GetInstance()->AddLidObserver(observer.pending_remote());
+
+  // Send out an event to make sure the observer is connected.
+  base::RunLoop run_loop;
+  EXPECT_CALL(observer, OnLidClosed()).WillOnce(Invoke([&]() {
+    run_loop.Quit();
+  }));
+  FakeCrosHealthdClient::Get()->EmitLidClosedEventForTesting();
 
   run_loop.Run();
 }

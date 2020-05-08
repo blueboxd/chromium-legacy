@@ -49,6 +49,7 @@ class ModalWindow : public views::WidgetDelegateView,
  public:
   explicit ModalWindow(ui::ModalType modal_type)
       : modal_type_(modal_type), color_(kColors[g_color_index]) {
+    SetTitle(base::ASCIIToUTF16("Modal Window"));
     ++g_color_index %= base::size(kColors);
     open_button_ =
         AddChildView(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!")));
@@ -78,9 +79,6 @@ class ModalWindow : public views::WidgetDelegateView,
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override { return true; }
-  base::string16 GetWindowTitle() const override {
-    return base::ASCIIToUTF16("Modal Window");
-  }
   ui::ModalType GetModalType() const override { return modal_type_; }
 
   // Overridden from views::ButtonListener:
@@ -100,6 +98,7 @@ class ModalWindow : public views::WidgetDelegateView,
 class NonModalTransient : public views::WidgetDelegateView {
  public:
   NonModalTransient() : color_(kColors[g_color_index]) {
+    SetTitle(base::ASCIIToUTF16("Non-Modal Transient"));
     ++g_color_index %= base::size(kColors);
   }
   ~NonModalTransient() override = default;
@@ -133,9 +132,6 @@ class NonModalTransient : public views::WidgetDelegateView {
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override { return true; }
-  base::string16 GetWindowTitle() const override {
-    return base::ASCIIToUTF16("Non-Modal Transient");
-  }
   void DeleteDelegate() override {
     if (GetWidget() == non_modal_transient_)
       non_modal_transient_ = nullptr;
@@ -182,6 +178,7 @@ WindowTypeLauncher::WindowTypeLauncher(
     : show_views_examples_callback_(std::move(show_views_examples_callback)),
       create_embedded_browser_callback_(
           std::move(create_embedded_browser_callback)) {
+  SetTitle(base::ASCIIToUTF16("Examples: Window Builder"));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
   SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
@@ -241,10 +238,6 @@ bool WindowTypeLauncher::OnMousePressed(const ui::MouseEvent& event) {
 
 bool WindowTypeLauncher::CanResize() const {
   return true;
-}
-
-base::string16 WindowTypeLauncher::GetWindowTitle() const {
-  return base::ASCIIToUTF16("Examples: Window Builder");
 }
 
 bool WindowTypeLauncher::CanMaximize() const {

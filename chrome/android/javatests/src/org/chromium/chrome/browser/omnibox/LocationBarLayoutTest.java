@@ -433,6 +433,7 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void testOmniboxSearchEngineLogo_siteIncognito() {
         final LocationBarLayout locationBar = getLocationBar();
@@ -558,6 +559,7 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void testOmniboxSearchEngineLogo_siteIncognito_nonGoogle() {
         final LocationBarLayout locationBar = getLocationBar();

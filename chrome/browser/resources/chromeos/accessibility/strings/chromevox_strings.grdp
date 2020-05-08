@@ -2299,6 +2299,15 @@
   <message desc="Hint for how to start editing a text field while exploring the screen using touch exploration." name="IDS_CHROMEVOX_HINT_DOUBLE_TAP_TO_EDIT">
     Double tap to start editing
   </message>
+  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP2_GESTURE">
+    Tap with two fingers
+  </message>
+  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP4_GESTURE">
+    Tap with four fingers
+  </message>
+  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_CLICK_GESTURE">
+    Double tap with one finger
+  </message>
   <message desc="Describes Learn Mode when the mode is initially entered." name="IDS_CHROMEVOX_LEARN_MODE_INTRO">
     Starting Learn Mode. Press a qwerty key, refreshable braille key, or touch gesture to learn its function. Press control with w or escape to exit.
   </message>
@@ -2923,51 +2932,6 @@
   </message>
   <message desc="Labels the checkbox on the options page that enables or disables Smart Sticky Mode. The label explains how the feature works." name="IDS_CHROMEVOX_OPTIONS_SMART_STICKY_MODE">
     Turn off sticky mode when editing text (Smart Sticky Mode)
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP1_GESTURE">
-    Swipe one finger up
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN1_GESTURE">
-    Swipe one finger down
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT1_GESTURE">
-    Swipe one finger left
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT1_GESTURE">
-    Swipe one finger right
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP2_GESTURE">
-    Swipe two fingers up
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN2_GESTURE">
-    Swipe two fingers down
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT2_GESTURE">
-    Swipe two fingers left
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT2_GESTURE">
-    Swipe two fingers right
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEUP3_GESTURE">
-    Swipe three fingers up
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPEDOWN3_GESTURE">
-    Swipe three fingers down
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPELEFT3_GESTURE">
-    Swipe three fingers left
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_SWIPERIGHT3_GESTURE">
-    Swipe three fingers right
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP2_GESTURE">
-    Tap with two fingers
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_TAP4_GESTURE">
-    Tap with four fingers
-  </message>
-  <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_CLICK_GESTURE">
-    Double tap with one finger
   </message>
 
 </grit-part>

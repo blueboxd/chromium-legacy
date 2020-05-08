@@ -72,16 +72,6 @@ source_set("base") {
     "//third_party/webrtc_overrides:webrtc_component",
     "//url",
   ]
-  if (is_nacl) {
-    sources -= [
-      "chromium_url_request.cc",
-      "chromoting_event.cc",
-      "telemetry_log_writer.cc",
-      "url_request_context_getter.cc",
-    ]
-    public_deps -= [ "//remoting/proto/remoting/v1:telemetry_grpc_library" ]
-    deps -= [ "//google_apis" ]
-  }
 }
 
 source_set("authorization") {

@@ -268,6 +268,7 @@ extern const char kChromeUISmbCredentialsURL[];
 extern const char kChromeUISmbShareHost[];
 extern const char kChromeUISmbShareURL[];
 extern const char kChromeUISysInternalsHost[];
+extern const char kChromeUIUntrustedCroshURL[];
 extern const char kChromeUIUntrustedTerminalURL[];
 extern const char kChromeUIUrgentPasswordExpiryNotificationHost[];
 extern const char kChromeUIUrgentPasswordExpiryNotificationUrl[];

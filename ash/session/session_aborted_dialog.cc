@@ -53,15 +53,6 @@ ui::ModalType SessionAbortedDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-base::string16 SessionAbortedDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_ASH_MULTIPROFILES_SESSION_ABORT_HEADLINE);
-}
-
-bool SessionAbortedDialog::ShouldShowCloseButton() const {
-  return false;
-}
-
 gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
   return gfx::Size(
       kDefaultWidth,
@@ -69,6 +60,10 @@ gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
 }
 
 SessionAbortedDialog::SessionAbortedDialog() {
+  SetTitle(
+      l10n_util::GetStringUTF16(IDS_ASH_MULTIPROFILES_SESSION_ABORT_HEADLINE));
+  SetShowCloseButton(false);
+
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,

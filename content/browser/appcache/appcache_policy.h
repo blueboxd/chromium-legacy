@@ -23,6 +23,10 @@ class AppCachePolicy {
   virtual bool CanCreateAppCache(const GURL& manifest_url,
                                  const GURL& first_party) = 0;
 
+  // Returns true if origin trial tokens are required in order to fetch or
+  // update manifests, as well as load any resources from such a manifest.
+  virtual bool IsOriginTrialRequiredForAppCache() = 0;
+
  protected:
   ~AppCachePolicy() = default;
 };

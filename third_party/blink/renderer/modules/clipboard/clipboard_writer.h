@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_WRITER_H_
 
 #include "base/sequence_checker.h"
-#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -25,7 +24,8 @@ class RawSystemClipboard;
 // Writing a Blob's data to the system clipboard is accomplished by:
 // (1) Reading the blob's contents using a FileReaderLoader.
 // (2) Decoding the blob's contents to avoid RCE in native applications that may
-//     take advantage of vulnerabilities in their decoders.
+//     take advantage of vulnerabilities in their decoders. In
+//     ClipboardRawDataWriter, this decoding is skipped.
 // (3) Writing the blob's decoded contents to the system clipboard.
 class ClipboardWriter : public GarbageCollected<ClipboardWriter>,
                         public FileReaderLoaderClient {
@@ -39,7 +39,7 @@ class ClipboardWriter : public GarbageCollected<ClipboardWriter>,
 
   ~ClipboardWriter() override;
 
-  static bool IsValidType(const String& type);
+  static bool IsValidType(const String& type, bool is_raw);
   void WriteToSystem(Blob*);
 
   // FileReaderLoaderClient.

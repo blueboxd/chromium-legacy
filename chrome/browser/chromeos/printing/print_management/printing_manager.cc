@@ -14,6 +14,10 @@ namespace chromeos {
 namespace printing {
 namespace print_management {
 
+using chromeos::printing::proto::PrintJobInfo;
+using printing_manager::mojom::PrintingMetadataProvider;
+using printing_manager::mojom::PrintJobInfoPtr;
+
 PrintingManager::PrintingManager(
     PrintJobHistoryService* print_job_history_service)
     : print_job_history_service_(print_job_history_service) {}
@@ -33,9 +37,8 @@ void PrintingManager::DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) {
 void PrintingManager::OnPrintJobsRetrieved(
     GetPrintJobsCallback callback,
     bool success,
-    std::vector<chromeos::printing::proto::PrintJobInfo>
-        print_job_info_protos) {
-  std::vector<mojom::PrintJobInfoPtr> print_job_infos;
+    std::vector<PrintJobInfo> print_job_info_protos) {
+  std::vector<PrintJobInfoPtr> print_job_infos;
 
   if (success) {
     for (const auto& print_job_info : print_job_info_protos) {
@@ -47,7 +50,7 @@ void PrintingManager::OnPrintJobsRetrieved(
 }
 
 void PrintingManager::BindInterface(
-    mojo::PendingReceiver<mojom::PrintingMetadataProvider> pending_receiver) {
+    mojo::PendingReceiver<PrintingMetadataProvider> pending_receiver) {
   receiver_.Bind(std::move(pending_receiver));
 }
 

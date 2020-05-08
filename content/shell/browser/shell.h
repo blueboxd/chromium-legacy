@@ -17,14 +17,35 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/shell/browser/shell_platform_delegate.h"
 #include "ipc/ipc_channel.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
-class GURL;
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#elif defined(USE_AURA)
+#if defined(OS_CHROMEOS)
 
+namespace wm {
+class WMTestHelper;
+}
+#endif  // defined(OS_CHROMEOS)
+namespace views {
+class Widget;
+class ViewsDelegate;
+}
+namespace wm {
+class WMState;
+}
+#endif  // defined(USE_AURA)
+
+class GURL;
 namespace content {
+
+#if defined(USE_AURA)
+class ShellPlatformDataAura;
+#endif
+
 class BrowserContext;
 class ShellDevToolsFrontend;
 class ShellJavaScriptDialogManager;
@@ -60,13 +81,14 @@ class Shell : public WebContentsDelegate,
   void Close();
   void ShowDevTools();
   void CloseDevTools();
-#if defined(OS_MACOSX)
+  bool hide_toolbar() { return hide_toolbar_; }
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
   // Resizes the web content view to the given dimensions.
-  void ResizeWebContentForTests(const gfx::Size& content_size);
+  void SizeTo(const gfx::Size& content_size);
 #endif
 
-  // Do one-time initialization at application startup.
-  static void Initialize(ShellPlatformDelegate* platform);
+  // Do one time initialization at application startup.
+  static void Initialize();
 
   static Shell* CreateNewWindow(
       BrowserContext* browser_context,
@@ -103,13 +125,8 @@ class Shell : public WebContentsDelegate,
   static void SetShellCreatedCallback(
       base::OnceCallback<void(Shell*)> shell_created_callback);
 
-  static bool ShouldHideToolbar();
-
   WebContents* web_contents() const { return web_contents_.get(); }
-
-#if !defined(OS_ANDROID)
-  gfx::NativeWindow window();
-#endif
+  gfx::NativeWindow window() { return window_; }
 
 #if defined(OS_MACOSX)
   // Public to be called by an ObjC bridge object.
@@ -189,19 +206,13 @@ class Shell : public WebContentsDelegate,
     delay_popup_contents_delegate_for_testing_ = delay;
   }
 
-  // This pointer is owned and used only by ShellPlatformDelegate.
-  void set_platform_data(ShellPlatformDelegate::ShellData* data) {
-    platform_data_ = data;
-  }
-  ShellPlatformDelegate::ShellData* platform_data() const {
-    return platform_data_;
-  }
-
-  // TODO(danakj): Move this to WebTestShellPlatformDelegate (a test-only
-  // subclass of ShellPlatformDelegate that does not exist yet).
-  bool headless() const { return headless_; }
-
  private:
+  enum UIControl {
+    BACK_BUTTON,
+    FORWARD_BUTTON,
+    STOP_BUTTON
+  };
+
   class DevToolsWebContentsObserver;
 
   Shell(std::unique_ptr<WebContents> web_contents, bool should_set_delegate);
@@ -211,9 +222,43 @@ class Shell : public WebContentsDelegate,
                             const gfx::Size& initial_size,
                             bool should_set_delegate);
 
+  // Helper for one time initialization of application
+  static void PlatformInitialize(const gfx::Size& default_window_size);
+  // Helper for one time deinitialization of platform specific state.
+  static void PlatformExit();
+
   // Adjust the size when Blink sends 0 for width and/or height.
   // This happens when Blink requests a default-sized window.
   static gfx::Size AdjustWindowSize(const gfx::Size& initial_size);
+
+  // All the methods that begin with Platform need to be implemented by the
+  // platform specific Shell implementation.
+  // Called from the destructor to let each platform do any necessary cleanup.
+  void PlatformCleanUp();
+  // Creates the main window GUI.
+  void PlatformCreateWindow(int width, int height);
+  // Links the WebContents into the newly created window.
+  void PlatformSetContents();
+  // Resize the content area and GUI.
+  void PlatformResizeSubViews();
+  // Enable/disable a button.
+  void PlatformEnableUIControl(UIControl control, bool is_enabled);
+  // Updates the url in the url bar.
+  void PlatformSetAddressBarURL(const GURL& url);
+  // Sets whether the spinner is spinning.
+  void PlatformSetIsLoading(bool loading);
+  // Set the title of shell window
+  void PlatformSetTitle(const base::string16& title);
+#if defined(OS_MACOSX)
+  // Activate (make key) the native window, and focus the web contents.
+  void PlatformActivateContents(WebContents* contents);
+#endif
+#if defined(OS_ANDROID)
+  void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
+                                          bool enter_fullscreen);
+  bool PlatformIsFullscreenForTabOrPending(
+      const WebContents* web_contents) const;
+#endif
 
   // Helper method for the two public LoadData methods.
   void LoadDataWithBaseURLInternal(const GURL& url,
@@ -233,20 +278,40 @@ class Shell : public WebContentsDelegate,
 
   void OnDevToolsWebContentsDestroyed();
 
-  ShellPlatformDelegate::ShellData* platform_data_ = nullptr;
-
   std::unique_ptr<ShellJavaScriptDialogManager> dialog_manager_;
 
   std::unique_ptr<WebContents> web_contents_;
 
   std::unique_ptr<DevToolsWebContentsObserver> devtools_observer_;
-  ShellDevToolsFrontend* devtools_frontend_ = nullptr;
+  ShellDevToolsFrontend* devtools_frontend_;
 
-  bool is_fullscreen_ = false;
+  bool is_fullscreen_;
+
+  gfx::NativeWindow window_;
+#if defined(OS_MACOSX)
+  NSTextField* url_edit_view_;
+#endif
 
   gfx::Size content_size_;
 
-  bool headless_ = false;
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
+#elif defined(USE_AURA)
+#if defined(OS_CHROMEOS)
+  static wm::WMTestHelper* wm_test_helper_;
+#else
+  static wm::WMState* wm_state_;
+#endif
+#if defined(TOOLKIT_VIEWS)
+  static views::ViewsDelegate* views_delegate_;
+
+  views::Widget* window_widget_;
+#endif // defined(TOOLKIT_VIEWS)
+  static ShellPlatformDataAura* platform_;
+#endif  // defined(USE_AURA)
+
+  bool headless_;
+  bool hide_toolbar_;
   bool delay_popup_contents_delegate_for_testing_ = false;
 
   // A container of all the open windows. We use a vector so we can keep track

@@ -358,6 +358,11 @@ public class Shell extends LinearLayout {
         }
     }
 
+    @CalledByNative
+    public void sizeTo(int width, int height) {
+        mWebContents.setSize(width, height);
+    }
+
     public void setOverayModeChangedCallbackForTesting(Callback<Boolean> callback) {
         mOverlayModeChangedCallbackForTesting = callback;
     }

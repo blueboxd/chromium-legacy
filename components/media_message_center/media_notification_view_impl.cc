@@ -13,7 +13,6 @@
 #include "components/media_message_center/media_notification_util.h"
 #include "components/media_message_center/vector_icons/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -63,17 +62,17 @@ void RecordMetadataHistogram(MediaNotificationViewImpl::Metadata metadata) {
 const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
   switch (action) {
     case MediaSessionAction::kPreviousTrack:
-      return &vector_icons::kMediaPreviousTrackIcon;
+      return &kMediaPreviousTrackIcon;
     case MediaSessionAction::kSeekBackward:
-      return &vector_icons::kMediaSeekBackwardIcon;
+      return &kMediaSeekBackwardIcon;
     case MediaSessionAction::kPlay:
-      return &vector_icons::kPlayArrowIcon;
+      return &kPlayArrowIcon;
     case MediaSessionAction::kPause:
-      return &vector_icons::kPauseIcon;
+      return &kPauseIcon;
     case MediaSessionAction::kSeekForward:
-      return &vector_icons::kMediaSeekForwardIcon;
+      return &kMediaSeekForwardIcon;
     case MediaSessionAction::kNextTrack:
-      return &vector_icons::kMediaNextTrackIcon;
+      return &kMediaNextTrackIcon;
     case MediaSessionAction::kEnterPictureInPicture:
       return &kMediaEnterPipIcon;
     case MediaSessionAction::kExitPictureInPicture:

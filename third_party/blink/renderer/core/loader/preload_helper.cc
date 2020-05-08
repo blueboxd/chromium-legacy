@@ -395,9 +395,9 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // settings object." [spec text]
   // |document| is the node document here, and its context document is the
   // relevant settings object.
-  Document* context_document = document.ContextDocument();
+  LocalDOMWindow* window = To<LocalDOMWindow>(document.GetExecutionContext());
   Modulator* modulator =
-      Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
+      Modulator::From(ToScriptStateForMainWorld(window->GetFrame()));
   DCHECK(modulator);
   if (!modulator)
     return;
@@ -492,7 +492,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // destination, options, settings object, "client", and with the top-level
   // module fetch flag set. Wait until algorithm asynchronously completes with
   // result." [spec text]
-  modulator->FetchSingle(request, context_document->Fetcher(),
+  modulator->FetchSingle(request, window->Fetcher(),
                          ModuleGraphLevel::kDependentModuleFetch,
                          ModuleScriptCustomFetchType::kNone, client);
 

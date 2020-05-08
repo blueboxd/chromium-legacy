@@ -29,6 +29,8 @@ public final class WebApkMetaDataKeys {
     public static final String SPLASH_ID = "org.chromium.webapk.shell_apk.splashId";
     public static final String IS_SPLASH_ICON_MASKABLE_BOOLEAN_ID =
             "org.chromium.webapk.shell_apk.isSplashIconMaskableBooleanId";
+    public static final String IS_NEW_STYLE_WEBAPK =
+            "org.chromium.webapk.shell_apk.isNewStyleWebApk";
 
     public static final String ICON_URLS_AND_ICON_MURMUR2_HASHES =
             "org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes";

@@ -14,11 +14,11 @@
 namespace chromeos {
 class PrintJobHistoryService;
 namespace printing {
-namespace mojom = printing_manager::mojom;
 namespace print_management {
 
-class PrintingManager : public mojom::PrintingMetadataProvider,
-                        public KeyedService {
+class PrintingManager
+    : public printing_manager::mojom::PrintingMetadataProvider,
+      public KeyedService {
  public:
   explicit PrintingManager(PrintJobHistoryService* print_job_history_service);
   ~PrintingManager() override;
@@ -26,12 +26,13 @@ class PrintingManager : public mojom::PrintingMetadataProvider,
   PrintingManager(const PrintingManager&) = delete;
   PrintingManager& operator=(const PrintingManager&) = delete;
 
-  // mojom::PrintingMetadataProvider:
+  // printing_manager::mojom::PrintingMetadataProvider:
   void GetPrintJobs(GetPrintJobsCallback callback) override;
   void DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) override;
 
   void BindInterface(
-      mojo::PendingReceiver<mojom::PrintingMetadataProvider> pending_receiver);
+      mojo::PendingReceiver<printing_manager::mojom::PrintingMetadataProvider>
+          pending_receiver);
 
  private:
   // KeyedService:
@@ -42,7 +43,8 @@ class PrintingManager : public mojom::PrintingMetadataProvider,
                             std::vector<chromeos::printing::proto::PrintJobInfo>
                                 print_job_info_protos);
 
-  mojo::Receiver<mojom::PrintingMetadataProvider> receiver_{this};
+  mojo::Receiver<printing_manager::mojom::PrintingMetadataProvider> receiver_{
+      this};
   chromeos::PrintJobHistoryService* print_job_history_service_;  // NOT OWNED.
 };
 

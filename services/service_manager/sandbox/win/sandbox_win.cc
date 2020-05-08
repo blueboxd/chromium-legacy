@@ -312,15 +312,10 @@ bool ShouldSetJobLevel(const base::CommandLine& cmd_line) {
   // Server 2012 and newer so if we do the check last we should be on the safe
   // side. See: https://msdn.microsoft.com/en-us/library/aa380798.aspx.
   if (!::GetSystemMetrics(SM_REMOTESESSION)) {
-    // Measure how often we would have decided to apply the sandbox but the
-    // user actually wanted to avoid it.
-    // TODO(pastarmovj): Remove this check and the flag altogether once we are
-    // convinced that the automatic logic is good enough.
-    bool set_job =
-        !cmd_line.HasSwitch(service_manager::switches::kAllowNoSandboxJob);
-    UMA_HISTOGRAM_BOOLEAN("Process.Sandbox.FlagOverrodeRemoteSessionCheck",
-                          !set_job);
-    return set_job;
+    // TODO(pastarmovj): Even though the number are low, this flag is still
+    // necessary in some limited set of cases. Remove it once Windows 7 is no
+    // longer supported together with the rest of the checks in this function.
+    return !cmd_line.HasSwitch(service_manager::switches::kAllowNoSandboxJob);
   }
 
   // Allow running without the sandbox in this case. This slightly reduces the

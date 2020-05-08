@@ -97,8 +97,9 @@ class PaymentManifestParser {
 
   // Called on successful parsing of a payment method manifest. Parse failure
   // results in empty vectors and "false".
-  using PaymentMethodCallback = base::OnceCallback<
-      void(const std::vector<GURL>&, const std::vector<url::Origin>&, bool)>;
+  using PaymentMethodCallback =
+      base::OnceCallback<void(const std::vector<GURL>&,
+                              const std::vector<url::Origin>&)>;
   // Called on successful parsing of a web app manifest. Parse failure results
   // in an empty vector.
   using WebAppCallback =
@@ -131,8 +132,7 @@ class PaymentManifestParser {
       std::unique_ptr<base::Value> value,
       const ErrorLogger& log,
       std::vector<GURL>* web_app_manifest_urls,
-      std::vector<url::Origin>* supported_origins,
-      bool* all_origins_supported);
+      std::vector<url::Origin>* supported_origins);
 
   static bool ParseWebAppManifestIntoVector(
       std::unique_ptr<base::Value> value,

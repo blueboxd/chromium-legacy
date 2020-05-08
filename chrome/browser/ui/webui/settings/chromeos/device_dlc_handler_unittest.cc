@@ -13,12 +13,11 @@ namespace settings {
 
 namespace {
 
-dlcservice::DlcModuleList CreateDlcModuleListOfSize(size_t numDlcs) {
-  dlcservice::DlcModuleList dlc_module_list;
-  dlcservice::DlcModuleInfo* dlc_module_info;
+dlcservice::DlcsWithContent CreateDlcModuleListOfSize(size_t numDlcs) {
+  dlcservice::DlcsWithContent dlc_module_list;
+  dlcservice::DlcsWithContent_DlcInfo* dlc_module_info;
   for (size_t i = 0; i < numDlcs; i++) {
-    dlc_module_info = dlc_module_list.add_dlc_module_infos();
-    dlc_module_info->set_dlc_id("dlcId" + base::NumberToString(i));
+    dlc_module_info = dlc_module_list.add_dlc_infos();
   }
   return dlc_module_list;
 }
@@ -71,7 +70,7 @@ class DlcHandlerTest : public testing::Test {
     return *test_web_ui_->call_data()[index];
   }
 
-  size_t CallGetDlcListAndReturnSize() {
+  base::Value::ConstListView CallGetDlcListAndReturnList() {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     base::ListValue args;
@@ -86,7 +85,7 @@ class DlcHandlerTest : public testing::Test {
         CallDataAtIndex(call_data_count_before_call);
     EXPECT_EQ("cr.webUIResponse", call_data.function_name());
     EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
-    return call_data.arg3()->GetList().size();
+    return call_data.arg3()->GetList();
   }
 
   bool CallPurgeDlcAndReturnSuccess() {
@@ -110,22 +109,25 @@ class DlcHandlerTest : public testing::Test {
 };
 
 TEST_F(DlcHandlerTest, GetDlcList) {
-  fake_dlcservice_client_->set_installed_dlcs(CreateDlcModuleListOfSize(2u));
+  fake_dlcservice_client_->set_dlcs_with_content(CreateDlcModuleListOfSize(2u));
 
-  fake_dlcservice_client_->SetGetInstalledError(dlcservice::kErrorInternal);
-  EXPECT_EQ(CallGetDlcListAndReturnSize(), 0u);
+  fake_dlcservice_client_->SetGetExistingDlcsError(dlcservice::kErrorInternal);
+  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
 
-  fake_dlcservice_client_->SetGetInstalledError(dlcservice::kErrorNeedReboot);
-  EXPECT_EQ(CallGetDlcListAndReturnSize(), 0u);
+  fake_dlcservice_client_->SetGetExistingDlcsError(
+      dlcservice::kErrorNeedReboot);
+  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
 
-  fake_dlcservice_client_->SetGetInstalledError(dlcservice::kErrorInvalidDlc);
-  EXPECT_EQ(CallGetDlcListAndReturnSize(), 0u);
+  fake_dlcservice_client_->SetGetExistingDlcsError(
+      dlcservice::kErrorInvalidDlc);
+  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
 
-  fake_dlcservice_client_->SetGetInstalledError(dlcservice::kErrorAllocation);
-  EXPECT_EQ(CallGetDlcListAndReturnSize(), 0u);
+  fake_dlcservice_client_->SetGetExistingDlcsError(
+      dlcservice::kErrorAllocation);
+  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
 
-  fake_dlcservice_client_->SetGetInstalledError(dlcservice::kErrorNone);
-  EXPECT_EQ(CallGetDlcListAndReturnSize(), 2u);
+  fake_dlcservice_client_->SetGetExistingDlcsError(dlcservice::kErrorNone);
+  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 2u);
 }
 
 TEST_F(DlcHandlerTest, PurgeDlc) {
@@ -143,6 +145,25 @@ TEST_F(DlcHandlerTest, PurgeDlc) {
 
   fake_dlcservice_client_->SetPurgeError(dlcservice::kErrorNone);
   EXPECT_TRUE(CallPurgeDlcAndReturnSuccess());
+}
+
+TEST_F(DlcHandlerTest, FormattedCorrectly) {
+  dlcservice::DlcsWithContent dlcs_with_content;
+  auto* dlc_info = dlcs_with_content.add_dlc_infos();
+  dlc_info->set_id("fake id");
+  dlc_info->set_name("fake name");
+  dlc_info->set_description("fake description");
+  dlc_info->set_used_bytes_on_disk(100000);
+
+  fake_dlcservice_client_->set_dlcs_with_content(dlcs_with_content);
+
+  auto result_list = CallGetDlcListAndReturnList();
+  EXPECT_EQ(1UL, result_list.size());
+  EXPECT_EQ("fake id", result_list[0].FindKey("id")->GetString());
+  EXPECT_EQ("fake name", result_list[0].FindKey("name")->GetString());
+  EXPECT_EQ("fake description",
+            result_list[0].FindKey("description")->GetString());
+  EXPECT_EQ("97.7 KB", result_list[0].FindKey("diskUsageLabel")->GetString());
 }
 
 }  // namespace

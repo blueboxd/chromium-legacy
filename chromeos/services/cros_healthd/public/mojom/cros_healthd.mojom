@@ -278,6 +278,13 @@ interface CrosHealthdEventService {
   // * |observer| - Bluetooth observer to be added to cros_healthd.
   AddBluetoothObserver(CrosHealthdBluetoothObserver observer);
 
+  // Adds an observer to be notified on lid events. The caller can remove the
+  // observer created by this call by closing their end of the message pipe.
+  //
+  // The request:
+  // * |observer| - lid observer to be added to cros_healthd.
+  AddLidObserver(CrosHealthdLidObserver observer);
+
   // Adds an observer to be notified on power events. The caller can remove the
   // observer created by this call by closing their end of the message pipe.
   //

@@ -104,6 +104,8 @@ AppCacheHost::AppCacheHost(
         ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
             process_id_);
   }
+  is_origin_trial_required_ =
+      service_->appcache_policy()->IsOriginTrialRequiredForAppCache();
 }
 
 AppCacheHost::~AppCacheHost() {
@@ -710,6 +712,10 @@ void AppCacheHost::AssociateCacheHelper(AppCache* cache,
 
 void AppCacheHost::OnContentBlocked(const GURL& manifest_url) {
   OnAppCacheAccessed(manifest_url, /*blocked=*/true);
+}
+
+bool AppCacheHost::IsOriginTrialRequiredForAppCache() {
+  return is_origin_trial_required_;
 }
 
 void AppCacheHost::OnAppCacheAccessed(const GURL& manifest_url, bool blocked) {

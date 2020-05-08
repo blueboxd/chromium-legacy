@@ -108,7 +108,6 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -1727,7 +1726,7 @@ void NavigationRequest::OnRequestRedirected(
 }
 
 void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
-  if (!IsOptInIsolationRequested(url))
+  if (!IsOptInIsolationRequested())
     return;
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -1767,18 +1766,9 @@ bool NavigationRequest::HasCommittingOrigin(const url::Origin& origin) {
   return origin == url::Origin::Create(GetURL());
 }
 
-bool NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
+bool NavigationRequest::IsOptInIsolationRequested() {
   if (!response())
     return false;
-
-  // The header can be enabled via either a command-line flag or an origin
-  // trial.
-  blink::TrialTokenValidator validator;
-  const bool header_is_enabled =
-      base::FeatureList::IsEnabled(features::kOriginIsolationHeader) ||
-      (response()->headers && validator.RequestEnablesFeature(
-                                  url, response()->headers.get(),
-                                  "OriginIsolationHeader", base::Time::Now()));
 
   // For now we only check for the presence of hints; we do not yet act on the
   // specific hints.
@@ -1792,8 +1782,8 @@ bool NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
   // header; we do not parse/validate it. When we do, that will have to be
   // outside the browser process.
   const bool requests_via_header =
-      header_is_enabled && response()->headers &&
-      response()->headers->HasHeader("origin-isolation");
+      base::FeatureList::IsEnabled(features::kOriginIsolationHeader) &&
+      response()->headers && response()->headers->HasHeader("origin-isolation");
 
   return requests_via_header || requests_via_origin_policy;
 }
@@ -1838,14 +1828,14 @@ void NavigationRequest::OnResponseStarted(
       ChildProcessSecurityPolicyImpl::ScopedOriginIsolationOptInRequest;
   std::unique_ptr<ScopedOriginIsolationOptInRequest>
       scoped_origin_isolation_opt_in_request;
-  if (IsOptInIsolationRequested(GetURL())) {
+  if (IsOptInIsolationRequested()) {
     // This origin conversion won't be correct for about:blank, but origin
     // isolation shouldn't need to care about that case because a previous
     // instance of the origin would already have determined its isolation status
     // in that BrowsingInstance.
     // TODO(https://crbug.com/888079): Use the computed origin here just to be
     // safe.
-    url::Origin origin_to_isolate(url::Origin::Create(GetURL()));
+    url::Origin origin_to_isolate(url::Origin::Create(common_params().url));
     scoped_origin_isolation_opt_in_request =
         ScopedOriginIsolationOptInRequest::GetScopedOriginIsolationOptInRequest(
             origin_to_isolate);
@@ -1854,7 +1844,7 @@ void NavigationRequest::OnResponseStarted(
   // The navigation may have encountered an origin policy or Origin-Isolation
   // header that requests isolation for the url's origin. Before we pick the
   // renderer, make sure we update the origin-isolation opt-ins appropriately.
-  CheckForIsolationOptIn(GetURL());
+  CheckForIsolationOptIn(common_params().url);
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =

@@ -94,10 +94,18 @@ void ErrorPageHelper::PrepareErrorPage(const error_page::Error& error,
       std::make_unique<ErrorPageInfo>(error, was_failed_post);
 }
 
-bool ErrorPageHelper::ShouldSuppressErrorPage() {
+bool ErrorPageHelper::ShouldSuppressErrorPage(int error_code) {
   // If there's no auto reload attempt in flight, this error page didn't come
   // from auto reload, so don't suppress it.
   if (!auto_reload_in_flight_)
+    return false;
+
+  // Even with auto_reload_in_flight_ error page may not come from
+  // the auto reload when proceeding from error CERT_AUTHORITY_INVALID
+  // to error INVALID_AUTH_CREDENTIALS, so do not suppress the error page
+  // for the new error code.
+  if (committed_error_page_info_ &&
+      committed_error_page_info_->error.reason() != error_code)
     return false;
 
   uncommitted_load_started_ = false;

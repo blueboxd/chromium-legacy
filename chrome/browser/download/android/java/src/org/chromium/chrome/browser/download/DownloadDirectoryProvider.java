@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
 
@@ -110,13 +109,7 @@ public class DownloadDirectoryProvider {
 
             // Retrieve additional directories, i.e. the external SD card directory.
             mExternalStorageDirectory = Environment.getExternalStorageDirectory().getAbsolutePath();
-            File[] files;
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                files = mDelegate.getExternalFilesDirs();
-            } else {
-                files = new File[] {Environment.getExternalStorageDirectory()};
-            }
+            File[] files = mDelegate.getExternalFilesDirs();
 
             if (files.length <= 1) return dirs;
 

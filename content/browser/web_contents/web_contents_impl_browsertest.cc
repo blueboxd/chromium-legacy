@@ -96,14 +96,17 @@ namespace content {
 
 void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
                            bool set_start_page) {
+  // Shell::SizeTo is not implemented on Aura; WebContentsView::SizeContents
+  // works on Win and ChromeOS but not Linux - we need to resize the shell
+  // window on Linux because if we don't, the next layout of the unchanged shell
+  // window will resize WebContentsView back to the previous size.
+  // SizeContents is a hack and should not be relied on.
 #if defined(OS_MACOSX)
-  // Mac requires platform-specific code to resize the WebContents directly
-  // (independent of the Shell window). It needs to happen after the
-  // RenderWidgetHostView exists, so we do a navigation first if
-  // |set_start_page| is true.
+  shell->SizeTo(size);
+  // If |set_start_page| is true, start with blank page to make sure resize
+  // takes effect.
   if (set_start_page)
     EXPECT_TRUE(NavigateToURL(shell, GURL(url::kAboutBlankURL)));
-  shell->ResizeWebContentForTests(size);
 #else
   static_cast<WebContentsImpl*>(shell->web_contents())->GetView()->
       SizeContents(size);

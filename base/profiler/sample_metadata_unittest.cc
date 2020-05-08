@@ -55,14 +55,15 @@ TEST(SampleMetadataTest, SampleMetadata) {
   ASSERT_EQ(0u, MetadataRecorder::MetadataProvider(GetSampleMetadataRecorder())
                     .GetItems(&items));
 
-  SetSampleMetadata("myname", 100);
+  SampleMetadata metadata("myname");
+  metadata.Set(100);
   ASSERT_EQ(1u, MetadataRecorder::MetadataProvider(GetSampleMetadataRecorder())
                     .GetItems(&items));
   EXPECT_EQ(HashMetricName("myname"), items[0].name_hash);
   EXPECT_FALSE(items[0].key.has_value());
   EXPECT_EQ(100, items[0].value);
 
-  RemoveSampleMetadata("myname");
+  metadata.Remove();
   ASSERT_EQ(0u, MetadataRecorder::MetadataProvider(GetSampleMetadataRecorder())
                     .GetItems(&items));
 }
@@ -72,7 +73,8 @@ TEST(SampleMetadataTest, SampleMetadataWithKey) {
   ASSERT_EQ(0u, MetadataRecorder::MetadataProvider(GetSampleMetadataRecorder())
                     .GetItems(&items));
 
-  SetSampleMetadata("myname", 10, 100);
+  SampleMetadata metadata("myname");
+  metadata.Set(10, 100);
   ASSERT_EQ(1u, MetadataRecorder::MetadataProvider(GetSampleMetadataRecorder())
                     .GetItems(&items));
   EXPECT_EQ(HashMetricName("myname"), items[0].name_hash);
@@ -80,7 +82,7 @@ TEST(SampleMetadataTest, SampleMetadataWithKey) {
   EXPECT_EQ(10, *items[0].key);
   EXPECT_EQ(100, items[0].value);
 
-  RemoveSampleMetadata("myname", 10);
+  metadata.Remove(10);
   ASSERT_EQ(0u, MetadataRecorder::MetadataProvider(GetSampleMetadataRecorder())
                     .GetItems(&items));
 }

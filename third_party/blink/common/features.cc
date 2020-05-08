@@ -55,6 +55,11 @@ const base::Feature kAssumeOverlapAfterFixedOrStickyPosition{
     "AssumeOverlapAfterFixedOrStickyPosition",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, use the maximum possible bounds in compositing overlap testing
+// for fixed position elements.
+const base::Feature kMaxOverlapBoundsForFixed{
+    "MaxOverlapBoundsForFixed", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

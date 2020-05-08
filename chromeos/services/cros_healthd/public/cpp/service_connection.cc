@@ -97,6 +97,8 @@ class ServiceConnectionImpl : public ServiceConnection {
   void AddBluetoothObserver(
       mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver> pending_observer)
       override;
+  void AddLidObserver(mojo::PendingRemote<mojom::CrosHealthdLidObserver>
+                          pending_observer) override;
   void AddPowerObserver(mojo::PendingRemote<mojom::CrosHealthdPowerObserver>
                             pending_observer) override;
   void ProbeTelemetryInfo(
@@ -301,6 +303,14 @@ void ServiceConnectionImpl::AddBluetoothObserver(
   BindCrosHealthdEventServiceIfNeeded();
   mojom::CrosHealthdBluetoothObserverPtr ptr{std::move(pending_observer)};
   cros_healthd_event_service_->AddBluetoothObserver(std::move(ptr));
+}
+
+void ServiceConnectionImpl::AddLidObserver(
+    mojo::PendingRemote<mojom::CrosHealthdLidObserver> pending_observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdEventServiceIfNeeded();
+  mojom::CrosHealthdLidObserverPtr ptr{std::move(pending_observer)};
+  cros_healthd_event_service_->AddLidObserver(std::move(ptr));
 }
 
 void ServiceConnectionImpl::AddPowerObserver(

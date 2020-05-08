@@ -6294,7 +6294,7 @@ bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
 
   // Allow the embedder to suppress an error page.
   if (GetContentClient()->renderer()->ShouldSuppressErrorPage(
-          this, unreachable_url)) {
+          this, unreachable_url, error_code)) {
     return false;
   }
 

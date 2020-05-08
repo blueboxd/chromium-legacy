@@ -49,6 +49,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "net/base/filename_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -548,8 +549,21 @@ void PageHandler::DownloadWillBegin(FrameTreeNode* ftn,
                                     download::DownloadItem* item) {
   if (!enabled_)
     return;
+
+  // The filename the end user sees may differ. This is an attempt to eagerly
+  // determine the filename at the beginning of the download; see
+  // DownloadTargetDeterminer:DownloadTargetDeterminer::Result
+  // and DownloadTargetDeterminer::GenerateFileName in
+  // chrome/browser/download/download_target_determiner.cc
+  // for the more comprehensive logic.
+  const base::string16 likely_filename = net::GetSuggestedFilename(
+      item->GetURL(), item->GetContentDisposition(), std::string(),
+      item->GetSuggestedFilename(), item->GetMimeType(), "download");
+
   frontend_->DownloadWillBegin(ftn->devtools_frame_token().ToString(),
-                               item->GetGuid(), item->GetURL().spec());
+                               item->GetGuid(), item->GetURL().spec(),
+                               base::UTF16ToUTF8(likely_filename));
+
   item->AddObserver(this);
   pending_downloads_.insert(item);
 }

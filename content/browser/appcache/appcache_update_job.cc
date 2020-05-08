@@ -16,6 +16,7 @@
 #include "content/browser/appcache/appcache_disk_cache_ops.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_update_job_cache_copier.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
@@ -282,6 +283,8 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       stored_state_(UNSTORED),
       storage_(service->storage()) {
   service_->AddObserver(this);
+  is_origin_trial_required_ =
+      service_->appcache_policy()->IsOriginTrialRequiredForAppCache();
 }
 
 AppCacheUpdateJob::~AppCacheUpdateJob() {
@@ -614,8 +617,7 @@ void AppCacheUpdateJob::HandleFetchedManifestChanged() {
     return;
   }
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kAppCacheRequireOriginTrial) &&
+  if (is_origin_trial_required_ &&
       manifest.token_expires <= base::Time::Now()) {
     const char kFormatString[] =
         "Invalid or missing manifest origin trial token: %s";

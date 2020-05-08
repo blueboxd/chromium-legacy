@@ -43,13 +43,6 @@ CWV_EXPORT
 // The credit card that is pending verification.
 @property(nonatomic, readonly) CWVCreditCard* creditCard;
 
-// Whether or not this card can be saved locally.
-@property(nonatomic, readonly) BOOL canStoreLocally;
-
-// The last |storeLocally| value that was used when verifying. Can be used to
-// set initial state for UI.
-@property(nonatomic, readonly) BOOL lastStoreLocallyValue;
-
 // Returns a recommended title to display in the navigation bar to the user.
 @property(nonatomic, readonly) NSString* navigationTitle;
 
@@ -80,8 +73,6 @@ CWV_EXPORT
 // |shouldRequestUpdateForExpirationDate| is YES. Ignored otherwise.
 // |year| 2 or 4 digit expiration year. e.g. 19 or 2019. Only used if
 // |shouldRequestUpdateForExpirationDate| is YES. Ignored otherwise.
-// |storeLocally| Whether or not to save |creditCard| locally. If YES, user will
-// not be asked again to verify this card. Ignored if |canSaveLocally| is NO.
 // |riskData| must be provided to integrate with 1P internal payments API.
 // See go/risk-eng.g3doc for more details.
 // |completionHandler| will be called upon completion. |error| is nil when the
@@ -91,9 +82,20 @@ CWV_EXPORT
 - (void)verifyWithCVC:(NSString*)CVC
       expirationMonth:(nullable NSString*)expirationMonth
        expirationYear:(nullable NSString*)expirationYear
-         storeLocally:(BOOL)storeLocally
              riskData:(NSString*)riskData
     completionHandler:(void (^)(NSError* _Nullable error))completionHandler;
+
+// Same method as above, but with an extra parameter |storeLocally|.
+// |storeLocally| Whether or not to save |creditCard| locally. If YES, user will
+// not be asked again to verify this card. Deprecated parameter.
+// This variant is deprecated because storeLocally is no longer supported.
+- (void)verifyWithCVC:(NSString*)CVC
+      expirationMonth:(nullable NSString*)expirationMonth
+       expirationYear:(nullable NSString*)expirationYear
+         storeLocally:(BOOL)storeLocally
+             riskData:(NSString*)riskData
+    completionHandler:(void (^)(NSError* _Nullable error))completionHandler
+    DEPRECATED_ATTRIBUTE;
 
 // Returns YES if |CVC| is all digits and matches |expectedCVCLength|.
 - (BOOL)isCVCValid:(NSString*)CVC;

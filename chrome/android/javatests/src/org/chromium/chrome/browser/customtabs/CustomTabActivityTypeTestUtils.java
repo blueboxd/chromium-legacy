@@ -8,13 +8,13 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.webapps.WebApkActivityTestRule;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
-import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 
 import java.util.concurrent.TimeoutException;
 
@@ -62,8 +62,9 @@ public class CustomTabActivityTypeTestUtils {
     }
 
     private static void launchWebApk(WebApkActivityTestRule activityTestRule, String url) {
-        WebappInfo webApkInfo = new WebApkInfoBuilder("org.chromium.webapk.random", url).build();
-        activityTestRule.startWebApkActivity(webApkInfo);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                new WebApkIntentDataProviderBuilder("org.chromium.webapk.random", url).build();
+        activityTestRule.startWebApkActivity(intentDataProvider);
     }
 
     private static void launchCct(CustomTabActivityTestRule activityTestRule, String url) {

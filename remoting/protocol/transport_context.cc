@@ -11,17 +11,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "remoting/base/logging.h"
-#include "remoting/base/url_request.h"
-#include "remoting/protocol/port_allocator_factory.h"
-#include "third_party/webrtc/rtc_base/socket_address.h"
-
-#if !defined(OS_NACL)
 #include "jingle/glue/thread_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "remoting/base/logging.h"
+#include "remoting/base/url_request.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
+#include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/remoting_ice_config_request.h"
-#endif  // !defined(OS_NACL)
+#include "third_party/webrtc/rtc_base/socket_address.h"
 
 namespace remoting {
 namespace protocol {
@@ -57,7 +54,6 @@ void PrintIceConfig(const IceConfig& ice_config) {
 
 }  // namespace
 
-#if !defined(OS_NACL)
 // static
 scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -67,7 +63,6 @@ scoped_refptr<TransportContext> TransportContext::ForTests(TransportRole role) {
           protocol::NetworkSettings::NAT_TRAVERSAL_OUTGOING),
       role);
 }
-#endif  // !defined(OS_NACL)
 
 TransportContext::TransportContext(
     std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
@@ -115,13 +110,9 @@ void TransportContext::EnsureFreshIceConfig() {
 
   if ((base::Time::Now() + kMinimumIceConfigLifetime) >
       ice_config_.expiration_time) {
-#if defined(OS_NACL)
-    NOTREACHED() << "TURN is not supported on NACL";
-#else
     ice_config_request_ = std::make_unique<RemotingIceConfigRequest>();
     ice_config_request_->Send(
         base::BindOnce(&TransportContext::OnIceConfig, base::Unretained(this)));
-#endif
   }
 }
 

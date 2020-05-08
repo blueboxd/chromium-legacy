@@ -68,6 +68,7 @@ class CONTENT_EXPORT ChromeAppCacheService
                        const GURL& first_party) override;
   bool CanCreateAppCache(const GURL& manifest_url,
                          const GURL& first_party) override;
+  bool IsOriginTrialRequiredForAppCache() override;
 
  protected:
   ~ChromeAppCacheService() override;

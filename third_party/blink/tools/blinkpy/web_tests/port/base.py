@@ -1011,8 +1011,8 @@ class Port(object):
 
     @memoized
     def test_isfile(self, test_name):
-        """Returns True if the test name refers to a directory of tests."""
-        # Used by test_expectations.py to apply rules to whole directories.
+        """Returns True if the test name refers to an existing test file."""
+        # Used by test_expectations.py to apply rules to a file.
         if self._filesystem.isfile(self.abspath_for_test(test_name)):
             return True
         base = self.lookup_virtual_test_base(test_name)
@@ -1020,7 +1020,7 @@ class Port(object):
 
     @memoized
     def test_isdir(self, test_name):
-        """Returns True if the test name refers to a directory of tests."""
+        """Returns True if the test name refers to an existing directory of tests."""
         # Used by test_expectations.py to apply rules to whole directories.
         if self._filesystem.isdir(self.abspath_for_test(test_name)):
             return True
@@ -1029,15 +1029,16 @@ class Port(object):
 
     @memoized
     def test_exists(self, test_name):
-        """Returns True if the test name refers to an existing test or baseline."""
-        # Used by test_expectations.py to determine if an entry refers to a
-        # valid test and by printing.py to determine if baselines exist.
+        """Returns True if the test name refers to an existing test directory or file."""
+        # Used by lint_test_expectations.py to determine if an entry refers to a
+        # valid test.
         if self.is_wpt_test(test_name):
             # A virtual WPT test must have valid virtual prefix and base.
             if test_name.startswith('virtual/'):
                 return bool(self.lookup_virtual_test_base(test_name))
             # Otherwise treat any WPT test as existing regardless of their real
             # existence on the file system.
+            # TODO(crbug.com/959958): Actually check existence of WPT tests.
             return True
         return self.test_isfile(test_name) or self.test_isdir(test_name)
 
@@ -1974,6 +1975,8 @@ class Port(object):
         return tests
 
     def _lookup_virtual_suite(self, test_name):
+        if not test_name.startswith('virtual/'):
+            return None
         for suite in self.virtual_test_suites():
             if test_name.startswith(suite.full_prefix):
                 return suite

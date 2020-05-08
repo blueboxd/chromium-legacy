@@ -33,8 +33,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   ~UdpSocketClient() override;
 
   // media::cast::PacketTransport implementations.
-  bool SendPacket(media::cast::PacketRef packet,
-                  const base::RepeatingClosure& cb) override;
+  bool SendPacket(media::cast::PacketRef packet, base::OnceClosure cb) override;
   int64_t GetBytesSent() override;
   void StartReceiving(
       media::cast::PacketReceiverCallbackWithStatus packet_receiver) override;
@@ -72,7 +71,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   // can only be called again when a previous sending completes successfully.
   // TODO(crbug.com/1015479): Change the callback to a base::OnceClosure as well
   // as in the cast::PacketTransport SendPacket().
-  base::RepeatingClosure resume_send_callback_;
+  base::OnceClosure resume_send_callback_;
 
   // Total numbe of bytes written to the data pipe.
   int64_t bytes_sent_;

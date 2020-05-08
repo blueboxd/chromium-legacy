@@ -51,7 +51,7 @@ class FakeLocationBarModelDelegate : public LocationBarModelDelegate {
     return true;
   }
 
-  bool ShouldPreventElision() const override { return should_prevent_elision_; }
+  bool ShouldPreventElision() override { return should_prevent_elision_; }
 
   security_state::SecurityLevel GetSecurityLevel() const override {
     return security_level_;

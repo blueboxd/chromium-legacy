@@ -524,9 +524,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
                          ->GetWebkitPreferences();
   } else {
 #if defined(OS_MACOSX)
-    // Mac requires platform-specific code to resize the main frame's
-    // RenderWidgetHostView (independent of the Shell window).
-    main_window_->ResizeWebContentForTests(initial_size_);
+    // Shell::SizeTo is not implemented on all platforms.
+    main_window_->SizeTo(initial_size_);
 #endif
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
@@ -618,7 +617,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
-  WebTestContentBrowserClient::Get()->ResetMockClipboardHost();
+  WebTestContentBrowserClient::Get()->ResetMockClipboardHosts();
   WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
   WebTestContentBrowserClient::Get()->ResetFakeBluetoothDelegate();
   navigation_history_dump_ = "";

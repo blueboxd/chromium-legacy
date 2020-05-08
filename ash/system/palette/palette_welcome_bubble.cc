@@ -36,6 +36,10 @@ class PaletteWelcomeBubble::WelcomeBubbleView
  public:
   WelcomeBubbleView(views::View* anchor, views::BubbleBorder::Arrow arrow)
       : views::BubbleDialogDelegateView(anchor, arrow) {
+    SetTitle(
+        l10n_util::GetStringUTF16(IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_TITLE));
+    SetShowTitle(true);
+    SetShowCloseButton(true);
     DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
     set_close_on_deactivate(true);
     SetCanActivate(false);
@@ -47,15 +51,6 @@ class PaletteWelcomeBubble::WelcomeBubbleView
   }
 
   ~WelcomeBubbleView() override = default;
-
-  // ui::BubbleDialogDelegateView:
-  base::string16 GetWindowTitle() const override {
-    return l10n_util::GetStringUTF16(IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_TITLE);
-  }
-
-  bool ShouldShowWindowTitle() const override { return true; }
-
-  bool ShouldShowCloseButton() const override { return true; }
 
   void Init() override {
     SetLayoutManager(std::make_unique<views::FillLayout>());

@@ -22,6 +22,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
@@ -29,7 +30,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -65,8 +66,9 @@ public final class WebApkActivityTest {
     @LargeTest
     @Feature({"WebApk"})
     public void testLaunchAndNavigateOutsideScope() throws Exception {
-        WebappActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
-                getTestServerUrl("scope_a/page_1.html"), getTestServerUrl("scope_a/")));
+        WebappActivity webApkActivity =
+                mActivityTestRule.startWebApkActivity(createIntentDataProvider(
+                        getTestServerUrl("scope_a/page_1.html"), getTestServerUrl("scope_a/")));
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, false);
 
         // We navigate outside scope and expect CCT toolbar to show on top of WebAPK Activity.
@@ -86,8 +88,9 @@ public final class WebApkActivityTest {
     @Test
     public void testActivateWebApkLPlus() throws Exception {
         // Launch WebAPK.
-        WebappActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
-                getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
+        WebappActivity webApkActivity =
+                mActivityTestRule.startWebApkActivity(createIntentDataProvider(
+                        getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
 
         Class<? extends ChromeActivity> mainClass = ChromeTabbedActivity.class;
 
@@ -110,11 +113,12 @@ public final class WebApkActivityTest {
         ChromeActivityTestRule.waitFor(WebappActivity.class);
     }
 
-    private WebappInfo createWebApkInfo(String startUrl, String scopeUrl) {
-        WebApkInfoBuilder webApkInfoBuilder =
-                new WebApkInfoBuilder(TEST_WEBAPK_PACKAGE_NAME, startUrl);
-        webApkInfoBuilder.setScope(scopeUrl);
-        return webApkInfoBuilder.build();
+    private BrowserServicesIntentDataProvider createIntentDataProvider(
+            String startUrl, String scopeUrl) {
+        WebApkIntentDataProviderBuilder intentDataProviderBuilder =
+                new WebApkIntentDataProviderBuilder(TEST_WEBAPK_PACKAGE_NAME, startUrl);
+        intentDataProviderBuilder.setScope(scopeUrl);
+        return intentDataProviderBuilder.build();
     }
 
     private String getTestServerUrl(String relativeUrl) {

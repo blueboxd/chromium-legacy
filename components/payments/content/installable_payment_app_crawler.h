@@ -84,8 +84,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
       const GURL& method_manifest_url_after_redirects,
       const std::string& content,
       const std::vector<GURL>& default_applications,
-      const std::vector<url::Origin>& supported_origins,
-      bool all_origins_supported);
+      const std::vector<url::Origin>& supported_origins);
   void OnPaymentWebAppManifestDownloaded(
       const GURL& method_manifest_url,
       const GURL& web_app_manifest_url,

@@ -23,11 +23,9 @@ public class PaymentManifestParser {
          *
          * @param webAppManifestUris  The URIs of the default applications in the parsed manifest.
          * @param supportedOrigins    The URIs for the supported origins in the parsed manifest.
-         * @param allOriginsSupported Whether all origins are supported.
          */
         @CalledByNative("ManifestParseCallback")
-        void onPaymentMethodManifestParseSuccess(
-                URI[] webAppManifestUris, URI[] supportedOrigins, boolean allOriginsSupported);
+        void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris, URI[] supportedOrigins);
 
         /**
          * Called on successful parse of a web app manifest.

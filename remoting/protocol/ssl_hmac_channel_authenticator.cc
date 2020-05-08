@@ -28,6 +28,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/socket/stream_socket.h"
@@ -37,12 +38,6 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/p2p_stream_socket.h"
-
-#if defined(OS_NACL)
-#include "net/socket/ssl_client_socket_impl.h"
-#else
-#include "net/socket/client_socket_factory.h"
-#endif
 
 namespace remoting {
 namespace protocol {
@@ -257,12 +252,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
 
   int result;
   if (is_ssl_server()) {
-#if defined(OS_NACL)
-    // Client plugin doesn't use server SSL sockets, and so SSLServerSocket
-    // implementation is not compiled for NaCl as part of net_nacl.
-    NOTREACHED();
-    result = net::ERR_FAILED;
-#else
     scoped_refptr<net::X509Certificate> cert =
         net::X509Certificate::CreateFromBytes(local_cert_.data(),
                                               local_cert_.length());
@@ -285,7 +274,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     socket_ = std::move(server_socket);
     result = raw_server_socket->Handshake(base::BindOnce(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
-#endif
   } else {
     socket_context_.transport_security_state =
         std::make_unique<net::TransportSecurityState>();
@@ -318,16 +306,10 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     net::HostPortPair host_and_port(kSslFakeHostName, 0);
     std::unique_ptr<net::StreamSocket> stream_socket =
         std::make_unique<NetStreamSocketAdapter>(std::move(socket));
-#if defined(OS_NACL)
-    // net_nacl doesn't include ClientSocketFactory.
-    socket_ = socket_context_.client_context->CreateSSLClientSocket(
-        std::move(stream_socket), host_and_port, ssl_config);
-#else
     socket_ =
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
             socket_context_.client_context.get(), std::move(stream_socket),
             host_and_port, ssl_config);
-#endif
 
     result = socket_->Connect(base::BindOnce(
         &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));

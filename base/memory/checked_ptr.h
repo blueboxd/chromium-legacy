@@ -42,7 +42,7 @@ struct CheckedPtrNoOpImpl {
   }
 
   // Advance the wrapped pointer by |delta| bytes.
-  static uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
+  static uintptr_t Advance(uintptr_t wrapped_ptr, ptrdiff_t delta) {
     return wrapped_ptr + delta;
   }
 
@@ -141,6 +141,20 @@ class CheckedPtr {
   CheckedPtr& operator++() {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, sizeof(T));
     return *this;
+  }
+
+  CheckedPtr& operator--() {
+    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, -sizeof(T));
+    return *this;
+  }
+
+  CheckedPtr& operator+=(ptrdiff_t delta_elems) {
+    wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems * sizeof(T));
+    return *this;
+  }
+
+  CheckedPtr& operator-=(ptrdiff_t delta_elems) {
+    return *this += -delta_elems;
   }
 
   bool operator==(T* p) const { return Impl::AreEqual(wrapped_ptr_, p); }

@@ -24,7 +24,7 @@ namespace {
 
 const char kConversionInternalsUrl[] = "chrome://conversion-internals/";
 
-const base::string16 kCompleteTitle = base::ASCIIToUTF16("Index of /");
+const base::string16 kCompleteTitle = base::ASCIIToUTF16("Complete");
 
 }  // namespace
 
@@ -54,6 +54,22 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(conversion_internals_ui);
     conversion_internals_ui->SetConversionManagerProviderForTesting(
         std::make_unique<TestManagerProvider>(manager));
+  }
+
+  // Registers a mutation observer that sets the window title to |title| when
+  // the report table is empty.
+  void SetTitleOnReportsTableEmpty(const base::string16& title) {
+    const std::string kObserveEmptyReportsTableScript = R"(
+    let table = document.getElementById("report-table-body");
+    let obs = new MutationObserver(() => {
+      if (table.children.length === 1 &&
+          table.children[0].children[0].innerText === "No pending reports.") {
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+    EXPECT_TRUE(
+        ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, title)));
   }
 };
 
@@ -153,18 +169,8 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TestConversionManager manager;
   OverrideWebUIConversionManager(&manager);
 
-  std::string wait_script = R"(
-    let table = document.getElementById("report-table-body");
-    let obs = new MutationObserver(() => {
-      if (table.children.length === 1 &&
-          table.children[0].children[0].innerText === "No pending reports.") {
-        document.title = $1;
-      }
-    });
-    obs.observe(table, {'childList': true});)";
-  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
-
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  SetTitleOnReportsTableEmpty(kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
 }
@@ -195,6 +201,44 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       WebUIWithPendingReportsClearStorage_ReportsRemoved) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  ConversionReport report(
+      ImpressionBuilder(base::Time::Now()).SetData("100").Build(),
+      "7" /* conversion_data */, base::Time::Now() /* report_time */,
+      base::nullopt /* conversion_id */);
+  manager.SetReportsForWebUI({report});
+  OverrideWebUIConversionManager(&manager);
+
+  std::string wait_script = R"(
+    let table = document.getElementById("report-table-body");
+    let obs = new MutationObserver(() => {
+      if (table.children.length === 1 &&
+          table.children[0].children[1].innerText === "0x7") {
+        document.title = $1;
+      }
+    });
+    obs.observe(table, {'childList': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  // Wait for the table to rendered.
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+
+  // Click the clear storage button and expect that the report table is emptied.
+  const base::string16 kDeleteTitle = base::ASCIIToUTF16("Delete");
+  TitleWatcher delete_title_watcher(shell()->web_contents(), kDeleteTitle);
+  SetTitleOnReportsTableEmpty(kDeleteTitle);
+
+  // Click the button.
+  EXPECT_TRUE(ExecJsInWebUI("document.getElementById('clear-data').click();"));
+  EXPECT_EQ(kDeleteTitle, delete_title_watcher.WaitAndGetTitle());
 }
 
 }  // namespace content

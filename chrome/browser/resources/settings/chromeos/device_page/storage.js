@@ -59,10 +59,10 @@ cr.define('settings', function() {
         }
       },
 
+      /** @private */
       allowDlcSubpage_: {
         type: Boolean,
-        value: () => loadTimeData.getBoolean('allowDlcSubpage') &&
-            !loadTimeData.getBoolean('isGuest'),
+        value: () => loadTimeData.getBoolean('allowDlcSubpage'),
         readOnly: true,
       },
 

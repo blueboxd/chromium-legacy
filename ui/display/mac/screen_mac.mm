@@ -83,8 +83,8 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   // Examine the presence of HDR.
   bool enable_hdr = false;
   if (@available(macOS 10.15, *)) {
-    if ([screen maximumPotentialExtendedDynamicRangeColorComponentValue] >=
-        2.0) {
+    if ([screen maximumPotentialExtendedDynamicRangeColorComponentValue] >
+        1.0) {
       enable_hdr = true;
     }
   }

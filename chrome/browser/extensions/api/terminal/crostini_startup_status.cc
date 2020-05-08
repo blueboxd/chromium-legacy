@@ -9,14 +9,17 @@
 
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using crostini::mojom::InstallerState;
 
@@ -58,7 +61,10 @@ void CrostiniStartupStatus::OnCrostiniRestarted(
   } else {
     if (verbose_) {
       stage_index_ = kMaxStage + 1;  // done.
-      PrintStage(kColor2GreenBright, "done\r\n");
+      PrintStage(kColor2GreenBright,
+                 base::StrCat({l10n_util::GetStringUTF8(
+                                   IDS_CROSTINI_TERMINAL_STATUS_READY),
+                               "\r\n"}));
     }
   }
   Print(
@@ -90,20 +96,35 @@ void CrostiniStartupStatus::OnStageStarted(InstallerState stage) {
   }
   static base::NoDestructor<base::flat_map<InstallerState, std::string>>
       kStartStrings({
-          {InstallerState::kStart, "Initializing"},
+          {InstallerState::kStart,
+           l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_STATUS_START)},
           {InstallerState::kInstallImageLoader,
-           "Checking cros-termina component installed"},
-          {InstallerState::kStartConcierge, "Starting VM controller"},
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_INSTALL_IMAGE_LOADER)},
+          {InstallerState::kStartConcierge,
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_START_CONCIERGE)},
           {InstallerState::kCreateDiskImage,
-           "Checking termina VM image installed"},
-          {InstallerState::kStartTerminaVm, "Starting termina VM"},
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_CREATE_DISK_IMAGE)},
+          {InstallerState::kStartTerminaVm,
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_START_TERMINA_VM)},
           {InstallerState::kCreateContainer,
-           "Checking penguin container installed"},
-          {InstallerState::kSetupContainer, "Checking penguin container setup"},
-          {InstallerState::kStartContainer, "Starting penguin container"},
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_CREATE_CONTAINER)},
+          {InstallerState::kSetupContainer,
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_SETUP_CONTAINER)},
+          {InstallerState::kStartContainer,
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_START_CONTAINER)},
           {InstallerState::kFetchSshKeys,
-           "Fetching penguin container ssh keys"},
-          {InstallerState::kMountContainer, "Mounting penguin container sshfs"},
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_FETCH_SSH_KEYS)},
+          {InstallerState::kMountContainer,
+           l10n_util::GetStringUTF8(
+               IDS_CROSTINI_TERMINAL_STATUS_MOUNT_CONTAINER)},
       });
   const std::string& stage_string = (*kStartStrings)[stage];
   PrintStage(kColor3Yellow, stage_string);

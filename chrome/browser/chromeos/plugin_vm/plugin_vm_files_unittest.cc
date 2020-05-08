@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 
-#include <memory>
-
-#include "base/bind.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/time/time.h"
+#include "base/test/mock_callback.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/test/base/testing_profile.h"
@@ -18,61 +14,52 @@
 
 namespace plugin_vm {
 
+using EnsureDefaultSharedDirExistsCallback =
+    testing::StrictMock<base::MockCallback<
+        base::OnceCallback<void(const base::FilePath& dir, bool result)>>>;
+
 const char kLsbRelease[] =
     "CHROMEOS_RELEASE_NAME=Chrome OS\n"
     "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
 class PluginVmFilesTest : public testing::Test {
- public:
-  void Callback(bool expected, const base::FilePath& dir, bool result) {
-    EXPECT_EQ(dir, my_files_.Append("PvmDefault"));
-    EXPECT_EQ(result, expected);
-  }
-
-  void SetUp() override {
-    profile_ = std::make_unique<TestingProfile>();
-    fake_release_ =
-        std::make_unique<chromeos::ScopedSetRunningOnChromeOSForTesting>(
-            kLsbRelease, base::Time());
-    my_files_ = file_manager::util::GetMyFilesFolderForProfile(profile_.get());
-  }
-
-  void TearDown() override {
-    fake_release_.reset();
-    profile_.reset();
-  }
-
  protected:
+  base::FilePath GetMyFilesFolderPath() {
+    return file_manager::util::GetMyFilesFolderForProfile(&profile_);
+  }
+
+  base::FilePath GetPvmDefaultPath() {
+    return GetMyFilesFolderPath().Append("PvmDefault");
+  }
+
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<chromeos::ScopedSetRunningOnChromeOSForTesting> fake_release_;
-  base::FilePath my_files_;
+  TestingProfile profile_;
+  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release_{kLsbRelease, {}};
 };
 
 TEST_F(PluginVmFilesTest, DirNotExists) {
-  EnsureDefaultSharedDirExists(profile_.get(),
-                               base::BindOnce(&PluginVmFilesTest::Callback,
-                                              base::Unretained(this), true));
+  EnsureDefaultSharedDirExistsCallback callback;
+  EnsureDefaultSharedDirExists(&profile_, callback.Get());
+  EXPECT_CALL(callback, Run(GetPvmDefaultPath(), true));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmFilesTest, DirAlreadyExists) {
-  base::CreateDirectory(my_files_.Append("PvmDefault"));
-  EnsureDefaultSharedDirExists(profile_.get(),
-                               base::BindOnce(&PluginVmFilesTest::Callback,
-                                              base::Unretained(this), true));
+  EXPECT_TRUE(base::CreateDirectory(GetPvmDefaultPath()));
+
+  EnsureDefaultSharedDirExistsCallback callback;
+  EnsureDefaultSharedDirExists(&profile_, callback.Get());
+  EXPECT_CALL(callback, Run(GetPvmDefaultPath(), true));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmFilesTest, FileAlreadyExists) {
-  base::FilePath my_files =
-      file_manager::util::GetMyFilesFolderForProfile(profile_.get());
-  base::FilePath path = my_files.Append("PvmDefault");
-  EXPECT_TRUE(base::CreateDirectory(my_files));
-  EXPECT_TRUE(base::WriteFile(path, ""));
-  EnsureDefaultSharedDirExists(profile_.get(),
-                               base::BindOnce(&PluginVmFilesTest::Callback,
-                                              base::Unretained(this), false));
+  EXPECT_TRUE(base::CreateDirectory(GetMyFilesFolderPath()));
+  EXPECT_TRUE(base::WriteFile(GetPvmDefaultPath(), ""));
+
+  EnsureDefaultSharedDirExistsCallback callback;
+  EnsureDefaultSharedDirExists(&profile_, callback.Get());
+  EXPECT_CALL(callback, Run(GetPvmDefaultPath(), false));
   task_environment_.RunUntilIdle();
 }
 

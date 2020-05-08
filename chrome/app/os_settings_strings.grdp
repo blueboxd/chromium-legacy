@@ -1045,8 +1045,17 @@
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_SHOW_BUTTON_ARIA_LABEL" desc="The aria label for the button to show the disk resize dialog i.e. the text that screen readers will read out for the button.">
     Change disk size
   </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESERVE_SIZE_BUTTON" desc="The label of the button/link the user clicks to open the disk resizing dialog when the existing disk is dynamically allocated (size was not user chosen)." meaning="The label of the button/link the user clicks to open the disk resizing dialog when the existing disk is dynamically allocated (size was not user chosen).">
+    Reserve size
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESERVE_SIZE_BUTTON_ARIA_LABEL" desc="The aria label for the button to show the disk resize dialog when the existing disk is dynamically allocated (size was not user chosen), i.e. the text that screen readers will read out for the button.">
+    Reserve disk size
+  </message>
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_LABEL" desc="The label on the row in settings for managing Crostini's disk size.">
     Disk size
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_DYNAMICALLY_ALLOCATED_SUBTEXT" desc="The subtext on the row in settings for managing Crostini's disk size when the existing disk is dynamically allocated (size was not user chosen).">
+    Dynamically allocated
   </message>
   <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE" desc="The title of the settings dialogue the user uses to resize the Crostini (AKA Linux (Beta)) Disk.">
     Resize Linux disk
@@ -2701,6 +2710,12 @@
   <!-- DLC Device Subpage -->
   <message name="IDS_SETTINGS_DLC_SUBPAGE_TITLE" desc="Title for the DLC subpage.">
     Downloaded Content
+  </message>
+  <message name="IDS_SETTINGS_DLC_REMOVE" desc="Label for a button that will remove a DLC from disk.">
+    Remove
+  </message>
+  <message name="IDS_SETTINGS_DLC_SUBPAGE_DESCRIPTION" desc="A description shown at the top of the subpage that informs users that if they modify any of the DLCs in the list, other users of the device may be impacted by those changes.">
+    These components are shared with other users on this device. Removing components may affect other users.
   </message>
 
   <!-- Privacy Page -->

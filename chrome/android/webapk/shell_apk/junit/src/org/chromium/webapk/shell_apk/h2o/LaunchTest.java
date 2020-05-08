@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import org.junit.Assert;
@@ -68,21 +69,46 @@ public final class LaunchTest {
         mAppContext = RuntimeEnvironment.application;
         mPackageManager = mAppContext.getPackageManager();
         mShadowPackageManager = Shadows.shadowOf(mPackageManager);
-
-        Bundle metadata = new Bundle();
-        metadata.putString(WebApkMetaDataKeys.START_URL, "https://pwa.rocks/");
-        WebApkTestHelper.registerWebApkWithMetaData(sWebApkPackageName, metadata, null);
     }
 
     /**
-     * Test launching via a deep link.
+     * Test launching via a deep link on pre-N Android.
      * Check:
      * 1) That the host browser was launched.
-     * 2) Which activities were launnched between the activity which handled
+     * 2) That no activities have been enabled/disabled.
+     */
+    @Test
+    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    public void testDeepLinkPreN() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
+        final String deepLinkUrl = "https://pwa.rocks/deep.html";
+
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));
+        launchIntent.setPackage(sWebApkPackageName);
+
+        ArrayList<Intent> launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class);
+        Assert.assertEquals(1, launchedIntents.size());
+        assertIntentIsForBrowserLaunch(launchedIntents.get(0), deepLinkUrl);
+
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
+    }
+
+    /**
+     * Test launching via a deep link on Android N+.
+     * Check:
+     * 1) That the host browser was launched.
+     * 2) Which activities were launched between the activity which handled
      * the intent and the host browser getting launched.
      */
     @Test
-    public void testDeepLink() {
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
+    public void testDeepLinkN() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         final String deepLinkUrl = "https://pwa.rocks/deep.html";
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));
@@ -95,6 +121,7 @@ public final class LaunchTest {
                         H2OTransparentLauncherActivity.class);
         Assert.assertEquals(1, launchedIntents.size());
         assertIntentIsForBrowserLaunch(launchedIntents.get(0), deepLinkUrl);
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
 
         launchedIntents =
                 launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
@@ -107,6 +134,7 @@ public final class LaunchTest {
                 H2OTransparentLauncherActivity.class, launchedIntents.get(2));
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(3));
         assertIntentIsForBrowserLaunch(launchedIntents.get(4), deepLinkUrl);
+        assertOnlyEnabledMainIntentHandler(H2OOpaqueMainActivity.class);
 
         launchedIntents =
                 launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
@@ -115,6 +143,7 @@ public final class LaunchTest {
         Assert.assertEquals(2, launchedIntents.size());
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
         assertIntentIsForBrowserLaunch(launchedIntents.get(1), deepLinkUrl);
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
 
         launchedIntents =
                 launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
@@ -123,11 +152,14 @@ public final class LaunchTest {
         Assert.assertEquals(2, launchedIntents.size());
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
         assertIntentIsForBrowserLaunch(launchedIntents.get(1), deepLinkUrl);
+        assertOnlyEnabledMainIntentHandler(H2OOpaqueMainActivity.class);
     }
 
     /** Test that the host browser is launched as a result of a main launch intent. */
     @Test
     public void testMainIntent() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         Intent launchIntent = new Intent(Intent.ACTION_MAIN);
         launchIntent.setPackage(sWebApkPackageName);
 
@@ -138,6 +170,7 @@ public final class LaunchTest {
                         H2OMainActivity.class);
         Assert.assertEquals(1, launchedIntents.size());
         assertIntentIsForBrowserLaunch(launchedIntents.get(0), DEFAULT_START_URL);
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
 
         launchedIntents =
                 launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
@@ -149,6 +182,7 @@ public final class LaunchTest {
                 H2OTransparentLauncherActivity.class, launchedIntents.get(1));
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(2));
         assertIntentIsForBrowserLaunch(launchedIntents.get(3), DEFAULT_START_URL);
+        assertOnlyEnabledMainIntentHandler(H2OOpaqueMainActivity.class);
 
         launchedIntents =
                 launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
@@ -157,6 +191,7 @@ public final class LaunchTest {
         Assert.assertEquals(2, launchedIntents.size());
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
         assertIntentIsForBrowserLaunch(launchedIntents.get(1), DEFAULT_START_URL);
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
 
         launchedIntents =
                 launchAndCheckBrowserLaunched(true /* opaqueMainActivityInitiallyEnabled */,
@@ -165,6 +200,7 @@ public final class LaunchTest {
         Assert.assertEquals(2, launchedIntents.size());
         assertIntentComponentClassNameEquals(SplashActivity.class, launchedIntents.get(0));
         assertIntentIsForBrowserLaunch(launchedIntents.get(1), DEFAULT_START_URL);
+        assertOnlyEnabledMainIntentHandler(H2OOpaqueMainActivity.class);
     }
 
     /**
@@ -174,6 +210,8 @@ public final class LaunchTest {
      */
     @Test
     public void testTargetShareActivityPreserved() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         Bundle metadata = new Bundle();
         metadata.putString(WebApkMetaDataKeys.START_URL, "https://pwa.rocks/");
         Bundle[] shareMetadata = new Bundle[2];
@@ -208,6 +246,8 @@ public final class LaunchTest {
      */
     @Test
     public void testSourcePropagated() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         final String deepLinkUrl = "https://pwa.rocks/deep_link.html";
         final int source = 2;
 
@@ -234,6 +274,8 @@ public final class LaunchTest {
      */
     @Test
     public void testDoesNotPropagateRelaunchDirective() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         final String deepLinkUrl = "https://pwa.rocks/deep_link.html";
 
         Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));
@@ -256,6 +298,8 @@ public final class LaunchTest {
      */
     @Test
     public void testDoesNotLoopIfEnablingInitialSplashActivityIsSlow() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         // InitialSplashActivity is disabled. Host browser is compatible with SplashActivity.
         changeWebApkActivityEnabledSetting(mPackageManager, H2OOpaqueMainActivity.class,
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
@@ -301,6 +345,8 @@ public final class LaunchTest {
      */
     @Test
     public void testLaunchWithArcIntentHelperHostBrowser() {
+        registerWebApk(true /* isNewStyleWebApk */);
+
         Intent launchIntent = new Intent(Intent.ACTION_MAIN);
         launchIntent.setPackage(sWebApkPackageName);
 
@@ -322,6 +368,119 @@ public final class LaunchTest {
                 HostBrowserUtils.ARC_INTENT_HELPER_BROWSER, DEFAULT_START_URL);
     }
 
+    /**
+     * Test launching old-style WebAPK via deep link:
+     * Check that:
+     * 1) Chrome is launched.
+     * 2) No activities have been enabled/disabled.
+     */
+    @Test
+    public void testDeepLinkOldStyle() {
+        registerWebApk(false /* isNewStyleWebApk */);
+
+        final String deepLinkUrl = "https://pwa.rocks/deep.html";
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deepLinkUrl));
+        launchIntent.setPackage(sWebApkPackageName);
+
+        ArrayList<Intent> launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OTransparentLauncherActivity.class);
+        Assert.assertEquals(1, launchedIntents.size());
+        assertIntentIsForBrowserLaunch(launchedIntents.get(0), deepLinkUrl);
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
+    }
+
+    /**
+     * Test launching old-style WebAPK via main intent.
+     * Check that:
+     * 1) Chrome is launched.
+     * 2) No activities have been enabled/disabled.
+     */
+    @Test
+    public void testMainIntentOldStyle() {
+        registerWebApk(false /* isNewStyleWebApk */);
+
+        Intent launchIntent = new Intent(Intent.ACTION_MAIN);
+        launchIntent.setPackage(sWebApkPackageName);
+
+        ArrayList<Intent> launchedIntents =
+                launchAndCheckBrowserLaunched(false /* opaqueMainActivityInitiallyEnabled */,
+                        true /* browserCompatibleWithSplashActivity */, launchIntent,
+                        H2OMainActivity.class);
+        Assert.assertEquals(1, launchedIntents.size());
+        assertIntentIsForBrowserLaunch(launchedIntents.get(0), DEFAULT_START_URL);
+        assertOnlyEnabledMainIntentHandler(H2OMainActivity.class);
+    }
+
+    /**
+     * Test {@link H2OOpaqueMainActivity#checkComponentEnabled()} when:
+     * - Component enabled setting is default
+     * AND
+     * - Android API level < N
+     */
+    @Test
+    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    public void testCheckH2OOpaqueMainActivityEnabledPreN() {
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OOpaqueMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+        Assert.assertFalse(H2OOpaqueMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, false /* isNewStyleWebApk */));
+        Assert.assertFalse(H2OOpaqueMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, true /* isNewStyleWebApk */));
+    }
+
+    /**
+     * Test {@link H2OMainActivity#checkComponentEnabled()} when:
+     * - Component enabled setting is default
+     * AND
+     * - Android API level < N
+     */
+    @Test
+    @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
+    public void testCheckH2oMainActivityEnabledPreN() {
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+        Assert.assertTrue(H2OMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, false /* isNewStyleWebApk */));
+        Assert.assertTrue(H2OMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, true /* isNewStyleWebApk */));
+    }
+
+    /**
+     * Test {@link H2OOpaqueMainActivity#checkComponentEnabled()} when:
+     * - Component enabled setting is default
+     * AND
+     * - Android API level >= N
+     */
+    @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
+    public void testCheckH2OOpaqueMainActivityEnabledN() {
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OOpaqueMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+        Assert.assertFalse(H2OOpaqueMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, false /* isNewStyleWebApk */));
+        Assert.assertTrue(H2OOpaqueMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, true /* isNewStyleWebApk */));
+    }
+
+    /**
+     * Test {@link H2OMainActivity#checkComponentEnabled()} when:
+     * - Component enabled setting is default
+     * AND
+     * - Android API level >= N
+     */
+    @Test
+    @Config(sdk = Build.VERSION_CODES.N_MR1)
+    public void testCheckH2OMainActivityEnabledN() {
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+        Assert.assertTrue(H2OMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, false /* isNewStyleWebApk */));
+        Assert.assertFalse(H2OMainActivity.checkComponentEnabled(
+                RuntimeEnvironment.application, true /* isNewStyleWebApk */));
+    }
+
     /** Checks the name of the intent's component class name. */
     private static void assertIntentComponentClassNameEquals(Class expectedClass, Intent intent) {
         Assert.assertEquals(expectedClass.getName(), intent.getComponent().getClassName());
@@ -340,11 +499,18 @@ public final class LaunchTest {
         Assert.assertEquals(expectedStartUrl, intent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
 
+    private static void registerWebApk(boolean isNewStyleWebApk) {
+        Bundle metadata = new Bundle();
+        metadata.putBoolean(WebApkMetaDataKeys.IS_NEW_STYLE_WEBAPK, isNewStyleWebApk);
+        metadata.putString(WebApkMetaDataKeys.START_URL, "https://pwa.rocks/");
+        WebApkTestHelper.registerWebApkWithMetaData(sWebApkPackageName, metadata, null);
+    }
+
     /**
-     * Launches WebAPK with the given intent and configuration. Tests that the host browser is
-     * launched and which activities are enabled after the browser launch.
-     * @param initialSplashActivityInitiallyEnabled Whether SplashActivity is enabled at the
-     *         beginning of the test case.
+     * Launches WebAPK with the given intent and configuration. Tests that the host
+     * browser is launched and which activities are enabled after the browser launch.
+     * @param opaqueMainActivityInitiallyEnabled Whether H2OOpaqueActivity is enabled at the
+     *        beginning of the test case.
      * @param browserCompatibleWithSplashActivity Whether the host browser supports the ShellAPK
      *         showing the splash screen.
      * @param launchIntent Intent to launch.
@@ -354,32 +520,46 @@ public final class LaunchTest {
     private ArrayList<Intent> launchAndCheckBrowserLaunched(
             boolean opaqueMainActivityInitiallyEnabled, boolean browserCompatibleWithSplashActivity,
             Intent launchIntent, Class<? extends Activity> launchActivity) {
-        changeWebApkActivityEnabledSetting(mPackageManager,
-                opaqueMainActivityInitiallyEnabled ? H2OOpaqueMainActivity.class
-                                                   : H2OMainActivity.class,
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
-        changeWebApkActivityEnabledSetting(mPackageManager,
-                opaqueMainActivityInitiallyEnabled ? H2OMainActivity.class
-                                                   : H2OOpaqueMainActivity.class,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        changeEnabledActivity(opaqueMainActivityInitiallyEnabled ? H2OOpaqueMainActivity.class
+                                                                 : H2OMainActivity.class);
+
         installBrowser(BROWSER_PACKAGE_NAME,
                 browserCompatibleWithSplashActivity
                         ? HostBrowserUtils.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH
                         : BROWSER_H2O_INCOMPATIBLE_VERSION);
 
-        // Android modifies the intent when the intent is used to launch an activity. Clone the
-        // intent so as not to affect test cases which use the same intent.
-        Intent launchIntentCopy = (Intent) launchIntent.clone();
-
         ArrayList<Intent> launchedIntents =
-                runActivityChain(launchIntentCopy, launchActivity, BROWSER_PACKAGE_NAME);
-
-        Assert.assertEquals(browserCompatibleWithSplashActivity,
-                isWebApkActivityEnabled(mPackageManager, H2OOpaqueMainActivity.class));
-        Assert.assertEquals(!browserCompatibleWithSplashActivity,
-                isWebApkActivityEnabled(mPackageManager, H2OMainActivity.class));
+                runActivityChain(launchIntent, launchActivity, BROWSER_PACKAGE_NAME);
 
         return launchedIntents;
+    }
+
+    /**
+     * Sets the passed-in activity to be enabled and disables the other activities which handle the
+     * main intent.
+     */
+    private void changeEnabledActivity(Class<? extends Activity> selectedActivityClass) {
+        boolean enableOpaqueActivity =
+                (selectedActivityClass.getName().equals(H2OOpaqueMainActivity.class.getName()));
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OOpaqueMainActivity.class,
+                enableOpaqueActivity ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                                     : PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
+                enableOpaqueActivity ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                                     : PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+    }
+
+    /**
+     * Checks that the passed-in activity is the only enabled main intent handler.
+     */
+    private void assertOnlyEnabledMainIntentHandler(
+            Class<? extends Activity> expectedEnabledActivity) {
+        boolean expectedOpaqueActivityEnabled =
+                (expectedEnabledActivity.getName().equals(H2OOpaqueMainActivity.class.getName()));
+        Assert.assertEquals(expectedOpaqueActivityEnabled,
+                isWebApkActivityEnabled(mPackageManager, H2OOpaqueMainActivity.class));
+        Assert.assertEquals(!expectedOpaqueActivityEnabled,
+                isWebApkActivityEnabled(mPackageManager, H2OMainActivity.class));
     }
 
     /** Changes whether the passed in WebAPK activity is enabled. */
@@ -407,7 +587,9 @@ public final class LaunchTest {
             Intent launchIntent, Class<? extends Activity> launchActivity, String browserPackage) {
         ArrayList<Intent> activityIntentChain = new ArrayList<Intent>();
 
-        buildActivityFully(launchActivity, launchIntent);
+        // Android modifies the intent when the intent is used to launch an activity. Clone the
+        // intent so as not to affect test cases which use the same intent.
+        buildActivityFully(launchActivity, (Intent) launchIntent.clone());
         for (;;) {
             Intent startedActivityIntent = mShadowApplication.getNextStartedActivity();
             if (startedActivityIntent == null) break;
@@ -457,6 +639,8 @@ public final class LaunchTest {
     }
 
     private static void setAppTaskTopActivity(int taskId, Activity topActivity) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+
         ActivityManager.RecentTaskInfo recentTaskInfo = new ActivityManager.RecentTaskInfo();
         recentTaskInfo.id = taskId;
         recentTaskInfo.topActivity = topActivity.getComponentName();

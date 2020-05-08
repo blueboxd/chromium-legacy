@@ -358,29 +358,6 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   [_autofillAgent hideAutofillPopup];
 }
 
-- (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-               saveCreditCardOptions:
-                   (autofill::AutofillClient::SaveCreditCardOptions)
-                       saveCreditCardOptions
-                            callback:(autofill::AutofillClient::
-                                          LocalSaveCardPromptCallback)callback {
-  if (![_delegate respondsToSelector:@selector(autofillController:
-                                          saveCreditCardWithSaver:)]) {
-    return;
-  }
-
-  CWVCreditCardSaver* saver = [[CWVCreditCardSaver alloc]
-            initWithCreditCard:creditCard
-                   saveOptions:saveCreditCardOptions
-             willUploadToCloud:NO
-             legalMessageLines:autofill::LegalMessageLines()
-      uploadSavePromptCallback:autofill::AutofillClient::
-                                   UploadSaveCardPromptCallback()
-       localSavePromptCallback:std::move(callback)];
-  [_delegate autofillController:self saveCreditCardWithSaver:saver];
-  _saver = saver;
-}
-
 - (void)
     confirmCreditCardAccountName:(const base::string16&)name
                         callback:
@@ -426,14 +403,11 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                                           saveCreditCardWithSaver:)]) {
     return;
   }
-  CWVCreditCardSaver* saver = [[CWVCreditCardSaver alloc]
-            initWithCreditCard:creditCard
-                   saveOptions:saveCreditCardOptions
-             willUploadToCloud:YES
-             legalMessageLines:legalMessageLines
-      uploadSavePromptCallback:std::move(callback)
-       localSavePromptCallback:autofill::AutofillClient::
-                                   LocalSaveCardPromptCallback()];
+  CWVCreditCardSaver* saver =
+      [[CWVCreditCardSaver alloc] initWithCreditCard:creditCard
+                                         saveOptions:saveCreditCardOptions
+                                   legalMessageLines:legalMessageLines
+                                  savePromptCallback:std::move(callback)];
   [_delegate autofillController:self saveCreditCardWithSaver:saver];
   _saver = saver;
 }

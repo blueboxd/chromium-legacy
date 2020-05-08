@@ -769,14 +769,17 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
     tooltipContent.style.setProperty('--arrow-left', (arrowX - boxX) + 'px');
 }
 
-function _drawRulers(context, bounds, rulerAtRight, rulerAtBottom)
+function _drawRulers(context, bounds, rulerAtRight, rulerAtBottom, color, dash)
 {
     context.save();
     var width = canvasWidth;
     var height = canvasHeight;
-    context.strokeStyle = "rgba(128, 128, 128, 0.3)";
+    context.strokeStyle = color || "rgba(128, 128, 128, 0.3)";
     context.lineWidth = 1;
     context.translate(0.5, 0.5);
+    if (dash) {
+        context.setLineDash([3, 3]);
+    }
 
     if (rulerAtRight) {
         for (var y in bounds.rightmostXForY) {
@@ -897,24 +900,130 @@ function emptyBounds()
 
 function _drawLayoutGridHighlight(highlight, context)
 {
-    const rowPath = buildPath(highlight.rows, emptyBounds());
-    const columnPath = buildPath(highlight.columns, emptyBounds());
-    context.save();
-    context.translate(0.5, 0.5);
-    context.setLineDash([3, 3]);
-    context.lineWidth = 0;
-    context.strokeStyle = highlight.color;
+    // Draw Grid border
+    if (highlight.gridHighlightConfig.gridBorderColor) {
+        context.save();
+        context.translate(0.5, 0.5);
+        context.lineWidth = 0;
+        if (highlight.gridHighlightConfig.gridBorderDash) {
+            context.setLineDash([3, 3]);
+        }
+        context.strokeStyle = highlight.gridHighlightConfig.gridBorderColor;
+        context.stroke(buildPath(highlight.gridBorder, emptyBounds()));
+        context.restore();
+    }
 
-    context.save();
-    context.clip(columnPath);
-    context.stroke(rowPath);
-    context.restore();
+    // Draw Cell Border
+    if (highlight.gridHighlightConfig.cellBorderColor) {
+        const rowBounds = emptyBounds();
+        const columnBounds = emptyBounds();
+        const rowPath = buildPath(highlight.rows, rowBounds);
+        const columnPath = buildPath(highlight.columns, columnBounds);
+        context.save();
+        context.translate(0.5, 0.5);
+        if (highlight.gridHighlightConfig.cellBorderDash) {
+            context.setLineDash([3, 3]);
+        }
+        context.lineWidth = 0;
+        context.strokeStyle = highlight.gridHighlightConfig.cellBorderColor;
 
-    context.save();
-    context.clip(rowPath);
-    context.stroke(columnPath);
-    context.restore();
+        context.save();
+        context.clip(columnPath);
+        context.stroke(rowPath);
+        context.restore();
 
+        context.save();
+        context.clip(rowPath);
+        context.stroke(columnPath);
+        context.restore();
+
+        context.restore();
+
+        if (highlight.gridHighlightConfig.showGridExtensionLines) {
+            // Extend row gap lines left/up.
+            _drawRulers(context, rowBounds, /* rulerAtRight */ false, /* rulerAtBottom */ false, highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
+            // Extend row gap right/down.
+            _drawRulers(context, rowBounds, /* rulerAtRight */ true, /* rulerAtBottom */ true, highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
+            // Extend column lines left/up.
+            _drawRulers(context, columnBounds, /* rulerAtRight */ false, /* rulerAtBottom */ false, highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
+            // Extend column right/down.
+            _drawRulers(context, columnBounds, /* rulerAtRight */ true, /* rulerAtBottom */ true, highlight.gridHighlightConfig.cellBorderColor, highlight.gridHighlightConfig.cellBorderDash);
+        }
+    }
+
+    // Row Gaps
+    if (highlight.gridHighlightConfig.rowGapColor) {
+        context.save();
+        context.translate(0.5, 0.5);
+        context.lineWidth = 0;
+        context.fillStyle = highlight.gridHighlightConfig.rowGapColor;
+        let bounds = emptyBounds();
+        const path = buildPath(highlight.rowGaps, bounds);
+        if (highlight.gridHighlightConfig.rowHatchColor) {
+            hatchFillPath(context, path, bounds, 10, highlight.gridHighlightConfig.rowHatchColor, /* flipDirection */ true);
+        }
+        context.fill(path);
+        context.restore();
+    }
+
+    // Column Gaps
+    if (highlight.gridHighlightConfig.columnGapColor) {
+        context.save();
+        context.translate(0.5, 0.5);
+        context.lineWidth = 0;
+        context.fillStyle = highlight.gridHighlightConfig.columnGapColor;
+        let bounds = emptyBounds();
+        const path = buildPath(highlight.columnGaps, bounds);
+        if (highlight.gridHighlightConfig.columnHatchColor) {
+            hatchFillPath(context, path, bounds, 10, highlight.gridHighlightConfig.columnHatchColor);
+        }
+        context.fill(path);
+        context.restore();
+    }
+}
+
+/**
+ * Draw line hatching at a 45 degree angle for a given
+ * path.
+ *   __________
+ *   |\  \  \ |
+ *   | \  \  \|
+ *   |  \  \  |
+ *   |\  \  \ |
+ *   **********
+ *
+ * @param {CanvasRenderingContext2D} context
+ * @param {Path2D} path
+ * @param {Object} bounds
+ * @param {delta} delta - vertical gap between hatching lines in pixels
+ * @param {string} color
+ * @param {boolean=} flipDirection - lines are drawn from top right to bottom left
+ *
+ */
+function hatchFillPath(context, path, bounds, delta, color, flipDirection) {
+    const dx = bounds.maxX - bounds.minX;
+    const dy = bounds.maxY - bounds.minY;
+    context.rect(bounds.minX, bounds.minY, dx, dy);
+    context.save();
+    context.clip(path);
+    context.setLineDash([5, 3]);
+    const majorAxis = Math.max(dx, dy);
+    context.strokeStyle = color;
+    if (flipDirection) {
+        for (let i = -majorAxis; i < majorAxis; i += delta) {
+            context.beginPath();
+            context.moveTo(bounds.maxX - i , bounds.minY);
+            context.lineTo(bounds.maxX - dy - i, bounds.maxY);
+            context.stroke();
+        }
+    } else {
+        for (let i = -majorAxis; i < majorAxis; i += delta) {
+            context.beginPath();
+            context.moveTo(i + bounds.minX, bounds.minY);
+            context.lineTo(dy + i + bounds.minX, bounds.maxY);
+            context.stroke();
+        }
+    }
     context.restore();
 }
 

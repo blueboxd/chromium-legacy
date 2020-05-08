@@ -106,7 +106,8 @@ class ChromeContentRendererClient
       const base::FilePath& plugin_path) override;
   bool HasErrorPage(int http_status_code) override;
   bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
-                               const GURL& url) override;
+                               const GURL& url,
+                               int error_code) override;
   bool ShouldTrackUseCounter(const GURL& url) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,

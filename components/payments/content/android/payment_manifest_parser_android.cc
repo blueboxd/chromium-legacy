@@ -35,14 +35,12 @@ class ParseCallback {
   // Copies payment method manifest into Java.
   void OnPaymentMethodManifestParsed(
       const std::vector<GURL>& web_app_manifest_urls,
-      const std::vector<url::Origin>& supported_origins,
-      bool all_origins_supported) {
+      const std::vector<url::Origin>& supported_origins) {
     DCHECK_GE(100U, web_app_manifest_urls.size());
     DCHECK_GE(100000U, supported_origins.size());
     JNIEnv* env = base::android::AttachCurrentThread();
 
-    if (web_app_manifest_urls.empty() && supported_origins.empty() &&
-        !all_origins_supported) {
+    if (web_app_manifest_urls.empty() && supported_origins.empty()) {
       // Can trigger synchronous deletion of PaymentManifestParserAndroid.
       Java_ManifestParseCallback_onManifestParseFailure(env, jcallback_);
       return;
@@ -74,7 +72,7 @@ class ParseCallback {
 
     // Can trigger synchronous deletion of PaymentManifestParserAndroid.
     Java_ManifestParseCallback_onPaymentMethodManifestParseSuccess(
-        env, jcallback_, juris, jorigins, all_origins_supported);
+        env, jcallback_, juris, jorigins);
   }
 
   // Copies web app manifest into Java.

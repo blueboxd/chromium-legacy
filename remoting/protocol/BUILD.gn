@@ -26,6 +26,10 @@ static_library("protocol") {
     "channel_multiplexer.h",
     "channel_socket_adapter.cc",
     "channel_socket_adapter.h",
+    "chromium_port_allocator_factory.cc",
+    "chromium_port_allocator_factory.h",
+    "chromium_socket_factory.cc",
+    "chromium_socket_factory.h",
     "client_authentication_config.cc",
     "client_authentication_config.h",
     "client_control_dispatcher.cc",
@@ -141,6 +145,8 @@ static_library("protocol") {
     "pseudotcp_channel_factory.h",
     "rejecting_authenticator.cc",
     "rejecting_authenticator.h",
+    "remoting_ice_config_request.cc",
+    "remoting_ice_config_request.h",
     "sdp_message.cc",
     "sdp_message.h",
     "secure_channel_factory.cc",
@@ -149,6 +155,7 @@ static_library("protocol") {
     "session_config.cc",
     "session_config.h",
     "session_manager.h",
+    "session_options_provider.h",
     "session_plugin.h",
     "socket_util.cc",
     "socket_util.h",
@@ -159,6 +166,11 @@ static_library("protocol") {
     "stream_channel_factory.h",
     "stream_message_pipe_adapter.cc",
     "stream_message_pipe_adapter.h",
+    "stream_packet_processor.h",
+    "stream_packet_socket.cc",
+    "stream_packet_socket.h",
+    "stun_tcp_packet_processor.cc",
+    "stun_tcp_packet_processor.h",
     "third_party_authenticator_base.cc",
     "third_party_authenticator_base.h",
     "third_party_client_authenticator.cc",
@@ -178,8 +190,22 @@ static_library("protocol") {
     "video_renderer.h",
     "video_stats_stub.h",
     "video_stub.h",
+    "webrtc_audio_module.cc",
+    "webrtc_audio_module.h",
+    "webrtc_audio_sink_adapter.cc",
+    "webrtc_audio_sink_adapter.h",
     "webrtc_bandwidth_estimator.cc",
     "webrtc_bandwidth_estimator.h",
+    "webrtc_connection_to_host.cc",
+    "webrtc_connection_to_host.h",
+    "webrtc_data_stream_adapter.cc",
+    "webrtc_data_stream_adapter.h",
+    "webrtc_dummy_video_encoder.cc",
+    "webrtc_dummy_video_encoder.h",
+    "webrtc_transport.cc",
+    "webrtc_transport.h",
+    "webrtc_video_renderer_adapter.cc",
+    "webrtc_video_renderer_adapter.h",
   ]
 
   configs += [
@@ -199,73 +225,23 @@ static_library("protocol") {
     "//net",
     "//remoting/base",
     "//remoting/codec:decoder",
+    "//remoting/proto/remoting/v1:network_traversal_grpc_library",
     "//remoting/proto/remoting/v1:network_traversal_proto",
     "//remoting/signaling",
     "//third_party/boringssl",
     "//third_party/libyuv",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//ui/events:dom_keycode_converter",
   ]
 
   defines = []
 
-  if (!is_nacl) {
-    # This condition needs to match with //remoting/codec/BUILD.gn
-    if (is_win || is_linux) {
-      defines += [ "USE_H264_ENCODER" ]
-      deps += [
-        "//media",
-        "//skia",
-      ]
-    }
-
-    sources += [
-      "chromium_port_allocator_factory.cc",
-      "chromium_port_allocator_factory.h",
-      "chromium_socket_factory.cc",
-      "chromium_socket_factory.h",
-      "remoting_ice_config_request.cc",
-      "remoting_ice_config_request.h",
-      "session_options_provider.h",
-      "stream_packet_processor.h",
-      "stream_packet_socket.cc",
-      "stream_packet_socket.h",
-      "stun_tcp_packet_processor.cc",
-      "stun_tcp_packet_processor.h",
-      "webrtc_audio_module.cc",
-      "webrtc_audio_module.h",
-      "webrtc_audio_sink_adapter.cc",
-      "webrtc_audio_sink_adapter.h",
-      "webrtc_connection_to_host.cc",
-      "webrtc_connection_to_host.h",
-      "webrtc_data_stream_adapter.cc",
-      "webrtc_data_stream_adapter.h",
-      "webrtc_dummy_video_encoder.cc",
-      "webrtc_dummy_video_encoder.h",
-      "webrtc_transport.cc",
-      "webrtc_transport.h",
-      "webrtc_video_renderer_adapter.cc",
-      "webrtc_video_renderer_adapter.h",
-    ]
-
-    if (enable_remoting_host) {
-      sources += [
-        "webrtc_audio_source_adapter.cc",
-        "webrtc_audio_source_adapter.h",
-        "webrtc_audio_stream.cc",
-        "webrtc_audio_stream.h",
-        "webrtc_connection_to_client.cc",
-        "webrtc_connection_to_client.h",
-        "webrtc_frame_scheduler.h",
-        "webrtc_frame_scheduler_simple.cc",
-        "webrtc_frame_scheduler_simple.h",
-        "webrtc_video_stream.cc",
-        "webrtc_video_stream.h",
-      ]
-    }
-
+  # Must match condition in //remoting/codec/BUILD.gn
+  if (is_win || is_linux) {
+    defines += [ "USE_H264_ENCODER" ]
     deps += [
-      "//remoting/proto/remoting/v1:network_traversal_grpc_library",
-      "//third_party/webrtc_overrides:webrtc_component",
+      "//media",
+      "//skia",
     ]
   }
 
@@ -281,7 +257,19 @@ static_library("protocol") {
       "ice_connection_to_client.h",
       "video_frame_pump.cc",
       "video_frame_pump.h",
+      "webrtc_audio_source_adapter.cc",
+      "webrtc_audio_source_adapter.h",
+      "webrtc_audio_stream.cc",
+      "webrtc_audio_stream.h",
+      "webrtc_connection_to_client.cc",
+      "webrtc_connection_to_client.h",
+      "webrtc_frame_scheduler.h",
+      "webrtc_frame_scheduler_simple.cc",
+      "webrtc_frame_scheduler_simple.h",
+      "webrtc_video_stream.cc",
+      "webrtc_video_stream.h",
     ]
+
     deps += [ "//remoting/codec:encoder" ]
   }
 }

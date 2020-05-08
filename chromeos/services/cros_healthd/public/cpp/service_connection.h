@@ -158,6 +158,12 @@ class ServiceConnection {
       mojo::PendingRemote<mojom::CrosHealthdBluetoothObserver>
           pending_observer) = 0;
 
+  // Subscribes to cros_healthd's lid-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddLidObserver(
+      mojo::PendingRemote<mojom::CrosHealthdLidObserver> pending_observer) = 0;
+
   // Subscribes to cros_healthd's power-related events. See
   // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.

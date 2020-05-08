@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
-import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
+import org.chromium.chrome.test.util.browser.webapps.WebApkIntentDataProviderBuilder;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.security_state.SecurityStateModelJni;
@@ -144,10 +144,11 @@ public class TrustedWebActivityBrowserControlsVisibilityManagerTest {
 
     private BrowserServicesIntentDataProvider buildWebApkIntentDataProvider(
             @WebDisplayMode int displayMode) {
-        WebApkInfoBuilder webApkInfoBuilder =
-                new WebApkInfoBuilder("org.chromium.webapk.abcd", "https://pwa.rocks/");
-        webApkInfoBuilder.setDisplayMode(displayMode);
-        return webApkInfoBuilder.build().getProvider();
+        WebApkIntentDataProviderBuilder intentDataProviderBuilder =
+                new WebApkIntentDataProviderBuilder(
+                        "org.chromium.webapk.abcd", "https://pwa.rocks/");
+        intentDataProviderBuilder.setDisplayMode(displayMode);
+        return intentDataProviderBuilder.build();
     }
 
     private TrustedWebActivityBrowserControlsVisibilityManager buildController(

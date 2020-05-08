@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "content/browser/conversions/conversion_manager_impl.h"
@@ -96,6 +97,17 @@ void ConversionInternalsHandlerImpl::GetPendingReports(
         base::Time::Max());
   } else {
     std::move(callback).Run({});
+  }
+}
+
+void ConversionInternalsHandlerImpl::ClearStorage(
+    ::mojom::ConversionInternalsHandler::ClearStorageCallback callback) {
+  if (ConversionManager* manager =
+          manager_provider_->GetManager(web_ui_->GetWebContents())) {
+    manager->ClearData(base::Time::Min(), base::Time::Max(),
+                       base::NullCallback(), std::move(callback));
+  } else {
+    std::move(callback).Run();
   }
 }
 

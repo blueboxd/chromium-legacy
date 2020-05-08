@@ -198,9 +198,13 @@ void LayoutBoxModelObject::WillBeDestroyed() {
     // 0 during destruction.
     if (LocalFrame* frame = GetFrame()) {
       if (LocalFrameView* frame_view = frame->View()) {
-        if (StyleRef().HasViewportConstrainedPosition() ||
-            StyleRef().HasStickyConstrainedPosition())
-          frame_view->RemoveViewportConstrainedObject(*this);
+        if (StyleRef().HasViewportConstrainedPosition()) {
+          frame_view->RemoveViewportConstrainedObject(
+              *this, LocalFrameView::ViewportConstrainedType::kFixed);
+        } else if (StyleRef().HasStickyConstrainedPosition()) {
+          frame_view->RemoveViewportConstrainedObject(
+              *this, LocalFrameView::ViewportConstrainedType::kSticky);
+        }
       }
     }
   }
@@ -430,7 +434,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
       } else {
         // This may get re-added to viewport constrained objects if the object
         // went from sticky to fixed.
-        frame_view->RemoveViewportConstrainedObject(*this);
+        frame_view->RemoveViewportConstrainedObject(
+            *this, LocalFrameView::ViewportConstrainedType::kSticky);
 
         // Remove sticky constraints for this layer.
         if (Layer()) {
@@ -449,10 +454,13 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
 
     if (new_style_is_viewport_constained != old_style_is_viewport_constrained) {
-      if (new_style_is_viewport_constained && Layer())
-        frame_view->AddViewportConstrainedObject(*this);
-      else
-        frame_view->RemoveViewportConstrainedObject(*this);
+      if (new_style_is_viewport_constained && Layer()) {
+        frame_view->AddViewportConstrainedObject(
+            *this, LocalFrameView::ViewportConstrainedType::kFixed);
+      } else {
+        frame_view->RemoveViewportConstrainedObject(
+            *this, LocalFrameView::ViewportConstrainedType::kFixed);
+      }
     }
   }
 

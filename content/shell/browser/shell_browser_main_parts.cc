@@ -24,7 +24,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/browser/shell_platform_delegate.h"
 #include "content/shell/common/shell_switches.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/base/filename_util.h"
@@ -182,8 +181,7 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   InitializeBrowserContexts();
-  shell_platform_delegate_ = CreateShellPlatformDelegate();
-  Shell::Initialize(shell_platform_delegate_.get());
+  Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
   ShellDevToolsManagerDelegate::StartHttpHandler(browser_context_.get());
   InitializeMessageLoopContext();
@@ -222,11 +220,6 @@ void ShellBrowserMainParts::PostDestroyThreads() {
   device::BluetoothAdapterFactory::Shutdown();
   bluez::DBusBluezManagerWrapperLinux::Shutdown();
 #endif
-}
-
-std::unique_ptr<ShellPlatformDelegate>
-ShellBrowserMainParts::CreateShellPlatformDelegate() {
-  return std::make_unique<ShellPlatformDelegate>();
 }
 
 }  // namespace

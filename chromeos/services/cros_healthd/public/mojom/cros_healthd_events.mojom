@@ -26,6 +26,14 @@ interface CrosHealthdBluetoothObserver {
   OnDevicePropertyChanged();
 };
 
+// Implemented by clients who desire lid notifications.
+interface CrosHealthdLidObserver {
+  // Fired when the device's lid is closed.
+  OnLidClosed();
+  // Fired when the device's lid is opened.
+  OnLidOpened();
+};
+
 // Implemented by clients who desire power notifications.
 interface CrosHealthdPowerObserver {
   // Fired when the device begins consuming from an external power source.

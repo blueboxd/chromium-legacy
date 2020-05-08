@@ -652,8 +652,8 @@
   },
   {
     "name": "crostini-port-forwarding",
-    "owners": [ "matterchen", "davidmunro@google.com", "hollingum@google.com" ],
-    "expiry_milestone": 84
+    "owners": [ "danielng", "davidmunro@google.com", "hollingum@google.com" ],
+    "expiry_milestone": 86
   },
   {
     "name": "crostini-show-mic-setting",
@@ -2979,7 +2979,7 @@
   {
     "name": "notification-scheduler-debug-options",
     "owners": [ "//chrome/browser/notifications/scheduler/OWNERS" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "ntp-confirm-suggestion-removals",
@@ -3899,6 +3899,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "suggested-content-toggle",
+    "owners": [ "jiameng", "wrong" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "sync-error-infobar",
     "owners": [ "triploblastic", "bsazonov" ],
     "expiry_milestone": 85
@@ -3946,7 +3951,7 @@
   {
     "name": "tab-hover-cards",
     "owners": [ "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "tab-outlines-in-low-contrast-themes",
@@ -4197,7 +4202,7 @@
   {
     "name": "use-winrt-midi-api",
     "owners": [ "toyoshim" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "use-WKWebView-loading",

@@ -312,13 +312,11 @@ void CastMirroringServiceHost::CreateAudioStream(
              mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
                  client_receiver,
              media::mojom::ReadOnlyAudioDataPipePtr data_pipe) {
-            // TODO(crbug.com/1015488): Remove |initially_muted| argument from
-            // mojom::AudioStreamCreatorClient::StreamCreated().
             mojo::Remote<mojom::AudioStreamCreatorClient> audio_client(
                 std::move(client));
-            audio_client->StreamCreated(
-                std::move(stream), std::move(client_receiver),
-                std::move(data_pipe), false /* initially_muted */);
+            audio_client->StreamCreated(std::move(stream),
+                                        std::move(client_receiver),
+                                        std::move(data_pipe));
           },
           base::Passed(&client)));
 }

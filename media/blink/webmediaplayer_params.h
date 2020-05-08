@@ -44,6 +44,7 @@ using CreateSurfaceLayerBridgeCB =
         blink::WebSurfaceLayerBridgeObserver*,
         cc::UpdateSubmissionStateCB)>;
 
+class Demuxer;
 class SwitchableAudioRendererSink;
 
 // Holds parameters for constructing WebMediaPlayerImpl without having
@@ -85,6 +86,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool is_background_video_play_enabled,
       bool is_background_video_track_optimization_supported,
       bool is_remoting_renderer_enabled,
+      std::unique_ptr<Demuxer> demuxer_override,
       std::unique_ptr<PowerStatusHelper> power_status_helper);
 
   ~WebMediaPlayerParams();
@@ -172,6 +174,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return is_remoting_renderer_enabled_;
   }
 
+  std::unique_ptr<Demuxer> TakeDemuxerOverride();
+
   std::unique_ptr<PowerStatusHelper> TakePowerStatusHelper() {
     return std::move(power_status_helper_);
   }
@@ -206,6 +210,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool is_background_video_track_optimization_supported_ = true;
   // Whether the media in this frame is a remoting media.
   bool is_remoting_renderer_enabled_ = false;
+
+  // Optional custom demuxer to use instead of the standard demuxers.
+  std::unique_ptr<Demuxer> demuxer_override_;
 
   std::unique_ptr<PowerStatusHelper> power_status_helper_;
 

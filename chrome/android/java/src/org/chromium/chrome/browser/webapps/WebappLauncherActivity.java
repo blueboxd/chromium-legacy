@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
@@ -115,7 +116,8 @@ public class WebappLauncherActivity extends Activity {
      * if the intent does not launch either a WebappLauncherActivity or a WebAPK Activity. This
      * method is slow. It makes several PackageManager calls.
      */
-    public static @Nullable WebappInfo maybeSlowlyGenerateWebApkInfoFromIntent(Intent fromIntent) {
+    public static @Nullable BrowserServicesIntentDataProvider
+    maybeSlowlyGenerateWebApkIntentDataProviderFromIntent(Intent fromIntent) {
         // Check for intents targeted at WebappActivity, WebappActivity0-9,
         // SameTaskWebApkActivity and WebappLauncherActivity.
         String targetActivityClassName = fromIntent.getComponent().getClassName();
@@ -125,7 +127,7 @@ public class WebappLauncherActivity extends Activity {
             return null;
         }
 
-        return WebApkInfo.create(fromIntent);
+        return WebApkIntentDataProviderFactory.create(fromIntent);
     }
 
     @Override

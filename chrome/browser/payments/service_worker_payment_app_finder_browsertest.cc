@@ -484,19 +484,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
   }
 }
 
-// A payment app from https://alicepay.com can use the payment method
+// A payment app from https://alicepay.com can not use the payment method
 // https://frankpay.com/webpay, because https://frankpay.com/payment-method.json
-// specifies "supported_origins": "*" (all origins supported).
+// invalid "supported_origins": "*".
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
-                       AllOringsSupported) {
+                       OriginWildcardNotSupportedInPaymentMethodManifest) {
   InstallPaymentAppForMethod("https://frankpay.com/webpay");
 
   {
     GetAllPaymentAppsForMethods({"https://frankpay.com/webpay"});
 
     EXPECT_TRUE(installable_apps().empty());
-    ASSERT_EQ(1U, apps().size());
-    ExpectPaymentAppWithMethod("https://frankpay.com/webpay");
+    ASSERT_EQ(0U, apps().size());
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
@@ -505,8 +504,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
     GetAllPaymentAppsForMethods({"https://frankpay.com/webpay"});
 
     EXPECT_TRUE(installable_apps().empty());
-    ASSERT_EQ(1U, apps().size());
-    ExpectPaymentAppWithMethod("https://frankpay.com/webpay");
+    ASSERT_EQ(0U, apps().size());
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }
@@ -574,12 +572,12 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
   }
 }
 
-// Multiple payment apps from https://alicepay.com can use either
-// https://georgepay.com/webpay or https://frankepay.com/webpay payment method,
-// because https://frankpay.com/payment-method.json specifies
-// "supported_origins": "*" (all origins supported) and
+// A Payment app from https://alicepay.com can use only the payment method
+// https://georgepay.com/webpay. Because
 // https://georgepay.com/payment-method.json explicitly includes
-// "https://alicepay.com" as on of the "supported_origins".
+// "https://alicepay.com" as on of the "supported_origins". Also
+// https://frankpay.com/payment-method.json does not explicitly authorize any
+// payment app.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
                        TwoAppsDifferentMethods) {
   InstallPaymentAppInScopeForMethod("/app1/", "https://georgepay.com/webpay");
@@ -590,11 +588,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
         {"https://georgepay.com/webpay", "https://frankpay.com/webpay"});
 
     EXPECT_TRUE(installable_apps().empty());
-    ASSERT_EQ(2U, apps().size());
+    ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppFromScopeWithMethod("/app1/",
                                         "https://georgepay.com/webpay");
-    ExpectPaymentAppFromScopeWithMethod("/app2/",
-                                        "https://frankpay.com/webpay");
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 
@@ -604,11 +600,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPaymentAppFinderBrowserTest,
         {"https://georgepay.com/webpay", "https://frankpay.com/webpay"});
 
     EXPECT_TRUE(installable_apps().empty());
-    ASSERT_EQ(2U, apps().size());
+    ASSERT_EQ(1U, apps().size());
     ExpectPaymentAppFromScopeWithMethod("/app1/",
                                         "https://georgepay.com/webpay");
-    ExpectPaymentAppFromScopeWithMethod("/app2/",
-                                        "https://frankpay.com/webpay");
     EXPECT_TRUE(error_message().empty()) << error_message();
   }
 }

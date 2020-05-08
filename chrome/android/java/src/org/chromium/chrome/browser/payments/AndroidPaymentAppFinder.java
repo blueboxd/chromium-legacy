@@ -124,9 +124,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
 
         /** The supported origins of this payment method. */
         public final Set<URI> supportedOrigins = new HashSet<>();
-
-        /** Whether all origins are supported. */
-        public boolean supportsAllOrigins;
     }
 
     /**
@@ -479,11 +476,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         getOrCreateVerifiedPaymentMethod(methodName).supportedOrigins.add(supportedOrigin);
     }
 
-    @Override
-    public void onAllOriginsSupported(URI methodName) {
-        getOrCreateVerifiedPaymentMethod(methodName).supportsAllOrigins = true;
-    }
-
     private PaymentMethod getOrCreateVerifiedPaymentMethod(URI methodName) {
         PaymentMethod verifiedPaymentManifest = mVerifiedPaymentMethods.get(methodName);
         if (verifiedPaymentManifest == null) {
@@ -511,17 +503,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             String methodNameString = uriToStringWithoutTrailingSlash(methodName);
             for (ResolveInfo app : method.defaultApplications) {
                 onValidPaymentAppForPaymentMethodName(app, methodNameString);
-            }
-
-            // Chrome does not verify payment apps if they claim to support URI payment methods
-            // that support all origins.
-            if (method.supportsAllOrigins) {
-                Set<ResolveInfo> supportedApps = mMethodToSupportedAppsMapping.get(methodName);
-                if (supportedApps == null) continue;
-                for (ResolveInfo supportedApp : supportedApps) {
-                    onValidPaymentAppForPaymentMethodName(supportedApp, methodNameString);
-                }
-                continue;
             }
 
             for (URI supportedOrigin : method.supportedOrigins) {

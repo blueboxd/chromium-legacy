@@ -363,6 +363,11 @@ const base::Feature kSplitSettingsSync{"SplitSettingsSync",
 const base::Feature kSplitSyncConsent{"SplitSyncConsent",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a settings UI toggle that controls Suggested Content status. Also
+// enables a corresponding notice in the Launcher about Suggested Content.
+const base::Feature kSuggestedContentToggle{"SuggestedContentToggle",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables unified media view in Files app to browse recently-modified media
 // files from local local, Google Drive, and Android.
 const base::Feature kUnifiedMediaView{"UnifiedMediaView",

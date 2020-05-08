@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/raw_clipboard_host_impl.h"
 
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "content/browser/frame_host/clipboard_host_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/render_frame_host.h"
@@ -15,6 +16,7 @@
 #include "third_party/blink/public/mojom/clipboard/raw_clipboard.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-shared.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace content {
@@ -31,7 +33,7 @@ void RawClipboardHostImpl::Create(
   // Feature flags and permission should already be checked in the renderer
   // process, but recheck in the browser process in case of a hijacked renderer.
   if (!base::FeatureList::IsEnabled(blink::features::kRawClipboard)) {
-    mojo::ReportBadMessage("Raw Clipboard is not enabled");
+    mojo::ReportBadMessage("Raw Clipboard is not enabled.");
     return;
   }
 
@@ -78,8 +80,33 @@ void RawClipboardHostImpl::ReadAvailableFormatNames(
   std::move(callback).Run(raw_types);
 }
 
+void RawClipboardHostImpl::Read(const base::string16& format,
+                                ReadCallback callback) {
+  if (format.size() >= kMaxFormatSize) {
+    receiver_.ReportBadMessage("Requested format string length too long.");
+    return;
+  }
+
+  std::string result;
+  clipboard_->ReadData(
+      ui::ClipboardFormatType::GetType(base::UTF16ToUTF8(format)), &result);
+  base::span<const uint8_t> span(
+      reinterpret_cast<const uint8_t*>(result.data()), result.size());
+  mojo_base::BigBuffer buffer = mojo_base::BigBuffer(span);
+  std::move(callback).Run(std::move(buffer));
+}
+
 void RawClipboardHostImpl::Write(const base::string16& format,
                                  mojo_base::BigBuffer data) {
+  if (format.size() >= kMaxFormatSize) {
+    receiver_.ReportBadMessage("Target format string length too long.");
+    return;
+  }
+  if (data.size() >= kMaxDataSize) {
+    receiver_.ReportBadMessage("Write data too large.");
+    return;
+  }
+
   // Windows / X11 clipboards enter an unrecoverable state after registering
   // some amount of unique formats, and there's no way to un-register these
   // formats. For these clipboards, use a conservative limit to avoid

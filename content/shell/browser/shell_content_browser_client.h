@@ -17,6 +17,7 @@
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
 namespace content {
+
 class ShellBrowserContext;
 class ShellBrowserMainParts;
 
@@ -88,19 +89,23 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
   base::FilePath GetSandboxedStorageServiceDataDirectory() override;
+
   std::string GetUserAgent() override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
+
   void OverrideURLLoaderFactoryParams(
       BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params) override;
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::PosixFileDescriptorInfo* mappings) override;
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
   mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,
@@ -186,7 +191,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       register_browser_interface_binders_for_frame_callback_;
 
   // Owned by content::BrowserMainLoop.
-  ShellBrowserMainParts* shell_browser_main_parts_ = nullptr;
+  ShellBrowserMainParts* shell_browser_main_parts_;
 };
 
 // The delay for sending reports when running with --run-web-tests

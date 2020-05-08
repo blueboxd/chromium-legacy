@@ -218,6 +218,64 @@ class LintTest(LoggingTestCase):
         all_logs = ''.join(self.logMessages())
         self.assertIn('conflict', all_logs)
 
+    def test_lint_exsistence(self):
+        options = optparse.Values({
+            'additional_expectations': [],
+            'platform': 'test',
+            'debug_rwt_logging': False
+        })
+        host = MockHost()
+
+        port = host.port_factory.get(options.platform, options=options)
+        test_expectations = ('# results: [ Pass Failure ]\n'
+                             'test1/* [ Failure ]\n'
+                             'test2/* [ Failure ]\n'
+                             'test2/foo.html [ Failure ]\n'
+                             'test2/bar.html [ Failure ]\n'
+                             'test3/foo.html [ Failure ]\n'
+                             'virtual/foo/* [ Failure ]\n'
+                             'virtual/foo/test2/* [ Pass ]\n'
+                             'virtual/foo/test2/foo.html [ Pass ]\n'
+                             'virtual/foo/test2/bar.html [ Pass ]\n'
+                             'virtual/foo/test3/foo.html [ Pass ]\n'
+                             'virtual/bar/* [ Pass ]\n'
+                             'virtual/bar/test2/foo.html [ Pass ]\n'
+                             'external/wpt/abc/def [ Failure ]\n')
+        port.expectations_dict = lambda: {
+            'testexpectations': test_expectations
+        }
+        port.virtual_test_suites = lambda: [
+            VirtualTestSuite(prefix='foo', bases=['test2'], args=['--foo'])
+        ]
+        host.filesystem.write_text_file(
+            host.filesystem.join(port.web_tests_dir(), 'test2', 'foo.html'),
+            'foo')
+        host.filesystem.write_text_file(
+            host.filesystem.join(port.web_tests_dir(), 'test3', 'foo.html'),
+            'foo')
+        host.filesystem.write_text_file(
+            host.filesystem.join(port.web_tests_dir(), 'virtual', 'foo',
+                                 'README.md'), 'foo')
+
+        host.port_factory.get = lambda platform, options=None: port
+        host.port_factory.all_port_names = lambda platform=None: [port.name()]
+
+        res = lint_test_expectations.lint(host, options)
+
+        self.assertTrue(res)
+        self.assertEquals(len(res), 6)
+        expected_non_existence = [
+            'test1/*',
+            'test2/bar.html',
+            'virtual/foo/test2/bar.html',
+            'virtual/foo/test3/foo.html',
+            'virtual/bar/*',
+            'virtual/bar/test2/foo.html',
+        ]
+        for i in range(len(res)):
+            self.assertIn('Test does not exist', res[i])
+            self.assertIn(expected_non_existence[i], res[i])
+
     def test_lint_globs(self):
         options = optparse.Values({
             'additional_expectations': [],
@@ -244,6 +302,38 @@ class LintTest(LoggingTestCase):
         self.assertTrue(res)
         all_logs = ''.join(self.logMessages())
         self.assertIn('directory', all_logs)
+
+    def test_virtual_test_redundant_expectation(self):
+        options = optparse.Values({
+            'additional_expectations': [],
+            'platform': 'test',
+            'debug_rwt_logging': False
+        })
+        host = MockHost()
+
+        port = host.port_factory.get(options.platform, options=options)
+        port.virtual_test_suites = lambda: [
+            VirtualTestSuite(prefix='foo', bases=['test'], args=['--foo'])
+        ]
+        test_expectations = (
+            '# tags: [ mac win ]\n'
+            '# tags: [ debug release ]\n'
+            '# results: [ Failure Pass ]\n'
+            '[ mac ] test/test1.html [ Failure ]\n'
+            '[ mac debug ] virtual/foo/test/test1.html [ Failure ]\n'
+            '[ win ] virtual/foo/test/test1.html [ Failure ]\n'
+            '[ mac release ] virtual/foo/test/test1.html [ Pass ]\n')
+        port.expectations_dict = lambda: {
+            'testexpectations': test_expectations
+        }
+        port.test_exists = lambda test: True
+        host.port_factory.get = lambda platform, options=None: port
+        host.port_factory.all_port_names = lambda platform=None: [port.name()]
+
+        res = lint_test_expectations.lint(host, options)
+
+        self.assertEquals(len(res), 1)
+        self.assertIn('redundant', res[0])
 
 
 class CheckVirtualSuiteTest(unittest.TestCase):

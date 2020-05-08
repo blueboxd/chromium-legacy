@@ -27,6 +27,7 @@ enum Capability {
   SEND_FEEDBACK = 12;
   CLICK_ACTION = 13;
   VIEW_ACTION = 14;
+  REPORT_FEED_USER_ACTIONS_NOTICE_CARD = 15;
 
   reserved 3, 11;
 }

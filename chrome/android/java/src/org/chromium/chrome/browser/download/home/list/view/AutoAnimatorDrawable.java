@@ -94,7 +94,6 @@ public class AutoAnimatorDrawable extends DrawableWrapper {
         });
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     private static void animatedDrawableHelper(
             @Nullable Drawable drawable, org.chromium.base.Callback<Animatable> consumer) {
         if (drawable == null) return;
@@ -128,8 +127,7 @@ public class AutoAnimatorDrawable extends DrawableWrapper {
             for (int i = 0; i < layerDrawable.getNumberOfLayers(); i++) {
                 AutoAnimatorDrawable.animatedDrawableHelper(layerDrawable.getDrawable(i), consumer);
             }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
-                && drawable instanceof InsetDrawable) {
+        } else if (drawable instanceof InsetDrawable) {
             // Support legacy versions of InsetDrawable.
             AutoAnimatorDrawable.animatedDrawableHelper(
                     ((InsetDrawable) drawable).getDrawable(), consumer);

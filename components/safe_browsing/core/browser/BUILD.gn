@@ -57,6 +57,7 @@ if (!is_ios) {
     deps = [
       ":browser",
       "//base/test:test_support",
+      "//components/safe_browsing/core:csd_proto",
       "//components/safe_browsing/core/common:test_support",
       "//components/safe_browsing/core/common:thread_utils",
       "//components/safe_browsing/core/db:test_database_manager",

@@ -305,6 +305,16 @@ void BrowserFrame::OnMenuClosed() {
 
 void BrowserFrame::OnTouchUiChanged() {
   client_view()->InvalidateLayout();
-  non_client_view()->InvalidateLayout();
+
+  // For standard browser frame, if we do not invalidate the NonClientFrameView
+  // the client window bounds will not be properly updated which could cause
+  // visual artifacts. See crbug.com/1035959 for details.
+  if (non_client_view()->frame_view()) {
+    // Note that invalidating a view invalidates all of its ancestors, so it is
+    // not necessary to also invalidate the NonClientView or RootView here.
+    non_client_view()->frame_view()->InvalidateLayout();
+  } else {
+    non_client_view()->InvalidateLayout();
+  }
   GetRootView()->Layout();
 }

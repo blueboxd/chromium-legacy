@@ -51,8 +51,8 @@ AppListView* DemoAppListViewDelegate::InitView(
   gfx::NativeView container = window_context;
 
   view_ = new AppListView(this);
-  view_->InitView(/*is_tablet_mode=*/false, container);
-  view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
+  view_->InitView(container);
+  view_->Show(false /*is_side_shelf*/);
 
   // Populate some apps.
   GetTestModel()->PopulateApps(kInitialItems);

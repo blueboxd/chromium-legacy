@@ -246,6 +246,7 @@ TEST(CheckedPtr, StdSwap) {
 }
 
 TEST(CheckedPtr, AdvanceIntArray) {
+  // operator++
   int foo[] = {42, 43, 44, 45};
   CheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; ++i, ++ptr) {
@@ -253,6 +254,24 @@ TEST(CheckedPtr, AdvanceIntArray) {
   }
   ptr = &foo[1];
   for (int i = 1; i < 4; ++i, ++ptr) {
+    ASSERT_EQ(*ptr, 42 + i);
+  }
+
+  // operator--
+  ptr = &foo[3];
+  for (int i = 3; i >= 0; --i, --ptr) {
+    ASSERT_EQ(*ptr, 42 + i);
+  }
+
+  // operator+=
+  ptr = foo;
+  for (int i = 0; i < 4; i += 2, ptr += 2) {
+    ASSERT_EQ(*ptr, 42 + i);
+  }
+
+  // operator-=
+  ptr = &foo[3];
+  for (int i = 3; i >= 0; i -= 2, ptr -= 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
 }

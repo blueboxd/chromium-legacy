@@ -6,11 +6,24 @@ import("//build/config/android/rules.gni")
 import("//chrome/android/modules/buildflags.gni")
 
 android_library("java") {
-  sources = [ "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderDummyImpl.java" ]
+  sources = [ "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderModuleContentsImpl.java" ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/android/modules/stack_unwinder/public:java",
   ]
+}
+
+generate_jni("jni_headers") {
+  sources = [ "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderModuleContentsImpl.java" ]
+}
+
+generate_jni_registration("jni_registration") {
+  targets = [ ":java" ]
+  header_output = "$target_gen_dir/jni_registration.h"
+  namespace = "stack_unwinder"
+  no_transitive_deps = true
 }
 
 # This group is effectively an alias representing the module's native code,
@@ -22,8 +35,13 @@ group("native") {
 }
 
 component("stack_unwinder") {
-  sources = [ "entrypoints.cc" ]
+  sources = [
+    "entrypoints.cc",
+    "stack_unwinder_module_contents_impl.cc",
+  ]
   deps = [
+    ":jni_headers",
+    ":jni_registration",
     "//base",
     "//chrome/android/features/stack_unwinder/public:memory_regions_map",
   ]

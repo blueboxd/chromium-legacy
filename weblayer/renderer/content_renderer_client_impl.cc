@@ -109,10 +109,11 @@ bool ContentRendererClientImpl::HasErrorPage(int http_status_code) {
 
 bool ContentRendererClientImpl::ShouldSuppressErrorPage(
     content::RenderFrame* render_frame,
-    const GURL& url) {
+    const GURL& url,
+    int error_code) {
   auto* error_page_helper = ErrorPageHelper::GetForFrame(render_frame);
   if (error_page_helper)
-    return error_page_helper->ShouldSuppressErrorPage();
+    return error_page_helper->ShouldSuppressErrorPage(error_code);
   return false;
 }
 

@@ -23,6 +23,7 @@ namespace blink {
 class ScriptPromiseResolver;
 class LocalFrame;
 class ExecutionContext;
+class ClipboardItemOptions;
 
 class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
                                public ExecutionContextClient {
@@ -30,7 +31,9 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
 
  public:
   // Creates promise to execute Clipboard API functions off the main thread.
-  static ScriptPromise CreateForRead(ExecutionContext*, ScriptState*);
+  static ScriptPromise CreateForRead(ExecutionContext*,
+                                     ScriptState*,
+                                     ClipboardItemOptions*);
   static ScriptPromise CreateForReadText(ExecutionContext*, ScriptState*);
   static ScriptPromise CreateForWrite(ExecutionContext*,
                                       ScriptState*,
@@ -51,10 +54,10 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
 
  private:
   // Called to begin writing a type.
-  void StartWriteRepresentation();
+  void WriteNextRepresentation();
 
   // Checks Read/Write permission (interacting with PermissionService).
-  void HandleRead();
+  void HandleRead(ClipboardItemOptions*);
   void HandleReadText();
   void HandleWrite(HeapVector<Member<ClipboardItem>>*);
   void HandleWriteText(const String&);
@@ -64,6 +67,11 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   void HandleReadTextWithPermission(mojom::blink::PermissionStatus);
   void HandleWriteWithPermission(mojom::blink::PermissionStatus);
   void HandleWriteTextWithPermission(mojom::blink::PermissionStatus);
+
+  void OnReadAvailableRawFormatNames(const Vector<String>& format_names);
+  void ReadNextRawRepresentation();
+  void OnRawRead(mojo_base::BigBuffer data);
+  void ResolveRead();
 
   // Checks for permissions (interacting with PermissionService).
   mojom::blink::PermissionService* GetPermissionService();

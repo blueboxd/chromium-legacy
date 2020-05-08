@@ -75,7 +75,11 @@ void TestConversionManager::ClearData(
     base::Time delete_begin,
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter,
-    base::OnceClosure done) {}
+    base::OnceClosure done) {
+  impressions_.clear();
+  reports_.clear();
+  std::move(done).Run();
+}
 
 void TestConversionManager::SetActiveImpressionsForWebUI(
     std::vector<StorableImpression> impressions) {

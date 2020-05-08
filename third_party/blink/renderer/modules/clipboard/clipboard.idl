@@ -12,6 +12,11 @@
      CallWith=ScriptState
     ] Promise<sequence<ClipboardItem>> read();
 
+    [MeasureAs=AsyncClipboardAPIRead,
+     CallWith=ScriptState,
+     RuntimeEnabled=RawClipboard
+    ] Promise<sequence<ClipboardItem>> read(ClipboardItemOptions options);
+
     [MeasureAs=AsyncClipboardAPIReadText,
      CallWith=ScriptState
     ] Promise<DOMString> readText();

@@ -7257,5 +7257,18 @@
         }
       }
     ]
+  },
+  "AppCacheForceEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AppCacheForceEnabled": true },
+        "prefs": {
+          "app_cache_force_enabled": {
+            "value": true
+          }
+        }
+      }
+    ]
   }
 }

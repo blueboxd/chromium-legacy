@@ -41,7 +41,6 @@ static const int kHeight = 240;
 using testing::_;
 using testing::AtLeast;
 
-
 void SaveOperationalStatus(OperationalStatus* out_status,
                            OperationalStatus in_status) {
   DVLOG(1) << "OperationalStatus transitioning from " << *out_status << " to "
@@ -52,15 +51,13 @@ void SaveOperationalStatus(OperationalStatus* out_status,
 class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender()
-      : number_of_rtp_packets_(0),
-        number_of_rtcp_packets_(0),
-        paused_(false) {}
+      : number_of_rtp_packets_(0), number_of_rtcp_packets_(0), paused_(false) {}
 
   // A singular packet implies a RTCP packet.
-  bool SendPacket(PacketRef packet, const base::Closure& cb) final {
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final {
     if (paused_) {
       stored_packet_ = packet;
-      callback_ = cb;
+      callback_ = std::move(cb);
       return false;
     }
     if (IsRtcpPacket(&packet->data[0], packet->data.size())) {
@@ -90,8 +87,8 @@ class TestPacketSender : public PacketTransport {
   void SetPause(bool paused) {
     paused_ = paused;
     if (!paused && stored_packet_.get()) {
-      SendPacket(stored_packet_, callback_);
-      callback_.Run();
+      SendPacket(stored_packet_, base::OnceClosure());
+      std::move(callback_).Run();
     }
   }
 
@@ -99,14 +96,13 @@ class TestPacketSender : public PacketTransport {
   int number_of_rtp_packets_;
   int number_of_rtcp_packets_;
   bool paused_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
   PacketRef stored_packet_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
 };
 
-void IgnorePlayoutDelayChanges(base::TimeDelta unused_playout_delay) {
-}
+void IgnorePlayoutDelayChanges(base::TimeDelta unused_playout_delay) {}
 
 class PeerVideoSender : public VideoSender {
  public:

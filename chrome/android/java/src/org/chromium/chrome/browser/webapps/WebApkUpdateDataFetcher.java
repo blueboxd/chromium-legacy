@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -36,7 +37,8 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
          * @param splashIconUrl  The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
          *                       suited for use as the splash icon on this device.
          */
-        void onGotManifestData(WebappInfo fetchedInfo, String primaryIconUrl, String splashIconUrl);
+        void onGotManifestData(BrowserServicesIntentDataProvider fetchedInfo, String primaryIconUrl,
+                String splashIconUrl);
     }
 
     /**
@@ -142,15 +144,17 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
         }
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
-        WebappInfo info = WebApkInfo.create(mOldInfo.url(), scopeUrl,
-                new WebappIcon(primaryIconBitmap), new WebappIcon(splashIconBitmap), name,
-                shortName, displayMode, orientation, mOldInfo.source(), themeColor, backgroundColor,
-                defaultBackgroundColor, isPrimaryIconMaskable, false /* isSplashIconMaskable */,
-                mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(),
-                manifestStartUrl, WebApkDistributor.BROWSER, iconUrlToMurmur2HashMap, shareTarget,
-                mOldInfo.shouldForceNavigation(), mOldInfo.isSplashProvidedByWebApk(), null,
-                shortcutItems, mOldInfo.webApkVersionCode());
-        mObserver.onGotManifestData(info, primaryIconUrl, splashIconUrl);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                WebApkIntentDataProviderFactory.create(mOldInfo.url(), scopeUrl,
+                        new WebappIcon(primaryIconBitmap), new WebappIcon(splashIconBitmap), name,
+                        shortName, displayMode, orientation, mOldInfo.source(), themeColor,
+                        backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,
+                        false /* isSplashIconMaskable */, mOldInfo.webApkPackageName(),
+                        mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), manifestStartUrl,
+                        WebApkDistributor.BROWSER, iconUrlToMurmur2HashMap, shareTarget,
+                        mOldInfo.shouldForceNavigation(), mOldInfo.isSplashProvidedByWebApk(), null,
+                        shortcutItems, mOldInfo.webApkVersionCode());
+        mObserver.onGotManifestData(intentDataProvider, primaryIconUrl, splashIconUrl);
     }
 
     @NativeMethods

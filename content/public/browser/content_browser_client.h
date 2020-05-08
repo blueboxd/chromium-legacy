@@ -1830,6 +1830,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // functionality.
   virtual XrIntegrationClient* GetXrIntegrationClient();
 #endif
+
+  virtual bool IsOriginTrialRequiredForAppCache(
+      content::BrowserContext* browser_text);
 };
 
 }  // namespace content

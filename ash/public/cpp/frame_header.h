@@ -78,7 +78,7 @@ class ASH_PUBLIC_EXPORT FrameHeader : public views::AnimationDelegateViews {
   virtual void UpdateFrameColors() = 0;
 
   // Sets text to display in place of the window's title. This will be shown
-  // regardless of what WidgetDelegate::ShouldShowWindowTitle() returns.
+  // regardless of what ShouldShowWindowTitle() returns.
   void SetFrameTextOverride(const base::string16& frame_text_override);
 
   // views::AnimationDelegateViews:

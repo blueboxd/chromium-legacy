@@ -551,6 +551,7 @@ suite('CrostiniPageTests', function() {
         {label: 'label 10', value: 10, ariaLabel: 'label 10'},
         {label: 'label 100', value: 100, ariaLabel: 'label 100'}
       ];
+
       const resizeableData = {
         succeeded: true,
         canResize: true,
@@ -585,6 +586,33 @@ suite('CrostiniPageTests', function() {
 
       setup(async function() {
         assertTrue(!!subpage.$$('#showDiskResizeButton'));
+      });
+
+      test('ResizeButtonAndSubtextCorrectlySet', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', resizeableData);
+        const button = subpage.$$('#showDiskResizeButton');
+        const subtext = subpage.$$('#diskSizeDescription');
+
+        assertEquals(
+            button.innerText,
+            loadTimeData.getString('crostiniDiskResizeShowButton'));
+        assertEquals(subtext.innerText, 'label 100');
+      });
+
+      test('ReserveSizeButtonAndSubtextCorrectlySet', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', sparseDiskData);
+        const button = subpage.$$('#showDiskResizeButton');
+        const subtext = subpage.$$('#diskSizeDescription');
+
+        assertEquals(
+            button.innerText,
+            loadTimeData.getString('crostiniDiskReserveSizeButton'));
+        assertEquals(
+            subtext.innerText,
+            loadTimeData.getString(
+                'crostiniDiskResizeDynamicallyAllocatedSubtext'));
       });
 
       test('MessageShownIfErrorAndCanRetry', async function() {

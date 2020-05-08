@@ -29,8 +29,8 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class WebappActivityCoordinator implements InflationObserver {
-    private final WebappActivity mActivity;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
+    private final WebappInfo mWebappInfo;
     private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final WebappDeferredStartupWithStorageHandler mDeferredStartupWithStorageHandler;
@@ -52,8 +52,8 @@ public class WebappActivityCoordinator implements InflationObserver {
         // We don't need to do anything with |actionsNotificationManager|. We just need to resolve
         // it so that it starts working.
 
-        mActivity = (WebappActivity) activity;
         mIntentDataProvider = intentDataProvider;
+        mWebappInfo = WebappInfo.create(mIntentDataProvider);
         mCurrentPageVerifier = currentPageVerifier;
         mDeferredStartupWithStorageHandler = deferredStartupWithStorageHandler;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
@@ -90,7 +90,7 @@ public class WebappActivityCoordinator implements InflationObserver {
 
     @Override
     public void onPreInflationStartup() {
-        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(mActivity.getWebappInfo());
+        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(mWebappInfo);
     }
 
     @Override
@@ -120,15 +120,14 @@ public class WebappActivityCoordinator implements InflationObserver {
         // The information in the WebappDataStorage may have been purged by the
         // user clearing their history or not launching the web app recently.
         // Restore the data if necessary.
-        WebappInfo webappInfo = mActivity.getWebappInfo();
-        storage.updateFromWebappInfo(webappInfo);
+        storage.updateFromWebappIntentDataProvider(mIntentDataProvider);
 
         // A recent last used time is the indicator that the web app is still
         // present on the home screen, and enables sources such as notifications to
         // launch web apps. Thus, we do not update the last used time when the web
         // app is not directly launched from the home screen, as this interferes
         // with the heuristic.
-        if (webappInfo.isLaunchedFromHomescreen()) {
+        if (mWebappInfo.isLaunchedFromHomescreen()) {
             // TODO(yusufo): WebappRegistry#unregisterOldWebapps uses this information to delete
             // WebappDataStorage objects for legacy webapps which haven't been used in a while.
             storage.updateLastUsedTime();

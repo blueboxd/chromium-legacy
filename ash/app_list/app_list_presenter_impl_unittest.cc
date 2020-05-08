@@ -50,7 +50,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   void Init(AppListView* view, int64_t display_id) override {
     init_called_ = true;
     view_ = view;
-    view->InitView(/*is_tablet_mode=*/false, container_);
+    view->InitView(container_);
   }
   void ShowForDisplay(int64_t display_id) override {}
   void OnClosing() override { on_dismissed_called_ = true; }

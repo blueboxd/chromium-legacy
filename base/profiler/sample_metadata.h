@@ -25,12 +25,14 @@
 // For example:
 //
 //   void DidStartLoad() {
-//     base::SetSampleMetadata("Renderer.IsLoading", 1);
+//     is_loading_metadata_.Set(1);
 //   }
 //
 //   void DidFinishLoad() {
-//     base::RemoveSampleMetadata("Renderer.IsLoading");
+//     is_loading_metadata_.Remove();
 //   }
+//
+//   base::SampleMetadata is_loading_metadata_;
 //
 // Alternatively, ScopedSampleMetadata can be used to ensure that the metadata
 // is removed correctly.
@@ -50,6 +52,49 @@
 //   }
 
 namespace base {
+
+class BASE_EXPORT SampleMetadata {
+ public:
+  // Set the metadata value associated with |name|.
+  explicit SampleMetadata(StringPiece name);
+
+  SampleMetadata(const SampleMetadata&) = default;
+  ~SampleMetadata() = default;
+
+  SampleMetadata& operator=(const SampleMetadata&) = delete;
+
+  // Set the metadata value associated with |name| in the process-global stack
+  // sampling profiler metadata, overwriting any previous value set for that
+  // |name|.
+  void Set(int64_t value);
+
+  // Set the metadata value associated with the pair (|name|, |key|) in the
+  // process-global stack sampling profiler metadata, overwriting any previous
+  // value set for that (|name|, |key|) pair. This constructor allows the
+  // metadata to be associated with an additional user-defined key. One might
+  // supply a key based on the frame id, for example, to distinguish execution
+  // in service of scrolling between different frames. Prefer the previous
+  // function if no user-defined metadata is required. Note: values specified
+  // for a name and key are stored separately from values specified with only a
+  // name.
+  void Set(int64_t key, int64_t value);
+
+  // Removes the metadata item with the specified name from the process-global
+  // stack sampling profiler metadata.
+  //
+  // If such an item doesn't exist, this has no effect.
+  void Remove();
+
+  // Removes the metadata item with the specified (|name|, |key|) pair from the
+  // process-global stack sampling profiler metadata. This function does not
+  // alter values set with the name |name| but no key.
+  //
+  // If such an item doesn't exist, this has no effect.
+  void Remove(int64_t key);
+
+ private:
+  const uint64_t name_hash_;
+};
 
 class BASE_EXPORT ScopedSampleMetadata {
  public:
@@ -74,36 +119,6 @@ class BASE_EXPORT ScopedSampleMetadata {
   const uint64_t name_hash_;
   Optional<int64_t> key_;
 };
-
-// Set the metadata value associated with |name| in the process-global stack
-// sampling profiler metadata, overwriting any previous value set for that
-// |name|.
-BASE_EXPORT void SetSampleMetadata(StringPiece name, int64_t value);
-
-// Set the metadata value associated with the pair (|name|, |key|) in the
-// process-global stack sampling profiler metadata, overwriting any previous
-// value set for that (|name|, |key|) pair. This constructor allows the metadata
-// to be associated with an additional user-defined key. One might supply a key
-// based on the frame id, for example, to distinguish execution in service of
-// scrolling between different frames. Prefer the previous function if no
-// user-defined metadata is required. Note: values specified for a name and key
-// are stored separately from values specified with only a name.
-BASE_EXPORT void SetSampleMetadata(StringPiece name,
-                                   int64_t key,
-                                   int64_t value);
-
-// Removes the metadata item with the specified name from the process-global
-// stack sampling profiler metadata.
-//
-// If such an item doesn't exist, this has no effect.
-BASE_EXPORT void RemoveSampleMetadata(StringPiece name);
-
-// Removes the metadata item with the specified (|name|, |key|) pair from the
-// process-global stack sampling profiler metadata. This function does not alter
-// values set with the name |name| but no key.
-//
-// If such an item doesn't exist, this has no effect.
-BASE_EXPORT void RemoveSampleMetadata(StringPiece name, int64_t key);
 
 // Applies the specified metadata to samples already recorded between
 // |period_start| and |period_end| in all thread's active profiles, subject to

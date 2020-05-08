@@ -36,6 +36,7 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
+#include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -293,6 +294,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void SetUpTest() {
     service_ = std::make_unique<AppCacheServiceImpl>(nullptr, nullptr);
+    service_->set_appcache_policy(&mock_policy_);
     service_->Initialize(base::FilePath());
     mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
@@ -1585,6 +1587,7 @@ class AppCacheStorageImplTest : public testing::Test {
     service_ = std::make_unique<AppCacheServiceImpl>(
         nullptr, weak_partition_factory_.GetWeakPtr());
 
+    service_->set_appcache_policy(&mock_policy_);
     service_->Initialize(temp_directory_.GetPath());
     mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
@@ -1780,6 +1783,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   base::OnceClosure test_finished_cb_;
   base::stack<base::OnceClosure> task_stack_;
+  MockAppCachePolicy mock_policy_;
   std::unique_ptr<AppCacheServiceImpl> service_;
   std::unique_ptr<MockStorageDelegate> delegate_;
   scoped_refptr<MockQuotaManagerProxy> mock_quota_manager_proxy_;

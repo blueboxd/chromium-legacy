@@ -42,6 +42,7 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.embedder_support.util.ShadowUrlUtilities;
@@ -369,7 +370,8 @@ public class WebApkUpdateManagerUnitTest {
         return manifestData;
     }
 
-    private static WebappInfo infoFromManifestData(ManifestData manifestData) {
+    private static BrowserServicesIntentDataProvider intentDataProviderFromManifestData(
+            ManifestData manifestData) {
         if (manifestData == null) return null;
 
         final String kPackageName = "org.random.webapk";
@@ -383,7 +385,7 @@ public class WebApkUpdateManagerUnitTest {
                                 && manifestData.shareTargetEncType.equals(
                                         SHARE_TARGET_ENC_TYPE_MULTIPART),
                         manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts);
-        return WebApkInfo.create("", manifestData.scopeUrl,
+        return WebApkIntentDataProviderFactory.create("", manifestData.scopeUrl,
                 new WebappIcon(manifestData.primaryIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor,
@@ -411,11 +413,12 @@ public class WebApkUpdateManagerUnitTest {
         Intent intent = new Intent();
         intent.putExtra(ShortcutHelper.EXTRA_URL, "");
         intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, packageName);
-        WebappInfo info = WebApkInfo.create(intent);
-        info.getProvider().getWebApkExtras().shortcutItems.clear();
-        info.getProvider().getWebApkExtras().shortcutItems.addAll(shortcuts);
+        BrowserServicesIntentDataProvider intentDataProvider =
+                WebApkIntentDataProviderFactory.create(intent);
+        intentDataProvider.getWebApkExtras().shortcutItems.clear();
+        intentDataProvider.getWebApkExtras().shortcutItems.addAll(shortcuts);
 
-        updateManager.updateIfNeeded(getStorage(packageName), info);
+        updateManager.updateIfNeeded(getStorage(packageName), intentDataProvider);
     }
 
     private static void updateIfNeeded(String packageName, WebApkUpdateManager updateManager) {
@@ -436,8 +439,8 @@ public class WebApkUpdateManagerUnitTest {
             WebApkUpdateManager updateManager, ManifestData fetchedManifestData) {
         String primaryIconUrl = randomIconUrl(fetchedManifestData);
         String splashIconUrl = randomIconUrl(fetchedManifestData);
-        updateManager.onGotManifestData(
-                infoFromManifestData(fetchedManifestData), primaryIconUrl, splashIconUrl);
+        updateManager.onGotManifestData(intentDataProviderFromManifestData(fetchedManifestData),
+                primaryIconUrl, splashIconUrl);
     }
 
     /**
@@ -492,7 +495,7 @@ public class WebApkUpdateManagerUnitTest {
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager();
         updateIfNeeded(WEBAPK_PACKAGE_NAME, updateManager, androidManifestData.shortcuts);
         assertTrue(updateManager.updateCheckStarted());
-        updateManager.onGotManifestData(infoFromManifestData(fetchedManifestData),
+        updateManager.onGotManifestData(intentDataProviderFromManifestData(fetchedManifestData),
                 fetchedManifestData.primaryIconUrl, null);
         return updateManager.updateRequested();
     }

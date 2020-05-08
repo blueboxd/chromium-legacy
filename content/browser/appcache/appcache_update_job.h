@@ -333,6 +333,10 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // |cache_copier_by_url_| owns all running cache copies, indexed by |url|.
   std::map<GURL, std::unique_ptr<CacheCopier>> cache_copier_by_url_;
 
+  // Whether to gate the fetch/update of a manifest on the presence of
+  // an origin trial token in the manifest.
+  bool is_origin_trial_required_ = false;
+
   AppCacheStorage* storage_;
   base::WeakPtrFactory<AppCacheUpdateJob> weak_factory_{this};
 

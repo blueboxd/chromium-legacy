@@ -1916,8 +1916,8 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
 bool ChildProcessSecurityPolicyImpl::ShouldOriginGetOptInIsolation(
     const IsolationContext& isolation_context,
     const url::Origin& origin) {
-  // Note: we cannot check the feature flags and early-out here, because the
-  // origin trial might be active (in which case no feature flags are active).
+  if (!IsOptInOriginIsolationEnabled())
+    return false;
 
   // We only isolate HTTPS, so early-out if we see other schemes.
   if (!origin.GetURL().SchemeIs(url::kHttpsScheme))
@@ -1971,6 +1971,12 @@ bool ChildProcessSecurityPolicyImpl::HasOriginEverRequestedOptInIsolation(
     const url::Origin& origin) {
   base::AutoLock origins_isolation_opt_in_lock(origins_isolation_opt_in_lock_);
   return base::Contains(origin_isolation_opt_ins_, origin);
+}
+
+// static
+bool ChildProcessSecurityPolicyImpl::IsOptInOriginIsolationEnabled() {
+  return base::FeatureList::IsEnabled(features::kOriginPolicy) ||
+         base::FeatureList::IsEnabled(features::kOriginIsolationHeader);
 }
 
 void ChildProcessSecurityPolicyImpl::AddNonIsolatedOriginIfNeeded(

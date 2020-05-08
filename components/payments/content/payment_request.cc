@@ -35,6 +35,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -78,7 +79,11 @@ PaymentRequest::PaymentRequest(
     mojo::PendingReceiver<mojom::PaymentRequest> receiver,
     ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
-      initiator_render_frame_host_(render_frame_host),
+      // TODO(crbug.com/1058840): change to WeakPtr<RenderFrameHost> once
+      // RenderFrameHost provides a WeakPtr API.
+      initiator_frame_routing_id_(content::GlobalFrameRoutingId(
+          render_frame_host->GetProcess()->GetID(),
+          render_frame_host->GetRoutingID())),
       log_(web_contents_),
       delegate_(std::move(delegate)),
       manager_(manager),
@@ -164,12 +169,22 @@ void PaymentRequest::Init(
     return;
   }
 
+  // TODO(crbug.com/1058840): change to WeakPtr<RenderFrameHost> once
+  // RenderFrameHost provides a WeakPtr API.
+  content::RenderFrameHost* initiator_frame =
+      content::RenderFrameHost::FromID(initiator_frame_routing_id_);
+  if (!initiator_frame) {
+    log_.Error(errors::kInvalidInitiatorFrame);
+    OnConnectionTerminated();
+    return;
+  }
+
   spec_ = std::make_unique<PaymentRequestSpec>(
       std::move(options), std::move(details), std::move(method_data),
       /*observer=*/this, delegate_->GetApplicationLocale());
   state_ = std::make_unique<PaymentRequestState>(
-      web_contents_, initiator_render_frame_host_, top_level_origin_,
-      frame_origin_, frame_security_origin_, spec_.get(),
+      web_contents_, initiator_frame, top_level_origin_, frame_origin_,
+      frame_security_origin_, spec_.get(),
       /*delegate=*/this, delegate_->GetApplicationLocale(),
       delegate_->GetPersonalDataManager(), delegate_.get(),
       base::BindRepeating(&PaymentRequest::SetInvokedServiceWorkerIdentity,

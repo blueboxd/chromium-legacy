@@ -5497,6 +5497,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateSubFrames)},
 
+#if defined(OS_CHROMEOS)
+    {"suggested-content-toggle", flag_descriptions::kSuggestedContentToggleName,
+     flag_descriptions::kSuggestedContentToggleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kSuggestedContentToggle)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

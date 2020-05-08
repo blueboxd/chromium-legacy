@@ -7,6 +7,7 @@
 #include <utility>
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard_item_options.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
 namespace blink {
@@ -17,7 +18,13 @@ Clipboard::Clipboard(ExecutionContext* context)
 }
 
 ScriptPromise Clipboard::read(ScriptState* script_state) {
-  return ClipboardPromise::CreateForRead(GetExecutionContext(), script_state);
+  return read(script_state, ClipboardItemOptions::Create());
+}
+
+ScriptPromise Clipboard::read(ScriptState* script_state,
+                              ClipboardItemOptions* options) {
+  return ClipboardPromise::CreateForRead(GetExecutionContext(), script_state,
+                                         options);
 }
 
 ScriptPromise Clipboard::readText(ScriptState* script_state) {

@@ -319,3 +319,10 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInProcessInternals) {
   CheckTrustedTypesViolation("chrome://process-internals");
 }
+
+// Verify that there's no Trusted Types violation in chrome://credits
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInCredits) {
+  CheckTrustedTypesViolation("chrome://credits");
+}

@@ -103,9 +103,12 @@
           "name": "blacklisted",
           "description": "The extension has been blacklisted."
         }, {
-	  "name": "custodian_approval_required",
-	  "description": "The extension cannot be enabled due to lack of custodian approval for child users."
-	}]
+          "name": "custodian_approval_required",
+          "description": "The extension cannot be enabled due to lack of custodian approval for child users."
+        }, {
+          "name": "force_installed",
+          "description": "The extension is force installed or recommended by policy."
+        }]
       }
     ],
     "functions": [

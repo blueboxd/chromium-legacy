@@ -16,12 +16,23 @@ function whenFeedTableIsPopulatedForTest() {
   return mediaFeedItemsPageIsPopulatedResolver.promise;
 }
 
+const mediaFeedsConfigTableIsPopulatedResolver = new PromiseResolver();
+function whenConfigTableIsPopulatedForTest() {
+  return mediaFeedsConfigTableIsPopulatedResolver.promise;
+}
+
+const mediaFeedsConfigTableIsUpdatedResolver = new PromiseResolver();
+function whenConfigTableIsUpdatedForTest() {
+  return mediaFeedsConfigTableIsUpdatedResolver.promise;
+}
+
 (function() {
 
 let delegate = null;
 let feedsTable = null;
 let feedItemsTable = null;
 let store = null;
+let configTableBody = null;
 
 /** @implements {cr.ui.MediaDataTableDelegate} */
 class MediaFeedsTableDelegate {
@@ -480,6 +491,92 @@ function convertMojoTimeToJS(mojoTime) {
 }
 
 /**
+ * Creates a single row in the config table.
+ * @param {string} name The name of the config setting.
+ * @param {string} value The value of the config setting.
+ * @return {!Node}
+ */
+function createConfigRow(name, value) {
+  const tr = document.createElement('tr');
+
+  const nameCell = document.createElement('td');
+  nameCell.textContent = name;
+  tr.appendChild(nameCell);
+
+  const valueCell = document.createElement('td');
+  valueCell.textContent = value;
+  tr.appendChild(valueCell);
+
+  return tr;
+}
+
+/**
+ * Creates a single row in the config table with a toggle button.
+ * @param {string} name The name of the config setting.
+ * @param {string} value The value of the config setting.
+ * @param {Function} clickAction The function to be called to toggle the row.
+ * @return {!Node}
+ */
+function createConfigRowWithToggle(name, value, clickAction) {
+  const tr = document.createElement('tr');
+
+  const nameCell = document.createElement('td');
+  nameCell.textContent = name;
+  tr.appendChild(nameCell);
+
+  const valueCell = document.createElement('td');
+  tr.appendChild(valueCell);
+
+  const a = document.createElement('a');
+  a.href = '#';
+  a.textContent = value + ' (Toggle)';
+  a.addEventListener('click', clickAction);
+  valueCell.appendChild(a);
+
+  return tr;
+}
+
+/**
+ * Regenerates the config table.
+ * @param {!mediaFeeds.mojom.DebugInformation} info The debug info
+ */
+function renderConfigTable(info) {
+  configTableBody.innerHTML = '';
+
+  configTableBody.appendChild(createConfigRow(
+      'Safe Search Enabled (value)',
+      formatFeatureFlag(info.safeSearchFeatureEnabled)));
+
+  configTableBody.appendChild(createConfigRowWithToggle(
+      'Safe Search Enabled (pref)', formatFeatureFlag(info.safeSearchPrefValue),
+      () => {
+        store.setSafeSearchEnabledPref(!info.safeSearchPrefValue).then(() => {
+          updateConfigTable().then(
+              () => mediaFeedsConfigTableIsUpdatedResolver.resolve());
+        });
+      }));
+}
+
+/**
+ * Retrieve debug info and render the config table.
+ */
+function updateConfigTable() {
+  return store.getDebugInformation().then(response => {
+    renderConfigTable(response.info);
+    mediaFeedsConfigTableIsPopulatedResolver.resolve();
+  });
+}
+
+/**
+ * Converts a boolean into a string value.
+ * @param {boolean} value The value of the config setting.
+ * @return {string}
+ */
+function formatFeatureFlag(value) {
+  return value ? 'Enabled' : 'Disabled';
+}
+
+/**
  * Retrieve feed info and render the feed table.
  */
 function updateFeedsTable() {
@@ -507,6 +604,9 @@ function showFeedContents(dataRow) {
 
 document.addEventListener('DOMContentLoaded', () => {
   store = mediaFeeds.mojom.MediaFeedsStore.getRemote();
+
+  configTableBody = $('config-table-body');
+  updateConfigTable();
 
   delegate = new MediaFeedsTableDelegate();
   feedsTable = new cr.ui.MediaDataTable($('feeds-table'), delegate);

@@ -278,11 +278,6 @@ bool Pointer::EnablePointerCapture(Surface* capture_surface) {
   aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
 
-  // TODO(b/146082565): Do not hide cursor when enabling pointer capture.
-  auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
-  cursor_client->HideCursor();
-  cursor_client->LockCursor();
-
   location_when_pointer_capture_enabled_ = gfx::ToRoundedPoint(location_);
 
   if (ShouldMoveToCenter())
@@ -298,10 +293,6 @@ void Pointer::DisablePointerCapture() {
 
   // Remove the pre-target handler that consumes all mouse events.
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
-
-  auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
-  cursor_client->UnlockCursor();
-  cursor_client->ShowCursor();
 
   aura::Window* root = capture_window_->GetRootWindow();
   gfx::Point p = location_when_pointer_capture_enabled_

@@ -3,6 +3,7 @@ Downloading via a navigation:
 {
     method : Page.downloadWillBegin
     params : {
+        filename : hello.txt
         frameId : <string>
         guid : <string>
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?download=1
@@ -33,6 +34,7 @@ Downloading by clicking a link:
 {
     method : Page.downloadWillBegin
     params : {
+        filename : hello.text
         frameId : <string>
         guid : <string>
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php

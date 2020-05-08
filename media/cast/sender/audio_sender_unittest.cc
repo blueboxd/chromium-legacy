@@ -58,7 +58,7 @@ class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
 
-  bool SendPacket(PacketRef packet, const base::Closure& cb) final {
+  bool SendPacket(PacketRef packet, base::OnceClosure cb) final {
     if (IsRtcpPacket(&packet->data[0], packet->data.size())) {
       ++number_of_rtcp_packets_;
     } else {
@@ -121,7 +121,7 @@ class AudioSenderTest : public ::testing::Test {
   ~AudioSenderTest() override = default;
 
   base::SimpleTestTickClock testing_clock_;
-  TestPacketSender* transport_;               // Owned by CastTransport.
+  TestPacketSender* transport_;  // Owned by CastTransport.
   std::unique_ptr<CastTransportImpl> transport_sender_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   std::unique_ptr<AudioSender> audio_sender_;

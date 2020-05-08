@@ -117,13 +117,13 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
       // root layer, we are no longer viewport constrained.
       if (previous_overflow_layer && previous_overflow_layer->IsRootLayer()) {
         layout_object.View()->GetFrameView()->RemoveViewportConstrainedObject(
-            layout_object);
+            layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
       }
     }
 
     if (info.last_overflow_clip_layer->IsRootLayer()) {
       layout_object.View()->GetFrameView()->AddViewportConstrainedObject(
-          layout_object);
+          layout_object, LocalFrameView::ViewportConstrainedType::kSticky);
     }
     layout_object.UpdateStickyPositionConstraints();
 

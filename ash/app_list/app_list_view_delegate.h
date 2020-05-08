@@ -219,6 +219,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Gets the current shelf height (or width for side-shelf) from the
   // ShelfConfig.
   virtual int GetShelfSize() = 0;
+
+  // Returns whether tablet mode is currently enabled.
+  virtual bool IsInTabletMode() = 0;
 };
 
 }  // namespace ash

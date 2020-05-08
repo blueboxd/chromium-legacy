@@ -248,7 +248,6 @@
                 [verifier verifyWithCVC:CVC
                         expirationMonth:nil
                          expirationYear:nil
-                           storeLocally:NO
                                riskData:self.riskDataLoader.riskData
                       completionHandler:^(NSError* error) {
                         if (error) {

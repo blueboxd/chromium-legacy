@@ -900,4 +900,29 @@ TEST_F(CRWWebViewScrollViewProxyTest,
             [[web_view_scroll_view_proxy_ asUIScrollView] crw_categoryMethod]);
 }
 
+// Verifies that the scroll view backgound color is not preserved between
+// scroll views.  Used to prevent regression of crbug.com/1078790.
+TEST_F(CRWWebViewScrollViewProxyTest, DontPreserveBackgroundColor) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      web::features::kPreserveScrollViewProperties);
+
+  // Recreate CRWWebViewScrollViewProxy with the updated feature flags.
+  web_view_scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
+
+  // Set an underlying UIScrollView, and update its background color to red.
+  UIScrollView* underlying_scroll_view1 = [[UIScrollView alloc] init];
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view1];
+  [web_view_scroll_view_proxy_ asUIScrollView].backgroundColor =
+      UIColor.redColor;
+
+  // Create a second UIScrollView and set its background color to black.
+  UIScrollView* underlying_scroll_view2 = [[UIScrollView alloc] init];
+  underlying_scroll_view2.backgroundColor = UIColor.blackColor;
+  [web_view_scroll_view_proxy_ setScrollView:underlying_scroll_view2];
+
+  // Verify that the second scroll view's background color remains black.
+  EXPECT_EQ(UIColor.blackColor, underlying_scroll_view2.backgroundColor);
+}
+
 }  // namespace

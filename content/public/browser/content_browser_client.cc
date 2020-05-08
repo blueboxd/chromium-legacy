@@ -48,6 +48,7 @@
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -1082,5 +1083,14 @@ XrIntegrationClient* ContentBrowserClient::GetXrIntegrationClient() {
   return nullptr;
 }
 #endif
+
+bool ContentBrowserClient::IsOriginTrialRequiredForAppCache(
+    content::BrowserContext* browser_context) {
+  // In Chrome proper, this also considers Profile preferences.
+  // As a default, only consider the base::Feature.
+  // Compare this with the ChromeContentBrowserClient implementation.
+  return base::FeatureList::IsEnabled(
+      blink::features::kAppCacheRequireOriginTrial);
+}
 
 }  // namespace content

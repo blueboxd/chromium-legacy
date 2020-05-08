@@ -25,14 +25,6 @@ class FormStructure;
 // WebView extension of AutofillClientIOSBridge.
 @protocol CWVAutofillClientIOSBridge<AutofillClientIOSBridge>
 
-// Bridge for AutofillClient's method |ConfirmSaveCreditCardLocally|.
-- (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-               saveCreditCardOptions:
-                   (autofill::AutofillClient::SaveCreditCardOptions)
-                       saveCreditCardOptions
-                            callback:(autofill::AutofillClient::
-                                          LocalSaveCardPromptCallback)callback;
-
 // Bridge for AutofillClient's method |ConfirmSaveCreditCardToCloud|.
 - (void)confirmSaveCreditCardToCloud:(const autofill::CreditCard&)creditCard
                    legalMessageLines:

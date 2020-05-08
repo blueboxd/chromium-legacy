@@ -13,6 +13,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -47,10 +48,12 @@ public class WebApkActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Launches a WebAPK Activity and waits for the page to have finished loading and for the splash
      * screen to be hidden.
      */
-    public WebappActivity startWebApkActivity(WebappInfo webApkInfo) {
+    public WebappActivity startWebApkActivity(
+            BrowserServicesIntentDataProvider webApkIntentDataProvider) {
+        WebappInfo webApkInfo = WebappInfo.create(webApkIntentDataProvider);
         Intent intent = createIntent(webApkInfo);
 
-        WebappActivity.setWebappInfoForTesting(webApkInfo);
+        WebappActivity.setIntentDataProviderForTesting(webApkIntentDataProvider);
         final WebappActivity webApkActivity =
                 (WebappActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
                         intent);

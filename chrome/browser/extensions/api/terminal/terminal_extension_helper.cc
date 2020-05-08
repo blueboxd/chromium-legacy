@@ -47,9 +47,11 @@ const Extension* TerminalExtensionHelper::GetTerminalExtension(
 }
 
 GURL TerminalExtensionHelper::GetCroshURL(Profile* profile) {
-  GURL url;
+  // chrome-untrusted://crosh by default.
+  GURL url(chrome::kChromeUIUntrustedCroshURL);
   const extensions::Extension* extension = GetTerminalExtension(profile);
-  if (extension) {
+  // Allow nassh-dev or nassh to override, but not crosh-builtin.
+  if (extension && extension->id() != extension_misc::kCroshBuiltinAppId) {
     url = extension->GetResourceURL(kCroshExtensionEntryPoint);
   }
   return url;

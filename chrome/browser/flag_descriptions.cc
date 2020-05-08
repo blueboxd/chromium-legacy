@@ -1885,6 +1885,11 @@ const char kStoragePressureUIDescription[] =
     "If enabled, Chrome will trigger system notifications to warn about "
     "storage pressure.";
 
+const char kSuggestedContentToggleName[] = "Enable Suggested Content toggle";
+const char kSuggestedContentToggleDescription[] =
+    "Enables a settings UI toggle that controls Suggested Content status. Also"
+    "enables a corresponding notice in the Launcher about Suggested Content.";
+
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =

@@ -37,8 +37,8 @@ void ChromeAppCacheService::Initialize(
   browser_context_ = browser_context;
 
   // Init our base class.
-  AppCacheServiceImpl::Initialize(cache_path_);
   set_appcache_policy(this);
+  AppCacheServiceImpl::Initialize(cache_path_);
   set_special_storage_policy(special_storage_policy.get());
 }
 
@@ -68,6 +68,12 @@ bool ChromeAppCacheService::CanCreateAppCache(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GetContentClient()->browser()->AllowAppCache(manifest_url, first_party,
                                                       browser_context_);
+}
+
+bool ChromeAppCacheService::IsOriginTrialRequiredForAppCache() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return GetContentClient()->browser()->IsOriginTrialRequiredForAppCache(
+      browser_context_);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() = default;

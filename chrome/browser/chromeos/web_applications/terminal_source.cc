@@ -7,10 +7,10 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -20,18 +20,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/navigation_entry.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace {
-// TODO(crbug.com/846546): Initially set to load crosh, but change to
-// terminal when it is available.
 constexpr base::FilePath::CharType kTerminalRoot[] =
     FILE_PATH_LITERAL("/usr/share/chromeos-assets/crosh_builtin");
-constexpr base::FilePath::CharType kDefaultFile[] =
-    FILE_PATH_LITERAL("html/crosh.html");
 constexpr char kDefaultMime[] = "text/html";
 
 void ReadFile(const std::string& relative_path,
@@ -82,10 +77,25 @@ void ReadFile(const std::string& relative_path,
 }
 }  // namespace
 
-TerminalSource::TerminalSource(Profile* profile) : profile_(profile) {
+// static
+std::unique_ptr<TerminalSource> TerminalSource::ForCrosh(Profile* profile) {
+  return base::WrapUnique(new TerminalSource(
+      profile, chrome::kChromeUIUntrustedCroshURL, "html/crosh.html"));
+}
+
+// static
+std::unique_ptr<TerminalSource> TerminalSource::ForTerminal(Profile* profile) {
+  return base::WrapUnique(new TerminalSource(
+      profile, chrome::kChromeUIUntrustedTerminalURL, "html/terminal.html"));
+}
+
+TerminalSource::TerminalSource(Profile* profile,
+                               std::string source,
+                               std::string default_file)
+    : profile_(profile), source_(source), default_file_(default_file) {
   auto* webui_allowlist = WebUIAllowlist::GetOrCreate(profile);
-  const url::Origin terminal_origin =
-      url::Origin::Create(GURL(chrome::kChromeUIUntrustedTerminalURL));
+  const url::Origin terminal_origin = url::Origin::Create(GURL(source));
+  CHECK(!terminal_origin.opaque());
   webui_allowlist->RegisterAutoGrantedPermission(
       terminal_origin, ContentSettingsType::NOTIFICATIONS);
   webui_allowlist->RegisterAutoGrantedPermission(
@@ -95,7 +105,7 @@ TerminalSource::TerminalSource(Profile* profile) : profile_(profile) {
 TerminalSource::~TerminalSource() = default;
 
 std::string TerminalSource::GetSource() {
-  return chrome::kChromeUIUntrustedTerminalURL;
+  return source_;
 }
 
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
@@ -111,18 +121,12 @@ void TerminalSource::StartDataRequest(
   // skip first '/' in path.
   std::string path = url.path().substr(1);
   if (path.empty())
-    path = kDefaultFile;
+    path = default_file_;
 
-  // Replace $i8n{themeColor} in *.html, set title to an empty value while
-  // the page is loading.  Must be non-blank, so use invisible unicode
-  // left-to-right-marker &lrm;.
+  // Replace $i8n{themeColor} in *.html.
   if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
     replacements_["themeColor"] = net::EscapeForHTML(
         crostini::GetTerminalSettingBackgroundColor(profile_));
-    if (content::WebContents* contents = wc_getter.Run()) {
-      if (auto* entry = contents->GetController().GetVisibleEntry())
-        entry->SetTitle(base::UTF8ToUTF16("\u200E"));
-    }
   }
 
   base::ThreadPool::PostTask(

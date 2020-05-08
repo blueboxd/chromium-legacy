@@ -229,7 +229,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
 
   if (face_->FontLoaded(this)) {
     font_selector_->FontFaceInvalidated(
-        FontInvalidationReason::kGeneralInvalidation);
+        FontInvalidationReason::kFontFaceLoaded);
 
     const scoped_refptr<FontCustomPlatformData> customFontData =
         font->GetCustomFontData();

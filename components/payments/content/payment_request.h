@@ -17,6 +17,7 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/content/service_worker_payment_app.h"
 #include "components/payments/core/journey_logger.h"
+#include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
@@ -187,7 +188,7 @@ class PaymentRequest : public mojom::PaymentRequest,
                                            bool warn_localhost_or_file);
 
   content::WebContents* web_contents_;
-  content::RenderFrameHost* initiator_render_frame_host_;
+  const content::GlobalFrameRoutingId initiator_frame_routing_id_;
   DeveloperConsoleLogger log_;
   std::unique_ptr<ContentPaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.

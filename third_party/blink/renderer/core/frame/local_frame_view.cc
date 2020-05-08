@@ -1291,16 +1291,35 @@ bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
   return true;
 }
 
-void LocalFrameView::AddViewportConstrainedObject(LayoutObject& object) {
+void LocalFrameView::AddViewportConstrainedObject(
+    LayoutObject& object,
+    ViewportConstrainedType constrained_reason) {
   if (!viewport_constrained_objects_)
     viewport_constrained_objects_ = std::make_unique<ObjectSet>();
 
-  viewport_constrained_objects_->insert(&object);
+  auto result = viewport_constrained_objects_->insert(&object);
+  if (constrained_reason == ViewportConstrainedType::kSticky) {
+    if (result.is_new_entry) {
+      sticky_position_object_count_++;
+    }
+    DCHECK_LE(sticky_position_object_count_,
+              viewport_constrained_objects_->size());
+  }
 }
 
-void LocalFrameView::RemoveViewportConstrainedObject(LayoutObject& object) {
-  if (viewport_constrained_objects_)
-    viewport_constrained_objects_->erase(&object);
+void LocalFrameView::RemoveViewportConstrainedObject(
+    LayoutObject& object,
+    ViewportConstrainedType constrained_reason) {
+  if (viewport_constrained_objects_) {
+    auto it = viewport_constrained_objects_->find(&object);
+    if (it != viewport_constrained_objects_->end()) {
+      viewport_constrained_objects_->erase(it);
+      if (constrained_reason == ViewportConstrainedType::kSticky) {
+        DCHECK_GT(sticky_position_object_count_, 0U);
+        sticky_position_object_count_--;
+      }
+    }
+  }
 }
 
 void LocalFrameView::ViewportSizeChanged(bool width_changed,

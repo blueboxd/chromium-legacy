@@ -48,8 +48,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) CapturedAudioInput final
   void StreamCreated(mojo::PendingRemote<media::mojom::AudioInputStream> stream,
                      mojo::PendingReceiver<media::mojom::AudioInputStreamClient>
                          client_receiver,
-                     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
-                     bool initially_muted) override;
+                     media::mojom::ReadOnlyAudioDataPipePtr data_pipe) override;
 
   // media::mojom::AudioInputStreamClient implementation.
   void OnError() override;

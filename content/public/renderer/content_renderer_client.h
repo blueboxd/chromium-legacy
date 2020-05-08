@@ -58,6 +58,7 @@ struct WebURLError;
 }  // namespace blink
 
 namespace media {
+class Demuxer;
 class KeySystemProperties;
 }
 
@@ -139,9 +140,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool HasErrorPage(int http_status_code);
 
   // Returns true if the embedder prefers not to show an error page for a failed
-  // navigation to |url| in |render_frame|.
+  // navigation to |url| with |error_code| in |render_frame|.
   virtual bool ShouldSuppressErrorPage(RenderFrame* render_frame,
-                                       const GURL& url);
+                                       const GURL& url,
+                                       int error_code);
 
   // Returns false for new tab page activities, which should be filtered out in
   // UseCounter; returns true otherwise.
@@ -173,6 +175,14 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool DeferMediaLoad(RenderFrame* render_frame,
                               bool has_played_media_before,
                               base::OnceClosure closure);
+
+  // Allows the embedder to override the Demuxer used for certain URLs.
+  // If a non-null value is returned, the object will be used as the source of
+  // media data by the media player instance for which this method was called.
+  virtual std::unique_ptr<media::Demuxer> OverrideDemuxerForUrl(
+      RenderFrame* render_frame,
+      const GURL& url,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.

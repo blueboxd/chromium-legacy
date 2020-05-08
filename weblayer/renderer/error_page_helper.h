@@ -44,7 +44,7 @@ class ErrorPageHelper
 
   // Returns whether a load for the frame the ErrorPageHelper is attached to
   // should have its error page suppressed.
-  bool ShouldSuppressErrorPage();
+  bool ShouldSuppressErrorPage(int error_code);
 
   // content::RenderFrameObserver:
   void DidStartNavigation(

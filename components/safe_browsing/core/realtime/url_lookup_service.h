@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "url/gurl.h"
@@ -60,6 +61,9 @@ class RealTimeUrlLookupService : public KeyedService {
       signin::IdentityManager* identity_manager,
       syncer::SyncService* sync_service,
       PrefService* pref_service,
+      const ChromeUserPopulation::ProfileManagementStatus&
+          profile_management_status,
+      bool is_under_advanced_protection,
       bool is_off_the_record);
   ~RealTimeUrlLookupService() override;
 
@@ -138,6 +142,8 @@ class RealTimeUrlLookupService : public KeyedService {
   // |cache_manager|.
   void MayBeCacheRealTimeUrlVerdict(const GURL& url, RTLookupResponse response);
 
+  bool IsHistorySyncEnabled();
+
   // Returns the duration of the next backoff. Starts at
   // |kMinBackOffResetDurationInSeconds| and increases exponentially until it
   // reaches |kMaxBackOffResetDurationInSeconds|.
@@ -203,6 +209,12 @@ class RealTimeUrlLookupService : public KeyedService {
 
   // Unowned object used for getting preference settings.
   PrefService* pref_service_;
+
+  const ChromeUserPopulation::ProfileManagementStatus
+      profile_management_status_;
+
+  // Whether the profile is enrolled in  advanced protection.
+  bool is_under_advanced_protection_;
 
   // The token fetcher used for getting access token.
   std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher_;

@@ -124,6 +124,21 @@ paddedGrid{
         408,
         "Z"
       ],
+      "rowGaps": [
+        "M",
+        198,
+        408,
+        "L",
+        198,
+        133,
+        "L",
+        213,
+        133,
+        "L",
+        213,
+        408,
+        "Z"
+      ],
       "columns": [
         "M",
         173,
@@ -152,7 +167,47 @@ paddedGrid{
         333,
         "Z"
       ],
-      "color": "rgba(128, 128, 128, 0)",
+      "columnGaps": [
+        "M",
+        173,
+        358,
+        "L",
+        173,
+        333,
+        "L",
+        238,
+        333,
+        "L",
+        238,
+        358,
+        "Z"
+      ],
+      "gridBorder": [
+        "M",
+        173,
+        408,
+        "L",
+        173,
+        133,
+        "L",
+        238,
+        133,
+        "L",
+        238,
+        408,
+        "Z"
+      ],
+      "gridHighlightConfig": {
+        "gridBorderDash": false,
+        "cellBorderDash": true,
+        "showGridExtensionLines": true,
+        "gridBorderColor": "rgba(255, 0, 0, 0)",
+        "cellBorderColor": "rgba(128, 0, 0, 0)",
+        "rowGapColor": "rgba(0, 255, 0, 0)",
+        "columnGapColor": "rgba(0, 0, 255, 0)",
+        "rowHatchColor": "rgba(255, 255, 255, 0)",
+        "columnHatchColor": "rgba(128, 128, 128, 0)"
+      },
       "isPrimaryGrid": true
     }
   ]
@@ -281,6 +336,21 @@ nestedGrid{
         1108,
         "Z"
       ],
+      "rowGaps": [
+        "M",
+        253,
+        1108,
+        "L",
+        253,
+        858,
+        "L",
+        253,
+        858,
+        "L",
+        253,
+        1108,
+        "Z"
+      ],
       "columns": [
         "M",
         228,
@@ -309,7 +379,47 @@ nestedGrid{
         1058,
         "Z"
       ],
-      "color": "rgba(128, 128, 128, 0)",
+      "columnGaps": [
+        "M",
+        228,
+        1058,
+        "L",
+        228,
+        1058,
+        "L",
+        278,
+        1058,
+        "L",
+        278,
+        1058,
+        "Z"
+      ],
+      "gridBorder": [
+        "M",
+        228,
+        1108,
+        "L",
+        228,
+        858,
+        "L",
+        278,
+        858,
+        "L",
+        278,
+        1108,
+        "Z"
+      ],
+      "gridHighlightConfig": {
+        "gridBorderDash": false,
+        "cellBorderDash": true,
+        "showGridExtensionLines": true,
+        "gridBorderColor": "rgba(255, 0, 0, 0)",
+        "cellBorderColor": "rgba(128, 0, 0, 0)",
+        "rowGapColor": "rgba(0, 255, 0, 0)",
+        "columnGapColor": "rgba(0, 0, 255, 0)",
+        "rowHatchColor": "rgba(255, 255, 255, 0)",
+        "columnHatchColor": "rgba(128, 128, 128, 0)"
+      },
       "isPrimaryGrid": true
     },
     {
@@ -341,6 +451,21 @@ nestedGrid{
         1208,
         "Z"
       ],
+      "rowGaps": [
+        "M",
+        208,
+        1208,
+        "L",
+        208,
+        -92,
+        "L",
+        228,
+        -92,
+        "L",
+        228,
+        1208,
+        "Z"
+      ],
       "columns": [
         "M",
         108,
@@ -369,7 +494,47 @@ nestedGrid{
         1108,
         "Z"
       ],
-      "color": "rgba(128, 128, 128, 0)",
+      "columnGaps": [
+        "M",
+        108,
+        1158,
+        "L",
+        108,
+        1108,
+        "L",
+        328,
+        1108,
+        "L",
+        328,
+        1158,
+        "Z"
+      ],
+      "gridBorder": [
+        "M",
+        108,
+        1208,
+        "L",
+        108,
+        -92,
+        "L",
+        328,
+        -92,
+        "L",
+        328,
+        1208,
+        "Z"
+      ],
+      "gridHighlightConfig": {
+        "gridBorderDash": false,
+        "cellBorderDash": true,
+        "showGridExtensionLines": true,
+        "gridBorderColor": "rgba(255, 0, 0, 0)",
+        "cellBorderColor": "rgba(128, 0, 0, 0)",
+        "rowGapColor": "rgba(0, 255, 0, 0)",
+        "columnGapColor": "rgba(0, 0, 255, 0)",
+        "rowHatchColor": "rgba(255, 255, 255, 0)",
+        "columnHatchColor": "rgba(128, 128, 128, 0)"
+      },
       "isPrimaryGrid": false
     }
   ]

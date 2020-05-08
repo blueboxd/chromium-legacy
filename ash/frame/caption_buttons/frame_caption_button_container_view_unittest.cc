@@ -25,21 +25,18 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   TestWidgetDelegate(bool can_maximize,
                      bool can_minimize,
                      bool close_button_visible)
-      : can_maximize_(can_maximize),
-        can_minimize_(can_minimize),
-        close_button_visible_(close_button_visible) {}
+      : can_maximize_(can_maximize), can_minimize_(can_minimize) {
+    SetShowCloseButton(close_button_visible);
+  }
   ~TestWidgetDelegate() override = default;
 
   bool CanMaximize() const override { return can_maximize_; }
 
   bool CanMinimize() const override { return can_minimize_; }
 
-  bool ShouldShowCloseButton() const override { return close_button_visible_; }
-
  private:
   bool can_maximize_;
   bool can_minimize_;
-  bool close_button_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
@@ -225,7 +222,7 @@ TEST_F(FrameCaptionButtonContainerViewTest,
 }
 
 // Test that the close button is visible when
-// |WidgetDelegate::ShouldShowCloseButton()| returns true.
+// |ShouldShowCloseButton()| returns true.
 TEST_F(FrameCaptionButtonContainerViewTest, ShouldShowCloseButtonTrue) {
   FrameCaptionButtonContainerView container(CreateTestWidget(
       MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED, CLOSE_BUTTON_VISIBLE));
@@ -237,7 +234,7 @@ TEST_F(FrameCaptionButtonContainerViewTest, ShouldShowCloseButtonTrue) {
 }
 
 // Test that the close button is not visible when
-// |WidgetDelegate::ShouldShowCloseButton()| returns false.
+// |ShouldShowCloseButton()| returns false.
 TEST_F(FrameCaptionButtonContainerViewTest, ShouldShowCloseButtonFalse) {
   FrameCaptionButtonContainerView container(CreateTestWidget(
       MAXIMIZE_ALLOWED, MINIMIZE_ALLOWED, CLOSE_BUTTON_NOT_VISIBLE));

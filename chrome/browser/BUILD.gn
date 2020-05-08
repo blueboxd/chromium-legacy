@@ -1763,6 +1763,8 @@ jumbo_static_library("browser") {
     "status_icons/status_icon_observer.h",
     "status_icons/status_tray.cc",
     "status_icons/status_tray.h",
+    "storage/appcache_feature_prefs.cc",
+    "storage/appcache_feature_prefs.h",
     "storage/durable_storage_permission_context.cc",
     "storage/durable_storage_permission_context.h",
     "subresource_filter/chrome_subresource_filter_client.cc",

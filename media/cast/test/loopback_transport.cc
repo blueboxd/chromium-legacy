@@ -19,8 +19,7 @@ namespace {
 // PacketReceiverCallback.
 class LoopBackPacketPipe : public test::PacketPipe {
  public:
-  LoopBackPacketPipe(
-      const PacketReceiverCallback& packet_receiver)
+  explicit LoopBackPacketPipe(const PacketReceiverCallback& packet_receiver)
       : packet_receiver_(packet_receiver) {}
 
   ~LoopBackPacketPipe() final = default;
@@ -40,14 +39,11 @@ class LoopBackPacketPipe : public test::PacketPipe {
 
 LoopBackTransport::LoopBackTransport(
     scoped_refptr<CastEnvironment> cast_environment)
-    : cast_environment_(cast_environment),
-      bytes_sent_(0) {
-}
+    : cast_environment_(cast_environment), bytes_sent_(0) {}
 
 LoopBackTransport::~LoopBackTransport() = default;
 
-bool LoopBackTransport::SendPacket(PacketRef packet,
-                                   const base::Closure& cb) {
+bool LoopBackTransport::SendPacket(PacketRef packet, base::OnceClosure cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   std::unique_ptr<Packet> packet_copy(new Packet(packet->data));
   packet_pipe_->Send(std::move(packet_copy));

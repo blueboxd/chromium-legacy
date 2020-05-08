@@ -30,17 +30,11 @@ CWV_EXPORT
 // Contains |NSLinkAttributeName| to indicate links wherever applicable.
 @property(nonatomic, readonly) NSArray<NSAttributedString*>* legalMessages;
 
-// Whether or not this card will be saved to Google Pay or local disk. i.e.,
-// |YES| means the card is uploaded to Google Pay but NOT stored on local disk.
-// |NO| means the card is stored on local disk and NOT uploaded to Google Pay.
-// If Chrome Sync is enabled, this value will be |YES|.
-@property(nonatomic, readonly) BOOL willUploadToCloud;
-
 - (instancetype)init NS_UNAVAILABLE;
 
-// Saves |creditCard| to device or cloud according to |willUploadToCloud|.
+// Saves |creditCard| to the user's Google Pay account.
 // |riskData| Needed for 1st party integration with the internal payments API.
-// Only required if |willUploadToCloud|. See go/risk-eng.g3doc for more details.
+// See go/risk-eng.g3doc for more details.
 // |completionHandler| to be called with BOOL indicating if the card was saved
 // or if it wasn't saved due to invalid card or network errors.
 // This method should only be called once.

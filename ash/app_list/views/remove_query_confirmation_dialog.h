@@ -38,9 +38,7 @@ class RemoveQueryConfirmationDialog
 
  private:
   // views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
-  bool ShouldShowCloseButton() const override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

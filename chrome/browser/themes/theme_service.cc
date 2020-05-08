@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "base/one_shot_event.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -265,10 +266,16 @@ void ThemeService::Init() {
 
   InitFromPrefs();
 
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile_));
+  // ThemeObserver should be constructed before calling
+  // OnExtensionServiceReady. Otherwise, the ThemeObserver won't be
+  // constructed in time to observe the corresponding events.
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  theme_observer_ = std::make_unique<ThemeObserver>(this);
 
+  extensions::ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE, base::Bind(&ThemeService::OnExtensionServiceReady,
+                            weak_ptr_factory_.GetWeakPtr()));
+#endif
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 
   // TODO(gayane): Temporary entry point for Chrome Colors. Remove once UI is
@@ -295,22 +302,6 @@ void ThemeService::Shutdown() {
   theme_observer_.reset();
 #endif
   native_theme_observer_.RemoveAll();
-}
-
-void ThemeService::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
-  using content::Details;
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED:
-      registrar_.Remove(this,
-                        extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                        content::Source<Profile>(profile_));
-      OnExtensionServiceReady();
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void ThemeService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
@@ -604,10 +595,6 @@ void ThemeService::OnExtensionServiceReady() {
     MigrateTheme();
     set_ready();
   }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  theme_observer_ = std::make_unique<ThemeObserver>(this);
-#endif
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

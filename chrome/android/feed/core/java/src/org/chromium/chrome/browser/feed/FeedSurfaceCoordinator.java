@@ -36,6 +36,8 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.SnackbarApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.SnackbarCallbackApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.StreamConfiguration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
+import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
+import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -65,7 +67,7 @@ import java.util.List;
 /**
  * Provides a surface that displays an interest feed rendered list of content suggestions.
  */
-public class FeedSurfaceCoordinator {
+public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final Activity mActivity;
     private final SnackbarManager mSnackbarManager;
     @Nullable
@@ -99,27 +101,6 @@ public class FeedSurfaceCoordinator {
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
     private @Nullable ViewResizer mScrollViewResizer;
-
-    /**
-     * The delegate of the {@link FeedSurfaceCoordinator} creator needs to implement.
-     */
-    public interface FeedSurfaceDelegate {
-        /**
-         * Creates {@link StreamLifecycleManager} for the specified {@link Stream} in the {@link
-         * Activity}.
-         * @param stream The {@link Stream} managed by the {@link StreamLifecycleManager}.
-         * @param activity The associated {@link Activity} of the {@link Stream}.
-         * @return The {@link StreamLifecycleManager}.
-         */
-        StreamLifecycleManager createStreamLifecycleManager(Stream stream, Activity activity);
-
-        /**
-         * Checks whether the delegate want to intercept the given touch event.
-         * @param ev The given {@link MotioneEvent}
-         * @return True if the delegate want to intercept the event, otherwise return false.
-         */
-        boolean onInterceptTouchEvent(MotionEvent ev);
-    }
 
     private static class BasicSnackbarApi implements SnackbarApi {
         private final SnackbarManager mManager;
@@ -356,6 +337,7 @@ public class FeedSurfaceCoordinator {
         }
     }
 
+    @Override
     public void destroy() {
         mMediator.destroy();
         if (mStreamLifecycleManager != null) mStreamLifecycleManager.destroy();
@@ -365,26 +347,32 @@ public class FeedSurfaceCoordinator {
         if (mHomepagePromoController != null) mHomepagePromoController.destroy();
     }
 
+    @Override
     public ContextMenuManager.TouchEnabledDelegate getTouchEnabledDelegate() {
         return mMediator;
     }
 
+    @Override
     public NewTabPageLayout.ScrollDelegate getScrollDelegate() {
         return mMediator;
     }
 
+    @Override
     public UiConfig getUiConfig() {
         return mUiConfig;
     }
 
+    @Override
     public View getView() {
         return mRootView;
     }
 
+    @Override
     public boolean shouldCaptureThumbnail() {
         return mMediator.shouldCaptureThumbnail();
     }
 
+    @Override
     public void captureThumbnail(Canvas canvas) {
         ViewUtils.captureBitmap(mRootView, canvas);
         mMediator.onThumbnailCaptured();

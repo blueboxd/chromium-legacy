@@ -606,8 +606,9 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
 
 void AddDeviceDlcSubpageStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kDlcSubpageStrings[] = {
-      // TODO(crbug/1070712): Add other DLC subpage strings needed.
       {"dlcSubpageTitle", IDS_SETTINGS_DLC_SUBPAGE_TITLE},
+      {"dlcSubpageDescription", IDS_SETTINGS_DLC_SUBPAGE_DESCRIPTION},
+      {"removeDlc", IDS_SETTINGS_DLC_REMOVE},
   };
   AddLocalizedStringsBulk(html_source, kDlcSubpageStrings);
 

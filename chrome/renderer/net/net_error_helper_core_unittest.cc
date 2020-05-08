@@ -2312,12 +2312,21 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePartialErrorReplacement) {
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressNonReloadableErrorPage) {
   DoErrorLoad(net::ERR_ABORTED);
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(
+      NetErrorHelperCore::MAIN_FRAME, GURL(kFailedUrl), net::ERR_ABORTED));
 
   DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_UNKNOWN_URL_SCHEME));
+}
+
+TEST_F(NetErrorHelperCoreAutoReloadTest,
+       ShouldSuppressErrorPageForDifferentError) {
+  DoErrorLoad(net::ERR_CERT_AUTHORITY_INVALID);
+  EXPECT_FALSE(core()->ShouldSuppressErrorPage(
+      NetErrorHelperCore::MAIN_FRAME, GURL(kFailedUrl),
+      net::ERR_INVALID_AUTH_CREDENTIALS));
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
@@ -2351,12 +2360,15 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
 
   // Sub-frame load.
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::SUB_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_CONNECTION_RESET));
   EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL(kFailedUrl)));
+                                              GURL(kFailedUrl),
+                                              net::ERR_CONNECTION_RESET));
   // No auto-reload attempt in flight.
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_CONNECTION_RESET));
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
@@ -2405,7 +2417,8 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
   core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
                       NetErrorHelperCore::ERROR_PAGE);
   EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl)));
+                                               GURL(kFailedUrl),
+                                               net::ERR_CONNECTION_RESET));
 }
 
 TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {

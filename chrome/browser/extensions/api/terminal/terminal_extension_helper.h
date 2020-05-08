@@ -23,8 +23,8 @@ class TerminalExtensionHelper {
   // 3. crosh builtin: nkoccljplnhpfnfiajclkommnmllphnl
   static const Extension* GetTerminalExtension(Profile* profile);
 
-  // Returns crosh URL.  TODO(crbug.com/1022250) Use chrome://terminal
-  // when terminalPrivate is supported for webui to allow gzipped resources.
+  // Returns crosh URL.  chrome-untrusted://crosh is used by default, but it can
+  // be overridden by nassh-dev or nassh.
   static GURL GetCroshURL(Profile* profile);
 };
 

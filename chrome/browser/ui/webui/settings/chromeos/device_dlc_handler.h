@@ -38,7 +38,7 @@ class DlcHandler : public ::settings::SettingsPageUIHandler {
 
   void GetDlcListCallback(const base::Value& callback_id,
                           const std::string& err,
-                          const dlcservice::DlcModuleList& dlc_module_list);
+                          const dlcservice::DlcsWithContent& dlcs_with_content);
 
   void PurgeDlcCallback(const base::Value& callback_id, const std::string& err);
 

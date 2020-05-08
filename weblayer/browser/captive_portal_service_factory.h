@@ -14,6 +14,8 @@ namespace captive_portal {
 class CaptivePortalService;
 }
 
+namespace weblayer {
+
 // Singleton that owns all captive_portal::CaptivePortalServices and associates
 // them with BrowserContextImpl instances.
 class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
@@ -43,5 +45,7 @@ class CaptivePortalServiceFactory : public BrowserContextKeyedServiceFactory {
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
+
+}  //  namespace weblayer
 
 #endif  // WEBLAYER_BROWSER_CAPTIVE_PORTAL_SERVICE_FACTORY_H_

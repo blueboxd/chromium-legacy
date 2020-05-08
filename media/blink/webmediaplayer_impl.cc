@@ -332,13 +332,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_background_video_track_optimization_supported_(
           params->IsBackgroundVideoTrackOptimizationSupported()),
       is_remoting_renderer_enabled_(params->IsRemotingRendererEnabled()),
-      reported_renderer_type_(RendererFactoryType::kDefault),
       simple_watch_timer_(
           base::BindRepeating(&WebMediaPlayerImpl::OnSimpleWatchTimerTick,
                               base::Unretained(this)),
           base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                               base::Unretained(this))),
       will_play_helper_(nullptr),
+      demuxer_override_(params->TakeDemuxerOverride()),
       power_status_helper_(params->TakePowerStatusHelper()) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
@@ -732,8 +732,9 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
       load_type == kLoadTypeURL ? blink::GetMediaURLScheme(loaded_url_)
                                 : mojom::MediaURLScheme::kUnknown);
 
-  // Media source pipelines can start immediately.
-  if (load_type == kLoadTypeMediaSource) {
+  if (demuxer_override_ || load_type == kLoadTypeMediaSource) {
+    // If a demuxer override was specified or a Media Source pipeline will be
+    // used, the pipeline can start immediately.
     StartPipeline();
   } else {
     // Short circuit the more complex loading path for data:// URLs. Sending
@@ -2782,7 +2783,13 @@ void WebMediaPlayerImpl::StartPipeline() {
 #endif  // defined(OS_ANDROID)
 
   // Figure out which demuxer to use.
-  if (load_type_ != kLoadTypeMediaSource) {
+  if (demuxer_override_) {
+    DCHECK(!chunk_demuxer_);
+
+    SetDemuxer(std::move(demuxer_override_));
+    // TODO(https://crbug.com/1076267): Should everything else after this block
+    // run in the demuxer override case?
+  } else if (load_type_ != kLoadTypeMediaSource) {
     DCHECK(!chunk_demuxer_);
     DCHECK(data_source_);
 

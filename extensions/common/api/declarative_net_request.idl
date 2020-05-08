@@ -372,26 +372,26 @@ namespace declarativeNetRequest {
   interface Functions {
 
     // Modify the current set of dynamic rules for the extension. The rules
-    // with IDs listed in <code>rule_ids_to_remove</code> are first removed,
-    // and then the rules given in <code>rules_to_add</code> are added. This
+    // with IDs listed in <code>ruleIdsToRemove</code> are first removed,
+    // and then the rules given in <code>rulesToAdd</code> are added. This
     // update happens as a single atomic operation: either all specified rules
     // are added and removed, or an error is returned.
     // These rules are persisted across browser sessions.
-    // Any ids in <code>rule_ids_to_remove</code> that are not present will be
+    // Any ids in <code>ruleIdsToRemove</code> that are not present will be
     // ignored.
     // Note that static rules specified as part of the extension package can
     // not be removed using this function.
     // Note: $(ref:MAX_NUMBER_OF_DYNAMIC_RULES) is the maximum number of dynamic
     // rules an extension can add.
-    // |rule_ids_to_remove|: The IDs of rules to remove.
-    // |rules_to_add|: The rules to add.
+    // |ruleIdsToRemove|: The IDs of rules to remove.
+    // |rulesToAdd|: The rules to add.
     // |callback|: Called once the update is complete or has failed. In case of
     // an error, $(ref:runtime.lastError) will be set to denote the error
     // message and no change will be made to the rule set. This can happen for
     // multiple reasons, such as invalid rule format, duplicate rule ID, rule
     // count limit exceeded, internal errors, and others.
-    static void updateDynamicRules(long[] rule_ids_to_remove, Rule[] rules_to_add,
-        optional EmptyCallback callback);
+    static void updateDynamicRules(long[] ruleIdsToRemove, Rule[] rulesToAdd,
+                                   optional EmptyCallback callback);
 
     // Returns the current set of dynamic rules for the extension.
     // |callback|: Called with the set of dynamic rules. An error might be
@@ -412,7 +412,7 @@ namespace declarativeNetRequest {
     // error and no rules will be returned. This can happen for multiple
     // reasons, such as insufficient permissions, or exceeding the quota.
     static void getMatchedRules(optional MatchedRulesFilter filter,
-        GetMatchedRulesCallback callback);
+                                GetMatchedRulesCallback callback);
 
     // Sets whether to automatically badge extension's icon to the matched
     // action count for a tab. This preference is persisted across sessions and

@@ -293,6 +293,8 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 }
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
+  device_cert_provisioning_scheduler_.reset();
+
   // NetworkCertLoader may be not initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized()) {
     chromeos::NetworkCertLoader::Get()->SetDevicePolicyCertificateProvider(
@@ -441,6 +443,14 @@ void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
   device_cloud_policy_initializer_->Shutdown();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
       FROM_HERE, std::move(device_cloud_policy_initializer_));
+
+  // TODO(miersh) Move to BrowserPolicyConnectorChromeOS::Init() when
+  // CertProvisioningScheduler does not depend on SignIn Profile.
+  if (!device_cert_provisioning_scheduler_) {
+    device_cert_provisioning_scheduler_ = chromeos::cert_provisioning::
+        CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler(
+            affiliated_invalidation_service_provider_.get());
+  }
 }
 
 void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerDisconnected() {

@@ -9,6 +9,7 @@
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
 #include "extensions/browser/extension_prefs.h"
@@ -21,8 +22,10 @@ using web_app::DisplayMode;
 
 namespace extensions {
 
-BookmarkAppRegistryController::BookmarkAppRegistryController(Profile* profile)
-    : AppRegistryController(profile) {}
+BookmarkAppRegistryController::BookmarkAppRegistryController(
+    Profile* profile,
+    BookmarkAppRegistrar* registrar)
+    : AppRegistryController(profile), registrar_(registrar) {}
 
 BookmarkAppRegistryController::~BookmarkAppRegistryController() = default;
 
@@ -62,10 +65,19 @@ void BookmarkAppRegistryController::SetAppUserDisplayMode(
   }
 }
 
+// Disabling here isn't equivalent to extensions disabling. It means the app is
+// installed, but won't be launched via app service. Ideally this disabled state
+// should be kept in the data model (ExtensionPrefs) and have a getter the same
+// as WebApp::chromeos_data.is_disabled, but as BMO will launch soon and this is
+// a short-term solution, it's not added to ExtensionPrefs.
 void BookmarkAppRegistryController::SetAppIsDisabled(
     const web_app::AppId& app_id,
     bool is_disabled) {
-  NOTIMPLEMENTED();
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return;
+
+  registrar_->NotifyWebAppDisabledStateChanged(app_id, is_disabled);
 }
 
 void BookmarkAppRegistryController::SetAppIsLocallyInstalled(

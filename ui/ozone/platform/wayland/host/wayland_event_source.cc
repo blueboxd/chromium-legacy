@@ -371,7 +371,7 @@ void WaylandEventSource::HandleTouchFocusChange(WaylandWindow* window,
                                                 bool focused,
                                                 base::Optional<PointerId> id) {
   DCHECK(window);
-  bool actual_focus = id ? ShouldUnsetTouchFocus(window, id.value()) : focused;
+  bool actual_focus = id ? !ShouldUnsetTouchFocus(window, id.value()) : focused;
   window->set_touch_focus(actual_focus);
 }
 

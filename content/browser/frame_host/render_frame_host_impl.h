@@ -46,6 +46,7 @@
 #include "content/common/ax_content_node_data.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
+#include "content/common/dom_automation_controller.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_replication_state.h"
@@ -229,6 +230,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public base::SupportsUserData,
       public mojom::FrameHost,
       public mojom::RenderAccessibilityHost,
+      public mojom::DomAutomationControllerHost,
       public BrowserAccessibilityDelegate,
       public RenderProcessHostObserver,
       public SiteInstanceImpl::Observer,
@@ -992,7 +994,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Binds the receiver end of the InterfaceProvider interface through which
   // services provided by this RenderFrameHost are exposed to the corresponding
   // RenderFrame. The caller is responsible for plumbing the client end to the
-  // the renderer process.
+  // renderer process.
   void BindInterfaceProviderReceiver(
       mojo::PendingReceiver<service_manager::mojom::InterfaceProvider>
           interface_provider_receiver);
@@ -1000,9 +1002,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Binds the receiver end of the BrowserInterfaceBroker interface through
   // which services provided by this RenderFrameHost are exposed to the
   // corresponding RenderFrame. The caller is responsible for plumbing the
-  // client end to the the renderer process.
+  // client end to the renderer process.
   void BindBrowserInterfaceBrokerReceiver(
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>);
+
+  // Binds the receiver end of the DomOperationControllerHost interface through
+  // which services provided by this RenderFrameHost are exposed to the
+  // corresponding RenderFrame. The caller is responsible for plumbing the
+  // client end to the renderer process.
+  void BindDomOperationControllerHostReceiver(
+      mojo::PendingAssociatedReceiver<mojom::DomAutomationControllerHost>
+          receiver);
 
   // Exposed so that tests can swap the implementation and intercept calls.
   mojo::AssociatedReceiver<mojom::FrameHost>&
@@ -1854,6 +1864,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       HandleAXEventsCallback callback) override;
   void HandleAXLocationChanges(
       std::vector<mojom::LocationChangesPtr> changes) override;
+
+  // mojom::DomAutomationControllerHost:
+  void DomOperationResponse(const std::string& json_string) override;
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();
@@ -2714,6 +2727,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   mojo::AssociatedReceiver<mojom::RenderAccessibilityHost>
       render_accessibility_host_receiver_{this};
+
+  mojo::AssociatedReceiver<mojom::DomAutomationControllerHost>
+      dom_automation_controller_receiver_{this};
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;

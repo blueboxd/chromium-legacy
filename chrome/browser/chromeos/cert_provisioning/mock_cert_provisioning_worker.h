@@ -7,6 +7,7 @@
 
 #include "base/containers/queue.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_worker.h"
+#include "chrome/browser/chromeos/cert_provisioning/mock_cert_provisioning_invalidator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -31,6 +32,7 @@ class MockCertProvisioningWorkerFactory : public CertProvisioningWorkerFactory {
                PrefService* pref_service,
                const CertProfile& cert_profile,
                policy::CloudPolicyClient* cloud_policy_client,
+               std::unique_ptr<CertProvisioningInvalidator> invalidator,
                CertProvisioningWorkerCallback callback),
               (override));
 
@@ -41,6 +43,7 @@ class MockCertProvisioningWorkerFactory : public CertProvisioningWorkerFactory {
                PrefService* pref_service,
                const base::Value& saved_worker,
                policy::CloudPolicyClient* cloud_policy_client,
+               std::unique_ptr<CertProvisioningInvalidator> invalidator,
                CertProvisioningWorkerCallback callback),
               (override));
 
@@ -61,6 +64,7 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
   ~MockCertProvisioningWorker() override;
 
   MOCK_METHOD(void, DoStep, (), (override));
+  MOCK_METHOD(void, Cancel, (), (override));
   MOCK_METHOD(bool, IsWaiting, (), (const override));
   MOCK_METHOD(const CertProfile&, GetCertProfile, (), (const override));
   MOCK_METHOD(const std::string&, GetPublicKey, (), (const override));

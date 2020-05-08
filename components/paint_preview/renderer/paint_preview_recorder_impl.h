@@ -44,8 +44,8 @@ class PaintPreviewRecorderImpl : public content::RenderFrameObserver,
   // Handles the bulk of the capture.
   void CapturePaintPreviewInternal(
       const mojom::PaintPreviewCaptureParamsPtr& params,
-      mojom::PaintPreviewCaptureResponse* region,
-      mojom::PaintPreviewStatus* status);
+      mojom::PaintPreviewCaptureResponsePtr region,
+      CapturePaintPreviewCallback callback);
 
   bool is_painting_preview_;
   const bool is_main_frame_;

@@ -1095,6 +1095,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.IntrinsicLogicalWidthsDirty();
   }
 
+  bool IntrinsicLogicalWidthsDependsOnPercentageBlockSize() const {
+    return bitfields_.IntrinsicLogicalWidthsDependsOnPercentageBlockSize();
+  }
+  void SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(bool b) {
+    bitfields_.SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(b);
+  }
+  bool IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize() const {
+    return bitfields_.IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize();
+  }
+  void SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(bool b) {
+    bitfields_.SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(b);
+  }
+
   bool NeedsLayoutOverflowRecalc() const {
     return bitfields_.SelfNeedsLayoutOverflowRecalc() ||
            bitfields_.ChildNeedsLayoutOverflowRecalc();
@@ -2904,6 +2917,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           self_needs_layout_overflow_recalc_(false),
           child_needs_layout_overflow_recalc_(false),
           intrinsic_logical_widths_dirty_(false),
+          intrinsic_logical_widths_depends_on_percentage_block_size_(true),
+          intrinsic_logical_widths_child_depends_on_percentage_block_size_(
+              true),
           needs_collect_inlines_(false),
           should_check_for_paint_invalidation_(true),
           subtree_should_check_for_paint_invalidation_(false),
@@ -3018,6 +3034,19 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // widths.
     ADD_BOOLEAN_BITFIELD(intrinsic_logical_widths_dirty_,
                          IntrinsicLogicalWidthsDirty);
+
+    // This boolean indicates if the cached intrinsic logical widths may depend
+    // on the input %-block-size given by the parent.
+    ADD_BOOLEAN_BITFIELD(
+        intrinsic_logical_widths_depends_on_percentage_block_size_,
+        IntrinsicLogicalWidthsDependsOnPercentageBlockSize);
+
+    // This boolean indicates if a *child* of this node may depend on the input
+    // %-block-size given by the parent. Must always be true for legacy layout
+    // roots.
+    ADD_BOOLEAN_BITFIELD(
+        intrinsic_logical_widths_child_depends_on_percentage_block_size_,
+        IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize);
 
     // This flag is set on inline container boxes that need to run the
     // Pre-layout phase in LayoutNG. See NGInlineNode::CollectInlines().

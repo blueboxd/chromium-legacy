@@ -237,14 +237,12 @@ function getCategoryItemMap() {
       enabledLabel: 'siteSettingsAllowed',
       disabledLabel: 'siteSettingsBlocked',
     },
-    // <if expr="chromeos">
     {
       route: routes.SITE_SETTINGS_PROTECTED_CONTENT,
       id: Id.PROTECTED_CONTENT,
       label: 'siteSettingsProtectedContent',
       icon: 'settings:protected-content',
     },
-    // </if>
     {
       route: routes.SITE_SETTINGS_HANDLERS,
       id: Id.PROTOCOL_HANDLERS,
@@ -376,9 +374,7 @@ Polymer({
               Id.NATIVE_FILE_SYSTEM_WRITE,
               Id.HID_DEVICES,
               'pdfDocuments',
-              // <if expr="chromeos">
               Id.PROTECTED_CONTENT,
-              // </if>
               Id.CLIPBOARD,
               Id.PAYMENT_HANDLER,
               Id.MIXEDSCRIPT,
@@ -426,9 +422,7 @@ Polymer({
             Id.ADS,
             Id.ZOOM_LEVELS,
             'pdfDocuments',
-            // <if expr="chromeos">
             Id.PROTECTED_CONTENT,
-            // </if>
             Id.MIXEDSCRIPT,
           ]),
         };

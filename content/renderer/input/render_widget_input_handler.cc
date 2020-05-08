@@ -710,7 +710,7 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
   }
 }
 
-bool RenderWidgetInputHandler::DidChangeCursor(const WebCursor& cursor) {
+bool RenderWidgetInputHandler::DidChangeCursor(const ui::Cursor& cursor) {
   if (current_cursor_.has_value() && current_cursor_.value() == cursor)
     return false;
   current_cursor_ = cursor;

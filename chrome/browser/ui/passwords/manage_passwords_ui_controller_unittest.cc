@@ -1335,16 +1335,17 @@ TEST_F(ManagePasswordsUIControllerTest,
 TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {
   std::vector<const PasswordForm*> matches = {&test_local_form()};
   auto test_form_manager = CreateFormManagerWithBestMatches(&matches);
+  MockPasswordFormManagerForUI* form_manager = test_form_manager.get();
 
   // A submitted form triggers the move dialog.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(2);
-  EXPECT_CALL(*test_form_manager, MoveCredentialsToAccountStore);
   controller()->OnShowMoveToAccountBubble(std::move(test_form_manager));
   EXPECT_TRUE(controller()->opened_automatic_bubble());
   ExpectIconAndControllerStateIs(
       password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE);
 
   // A user confirms the move which closes the dialog.
+  EXPECT_CALL(*form_manager, MoveCredentialsToAccountStore);
   controller()->MovePasswordToAccountStore();
   EXPECT_FALSE(controller()->opened_automatic_bubble());
   ExpectIconAndControllerStateIs(password_manager::ui::MANAGE_STATE);

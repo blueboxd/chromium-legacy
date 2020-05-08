@@ -105,7 +105,12 @@ void WaylandPointer::Button(void* data,
       return;
   }
 
-  pointer->connection_->set_serial(serial);
+  // Set serial only on button presses. Popup windows can be created on
+  // button/touch presses, and, thus, require the serial of the last serial when
+  // the button was pressed. Otherwise, Wayland server dismisses the popup
+  // requests (see the protocol definition).
+  if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+    pointer->connection_->set_serial(serial);
   EventType type = state == WL_POINTER_BUTTON_STATE_PRESSED ? ET_MOUSE_PRESSED
                                                             : ET_MOUSE_RELEASED;
   pointer->delegate_->OnPointerButtonEvent(type, changed_button);

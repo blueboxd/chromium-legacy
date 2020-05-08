@@ -101,6 +101,7 @@ class Range;
 }
 
 namespace ui {
+class Cursor;
 struct DidOverscrollParams;
 }
 

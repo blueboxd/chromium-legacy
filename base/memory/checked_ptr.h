@@ -5,11 +5,16 @@
 #ifndef BASE_MEMORY_CHECKED_PTR_H_
 #define BASE_MEMORY_CHECKED_PTR_H_
 
-#include <cstddef>  // for std::nullptr_t
-#include <cstdint>  // for uintptr_t
-#include <utility>  // for std::swap
+#include <cstddef>
+#include <cstdint>
+#include <utility>
+
+#include "base/compiler_specific.h"
 
 namespace base {
+
+// NOTE: All methods should be ALWAYS_INLINE. CheckedPtr is meant to be a
+// lightweight replacement of a raw pointer, hence performance is critical.
 
 namespace internal {
 // These classes/structures are part of the CheckedPtr implementation.
@@ -17,13 +22,13 @@ namespace internal {
 
 struct CheckedPtrNoOpImpl {
   // Wraps a pointer, and returns its uintptr_t representation.
-  static inline uintptr_t WrapRawPtr(const void* const_ptr) {
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const void* const_ptr) {
     return reinterpret_cast<uintptr_t>(const_ptr);
   }
 
   // Returns equivalent of |WrapRawPtr(nullptr)|. Separated out to make it a
   // constexpr.
-  static constexpr uintptr_t GetWrappedNullPtr() {
+  static constexpr ALWAYS_INLINE uintptr_t GetWrappedNullPtr() {
     // This relies on nullptr and 0 being equal in the eyes of reinterpret_cast,
     // which apparently isn't true in all environments.
     return 0;
@@ -31,29 +36,30 @@ struct CheckedPtrNoOpImpl {
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
   // hasn't been freed. The function is allowed to crash on nullptr.
-  static inline void* SafelyUnwrapPtr(uintptr_t wrapped_ptr) {
+  static ALWAYS_INLINE void* SafelyUnwrapPtr(uintptr_t wrapped_ptr) {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
   // hasn't been freed. The function must handle nullptr gracefully.
-  static inline void* SafelyUnwrapPtrMayBeNull(uintptr_t wrapped_ptr) {
+  static ALWAYS_INLINE void* SafelyUnwrapPtrMayBeNull(uintptr_t wrapped_ptr) {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
   // Advance the wrapped pointer by |delta| bytes.
-  static uintptr_t Advance(uintptr_t wrapped_ptr, ptrdiff_t delta) {
+  static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     return wrapped_ptr + delta;
   }
 
   // Checks if wrapped pointers are equal. The pointers can be nullptr.
-  static inline bool AreEqual(uintptr_t wrapped_ptr1, uintptr_t wrapped_ptr2) {
+  static ALWAYS_INLINE bool AreEqual(uintptr_t wrapped_ptr1,
+                                     uintptr_t wrapped_ptr2) {
     return wrapped_ptr1 == wrapped_ptr2;
   }
 
   // Checks if a wrapped pointer is equal to a raw pointer. The pointers
   // can be nullptr.
-  static inline bool AreEqual(uintptr_t wrapped_ptr, const void* ptr) {
+  static ALWAYS_INLINE bool AreEqual(uintptr_t wrapped_ptr, const void* ptr) {
     return reinterpret_cast<void*>(wrapped_ptr) == ptr;
   }
 };
@@ -91,11 +97,11 @@ class CheckedPtr {
   constexpr CheckedPtr() noexcept = default;
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  constexpr CheckedPtr(std::nullptr_t) noexcept
+  constexpr ALWAYS_INLINE CheckedPtr(std::nullptr_t) noexcept
       : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
+  ALWAYS_INLINE CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
 
   // In addition to nullptr_t ctor above, CheckedPtr needs to have these
   // as |=default| or |constexpr| to avoid hitting -Wglobal-constructors in
@@ -107,7 +113,7 @@ class CheckedPtr {
   CheckedPtr& operator=(const CheckedPtr&) noexcept = default;
   CheckedPtr& operator=(CheckedPtr&&) noexcept = default;
 
-  CheckedPtr& operator=(T* p) noexcept {
+  ALWAYS_INLINE CheckedPtr& operator=(T* p) noexcept {
     wrapped_ptr_ = Impl::WrapRawPtr(p);
     return *this;
   }
@@ -116,9 +122,9 @@ class CheckedPtr {
 
   // Avoid using. The goal of CheckedPtr is to be as close to raw pointer as
   // possible, so use it only if absolutely necessary (e.g. for const_cast).
-  T* get() const { return GetMayBeNull(); }
+  ALWAYS_INLINE T* get() const { return GetMayBeNull(); }
 
-  explicit operator bool() const {
+  explicit ALWAYS_INLINE operator bool() const {
     return wrapped_ptr_ != Impl::GetWrappedNullPtr();
   }
 
@@ -126,68 +132,72 @@ class CheckedPtr {
   // due to |void&|.
   template <typename U = T,
             typename V = typename internal::DereferencedPointerType<U>::Type>
-  V& operator*() const {
+  ALWAYS_INLINE V& operator*() const {
     return *GetOkToCrashOnNull();
   }
-  T* operator->() const { return GetOkToCrashOnNull(); }
+  ALWAYS_INLINE T* operator->() const { return GetOkToCrashOnNull(); }
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  operator T*() const { return GetMayBeNull(); }
+  ALWAYS_INLINE operator T*() const { return GetMayBeNull(); }
   template <typename U>
-  explicit operator U*() const {
+  explicit ALWAYS_INLINE operator U*() const {
     return static_cast<U*>(GetMayBeNull());
   }
 
-  CheckedPtr& operator++() {
+  ALWAYS_INLINE CheckedPtr& operator++() {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, sizeof(T));
     return *this;
   }
 
-  CheckedPtr& operator--() {
+  ALWAYS_INLINE CheckedPtr& operator--() {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, -sizeof(T));
     return *this;
   }
 
-  CheckedPtr& operator+=(ptrdiff_t delta_elems) {
+  ALWAYS_INLINE CheckedPtr& operator+=(ptrdiff_t delta_elems) {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems * sizeof(T));
     return *this;
   }
 
-  CheckedPtr& operator-=(ptrdiff_t delta_elems) {
+  ALWAYS_INLINE CheckedPtr& operator-=(ptrdiff_t delta_elems) {
     return *this += -delta_elems;
   }
 
-  bool operator==(T* p) const { return Impl::AreEqual(wrapped_ptr_, p); }
-  bool operator!=(T* p) const { return !operator==(p); }
-  bool operator==(const CheckedPtr& other) const {
+  ALWAYS_INLINE bool operator==(T* p) const {
+    return Impl::AreEqual(wrapped_ptr_, p);
+  }
+  ALWAYS_INLINE bool operator!=(T* p) const { return !operator==(p); }
+  ALWAYS_INLINE bool operator==(const CheckedPtr& other) const {
     return Impl::AreEqual(wrapped_ptr_, other.wrapped_ptr_);
   }
-  bool operator!=(const CheckedPtr& other) const { return !operator==(other); }
+  ALWAYS_INLINE bool operator!=(const CheckedPtr& other) const {
+    return !operator==(other);
+  }
   template <typename U>
-  bool operator==(const CheckedPtr<U>& other) const {
+  ALWAYS_INLINE bool operator==(const CheckedPtr<U>& other) const {
     // TODO(bartekn): Eliminate unwrapping |other| (which cast does), because it
     // may check if the pointer was freed.
     return Impl::AreEqual(wrapped_ptr_, static_cast<T*>(other));
   }
   template <typename U>
-  bool operator!=(const CheckedPtr<U>& other) const {
+  ALWAYS_INLINE bool operator!=(const CheckedPtr<U>& other) const {
     return !operator==(other);
   }
 
-  void swap(CheckedPtr& other) noexcept {
+  ALWAYS_INLINE void swap(CheckedPtr& other) noexcept {
     std::swap(wrapped_ptr_, other.wrapped_ptr_);
   }
 
  private:
   // This getter is meant for situations where the pointers is merely read, not
   // necessarily with intention to dereference. It doesn't crash on nullptr.
-  T* GetMayBeNull() const {
+  ALWAYS_INLINE T* GetMayBeNull() const {
     return static_cast<T*>(Impl::SafelyUnwrapPtrMayBeNull(wrapped_ptr_));
   }
   // This getter is meant for situations where the pointers is meant to be
   // dereferenced. It is allowed to crash on nullptr (it may or may not),
   // because it knows that the caller will crash on nullptr.
-  T* GetOkToCrashOnNull() const {
+  ALWAYS_INLINE T* GetOkToCrashOnNull() const {
     return static_cast<T*>(Impl::SafelyUnwrapPtr(wrapped_ptr_));
   }
 
@@ -197,7 +207,7 @@ class CheckedPtr {
 };
 
 template <typename T>
-void swap(CheckedPtr<T>& lhs, CheckedPtr<T>& rhs) noexcept {
+ALWAYS_INLINE void swap(CheckedPtr<T>& lhs, CheckedPtr<T>& rhs) noexcept {
   lhs.swap(rhs);
 }
 

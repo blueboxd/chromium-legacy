@@ -44,10 +44,11 @@ void FontFallbackMap::InvalidateAll() {
   fallback_list_for_description_.clear();
 }
 
-void FontFallbackMap::InvalidateForLoadingFallback() {
+template <typename Predicate>
+void FontFallbackMap::InvalidateInternal(Predicate predicate) {
   Vector<FontDescription> invalidated;
   for (auto& entry : fallback_list_for_description_) {
-    if (entry.value->HasLoadingFallback()) {
+    if (predicate(*entry.value)) {
       invalidated.push_back(entry.key);
       entry.value->MarkInvalid();
     }
@@ -57,11 +58,20 @@ void FontFallbackMap::InvalidateForLoadingFallback() {
 
 void FontFallbackMap::FontsNeedUpdate(FontSelector*,
                                       FontInvalidationReason reason) {
-  if (reason == FontInvalidationReason::kFontFaceLoaded) {
-    InvalidateForLoadingFallback();
-    return;
+  switch (reason) {
+    case FontInvalidationReason::kFontFaceLoaded:
+      InvalidateInternal([](const FontFallbackList& fallback_list) {
+        return fallback_list.HasLoadingFallback();
+      });
+      break;
+    case FontInvalidationReason::kFontFaceDeleted:
+      InvalidateInternal([](const FontFallbackList& fallback_list) {
+        return fallback_list.HasCustomFont();
+      });
+      break;
+    default:
+      InvalidateAll();
   }
-  InvalidateAll();
 }
 
 void FontFallbackMap::FontCacheInvalidated() {

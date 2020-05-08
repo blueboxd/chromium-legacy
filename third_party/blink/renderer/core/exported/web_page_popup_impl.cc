@@ -344,6 +344,10 @@ WebPagePopupImpl::RendererWidgetSchedulingState() {
   return widget_base_->RendererWidgetSchedulingState();
 }
 
+void WebPagePopupImpl::SetCursor(const ui::Cursor& cursor) {
+  widget_base_->SetCursor(cursor);
+}
+
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
 }

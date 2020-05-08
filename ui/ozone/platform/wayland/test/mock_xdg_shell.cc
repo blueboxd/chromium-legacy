@@ -5,9 +5,9 @@
 #include "ui/ozone/platform/wayland/test/mock_xdg_shell.h"
 
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
-#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_positioner.h"
+#include "ui/ozone/platform/wayland/test/test_xdg_popup.h"
 
 namespace wl {
 

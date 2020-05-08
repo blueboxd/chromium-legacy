@@ -7,9 +7,10 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
 
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -21,8 +22,6 @@ class SensorProviderProxy;
 // JS sensor instances of the same type (within a single frame).
 class SensorProxyImpl final : public SensorProxy,
                               public device::mojom::blink::SensorClient {
-  USING_PRE_FINALIZER(SensorProxyImpl, Dispose);
-
  public:
   SensorProxyImpl(device::mojom::blink::SensorType,
                   SensorProviderProxy*,
@@ -30,8 +29,6 @@ class SensorProxyImpl final : public SensorProxy,
   ~SensorProxyImpl() override;
 
   void Trace(Visitor*) override;
-
-  void Dispose();
 
  private:
   // SensorProxy overrides.
@@ -78,8 +75,14 @@ class SensorProxyImpl final : public SensorProxy,
 
   device::mojom::blink::ReportingMode mode_ =
       device::mojom::blink::ReportingMode::CONTINUOUS;
-  mojo::Remote<device::mojom::blink::Sensor> sensor_remote_;
-  mojo::Receiver<device::mojom::blink::SensorClient> client_receiver_{this};
+  HeapMojoRemote<device::mojom::blink::Sensor,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      sensor_remote_;
+  HeapMojoReceiver<device::mojom::blink::SensorClient,
+                   SensorProxyImpl,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      client_receiver_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::unique_ptr<device::SensorReadingSharedBufferReader>
       shared_buffer_reader_;

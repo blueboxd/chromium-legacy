@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/site_per_process_browsertest.h"
@@ -46,6 +47,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display_switches.h"
@@ -4163,45 +4165,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
 // There are no cursors on Android.
 #if !defined(OS_ANDROID)
-class CursorMessageFilter : public content::BrowserMessageFilter {
+namespace {
+
+class SetCursorInterceptor
+    : public blink::mojom::WidgetHostInterceptorForTesting {
  public:
-  CursorMessageFilter()
-      : content::BrowserMessageFilter(WidgetMsgStart),
-        message_loop_runner_(new content::MessageLoopRunner),
-        last_set_cursor_routing_id_(MSG_ROUTING_NONE) {}
+  explicit SetCursorInterceptor(RenderWidgetHostImpl* render_widget_host)
+      : render_widget_host_(render_widget_host) {
+    render_widget_host_->widget_host_receiver_for_testing().SwapImplForTesting(
+        this);
+  }
+  ~SetCursorInterceptor() override = default;
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == WidgetHostMsg_SetCursor::ID) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&CursorMessageFilter::OnSetCursor, this,
-                                    message.routing_id()));
-    }
-    return false;
+  WidgetHost* GetForwardingInterface() override { return render_widget_host_; }
+
+  void SetCursor(const ui::Cursor& cursor) override {
+    GetForwardingInterface()->SetCursor(cursor);
+    run_loop_.Quit();
   }
 
-  void OnSetCursor(int routing_id) {
-    last_set_cursor_routing_id_ = routing_id;
-    message_loop_runner_->Quit();
-  }
-
-  int last_set_cursor_routing_id() const { return last_set_cursor_routing_id_; }
-
-  void Wait() {
-    // Do not reset the cursor, as the cursor may already have been set (and
-    // Quit() already called on |message_loop_runner_|).
-    message_loop_runner_->Run();
-  }
+  void Wait() { run_loop_.Run(); }
 
  private:
-  ~CursorMessageFilter() override {}
-
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  int last_set_cursor_routing_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(CursorMessageFilter);
+  base::RunLoop run_loop_;
+  RenderWidgetHostImpl* render_widget_host_;
 };
-
-namespace {
 
 // Verify that we receive a mouse cursor update message when we mouse over
 // a text field contained in an out-of-process iframe.
@@ -4221,15 +4209,16 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
 
   WaitForHitTestData(child_node->current_frame_host());
 
-  scoped_refptr<CursorMessageFilter> filter = new CursorMessageFilter();
-  child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
-
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  RenderWidgetHost* rwh_child =
+  RenderWidgetHostImpl* rwh_child =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
   RenderWidgetHostViewBase* child_view =
       static_cast<RenderWidgetHostViewBase*>(rwh_child->GetView());
+
+  // Intercept SetCursor messages.
+  auto set_cursor_interceptor =
+      std::make_unique<SetCursorInterceptor>(rwh_child);
 
   // This should only return nullptr on Android.
   EXPECT_TRUE(root_view->GetCursorManager());
@@ -4270,20 +4259,10 @@ void CursorUpdateReceivedFromCrossSiteIframeHelper(
   EXPECT_EQ(60, root_monitor.event().PositionInWidget().x());
   EXPECT_EQ(60, root_monitor.event().PositionInWidget().y());
 
-  // CursorMessageFilter::Wait() implicitly tests whether we receive a
-  // WidgetHostMsg_SetCursor message from the renderer process, because it does
-  // does not return otherwise.
-  filter->Wait();
-  EXPECT_EQ(filter->last_set_cursor_routing_id(), rwh_child->GetRoutingID());
-
-  // Yield to ensure that the SetCursor message is processed by its real
-  // handler.
-  {
-    base::RunLoop loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  loop.QuitClosure());
-    loop.Run();
-  }
+  // SetCursorInterceptor::Wait() implicitly tests whether we receive a
+  // blink.mojom.WidgetHost SetCursor message from the renderer process,
+  // because it does does not return otherwise.
+  set_cursor_interceptor->Wait();
 
   // The root_view receives a mouse-move event on top of the iframe, which does
   // not send a cursor update.

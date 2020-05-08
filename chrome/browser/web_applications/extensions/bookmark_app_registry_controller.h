@@ -14,9 +14,12 @@ namespace extensions {
 
 class Extension;
 
+class BookmarkAppRegistrar;
+
 class BookmarkAppRegistryController : public web_app::AppRegistryController {
  public:
-  explicit BookmarkAppRegistryController(Profile* profile);
+  explicit BookmarkAppRegistryController(Profile* profile,
+                                         BookmarkAppRegistrar* registrar);
   ~BookmarkAppRegistryController() override;
 
   // AppRegistryController:
@@ -31,6 +34,8 @@ class BookmarkAppRegistryController : public web_app::AppRegistryController {
 
  private:
   const Extension* GetExtension(const web_app::AppId& app_id) const;
+
+  BookmarkAppRegistrar* registrar_;
 };
 
 }  // namespace extensions

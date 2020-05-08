@@ -149,14 +149,6 @@ public class IntentHandler {
     private static final String TRUSTED_APPLICATION_CODE_EXTRA = "trusted_application_code_extra";
 
     /**
-     * The scheme for referrer coming from an application.
-    // TODO(crbug.com/1071390): Eliminate this constant once downstream is transitioned to use the
-    // one in IntentUtils.java.
-     */
-    @Deprecated
-    public static final String ANDROID_APP_REFERRER_SCHEME = "android-app";
-
-    /**
      * A referrer id used for Chrome to Chrome referrer passing.
      */
     public static final String EXTRA_REFERRER_ID = "org.chromium.chrome.browser.referrer_id";

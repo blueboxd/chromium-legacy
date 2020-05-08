@@ -12,10 +12,10 @@
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_subsurface.h"
+#include "ui/ozone/platform/wayland/test/test_xdg_popup.h"
 
 struct wl_resource;
 

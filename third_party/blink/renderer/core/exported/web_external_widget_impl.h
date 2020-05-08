@@ -44,6 +44,7 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   WebInputEventResult DispatchBufferedTouchEvents() override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
+  void SetCursor(const ui::Cursor& cursor) override;
 
   // WebExternalWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;

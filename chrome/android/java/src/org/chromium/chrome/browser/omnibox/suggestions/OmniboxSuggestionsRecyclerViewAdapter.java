@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import android.os.Debug;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -98,13 +97,11 @@ class OmniboxSuggestionsRecyclerViewAdapter extends SimpleRecyclerViewAdapter {
     protected View createView(ViewGroup parent, int viewType) {
         // This skips measuring Adapter.CreateViewHolder, which is final, but it capture
         // the creation of a view holder.
-        try (TraceEvent tracing = TraceEvent.scoped(
-                     "OmniboxSuggestionsList.CreateView", "type:" + viewType)) {
-            final long start = Debug.threadCpuTimeNanos();
-            View v = super.createView(parent, viewType);
-            final long end = Debug.threadCpuTimeNanos();
-            SuggestionsMetrics.recordSuggestionViewCreateTime(start, end);
-            return v;
+        try (TraceEvent tracing =
+                        TraceEvent.scoped("OmniboxSuggestionsList.CreateView", "type:" + viewType);
+                SuggestionsMetrics.TimingMetric metric =
+                        SuggestionsMetrics.recordSuggestionViewCreateTime()) {
+            return super.createView(parent, viewType);
         }
     }
 }

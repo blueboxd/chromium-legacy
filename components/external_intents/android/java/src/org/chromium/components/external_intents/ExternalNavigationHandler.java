@@ -835,8 +835,7 @@ public class ExternalNavigationHandler {
         // Ensure intents re-target potential caller activity when we run in CCT mode.
         targetIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mDelegate.maybeSetWindowId(targetIntent);
-        targetIntent.putExtra(
-                EXTRA_EXTERNAL_NAV_PACKAGES, mDelegate.getSpecializedHandlers(resolvingInfos));
+        targetIntent.putExtra(EXTRA_EXTERNAL_NAV_PACKAGES, getSpecializedHandlers(resolvingInfos));
 
         if (params.getReferrerUrl() != null) {
             mDelegate.maybeSetPendingReferrer(targetIntent, params.getReferrerUrl());
@@ -1034,7 +1033,7 @@ public class ExternalNavigationHandler {
 
         if (browserFallbackUrl != null) targetIntent.removeExtra(EXTRA_BROWSER_FALLBACK_URL);
 
-        boolean hasSpecializedHandler = mDelegate.countSpecializedHandlers(resolvingInfos) > 0;
+        boolean hasSpecializedHandler = countSpecializedHandlers(resolvingInfos) > 0;
         if (!isExternalProtocol && !hasSpecializedHandler) {
             if (fallBackToHandlingWithInstantApp(
                         params, incomingIntentRedirect, linkNotFromIntent)) {
@@ -1249,7 +1248,7 @@ public class ExternalNavigationHandler {
      */
     private boolean launchWebApkIfSoleIntentHandler(
             List<ResolveInfo> resolvingInfos, Intent targetIntent) {
-        ArrayList<String> packages = mDelegate.getSpecializedHandlers(resolvingInfos);
+        ArrayList<String> packages = getSpecializedHandlers(resolvingInfos);
         if (packages.size() != 1 || !mDelegate.isValidWebApk(packages.get(0))) return false;
         Intent webApkIntent = new Intent(targetIntent);
         webApkIntent.setPackage(packages.get(0));
@@ -1387,6 +1386,24 @@ public class ExternalNavigationHandler {
             }
         }
         return !canSelfOpen || allowSelfOpen || hasPdfViewer;
+    }
+
+    /**
+     * Returns the number of specialized intent handlers in {@params infos}. Specialized intent
+     * handlers are intent handlers which handle only a few URLs (e.g. google maps or youtube).
+     */
+    int countSpecializedHandlers(List<ResolveInfo> infos) {
+        return getSpecializedHandlersWithFilter(
+                infos, null, mDelegate.handlesInstantAppLaunchingInternally())
+                .size();
+    }
+
+    /**
+     * Returns the subset of {@params infos} that are specialized intent handlers.
+     */
+    ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
+        return getSpecializedHandlersWithFilter(
+                infos, null, mDelegate.handlesInstantAppLaunchingInternally());
     }
 
     static boolean matchResolveInfoExceptWildCardHost(ResolveInfo info, String filterPackageName) {

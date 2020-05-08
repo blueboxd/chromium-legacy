@@ -5839,6 +5839,9 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save
         </message>
+        <message name="IDS_PASSWORD_MANAGER_MOVE_BUTTON" desc="Move button text for password manager">
+          Move
+        </message>
         <if expr="use_titlecase">
           <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="In Title Case: Update button text for password manager">
             Update Password
@@ -5875,6 +5878,12 @@ the Bookmarks menu.">
         </message>
         <message name="IDS_PASSWORD_MANAGER_PASSWORD_LABEL" desc="Label for the password field in a prompt to store new credential">
           Password
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_MOVE_TITLE" desc="The title of the 'move password to account' bubble">
+          Move to Google Account?
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_MOVE_HINT" desc="Label describing the effect of moving an existing credential to the user's account store">
+          Move your password to your Google account to access it securely wherever you're signed in
         </message>
       </if>
       <if expr="is_android">

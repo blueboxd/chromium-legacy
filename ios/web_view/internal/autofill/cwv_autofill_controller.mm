@@ -243,6 +243,15 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
                          completionHandler:
                              (void (^)(NSArray<CWVAutofillSuggestion*>*))
                                  completionHandler {
+  FormSuggestionProviderQuery* formQuery = [[FormSuggestionProviderQuery alloc]
+      initWithFormName:formName
+          uniqueFormID:_lastFormActivityUniqueFormID
+       fieldIdentifier:fieldIdentifier
+         uniqueFieldID:_lastFormActivityUniqueFieldID
+             fieldType:fieldType
+                  type:nil
+            typedValue:nil
+               frameID:frameID];
   __weak CWVAutofillController* weakSelf = self;
   id availableHandler = ^(BOOL suggestionsAvailable) {
     CWVAutofillController* strongSelf = weakSelf;
@@ -264,14 +273,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
       }
       completionHandler([autofillSuggestions copy]);
     };
-    [strongSelf->_autofillAgent retrieveSuggestionsForForm:formName
-                                              uniqueFormID:FormRendererId()
-                                           fieldIdentifier:fieldIdentifier
-                                             uniqueFieldID:FieldRendererId()
-                                                 fieldType:fieldType
-                                                      type:nil
-                                                typedValue:nil
-                                                   frameID:frameID
+    [strongSelf->_autofillAgent retrieveSuggestionsForForm:formQuery
                                                   webState:strongSelf->_webState
                                          completionHandler:retrieveHandler];
   };
@@ -281,14 +283,8 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   NSString* mainFrameID =
       base::SysUTF8ToNSString(web::GetMainWebFrameId(_webState));
   BOOL isMainFrame = [frameID isEqualToString:mainFrameID];
-  [_autofillAgent checkIfSuggestionsAvailableForForm:formName
-                                        uniqueFormID:FormRendererId()
-                                     fieldIdentifier:fieldIdentifier
-                                       uniqueFieldID:FieldRendererId()
-                                           fieldType:fieldType
-                                                type:nil
-                                          typedValue:nil
-                                             frameID:frameID
+
+  [_autofillAgent checkIfSuggestionsAvailableForForm:formQuery
                                          isMainFrame:isMainFrame
                                       hasUserGesture:YES
                                             webState:_webState

@@ -302,6 +302,9 @@ suite('PasswordsSection', function() {
     // Click the remove button on the first password.
     firstNode.$$('#passwordMenu').click();
     passwordsSection.$.menuRemovePassword.click();
+    assertEquals(
+        passwordsSection.i18n('passwordDeleted'),
+        getToastManager().$.content.textContent);
   });
 
   // Test verifies that 'Copy password' button is hidden for Federated
@@ -806,6 +809,47 @@ suite('PasswordsSection', function() {
       assertFalse(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
     });
+
+    test(
+        'passwordDeletionMessageSpecifiesStoreIfAccountStorageIsEnabled',
+        function() {
+          // Feature flag enabled.
+          loadTimeData.overrideValues({enableAccountStorage: true});
+
+          const accountPassword = createPasswordEntry('foo.com', 'account', 0);
+          accountPassword.fromAccountStore = true;
+          const localPassword = createPasswordEntry('foo.com', 'local', 1);
+          localPassword.fromAccountStore = false;
+          const passwordsSection = elementFactory.createPasswordsSection(
+              passwordManager, [accountPassword, localPassword], []);
+
+          // Setup user in account storage mode: sync disabled, user signed in
+          // and opted in.
+          simulateSyncStatus({signedIn: false});
+          simulateStoredAccounts([{
+            fullName: 'john doe',
+            givenName: 'john',
+            email: 'john@gmail.com',
+          }]);
+          passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+
+          const passwordListItems =
+              passwordsSection.root.querySelectorAll('password-list-item');
+
+          passwordListItems[0].$$('#passwordMenu').click();
+          passwordsSection.$.menuRemovePassword.click();
+          assertEquals(
+              passwordsSection.i18n('passwordDeletedFromAccount'),
+              getToastManager().$.content.textContent);
+
+          // The account password was not really removed, so the local one is
+          // still at index 1.
+          passwordListItems[1].$$('#passwordMenu').click();
+          passwordsSection.$.menuRemovePassword.click();
+          assertEquals(
+              passwordsSection.i18n('passwordDeletedFromDevice'),
+              getToastManager().$.content.textContent);
+        });
   }
 
   // The export dialog is dismissable.

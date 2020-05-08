@@ -49,7 +49,6 @@ import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -120,13 +119,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public int countSpecializedHandlers(List<ResolveInfo> infos) {
-        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, true).size();
-    }
-
-    @Override
-    public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
-        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, true);
+    public boolean handlesInstantAppLaunchingInternally() {
+        return true;
     }
 
     /**

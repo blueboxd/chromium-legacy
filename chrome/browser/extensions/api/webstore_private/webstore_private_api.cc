@@ -156,6 +156,8 @@ const char kWebstoreInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kWebstoreUserCancelledError[] = "User cancelled install";
+const char kWebstoreBlockByPolicy[] =
+    "Extension installation is blocked by policy";
 const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
 const char kEphemeralAppLaunchingNotSupported[] =
@@ -628,10 +630,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnRequestPromptDone(
 }
 void WebstorePrivateBeginInstallWithManifest3Function::
     OnBlockByPolicyPromptDone() {
-  // TODO(crbug.com/1061205): Returns |blocked_by_policy| when CWS is ready for
-  // the new dialog change.
-  Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
-                        kWebstoreUserCancelledError));
+  Respond(BuildResponse(api::webstore_private::RESULT_BLOCKED_BY_POLICY,
+                        kWebstoreBlockByPolicy));
   // Matches the AddRef in Run().
   Release();
 }

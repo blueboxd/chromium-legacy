@@ -27,6 +27,7 @@
 #include "absl/flags/internal/commandlineflag.h"
 #include "absl/flags/internal/flag.h"
 #include "absl/flags/internal/path_util.h"
+#include "absl/flags/internal/private_handle_accessor.h"
 #include "absl/flags/internal/program_name.h"
 #include "absl/flags/internal/registry.h"
 #include "absl/flags/usage_config.h"
@@ -53,27 +54,6 @@ namespace absl {
 ABSL_NAMESPACE_BEGIN
 namespace flags_internal {
 namespace {
-
-absl::string_view TypenameForHelp(const flags_internal::CommandLineFlag& flag) {
-  // Only report names of v1 built-in types
-#define HANDLE_V1_BUILTIN_TYPE(t) \
-  if (flag.IsOfType<t>()) {       \
-    return #t;                    \
-  }
-
-  HANDLE_V1_BUILTIN_TYPE(bool);
-  HANDLE_V1_BUILTIN_TYPE(int32_t);
-  HANDLE_V1_BUILTIN_TYPE(int64_t);
-  HANDLE_V1_BUILTIN_TYPE(uint64_t);
-  HANDLE_V1_BUILTIN_TYPE(double);
-#undef HANDLE_V1_BUILTIN_TYPE
-
-  if (flag.IsOfType<std::string>()) {
-    return "string";
-  }
-
-  return "";
-}
 
 // This class is used to emit an XML element with `tag` and `text`.
 // It adds opening and closing tags and escapes special characters in the text.
@@ -212,23 +192,20 @@ void FlagHelpHumanReadable(const flags_internal::CommandLineFlag& flag,
   // Flag help.
   printer.Write(absl::StrCat("(", flag.Help(), ");"), /*wrap_line=*/true);
 
-  // Flag data type (for V1 flags only).
-  if (!flag.IsAbseilFlag() && !flag.IsRetired()) {
-    printer.Write(absl::StrCat("type: ", TypenameForHelp(flag), ";"));
-  }
-
   // The listed default value will be the actual default from the flag
   // definition in the originating source file, unless the value has
   // subsequently been modified using SetCommandLineOption() with mode
   // SET_FLAGS_DEFAULT.
   std::string dflt_val = flag.DefaultValue();
+  std::string curr_val = flag.CurrentValue();
+  bool is_modified = curr_val != dflt_val;
+
   if (flag.IsOfType<std::string>()) {
     dflt_val = absl::StrCat("\"", dflt_val, "\"");
   }
   printer.Write(absl::StrCat("default: ", dflt_val, ";"));
 
-  if (flag.IsModified()) {
-    std::string curr_val = flag.CurrentValue();
+  if (is_modified) {
     if (flag.IsOfType<std::string>()) {
       curr_val = absl::StrCat("\"", curr_val, "\"");
     }

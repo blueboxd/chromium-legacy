@@ -10,15 +10,41 @@
 
 namespace enterprise_reporting {
 
-ExtensionRequestObserverFactory::ExtensionRequestObserverFactory() {
+ExtensionRequestObserverFactory::ExtensionRequestObserverFactory(
+    Profile* profile)
+    : profile_(profile) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->AddObserver(this);
-  for (Profile* profile : profile_manager->GetLoadedProfiles())
+
+  if (profile) {
     OnProfileAdded(profile);
+  } else {
+    for (Profile* profile : profile_manager->GetLoadedProfiles())
+      OnProfileAdded(profile);
+  }
 }
+
 ExtensionRequestObserverFactory::~ExtensionRequestObserverFactory() {
   if (g_browser_process->profile_manager())
     g_browser_process->profile_manager()->RemoveObserver(this);
+}
+
+void ExtensionRequestObserverFactory::OnProfileAdded(Profile* profile) {
+  if (profile->IsSystemProfile() || profile->IsGuestSession() ||
+      profile->IsIncognitoProfile()) {
+    return;
+  }
+
+  if (profile_ && (profile_ != profile || !observers_.empty()))
+    return;
+
+  observers_.emplace(profile,
+                     std::make_unique<ExtensionRequestObserver>(profile));
+}
+
+void ExtensionRequestObserverFactory::OnProfileMarkedForPermanentDeletion(
+    Profile* profile) {
+  observers_.erase(profile);
 }
 
 ExtensionRequestObserver*
@@ -30,20 +56,6 @@ ExtensionRequestObserverFactory::GetObserverByProfileForTesting(
 
 int ExtensionRequestObserverFactory::GetNumberOfObserversForTesting() {
   return observers_.size();
-}
-
-void ExtensionRequestObserverFactory::OnProfileAdded(Profile* profile) {
-  if (profile->IsSystemProfile() || profile->IsGuestSession() ||
-      profile->IsIncognitoProfile()) {
-    return;
-  }
-  observers_.emplace(profile,
-                     std::make_unique<ExtensionRequestObserver>(profile));
-}
-
-void ExtensionRequestObserverFactory::OnProfileMarkedForPermanentDeletion(
-    Profile* profile) {
-  observers_.erase(profile);
 }
 
 }  // namespace enterprise_reporting

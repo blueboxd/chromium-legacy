@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/wayland/test/mock_pointer.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_region.h"
+#include "ui/ozone/platform/wayland/test/test_touch.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
@@ -193,7 +194,7 @@ class WaylandWindowTest : public WaylandTest {
     EXPECT_EQ(popup->constraint_adjustment(), position.constraint_adjustment);
   }
 
-  wl::MockXdgPopup* GetPopupByWidget(gfx::AcceleratedWidget widget) {
+  wl::TestXdgPopup* GetPopupByWidget(gfx::AcceleratedWidget widget) {
     wl::MockSurface* mock_surface = server_.GetObject<wl::MockSurface>(widget);
     if (mock_surface) {
       auto* mock_xdg_surface = mock_surface->xdg_surface();
@@ -1727,6 +1728,76 @@ TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
   EXPECT_EQ(mock_xdg_toplevel->max_size(), max_size.value());
   EXPECT_EQ(std::string(kAppId), mock_xdg_toplevel->app_id());
   EXPECT_EQ(mock_xdg_toplevel->title(), base::UTF16ToUTF8(kTitle));
+}
+
+// Tests that a popup window is created using the serial of button press events
+// as required by the Wayland protocol spec.
+TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+
+  Sync();
+
+  constexpr uint32_t button_press_serial = 1;
+  constexpr uint32_t button_release_serial = 2;
+
+  // Send two events - button down and button up.
+  wl_pointer_send_button(server_.seat()->pointer()->resource(),
+                         button_press_serial, 1002, BTN_LEFT,
+                         WL_POINTER_BUTTON_STATE_PRESSED);
+  wl_pointer_send_button(server_.seat()->pointer()->resource(),
+                         button_release_serial, 1004, BTN_LEFT,
+                         WL_POINTER_BUTTON_STATE_RELEASED);
+  Sync();
+
+  // Create a popup window and verify the client used correct serial.
+  MockPlatformWindowDelegate delegate;
+  auto popup = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
+      &delegate);
+  ASSERT_TRUE(popup);
+
+  Sync();
+
+  auto* test_popup = GetPopupByWidget(popup->GetWidget());
+  ASSERT_TRUE(test_popup);
+  EXPECT_NE(test_popup->grab_serial(), button_release_serial);
+  EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
+}
+
+// Tests that a popup window is created using the serial of touch down events
+// as required by the Wayland protocol spec.
+TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_TOUCH);
+
+  Sync();
+
+  constexpr uint32_t touch_down_serial = 1;
+  constexpr uint32_t touch_up_serial = 2;
+
+  // Send two events - touch down and touch up.
+  wl_touch_send_down(server_.seat()->touch()->resource(), touch_down_serial, 0,
+                     surface_->resource(), 0 /* id */, wl_fixed_from_int(50),
+                     wl_fixed_from_int(100));
+  wl_touch_send_up(server_.seat()->touch()->resource(), touch_up_serial, 1000,
+                   0 /* id */);
+
+  Sync();
+
+  // Create a popup window and verify the client used correct serial.
+  MockPlatformWindowDelegate delegate;
+  auto popup = CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
+      &delegate);
+  ASSERT_TRUE(popup);
+
+  Sync();
+
+  auto* test_popup = GetPopupByWidget(popup->GetWidget());
+  ASSERT_TRUE(test_popup);
+  EXPECT_NE(test_popup->grab_serial(), touch_up_serial);
+  EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

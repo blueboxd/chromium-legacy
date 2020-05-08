@@ -103,14 +103,8 @@ using autofill::FieldRendererId;
   return _suggestion;
 }
 
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                              uniqueFormID:(FormRendererId)uniqueFormID
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                             uniqueFieldID:(FieldRendererId)uniqueFieldID
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                typedValue:(NSString*)typedValue
-                                   frameID:(NSString*)frameID
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -120,14 +114,7 @@ using autofill::FieldRendererId;
   completion([_suggestions count] > 0);
 }
 
-- (void)retrieveSuggestionsForForm:(NSString*)formName
-                      uniqueFormID:(FormRendererId)uniqueFormID
-                   fieldIdentifier:(NSString*)fieldIdentifier
-                     uniqueFieldID:(FieldRendererId)uniqueFieldID
-                         fieldType:(NSString*)fieldType
-                              type:(NSString*)type
-                        typedValue:(NSString*)typedValue
-                           frameID:(NSString*)frameID
+- (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   self.askedForSuggestions = YES;

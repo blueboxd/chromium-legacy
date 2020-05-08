@@ -591,21 +591,17 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Successful) {
   EXPECT_FALSE(update_service()->IsBusy());
 }
 
-TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
+// Incorrect deduplicating of the same extension ID but with different flags may
+// lead to incorrect behaviour: corrupted extension won't be reinstalled.
+TEST_F(UpdateServiceTest, InProgressUpdate_DuplicateWithDifferentData) {
   base::HistogramTester histogram_tester;
   update_client()->set_delay_update();
   ExtensionUpdateCheckParams uc1, uc2;
   uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-  uc1.update_info["D"] = ExtensionUpdateData();
-  uc1.update_info["E"] = ExtensionUpdateData();
 
   uc2.update_info["A"] = ExtensionUpdateData();
-  uc2.update_info["B"] = ExtensionUpdateData();
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-  uc2.update_info["E"] = ExtensionUpdateData();
+  uc2.update_info["A"].install_source = "reinstall";
+  uc2.update_info["A"].is_corrupt_reinstall = true;
 
   bool executed1 = false;
   update_service()->StartUpdateCheck(
@@ -619,11 +615,17 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Duplicate) {
       base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
   EXPECT_FALSE(executed2);
 
-  ASSERT_EQ(1, update_client()->num_update_requests());
+  ASSERT_EQ(2, update_client()->num_update_requests());
 
-  const auto& request = update_client()->update_request(0);
-  EXPECT_THAT(request.extension_ids,
-              testing::ElementsAre("A", "B", "C", "D", "E"));
+  {
+    const auto& request = update_client()->update_request(0);
+    EXPECT_THAT(request.extension_ids, testing::ElementsAre("A"));
+  }
+
+  {
+    const auto& request = update_client()->update_request(1);
+    EXPECT_THAT(request.extension_ids, testing::ElementsAre("A"));
+  }
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);
@@ -670,181 +672,6 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NonOverlapped) {
 
   update_client()->RunDelayedUpdate(1);
   EXPECT_TRUE(executed2);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_Overlapped) {
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1, uc2;
-
-  uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-
-  EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
-  EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D"));
-
-  update_client()->RunDelayedUpdate(0);
-  ASSERT_TRUE(executed1);
-  ASSERT_FALSE(executed2);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  ASSERT_TRUE(executed2);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_3Overlapped) {
-  // 3 overlapped requests. The 3rd request have all of its IDs in request1 and
-  // request2.
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1, uc2, uc3;
-
-  uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-  uc2.update_info["E"] = ExtensionUpdateData();
-
-  uc3.update_info["A"] = ExtensionUpdateData();
-  uc3.update_info["B"] = ExtensionUpdateData();
-  uc3.update_info["C"] = ExtensionUpdateData();
-  uc3.update_info["D"] = ExtensionUpdateData();
-  uc3.update_info["E"] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  bool executed3 = false;
-  update_service()->StartUpdateCheck(
-      uc3,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed3));
-  EXPECT_FALSE(executed3);
-
-  ASSERT_EQ(2, update_client()->num_update_requests());
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-
-  EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
-  EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
-
-  update_client()->RunDelayedUpdate(0);
-  ASSERT_TRUE(executed1);
-  ASSERT_FALSE(executed2);
-  ASSERT_FALSE(executed3);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  ASSERT_TRUE(executed2);
-  ASSERT_TRUE(executed3);
-  EXPECT_FALSE(update_service()->IsBusy());
-}
-
-TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
-  // Similar to 3Overlapped, but the 4th request doesn't overlap with the first
-  // 3 requests.
-  base::HistogramTester histogram_tester;
-  update_client()->set_delay_update();
-  ExtensionUpdateCheckParams uc1, uc2, uc3, uc4;
-
-  uc1.update_info["A"] = ExtensionUpdateData();
-  uc1.update_info["B"] = ExtensionUpdateData();
-  uc1.update_info["C"] = ExtensionUpdateData();
-
-  uc2.update_info["C"] = ExtensionUpdateData();
-  uc2.update_info["D"] = ExtensionUpdateData();
-  uc2.update_info["E"] = ExtensionUpdateData();
-
-  uc3.update_info["A"] = ExtensionUpdateData();
-  uc3.update_info["B"] = ExtensionUpdateData();
-  uc3.update_info["C"] = ExtensionUpdateData();
-  uc3.update_info["D"] = ExtensionUpdateData();
-  uc3.update_info["E"] = ExtensionUpdateData();
-
-  uc4.update_info["G"] = ExtensionUpdateData();
-  uc4.update_info["H"] = ExtensionUpdateData();
-  uc4.update_info["I"] = ExtensionUpdateData();
-  uc4.update_info["J"] = ExtensionUpdateData();
-
-  bool executed1 = false;
-  update_service()->StartUpdateCheck(
-      uc1,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed1));
-  EXPECT_FALSE(executed1);
-
-  bool executed2 = false;
-  update_service()->StartUpdateCheck(
-      uc2,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed2));
-  EXPECT_FALSE(executed2);
-
-  bool executed3 = false;
-  update_service()->StartUpdateCheck(
-      uc3,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed3));
-  EXPECT_FALSE(executed3);
-
-  bool executed4 = false;
-  update_service()->StartUpdateCheck(
-      uc4,
-      base::BindOnce([](bool* executed) { *executed = true; }, &executed4));
-  EXPECT_FALSE(executed4);
-
-  ASSERT_EQ(3, update_client()->num_update_requests());
-  const auto& request1 = update_client()->update_request(0);
-  const auto& request2 = update_client()->update_request(1);
-  const auto& request3 = update_client()->update_request(2);
-
-  EXPECT_THAT(request1.extension_ids, testing::ElementsAre("A", "B", "C"));
-  EXPECT_THAT(request2.extension_ids, testing::ElementsAre("D", "E"));
-  EXPECT_THAT(request3.extension_ids, testing::ElementsAre("G", "H", "I", "J"));
-
-  update_client()->RunDelayedUpdate(0);
-  ASSERT_TRUE(executed1);
-  ASSERT_FALSE(executed2);
-  ASSERT_FALSE(executed3);
-  ASSERT_FALSE(executed4);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(1);
-  ASSERT_TRUE(executed2);
-  ASSERT_TRUE(executed3);
-  ASSERT_FALSE(executed4);
-  EXPECT_TRUE(update_service()->IsBusy());
-
-  update_client()->RunDelayedUpdate(2);
-  ASSERT_TRUE(executed4);
   EXPECT_FALSE(update_service()->IsBusy());
 }
 

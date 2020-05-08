@@ -8,8 +8,11 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
 namespace cert_provisioning {
@@ -33,15 +36,18 @@ const char* CertScopeToString(CertScope scope) {
 
 }  // namespace
 
+//=============== CertProvisioningInvalidationHandler ==========================
+
+namespace internal {
+
 // static
-std::unique_ptr<CertProvisioningInvalidator>
-CertProvisioningInvalidator::BuildAndRegister(
+std::unique_ptr<CertProvisioningInvalidationHandler>
+CertProvisioningInvalidationHandler::BuildAndRegister(
     CertScope scope,
     invalidation::InvalidationService* invalidation_service,
     const syncer::Topic& topic,
-    CertProvisioningInvalidator::OnInvalidationCallback
-        on_invalidation_callback) {
-  auto invalidator = std::make_unique<CertProvisioningInvalidator>(
+    OnInvalidationCallback on_invalidation_callback) {
+  auto invalidator = std::make_unique<CertProvisioningInvalidationHandler>(
       scope, invalidation_service, topic, std::move(on_invalidation_callback));
 
   if (!invalidator->Register()) {
@@ -51,7 +57,7 @@ CertProvisioningInvalidator::BuildAndRegister(
   return invalidator;
 }
 
-CertProvisioningInvalidator::CertProvisioningInvalidator(
+CertProvisioningInvalidationHandler::CertProvisioningInvalidationHandler(
     CertScope scope,
     invalidation::InvalidationService* invalidation_service,
     const syncer::Topic& topic,
@@ -64,13 +70,13 @@ CertProvisioningInvalidator::CertProvisioningInvalidator(
   DCHECK(!on_invalidation_callback_.is_null());
 }
 
-CertProvisioningInvalidator::~CertProvisioningInvalidator() {
+CertProvisioningInvalidationHandler::~CertProvisioningInvalidationHandler() {
   // Unregister is not called here so that subscription can be preserved if
   // browser restarts. If subscription is not needed a user must call Unregister
   // explicitly.
 }
 
-bool CertProvisioningInvalidator::Register() {
+bool CertProvisioningInvalidationHandler::Register() {
   if (state_.is_registered) {
     return true;
   }
@@ -89,7 +95,7 @@ bool CertProvisioningInvalidator::Register() {
   return true;
 }
 
-void CertProvisioningInvalidator::Unregister() {
+void CertProvisioningInvalidationHandler::Unregister() {
   if (!state_.is_registered) {
     return;
   }
@@ -105,7 +111,7 @@ void CertProvisioningInvalidator::Unregister() {
   state_.is_registered = false;
 }
 
-void CertProvisioningInvalidator::OnInvalidatorStateChange(
+void CertProvisioningInvalidationHandler::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -113,7 +119,7 @@ void CertProvisioningInvalidator::OnInvalidatorStateChange(
       state == syncer::INVALIDATIONS_ENABLED;
 }
 
-void CertProvisioningInvalidator::OnIncomingInvalidation(
+void CertProvisioningInvalidationHandler::OnIncomingInvalidation(
     const syncer::TopicInvalidationMap& invalidation_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -136,16 +142,125 @@ void CertProvisioningInvalidator::OnIncomingInvalidation(
   on_invalidation_callback_.Run();
 }
 
-std::string CertProvisioningInvalidator::GetOwnerName() const {
+std::string CertProvisioningInvalidationHandler::GetOwnerName() const {
   return base::StringPrintf(kOwnerNameFormat, CertScopeToString(scope_),
                             topic_.c_str());
 }
 
-bool CertProvisioningInvalidator::IsPublicTopic(
+bool CertProvisioningInvalidationHandler::IsPublicTopic(
     const syncer::Topic& /*topic*/) const {
   return false;
 }
 
+}  // namespace internal
+
+//=============== CertProvisioningUserInvalidator ==============================
+
+CertProvisioningInvalidator::CertProvisioningInvalidator() = default;
+CertProvisioningInvalidator::~CertProvisioningInvalidator() = default;
+
+void CertProvisioningInvalidator::Unregister() {
+  if (invalidation_handler_) {
+    invalidation_handler_->Unregister();
+    invalidation_handler_.reset();
+  }
+}
+
+//=============== CertProvisioningUserInvalidatorFactory =======================
+
+CertProvisioningUserInvalidatorFactory::CertProvisioningUserInvalidatorFactory(
+    Profile* profile)
+    : profile_(profile) {
+  DCHECK(profile_);
+}
+
+std::unique_ptr<CertProvisioningInvalidator>
+CertProvisioningUserInvalidatorFactory::Create() {
+  return std::make_unique<CertProvisioningUserInvalidator>(profile_);
+}
+
+//=============== CertProvisioningUserInvalidator ==============================
+
+CertProvisioningUserInvalidator::CertProvisioningUserInvalidator(
+    Profile* profile)
+    : profile_(profile) {
+  DCHECK(profile_);
+}
+
+void CertProvisioningUserInvalidator::Register(
+    const syncer::Topic& topic,
+    OnInvalidationCallback on_invalidation_callback) {
+  invalidation::ProfileInvalidationProvider* invalidation_provider =
+      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+  DCHECK(invalidation_provider);
+  invalidation::InvalidationService* invalidation_service =
+      invalidation_provider->GetInvalidationServiceForCustomSender(
+          policy::kPolicyFCMInvalidationSenderID);
+  DCHECK(invalidation_service);
+
+  invalidation_handler_ =
+      internal::CertProvisioningInvalidationHandler::BuildAndRegister(
+          CertScope::kUser, invalidation_service, topic,
+          std::move(on_invalidation_callback));
+  if (!invalidation_handler_) {
+    LOG(ERROR) << "Failed to register for invalidation topic";
+  }
+}
+
+//=============== CertProvisioningDeviceInvalidatorFactory =====================
+
+CertProvisioningDeviceInvalidatorFactory::
+    CertProvisioningDeviceInvalidatorFactory(
+        policy::AffiliatedInvalidationServiceProvider* service_provider)
+    : service_provider_(service_provider) {
+  DCHECK(service_provider_);
+}
+
+std::unique_ptr<CertProvisioningInvalidator>
+CertProvisioningDeviceInvalidatorFactory::Create() {
+  return std::make_unique<CertProvisioningDeviceInvalidator>(service_provider_);
+}
+
+//=============== CertProvisioningDeviceInvalidator ============================
+
+CertProvisioningDeviceInvalidator::CertProvisioningDeviceInvalidator(
+    policy::AffiliatedInvalidationServiceProvider* service_provider)
+    : service_provider_(service_provider) {
+  DCHECK(service_provider_);
+}
+
+CertProvisioningDeviceInvalidator::~CertProvisioningDeviceInvalidator() {
+  service_provider_->UnregisterConsumer(this);
+}
+
+void CertProvisioningDeviceInvalidator::Register(
+    const syncer::Topic& topic,
+    OnInvalidationCallback on_invalidation_callback) {
+  topic_ = topic;
+  on_invalidation_callback_ = std::move(on_invalidation_callback);
+  service_provider_->RegisterConsumer(this);
+}
+
+void CertProvisioningDeviceInvalidator::Unregister() {
+  service_provider_->UnregisterConsumer(this);
+  CertProvisioningInvalidator::Unregister();
+}
+
+void CertProvisioningDeviceInvalidator::OnInvalidationServiceSet(
+    invalidation::InvalidationService* invalidation_service) {
+  if (!invalidation_service) {
+    invalidation_handler_.reset();
+    return;
+  }
+
+  invalidation_handler_ =
+      internal::CertProvisioningInvalidationHandler::BuildAndRegister(
+          CertScope::kDevice, invalidation_service, topic_,
+          on_invalidation_callback_);
+  if (!invalidation_handler_) {
+    LOG(ERROR) << "Failed to register for invalidation topic";
+  }
+}
+
 }  // namespace cert_provisioning
 }  // namespace chromeos
-

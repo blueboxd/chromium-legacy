@@ -12,8 +12,8 @@
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
+#include "ui/ozone/platform/wayland/test/test_xdg_popup.h"
 
 struct wl_resource;
 
@@ -42,14 +42,14 @@ class MockXdgSurface : public ServerObject {
   }
   MockXdgTopLevel* xdg_toplevel() const { return xdg_toplevel_.get(); }
 
-  void set_xdg_popup(MockXdgPopup* xdg_popup) { xdg_popup_ = xdg_popup; }
-  MockXdgPopup* xdg_popup() const { return xdg_popup_; }
+  void set_xdg_popup(TestXdgPopup* xdg_popup) { xdg_popup_ = xdg_popup; }
+  TestXdgPopup* xdg_popup() const { return xdg_popup_; }
 
  private:
   // Has either toplevel role..
   std::unique_ptr<MockXdgTopLevel> xdg_toplevel_;
   // Or popup role.
-  MockXdgPopup* xdg_popup_ = nullptr;
+  TestXdgPopup* xdg_popup_ = nullptr;
 
   // MockSurface that is the ground for this xdg_surface.
   wl_resource* surface_ = nullptr;

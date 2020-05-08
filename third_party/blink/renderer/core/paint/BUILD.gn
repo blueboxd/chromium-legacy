@@ -257,6 +257,8 @@ blink_core_sources("paint") {
     "theme_painter_default.h",
     "theme_painter_mac.h",
     "theme_painter_mac.mm",
+    "url_metadata_utils.cc",
+    "url_metadata_utils.h",
     "video_painter.cc",
     "video_painter.h",
     "view_painter.cc",

@@ -25,26 +25,28 @@ typedef content::TestMessageHandler::MessageResponse MessageResponse;
 
 MessageResponse StructuredMessageHandler::HandleMessage(
     const std::string& json) {
-  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
   // Automation messages are stringified before they are sent because the
   // automation channel cannot handle arbitrary objects.  This means we
   // need to decode the json twice to get the original message.
-  std::unique_ptr<base::Value> value = reader.ReadToValueDeprecated(json);
-  if (!value.get())
-    return InternalError("Could parse automation JSON: " + json +
-                         " because " + reader.GetErrorMessage());
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value)
+    return InternalError("Could parse automation JSON: " + json + " because " +
+                         parsed_json.error_message);
 
   std::string temp;
-  if (!value->GetAsString(&temp))
+  if (!parsed_json.value->GetAsString(&temp))
     return InternalError("Message was not a string: " + json);
 
-  value = reader.ReadToValueDeprecated(temp);
-  if (!value.get())
-    return InternalError("Could not parse message JSON: " + temp +
-                         " because " + reader.GetErrorMessage());
+  parsed_json = base::JSONReader::ReadAndReturnValueWithError(
+      temp, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value)
+    return InternalError("Could not parse message JSON: " + temp + " because " +
+                         parsed_json.error_message);
 
   base::DictionaryValue* msg;
-  if (!value->GetAsDictionary(&msg))
+  if (!parsed_json.value->GetAsDictionary(&msg))
     return InternalError("Message was not an object: " + temp);
 
   std::string type;

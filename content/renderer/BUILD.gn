@@ -408,6 +408,7 @@ target(link_target_type, "renderer") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/clipboard",
+    "//ui/base/cursor",
     "//ui/base/ime",
     "//ui/display",
     "//ui/events:dom_keycode_converter",

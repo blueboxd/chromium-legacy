@@ -4,13 +4,43 @@
 
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 
+#include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
+
+// MIERSH
+// #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
 namespace cert_provisioning {
+
+namespace {
+base::Optional<AccountId> GetAccountId(CertScope scope, Profile* profile) {
+  switch (scope) {
+    case CertScope::kDevice: {
+      return EmptyAccountId();
+    }
+    case CertScope::kUser: {
+      user_manager::User* user =
+          ProfileHelper::Get()->GetUserByProfile(profile);
+      if (!user) {
+        return base::nullopt;
+      }
+
+      return user->GetAccountId();
+    }
+  }
+
+  NOTREACHED();
+}
+}  // namespace
 
 //===================== CertProfile ============================================
 
@@ -100,6 +130,36 @@ const char* GetPlatformKeysTokenId(CertScope scope) {
     case CertScope::kDevice:
       return platform_keys::kTokenIdSystem;
   }
+}
+
+void DeleteVaKey(CertScope scope,
+                 Profile* profile,
+                 const std::string& key_name,
+                 DeleteVaKeyCallback callback) {
+  auto account_id = GetAccountId(scope, profile);
+  if (!account_id.has_value()) {
+    return;
+  }
+
+  CryptohomeClient::Get()->TpmAttestationDeleteKey(
+      GetVaKeyType(scope),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id.value()),
+      key_name, std::move(callback));
+}
+
+void DeleteVaKeysByPrefix(CertScope scope,
+                          Profile* profile,
+                          const std::string& key_prefix,
+                          DeleteVaKeyCallback callback) {
+  auto account_id = GetAccountId(scope, profile);
+  if (!account_id.has_value()) {
+    return;
+  }
+
+  CryptohomeClient::Get()->TpmAttestationDeleteKeysByPrefix(
+      GetVaKeyType(scope),
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id.value()),
+      key_prefix, std::move(callback));
 }
 
 scoped_refptr<net::X509Certificate> CreateSingleCertificateFromBytes(

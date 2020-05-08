@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_scheduler.h"
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -107,12 +108,15 @@ CertProvisioningScheduler::CreateUserCertProvisioningScheduler(
   return std::make_unique<CertProvisioningScheduler>(
       CertScope::kUser, profile, pref_service,
       prefs::kRequiredClientCertificateForUser, cloud_policy_client,
-      network_state_handler);
+      network_state_handler,
+      std::make_unique<CertProvisioningUserInvalidatorFactory>(profile));
 }
 
 // static
 std::unique_ptr<CertProvisioningScheduler>
-CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler() {
+CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler(
+    policy::AffiliatedInvalidationServiceProvider*
+        invalidation_service_provider) {
   Profile* profile = ProfileHelper::GetSigninProfile();
   PrefService* pref_service = g_browser_process->local_state();
   policy::CloudPolicyClient* cloud_policy_client =
@@ -128,7 +132,9 @@ CertProvisioningScheduler::CreateDeviceCertProvisioningScheduler() {
   return std::make_unique<CertProvisioningScheduler>(
       CertScope::kDevice, profile, pref_service,
       prefs::kRequiredClientCertificateForDevice, cloud_policy_client,
-      network_state_handler);
+      network_state_handler,
+      std::make_unique<CertProvisioningDeviceInvalidatorFactory>(
+          invalidation_service_provider));
 }
 
 CertProvisioningScheduler::CertProvisioningScheduler(
@@ -137,26 +143,24 @@ CertProvisioningScheduler::CertProvisioningScheduler(
     PrefService* pref_service,
     const char* pref_name,
     policy::CloudPolicyClient* cloud_policy_client,
-    NetworkStateHandler* network_state_handler)
+    NetworkStateHandler* network_state_handler,
+    std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory)
     : cert_scope_(cert_scope),
       profile_(profile),
       pref_service_(pref_service),
       pref_name_(pref_name),
       cloud_policy_client_(cloud_policy_client),
-      network_state_handler_(network_state_handler) {
+      network_state_handler_(network_state_handler),
+      invalidator_factory_(std::move(invalidator_factory)) {
   CHECK(pref_service_);
   CHECK(pref_name_);
   CHECK(cloud_policy_client_);
   CHECK(profile);
+  CHECK(invalidator_factory_);
 
   platform_keys_service_ =
       platform_keys::PlatformKeysServiceFactory::GetForBrowserContext(profile);
   CHECK(platform_keys_service_);
-
-  pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(
-      pref_name_, base::BindRepeating(&CertProvisioningScheduler::OnPrefsChange,
-                                      weak_factory_.GetWeakPtr()));
 
   network_state_handler_->AddObserver(this, FROM_HERE);
 
@@ -212,11 +216,11 @@ void CertProvisioningScheduler::DeleteCertsWithoutPolicy() {
   cert_deleter_ = std::make_unique<CertProvisioningCertDeleter>();
   cert_deleter_->DeleteCerts(
       cert_scope_, platform_keys_service_, cert_profile_ids_to_keep,
-      base::BindOnce(&CertProvisioningScheduler::OnDeleteKeysWithoutPolicyDone,
+      base::BindOnce(&CertProvisioningScheduler::OnDeleteCertsWithoutPolicyDone,
                      weak_factory_.GetWeakPtr()));
 }
 
-void CertProvisioningScheduler::OnDeleteKeysWithoutPolicyDone(
+void CertProvisioningScheduler::OnDeleteCertsWithoutPolicyDone(
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -228,7 +232,43 @@ void CertProvisioningScheduler::OnDeleteKeysWithoutPolicyDone(
   }
 
   DeserializeWorkers();
+
+  CleanVaKeysIfIdle();
+}
+
+void CertProvisioningScheduler::CleanVaKeysIfIdle() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!workers_.empty()) {
+    OnCleanVaKeysIfIdleDone(true);
+    return;
+  }
+
+  DeleteVaKeysByPrefix(
+      cert_scope_, profile_, kKeyNamePrefix,
+      base::BindOnce(&CertProvisioningScheduler::OnCleanVaKeysIfIdleDone,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void CertProvisioningScheduler::OnCleanVaKeysIfIdleDone(
+    base::Optional<bool> delete_result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!delete_result.has_value() || !delete_result.value()) {
+    LOG(ERROR) << "Failed to delete keys while idle";
+  }
+
+  RegisterForPrefsChanges();
   UpdateCerts();
+}
+
+void CertProvisioningScheduler::RegisterForPrefsChanges() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      pref_name_, base::BindRepeating(&CertProvisioningScheduler::OnPrefsChange,
+                                      weak_factory_.GetWeakPtr()));
 }
 
 void CertProvisioningScheduler::DailyUpdateCerts() {
@@ -254,7 +294,7 @@ void CertProvisioningScheduler::DeserializeWorkers() {
     std::unique_ptr<CertProvisioningWorker> worker =
         CertProvisioningWorkerFactory::Get()->Deserialize(
             cert_scope_, profile_, pref_service_, saved_worker,
-            cloud_policy_client_,
+            cloud_policy_client_, invalidator_factory_->Create(),
             base::BindOnce(&CertProvisioningScheduler::OnProfileFinished,
                            weak_factory_.GetWeakPtr()));
     if (!worker) {
@@ -321,10 +361,8 @@ void CertProvisioningScheduler::OnGetCertsWithIdsDone(
   }
 
   std::vector<CertProfile> profiles = GetCertProfiles();
-  if (profiles.empty()) {
-    workers_.clear();
-    return;
-  }
+
+  DeleteWorkersWithoutPolicy(profiles);
 
   for (const auto& profile : profiles) {
     if (base::Contains(existing_certs_with_ids, profile.profile_id) ||
@@ -365,7 +403,7 @@ void CertProvisioningScheduler::CreateCertProvisioningWorker(
   std::unique_ptr<CertProvisioningWorker> worker =
       CertProvisioningWorkerFactory::Get()->Create(
           cert_scope_, profile_, pref_service_, cert_profile,
-          cloud_policy_client_,
+          cloud_policy_client_, invalidator_factory_->Create(),
           base::BindOnce(&CertProvisioningScheduler::OnProfileFinished,
                          weak_factory_.GetWeakPtr()));
   CertProvisioningWorker* worker_unowned = worker.get();
@@ -509,6 +547,31 @@ void CertProvisioningScheduler::UpdateFailedCertProfiles(
   info.public_key = worker.GetPublicKey();
 
   failed_cert_profiles_[worker.GetCertProfile().profile_id] = std::move(info);
+}
+
+void CertProvisioningScheduler::DeleteWorkersWithoutPolicy(
+    const std::vector<CertProfile>& profiles) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (workers_.empty()) {
+    return;
+  }
+
+  std::unordered_set<CertProfileId> cert_profile_ids;
+  for (const CertProfile& profile : profiles) {
+    cert_profile_ids.insert(profile.profile_id);
+  }
+
+  for (auto iter = workers_.begin(); iter != workers_.end();) {
+    const auto& worker = iter->second;
+    if (cert_profile_ids.find(worker->GetCertProfile().profile_id) ==
+        cert_profile_ids.end()) {
+      worker->Cancel();
+      iter = workers_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
 }
 
 }  // namespace cert_provisioning

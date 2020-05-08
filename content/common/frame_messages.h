@@ -585,14 +585,6 @@ IPC_MESSAGE_ROUTED2(
     int32_t /* subframe_routing_id */,
     blink::mojom::FrameOwnerProperties /* frame_owner_properties */)
 
-// Following message is used to communicate the values received by the
-// callback binding the JS to Cpp.
-// An instance of browser that has an automation host listening to it can
-// have a javascript send a native value (string, number, boolean) to the
-// listener in Cpp. (DomAutomationController)
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DomOperationResponse,
-                    std::string  /* json_string */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin
 // instance is created in the DOM.

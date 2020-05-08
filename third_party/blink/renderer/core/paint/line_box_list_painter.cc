@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/url_metadata_utils.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -71,20 +72,6 @@ void BuildBackplate(const InlineFlowBox* box,
       BuildBackplate(ToInlineFlowBox(child), paint_offset, current_backplate,
                      consecutive_line_breaks, paragraph_backplates);
     }
-  }
-}
-
-void AddURLRectsForInlineChildrenRecursively(
-    const LayoutObject& layout_object,
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  for (LayoutObject* child = layout_object.SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (!child->IsLayoutInline() ||
-        ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
-      continue;
-    ObjectPainter(*child).AddURLRectIfNeeded(paint_info, paint_offset);
-    AddURLRectsForInlineChildrenRecursively(*child, paint_info, paint_offset);
   }
 }
 

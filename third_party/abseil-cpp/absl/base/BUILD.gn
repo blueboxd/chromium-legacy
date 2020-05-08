@@ -69,12 +69,7 @@ absl_source_set("config") {
   ]
 }
 
-config("clang_support_dynamic_annotations") {
-  cflags_cc = [ "-D__CLANG_SUPPORT_DYN_ANNOTATION__" ]
-}
-
 absl_source_set("dynamic_annotations") {
-  public_configs = [ ":clang_support_dynamic_annotations" ]
   sources = [ "dynamic_annotations.cc" ]
   public = [ "dynamic_annotations.h" ]
 

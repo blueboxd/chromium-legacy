@@ -7,6 +7,7 @@ module blink.mojom;
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "cc/mojom/touch_action.mojom";
+import "ui/base/cursor/mojom/cursor.mojom";
 
 // Implemented in Blink, this interface defines frame-widget-specific methods that
 // will be invoked from the browser process (e.g. blink::WebFrameWidget).
@@ -60,5 +61,7 @@ interface Widget {
 // Implemented in Browser, this interface defines widget-specific methods that
 // will be invoked from the render process (e.g. content::RenderWidgetHostImpl).
 interface WidgetHost {
-  //TODO(dtapuska): Implement more methods.
+  // Updates the current cursor to be used by the browser for indicating the
+  // location of a pointing device.
+  SetCursor(ui.mojom.Cursor cursor);
 };

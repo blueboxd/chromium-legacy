@@ -25,6 +25,10 @@ class TaskGraphRunner;
 class UkmRecorderFactory;
 }  // namespace cc
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 class LayerTreeView;
 class WidgetBaseClient;
@@ -106,6 +110,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // Returns if we should gather begin main frame metrics. If there is no
   // compositor thread this returns false.
   static bool ShouldRecordBeginMainFrameMetrics();
+
+  void SetCursor(const ui::Cursor& cursor);
 
  private:
   std::unique_ptr<LayerTreeView> layer_tree_view_;

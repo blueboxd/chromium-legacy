@@ -494,6 +494,7 @@ public class SiteSettingsTest {
         SettingsActivity settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setCookiesEnabled(settingsActivity, true);
+        settingsActivity.finish();
 
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
 
@@ -508,15 +509,16 @@ public class SiteSettingsTest {
 
         // Set specific rule to block site and ensure it cannot set cookies.
         mActivityTestRule.loadUrl(url + "#clear");
+        settingsActivity =
+                SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setBlockCookiesSiteException(settingsActivity, url, false);
+        settingsActivity.finish();
         mActivityTestRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Load the page again and ensure the cookie remains unset.
         mActivityTestRule.loadUrl(url);
         Assert.assertEquals("\"\"", mActivityTestRule.runJavaScriptCodeInCurrentTab("getCookie()"));
-
-        settingsActivity.finish();
     }
 
     /**

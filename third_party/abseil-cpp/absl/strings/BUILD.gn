@@ -119,10 +119,13 @@ absl_source_set("str_format_internal") {
   visibility += [ ":*" ]
   deps = [
     ":strings",
+    "//third_party/abseil-cpp/absl/base:bits",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/functional:function_ref",
     "//third_party/abseil-cpp/absl/meta:type_traits",
     "//third_party/abseil-cpp/absl/numeric:int128",
+    "//third_party/abseil-cpp/absl/types:optional",
     "//third_party/abseil-cpp/absl/types:span",
   ]
 }

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/optional.h"
 #include "base/values.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
@@ -14,9 +16,13 @@
 #include "net/cert/x509_certificate.h"
 
 class PrefRegistrySimple;
+class Profile;
 
 namespace chromeos {
 namespace cert_provisioning {
+
+// Used for both DeleteVaKey and DeleteVaKeysByPrefix
+using DeleteVaKeyCallback = base::OnceCallback<void(base::Optional<bool>)>;
 
 const char kKeyNamePrefix[] = "cert-provis-";
 
@@ -44,7 +50,8 @@ enum class CertProvisioningWorkerState {
   kSucceed = 8,
   kInconsistentDataError = 9,
   kFailed = 10,
-  kMaxValue = kFailed,
+  kCanceled = 11,
+  kMaxValue = kCanceled,
 };
 
 using CertProfileId = std::string;
@@ -91,6 +98,18 @@ const char* GetPlatformKeysTokenId(CertScope scope);
 // key_name_for_spkac for device-wide keys.
 std::string GetVaKeyName(CertScope scope, CertProfileId profile_id);
 std::string GetVaKeyNameForSpkac(CertScope scope, CertProfileId profile_id);
+
+// This functions should be used to delete keys that were created by
+// TpmChallengeKey* and were not registered yet. (To delete registered keys
+// PlatformKeysService should be used.)
+void DeleteVaKey(CertScope scope,
+                 Profile* profile,
+                 const std::string& key_name,
+                 DeleteVaKeyCallback callback);
+void DeleteVaKeysByPrefix(CertScope scope,
+                          Profile* profile,
+                          const std::string& key_prefix,
+                          DeleteVaKeyCallback callback);
 
 // Parses |data| using net::X509Certificate::FORMAT_AUTO as format specifier.
 // Expects exactly one certificate to be the result and returns it.  If parsing

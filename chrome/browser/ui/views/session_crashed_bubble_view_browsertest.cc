@@ -32,19 +32,6 @@ class SessionCrashedBubbleViewTest : public DialogBrowserTest {
     views::BubbleDialogDelegateView::CreateBubble(crash_bubble_)->Show();
   }
 
-  void SimulateKeyPress(ui::KeyboardCode key, ui::EventFlags flags) {
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(browser());
-
-    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, key, flags);
-    if (browser_view->GetFocusManager()->OnKeyEvent(press_event))
-      browser_view->OnKeyEvent(&press_event);
-
-    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, key, flags);
-    if (browser_view->GetFocusManager()->OnKeyEvent(release_event))
-      browser_view->OnKeyEvent(&release_event);
-  }
-
  protected:
   SessionCrashedBubbleView* crash_bubble_;
 
@@ -62,43 +49,38 @@ IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
   ShowAndVerifyUi();
 }
 
-// TODO(https://crbug.com/1068579): Fails on Windows because the simulated key
-// events don't trigger the accelerators.
-#if !defined(OS_WIN)
 // Regression test for https://crbug.com/1042010, it should be possible to focus
 // the bubble with the "focus dialog" hotkey combination (Alt+Shift+A).
-// Disabled due to flake: https://crbug.com/1068579
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
-                       DISABLED_CanFocusBubbleWithFocusDialogHotkey) {
+                       CanFocusBubbleWithFocusDialogHotkey) {
   ShowUi("SessionCrashedBubble");
 
   views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();
 
   focus_manager->ClearFocus();
   EXPECT_FALSE(bubble_focused_view->HasFocus());
 
-  SimulateKeyPress(ui::VKEY_A, static_cast<ui::EventFlags>(ui::EF_ALT_DOWN |
-                                                           ui::EF_SHIFT_DOWN));
+  browser_view->FocusInactivePopupForAccessibility();
   EXPECT_TRUE(bubble_focused_view->HasFocus());
 }
 
 // Regression test for https://crbug.com/1042010, it should be possible to focus
 // the bubble with the "rotate pane focus" (F6) hotkey.
-// Disabled due to flake: https://crbug.com/1068579
 IN_PROC_BROWSER_TEST_F(SessionCrashedBubbleViewTest,
-                       DISABLED_CanFocusBubbleWithRotatePaneFocusHotkey) {
+                       CanFocusBubbleWithRotatePaneFocusHotkey) {
   ShowUi("SessionCrashedBubble");
   views::FocusManager* focus_manager = crash_bubble_->GetFocusManager();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   views::View* bubble_focused_view = crash_bubble_->GetInitiallyFocusedView();
 
   focus_manager->ClearFocus();
   EXPECT_FALSE(bubble_focused_view->HasFocus());
 
-  SimulateKeyPress(ui::VKEY_F6, ui::EF_NONE);
+  browser_view->RotatePaneFocus(true);
   // Rotate pane focus is expected to keep the bubble focused until the user
   // deals with it, so a second call should have no effect.
-  SimulateKeyPress(ui::VKEY_F6, ui::EF_NONE);
+  browser_view->RotatePaneFocus(true);
   EXPECT_TRUE(bubble_focused_view->HasFocus());
 }
-#endif

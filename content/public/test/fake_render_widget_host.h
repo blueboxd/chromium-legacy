@@ -12,12 +12,11 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
-class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost {
+class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
+                             public blink::mojom::WidgetHost {
  public:
   FakeRenderWidgetHost();
   ~FakeRenderWidgetHost() override;
@@ -25,6 +24,10 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost {
   std::pair<mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>,
             mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>>
   BindNewFrameWidgetInterfaces();
+
+  std::pair<mojo::PendingAssociatedRemote<blink::mojom::WidgetHost>,
+            mojo::PendingAssociatedReceiver<blink::mojom::Widget>>
+  BindNewWidgetInterfaces();
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
@@ -34,10 +37,21 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost {
   void IntrinsicSizingInfoChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
 
+  // blink::mojom::WidgetHost overrides.
+  void SetCursor(const ui::Cursor& cursor) override;
+
+  mojo::AssociatedReceiver<blink::mojom::WidgetHost>&
+  widget_host_receiver_for_testing() {
+    return widget_host_receiver_;
+  }
+
  private:
   mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>
       frame_widget_host_receiver_{this};
   mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget_remote_;
+  mojo::AssociatedReceiver<blink::mojom::WidgetHost> widget_host_receiver_{
+      this};
+  mojo::AssociatedRemote<blink::mojom::Widget> widget_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetHost);
 };

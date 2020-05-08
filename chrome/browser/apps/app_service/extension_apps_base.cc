@@ -121,22 +121,6 @@ ash::ShelfLaunchSource ConvertLaunchSource(
   }
 }
 
-// Get the |apps::mojom::Readiness| for the |app_id|. If the extension is
-// enabled, it returns |kReady|. If the extension is
-// |DISABLE_BLOCKED_BY_POLICY|, it returns |kDisabledByPolicy|. Otherwise it
-// returns |kDisabledByUser|.
-apps::mojom::Readiness GetReadiness(const std::string& app_id,
-                                    extensions::ExtensionPrefs* prefs) {
-  DCHECK(prefs);
-  if (prefs->IsExtensionDisabled(app_id)) {
-    return prefs->HasDisableReason(
-               app_id, extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY)
-               ? apps::mojom::Readiness::kDisabledByPolicy
-               : apps::mojom::Readiness::kDisabledByUser;
-  }
-  return apps::mojom::Readiness::kReady;
-}
-
 apps::mojom::InstallSource GetInstallSource(
     const Profile* profile,
     const extensions::Extension* extension) {
@@ -443,23 +427,7 @@ void ExtensionAppsBase::Connect(
         extensions::ExtensionRegistry::Get(profile_);
     ConvertVector(registry->enabled_extensions(),
                   apps::mojom::Readiness::kReady, &apps);
-
-    extensions::ExtensionSet extensions_disabled_by_policy,
-        extensions_disabled_by_user;
-    const extensions::ExtensionPrefs* prefs =
-        extensions::ExtensionPrefs::Get(profile_);
-    for (const auto& extension : registry->disabled_extensions()) {
-      if (prefs->HasDisableReason(
-              extension->id(),
-              extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY)) {
-        extensions_disabled_by_policy.Insert(extension);
-      } else {
-        extensions_disabled_by_user.Insert(extension);
-      }
-    }
-    ConvertVector(extensions_disabled_by_policy,
-                  apps::mojom::Readiness::kDisabledByPolicy, &apps);
-    ConvertVector(extensions_disabled_by_user,
+    ConvertVector(registry->disabled_extensions(),
                   apps::mojom::Readiness::kDisabledByUser, &apps);
     ConvertVector(registry->terminated_extensions(),
                   apps::mojom::Readiness::kTerminated, &apps);
@@ -729,8 +697,7 @@ void ExtensionAppsBase::OnExtensionUnloaded(
 
   switch (reason) {
     case extensions::UnloadedExtensionReason::DISABLE:
-      readiness = GetReadiness(extension->id(),
-                               extensions::ExtensionPrefs::Get(profile_));
+      readiness = apps::mojom::Readiness::kDisabledByUser;
       break;
     case extensions::UnloadedExtensionReason::BLACKLIST:
       readiness = apps::mojom::Readiness::kDisabledByBlacklist;
@@ -776,11 +743,7 @@ void ExtensionAppsBase::OnSystemWebAppsInstalled() {
     if (!extension) {
       continue;
     }
-
-    Publish(Convert(extension,
-                    GetReadiness(app_id,
-                                 extensions::ExtensionPrefs::Get(profile_))),
-            subscribers_);
+    Publish(Convert(extension, apps::mojom::Readiness::kReady), subscribers_);
   }
 }
 

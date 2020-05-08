@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
+#include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -38,6 +40,12 @@ TEST_F(MoveToAccountStoreBubbleControllerTest, CloseExplicitly) {
 TEST_F(MoveToAccountStoreBubbleControllerTest, AcceptMove) {
   EXPECT_CALL(*delegate(), MovePasswordToAccountStore);
   controller()->AcceptMove();
+}
+
+TEST_F(MoveToAccountStoreBubbleControllerTest, ProvidesTitle) {
+  PasswordBubbleControllerBase* controller_ptr = controller();
+  EXPECT_EQ(controller_ptr->GetTitle(),
+            l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_TITLE));
 }
 
 }  // namespace

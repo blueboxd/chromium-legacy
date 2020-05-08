@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_CHROMEOS_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
@@ -48,7 +50,8 @@ namespace apps {
 class ExtensionAppsChromeOs : public ExtensionAppsBase,
                               public extensions::AppWindowRegistry::Observer,
                               public ArcAppListPrefs::Observer,
-                              public NotificationDisplayService::Observer {
+                              public NotificationDisplayService::Observer,
+                              public web_app::AppRegistrarObserver {
  public:
   ExtensionAppsChromeOs(
       const mojo::Remote<apps::mojom::AppService>& app_service,
@@ -127,6 +130,7 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
 
   // ExtensionAppsBase overrides.
   void OnHideWebStoreIconPrefChanged() override;
+  void OnSystemFeaturesPrefChanged() override;
   bool Accepts(const extensions::Extension* extension) override;
   bool ShouldShownInLauncher(const extensions::Extension* extension) override;
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
@@ -150,14 +154,23 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   void GetMenuModelForChromeBrowserApp(apps::mojom::MenuType menu_type,
                                        GetMenuModelCallback callback);
 
+  // web_app::AppRegistrarObserver overrides.
+  void OnWebAppDisabledStateChanged(const std::string& app_id,
+                                    bool is_disabled) override;
+  void OnAppRegistrarDestroyed() override;
+
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   apps::InstanceRegistry* instance_registry_;
   ScopedObserver<extensions::AppWindowRegistry,
                  extensions::AppWindowRegistry::Observer>
       app_window_registry_{this};
+  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      registrar_observer_{this};
 
   PausedApps paused_apps_;
+
+  std::set<std::string> disabled_apps_;
 
   std::map<extensions::AppWindow*, aura::Window*> app_window_to_aura_window_;
 
@@ -165,6 +178,9 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
 
   // Registrar used to monitor the profile prefs.
   PrefChangeRegistrar profile_pref_change_registrar_;
+
+  // Registrar used to monitor the local state prefs.
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   ScopedObserver<NotificationDisplayService,
                  NotificationDisplayService::Observer>

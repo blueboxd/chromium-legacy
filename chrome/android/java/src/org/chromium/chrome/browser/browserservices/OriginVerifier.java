@@ -19,6 +19,7 @@ import androidx.browser.customtabs.CustomTabsService.Relation;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
@@ -26,7 +27,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.embedder_support.util.Origin;
@@ -119,7 +119,7 @@ public class OriginVerifier {
 
     public static Uri getPostMessageUriFromVerifiedOrigin(String packageName,
             Origin verifiedOrigin) {
-        return Uri.parse(IntentHandler.ANDROID_APP_REFERRER_SCHEME + "://"
+        return Uri.parse(IntentUtils.ANDROID_APP_REFERRER_SCHEME + "://"
                 + verifiedOrigin.uri().getHost() + "/" + packageName);
     }
 

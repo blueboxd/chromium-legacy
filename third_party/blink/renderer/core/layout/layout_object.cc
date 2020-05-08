@@ -1196,6 +1196,8 @@ void LayoutObject::CheckBlockPositionedObjectsNeedLayout() {
 void LayoutObject::SetIntrinsicLogicalWidthsDirty(
     MarkingBehavior mark_parents) {
   bitfields_.SetIntrinsicLogicalWidthsDirty(true);
+  bitfields_.SetIntrinsicLogicalWidthsDependsOnPercentageBlockSize(true);
+  bitfields_.SetIntrinsicLogicalWidthsChildDependsOnPercentageBlockSize(true);
   if (mark_parents == kMarkContainerChain &&
       (IsText() || !StyleRef().HasOutOfFlowPosition()))
     InvalidateContainerIntrinsicLogicalWidths();

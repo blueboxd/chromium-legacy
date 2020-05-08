@@ -57,9 +57,11 @@ constexpr bool ShouldReportUpdates() {
 
 ReportScheduler::ReportScheduler(
     policy::CloudPolicyClient* client,
-    std::unique_ptr<ReportGenerator> report_generator)
+    std::unique_ptr<ReportGenerator> report_generator,
+    Profile* profile)
     : cloud_policy_client_(std::move(client)),
-      report_generator_(std::move(report_generator)) {
+      report_generator_(std::move(report_generator)),
+      extension_request_observer_factory_(profile) {
   RegisterPrefObserver();
 }
 

@@ -58,6 +58,10 @@ class UkmRecorderFactory;
 class LayerTreeSettings;
 }
 
+namespace ui {
+class Cursor;
+}
+
 namespace blink {
 class WebCoalescedInputEvent;
 
@@ -179,6 +183,8 @@ class WebWidget {
   // remote in that frame tree, then the url is not known, and an empty url is
   // returned.
   virtual WebURL GetURLForDebugTrace() = 0;
+
+  virtual void SetCursor(const ui::Cursor& cursor) = 0;
 
  protected:
   ~WebWidget() = default;

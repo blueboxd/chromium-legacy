@@ -606,6 +606,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const std::string& mime_type,
       network::mojom::RequestDestination request_destination) {}
 
+  // Called when the renderer sends a response via DomAutomationController.
+  // For example, `window.domAutomationController.send(foo())` sends the result
+  // of foo() here.
+  virtual void DomOperationResponse(const std::string& json_string) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() = default;
 };

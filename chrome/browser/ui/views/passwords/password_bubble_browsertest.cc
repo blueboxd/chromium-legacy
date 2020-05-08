@@ -58,6 +58,9 @@ class PasswordBubbleBrowserTest
 
       PasswordAutoSignInView::set_auto_signin_toast_timeout(10);
       SetupAutoSignin(std::move(local_credentials));
+    } else if (StartsWith(name, "MoveToAccountStoreBubble",
+                          base::CompareCase::SENSITIVE)) {
+      SetupMovingPasswords();
     } else {
       ADD_FAILURE() << "Unknown dialog type";
       return;
@@ -89,5 +92,13 @@ IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest, InvokeUi_AutoSignin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_P(PasswordBubbleBrowserTest,
+                       InvokeUi_MoveToAccountStoreBubble) {
+  if (!GetParam()) {
+    return;  // No moving bubble available without the flag.
+  }
   ShowAndVerifyUi();
 }

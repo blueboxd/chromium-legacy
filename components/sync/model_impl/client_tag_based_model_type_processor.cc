@@ -1084,13 +1084,21 @@ void ClientTagBasedModelTypeProcessor::CheckForInvalidPersistedMetadata() {
   const bool invalid_data_type_id =
       model_type_state.progress_marker().data_type_id() !=
       GetSpecificsFieldNumberFromModelType(type_);
-  const bool invalid_authenticated_account_id =
+  const bool invalid_account_id =
       model_type_state.authenticated_account_id() !=
       activation_request_.authenticated_account_id.ToString();
+  // Do not check for the authenticated_account_id since the cache GUID equality
+  // implies account ID equality (verified in ProfileSyncService).
+  //
   // Check for invalid persisted metadata.
-  // TODO(rushans): add UMA for each case of inconsistent data.
-  if (!invalid_cache_guid && !invalid_data_type_id &&
-      !invalid_authenticated_account_id) {
+  // TODO(crbug.com/1079314): add UMA for each case of inconsistent data.
+  if (!invalid_cache_guid && !invalid_data_type_id) {
+    if (invalid_account_id) {
+      sync_pb::ModelTypeState update_model_type_state = model_type_state;
+      update_model_type_state.set_authenticated_account_id(
+          activation_request_.authenticated_account_id.ToString());
+      entity_tracker_->set_model_type_state(update_model_type_state);
+    }
     return;
   }
   // There is a mismatch between the cache guid or the data type id stored

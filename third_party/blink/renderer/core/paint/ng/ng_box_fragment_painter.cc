@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
+#include "third_party/blink/renderer/core/paint/url_metadata_utils.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -1290,9 +1291,11 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
   DCHECK(!layout_object || layout_object->IsLayoutBlock() ||
          (layout_object->IsLayoutInline() && layout_object->HasLayer()));
 
-  // if (paint_info.phase == PaintPhase::kForeground && paint_info.IsPrinting())
-  //  AddPDFURLRectsForInlineChildrenRecursively(layout_object, paint_info,
-  //                                             paint_offset);
+  if (paint_info.phase == PaintPhase::kForeground &&
+      paint_info.ShouldAddUrlMetadata()) {
+    AddURLRectsForInlineChildrenRecursively(*layout_object, paint_info,
+                                            paint_offset);
+  }
 
   // If we have no lines then we have no work to do.
   if (!*children)

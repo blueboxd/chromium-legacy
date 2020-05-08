@@ -250,7 +250,7 @@ LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
 }
 
 template <typename MinMaxSizesFunc>
-MinMaxSizes ComputeMinAndMaxContentContributionInternal(
+MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
     WritingMode parent_writing_mode,
     const ComputedStyle& style,
     const MinMaxSizesFunc& min_max_sizes_func) {
@@ -264,24 +264,28 @@ MinMaxSizes ComputeMinAndMaxContentContributionInternal(
   NGBoxStrut border_padding =
       ComputeBorders(space, style) + ComputePadding(space, style);
 
-  MinMaxSizes computed_sizes;
+  MinMaxSizesResult result;
   const Length& inline_size = parent_writing_mode == WritingMode::kHorizontalTb
                                   ? style.Width()
                                   : style.Height();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
       inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
-    computed_sizes = min_max_sizes_func();
+    result = min_max_sizes_func();
   } else {
     if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-      computed_sizes = ResolveMainInlineLength(space, style, border_padding,
-                                               min_max_sizes_func, inline_size);
+      MinMaxSizes sizes;
+      sizes = ResolveMainInlineLength(space, style, border_padding,
+                                      min_max_sizes_func, inline_size);
+      result = {sizes, /* depends_on_percentage_block_size */ false};
     } else {
       auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
-        return min_max_sizes_func().max_size;
+        return min_max_sizes_func().sizes.max_size;
       };
-      computed_sizes = ResolveMainBlockLength(
-          space, style, border_padding, inline_size, IntrinsicBlockSizeFunc,
-          LengthResolvePhase::kIntrinsic);
+      MinMaxSizes sizes;
+      sizes = ResolveMainBlockLength(space, style, border_padding, inline_size,
+                                     IntrinsicBlockSizeFunc,
+                                     LengthResolvePhase::kIntrinsic);
+      result = {sizes, /* depends_on_percentage_block_size */ false};
     }
   }
 
@@ -297,7 +301,7 @@ MinMaxSizes ComputeMinAndMaxContentContributionInternal(
     max = ResolveMaxBlockLength(space, style, border_padding, max_length,
                                 LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.Constrain(max);
+  result.sizes.Constrain(max);
 
   const Length& min_length = parent_writing_mode == WritingMode::kHorizontalTb
                                  ? style.MinWidth()
@@ -311,9 +315,9 @@ MinMaxSizes ComputeMinAndMaxContentContributionInternal(
     min = ResolveMinBlockLength(space, style, border_padding, min_length,
                                 LengthResolvePhase::kIntrinsic);
   }
-  computed_sizes.Encompass(min);
+  result.sizes.Encompass(min);
 
-  return computed_sizes;
+  return result;
 }
 
 }  // namespace
@@ -322,12 +326,15 @@ MinMaxSizes ComputeMinAndMaxContentContributionForTest(
     WritingMode parent_writing_mode,
     const ComputedStyle& style,
     const MinMaxSizes& min_max_sizes) {
-  auto MinMaxSizesFunc = [&]() -> MinMaxSizes { return min_max_sizes; };
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+    return {min_max_sizes, false};
+  };
   return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, style,
-                                                     MinMaxSizesFunc);
+                                                     MinMaxSizesFunc)
+      .sizes;
 }
 
-MinMaxSizes ComputeMinAndMaxContentContribution(
+MinMaxSizesResult ComputeMinAndMaxContentContribution(
     const ComputedStyle& parent_style,
     NGLayoutInputNode child,
     const MinMaxSizesInput& input) {
@@ -356,11 +363,18 @@ MinMaxSizes ComputeMinAndMaxContentContribution(
 
       if (needs_size_reset)
         box->ClearOverrideContainingBlockContentSize();
-      return result;
+
+      // Replaced elements which have a percentage block-size use the
+      // |MinMaxSizesInput::percentage_resolution_block_size| field.
+      bool depends_on_percentage_block_size =
+          child_style.LogicalMinHeight().IsPercentOrCalc() ||
+          child_style.LogicalHeight().IsPercentOrCalc() ||
+          child_style.LogicalMaxHeight().IsPercentOrCalc();
+      return {result, depends_on_percentage_block_size};
     }
   }
 
-  auto MinMaxSizesFunc = [&]() -> MinMaxSizes {
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
     // We need to set up a constraint space with correct fallback available
     // inline-size in case of orthogonal children.
     NGConstraintSpace indefinite_constraint_space;
@@ -404,9 +418,9 @@ LayoutUnit ComputeInlineSizeForFragment(
 
   const ComputedStyle& style = node.Style();
   Length logical_width = style.LogicalWidth();
-  auto MinMaxSizesFunc = [&]() -> MinMaxSizes {
+  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
     if (override_min_max_sizes_for_test)
-      return *override_min_max_sizes_for_test;
+      return {*override_min_max_sizes_for_test, false};
 
     return node.ComputeMinMaxSizes(
         space.GetWritingMode(),
@@ -1181,18 +1195,29 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
     const NGConstraintSpace& space,
     const NGBlockNode node,
     const NGBoxStrut& border_padding,
-    LayoutUnit parent_percentage_block_size) {
+    LayoutUnit input_percentage_block_size,
+    bool* uses_input_percentage_block_size) {
+  *uses_input_percentage_block_size = false;
+
   // Anonymous block or spaces should pass the percent size straight through.
   // If this node is OOF-positioned, our size was pre-calculated and we should
   // pass this through to our children.
   if (space.IsAnonymous() || node.IsAnonymousBlock() ||
-      node.IsOutOfFlowPositioned())
-    return parent_percentage_block_size;
+      node.IsOutOfFlowPositioned()) {
+    *uses_input_percentage_block_size = true;
+    return input_percentage_block_size;
+  }
 
+  const ComputedStyle& style = node.Style();
   LayoutUnit block_size = ComputeBlockSizeForFragmentInternal(
-      space, node.Style(), border_padding,
+      space, style, border_padding,
       CalculateDefaultBlockSize(space, node, border_padding), base::nullopt,
-      &parent_percentage_block_size);
+      &input_percentage_block_size);
+
+  if (style.LogicalMinHeight().IsPercentOrCalc() ||
+      style.LogicalHeight().IsPercentOrCalc() ||
+      style.LogicalMaxHeight().IsPercentOrCalc())
+    *uses_input_percentage_block_size = true;
 
   LayoutUnit child_percentage_block_size =
       block_size == kIndefiniteSize
@@ -1201,8 +1226,10 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
 
   // For OOF-positioned nodes, use the parent (containing-block) size.
   if (child_percentage_block_size == kIndefiniteSize &&
-      node.UseParentPercentageResolutionBlockSizeForChildren())
-    child_percentage_block_size = parent_percentage_block_size;
+      node.UseParentPercentageResolutionBlockSizeForChildren()) {
+    *uses_input_percentage_block_size = true;
+    child_percentage_block_size = input_percentage_block_size;
+  }
 
   return child_percentage_block_size;
 }
@@ -1245,7 +1272,7 @@ LayoutUnit ClampIntrinsicBlockSize(
   return current_intrinsic_block_size;
 }
 
-base::Optional<MinMaxSizes> CalculateMinMaxSizesIgnoringChildren(
+base::Optional<MinMaxSizesResult> CalculateMinMaxSizesIgnoringChildren(
     const NGBlockNode& node,
     const NGBoxStrut& border_scrollbar_padding) {
   MinMaxSizes sizes;
@@ -1256,19 +1283,23 @@ base::Optional<MinMaxSizes> CalculateMinMaxSizesIgnoringChildren(
       node.OverrideIntrinsicContentInlineSize();
   if (intrinsic_size_override != kIndefiniteSize) {
     sizes += intrinsic_size_override;
-    return sizes;
+    return MinMaxSizesResult{sizes,
+                             /* depends_on_percentage_block_size */ false};
   } else {
     LayoutUnit default_inline_size = node.DefaultIntrinsicContentInlineSize();
     if (default_inline_size != kIndefiniteSize) {
       sizes += default_inline_size;
-      return sizes;
+      return MinMaxSizesResult{sizes,
+                               /* depends_on_percentage_block_size */ false};
     }
   }
 
   // Size contained elements don't consider children for intrinsic sizing.
   // Also, if we don't have children, we can determine the size immediately.
-  if (node.ShouldApplySizeContainment() || !node.FirstChild())
-    return sizes;
+  if (node.ShouldApplySizeContainment() || !node.FirstChild()) {
+    return MinMaxSizesResult{sizes,
+                             /* depends_on_percentage_block_size */ false};
+  }
 
   return base::nullopt;
 }

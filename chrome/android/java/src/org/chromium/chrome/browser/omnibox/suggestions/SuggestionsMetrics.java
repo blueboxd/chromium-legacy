@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
+import android.os.Debug;
+
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.TimeUnit;
@@ -24,60 +26,62 @@ class SuggestionsMetrics {
     private static final long MAX_HISTOGRAM_DURATION_US = TimeUnit.MILLISECONDS.toMicros(10);
     private static final int NUM_DURATION_BUCKETS = 100;
 
+    /** Class for reporting timing metrics using try-with-resources block. */
+    public static class TimingMetric implements AutoCloseable {
+        private final String mMetricName;
+        private final long mStartTime;
+
+        /**
+         * Creates an instance and starts the timer.
+         * @param metricName The name of the metric to be reported on close.
+         */
+        public TimingMetric(String metricName) {
+            mMetricName = metricName;
+            mStartTime = Debug.threadCpuTimeNanos();
+        }
+
+        @Override
+        public void close() {
+            final long endTime = Debug.threadCpuTimeNanos();
+            final long duration = getDurationInMicroseconds(mStartTime, endTime);
+            if (duration < 0) return;
+            RecordHistogram.recordCustomTimesHistogram(mMetricName, duration,
+                    MIN_HISTOGRAM_DURATION_US, MAX_HISTOGRAM_DURATION_US, NUM_DURATION_BUCKETS);
+        }
+    }
+
     /**
-     * Measure duration between two timestamps in hundreds of microseconds.
+     * Measure duration between two timestamps in microseconds.
      *
      * @param startTimeNs Operation start timestamp (nanoseconds).
      * @param endTimeNs Operation end time (nanoseconds).
      * @return Duration in hundreds of microseconds or -1, if timestamps were invalid.
      */
-    private static final long getDurationInHundredsOfMicroseconds(
-            long startTimeNs, long endTimeNs) {
+    private static final long getDurationInMicroseconds(long startTimeNs, long endTimeNs) {
         if (startTimeNs == -1 || endTimeNs == -1) return -1;
         return TimeUnit.NANOSECONDS.toMicros(endTimeNs - startTimeNs);
     }
 
     /**
      * Record how long the Suggestion List needed to layout its content and children.
-     *
-     * @param startTimeNs Operation start timestamp (nanoseconds).
-     * @param endTimeNs Operation end timestamp (nanoseconds).
      */
-    static final void recordSuggestionListLayoutTime(long startTimeNs, long endTimeNs) {
-        final long duration = getDurationInHundredsOfMicroseconds(startTimeNs, endTimeNs);
-        if (duration < 0) return;
-        RecordHistogram.recordCustomTimesHistogram("Android.Omnibox.SuggestionList.LayoutTime",
-                duration, MIN_HISTOGRAM_DURATION_US, MAX_HISTOGRAM_DURATION_US,
-                NUM_DURATION_BUCKETS);
+    static final SuggestionsMetrics.TimingMetric recordSuggestionListLayoutTime() {
+        return new TimingMetric("Android.Omnibox.SuggestionList.LayoutTime");
     }
 
     /**
      * Record how long the Suggestion List needed to measure its content and children.
-     *
-     * @param startTimeNs Operation start timestamp (nanoseconds).
-     * @param endTimeNs Operation end timestamp (nanoseconds).
      */
-    static final void recordSuggestionListMeasureTime(long startTimeNs, long endTimeNs) {
-        final long duration = getDurationInHundredsOfMicroseconds(startTimeNs, endTimeNs);
-        if (duration < 0) return;
-        RecordHistogram.recordCustomTimesHistogram("Android.Omnibox.SuggestionList.MeasureTime",
-                duration, MIN_HISTOGRAM_DURATION_US, MAX_HISTOGRAM_DURATION_US,
-                NUM_DURATION_BUCKETS);
+    static final SuggestionsMetrics.TimingMetric recordSuggestionListMeasureTime() {
+        return new TimingMetric("Android.Omnibox.SuggestionList.MeasureTime");
     }
 
     /**
      * Record the amount of time needed to create a new suggestion view.
      * The type of view is intentionally ignored for this call.
-     *
-     * @param startTimeNs Operation start timestamp (nanoseconds).
-     * @param endTimeNs Operation end timestamp (nanoseconds).
      */
-    static final void recordSuggestionViewCreateTime(long startTimeNs, long endTimeNs) {
-        final long duration = getDurationInHundredsOfMicroseconds(startTimeNs, endTimeNs);
-        if (duration < 0) return;
-        RecordHistogram.recordCustomTimesHistogram("Android.Omnibox.SuggestionView.CreateTime",
-                duration, MIN_HISTOGRAM_DURATION_US, MAX_HISTOGRAM_DURATION_US,
-                NUM_DURATION_BUCKETS);
+    static final SuggestionsMetrics.TimingMetric recordSuggestionViewCreateTime() {
+        return new TimingMetric("Android.Omnibox.SuggestionView.CreateTime");
     }
 
     /**

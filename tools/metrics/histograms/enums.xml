@@ -3985,6 +3985,42 @@ Unknown properties are collapsed to zero. -->
   <int value="28" label="TILE_SUGGESTION"/>
 </enum>
 
+<enum name="AutofillAddressProfileImportCountrySpecificFieldRequirement">
+  <int value="0" label="All required fields present"/>
+  <int value="1" label="Missing: ZIP"/>
+  <int value="2" label="Missing: State"/>
+  <int value="3" label="Missing: City"/>
+  <int value="4" label="Missing: Zip, State"/>
+  <int value="5" label="Missing: Zip, City"/>
+  <int value="6" label="Missing: State, City"/>
+  <int value="7" label="Missing: ZIP, State, City"/>
+</enum>
+
+<enum name="AutofillAddressProfileImportRequirement">
+  <int value="0" label="Email is unique: Violated"/>
+  <int value="1" label="Email is unique: Fulfilled"/>
+  <int value="2" label="No invalid field types: Violated"/>
+  <int value="3" label="No invalid field types: Fulfilled"/>
+  <int value="4" label="City requirement: Violated"/>
+  <int value="5" label="City requirement: Fulfilled"/>
+  <int value="6" label="State requirement: Violated"/>
+  <int value="7" label="State requirement: Fulfilled"/>
+  <int value="8" label="ZIP requirement: Violated"/>
+  <int value="9" label="ZIP requirement: Fulfilled"/>
+  <int value="10" label="Valid email: Violated"/>
+  <int value="11" label="Valid email: Fulfilled"/>
+  <int value="12" label="Valid country: Violated"/>
+  <int value="13" label="Valid country: Fulfilled"/>
+  <int value="14" label="Valid state: Violated"/>
+  <int value="15" label="Valid state: Fulfilled"/>
+  <int value="16" label="Valid ZIP: Violated"/>
+  <int value="17" label="Valid ZIP: Fulfilled"/>
+  <int value="18" label="Valid phone: Violated"/>
+  <int value="19" label="Valid phone: Fulfilled"/>
+  <int value="20" label="Overall: Violated"/>
+  <int value="21" label="Overall: Fulfilled"/>
+</enum>
+
 <enum name="AutofillAssistantDropOutReason">
   <int value="0" label="Autofill Assistant started"/>
   <int value="1" label="Autostart timed out"/>

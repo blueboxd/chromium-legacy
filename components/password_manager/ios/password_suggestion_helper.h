@@ -63,18 +63,12 @@ class WebState;
 // parameter indicating whether suggestions are available or not.
 // See //components/autofill/ios/form_util/form_activity_params.h for definition
 // of other parameters.
-- (void)
-    checkIfSuggestionsAvailableForForm:(NSString*)formName
-                          uniqueFormID:(autofill::FormRendererId)uniqueFormID
-                       fieldIdentifier:(NSString*)fieldIdentifier
-                         uniqueFieldID:(autofill::FieldRendererId)uniqueFieldID
-                             fieldType:(NSString*)fieldType
-                                  type:(NSString*)type
-                               frameID:(NSString*)frameID
-                           isMainFrame:(BOOL)isMainFrame
-                              webState:(web::WebState*)webState
-                     completionHandler:
-                         (SuggestionsAvailableCompletion)completion;
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
+                               isMainFrame:(BOOL)isMainFrame
+                                  webState:(web::WebState*)webState
+                         completionHandler:
+                             (SuggestionsAvailableCompletion)completion;
 
 // Retrieves password form fill data for |username| for use in
 // |PasswordFormHelper|'s

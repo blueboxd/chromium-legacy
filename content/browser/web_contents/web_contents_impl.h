@@ -758,6 +758,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const std::string& http_request,
       const std::string& mime_type,
       network::mojom::RequestDestination request_destination) override;
+  void DomOperationResponse(const std::string& json_string) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1423,9 +1424,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);
-
-  void OnDomOperationResponse(RenderFrameHostImpl* source,
-                              const std::string& json_string);
 #if BUILDFLAG(ENABLE_PLUGINS)
   void OnPepperInstanceCreated(RenderFrameHostImpl* source,
                                int32_t pp_instance);

@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -47,6 +48,7 @@ CertProvisioningSchedulerUserServiceFactory::
           "CertProvisioningSchedulerUserService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(chromeos::platform_keys::PlatformKeysServiceFactory::GetInstance());
+  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
 }
 
 bool CertProvisioningSchedulerUserServiceFactory::

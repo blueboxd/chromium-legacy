@@ -490,6 +490,27 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldExposeNewlyTrackedAccountIdIfChanged) {
+  std::unique_ptr<MetadataBatch> metadata_batch = db()->CreateMetadataBatch();
+  sync_pb::ModelTypeState model_type_state(metadata_batch->GetModelTypeState());
+  model_type_state.set_initial_sync_done(true);
+  model_type_state.set_cache_guid(kCacheGuid);
+  model_type_state.set_authenticated_account_id("PersistedAccountId");
+  model_type_state.mutable_progress_marker()->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(GetModelType()));
+  metadata_batch->SetModelTypeState(model_type_state);
+  type_processor()->ModelReadyToSync(std::move(metadata_batch));
+
+  // Even prior to starting sync, the account ID should already be tracked.
+  ASSERT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
+
+  // If sync gets started, the new account should be tracked.
+  OnSyncStarting("NewAccountId");
+  EXPECT_TRUE(type_processor()->IsTrackingMetadata());
+  EXPECT_EQ("NewAccountId", type_processor()->TrackedAccountId());
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldExposeNewlyTrackedCacheGuid) {
   ModelReadyToSync();
   ASSERT_EQ("", type_processor()->TrackedCacheGuid());

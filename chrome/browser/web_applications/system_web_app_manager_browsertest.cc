@@ -1158,7 +1158,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
 // This feature will only work when DesktopPWAsWithoutExtensions launches.
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerAppSuspensionBrowserTest,
-                         ::testing::Values(ProviderType::kWebApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
 #endif  // defined(OS_CHROMEOS)

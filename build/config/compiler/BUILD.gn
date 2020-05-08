@@ -638,11 +638,6 @@ config("compiler") {
       }
     }
 
-    # Work-around for http://openradar.appspot.com/20356002
-    if (is_mac) {
-      ldflags += [ "-Wl,-all_load" ]
-    }
-
     # This flag causes LTO to create an .ARM.attributes section with the correct
     # architecture. This is necessary because LLD will refuse to link a program
     # unless the architecture revision in .ARM.attributes is sufficiently new.

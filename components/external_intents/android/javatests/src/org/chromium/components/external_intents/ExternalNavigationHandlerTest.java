@@ -1963,34 +1963,8 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public int countSpecializedHandlers(List<ResolveInfo> infos) {
-            return getSpecializedHandlers(infos).size();
-        }
-
-        @Override
-        public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
-            ArrayList<String> result = new ArrayList<>();
-            List<IntentActivity> matchingIntentActivities = findMatchingIntentActivities(infos);
-            for (IntentActivity intentActivity : matchingIntentActivities) {
-                if (intentActivity.isSpecialized()) {
-                    result.add(intentActivity.packageName());
-                }
-            }
-
-            return result;
-        }
-
-        private ArrayList<IntentActivity> findMatchingIntentActivities(List<ResolveInfo> infos) {
-            ArrayList<IntentActivity> outList = new ArrayList<IntentActivity>();
-            for (ResolveInfo info : infos) {
-                String packageName = info.activityInfo.packageName;
-                for (IntentActivity intentActivity : mIntentActivities) {
-                    if (intentActivity.packageName().equals(packageName)) {
-                        outList.add(intentActivity);
-                    }
-                }
-            }
-            return outList;
+        public boolean handlesInstantAppLaunchingInternally() {
+            return false;
         }
 
         @Override

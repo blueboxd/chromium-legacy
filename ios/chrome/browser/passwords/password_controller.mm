@@ -379,14 +379,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   return self;
 }
 
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                              uniqueFormID:(FormRendererId)uniqueFormID
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                             uniqueFieldID:(FieldRendererId)uniqueFieldID
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                typedValue:(NSString*)typedValue
-                                   frameID:(NSString*)frameID
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -395,81 +389,70 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
     return;
   [self.suggestionHelper
-      checkIfSuggestionsAvailableForForm:formName
-                            uniqueFormID:uniqueFormID
-                         fieldIdentifier:fieldIdentifier
-                           uniqueFieldID:uniqueFieldID
-                               fieldType:fieldType
-                                    type:type
-                                 frameID:frameID
+      checkIfSuggestionsAvailableForForm:formQuery
                              isMainFrame:isMainFrame
                                 webState:webState
                        completionHandler:^(BOOL suggestionsAvailable) {
                          // Always display "Show All..." for password fields.
-                         completion([fieldType isEqualToString:@"password"] ||
+                         completion([formQuery isOnPasswordField] ||
                                     suggestionsAvailable);
                        }];
 
   if (self.isPasswordGenerated &&
-      [fieldIdentifier isEqualToString:self.passwordGeneratedIdentifier]) {
+      [formQuery.fieldIdentifier isEqual:self.passwordGeneratedIdentifier]) {
     // On other platforms, when the user clicks on generation field, we show
     // password in clear text. And the user has the possibility to edit it. On
     // iOS, it's harder to do (it's probably bad idea to change field type from
     // password to text). The decision was to give everything to the automatic
     // flow and avoid the manual flow, for a cleaner and simpler UI.
-    if (typedValue.length < kMinimumLengthForEditedPassword) {
+    if (formQuery.typedValue.length < kMinimumLengthForEditedPassword) {
       self.isPasswordGenerated = NO;
       self.passwordGeneratedIdentifier = nil;
       self.passwordManager->OnPasswordNoLongerGenerated(
           self.passwordManagerDriver);
     } else {
       // Inject updated value to possibly update confirmation field.
-      [self injectGeneratedPasswordForFormName:formName
-                             generatedPassword:typedValue
+      [self injectGeneratedPasswordForFormName:formQuery.formName
+                             generatedPassword:formQuery.typedValue
                              completionHandler:nil];
     }
   }
 
-  if (![fieldIdentifier isEqualToString:_lastTypedfieldIdentifier] ||
-      ![typedValue isEqualToString:_lastTypedValue]) {
+  if (![formQuery.fieldIdentifier isEqual:_lastTypedfieldIdentifier] ||
+      ![formQuery.typedValue isEqual:_lastTypedValue]) {
     // This method is called multiple times for the same user keystroke. Inform
     // only once the keystroke.
-    _lastTypedfieldIdentifier = fieldIdentifier;
-    _lastTypedValue = typedValue;
+    _lastTypedfieldIdentifier = formQuery.fieldIdentifier;
+    _lastTypedValue = formQuery.typedValue;
 
     self.passwordManager->UpdateStateOnUserInput(
-        self.passwordManagerDriver, SysNSStringToUTF16(formName),
-        SysNSStringToUTF16(fieldIdentifier), SysNSStringToUTF16(typedValue));
+        self.passwordManagerDriver, SysNSStringToUTF16(formQuery.formName),
+        SysNSStringToUTF16(formQuery.fieldIdentifier),
+        SysNSStringToUTF16(formQuery.typedValue));
   }
 }
 
-- (void)retrieveSuggestionsForForm:(NSString*)formName
-                      uniqueFormID:(FormRendererId)uniqueFormID
-                   fieldIdentifier:(NSString*)fieldIdentifier
-                     uniqueFieldID:(FieldRendererId)uniqueFieldID
-                         fieldType:(NSString*)fieldType
-                              type:(NSString*)type
-                        typedValue:(NSString*)typedValue
-                           frameID:(NSString*)frameID
+- (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
     return;
-  NSArray<FormSuggestion*>* rawSuggestions =
-      [self.suggestionHelper retrieveSuggestionsWithFormID:uniqueFormID
-                                           fieldIdentifier:uniqueFieldID
-                                                 fieldType:fieldType];
+  NSArray<FormSuggestion*>* rawSuggestions = [self.suggestionHelper
+      retrieveSuggestionsWithFormID:formQuery.uniqueFormID
+                    fieldIdentifier:formQuery.uniqueFieldID
+                          fieldType:formQuery.fieldType];
 
   NSMutableArray<FormSuggestion*>* suggestions = [NSMutableArray array];
-  bool isPasswordField = [fieldType isEqual:@"password"];
+  bool isPasswordField = [formQuery isOnPasswordField];
   for (FormSuggestion* rawSuggestion in rawSuggestions) {
     // 1) If this is a focus event or the field is empty show all suggestions.
     // Otherwise:
     // 2) If this is a username field then show only credentials with matching
     // prefixes. 3) If this is a password field then show suggestions only if
     // the field is empty.
-    if (![type isEqual:@"focus"] && typedValue.length > 0 &&
-        (isPasswordField || ![rawSuggestion.value hasPrefix:typedValue])) {
+    if (![formQuery hasFocusType] && formQuery.typedValue.length > 0 &&
+        (isPasswordField ||
+         ![rawSuggestion.value hasPrefix:formQuery.typedValue])) {
       continue;
     }
     [suggestions
@@ -486,9 +469,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     suggestion_state = PasswordDropdownState::kStandard;
   }
 
-  if ([self canGeneratePasswordForForm:formName
-                       fieldIdentifier:fieldIdentifier
-                             fieldType:fieldType]) {
+  if ([self canGeneratePasswordForForm:formQuery.formName
+                       fieldIdentifier:formQuery.fieldIdentifier
+                             fieldType:formQuery.fieldType]) {
     // Add "Suggest Password...".
     NSString* suggestPassword = GetNSString(IDS_IOS_SUGGEST_PASSWORD);
     [suggestions
@@ -878,7 +861,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
            ->IsGenerationEnabled(
                /*log_debug_data*/ true))
     return NO;
-  if (![fieldType isEqualToString:@"password"])
+  if (![fieldType isEqual:kPasswordFieldType])
     return NO;
   const PasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
@@ -887,7 +870,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   NSString* newPasswordIdentifier =
       SysUTF16ToNSString(generation_data->new_password_element);
-  if ([fieldIdentifier isEqualToString:newPasswordIdentifier])
+  if ([fieldIdentifier isEqual:newPasswordIdentifier])
     return YES;
 
   // Don't show password generation if the field is 'confirm password'.

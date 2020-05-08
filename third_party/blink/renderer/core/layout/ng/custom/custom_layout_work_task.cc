@@ -43,14 +43,15 @@ CustomLayoutWorkTask::~CustomLayoutWorkTask() = default;
 void CustomLayoutWorkTask::Run(
     const NGConstraintSpace& parent_space,
     const ComputedStyle& parent_style,
-    const LayoutUnit child_percentage_resolution_block_size_for_min_max) {
+    const LayoutUnit child_percentage_resolution_block_size_for_min_max,
+    bool* child_depends_on_percentage_block_size) {
   DCHECK(token_->IsValid());
   NGLayoutInputNode child = child_->GetLayoutNode();
 
   if (type_ == CustomLayoutWorkTask::TaskType::kIntrinsicSizes) {
     RunIntrinsicSizesTask(parent_style,
                           child_percentage_resolution_block_size_for_min_max,
-                          child);
+                          child, child_depends_on_percentage_block_size);
   } else {
     DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kLayoutFragment);
     RunLayoutFragmentTask(parent_space, parent_style, child);
@@ -144,15 +145,21 @@ void CustomLayoutWorkTask::RunLayoutFragmentTask(
 void CustomLayoutWorkTask::RunIntrinsicSizesTask(
     const ComputedStyle& parent_style,
     const LayoutUnit child_percentage_resolution_block_size_for_min_max,
-    NGLayoutInputNode child) {
+    NGLayoutInputNode child,
+    bool* child_depends_on_percentage_block_size) {
   DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kIntrinsicSizes);
   DCHECK(resolver_);
 
   MinMaxSizesInput input(child_percentage_resolution_block_size_for_min_max);
-  MinMaxSizes sizes =
+  MinMaxSizesResult result =
       ComputeMinAndMaxContentContribution(parent_style, child, input);
   resolver_->Resolve(MakeGarbageCollected<CustomIntrinsicSizes>(
-      child_, token_, sizes.min_size, sizes.max_size));
+      child_, token_, result.sizes.min_size, result.sizes.max_size));
+
+  if (child_depends_on_percentage_block_size) {
+    *child_depends_on_percentage_block_size |=
+        result.depends_on_percentage_block_size;
+  }
 }
 
 }  // namespace blink

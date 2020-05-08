@@ -209,6 +209,7 @@ mojom("mojom_platform") {
     "//third_party/blink/public/mojom/dom_storage",
     "//third_party/blink/public/mojom/frame",
     "//third_party/blink/public/mojom/usb",
+    "//ui/base/cursor/mojom",
     "//ui/base/ime/mojom",
     "//ui/display/mojom",
     "//ui/events/mojom",

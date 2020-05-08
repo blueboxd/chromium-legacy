@@ -40,7 +40,9 @@ class PLATFORM_EXPORT FontFallbackMap : public FontCacheClient,
   void FontCacheInvalidated() override;
 
   void InvalidateAll();
-  void InvalidateForLoadingFallback();
+
+  template <typename Predicate>
+  void InvalidateInternal(Predicate predicate);
 
   Member<FontSelector> font_selector_;
   HashMap<FontDescription, scoped_refptr<FontFallbackList>>

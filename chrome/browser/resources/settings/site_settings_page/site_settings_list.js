@@ -142,8 +142,10 @@ Polymer({
    * @private
    */
   refreshDefaultValueLabel_(category) {
-    // Default labels are not applicable to ZOOM_LEVELS or PDF.
+    // Default labels are not applicable to ZOOM_LEVELS, PDF or
+    // PROTECTED_CONTENT
     if (category === ContentSettingsTypes.ZOOM_LEVELS ||
+        category === ContentSettingsTypes.PROTECTED_CONTENT ||
         category === 'pdfDocuments') {
       return Promise.resolve();
     }

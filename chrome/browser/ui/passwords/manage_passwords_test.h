@@ -48,6 +48,9 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   void SetupAutoSignin(
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials);
 
+  // Put the controller, icon, and bubble into a moving-password state.
+  void SetupMovingPasswords();
+
   // Get samples for |histogram|.
   std::unique_ptr<base::HistogramSamples> GetSamples(const char* histogram);
 

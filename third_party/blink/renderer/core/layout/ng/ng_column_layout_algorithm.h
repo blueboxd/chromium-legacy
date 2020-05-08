@@ -26,7 +26,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  MinMaxSizes ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
 
  private:
   // Lay out as many children as we can. If |kNeedsEarlierBreak| is returned, it

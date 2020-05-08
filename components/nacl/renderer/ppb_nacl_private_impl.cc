@@ -1239,18 +1239,18 @@ PP_Bool PPBNaClPrivate::GetPnaclResourceInfo(PP_Instance instance,
   buffer.get()[rc] = 0;
 
   // Expect the JSON file to contain a top-level object (dictionary).
-  base::JSONReader json_reader;
-  int json_read_error_code;
-  std::string json_read_error_msg;
-  std::unique_ptr<base::DictionaryValue> json_dict(
-      base::DictionaryValue::From(json_reader.ReadAndReturnErrorDeprecated(
-          buffer.get(), base::JSON_PARSE_RFC, &json_read_error_code,
-          &json_read_error_msg)));
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(buffer.get());
+  std::unique_ptr<base::DictionaryValue> json_dict;
+  if (parsed_json.value) {
+    json_dict = base::DictionaryValue::From(
+        base::Value::ToUniquePtrValue(std::move(*parsed_json.value)));
+  }
   if (!json_dict) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         std::string("Parsing resource info failed: JSON parse error: ") +
-            json_read_error_msg);
+            parsed_json.error_message);
     return PP_FALSE;
   }
 

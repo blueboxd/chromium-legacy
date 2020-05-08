@@ -25,7 +25,6 @@ html {
   <iframe id=frame srcdoc='<body style="margin: 5px"><iframe width=75 height=75></iframe></body>'></iframe>
 </div>
 <script src="../../resources/js-test.js"></script>
-<script src="../../resources/gesture-util.js"></script>
 <script>
 setPrintTestResultsLazily();
 if (window.internals)
@@ -54,7 +53,7 @@ function hitTestCacheHitsDelta(doc)
     return newCount - lastCount;
 }
 
-async function logCounts(label, documents, multiTapNotification, eventSenderFunction)
+function logCounts(label, documents, multiTapNotification, eventSenderFunction)
 {
     if (eventSenderFunction)
         eventSenderFunction();
@@ -84,7 +83,7 @@ function clearCounts(documents)
     }
 }
 
-async function sendEvents(targetX, targetY, documents, multiTapNotification)
+function sendEvents(targetX, targetY, documents, multiTapNotification)
 {
     logCounts('Initial', documents, multiTapNotification);
 
@@ -100,10 +99,8 @@ async function sendEvents(targetX, targetY, documents, multiTapNotification)
         eventSender.mouseUp();
     });
 
-    logCounts('Wheel', documents, multiTapNotification, async function() {
-
-        var scrollPosition = {x: targetX, y: targetY};
-        await wheelTick(0, -5, scrollPosition);
+    logCounts('Wheel', documents, multiTapNotification, function() {
+        eventSender.mouseScrollBy(0, 5, false, false, 0, false);
     });
 
     logCounts('TouchStart', documents, multiTapNotification, function() {
@@ -135,15 +132,22 @@ async function sendEvents(targetX, targetY, documents, multiTapNotification)
         eventSender.gestureTap(targetX, targetY, 1, 30, 30, unique_event_id + 3);
     });
 
-    // There should be only one hit test as part of the scroll begin.
-    logCounts('GestureScroll', documents, multiTapNotification, async function() {
+    logCounts('GestureScrollBegin', documents, multiTapNotification, function() {
         eventSender.gestureTapDown(targetX, targetY, 30, 30);
         clearCounts(documents);
-        await smoothScrollWithXY(0, 5, targetX, targetY, GestureSourceType.MOUSE_INPUT, SPEED_INSTANT);
+        eventSender.gestureScrollBegin(targetX, targetY);
     });
 
     logCounts('GestureTapCancel', documents, multiTapNotification, function() {
         eventSender.gestureTapCancel(targetX, targetY);
+    });
+
+    logCounts('GestureScrollUpdate', documents, multiTapNotification, function() {
+        eventSender.gestureScrollUpdate(0, 5);
+    });
+
+    logCounts('GestureScrollEnd', documents, multiTapNotification, function() {
+        eventSender.gestureScrollEnd(0, 5);
     });
 
     logCounts('DoubleFingerTouch', documents, multiTapNotification, function() {

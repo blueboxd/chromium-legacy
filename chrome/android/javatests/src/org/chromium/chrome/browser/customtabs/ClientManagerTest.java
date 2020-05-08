@@ -21,10 +21,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.components.embedder_support.util.Origin;
@@ -207,7 +207,7 @@ public class ClientManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
             Assert.assertEquals(
-                    IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
+                    IntentUtils.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
 
             // initializeWithPostMessageOriginForSession should override without checking
             // origin.
@@ -248,7 +248,7 @@ public class ClientManagerTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Uri verifiedOrigin = cm.getPostMessageOriginForSessionForTesting(mSession);
             Assert.assertEquals(
-                    IntentHandler.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
+                    IntentUtils.ANDROID_APP_REFERRER_SCHEME, verifiedOrigin.getScheme());
             // initializeWithPostMessageOriginForSession should override without checking
             // origin.
             cm.initializeWithPostMessageOriginForSession(mSession, null);

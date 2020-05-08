@@ -5351,11 +5351,6 @@ crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 # Temporarily disabled to a breakpoint non-determinism issue.
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
 
-# eval+Trusted Types failures while the feature is implemented.
-external/wpt/trusted-types/eval-csp-no-tt.tentative.https.html [ Failure Pass ]
-external/wpt/trusted-types/eval-no-csp-no-tt.tentative.https.html [ Failure Pass ]
-external/wpt/trusted-types/eval-no-csp-no-tt-default-policy.tentative.https.html [ Failure Pass ]
-
 # First frame not always painted in time
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]

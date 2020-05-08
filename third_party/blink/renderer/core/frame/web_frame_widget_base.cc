@@ -698,6 +698,10 @@ void WebFrameWidgetBase::SetDisplayMode(mojom::blink::DisplayMode mode) {
   }
 }
 
+void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
+  widget_base_->SetCursor(cursor);
+}
+
 void WebFrameWidgetBase::RequestAnimationAfterDelay(
     const base::TimeDelta& delay) {
   DCHECK(request_animation_after_delay_timer_.get());

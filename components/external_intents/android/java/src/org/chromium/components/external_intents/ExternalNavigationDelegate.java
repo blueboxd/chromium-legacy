@@ -6,7 +6,6 @@ package org.chromium.components.external_intents;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 
 import androidx.annotation.NonNull;
 
@@ -14,9 +13,6 @@ import org.chromium.components.external_intents.ExternalNavigationHandler.Overri
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A delegate for the class responsible for navigating to external applications from Chrome. Used
@@ -41,15 +37,10 @@ public interface ExternalNavigationDelegate {
     boolean shouldDisableExternalIntentRequestsForUrl(String url);
 
     /**
-     * Returns the number of specialized intent handlers in {@params infos}. Specialized intent
-     * handlers are intent handlers which handle only a few URLs (e.g. google maps or youtube).
+     * Returns whether the embedder has custom integration with InstantApps (most embedders will not
+     * have any such integration).
      */
-    int countSpecializedHandlers(List<ResolveInfo> infos);
-
-    /**
-     * Returns the subset of {@params infos} that are specialized intent handlers.
-     */
-    ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos);
+    boolean handlesInstantAppLaunchingInternally();
 
     /**
      * Start an activity for the intent. Used for intents that must be handled externally.

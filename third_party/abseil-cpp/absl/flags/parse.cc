@@ -39,6 +39,7 @@
 #include "absl/flags/internal/commandlineflag.h"
 #include "absl/flags/internal/flag.h"
 #include "absl/flags/internal/parse.h"
+#include "absl/flags/internal/private_handle_accessor.h"
 #include "absl/flags/internal/program_name.h"
 #include "absl/flags/internal/registry.h"
 #include "absl/flags/internal/usage.h"
@@ -298,7 +299,8 @@ void CheckDefaultValuesParsingRoundtrip() {
     ABSL_FLAGS_INTERNAL_BUILTIN_TYPES(IGNORE_TYPE)
 #undef IGNORE_TYPE
 
-    flag->CheckDefaultValueParsingRoundtrip();
+    flags_internal::PrivateHandleAccessor::CheckDefaultValueParsingRoundtrip(
+        *flag);
   });
 #endif
 }
@@ -696,7 +698,8 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
     if (flag->IsRetired()) continue;
 
     std::string error;
-    if (!flag->ParseFrom(value, SET_FLAGS_VALUE, kCommandLine, &error)) {
+    if (!flags_internal::PrivateHandleAccessor::ParseFrom(
+            flag, value, SET_FLAGS_VALUE, kCommandLine, &error)) {
       flags_internal::ReportUsageError(error, true);
       success = false;
     }

@@ -926,8 +926,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
-                        OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunInsecureContent,
                         OnDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayContentWithCertificateErrors,
@@ -4962,16 +4960,6 @@ void WebContentsImpl::UnregisterProtocolHandler(RenderFrameHostImpl* source,
   delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
 }
 
-void WebContentsImpl::OnDomOperationResponse(RenderFrameHostImpl* source,
-                                             const std::string& json_string) {
-  // TODO(nick, lukasza): The notification below should probably be updated to
-  // include |source|.
-  std::string json = json_string;
-  NotificationService::current()->Notify(NOTIFICATION_DOM_OPERATION_RESPONSE,
-                                         Source<WebContents>(this),
-                                         Details<std::string>(&json));
-}
-
 void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
                                          bool blocked_by_policy) {
   // TODO(nick): Should we consider |source| here? Should we call FilterURL on
@@ -4980,6 +4968,17 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
   // Notify observers about navigation.
   for (auto& observer : observers_)
     observer.AppCacheAccessed(manifest_url, blocked_by_policy);
+}
+
+void WebContentsImpl::DomOperationResponse(const std::string& json_string) {
+  // TODO(lukasza): The notification below should probably indicate which
+  // RenderFrameHostImpl the message is coming from. This can enable tests to
+  // talk to 2 frames at the same time, without being confused which frame a
+  // given response comes from.  See also a corresponding TODO in the
+  // ExecuteScriptHelper in //content/public/test/browser_test_utils.cc
+  NotificationService::current()->Notify(
+      NOTIFICATION_DOM_OPERATION_RESPONSE, Source<WebContents>(this),
+      Details<const std::string>(&json_string));
 }
 
 void WebContentsImpl::OnServiceWorkerAccessed(

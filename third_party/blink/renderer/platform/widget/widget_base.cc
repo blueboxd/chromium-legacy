@@ -232,4 +232,8 @@ void WidgetBase::AddPresentationCallback(
   layer_tree_view_->AddPresentationCallback(frame_token, std::move(callback));
 }
 
+void WidgetBase::SetCursor(const ui::Cursor& cursor) {
+  widget_host_->SetCursor(cursor);
+}
+
 }  // namespace blink

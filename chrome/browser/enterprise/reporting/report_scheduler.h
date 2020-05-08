@@ -32,7 +32,8 @@ class ReportScheduler : public ProfileManagerObserver,
                         public BuildStateObserver {
  public:
   ReportScheduler(policy::CloudPolicyClient* client,
-                  std::unique_ptr<ReportGenerator> report_generator);
+                  std::unique_ptr<ReportGenerator> report_generator,
+                  Profile* profile = nullptr);
 
   ~ReportScheduler() override;
 

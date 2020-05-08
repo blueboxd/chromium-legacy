@@ -443,6 +443,7 @@ mojom("mojo_bindings") {
     "ax_content_tree_update.mojom",
     "child_process.mojom",
     "document_scoped_interface_bundle.mojom",
+    "dom_automation_controller.mojom",
     "download/mhtml_file_writer.mojom",
     "field_trial_recorder.mojom",
     "frame.mojom",

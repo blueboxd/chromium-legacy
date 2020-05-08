@@ -221,11 +221,6 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   std::unique_ptr<ForwardingSchemaRegistry>
       signin_profile_forwarding_schema_registry_;
 
-  // Manages provisioning of certificates from
-  // RequiredClientCertificateForDevice device policy.
-  std::unique_ptr<chromeos::cert_provisioning::CertProvisioningScheduler>
-      device_cert_provisioning_scheduler_;
-
   // Whether the component cloud policy should be disabled (by skipping the
   // component cloud policy service creation).
   bool component_policy_disabled_for_testing_ = false;

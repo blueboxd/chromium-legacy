@@ -164,15 +164,15 @@ inline scoped_refptr<const NGLayoutResult> LayoutWithAlgorithm(
   return result;
 }
 
-inline MinMaxSizes ComputeMinMaxSizesWithAlgorithm(
+inline MinMaxSizesResult ComputeMinMaxSizesWithAlgorithm(
     const NGLayoutAlgorithmParams& params,
     const MinMaxSizesInput& input) {
-  MinMaxSizes min_max_sizes;
+  MinMaxSizesResult result;
   DetermineAlgorithmAndRun(
-      params, [&min_max_sizes, &input](NGLayoutAlgorithmOperations* algorithm) {
-        min_max_sizes = algorithm->ComputeMinMaxSizes(input);
+      params, [&result, &input](NGLayoutAlgorithmOperations* algorithm) {
+        result = algorithm->ComputeMinMaxSizes(input);
       });
-  return min_max_sizes;
+  return result;
 }
 
 void UpdateLegacyMultiColumnFlowThread(
@@ -328,10 +328,8 @@ void SetupBoxLayoutExtraInput(const NGConstraintSpace& space,
 
 bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
                                       const NGBlockNode& node) {
-  const auto& box = *node.GetLayoutBox();
-
   // Obviously can't use the cache if our intrinsic logical widths are dirty.
-  if (box.IntrinsicLogicalWidthsDirty())
+  if (node.GetLayoutBox()->IntrinsicLogicalWidthsDirty())
     return false;
 
   // We don't store the float inline sizes for comparison, always skip the
@@ -344,24 +342,6 @@ bool CanUseCachedIntrinsicInlineSizes(const MinMaxSizesInput& input,
   if (style.MayHavePadding() && (style.PaddingStart().IsPercentOrCalc() ||
                                  style.PaddingEnd().IsPercentOrCalc()))
     return false;
-
-  // Check if the %-block-size matches.
-  if (input.percentage_resolution_block_size !=
-      box.IntrinsicLogicalWidthsPercentageResolutionBlockSize()) {
-    // Miss the cache if our children use our %-block-size.
-    if (node.UseParentPercentageResolutionBlockSizeForChildren())
-      return false;
-
-    // OOF-positioned nodes have the %-block-size computed for their children
-    // up front.
-    if (node.IsOutOfFlowPositioned())
-      return false;
-
-    if (style.LogicalHeight().IsPercentOrCalc() ||
-        style.LogicalMinHeight().IsPercentOrCalc() ||
-        style.LogicalMaxHeight().IsPercentOrCalc())
-      return false;
-  }
 
   return true;
 }
@@ -691,7 +671,7 @@ void NGBlockNode::FinishLayout(
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result, break_token);
 }
 
-MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
+MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     WritingMode container_writing_mode,
     const MinMaxSizesInput& input,
     const NGConstraintSpace* constraint_space) {
@@ -700,17 +680,19 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
   if (IsListItem())
     ToLayoutNGListItem(box_)->UpdateMarkerTextIfNeeded();
 
-  MinMaxSizes sizes;
   bool is_orthogonal_flow_root =
       !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
   // If we're orthogonal, run layout to compute the sizes.
   if (is_orthogonal_flow_root) {
+    MinMaxSizes sizes;
     // Some other areas of the code can query the intrinsic-sizes while outside
     // of the layout phase.
     // TODO(ikilpatrick): Remove this check.
-    if (!box_->GetFrameView()->IsInPerformLayout())
-      return ComputeMinMaxSizesFromLegacy(input);
+    if (!box_->GetFrameView()->IsInPerformLayout()) {
+      sizes = ComputeMinMaxSizesFromLegacy(input);
+      return {sizes, /* depends_on_percentage_block_size */ false};
+    }
 
     DCHECK(constraint_space);
     scoped_refptr<const NGLayoutResult> layout_result =
@@ -719,43 +701,106 @@ MinMaxSizes NGBlockNode::ComputeMinMaxSizes(
     sizes =
         NGFragment(container_writing_mode, layout_result->PhysicalFragment())
             .InlineSize();
-    return sizes;
+    return {sizes, /* depends_on_percentage_block_size */ false};
   }
 
-  // Attempt to use our cached sizes.
-  if (CanUseCachedIntrinsicInlineSizes(input, *this)) {
-    return box_->IsTable() ? box_->PreferredLogicalWidths()
-                           : box_->IntrinsicLogicalWidths();
+  bool can_use_cached_intrinsic_inline_sizes =
+      CanUseCachedIntrinsicInlineSizes(input, *this);
+
+  // Use our cached sizes if either:
+  //  - The %-block-sizes match.
+  //  - We don't have a descendant which depends on the %-block-size.
+  if (can_use_cached_intrinsic_inline_sizes &&
+      (input.percentage_resolution_block_size ==
+           box_->IntrinsicLogicalWidthsPercentageResolutionBlockSize() ||
+       !box_->IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize())) {
+    MinMaxSizes sizes = box_->IsTable() ? box_->PreferredLogicalWidths()
+                                        : box_->IntrinsicLogicalWidths();
+    bool depends_on_percentage_block_size =
+        box_->IntrinsicLogicalWidthsDependsOnPercentageBlockSize();
+    return {sizes, depends_on_percentage_block_size};
   }
 
-  box_->SetIntrinsicLogicalWidthsDirty();
-
-  if (!CanUseNewLayout())
-    return ComputeMinMaxSizesFromLegacy(input);
-
+  // Synthesize a zero space if not provided.
   auto zero_constraint_space = CreateConstraintSpaceForMinMax(*this);
   if (!constraint_space)
     constraint_space = &zero_constraint_space;
 
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
-  sizes = ComputeMinMaxSizesWithAlgorithm(
+
+  // Calculate the %-block-size for our children up front. This allows us to
+  // determine if |input|'s %-block-size is used.
+  bool uses_input_percentage_block_size = false;
+  LayoutUnit child_percentage_resolution_block_size =
+      CalculateChildPercentageBlockSizeForMinMax(
+          *constraint_space, *this,
+          fragment_geometry.border + fragment_geometry.padding,
+          input.percentage_resolution_block_size,
+          &uses_input_percentage_block_size);
+
+  bool cache_depends_on_percentage_block_size =
+      uses_input_percentage_block_size &&
+      box_->IntrinsicLogicalWidthsChildDependsOnPercentageBlockSize();
+
+  // We might still be able to use the cached values if our children don't
+  // depend on the *input* %-block-size.
+  if (can_use_cached_intrinsic_inline_sizes &&
+      !cache_depends_on_percentage_block_size) {
+    MinMaxSizes sizes = box_->IsTable() ? box_->PreferredLogicalWidths()
+                                        : box_->IntrinsicLogicalWidths();
+    return {sizes, cache_depends_on_percentage_block_size};
+  }
+
+  box_->SetIntrinsicLogicalWidthsDirty();
+
+  if (!CanUseNewLayout()) {
+    MinMaxSizes sizes = ComputeMinMaxSizesFromLegacy(input);
+
+    // Update the cache bits for this legacy root (but not the intrinsic
+    // inline-sizes themselves).
+    box_->SetIntrinsicLogicalWidthsFromNG(
+        input.percentage_resolution_block_size,
+        /* depends_on_percentage_block_size */ uses_input_percentage_block_size,
+        /* child_depends_on_percentage_block_size */ true,
+        /* sizes */ nullptr);
+
+    return {sizes, uses_input_percentage_block_size};
+  }
+
+  // Copy the input, and set the new %-block-size.
+  MinMaxSizesInput adjusted_input = input;
+  adjusted_input.percentage_resolution_block_size =
+      child_percentage_resolution_block_size;
+
+  MinMaxSizesResult result = ComputeMinMaxSizesWithAlgorithm(
       NGLayoutAlgorithmParams(*this, fragment_geometry, *constraint_space),
-      input);
+      adjusted_input);
 
   const auto* node = box_->GetNode();
   const auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(node);
   if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
-    sizes.min_size = LayoutUnit();
+    result.sizes.min_size = LayoutUnit();
   else if (UNLIKELY(IsA<HTMLSelectElement>(node) ||
                     (IsA<HTMLInputElement>(node) &&
                      To<HTMLInputElement>(node)->type() ==
                          input_type_names::kFile)) &&
            Style().LogicalWidth().IsPercentOrCalc())
-    sizes.min_size = LayoutUnit();
-  box_->SetIntrinsicLogicalWidthsFromNG(sizes,
-                                        input.percentage_resolution_block_size);
-  return sizes;
+    result.sizes.min_size = LayoutUnit();
+
+  bool depends_on_percentage_block_size =
+      uses_input_percentage_block_size &&
+      result.depends_on_percentage_block_size;
+
+  box_->SetIntrinsicLogicalWidthsFromNG(
+      input.percentage_resolution_block_size, depends_on_percentage_block_size,
+      /* child_depends_on_percentage_block_size */
+      result.depends_on_percentage_block_size, &result.sizes);
+
+  // We report to our parent if we depend on the %-block-size if we used the
+  // input %-block-size, or one of children said it depended on this.
+  result.depends_on_percentage_block_size = depends_on_percentage_block_size;
+  return result;
 }
 
 MinMaxSizes NGBlockNode::ComputeMinMaxSizesFromLegacy(

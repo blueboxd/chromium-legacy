@@ -287,33 +287,31 @@ scoped_refptr<const NGLayoutResult> NGMathFractionLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-MinMaxSizes NGMathFractionLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& input) const {
-  if (auto sizes = CalculateMinMaxSizesIgnoringChildren(
+MinMaxSizesResult NGMathFractionLayoutAlgorithm::ComputeMinMaxSizes(
+    const MinMaxSizesInput& child_input) const {
+  if (auto result = CalculateMinMaxSizesIgnoringChildren(
           Node(), border_scrollbar_padding_))
-    return *sizes;
+    return *result;
 
   MinMaxSizes sizes;
-  LayoutUnit child_percentage_resolution_block_size =
-      CalculateChildPercentageBlockSizeForMinMax(
-          ConstraintSpace(), Node(), border_scrollbar_padding_,
-          input.percentage_resolution_block_size);
-
-  MinMaxSizesInput child_input(child_percentage_resolution_block_size);
+  bool depends_on_percentage_block_size = false;
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
     if (child.IsOutOfFlowPositioned())
       continue;
-    auto child_sizes =
+    auto child_result =
         ComputeMinAndMaxContentContribution(Style(), child, child_input);
     NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
-    child_sizes += margins.InlineSum();
-    sizes.Encompass(child_sizes);
+    child_result.sizes += margins.InlineSum();
+
+    sizes.Encompass(child_result.sizes);
+    depends_on_percentage_block_size |=
+        child_result.depends_on_percentage_block_size;
   }
 
   sizes += border_scrollbar_padding_.InlineSum();
-  return sizes;
+  return {sizes, depends_on_percentage_block_size};
 }
 
 }  // namespace blink

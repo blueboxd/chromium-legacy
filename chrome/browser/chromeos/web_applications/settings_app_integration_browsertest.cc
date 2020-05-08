@@ -50,5 +50,6 @@ IN_PROC_BROWSER_TEST_P(SettingsAppIntegrationTest, SettingsAppDisabled) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SettingsAppIntegrationTest,
-                         ::testing::Values(web_app::ProviderType::kWebApps),
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);

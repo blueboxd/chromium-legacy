@@ -93,7 +93,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
     if (font_face->LoadStatus() == FontFace::kLoading)
       RemoveFromLoadingFonts(font_face);
     font_selector->FontFaceInvalidated(
-        FontInvalidationReason::kGeneralInvalidation);
+        FontInvalidationReason::kFontFaceDeleted);
     return true;
   }
   return false;

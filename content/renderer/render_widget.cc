@@ -1568,11 +1568,9 @@ void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
 }
 
 void RenderWidget::DidChangeCursor(const ui::Cursor& cursor) {
-  // TODO(darin): Eliminate this temporary.
-  WebCursor webcursor(cursor);
   // Only send a SetCursor message if we need to make a change.
-  if (input_handler_->DidChangeCursor(webcursor))
-    Send(new WidgetHostMsg_SetCursor(routing_id_, webcursor));
+  if (input_handler_->DidChangeCursor(cursor))
+    GetWebWidget()->SetCursor(cursor);
 }
 
 void RenderWidget::AutoscrollStart(const gfx::PointF& point) {

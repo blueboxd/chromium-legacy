@@ -19,14 +19,18 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "content/public/test/test_utils.h"
 
 using base::ASCIIToUTF16;
 using password_manager::PasswordFormManager;
+using testing::Return;
+using testing::ReturnRef;
 
 namespace {
 constexpr char kTestOrigin[] = "https://www.example.com";
@@ -103,6 +107,23 @@ void ManagePasswordsTest::SetupAutoSignin(
   ASSERT_FALSE(local_credentials.empty());
   GURL origin = local_credentials[0]->origin;
   GetController()->OnAutoSignin(std::move(local_credentials), origin);
+}
+
+void ManagePasswordsTest::SetupMovingPasswords() {
+  auto form_manager = std::make_unique<
+      testing::NiceMock<password_manager::MockPasswordFormManagerForUI>>();
+  password_manager::MockPasswordFormManagerForUI* form_manager_ptr =
+      form_manager.get();
+  std::vector<const autofill::PasswordForm*> best_matches = {test_form()};
+  EXPECT_CALL(*form_manager, GetBestMatches).WillOnce(ReturnRef(best_matches));
+  ON_CALL(*form_manager, GetFederatedMatches)
+      .WillByDefault(Return(std::vector<const autofill::PasswordForm*>{}));
+  ON_CALL(*form_manager, GetOrigin)
+      .WillByDefault(ReturnRef(test_form()->origin));
+  GetController()->OnShowMoveToAccountBubble(std::move(form_manager));
+  // Clearing the mock here ensures that |GetBestMatches| won't be called with a
+  // reference to |best_matches|.
+  testing::Mock::VerifyAndClear(form_manager_ptr);
 }
 
 std::unique_ptr<base::HistogramSamples> ManagePasswordsTest::GetSamples(

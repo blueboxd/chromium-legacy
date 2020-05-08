@@ -58,6 +58,8 @@ constexpr char kBlockedExtensionSettings[] = R"({
 })";
 
 constexpr char kWebstoreUserCancelledError[] = "User cancelled install";
+constexpr char kWebstoreBlockByPolicy[] =
+    "Extension installation is blocked by policy";
 
 base::Time GetFaketime() {
   return base::Time::FromJavaTime(kFakeTime);
@@ -283,8 +285,8 @@ class WebstorePrivateBeginInstallWithManifest3Test
     const base::Value* result;
     ASSERT_TRUE(function->GetResultList() &&
                 function->GetResultList()->Get(0, &result));
-    EXPECT_EQ("user_cancelled", result->GetString());
-    EXPECT_EQ(kWebstoreUserCancelledError, function->GetError());
+    EXPECT_EQ("blocked_by_policy", result->GetString());
+    EXPECT_EQ(kWebstoreBlockByPolicy, function->GetError());
     EXPECT_EQ(expected_blocked_message,
               function->GetBlockedByPolicyErrorMessageForTesting());
   }

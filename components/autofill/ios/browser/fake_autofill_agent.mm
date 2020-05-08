@@ -61,14 +61,8 @@ using autofill::FieldRendererId;
 
 #pragma mark - FormSuggestionProvider
 
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                              uniqueFormID:(FormRendererId)uniqueFormID
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                             uniqueFieldID:(FieldRendererId)uniqueFieldID
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                typedValue:(NSString*)typedValue
-                                   frameID:(NSString*)frameID
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
                                   webState:(web::WebState*)webState
@@ -76,27 +70,21 @@ using autofill::FieldRendererId;
                              (SuggestionsAvailableCompletion)completion {
   base::PostTask(
       FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-        NSString* key = [self keyForFormName:formName
-                             fieldIdentifier:fieldIdentifier
-                                     frameID:frameID];
+        NSString* key = [self keyForFormName:formQuery.formName
+                             fieldIdentifier:formQuery.fieldIdentifier
+                                     frameID:formQuery.frameID];
         completion([_suggestionsByFormAndFieldName[key] count] ? YES : NO);
       }));
 }
 
-- (void)retrieveSuggestionsForForm:(NSString*)formName
-                      uniqueFormID:(FormRendererId)uniqueFormID
-                   fieldIdentifier:(NSString*)fieldIdentifier
-                     uniqueFieldID:(FieldRendererId)uniqueFieldID
-                         fieldType:(NSString*)fieldType
-                              type:(NSString*)type
-                        typedValue:(NSString*)typedValue
-                           frameID:(NSString*)frameID
+- (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                   NSString* key = [self keyForFormName:formName
-                                        fieldIdentifier:fieldIdentifier
-                                                frameID:frameID];
+                   NSString* key =
+                       [self keyForFormName:formQuery.formName
+                            fieldIdentifier:formQuery.fieldIdentifier
+                                    frameID:formQuery.frameID];
                    completion(_suggestionsByFormAndFieldName[key], self);
                  }));
 }

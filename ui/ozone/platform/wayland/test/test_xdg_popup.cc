@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
+#include "ui/ozone/platform/wayland/test/test_xdg_popup.h"
 
 #include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
 
@@ -14,7 +14,7 @@ void Grab(struct wl_client* client,
           struct wl_resource* resource,
           struct wl_resource* seat,
           uint32_t serial) {
-  GetUserDataAs<MockXdgPopup>(resource)->Grab(serial);
+  GetUserDataAs<TestXdgPopup>(resource)->set_grab_serial(serial);
 }
 
 }  // namespace
@@ -29,13 +29,13 @@ const struct zxdg_popup_v6_interface kZxdgPopupV6Impl = {
     &Grab,             // grab
 };
 
-MockXdgPopup::MockXdgPopup(wl_resource* resource, wl_resource* surface)
+TestXdgPopup::TestXdgPopup(wl_resource* resource, wl_resource* surface)
     : ServerObject(resource), surface_(surface) {
   auto* mock_xdg_surface = GetUserDataAs<MockXdgSurface>(surface_);
   if (mock_xdg_surface)
     mock_xdg_surface->set_xdg_popup(nullptr);
 }
 
-MockXdgPopup::~MockXdgPopup() {}
+TestXdgPopup::~TestXdgPopup() {}
 
 }  // namespace wl

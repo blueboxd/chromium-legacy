@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_XDG_POPUP_H_
-#define UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_XDG_POPUP_H_
+#ifndef UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_XDG_POPUP_H_
+#define UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_XDG_POPUP_H_
 
 #include <utility>
 
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
-#include "base/macros.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
 #include "ui/ozone/platform/wayland/test/test_positioner.h"
 
@@ -22,16 +20,20 @@ namespace wl {
 extern const struct xdg_popup_interface kXdgPopupImpl;
 extern const struct zxdg_popup_v6_interface kZxdgPopupV6Impl;
 
-class MockXdgPopup : public ServerObject {
+class TestXdgPopup : public ServerObject {
  public:
-  MockXdgPopup(wl_resource* resource, wl_resource* surface);
-  ~MockXdgPopup() override;
-
-  MOCK_METHOD1(Grab, void(uint32_t serial));
+  TestXdgPopup(wl_resource* resource, wl_resource* surface);
+  TestXdgPopup(const TestXdgPopup&) = delete;
+  TestXdgPopup& operator=(const TestXdgPopup&) = delete;
+  ~TestXdgPopup() override;
 
   void set_position(struct TestPositioner::PopupPosition position) {
     position_ = std::move(position);
   }
+
+  // Returns and stores the serial used for grab.
+  uint32_t grab_serial() const { return grab_serial_; }
+  void set_grab_serial(uint32_t serial) { grab_serial_ = serial; }
 
   gfx::Rect anchor_rect() const { return position_.anchor_rect; }
   gfx::Size size() const { return position_.size; }
@@ -47,9 +49,9 @@ class MockXdgPopup : public ServerObject {
   // Ground surface for this popup.
   wl_resource* surface_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(MockXdgPopup);
+  uint32_t grab_serial_ = 0;
 };
 
 }  // namespace wl
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_TEST_MOCK_XDG_POPUP_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_TEST_TEST_XDG_POPUP_H_

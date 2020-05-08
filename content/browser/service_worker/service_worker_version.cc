@@ -51,7 +51,6 @@
 #include "mojo/public/c/system/types.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_response_info.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
@@ -212,15 +211,6 @@ base::TimeDelta GetUpdateDelay() {
 constexpr base::TimeDelta ServiceWorkerVersion::kTimeoutTimerDelay;
 constexpr base::TimeDelta ServiceWorkerVersion::kStartNewWorkerTimeout;
 constexpr base::TimeDelta ServiceWorkerVersion::kStopWorkerTimeout;
-
-ServiceWorkerVersion::MainScriptResponse::MainScriptResponse(
-    const net::HttpResponseInfo& http_info) {
-  response_time = http_info.response_time;
-  if (http_info.headers)
-    http_info.headers->GetLastModifiedValue(&last_modified);
-  headers = http_info.headers;
-  ssl_info = http_info.ssl_info;
-}
 
 ServiceWorkerVersion::MainScriptResponse::MainScriptResponse(
     const network::mojom::URLResponseHead& response_head) {

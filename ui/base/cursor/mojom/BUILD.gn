@@ -12,18 +12,18 @@ mojom("mojom") {
     "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",
   ]
-  cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "ui.mojom.Cursor"
-          cpp = "::ui::Cursor"
-        },
-      ]
-      traits_headers = [ "cursor_mojom_traits.h" ]
-      traits_public_deps = [ ":mojom_traits" ]
-    },
-  ]
+  shared_cpp_typemap = {
+    types = [
+      {
+        mojom = "ui.mojom.Cursor"
+        cpp = "::ui::Cursor"
+      },
+    ]
+    traits_headers = [ "cursor_mojom_traits.h" ]
+    traits_public_deps = [ ":mojom_traits" ]
+  }
+  cpp_typemaps = [ shared_cpp_typemap ]
+  blink_cpp_typemaps = [ shared_cpp_typemap ]
 }
 
 source_set("mojom_traits") {

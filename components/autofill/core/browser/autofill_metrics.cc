@@ -1743,16 +1743,18 @@ void AutofillMetrics::LogParseFormTiming(const base::TimeDelta& duration) {
 void AutofillMetrics::LogNumberOfProfilesConsideredForDedupe(
     size_t num_considered) {
   // A maximum of 50 is enforced to reduce the number of generated buckets.
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesConsideredForDedupe",
-                            std::min(int(num_considered), kMaxBucketsCount));
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.NumberOfProfilesConsideredForDedupe",
+      std::min(static_cast<int>(num_considered), kMaxBucketsCount));
 }
 
 // static
 void AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
     size_t num_removed) {
   // A maximum of 50 is enforced to reduce the number of generated buckets.
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.NumberOfProfilesRemovedDuringDedupe",
-                            std::min(int(num_removed), kMaxBucketsCount));
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.NumberOfProfilesRemovedDuringDedupe",
+      std::min(static_cast<int>(num_removed), kMaxBucketsCount));
 }
 
 // static
@@ -2181,6 +2183,31 @@ AutofillMetrics::UkmTimestampPin::UkmTimestampPin(
 AutofillMetrics::UkmTimestampPin::~UkmTimestampPin() {
   DCHECK(logger_->has_pinned_timestamp());
   logger_->set_pinned_timestamp(base::TimeTicks());
+}
+
+// static
+void AutofillMetrics::LogAddressFormImportRequirementMetric(
+    AutofillMetrics::AddressProfileImportRequirementMetric metric) {
+  // Shift the requirement type index by one bit to the right.
+  // The freed least significant bit is used to indicate the fulfillment status
+  // of the specific requirement.
+  base::UmaHistogramEnumeration("Autofill.AddressProfileImportRequirements",
+                                metric);
+}
+
+// static
+void AutofillMetrics::
+    LogAddressFormImportCountrySpecificFieldRequirementsMetric(
+        bool is_zip_missing,
+        bool is_state_missing,
+        bool is_city_missing) {
+  const auto metric = static_cast<
+      AutofillMetrics::
+          AddressProfileImportCountrySpecificFieldRequirementsMetric>(
+      (is_zip_missing ? 0b1 : 0) | (is_state_missing ? 0b10 : 0) |
+      (is_city_missing ? 0b100 : 0));
+  base::UmaHistogramEnumeration(
+      "Autofill.AddressProfileImportCountrySpecificFieldRequirements", metric);
 }
 
 }  // namespace autofill

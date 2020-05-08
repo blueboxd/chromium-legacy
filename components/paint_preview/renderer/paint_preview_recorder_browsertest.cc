@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -98,6 +99,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
+  content::RunAllTasksUntilIdle();
 
   EXPECT_FALSE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
@@ -173,6 +175,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
+  content::RunAllTasksUntilIdle();
 
   EXPECT_FALSE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
@@ -228,6 +231,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      &out_response));
+  content::RunAllTasksUntilIdle();
 
   EXPECT_FALSE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
@@ -258,6 +262,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureInvalidFile) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished,
                      mojom::PaintPreviewStatus::kCaptureFailed, nullptr));
+  content::RunAllTasksUntilIdle();
 }
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
@@ -286,6 +291,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
+  content::RunAllTasksUntilIdle();
+
   EXPECT_FALSE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }
@@ -318,6 +325,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
+  content::RunAllTasksUntilIdle();
+
   EXPECT_FALSE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }

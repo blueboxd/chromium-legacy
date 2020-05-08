@@ -4,10 +4,13 @@
 
 #include "components/paint_preview/renderer/paint_preview_recorder_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
@@ -23,30 +26,51 @@ namespace paint_preview {
 
 namespace {
 
-mojom::PaintPreviewStatus FinishRecording(
+struct FinishedRecording {
+  FinishedRecording(mojom::PaintPreviewStatus status,
+                    mojom::PaintPreviewCaptureResponsePtr response)
+      : status(status), response(std::move(response)) {}
+  ~FinishedRecording() = default;
+
+  FinishedRecording(FinishedRecording&& other) = default;
+  FinishedRecording& operator=(FinishedRecording&& other) = default;
+
+  FinishedRecording(const FinishedRecording& other) = delete;
+  FinishedRecording& operator=(const FinishedRecording& other) = delete;
+
+  mojom::PaintPreviewStatus status;
+  mojom::PaintPreviewCaptureResponsePtr response;
+};
+
+FinishedRecording FinishRecording(
     sk_sp<const cc::PaintRecord> recording,
     const gfx::Rect& bounds,
-    PaintPreviewTracker* tracker,
+    std::unique_ptr<PaintPreviewTracker> tracker,
     base::File skp_file,
     size_t max_capture_size,
-    mojom::PaintPreviewCaptureResponse* response) {
+    mojom::PaintPreviewCaptureResponsePtr response) {
   TRACE_EVENT0("paint_preview", "FinishRecording");
-  DCHECK(response);
+  FinishedRecording out(mojom::PaintPreviewStatus::kOk, std::move(response));
   DCHECK(tracker);
-  if (!response || !tracker)
-    return mojom::PaintPreviewStatus::kCaptureFailed;
+  if (!tracker) {
+    out.status = mojom::PaintPreviewStatus::kCaptureFailed;
+    return out;
+  }
 
   TRACE_EVENT_BEGIN0("paint_preview", "ParseGlyphs");
-  ParseGlyphs(recording.get(), tracker);
+  ParseGlyphs(recording.get(), tracker.get());
   TRACE_EVENT_END0("paint_preview", "ParseGlyphs");
   size_t serialized_size = 0;
-  if (!SerializeAsSkPicture(recording, tracker, bounds, std::move(skp_file),
-                            max_capture_size, &serialized_size))
-    return mojom::PaintPreviewStatus::kCaptureFailed;
+  if (!SerializeAsSkPicture(recording, tracker.get(), bounds,
+                            std::move(skp_file), max_capture_size,
+                            &serialized_size)) {
+    out.status = mojom::PaintPreviewStatus::kCaptureFailed;
+    return out;
+  }
 
-  BuildResponse(tracker, response);
-  response->serialized_size = serialized_size;
-  return mojom::PaintPreviewStatus::kOk;
+  BuildResponse(tracker.get(), out.response.get());
+  out.response->serialized_size = serialized_size;
+  return out;
 }
 
 }  // namespace
@@ -68,7 +92,6 @@ void PaintPreviewRecorderImpl::CapturePaintPreview(
     CapturePaintPreviewCallback callback) {
   TRACE_EVENT0("paint_preview",
                "PaintPreviewRecorderImpl::CapturePaintPreview");
-  mojom::PaintPreviewStatus status = mojom::PaintPreviewStatus::kOk;
   base::ReadOnlySharedMemoryRegion region;
   // This should not be called recursively or multiple times while unfinished
   // (Blink can only run one capture per RenderFrame at a time).
@@ -79,14 +102,12 @@ void PaintPreviewRecorderImpl::CapturePaintPreview(
   // recoverable.
   auto response = mojom::PaintPreviewCaptureResponse::New();
   if (is_painting_preview_) {
-    status = mojom::PaintPreviewStatus::kAlreadyCapturing;
-    std::move(callback).Run(status, std::move(response));
+    std::move(callback).Run(mojom::PaintPreviewStatus::kAlreadyCapturing,
+                            std::move(response));
     return;
   }
   base::AutoReset<bool>(&is_painting_preview_, true);
-
-  CapturePaintPreviewInternal(params, response.get(), &status);
-  std::move(callback).Run(status, std::move(response));
+  CapturePaintPreviewInternal(params, std::move(response), std::move(callback));
 }
 
 void PaintPreviewRecorderImpl::OnDestruct() {
@@ -101,12 +122,14 @@ void PaintPreviewRecorderImpl::BindPaintPreviewRecorder(
 
 void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
     const mojom::PaintPreviewCaptureParamsPtr& params,
-    mojom::PaintPreviewCaptureResponse* response,
-    mojom::PaintPreviewStatus* status) {
+    mojom::PaintPreviewCaptureResponsePtr response,
+    CapturePaintPreviewCallback callback) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // Ensure the a frame actually exists to avoid a possible crash.
   if (!frame) {
     DVLOG(1) << "Error: renderer has no frame yet!";
+    std::move(callback).Run(mojom::PaintPreviewStatus::kFailed,
+                            std::move(response));
     return;
   }
 
@@ -123,7 +146,8 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
     // occur during tests. Capturing prior to layout is non-sensical as the
     // canvas size cannot be deremined so just abort.
     if (size.height == 0 || size.width == 0) {
-      *status = mojom::PaintPreviewStatus::kCaptureFailed;
+      std::move(callback).Run(mojom::PaintPreviewStatus::kCaptureFailed,
+                              std::move(response));
       return;
     }
     bounds = gfx::Rect(0, 0, size.width, size.height);
@@ -132,11 +156,11 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   }
 
   cc::PaintRecorder recorder;
-  PaintPreviewTracker tracker(params->guid, frame->GetEmbeddingToken(),
-                              is_main_frame_);
+  auto tracker = std::make_unique<PaintPreviewTracker>(
+      params->guid, frame->GetEmbeddingToken(), is_main_frame_);
   cc::PaintCanvas* canvas =
       recorder.beginRecording(bounds.width(), bounds.height());
-  canvas->SetPaintPreviewTracker(&tracker);
+  canvas->SetPaintPreviewTracker(tracker.get());
 
   // Use time ticks manually rather than a histogram macro so as to;
   // 1. Account for main frames and subframes separately.
@@ -173,14 +197,23 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   // Restore to before out-of-lifecycle paint phase.
   frame->DispatchAfterPrintEvent();
   if (!success) {
-    *status = mojom::PaintPreviewStatus::kCaptureFailed;
+    std::move(callback).Run(mojom::PaintPreviewStatus::kCaptureFailed,
+                            std::move(response));
     return;
   }
 
-  // TODO(crbug/1011896): Determine if making this async would be beneficial.
-  *status = FinishRecording(recorder.finishRecordingAsPicture(), bounds,
-                            &tracker, std::move(params->file),
-                            params->max_capture_size, response);
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&FinishRecording, recorder.finishRecordingAsPicture(),
+                     bounds, std::move(tracker), std::move(params->file),
+                     params->max_capture_size, std::move(response)),
+      base::BindOnce(
+          [](CapturePaintPreviewCallback callback,
+             FinishedRecording recording) {
+            std::move(callback).Run(recording.status,
+                                    std::move(recording.response));
+          },
+          std::move(callback)));
 }
 
 }  // namespace paint_preview

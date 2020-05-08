@@ -13,7 +13,6 @@
 #include "content/common/common_param_traits_macros.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/content_to_visible_time_reporter.h"
-#include "content/common/cursors/webcursor.h"
 #include "content/common/text_input_state.h"
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
@@ -196,10 +195,6 @@ IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
 IPC_MESSAGE_ROUTED2(WidgetHostMsg_SetTooltipText,
                     base::string16 /* tooltip text string */,
                     base::i18n::TextDirection /* text direction hint */)
-
-// Updates the current cursor to be used by the browser for indicating the
-// location of a pointing device.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_SetCursor, content::WebCursor)
 
 // Request a non-decelerating synthetic fling animation to be latched on the
 // scroller at the start point, and whose velocity can be changed over time by

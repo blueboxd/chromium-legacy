@@ -141,6 +141,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
+  void SetCursor(const ui::Cursor& cursor) override;
 
   // PageWidgetEventHandler functions
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;

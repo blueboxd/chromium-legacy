@@ -62,10 +62,6 @@ namespace blink {
 class PendingURLLoaderFactoryBundle;
 }
 
-namespace net {
-class HttpResponseInfo;
-}
-
 namespace content {
 
 class ServiceWorkerContainerHost;
@@ -156,8 +152,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Contains a subset of the main script's response information.
   struct CONTENT_EXPORT MainScriptResponse {
-    // TODO(crbug.com/1060076): Remove this constructor.
-    explicit MainScriptResponse(const net::HttpResponseInfo& http_info);
     explicit MainScriptResponse(
         const network::mojom::URLResponseHead& response_head);
     ~MainScriptResponse();

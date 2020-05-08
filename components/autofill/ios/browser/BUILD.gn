@@ -24,6 +24,8 @@ source_set("browser") {
     "form_suggestion.h",
     "form_suggestion.mm",
     "form_suggestion_provider.h",
+    "form_suggestion_provider_query.h",
+    "form_suggestion_provider_query.mm",
     "js_autofill_manager.h",
     "js_autofill_manager.mm",
     "js_suggestion_manager.h",

@@ -106,7 +106,17 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
   if (!value || !serializer.Serialize(*value))
     return false;
 
-  return Send(new FrameHostMsg_DomOperationResponse(routing_id(), json));
+  GetDomAutomationControllerHost()->DomOperationResponse(json);
+  return true;
+}
+
+const mojo::AssociatedRemote<mojom::DomAutomationControllerHost>&
+DomAutomationController::GetDomAutomationControllerHost() {
+  if (!dom_automation_controller_host_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &dom_automation_controller_host_);
+  }
+  return dom_automation_controller_host_;
 }
 
 }  // namespace content

@@ -83,4 +83,59 @@ TEST_F(FontUpdateInvalidationTest, PartialLayoutInvalidationAfterFontLoading) {
   main_resource.Finish();
 }
 
+TEST_F(FontUpdateInvalidationTest,
+       PartialLayoutInvalidationAfterFontFaceDeletion) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Write(R"HTML(
+    <!doctype html>
+    <script>
+    const face = new FontFace('custom-font',
+                              'url(https://example.com/Ahem.woff2)');
+    face.load();
+    document.fonts.add(face);
+    </script>
+    <style>
+      #target {
+        font: 25px/1 custom-font, monospace;
+      }
+      #reference {
+        font: 25px/1 monospace;
+      }
+    </style>
+    <div><span id=target>0123456789</span></div>
+    <div><span id=reference>0123456789</div>
+  )HTML");
+
+  // First render the page with the custom font
+  font_resource.Complete(ReadAhemWoff2());
+  Compositor().BeginFrame();
+
+  Element* target = GetDocument().getElementById("target");
+  Element* reference = GetDocument().getElementById("reference");
+
+  EXPECT_EQ(250, target->OffsetWidth());
+  EXPECT_GT(250, reference->OffsetWidth());
+
+  // Then delete the custom font, and trigger invalidations
+  main_resource.Write("<script>document.fonts.delete(face);</script>");
+  GetDocument().GetStyleEngine().InvalidateStyleAndLayoutForFontUpdates();
+
+  // No element is marked for style recalc, since no computed style is changed.
+  EXPECT_EQ(kNoStyleChange, target->GetStyleChangeType());
+  EXPECT_EQ(kNoStyleChange, reference->GetStyleChangeType());
+
+  // Only elements using custom fonts are marked for relayout.
+  EXPECT_TRUE(target->GetLayoutObject()->NeedsLayout());
+  EXPECT_FALSE(reference->GetLayoutObject()->NeedsLayout());
+
+  Compositor().BeginFrame();
+  EXPECT_GT(250, target->OffsetWidth());
+  EXPECT_GT(250, reference->OffsetWidth());
+
+  main_resource.Finish();
+}
+
 }  // namespace blink

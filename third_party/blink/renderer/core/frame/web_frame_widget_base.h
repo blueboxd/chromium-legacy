@@ -173,6 +173,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void ShowContextMenu(WebMenuSourceType) override;
   void SetCompositorVisible(bool visible) override;
   void SetDisplayMode(mojom::blink::DisplayMode) override;
+  void SetCursor(const ui::Cursor& cursor) override;
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.os.Debug;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -95,12 +94,11 @@ public class OmniboxSuggestionsList
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Measure")) {
-            final long start = Debug.threadCpuTimeNanos();
+        try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Measure");
+                SuggestionsMetrics.TimingMetric metric =
+                        SuggestionsMetrics.recordSuggestionListMeasureTime()) {
             mDropdownDelegate.calculateOnMeasureAndTriggerUpdates(mTempMeasureSpecs);
             super.onMeasure(mTempMeasureSpecs[0], mTempMeasureSpecs[1]);
-            final long end = Debug.threadCpuTimeNanos();
-            SuggestionsMetrics.recordSuggestionListMeasureTime(start, end);
         }
     }
 
@@ -148,11 +146,10 @@ public class OmniboxSuggestionsList
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Layout")) {
-            final long start = Debug.threadCpuTimeNanos();
+        try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Layout");
+                SuggestionsMetrics.TimingMetric metric =
+                        SuggestionsMetrics.recordSuggestionListLayoutTime()) {
             super.onLayout(changed, l, t, r, b);
-            final long end = Debug.threadCpuTimeNanos();
-            SuggestionsMetrics.recordSuggestionListLayoutTime(start, end);
         }
     }
 

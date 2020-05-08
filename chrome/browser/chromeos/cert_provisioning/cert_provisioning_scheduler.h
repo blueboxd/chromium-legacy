@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_invalidator.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -50,14 +51,18 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   static std::unique_ptr<CertProvisioningScheduler>
   CreateUserCertProvisioningScheduler(Profile* profile);
   static std::unique_ptr<CertProvisioningScheduler>
-  CreateDeviceCertProvisioningScheduler();
+  CreateDeviceCertProvisioningScheduler(
+      policy::AffiliatedInvalidationServiceProvider*
+          invalidation_service_provider);
 
-  CertProvisioningScheduler(CertScope cert_scope,
-                            Profile* profile,
-                            PrefService* pref_service,
-                            const char* pref_name,
-                            policy::CloudPolicyClient* cloud_policy_client,
-                            NetworkStateHandler* network_state_handler);
+  CertProvisioningScheduler(
+      CertScope cert_scope,
+      Profile* profile,
+      PrefService* pref_service,
+      const char* pref_name,
+      policy::CloudPolicyClient* cloud_policy_client,
+      NetworkStateHandler* network_state_handler,
+      std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory);
   ~CertProvisioningScheduler() override;
 
   CertProvisioningScheduler(const CertProvisioningScheduler&) = delete;
@@ -81,7 +86,11 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
 
   void InitialUpdateCerts();
   void DeleteCertsWithoutPolicy();
-  void OnDeleteKeysWithoutPolicyDone(const std::string& error_message);
+  void OnDeleteCertsWithoutPolicyDone(const std::string& error_message);
+  void DeleteWorkersWithoutPolicy(const std::vector<CertProfile>& profiles);
+  void CleanVaKeysIfIdle();
+  void OnCleanVaKeysIfIdleDone(base::Optional<bool> delete_result);
+  void RegisterForPrefsChanges();
 
   void OnPrefsChange();
   void DailyUpdateCerts();
@@ -133,6 +142,7 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
 
   std::unique_ptr<CertProvisioningCertsWithIdsGetter> certs_with_ids_getter_;
   std::unique_ptr<CertProvisioningCertDeleter> cert_deleter_;
+  std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CertProvisioningScheduler> weak_factory_{this};

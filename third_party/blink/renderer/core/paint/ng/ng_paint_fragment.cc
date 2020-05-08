@@ -491,15 +491,8 @@ void NGPaintFragment::AssociateWithLayoutObject(
   DCHECK(layout_object->IsInline());
   DCHECK(PhysicalFragment().IsInline());
 
-#if DCHECK_IS_ON()
-  // Check we don't add the same fragment twice.
-  for (const NGPaintFragment* fragment :
-       FragmentRange(layout_object->FirstInlineFragment())) {
-    DCHECK_NE(this, fragment);
-  }
-#endif
-
   auto add_result = last_fragment_map->insert(layout_object, this);
+  NGPaintFragment* last_fragment;
   if (add_result.is_new_entry) {
     NGPaintFragment* first_fragment = layout_object->FirstInlineFragment();
     if (!first_fragment) {
@@ -507,16 +500,15 @@ void NGPaintFragment::AssociateWithLayoutObject(
       return;
     }
     // This |layout_object| was fragmented across multiple blocks.
-    DCHECK_EQ(layout_object, first_fragment->GetLayoutObject());
-    NGPaintFragment* last_fragment = first_fragment->LastForSameLayoutObject();
-    last_fragment->next_for_same_layout_object_ = this;
-    return;
+    last_fragment = first_fragment->LastForSameLayoutObject();
+  } else {
+    last_fragment = add_result.stored_value->value;
+    DCHECK(last_fragment) << layout_object;
+    add_result.stored_value->value = this;
   }
-  NGPaintFragment* last_fragment = add_result.stored_value->value;
-  DCHECK(last_fragment) << layout_object;
   DCHECK_EQ(layout_object, last_fragment->GetLayoutObject());
+  DCHECK_NE(this, last_fragment);
   last_fragment->next_for_same_layout_object_ = this;
-  add_result.stored_value->value = this;
 }
 
 // TODO(kojii): Consider unifying this with

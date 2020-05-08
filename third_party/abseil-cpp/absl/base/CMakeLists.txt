@@ -108,8 +108,6 @@ absl_cc_library(
     "dynamic_annotations.cc"
   COPTS
     ${ABSL_DEFAULT_COPTS}
-  DEFINES
-    "__CLANG_SUPPORT_DYN_ANNOTATION__"
   PUBLIC
 )
 
@@ -497,6 +495,7 @@ absl_cc_test(
     ${ABSL_TEST_COPTS}
   DEPS
     absl::malloc_internal
+    absl::node_hash_map
     Threads::Threads
 )
 

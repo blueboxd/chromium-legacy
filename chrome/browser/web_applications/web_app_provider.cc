@@ -216,9 +216,12 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
-  registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
-  registry_controller_ =
-      std::make_unique<extensions::BookmarkAppRegistryController>(profile);
+  std::unique_ptr<extensions::BookmarkAppRegistrar> registrar =
+      std::make_unique<extensions::BookmarkAppRegistrar>(profile);
+  std::unique_ptr<extensions::BookmarkAppRegistryController>
+      registry_controller =
+          std::make_unique<extensions::BookmarkAppRegistryController>(
+              profile, registrar.get());
   icon_manager_ = std::make_unique<extensions::BookmarkAppIconManager>(profile);
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
@@ -226,6 +229,10 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
       std::make_unique<extensions::BookmarkAppFileHandlerManager>(profile);
   shortcut_manager_ =
       std::make_unique<extensions::BookmarkAppShortcutManager>(profile);
+
+  // Upcast to unified subsystem types:
+  registrar_ = std::move(registrar);
+  registry_controller_ = std::move(registry_controller);
 }
 
 void WebAppProvider::ConnectSubsystems() {

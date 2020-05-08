@@ -4392,6 +4392,13 @@ void RenderFrameHostImpl::BindBrowserInterfaceBrokerReceiver(
   broker_receiver_.SetFilter(std::make_unique<ActiveURLMessageFilter>(this));
 }
 
+void RenderFrameHostImpl::BindDomOperationControllerHostReceiver(
+    mojo::PendingAssociatedReceiver<mojom::DomAutomationControllerHost>
+        receiver) {
+  DCHECK(receiver.is_valid());
+  dom_automation_controller_receiver_.Bind(std::move(receiver));
+}
+
 void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
     base::TimeDelta timeout) {
   keep_alive_timeout_ = timeout;
@@ -4410,6 +4417,10 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
 void RenderFrameHostImpl::RequestOverlayRoutingToken(
     RequestOverlayRoutingTokenCallback callback) {
   std::move(callback).Run(frame_token_);
+}
+
+void RenderFrameHostImpl::DomOperationResponse(const std::string& json_string) {
+  delegate_->DomOperationResponse(json_string);
 }
 
 std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
@@ -6127,6 +6138,16 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
          mojo::PendingAssociatedReceiver<mojom::RenderAccessibilityHost>
              receiver) {
         impl->render_accessibility_host_receiver_.Bind(std::move(receiver));
+      },
+      base::Unretained(this)));
+
+  // TODO(crbug.com/1047354): How to avoid binding if the
+  // BINDINGS_POLICY_DOM_AUTOMATION policy is not set?
+  associated_registry_->AddInterface(base::BindRepeating(
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<mojom::DomAutomationControllerHost>
+             receiver) {
+        impl->BindDomOperationControllerHostReceiver(std::move(receiver));
       },
       base::Unretained(this)));
 

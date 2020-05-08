@@ -30,10 +30,6 @@ using password_manager::FillData;
 typedef void (^PasswordSuggestionsAvailableCompletion)(
     const password_manager::AccountSelectFillData* __nullable);
 
-namespace {
-NSString* const kPasswordFieldType = @"password";
-}  // namespace
-
 @interface PasswordSuggestionHelper ()
 // Delegate to receive callbacks.
 @property(nonatomic, weak, readonly) id<PasswordSuggestionHelperDelegate>
@@ -97,13 +93,8 @@ NSString* const kPasswordFieldType = @"password";
   return [results copy];
 }
 
-- (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                              uniqueFormID:(FormRendererId)uniqueFormID
-                           fieldIdentifier:(NSString*)fieldIdentifier
-                             uniqueFieldID:(FieldRendererId)uniqueFieldID
-                                 fieldType:(NSString*)fieldType
-                                      type:(NSString*)type
-                                   frameID:(NSString*)frameID
+- (void)checkIfSuggestionsAvailableForForm:
+            (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                                   webState:(web::WebState*)webState
                          completionHandler:
@@ -118,7 +109,7 @@ NSString* const kPasswordFieldType = @"password";
   // -suggestionHelperShouldTriggerFormExtraction: will be skipped.
   if (!isMainFrame) {
     web::WebFrame* frame =
-        web::GetWebFrameWithId(webState, SysNSStringToUTF8(frameID));
+        web::GetWebFrameWithId(webState, SysNSStringToUTF8(formQuery.frameID));
     if (!frame || webState->GetLastCommittedURL().GetOrigin() !=
                       frame->GetSecurityOrigin()) {
       // Passwords is only supported on main frame and iframes with the same
@@ -128,21 +119,22 @@ NSString* const kPasswordFieldType = @"password";
     }
   }
 
-  BOOL isPasswordField = [fieldType isEqual:kPasswordFieldType];
-  if (!_sentPasswordFormToPasswordManager && [type isEqual:@"focus"]) {
+  BOOL isPasswordField = [formQuery isOnPasswordField];
+  if (!_sentPasswordFormToPasswordManager && [formQuery hasFocusType]) {
     // Save the callback until fill data is ready.
     _suggestionsAvailableCompletion = ^(const AccountSelectFillData* fillData) {
       completion(!fillData ? NO
                            : fillData->IsSuggestionsAvailable(
-                                 uniqueFormID, uniqueFieldID, isPasswordField));
+                                 formQuery.uniqueFormID,
+                                 formQuery.uniqueFieldID, isPasswordField));
     };
     // Form extraction is required for this check.
     [self.delegate suggestionHelperShouldTriggerFormExtraction:self];
     return;
   }
 
-  completion(_fillData.IsSuggestionsAvailable(uniqueFormID, uniqueFieldID,
-                                              isPasswordField));
+  completion(_fillData.IsSuggestionsAvailable(
+      formQuery.uniqueFormID, formQuery.uniqueFieldID, isPasswordField));
 }
 
 - (std::unique_ptr<password_manager::FillData>)getFillDataForUsername:

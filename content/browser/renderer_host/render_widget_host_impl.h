@@ -797,6 +797,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return blink_frame_widget_host_receiver_;
   }
 
+  // Exposed so that tests can swap the implementation and intercept calls.
+  mojo::AssociatedReceiver<blink::mojom::WidgetHost>&
+  widget_host_receiver_for_testing() {
+    return blink_widget_host_receiver_;
+  }
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -897,7 +903,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
                         base::i18n::TextDirection text_direction_hint);
-  void OnSetCursor(const WebCursor& cursor);
   void OnAutoscrollStart(const gfx::PointF& position);
   void OnAutoscrollFling(const gfx::Vector2dF& velocity);
   void OnAutoscrollEnd();

@@ -7,7 +7,6 @@ package org.chromium.weblayer_private;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.os.StrictMode;
 
 import org.chromium.base.ContextUtils;
@@ -19,9 +18,6 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * WebLayer's implementation of the {@link ExternalNavigationDelegate}.
@@ -58,14 +54,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public int countSpecializedHandlers(List<ResolveInfo> infos) {
-        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, false)
-                .size();
-    }
-
-    @Override
-    public ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
-        return ExternalNavigationHandler.getSpecializedHandlersWithFilter(infos, null, false);
+    public boolean handlesInstantAppLaunchingInternally() {
+        return false;
     }
 
     @Override

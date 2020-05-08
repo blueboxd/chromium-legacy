@@ -514,7 +514,8 @@ Polymer({
   onMenuRemovePasswordTap_() {
     this.passwordManager_.removeSavedPassword(
         this.activePassword.item.entry.id);
-    getToastManager().show(this.i18n('passwordDeleted'));
+    getToastManager().show(
+        this.getRemovePasswordText_(this.activePassword.item));
     this.fire('iron-announce', {
       text: this.i18n('undoDescription'),
     });
@@ -678,6 +679,23 @@ Polymer({
   getStorageIcon_(item) {
     // TODO(crbug.com/1049141): Add the proper icons once we know them.
     return item.fromAccountStore ? 'cr:sync' : 'cr:computer';
+  },
+
+  /**
+   * @private
+   * @param {!PasswordManagerProxy.UiEntryWithPassword} item The deleted item.
+   * @return {string}
+   */
+  getRemovePasswordText_(item) {
+    // TODO(crbug.com/1049141): Adapt the string when the user can delete from
+    // both account and device.
+    // TODO(crbug.com/1049141): Style the text according to mocks.
+    if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
+      return item.entry.fromAccountStore ?
+          this.i18n('passwordDeletedFromAccount') :
+          this.i18n('passwordDeletedFromDevice');
+    }
+    return this.i18n('passwordDeleted');
   },
 
   /**

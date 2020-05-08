@@ -19,6 +19,11 @@ SensorProxyImpl::SensorProxyImpl(device::mojom::blink::SensorType sensor_type,
                                  SensorProviderProxy* provider,
                                  Page* page)
     : SensorProxy(sensor_type, provider, page),
+      sensor_remote_(provider->GetSupplementable()->GetExecutionContext()),
+      client_receiver_(this,
+                       provider->GetSupplementable()->GetExecutionContext()),
+      task_runner_(
+          provider->GetSupplementable()->GetTaskRunner(TaskType::kSensor)),
       polling_timer_(
           provider->GetSupplementable()->GetTaskRunner(TaskType::kSensor),
           this,
@@ -26,11 +31,9 @@ SensorProxyImpl::SensorProxyImpl(device::mojom::blink::SensorType sensor_type,
 
 SensorProxyImpl::~SensorProxyImpl() {}
 
-void SensorProxyImpl::Dispose() {
-  client_receiver_.reset();
-}
-
 void SensorProxyImpl::Trace(Visitor* visitor) {
+  visitor->Trace(sensor_remote_);
+  visitor->Trace(client_receiver_);
   SensorProxy::Trace(visitor);
 }
 
@@ -175,8 +178,8 @@ void SensorProxyImpl::OnSensorCreated(
   default_frequency_ = params->default_configuration->frequency;
   DCHECK_GT(default_frequency_, 0.0);
 
-  sensor_remote_.Bind(std::move(params->sensor));
-  client_receiver_.Bind(std::move(params->client_receiver));
+  sensor_remote_.Bind(std::move(params->sensor), task_runner_);
+  client_receiver_.Bind(std::move(params->client_receiver), task_runner_);
 
   shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
       std::move(params->memory), params->buffer_offset);

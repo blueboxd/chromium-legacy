@@ -5,6 +5,7 @@
 #include "content/renderer/render_widget.h"
 
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -28,6 +29,7 @@
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/fake_render_widget_host.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -39,6 +41,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
@@ -332,12 +335,13 @@ class RenderWidgetUnittest : public testing::Test {
 class RenderWidgetExternalWidgetUnittest : public testing::Test {
  public:
   void SetUp() override {
+    mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> widget_host_remote;
+    mojo::PendingAssociatedReceiver<blink::mojom::Widget> widget_receiver;
+    std::tie(widget_host_remote, widget_receiver) =
+        render_widget_host_.BindNewWidgetInterfaces();
     external_web_widget_ = blink::WebExternalWidget::Create(
         &mock_web_external_widget_client_, blink::WebURL(),
-        blink::CrossVariantMojoAssociatedRemote<
-            blink::mojom::WidgetHostInterfaceBase>(),
-        blink::CrossVariantMojoAssociatedReceiver<
-            blink::mojom::WidgetInterfaceBase>());
+        std::move(widget_host_remote), std::move(widget_receiver));
 
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
     widget_->Init(external_web_widget_.get(), ScreenInfo());
@@ -362,6 +366,8 @@ class RenderWidgetExternalWidgetUnittest : public testing::Test {
     return external_web_widget_.get();
   }
 
+  FakeRenderWidgetHost* render_widget_host() { return &render_widget_host_; }
+
   const base::HistogramTester& histogram_tester() const {
     return histogram_tester_;
   }
@@ -374,6 +380,7 @@ class RenderWidgetExternalWidgetUnittest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   RenderProcess render_process_;
   MockRenderThread render_thread_;
+  FakeRenderWidgetHost render_widget_host_;
   FakeCompositorDependencies compositor_deps_;
   MockWebExternalWidgetClient mock_web_external_widget_client_;
   std::unique_ptr<blink::WebExternalWidget> external_web_widget_;
@@ -381,29 +388,51 @@ class RenderWidgetExternalWidgetUnittest : public testing::Test {
   base::HistogramTester histogram_tester_;
 };
 
+class SetCursorInterceptor
+    : public blink::mojom::WidgetHostInterceptorForTesting {
+ public:
+  explicit SetCursorInterceptor(FakeRenderWidgetHost* render_widget_host)
+      : render_widget_host_(render_widget_host) {
+    render_widget_host_->widget_host_receiver_for_testing().SwapImplForTesting(
+        this);
+  }
+  ~SetCursorInterceptor() override = default;
+
+  WidgetHost* GetForwardingInterface() override { return render_widget_host_; }
+
+  void SetCursor(const ui::Cursor& cursor) override { set_cursor_count_++; }
+
+  int set_cursor_count() { return set_cursor_count_; }
+
+ private:
+  FakeRenderWidgetHost* render_widget_host_;
+  int set_cursor_count_ = 0;
+};
+
 TEST_F(RenderWidgetExternalWidgetUnittest, CursorChange) {
   ui::Cursor cursor;
 
+  auto set_cursor_interceptor =
+      std::make_unique<SetCursorInterceptor>(render_widget_host());
   widget()->DidChangeCursor(cursor);
-  EXPECT_EQ(widget()->sink()->message_count(), 1U);
-  EXPECT_EQ(widget()->sink()->GetMessageAt(0)->type(),
-            WidgetHostMsg_SetCursor::ID);
-  widget()->sink()->ClearMessages();
+  render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
+  EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
   widget()->DidChangeCursor(cursor);
-  EXPECT_EQ(widget()->sink()->message_count(), 0U);
+  render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
+  EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
   widget()->SendInputEvent(SyntheticWebMouseEventBuilder::Build(
                                blink::WebInputEvent::Type::kMouseLeave),
                            HandledEventCallback());
-  EXPECT_EQ(widget()->sink()->message_count(), 0U);
+  render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
+  EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
   widget()->DidChangeCursor(cursor);
-  EXPECT_EQ(widget()->sink()->message_count(), 1U);
-  EXPECT_EQ(widget()->sink()->GetMessageAt(0)->type(),
-            WidgetHostMsg_SetCursor::ID);
+  render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
+  EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 2);
 }
 
 TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {

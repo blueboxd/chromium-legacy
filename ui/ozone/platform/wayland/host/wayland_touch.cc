@@ -61,11 +61,14 @@ void WaylandTouch::Up(void* data,
                       int32_t id) {
   WaylandTouch* touch = static_cast<WaylandTouch*>(data);
   DCHECK(touch);
-  touch->connection_->set_serial(serial);
 
   base::TimeTicks timestamp =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
   touch->delegate_->OnTouchReleaseEvent(timestamp, id);
+
+  // Do not store the |serial| on UP events. Otherwise, Ozone can't create popup
+  // windows, which (according to the spec) can only be created on reaction to
+  // button/touch down serials.
 }
 
 void WaylandTouch::Motion(void* data,

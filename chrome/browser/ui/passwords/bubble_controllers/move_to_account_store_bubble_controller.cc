@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/passwords/bubble_controllers/move_to_account_store_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
+#include "ui/base/l10n/l10n_util.h"
 
 MoveToAccountStoreBubbleController::MoveToAccountStoreBubbleController(
     base::WeakPtr<PasswordsModelDelegate> delegate)
@@ -20,7 +22,7 @@ MoveToAccountStoreBubbleController::~MoveToAccountStoreBubbleController() {
 }
 
 base::string16 MoveToAccountStoreBubbleController::GetTitle() const {
-  return base::string16();
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_TITLE);
 }
 
 void MoveToAccountStoreBubbleController::AcceptMove() {

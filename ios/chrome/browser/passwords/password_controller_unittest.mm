@@ -332,21 +332,23 @@ class PasswordControllerTest : public ChromeWebTest {
                           const std::string& typed_value,
                           const std::string& main_frame_id) {
     __block BOOL completion_handler_called = NO;
-    [passwordController_
-        checkIfSuggestionsAvailableForForm:SysUTF8ToNSString(form_name)
-                              uniqueFormID:uniqueFormID
-                           fieldIdentifier:SysUTF8ToNSString(field_identifier)
-                             uniqueFieldID:uniqueFieldID
-                                 fieldType:@"not_important"
-                                      type:@"text"
-                                typedValue:SysUTF8ToNSString(typed_value)
-                                   frameID:SysUTF8ToNSString(main_frame_id)
-                               isMainFrame:YES
-                            hasUserGesture:YES
-                                  webState:web_state()
-                         completionHandler:^(BOOL success) {
-                           completion_handler_called = YES;
-                         }];
+    FormSuggestionProviderQuery* form_query =
+        [[FormSuggestionProviderQuery alloc]
+            initWithFormName:SysUTF8ToNSString(form_name)
+                uniqueFormID:uniqueFormID
+             fieldIdentifier:SysUTF8ToNSString(field_identifier)
+               uniqueFieldID:uniqueFieldID
+                   fieldType:@"not_important"
+                        type:@"text"
+                  typedValue:SysUTF8ToNSString(typed_value)
+                     frameID:SysUTF8ToNSString(main_frame_id)];
+    [passwordController_ checkIfSuggestionsAvailableForForm:form_query
+                                                isMainFrame:YES
+                                             hasUserGesture:YES
+                                                   webState:web_state()
+                                          completionHandler:^(BOOL success) {
+                                            completion_handler_called = YES;
+                                          }];
     // Wait until the expected handler is called.
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
       return completion_handler_called;
@@ -1172,15 +1174,18 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     // That's required in order that PasswordController can identify which form
     // should be filled.
     __block BOOL block_was_called = NO;
+    FormSuggestionProviderQuery* form_query =
+        [[FormSuggestionProviderQuery alloc]
+            initWithFormName:form_name
+                uniqueFormID:form_renderer_id
+             fieldIdentifier:username_element
+               uniqueFieldID:username_renderer_id
+                   fieldType:@"text"
+                        type:@"focus"
+                  typedValue:@""
+                     frameID:SysUTF8ToNSString(mainFrameID)];
     [passwordController_
-        retrieveSuggestionsForForm:form_name
-                      uniqueFormID:form_renderer_id
-                   fieldIdentifier:username_element
-                     uniqueFieldID:username_renderer_id
-                         fieldType:@"text"
-                              type:@"focus"
-                        typedValue:@""
-                           frameID:SysUTF8ToNSString(mainFrameID)
+        retrieveSuggestionsForForm:form_query
                           webState:web_state()
                  completionHandler:^(NSArray* suggestions,
                                      id<FormSuggestionProvider> provider) {
@@ -1439,22 +1444,25 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     }
     std::string mainFrameID = web::GetMainWebFrameId(web_state());
-    [passwordController_
-        checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                              uniqueFormID:FormRendererId(0)
-                           fieldIdentifier:@"username"
-                             uniqueFieldID:FieldRendererId(1)
-                                 fieldType:@"text"
-                                      type:@"focus"
-                                typedValue:@""
-                                   frameID:SysUTF8ToNSString(mainFrameID)
-                               isMainFrame:YES
-                            hasUserGesture:YES
-                                  webState:web_state()
-                         completionHandler:^(BOOL success) {
-                           completion_handler_success = success;
-                           completion_handler_called = YES;
-                         }];
+    FormSuggestionProviderQuery* form_query =
+        [[FormSuggestionProviderQuery alloc]
+            initWithFormName:@"dynamic_form"
+                uniqueFormID:FormRendererId(0)
+             fieldIdentifier:@"username"
+               uniqueFieldID:FieldRendererId(1)
+                   fieldType:@"text"
+                        type:@"focus"
+                  typedValue:@""
+                     frameID:SysUTF8ToNSString(mainFrameID)];
+    [passwordController_ checkIfSuggestionsAvailableForForm:form_query
+                                                isMainFrame:YES
+                                             hasUserGesture:YES
+                                                   webState:web_state()
+                                          completionHandler:^(BOOL success) {
+                                            completion_handler_success =
+                                                success;
+                                            completion_handler_called = YES;
+                                          }];
     // Wait until the expected handler is called.
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
       return completion_handler_called;
@@ -1479,22 +1487,23 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   PasswordForm form(CreatePasswordForm(BaseUrl().c_str(), "user", "pw"));
   EXPECT_CALL(*store_, GetLogins).WillOnce(WithArg<1>(InvokeConsumer(form)));
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
-  [passwordController_
-      checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                            uniqueFormID:FormRendererId(0)
-                         fieldIdentifier:@"address"
-                           uniqueFieldID:FieldRendererId(3)
-                               fieldType:@"text"
-                                    type:@"focus"
-                              typedValue:@""
-                                 frameID:SysUTF8ToNSString(mainFrameID)
-                             isMainFrame:YES
-                          hasUserGesture:YES
-                                webState:web_state()
-                       completionHandler:^(BOOL success) {
-                         completion_handler_success = success;
-                         completion_handler_called = YES;
-                       }];
+  FormSuggestionProviderQuery* form_query = [[FormSuggestionProviderQuery alloc]
+      initWithFormName:@"dynamic_form"
+          uniqueFormID:FormRendererId(0)
+       fieldIdentifier:@"address"
+         uniqueFieldID:FieldRendererId(3)
+             fieldType:@"text"
+                  type:@"focus"
+            typedValue:@""
+               frameID:SysUTF8ToNSString(mainFrameID)];
+  [passwordController_ checkIfSuggestionsAvailableForForm:form_query
+                                              isMainFrame:YES
+                                           hasUserGesture:YES
+                                                 webState:web_state()
+                                        completionHandler:^(BOOL success) {
+                                          completion_handler_success = success;
+                                          completion_handler_called = YES;
+                                        }];
   // Wait until the expected handler is called.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return completion_handler_called;
@@ -1513,22 +1522,23 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
 
   EXPECT_CALL(*store_, GetLogins).Times(0);
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
-  [passwordController_
-      checkIfSuggestionsAvailableForForm:@"form"
-                            uniqueFormID:FormRendererId(0)
-                         fieldIdentifier:@"address"
-                           uniqueFieldID:FieldRendererId(1)
-                               fieldType:@"text"
-                                    type:@"focus"
-                              typedValue:@""
-                                 frameID:SysUTF8ToNSString(mainFrameID)
-                             isMainFrame:YES
-                          hasUserGesture:YES
-                                webState:web_state()
-                       completionHandler:^(BOOL success) {
-                         completion_handler_success = success;
-                         completion_handler_called = YES;
-                       }];
+  FormSuggestionProviderQuery* form_query = [[FormSuggestionProviderQuery alloc]
+      initWithFormName:@"form"
+          uniqueFormID:FormRendererId(0)
+       fieldIdentifier:@"address"
+         uniqueFieldID:FieldRendererId(1)
+             fieldType:@"text"
+                  type:@"focus"
+            typedValue:@""
+               frameID:SysUTF8ToNSString(mainFrameID)];
+  [passwordController_ checkIfSuggestionsAvailableForForm:form_query
+                                              isMainFrame:YES
+                                           hasUserGesture:YES
+                                                 webState:web_state()
+                                        completionHandler:^(BOOL success) {
+                                          completion_handler_success = success;
+                                          completion_handler_called = YES;
+                                        }];
   // Wait until the expected handler is called.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool() {
     return completion_handler_called;

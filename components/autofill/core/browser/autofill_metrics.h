@@ -897,6 +897,60 @@ class AutofillMetrics {
     kMaxValue = CARD_UPLOAD_ENABLED,
   };
 
+  // Enumerates the status of the  different requirements to successfully import
+  // an address profile from a form submission.
+  enum class AddressProfileImportRequirementMetric {
+    // The form must contain either no or only a single unique email address.
+    EMAIL_ADDRESS_UNIQUE_FULFILLED = 0,
+    EMAIL_ADDRESS_UNIQUE_MISSING = 1,
+    // The form is not allowed to contain invalid field types.
+    NO_INVALID_FIELD_TYPES_FULFILLED = 2,
+    NO_INVALID_FIELD_TYPES_MISSING = 3,
+    // If required by |CountryData|, the form must contain a city entry.
+    CITY_REQUIREMENT_FULFILLED = 4,
+    CITY_REQUIREMENT_MISSING = 5,
+    // If required by |CountryData|, the form must contain a state entry.
+    STATE_REQUIREMENT_FULFILLED = 6,
+    STATE_REQUIREMENT_MISSING = 7,
+    // If required by |CountryData|, the form must contain a ZIP entry.
+    ZIP_REQUIREMENT_FULFILLED = 8,
+    ZIP_REQUIREMENT_MISSING = 9,
+    // If present, the email address must be valid.
+    EMAIL_VALID_FULFILLED = 10,
+    EMAIL_VALID_MISSING = 11,
+    // If present, the country must be valid.
+    COUNTRY_VALID_FULFILLED = 12,
+    COUNTRY_VALID_MISSING = 13,
+    // If present, the state must be valid (if verifiable).
+    STATE_VALID_FULFILLED = 14,
+    STATE_VALID_MISSING = 15,
+    // If present, the ZIP must be valid (if verifiable).
+    ZIP_VALID_FULFILLED = 16,
+    ZIP_VALID_MISSING = 17,
+    // If present, the phone number must be valid (if verifiable).
+    PHONE_VALID_FULFILLED = 18,
+    PHONE_VALID_MISSING = 19,
+    // Indicates the overall status of the import requirements check.
+    OVERALL_FULFILLED = 20,
+    OVERALL_MISSING = 21,
+    // Must be set to the last entry.
+    kMaxValue = OVERALL_MISSING,
+  };
+
+  // Represents the status of the field type requirements that are specific to
+  // countries.
+  enum class AddressProfileImportCountrySpecificFieldRequirementsMetric {
+    ALL_GOOD = 0,
+    ZIP_MISSING = 1,
+    STATE_MISSING = 2,
+    ZIP_STATE_MISSING = 3,
+    CITY_MISSING = 4,
+    ZIP_CITY_MISSING = 5,
+    STATE_CITY_MISSING = 6,
+    ZIP_STATE_CITY_MISSING = 7,
+    kMaxValue = ZIP_STATE_CITY_MISSING,
+  };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -978,7 +1032,7 @@ class AutofillMetrics {
   // nested.
   class UkmTimestampPin {
    public:
-    UkmTimestampPin(FormInteractionsUkmLogger* logger);
+    explicit UkmTimestampPin(FormInteractionsUkmLogger* logger);
     ~UkmTimestampPin();
 
    private:
@@ -1452,6 +1506,17 @@ class AutofillMetrics {
   // user.
   static void LogCardUploadEnabledMetric(CardUploadEnabledMetric metric,
                                          AutofillSyncSigninState sync_state);
+
+  // Logs the status of an address import requirement defined by type.
+  static void LogAddressFormImportRequirementMetric(
+      AutofillMetrics::AddressProfileImportRequirementMetric metric);
+
+  // Logs the overall status of the country specific field requirements for
+  // importing an address profile from a submitted form.
+  static void LogAddressFormImportCountrySpecificFieldRequirementsMetric(
+      bool is_zip_missing,
+      bool is_state_missing,
+      bool is_city_missing);
 
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);

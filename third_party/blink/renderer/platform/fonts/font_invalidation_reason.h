@@ -13,6 +13,8 @@ enum class FontInvalidationReason {
   kGeneralInvalidation,
   // A custom font has finished loading and is ready for use.
   kFontFaceLoaded,
+  // A @font-face rule has been deleted.
+  kFontFaceDeleted,
   // TODO(xiaochengh): Add more detailed entries for different callers, and
   // implement different behaviors on FontSelectorClient.
 };

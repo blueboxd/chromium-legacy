@@ -770,7 +770,8 @@ void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady(
   }
 
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      client(), std::make_unique<enterprise_reporting::ReportGenerator>());
+      client(), std::make_unique<enterprise_reporting::ReportGenerator>(),
+      profile_);
 
   report_scheduler_->OnDMTokenUpdated();
 }

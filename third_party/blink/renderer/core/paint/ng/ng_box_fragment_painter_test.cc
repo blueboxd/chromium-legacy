@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
+#include "components/paint_preview/common/paint_preview_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -11,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using testing::ElementsAre;
@@ -90,6 +92,44 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
                 &scroll_hit_test, IntRect(0, 0, 40, 40)),
             IsPaintChunk(1, 2)));
   }
+}
+
+TEST_P(NGBoxFragmentPainterTest, AddUrlRects) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div>
+      <p>
+        <a href="https://www.chromium.org">Chromium</a>
+      </p>
+      <p>
+        <a href="https://www.wikipedia.org">Wikipedia</a>
+      </p>
+    </div>
+  )HTML");
+  // Use Paint Preview to test this as printing falls back to the legacy layout
+  // engine.
+
+  // PaintPreviewTracker records URLs via the GraphicsContext under certain
+  // flagsets when painting. This is the simplest way to check if URLs were
+  // annotated.
+  GetDocument().SetIsPaintingPreview(true);
+  UpdateAllLifecyclePhasesForTest();
+
+  paint_preview::PaintPreviewTracker tracker(base::UnguessableToken::Create(),
+                                             base::nullopt, true);
+  PaintRecordBuilder builder(nullptr, nullptr, nullptr, &tracker);
+  builder.Context().SetIsPaintingPreview(true);
+
+  GetDocument().View()->PaintContentsOutsideOfLifecycle(
+      builder.Context(),
+      kGlobalPaintNormalPhase | kGlobalPaintAddUrlMetadata |
+          kGlobalPaintFlattenCompositingLayers,
+      CullRect::Infinite());
+
+  builder.EndRecording();
+  ASSERT_EQ(tracker.GetLinks().size(), 2U);
+  EXPECT_EQ(tracker.GetLinks()[0]->url, "https://www.chromium.org/");
+  EXPECT_EQ(tracker.GetLinks()[1]->url, "https://www.wikipedia.org/");
 }
 
 }  // namespace blink

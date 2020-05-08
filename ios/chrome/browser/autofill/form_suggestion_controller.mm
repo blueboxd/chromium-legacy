@@ -181,18 +181,20 @@ AutofillSuggestionState::AutofillSuggestionState(
   NSUInteger requestIdentifier = self.requestIdentifier;
 
   __weak FormSuggestionController* weakSelf = self;
-  NSString* strongFormName = base::SysUTF8ToNSString(params.form_name);
-  FormRendererId uniqueFormID = FormRendererId(params.unique_form_id);
-  NSString* strongFieldIdentifier =
-      base::SysUTF8ToNSString(params.field_identifier);
-  FieldRendererId uniqueFieldID = FieldRendererId(params.unique_field_id);
-  NSString* strongFrameId = base::SysUTF8ToNSString(params.frame_id);
-  NSString* strongFieldType = base::SysUTF8ToNSString(params.field_type);
-  NSString* strongType = base::SysUTF8ToNSString(params.type);
-  NSString* strongValue =
-      base::SysUTF8ToNSString(_suggestionState.get()->typed_value);
-  BOOL is_main_frame = params.is_main_frame;
-  BOOL has_user_gesture = params.has_user_gesture;
+
+  FormSuggestionProviderQuery* formQuery = [[FormSuggestionProviderQuery alloc]
+      initWithFormName:base::SysUTF8ToNSString(params.form_name)
+          uniqueFormID:FormRendererId(params.unique_form_id)
+       fieldIdentifier:base::SysUTF8ToNSString(params.field_identifier)
+         uniqueFieldID:FieldRendererId(params.unique_field_id)
+             fieldType:base::SysUTF8ToNSString(params.field_type)
+                  type:base::SysUTF8ToNSString(params.type)
+            typedValue:base::SysUTF8ToNSString(
+                           _suggestionState.get()->typed_value)
+               frameID:base::SysUTF8ToNSString(params.frame_id)];
+
+  BOOL isMainFrame = params.is_main_frame;
+  BOOL hasUserGesture = params.has_user_gesture;
 
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide suggestions for the specified form/field/type
@@ -210,16 +212,9 @@ AutofillSuggestionState::AutofillSuggestionState(
             return;
           id<FormSuggestionProvider> provider =
               strongSelf->_suggestionProviders[i];
-          [provider checkIfSuggestionsAvailableForForm:strongFormName
-                                          uniqueFormID:uniqueFormID
-                                       fieldIdentifier:strongFieldIdentifier
-                                         uniqueFieldID:uniqueFieldID
-                                             fieldType:strongFieldType
-                                                  type:strongType
-                                            typedValue:strongValue
-                                               frameID:strongFrameId
-                                           isMainFrame:is_main_frame
-                                        hasUserGesture:has_user_gesture
+          [provider checkIfSuggestionsAvailableForForm:formQuery
+                                           isMainFrame:isMainFrame
+                                        hasUserGesture:hasUserGesture
                                               webState:webState
                                      completionHandler:completion];
         };
@@ -248,14 +243,7 @@ AutofillSuggestionState::AutofillSuggestionState(
       return;
     id<FormSuggestionProvider> provider =
         strongSelf->_suggestionProviders[providerIndex];
-    [provider retrieveSuggestionsForForm:strongFormName
-                            uniqueFormID:uniqueFormID
-                         fieldIdentifier:strongFieldIdentifier
-                           uniqueFieldID:uniqueFieldID
-                               fieldType:strongFieldType
-                                    type:strongType
-                              typedValue:strongValue
-                                 frameID:strongFrameId
+    [provider retrieveSuggestionsForForm:formQuery
                                 webState:webState
                        completionHandler:readyCompletion];
   };

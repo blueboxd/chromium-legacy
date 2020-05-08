@@ -93,6 +93,10 @@ WebExternalWidgetImpl::RendererWidgetSchedulingState() {
   return widget_base_->RendererWidgetSchedulingState();
 }
 
+void WebExternalWidgetImpl::SetCursor(const ui::Cursor& cursor) {
+  widget_base_->SetCursor(cursor);
+}
+
 void WebExternalWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   widget_base_->LayerTreeHost()->SetNonBlinkManagedRootLayer(layer);
 }

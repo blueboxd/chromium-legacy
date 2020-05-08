@@ -63,6 +63,9 @@ class ExtensionAppsBase : public apps::PublisherBase,
   // Handles profile prefs kHideWebStoreIcon changes for ChromeOS.
   virtual void OnHideWebStoreIconPrefChanged() {}
 
+  // Handles local state prefs kSystemFeaturesDisableList changes for ChromeOS.
+  virtual void OnSystemFeaturesPrefChanged() {}
+
  protected:
   // extensions::ExtensionRegistryObserver overrides.
   void OnExtensionUninstalled(content::BrowserContext* browser_context,

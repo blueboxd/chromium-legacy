@@ -383,6 +383,15 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
     completionHandler(@[]);
     return;
   }
+  FormSuggestionProviderQuery* formQuery =
+      [[FormSuggestionProviderQuery alloc] initWithFormName:formName
+                                               uniqueFormID:uniqueFormID
+                                            fieldIdentifier:fieldIdentifier
+                                              uniqueFieldID:uniqueFieldID
+                                                  fieldType:fieldType
+                                                       type:@"focus"
+                                                 typedValue:nil
+                                                    frameID:frameID];
   __weak CWVPasswordController* weakSelf = self;
   // It is necessary to call |checkIfSuggestionsAvailableForForm| before
   // |retrieveSuggestionsForForm| because the former actually queries the db,
@@ -390,13 +399,7 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   // Set |type| to "focus" to trigger form extraction in
   // |PasswordSuggestionHelper|.
   [self.suggestionHelper
-      checkIfSuggestionsAvailableForForm:formName
-                            uniqueFormID:uniqueFormID
-                         fieldIdentifier:fieldIdentifier
-                           uniqueFieldID:uniqueFieldID
-                               fieldType:fieldType
-                                    type:@"focus"
-                                 frameID:frameID
+      checkIfSuggestionsAvailableForForm:formQuery
                              isMainFrame:YES
                                 webState:_webState
                        completionHandler:^(BOOL suggestionsAvailable) {
@@ -407,11 +410,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
                          }
                          NSArray<FormSuggestion*>* suggestions =
                              [strongSelf.suggestionHelper
-                                 retrieveSuggestionsWithFormID:FormRendererId(
-                                                                   uniqueFormID)
-                                               fieldIdentifier:
-                                                   FieldRendererId(
-                                                       uniqueFieldID)
+                                 retrieveSuggestionsWithFormID:uniqueFormID
+                                               fieldIdentifier:uniqueFieldID
                                                      fieldType:fieldType];
                          NSMutableArray<CWVAutofillSuggestion*>*
                              autofillSuggestions = [NSMutableArray array];

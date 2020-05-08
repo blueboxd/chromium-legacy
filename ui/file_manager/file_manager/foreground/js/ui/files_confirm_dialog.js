@@ -39,4 +39,20 @@ class FilesConfirmDialog extends cr.ui.dialogs.ConfirmDialog {
     super.initDom();
     this.frame.classList.add('files-confirm-dialog');
   }
+
+  /**
+   * @override
+   */
+  showWithTitle(title, message, ...args) {
+    this.frame.classList.toggle('no-title', !title);
+    super.showWithTitle(title, message, ...args);
+  }
+
+  /**
+   * @override
+   */
+  showHtml(title, message, ...args) {
+    this.frame.classList.toggle('no-title', !title);
+    super.showHtml(title, message, ...args);
+  }
 }

@@ -136,6 +136,11 @@ AutocompleteProviderClientImpl::GetKeywordExtensionsDelegate(
   return nullptr;
 }
 
+upboarding::TileService* AutocompleteProviderClientImpl::GetQueryTileService()
+    const {
+  return nullptr;
+}
+
 std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
   return browser_state_->GetPrefs()->GetString(
       language::prefs::kAcceptLanguages);

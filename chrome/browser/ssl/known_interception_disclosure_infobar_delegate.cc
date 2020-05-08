@@ -82,13 +82,12 @@ void MaybeShowKnownInterceptionDisclosureDialog(
   auto delegate =
       std::make_unique<KnownInterceptionDisclosureInfoBarDelegate>(profile);
 
-  infobars::InfoBar* infobar = nullptr;
   if (!KnownInterceptionDisclosureCooldown::GetInstance()->IsActive(profile)) {
 #if defined(OS_ANDROID)
-    infobar = infobar_service->AddInfoBar(
+    infobar_service->AddInfoBar(
         KnownInterceptionDisclosureInfoBar::CreateInfoBar(std::move(delegate)));
 #else
-    infobar = infobar_service->AddInfoBar(
+    infobar_service->AddInfoBar(
         infobar_service->CreateConfirmInfoBar(std::move(delegate)));
 #endif
   }

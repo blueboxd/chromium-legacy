@@ -89,7 +89,9 @@ public class CrashesListFragment extends DevUiBaseFragment {
             + "\n"
             + "\n"
             + "****DO NOT CHANGE BELOW THIS LINE****\n"
-            + "Crash ID: http://crash/%s\n";
+            + "Crash ID: http://crash/%s\n"
+            + "Instructions for triaging this report (Chromium members only): "
+            + "https://bit.ly/2SM1Y9t\n";
 
     @Override
     public void onAttach(Context context) {

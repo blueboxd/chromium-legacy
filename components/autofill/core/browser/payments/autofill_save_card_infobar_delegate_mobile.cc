@@ -36,8 +36,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     AutofillClient::UploadSaveCardPromptCallback
         upload_save_card_prompt_callback,
     AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback,
-    PrefService* pref_service,
-    bool is_off_the_record)
+    PrefService* pref_service)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
       options_(options),
@@ -54,8 +53,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       cardholder_name_(card.GetRawInfo(CREDIT_CARD_NAME_FULL)),
       expiration_date_month_(card.Expiration2DigitMonthAsString()),
       expiration_date_year_(card.Expiration4DigitYearAsString()),
-      legal_message_lines_(legal_message_lines),
-      is_off_the_record_(is_off_the_record) {
+      legal_message_lines_(legal_message_lines) {
   DCHECK_EQ(upload, !upload_save_card_prompt_callback_.is_null());
   DCHECK_EQ(upload, local_save_card_prompt_callback_.is_null());
 
@@ -94,13 +92,8 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
   if (!IsGooglePayBrandingEnabled())
     return base::string16();
 
-  bool offer_to_save_on_device_message =
-      OfferStoreUnmaskedCards(is_off_the_record_) &&
-      !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
   return l10n_util::GetStringUTF16(
-      offer_to_save_on_device_message
-          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE
-          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
 }
 
 int AutofillSaveCardInfoBarDelegateMobile::GetIconId() const {

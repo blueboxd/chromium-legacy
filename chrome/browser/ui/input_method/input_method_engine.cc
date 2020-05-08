@@ -32,8 +32,8 @@ const char kErrorReachMaxWindowCount[] =
     "Cannot create more than 5 normal IME windows.";
 const char kErrorSentKeyEventsNotAllowed[] =
     "input.ime.sendKeyEvents API is not allowed on non-text fields.";
-const char kErrorSpecialKeysNotAllowed[] =
-    "ENTER et al. keys are allowed only on http:, https: etc.";
+const char kErrorAllKeysNotAllowed[] =
+    "All keys have been disabled for this API on windows and linux.";
 
 const int kMaxNormalWindowCount = 5;
 
@@ -150,7 +150,7 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
 
   // ENTER et al. keys are allowed to work only on http:, https: etc.
   if (!IsValidKeyEvent(event)) {
-    *error = kErrorSpecialKeysNotAllowed;
+    *error = kErrorAllKeysNotAllowed;
     return false;
   }
 
@@ -159,18 +159,7 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
 }
 
 bool InputMethodEngine::IsValidKeyEvent(const ui::KeyEvent* ui_event) {
-  // Disable shortcut keys for Windows and Linux.
-  if (ui_event->IsControlDown() || ui_event->IsCommandDown()) {
-    return false;
-  }
-  // Disable the enter key for Windows and Linux.
-  if (ui_event->key_code() == ui::VKEY_RETURN) {
-    return false;
-  }
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  return input_context && (IsValidKeyForAllPages(ui_event) ||
-                           !IsSpecialPage(input_context->GetInputMethod()));
+  return false;
 }
 
 bool InputMethodEngine::IsActive() const {

@@ -31,7 +31,6 @@
 
 struct PrintMsg_Print_Params;
 struct PrintMsg_PrintPages_Params;
-struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 // RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
@@ -229,6 +228,8 @@ class PrintRenderFrameHelper
   void PrintRequestedPages() override;
   void PrintForSystemDialog() override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void SetPrintPreviewUI(
+      mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> preview) override;
   void InitiatePrintPreview(
       mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
       bool has_selection) override;
@@ -308,8 +309,7 @@ class PrintRenderFrameHelper
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Set options for print preset from source PDF document.
-  bool SetOptionsFromPdfDocument(
-      PrintHostMsg_SetOptionsFromDocument_Params* options);
+  mojom::OptionsFromDocumentParamsPtr SetOptionsFromPdfDocument();
 
   // Update the current print settings with new |passed_job_settings|.
   // |passed_job_settings| dictionary contains print job details such as printer
@@ -420,6 +420,9 @@ class PrintRenderFrameHelper
   // Returns true if print preview should continue, false on failure.
   bool PreviewPageRendered(int page_number,
                            std::unique_ptr<MetafileSkia> metafile);
+
+  // Called when the connection with the |preview_ui_| goes away.
+  void OnPreviewDisconnect();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   void SetPrintPagesParams(const PrintMsg_PrintPages_Params& settings);
@@ -448,6 +451,11 @@ class PrintRenderFrameHelper
   // Used to render print documents from an external source (ARC, Crostini,
   // etc.).
   mojo::AssociatedRemote<mojom::PrintRenderer> print_renderer_;
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  // Used to notify the browser of preview UI actions.
+  mojo::AssociatedRemote<mojom::PrintPreviewUI> preview_ui_;
+#endif
 
   mojo::AssociatedReceiverSet<mojom::PrintRenderFrame> receivers_;
 

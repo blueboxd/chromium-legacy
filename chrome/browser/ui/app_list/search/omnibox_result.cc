@@ -115,6 +115,7 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
       return ash::kEqualIcon;
 
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
+    case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
       break;
@@ -226,8 +227,9 @@ ash::SearchResultType OmniboxResult::GetSearchResultType() const {
     case AutocompleteMatchType::PEDAL:
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
-    case AutocompleteMatchType::NUM_TYPES:
     case AutocompleteMatchType::HISTORY_BODY:
+    case AutocompleteMatchType::TILE_SUGGESTION:
+    case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
       return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }

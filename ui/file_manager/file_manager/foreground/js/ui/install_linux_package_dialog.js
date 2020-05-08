@@ -23,7 +23,8 @@ cr.define('cr.filebrowser', () => {
       this.frame.insertBefore(this.details_frame_, this.buttons);
 
       this.details_label_ = this.document_.createElement('div');
-      this.details_label_.className = 'install-linux-package-details-label';
+      this.details_label_.classList.add(
+          'install-linux-package-details-label', 'button2');
       this.details_label_.textContent =
           str('INSTALL_LINUX_PACKAGE_DETAILS_LABEL');
 
@@ -82,7 +83,8 @@ cr.define('cr.filebrowser', () => {
       if (message) {
         const text = this.document_.createElement('div');
         text.textContent = message;
-        text.className = 'install-linux-package-detail-value';
+        text.classList.add(
+            'install-linux-package-detail-value', 'body2-primary');
         this.details_frame_.appendChild(text);
       }
     }
@@ -130,6 +132,18 @@ cr.define('cr.filebrowser', () => {
         ]);
       }
 
+      this.renderDetails_(details);
+
+      // Allow install now.
+      this.installButton_.disabled = false;
+    }
+
+    /**
+     * @param {!Array<!Array<string>>} details Array with pairs:
+     *    ['label', 'value'].
+     * @private
+     */
+    renderDetails_(details) {
       for (const detail of details) {
         const label = this.document_.createElement('div');
         label.textContent = detail[0] + ': ';
@@ -141,9 +155,6 @@ cr.define('cr.filebrowser', () => {
         this.details_frame_.appendChild(text);
         this.details_frame_.appendChild(this.document_.createElement('br'));
       }
-
-      // Allow install now.
-      this.installButton_.disabled = false;
     }
 
     /**

@@ -167,9 +167,9 @@ void LabelExample::AddCustomLabel(View* container) {
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0.0f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(std::make_unique<Label>(ASCIIToUTF16("Content: ")));
@@ -189,11 +189,11 @@ void LabelExample::AddCustomLabel(View* container) {
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(0, 1);
   multiline_ = layout->AddView(
       std::make_unique<Checkbox>(base::ASCIIToUTF16("Multiline"), this));
@@ -205,7 +205,7 @@ void LabelExample::AddCustomLabel(View* container) {
 
   column_set = layout->AddColumnSet(2);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(0, 2);
   auto custom_label = std::make_unique<ExamplePreferredSizeLabel>();
   custom_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

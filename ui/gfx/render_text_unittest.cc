@@ -7487,4 +7487,29 @@ TEST_F(RenderTextTest, DrawSelectAll) {
   ExpectTextLog(kUnselected);
 }
 
+#if defined(OS_LINUX)
+TEST_F(RenderTextTest, StringSizeUpdatedWhenDeviceScaleFactorChanges) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(ASCIIToUTF16("Test - 1"));
+  const gfx::SizeF initial_size = render_text->GetStringSizeF();
+
+  // Non-integer device scale factor enables subpixel positioning on Linux and
+  // Chrome OS, which should update text size.
+  SetFontRenderParamsDeviceScaleFactor(1.5);
+
+  const gfx::SizeF scaled_size = render_text->GetStringSizeF();
+
+  // Create render text with scale factor set from the beginning, and use is as
+  // a baseline to which compare the original render text string size.
+  ResetRenderTextInstance();
+  RenderText* scaled_render_text = GetRenderText();
+  scaled_render_text->SetText(ASCIIToUTF16("Test - 1"));
+
+  // Verify that original render text string size got updated after device scale
+  // factor changed.
+  EXPECT_NE(initial_size.width(), scaled_size.width());
+  EXPECT_EQ(scaled_render_text->GetStringSizeF(), scaled_size);
+}
+#endif
+
 }  // namespace gfx

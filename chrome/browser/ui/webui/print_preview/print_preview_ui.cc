@@ -438,6 +438,15 @@ PrintPreviewUI::~PrintPreviewUI() {
   ClearPreviewUIId();
 }
 
+mojo::PendingAssociatedRemote<mojom::PrintPreviewUI>
+PrintPreviewUI::BindPrintPreviewUI() {
+  return receiver_.BindNewEndpointAndPassRemote();
+}
+
+bool PrintPreviewUI::IsBound() const {
+  return receiver_.is_bound();
+}
+
 void PrintPreviewUI::ClearPreviewUIId() {
   if (!id_)
     return;
@@ -704,6 +713,7 @@ void PrintPreviewUI::OnHidePreviewDialog() {
 }
 
 void PrintPreviewUI::OnClosePrintPreviewDialog() {
+  receiver_.reset();
   if (dialog_closed_)
     return;
   dialog_closed_ = true;
@@ -714,11 +724,11 @@ void PrintPreviewUI::OnClosePrintPreviewDialog() {
   delegate->OnDialogCloseFromWebUI();
 }
 
-void PrintPreviewUI::OnSetOptionsFromDocument(
-    const PrintHostMsg_SetOptionsFromDocument_Params& params,
-    int request_id) {
-  handler_->SendPrintPresetOptions(params.is_scaling_disabled, params.copies,
-                                   params.duplex, request_id);
+void PrintPreviewUI::SetOptionsFromDocument(
+    const mojom::OptionsFromDocumentParamsPtr params,
+    int32_t request_id) {
+  handler_->SendPrintPresetOptions(params->is_scaling_disabled, params->copies,
+                                   params->duplex, request_id);
 }
 
 // static

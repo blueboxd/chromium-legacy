@@ -67,8 +67,8 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
   const int kMaxMessageWidth = 400;
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                kMaxMessageWidth, false);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kFixed, kMaxMessageWidth, false);
 
   // Create the message label text.
   std::vector<size_t> offsets;

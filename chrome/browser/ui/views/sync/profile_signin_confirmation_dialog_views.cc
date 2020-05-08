@@ -210,23 +210,24 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   auto* prompt_columnset = prompt_layout->AddColumnSet(kPromptBarColumnSetId);
   prompt_columnset->AddColumn(
       views::GridLayout::FILL, views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   prompt_columnset->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
-  prompt_columnset->AddColumn(views::GridLayout::FILL,
-                              views::GridLayout::CENTER, 1.0,
-                              views::GridLayout::USE_PREF, 0, 0);
+  prompt_columnset->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   prompt_layout->StartRow(views::GridLayout::kFixedSize, kPromptBarColumnSetId);
   prompt_layout->AddView(std::move(business_icon));
   prompt_layout->AddView(std::move(prompt_label));
 
   // Use a column set with no padding.
-  dialog_layout->AddColumnSet(0)->AddColumn(views::GridLayout::FILL,
-                                            views::GridLayout::FILL, 1.0,
-                                            views::GridLayout::USE_PREF, 0, 0);
+  dialog_layout->AddColumnSet(0)->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   dialog_layout->StartRow(views::GridLayout::kFixedSize, 0);
   dialog_layout->AddView(std::move(prompt_bar), 1, 1, views::GridLayout::FILL,
                          views::GridLayout::FILL, 0, 0);
@@ -239,9 +240,9 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
       dialog_layout->AddColumnSet(kExplanationColumnSetId);
   explanation_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                                         content_insets.left());
-  explanation_columns->AddColumn(views::GridLayout::FILL,
-                                 views::GridLayout::FILL, 1.0,
-                                 views::GridLayout::USE_PREF, 0, 0);
+  explanation_columns->AddColumn(
+      views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   explanation_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                                         content_insets.right());
   dialog_layout->StartRow(views::GridLayout::kFixedSize,

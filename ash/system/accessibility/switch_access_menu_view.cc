@@ -97,7 +97,7 @@ void SwitchAccessMenuView::SetActions(std::vector<std::string> actions) {
   for (int i = 0; i < kMaxColumns; i++) {
     columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
                        0, /* resize_percent */
-                       views::GridLayout::FIXED,
+                       views::GridLayout::ColumnSize::kFixed,
                        SwitchAccessMenuButton::kWidthDip, 0);
     columns->AddPaddingColumn(0 /* resize_percent */, kUnifiedMenuPadding);
   }

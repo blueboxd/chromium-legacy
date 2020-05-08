@@ -12,6 +12,7 @@ import androidx.core.util.ObjectsCompat;
 
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.components.omnibox.SuggestionAnswer;
+import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.url.GURL;
 
 import java.util.Arrays;
@@ -72,13 +73,14 @@ public class OmniboxSuggestion {
     private final String mPostContentType;
     private final byte[] mPostData;
     private final int mGroupId;
+    private final List<QueryTile> mQueryTiles;
 
     public OmniboxSuggestion(int nativeType, boolean isSearchType, int relevance, int transition,
             String displayText, List<MatchClassification> displayTextClassifications,
             String description, List<MatchClassification> descriptionClassifications,
             SuggestionAnswer answer, String fillIntoEdit, GURL url, GURL imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
-            String postContentType, byte[] postData, int groupId) {
+            String postContentType, byte[] postData, int groupId, List<QueryTile> queryTiles) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -99,6 +101,7 @@ public class OmniboxSuggestion {
         mPostContentType = postContentType;
         mPostData = postData;
         mGroupId = groupId;
+        mQueryTiles = queryTiles;
     }
 
     public int getType() {
@@ -172,6 +175,10 @@ public class OmniboxSuggestion {
         return mPostContentType;
     }
 
+    public List<QueryTile> getQueryTiles() {
+        return mQueryTiles;
+    }
+
     public byte[] getPostData() {
         return mPostData;
     }
@@ -209,8 +216,8 @@ public class OmniboxSuggestion {
                 && mIsStarred == suggestion.mIsStarred && mIsDeletable == suggestion.mIsDeletable
                 && ObjectsCompat.equals(mAnswer, suggestion.mAnswer)
                 && TextUtils.equals(mPostContentType, suggestion.mPostContentType)
-                && Arrays.equals(mPostData, suggestion.mPostData)
-                && mGroupId == suggestion.mGroupId;
+                && Arrays.equals(mPostData, suggestion.mPostData) && mGroupId == suggestion.mGroupId
+                && ObjectsCompat.equals(mQueryTiles, suggestion.mQueryTiles);
     }
 
     /**

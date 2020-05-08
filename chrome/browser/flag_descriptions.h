@@ -144,9 +144,6 @@ extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 extern const char kAutofillNoLocalSaveOnUnmaskSuccessName[];
 extern const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[];
 
-extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
-extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
-
 extern const char kAutofillOffNoServerDataName[];
 extern const char kAutofillOffNoServerDataDescription[];
 

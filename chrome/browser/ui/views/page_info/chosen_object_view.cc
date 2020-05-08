@@ -45,17 +45,19 @@ ChosenObjectView::ChosenObjectView(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::ColumnSize::kFixed,
                         PageInfoBubbleView::kIconColumnWidth, 0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                related_label_padding);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                        1.0, views::GridLayout::USE_PREF, 0, 0);
+                        1.0, views::GridLayout::ColumnSize::kUsePreferred, 0,
+                        0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                related_label_padding);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF,
+                        views::GridLayout::ColumnSize::kUsePreferred,
                         PageInfoBubbleView::kIconColumnWidth, 0);
 
   layout->StartRow(1.0, column_set_id);

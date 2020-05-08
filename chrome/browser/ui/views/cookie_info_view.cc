@@ -86,16 +86,17 @@ CookieInfoView::CookieInfoView() {
 
   int three_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
-  column_set->AddColumn(
-      provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(provider->GetControlLabelGridAlignment(),
+                        views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                kLabelValuePadding);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   for (const auto& cookie_property_and_label : {
            std::make_pair(CookieProperty::kName, IDS_COOKIES_COOKIE_NAME_LABEL),

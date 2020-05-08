@@ -128,7 +128,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     1.0, views::GridLayout::FIXED, dialog_content_width, 0);
+                     1.0, views::GridLayout::ColumnSize::kFixed,
+                     dialog_content_width, 0);
 
   // Message text.
   const int vertical_padding =

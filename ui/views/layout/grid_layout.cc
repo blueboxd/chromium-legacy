@@ -158,7 +158,7 @@ class Column : public LayoutElement {
   Column(GridLayout::Alignment h_align,
          GridLayout::Alignment v_align,
          float resize_percent,
-         GridLayout::SizeType size_type,
+         GridLayout::ColumnSize size_type,
          int fixed_width,
          int min_width,
          bool is_padding)
@@ -194,7 +194,7 @@ class Column : public LayoutElement {
 
   const GridLayout::Alignment h_align_;
   const GridLayout::Alignment v_align_;
-  const GridLayout::SizeType size_type_;
+  const GridLayout::ColumnSize size_type_;
   int same_size_column_;
   const int fixed_width_;
   const int min_width_;
@@ -216,7 +216,7 @@ class Column : public LayoutElement {
 };
 
 void Column::ResetSize() {
-  if (size_type_ == GridLayout::FIXED) {
+  if (size_type_ == GridLayout::ColumnSize::kFixed) {
     SetSize(fixed_width_);
   } else {
     SetSize(min_width_);
@@ -249,7 +249,7 @@ void Column::UnifyLinkedColumnSizes(int size_limit) {
 }
 
 void Column::AdjustSize(int size) {
-  if (size_type_ == GridLayout::USE_PREF)
+  if (size_type_ == GridLayout::ColumnSize::kUsePreferred)
     LayoutElement::AdjustSize(size);
 }
 
@@ -382,13 +382,13 @@ ColumnSet::~ColumnSet() = default;
 
 void ColumnSet::AddPaddingColumn(float resize_percent, int width) {
   AddColumn(GridLayout::FILL, GridLayout::FILL, resize_percent,
-            GridLayout::FIXED, width, width, true);
+            GridLayout::ColumnSize::kFixed, width, width, true);
 }
 
 void ColumnSet::AddColumn(GridLayout::Alignment h_align,
                           GridLayout::Alignment v_align,
                           float resize_percent,
-                          GridLayout::SizeType size_type,
+                          GridLayout::ColumnSize size_type,
                           int fixed_width,
                           int min_width) {
   AddColumn(h_align, v_align, resize_percent, size_type, fixed_width, min_width,
@@ -411,7 +411,7 @@ void ColumnSet::LinkColumnSizes(const std::vector<int>& columns) {
 void ColumnSet::AddColumn(GridLayout::Alignment h_align,
                           GridLayout::Alignment v_align,
                           float resize_percent,
-                          GridLayout::SizeType size_type,
+                          GridLayout::ColumnSize size_type,
                           int fixed_width,
                           int min_width,
                           bool is_padding) {
@@ -533,7 +533,8 @@ void ColumnSet::DistributeRemainingWidth(ViewState* view_state) {
     if (columns_[i]->IsResizable()) {
       total_resize += columns_[i]->ResizePercent();
       resizable_columns++;
-    } else if (columns_[i]->size_type_ == GridLayout::USE_PREF) {
+    } else if (columns_[i]->size_type_ ==
+               GridLayout::ColumnSize::kUsePreferred) {
       pref_size_columns++;
     }
   }
@@ -559,7 +560,7 @@ void ColumnSet::DistributeRemainingWidth(ViewState* view_state) {
     // that use the preferred size.
     int to_distribute = width / pref_size_columns;
     for (int i = start_col; i < max_col; ++i) {
-      if (columns_[i]->size_type_ == GridLayout::USE_PREF) {
+      if (columns_[i]->size_type_ == GridLayout::ColumnSize::kUsePreferred) {
         width -= to_distribute;
         if (width < to_distribute)
           to_distribute += width;
@@ -740,7 +741,8 @@ void ColumnSet::ResizeUsingMin(int total_delta) {
 
 bool ColumnSet::CanUseMinimum(const ViewState& view_state) const {
   const auto resizable = [](const auto& col) {
-    return col->ResizePercent() > 0 && col->size_type_ != GridLayout::FIXED;
+    return col->ResizePercent() > 0 &&
+           col->size_type_ != GridLayout::ColumnSize::kFixed;
   };
   return std::all_of(
       columns_.cbegin() + view_state.start_col,

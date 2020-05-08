@@ -46,9 +46,17 @@ class GpuArcVideoEncodeAccelerator
 
   // ::arc::mojom::VideoEncodeAccelerator implementation.
   void GetSupportedProfiles(GetSupportedProfilesCallback callback) override;
+
   void Initialize(const media::VideoEncodeAccelerator::Config& config,
                   VideoEncodeClientPtr client,
                   InitializeCallback callback) override;
+  void InitializeDeprecated(const media::VideoEncodeAccelerator::Config& config,
+                            VideoEncodeClientPtr client,
+                            InitializeDeprecatedCallback callback) override;
+  mojom::VideoEncodeAccelerator::Result InitializeTask(
+      const media::VideoEncodeAccelerator::Config& config,
+      VideoEncodeClientPtr client);
+
   void Encode(media::VideoPixelFormat format,
               mojo::ScopedHandle fd,
               std::vector<::arc::VideoFramePlane> planes,

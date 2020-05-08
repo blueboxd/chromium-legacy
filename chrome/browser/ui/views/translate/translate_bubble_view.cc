@@ -115,8 +115,8 @@ std::unique_ptr<views::View> CreateWordmarkView(
 
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(1, 0);
   layout->AddView(std::move(translate_icon));
 
@@ -820,21 +820,21 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewBeforeTranslate() {
   constexpr int kCheckboxColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kCheckboxColumnSetId);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   constexpr int kButtonColumnSetId = 1;
   cs = layout->AddColumnSet(kButtonColumnSetId);
   cs->AddPaddingColumn(1.0, 0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   if (model_->ShouldShowAlwaysTranslateShortcut()) {
     layout->StartRow(views::GridLayout::kFixedSize, kCheckboxColumnSetId);
@@ -992,14 +992,16 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTranslating() {
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
   cs->AddPaddingColumn(1.0, 0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred,
                 views::GridLayout::kFixedSize, 0);
 
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred,
                 views::GridLayout::kFixedSize, 0);
 
   layout->AddPaddingRow(
@@ -1028,15 +1030,16 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAfterTranslate() {
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
   cs->AddPaddingColumn(1.0, 0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred,
                 views::GridLayout::kFixedSize, 0);
 
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
@@ -1070,15 +1073,15 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewError() {
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
   cs->AddPaddingColumn(1.0, 0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->AddPaddingRow(
       views::GridLayout::kFixedSize,
@@ -1121,25 +1124,25 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorNoTitle(
 
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(1, provider->GetDistanceMetric(
                               views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddPaddingColumn(1.0, 0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
@@ -1214,38 +1217,33 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced() {
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
+  using ColumnSize = views::GridLayout::ColumnSize;
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_LANGUAGES);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(1.0, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       1.0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_ALWAYS_CHECKBOX);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_LANGUAGES);
   layout->AddView(std::make_unique<views::Label>(
@@ -1393,21 +1391,21 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
   if (!UseGoogleTranslateBranding()) {
     cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                  0);
+                  views::GridLayout::kFixedSize,
+                  views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     cs->AddPaddingColumn(views::GridLayout::kFixedSize,
                          provider->GetDistanceMetric(
                              views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   }
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(1, provider->GetDistanceMetric(
                               views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
                               4);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_LANGUAGES);
 
@@ -1418,10 +1416,10 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
                          provider->GetDistanceMetric(
                              views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
     cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
-                  views::GridLayout::USE_PREF, 0, 0);
+                  views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   } else {
     cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
-                  views::GridLayout::USE_PREF, 0, 0);
+                  views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
@@ -1435,29 +1433,29 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
                          provider->GetDistanceMetric(
                              views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
     cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                  0);
+                  views::GridLayout::kFixedSize,
+                  views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   } else {
     cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                  views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                  0);
+                  views::GridLayout::kFixedSize,
+                  views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       1.0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));

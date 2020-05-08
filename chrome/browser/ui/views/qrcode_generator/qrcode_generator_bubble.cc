@@ -182,7 +182,7 @@ void QRCodeGeneratorBubble::Init() {
   column_set_qr_image->AddColumn(
       views::GridLayout::CENTER,  // Center horizontally, do not resize.
       views::GridLayout::CENTER,  // Align center vertically, do not resize.
-      1.0, views::GridLayout::USE_PREF, 0, 0);
+      1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   using Alignment = views::ImageView::Alignment;
   auto qr_code_image = std::make_unique<views::ImageView>();
   qr_code_image->SetBorder(views::CreateRoundedRectBorder(
@@ -207,7 +207,7 @@ void QRCodeGeneratorBubble::Init() {
   column_set_textfield->AddColumn(
       views::GridLayout::FILL,    // Fill text field horizontally.
       views::GridLayout::CENTER,  // Align center vertically, do not resize.
-      1.0, views::GridLayout::USE_PREF, 0,
+      1.0, views::GridLayout::ColumnSize::kUsePreferred, 0,
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           DISTANCE_BUBBLE_PREFERRED_WIDTH));
   auto textfield_url = std::make_unique<views::Textfield>();
@@ -230,20 +230,21 @@ void QRCodeGeneratorBubble::Init() {
       layout->AddColumnSet(kDownloadRowColumnSetId);
   // Column for tooltip.
   control_columns->AddColumn(
-      views::GridLayout::LEADING,   // View is aligned to leading edge, not
-                                    // resized.
-      views::GridLayout::CENTER,    // View moves to center of vertical space.
-      1.0,                          // This column has a resize weight of 1.
-      views::GridLayout::USE_PREF,  // Use the preferred size of the view.
-      0,                            // Ignored for USE_PREF.
-      0);                           // Minimum width of 0.
+      views::GridLayout::LEADING,  // View is aligned to leading edge, not
+                                   // resized.
+      views::GridLayout::CENTER,   // View moves to center of vertical space.
+      1.0,                         // This column has a resize weight of 1.
+      views::GridLayout::ColumnSize::kUsePreferred,  // Use the preferred size
+                                                     // of the view.
+      0,                                             // Ignored for USE_PREF.
+      0);                                            // Minimum width of 0.
   // Spacing between tooltip and download button.
   control_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                                     kPaddingTooltipDownloadButtonPx);
   // Column for download button.
-  control_columns->AddColumn(views::GridLayout::TRAILING,
-                             views::GridLayout::CENTER, 1.0,
-                             views::GridLayout::USE_PREF, 0, 0);
+  control_columns->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::CENTER, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, kDownloadRowColumnSetId);
 
   // "More info" tooltip; looks like (i).

@@ -54,8 +54,8 @@ class MockChromeClient : public EmptyChromeClient {
   // ChromeClient overrides:
   void InstallSupplements(LocalFrame& frame) override {
     EmptyChromeClient::InstallSupplements(frame);
-    mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
-        screen_orientation;
+    HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>
+        screen_orientation(frame.DomWindow());
     ignore_result(
         screen_orientation.BindNewEndpointAndPassDedicatedReceiverForTesting());
     ScreenOrientationController::From(*frame.DomWindow())

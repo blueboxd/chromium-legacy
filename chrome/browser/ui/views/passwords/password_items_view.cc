@@ -53,20 +53,22 @@ void BuildColumnSet(views::GridLayout* layout,
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        kFirstColumnWeight, views::GridLayout::FIXED, 0, 0);
+                        kFirstColumnWeight,
+                        views::GridLayout::ColumnSize::kFixed, 0, 0);
 
   if (type_id == PASSWORD_COLUMN_SET) {
     column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                  between_column_padding);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                          kSecondColumnWeight, views::GridLayout::FIXED, 0, 0);
+                          kSecondColumnWeight,
+                          views::GridLayout::ColumnSize::kFixed, 0, 0);
   }
   // All rows end with a trailing column for the undo/trash button.
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                between_column_padding);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 }
 
 void StartRow(views::GridLayout* layout,

@@ -62,6 +62,14 @@ namespace {
 // disconnect and effectively kill it.
 constexpr auto kCdmServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
 
+// The CDM name will be displayed as the process name in the Task Manager.
+// Put a length limit and restrict to ASCII. Empty name is allowed, in which
+// case the process name will be "media::mojom::CdmService".
+bool IsValidCdmDisplayName(const std::string& cdm_name) {
+  constexpr size_t kMaxCdmNameSize = 256;
+  return cdm_name.size() <= kMaxCdmNameSize && base::IsStringASCII(cdm_name);
+}
+
 auto& GetCdmServiceSlot() {
   // NOTE: Sequence-local storage is used to limit the lifetime of the Remote
   // objects to that of the UI-thread sequence. This ensures the Remotes are
@@ -83,14 +91,15 @@ void RemoveCdmServiceForGuid(const base::Token& guid) {
 
 // Gets an instance of the CDM service for the CDM identified by |guid|.
 // Instances are started lazily as needed.
-media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid) {
+media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid,
+                                               const std::string& cdm_name) {
   auto& remotes = GetCdmServiceSlot().GetOrCreateValue();
   auto& remote = remotes[guid];
   if (!remote) {
     ServiceProcessHost::Launch(
         remote.BindNewPipeAndPassReceiver(),
         ServiceProcessHost::Options()
-            .WithDisplayName("Content Decryption Module Service")
+            .WithDisplayName(cdm_name)
             .WithSandboxType(service_manager::SandboxType::kCdm)
             .Pass());
     remote.set_disconnect_handler(
@@ -388,10 +397,6 @@ media::mojom::CdmFactory* MediaInterfaceProxy::GetCdmFactory(
     const std::string& key_system) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::Token cdm_guid;
-  base::FilePath cdm_path;
-  std::string cdm_file_system_id;
-
   std::unique_ptr<CdmInfo> cdm_info =
       KeySystemSupportImpl::GetCdmInfoForKeySystem(key_system);
   if (!cdm_info) {
@@ -406,26 +411,32 @@ media::mojom::CdmFactory* MediaInterfaceProxy::GetCdmFactory(
     NOTREACHED() << "Invalid file system ID " << cdm_info->file_system_id;
     return nullptr;
   }
-  cdm_guid = cdm_info->guid;
-  cdm_path = cdm_info->path;
-  cdm_file_system_id = cdm_info->file_system_id;
+  if (!IsValidCdmDisplayName(cdm_info->name)) {
+    NOTREACHED() << "Invalid CDM display name " << cdm_info->name;
+    return nullptr;
+  }
+
+  auto& cdm_guid = cdm_info->guid;
 
   auto found = cdm_factory_map_.find(cdm_guid);
   if (found != cdm_factory_map_.end())
     return found->second.get();
 
-  return ConnectToCdmService(cdm_guid, cdm_path, cdm_file_system_id);
+  return ConnectToCdmService(cdm_guid, cdm_info->path, cdm_info->file_system_id,
+                             cdm_info->name);
 }
 
 media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
     const base::Token& cdm_guid,
     const base::FilePath& cdm_path,
-    const std::string& cdm_file_system_id) {
+    const std::string& cdm_file_system_id,
+    const std::string& cdm_name) {
   DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid.ToString();
 
   DCHECK(!cdm_factory_map_.count(cdm_guid));
 
-  media::mojom::CdmService& cdm_service = GetCdmServiceForGuid(cdm_guid);
+  media::mojom::CdmService& cdm_service =
+      GetCdmServiceForGuid(cdm_guid, cdm_name);
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().

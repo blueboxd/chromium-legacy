@@ -96,7 +96,7 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
     views::ColumnSet* columns = layout->AddColumnSet(kColumnId);
     columns->AddPaddingColumn(0, kVerticalClockLeftPadding);
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       0, views::GridLayout::USE_PREF, 0, 0);
+                       0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     layout->AddPaddingRow(0, kClockLeadingPadding);
     layout->StartRow(0, kColumnId);
     // Add the views as existing since ownership isn't being transferred.

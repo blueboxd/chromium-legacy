@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.action.ViewActions.pressImeActionButton;
+import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
@@ -332,5 +334,40 @@ public class AutofillAssistantChromeTabIntegrationTest {
         waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
         assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
                 is(getURL(TEST_PAGE_A)));
+    }
+
+    @Test
+    @MediumTest
+    public void interactingWithLocationBarHidesAutofillAssistant() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE_A)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        setupScripts(script);
+        startAutofillAssistantOnTab(TEST_PAGE_A);
+
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // Clicking location bar hides UI.
+        onView(withId(org.chromium.chrome.R.id.url_bar)).perform(click());
+        waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+
+        // Closing keyboard brings it back.
+        Espresso.pressBack();
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // Committing URL shows error.
+        onView(withId(org.chromium.chrome.R.id.url_bar))
+                .perform(click(), typeText(getURL(TEST_PAGE_B)), pressImeActionButton());
+        waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
     }
 }

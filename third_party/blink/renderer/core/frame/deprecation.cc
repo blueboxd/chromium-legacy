@@ -63,7 +63,6 @@ enum Milestone {
   kM82 = 82,
   kM83 = 83,
   kM84 = 84,
-  kM85 = 85,
 };
 
 // Returns estimated milestone dates as milliseconds since January 1, 1970.
@@ -111,11 +110,7 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
     case kM84:
       // This release is not yet scheduled, so this date is a guess.
       // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/N1NxbSVOZas/ySlEKDKkBgAJ
-      return {2020, 7, 0, 14, 4};
-    case kM85:
-      // This release is not yet scheduled, so this date is a guess.
-      // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/N1NxbSVOZas/ySlEKDKkBgAJ
-      return {2020, 8, 0, 25, 4};
+      return {2020, 6, 0, 29, 4};
   }
 
   NOTREACHED();
@@ -307,12 +302,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
     case WebFeature::kApplicationCacheAPISecureOrigin:
       return {
-          "ApplicationCacheAPISecureOrigin", kM85,
-          WillBeRemoved("Application Cache API use", kM85, "6192449487634432")};
+          "ApplicationCacheAPISecureOrigin", kM82,
+          WillBeRemoved("Application Cache API use", kM82, "6192449487634432")};
 
     case WebFeature::kApplicationCacheManifestSelectSecureOrigin:
-      return {"ApplicationCacheAPISecureOrigin", kM85,
-              WillBeRemoved("Application Cache API manifest selection", kM85,
+      return {"ApplicationCacheAPISecureOrigin", kM82,
+              WillBeRemoved("Application Cache API manifest selection", kM82,
                             "6192449487634432")};
 
     case WebFeature::kNotificationInsecureOrigin:

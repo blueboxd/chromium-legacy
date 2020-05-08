@@ -76,6 +76,9 @@ class MockAutocompleteProviderClient
       KeywordProvider* keyword_provider) override {
     return nullptr;
   }
+  upboarding::TileService* GetQueryTileService() const override {
+    return nullptr;
+  }
 
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override {

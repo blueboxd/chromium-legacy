@@ -112,7 +112,7 @@ void AddColumnWithSideMargin(views::GridLayout* layout, int margin, int id) {
   views::ColumnSet* column_set = layout->AddColumnSet(id);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize, margin);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize, margin);
 }
 
@@ -505,7 +505,7 @@ PageInfoBubbleView::PageInfoBubbleView(
   constexpr int kColumnId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   header_ = layout->AddView(
@@ -711,7 +711,8 @@ void PageInfoBubbleView::SetPermissionInfo(
   chosen_object_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       side_margin);
   chosen_object_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                               1.0, views::GridLayout::USE_PREF,
+                               1.0,
+                               views::GridLayout::ColumnSize::kUsePreferred,
                                views::GridLayout::kFixedSize, 0);
   chosen_object_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       side_margin);
@@ -925,25 +926,27 @@ void PageInfoBubbleView::LayoutPermissionsLikeUiRow(views::GridLayout* layout,
   // *----------------------------------------------*
   views::ColumnSet* permissions_set = layout->AddColumnSet(column_id);
   permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
-  permissions_set->AddColumn(views::GridLayout::CENTER,
-                             views::GridLayout::CENTER,
-                             views::GridLayout::kFixedSize,
-                             views::GridLayout::FIXED, kIconColumnWidth, 0);
+  permissions_set->AddColumn(
+      views::GridLayout::CENTER, views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
+      kIconColumnWidth, 0);
   permissions_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       layout_provider->GetDistanceMetric(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  permissions_set->AddColumn(
-      views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
-      views::GridLayout::USE_PREF, views::GridLayout::kFixedSize, 0);
+  permissions_set->AddColumn(views::GridLayout::LEADING,
+                             views::GridLayout::CENTER, 1.0,
+                             views::GridLayout::ColumnSize::kUsePreferred,
+                             views::GridLayout::kFixedSize, 0);
   permissions_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       layout_provider->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  permissions_set->AddColumn(
-      views::GridLayout::TRAILING, views::GridLayout::FILL,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-      views::GridLayout::kFixedSize, 0);
+  permissions_set->AddColumn(views::GridLayout::TRAILING,
+                             views::GridLayout::FILL,
+                             views::GridLayout::kFixedSize,
+                             views::GridLayout::ColumnSize::kUsePreferred,
+                             views::GridLayout::kFixedSize, 0);
   permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
 }
 

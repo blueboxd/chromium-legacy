@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/views/padded_button.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -23,7 +24,6 @@ class Button;
 namespace message_center {
 
 class MessageView;
-class PaddedButton;
 
 class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
     : public views::View,
@@ -53,9 +53,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   void SetButtonIconColors(SkColor color);
 
   // Methods for retrieving the control buttons directly.
-  views::Button* close_button() const;
-  views::Button* settings_button() const;
-  views::Button* snooze_button() const;
+  views::Button* close_button() { return close_button_; }
+  views::Button* settings_button() { return settings_button_; }
+  views::Button* snooze_button() { return snooze_button_; }
 
   // views::View
   const char* GetClassName() const override;
@@ -69,9 +69,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
  private:
   MessageView* message_view_;
 
-  std::unique_ptr<PaddedButton> close_button_;
-  std::unique_ptr<PaddedButton> settings_button_;
-  std::unique_ptr<PaddedButton> snooze_button_;
+  PaddedButton* close_button_ = nullptr;
+  PaddedButton* settings_button_ = nullptr;
+  PaddedButton* snooze_button_ = nullptr;
 
   // The color used for the close, settings, and snooze icons.
   SkColor icon_color_;

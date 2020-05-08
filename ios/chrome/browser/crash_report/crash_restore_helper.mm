@@ -149,16 +149,15 @@ bool SessionCrashedInfoBarDelegate::Create(
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new SessionCrashedInfoBarDelegate(crash_restore_helper));
 
+  std::unique_ptr<infobars::InfoBar> infobar;
   if (IsCrashRestoreInfobarMessagesUIEnabled()) {
-    return !!infobar_manager->AddInfoBar(
-        ::CreateHighPriorityConfirmInfoBar(std::move(delegate)));
+    infobar = ::CreateHighPriorityConfirmInfoBar(std::move(delegate));
   } else {
     ConfirmInfoBarController* controller = [[ConfirmInfoBarController alloc]
         initWithInfoBarDelegate:delegate.get()];
-    std::unique_ptr<infobars::InfoBar> infobar =
-        std::make_unique<InfoBarIOS>(controller, std::move(delegate));
-    return !!infobar_manager->AddInfoBar(std::move(infobar));
+    infobar = std::make_unique<InfoBarIOS>(controller, std::move(delegate));
   }
+  return !!infobar_manager->AddInfoBar(std::move(infobar));
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

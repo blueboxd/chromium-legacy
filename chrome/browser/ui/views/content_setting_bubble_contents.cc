@@ -99,13 +99,13 @@ class MediaMenuBlock : public views::View {
     views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                           views::GridLayout::kFixedSize,
-                          views::GridLayout::USE_PREF, 0, 0);
+                          views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(
         views::GridLayout::kFixedSize,
         provider->GetDistanceMetric(
             views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                          views::GridLayout::FIXED, 0, 0);
+                          views::GridLayout::ColumnSize::kFixed, 0, 0);
 
     bool first_row = true;
     for (auto i = media.cbegin(); i != media.cend(); ++i) {
@@ -307,15 +307,16 @@ void ContentSettingBubbleContents::ListItemContainer::ResetLayout() {
   views::ColumnSet* item_list_column_set = layout->AddColumnSet(0);
   item_list_column_set->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::FILL,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   const int related_control_horizontal_spacing =
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   item_list_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                          related_control_horizontal_spacing);
-  item_list_column_set->AddColumn(views::GridLayout::LEADING,
-                                  views::GridLayout::FILL, 1.0,
-                                  views::GridLayout::USE_PREF, 0, 0);
+  item_list_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   auto* scroll_view = views::ScrollView::GetScrollViewForContents(this);
   // When this function is called from the constructor, the view has not yet
   // been placed into a ScrollView.

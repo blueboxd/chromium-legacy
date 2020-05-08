@@ -36,7 +36,7 @@ suite('cr_tabs_test', function() {
    */
   async function checkUiChange(uiChange, initialSelection, expectedSelection) {
     tabs.selected = initialSelection;
-    if (initialSelection == expectedSelection) {
+    if (initialSelection === expectedSelection) {
       uiChange();
     } else {
       const wait = test_util.eventToPromise('selected-changed', tabs);

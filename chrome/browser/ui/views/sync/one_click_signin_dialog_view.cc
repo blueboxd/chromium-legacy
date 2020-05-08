@@ -91,7 +91,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
   // Column set for descriptive text and link.
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                views::GridLayout::USE_PREF, 0, 0);
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 

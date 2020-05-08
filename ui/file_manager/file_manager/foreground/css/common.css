@@ -336,14 +336,16 @@ html[dir='rtl'] .entry-name {
 .cr-dialog-container.files-ng .cr-dialog-frame {
   background-color: var(--cros-default-bg-color);
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(var(--google-grey-800-rgb), 15%),
-              0 1px 3px rgba(var(--google-grey-800-rgb), 30%);
+  box-shadow: 0 4px 8px 3px rgba(var(--google-grey-800-rgb), 15%),
+              0 1px 3px 0 rgba(var(--google-grey-800-rgb), 30%);
   color: var(--cros-default-text-color);
   cursor: default;
   display: flex;
   flex-direction: column;
   margin: auto;
-  min-width: calc(384px - 24px - 24px);
+  /* Narrower when viewport is too narrow. */
+  max-width: min(512px - 24px - 24px, 75vw);
+  min-width: calc(320px - 24px - 24px);
   padding: 24px;
   padding-bottom: 20px;
   position: relative;
@@ -410,12 +412,12 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-container.files-ng .cr-dialog-title {
+  color: var(--cros-default-text-color);
   display: block;
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 16px;
-  white-space: nowrap;
-  word-wrap: normal;
+  word-wrap: break-word;
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-text {
@@ -432,6 +434,14 @@ html[dir='rtl'] .entry-name {
   color: var(--cros-default-text-color);
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.cr-dialog-container.files-ng .cr-dialog-text {
+  color: var(--cros-default-text-color-secondary);
+}
+
+.cr-dialog-container.files-ng .no-title .cr-dialog-text {
+  color: var(--cros-default-text-color);
 }
 
 .cr-dialog-container:not(.files-ng) .cr-dialog-frame input {
@@ -517,22 +527,30 @@ html[dir='rtl'] .cr-dialog-container:not(.files-ng) .cr-dialog-close {
 
 /* Common typography styles for ChromeOS. */
 body.files-ng .headline2 {
-  color: var(--google-grey-900);
+  color: var(--cros-default-text-color);
   font-family: Roboto;
   font-size: 15px;
   font-weight: 500;
   line-height: 22px;
 }
 
+body.files-ng .button2 {
+  color: var(--cros-default-text-color);
+  font-family: Roboto;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
 body.files-ng .body2-primary {
-  color: var(--google-grey-900);
+  color: var(--cros-default-text-color);
   font-family: Roboto;
   font-size: 13px;
   line-height: 20px;
 }
 
 body.files-ng .annotation1-primary {
-  color: var(--google-grey-900);
+  color: var(--cros-default-text-color);
   font-family: Roboto;
   font-size: 12px;
   line-height: 18px;

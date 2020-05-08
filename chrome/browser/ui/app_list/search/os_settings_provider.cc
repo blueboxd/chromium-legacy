@@ -36,7 +36,8 @@ enum class Error {
   kOk = 0,
   kAppServiceUnavailable = 1,
   kNoSettingsIcon = 2,
-  kMaxValue = kNoSettingsIcon
+  kSearchHandlerUnavailable = 3,
+  kMaxValue = kSearchHandlerUnavailable
 };
 
 void LogError(Error error) {
@@ -76,7 +77,14 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
       search_handler_(
           chromeos::settings::SearchHandlerFactory::GetForProfile(profile)) {
   DCHECK(profile_);
-  DCHECK(search_handler_);
+
+  // |search_handler_| can be nullptr in the case that the new OS settings
+  // search chrome flag is disabled. If it is, we should effectively disable the
+  // search provider.
+  if (!search_handler_) {
+    LogError(Error::kSearchHandlerUnavailable);
+    return;
+  }
 
   app_service_proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (app_service_proxy_) {
@@ -97,6 +105,9 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
 OsSettingsProvider::~OsSettingsProvider() = default;
 
 void OsSettingsProvider::Start(const base::string16& query) {
+  if (!search_handler_)
+    return;
+
   ClearResultsSilently();
 
   // This provider does not handle zero-state.

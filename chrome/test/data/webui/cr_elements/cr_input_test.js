@@ -186,11 +186,11 @@ suite('cr-input', function() {
 
     input.focus();
     assertTrue(crInput.hasAttribute('focused_'));
-    assertTrue(originalLabelColor != getComputedStyle(label).color);
+    assertTrue(originalLabelColor !== getComputedStyle(label).color);
     return whenTransitionEnd
         .then(() => {
           assertEquals('1', getComputedStyle(underline).opacity);
-          assertTrue(0 != underline.offsetWidth);
+          assertTrue(0 !== underline.offsetWidth);
         })
         .then(() => {
           input.blur();
@@ -234,12 +234,12 @@ suite('cr-input', function() {
     Polymer.dom.flush();
     assertTrue(crInput.hasAttribute('invalid'));
     assertEquals('visible', getComputedStyle(errorLabel).visibility);
-    assertTrue(originalLabelColor != getComputedStyle(label).color);
+    assertTrue(originalLabelColor !== getComputedStyle(label).color);
     assertTrue(
-        originalLineColor != getComputedStyle(underline).borderBottomColor);
+        originalLineColor !== getComputedStyle(underline).borderBottomColor);
     return whenTransitionEnd.then(() => {
       assertEquals('1', getComputedStyle(underline).opacity);
-      assertTrue(0 != underline.offsetWidth);
+      assertTrue(0 !== underline.offsetWidth);
     });
   });
 

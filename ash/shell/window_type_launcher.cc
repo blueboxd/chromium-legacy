@@ -184,7 +184,7 @@ WindowTypeLauncher::WindowTypeLauncher(
   SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+                        0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   create_button_ = AddViewToLayout(
       layout, MdTextButton::Create(this, base::ASCIIToUTF16("Create Window")));
   create_nonresizable_button_ = AddViewToLayout(

@@ -629,9 +629,9 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionFlagTest, DialogColoredTitle) {
   SkColor inactive_color =
       dialog_window->GetProperty(ash::kFrameInactiveColorKey);
 
-  constexpr SkColor kFilesNgTitleColor = SkColorSetRGB(0xDB, 0xE2, 0xED);
+  constexpr SkColor kFilesNgTitleColor = gfx::kGoogleGrey200;
   if (GetParam()) {
-    // FilesNG enabled the title should be blue-ish grey.
+    // FilesNG enabled the title should be Google Grey 200.
     EXPECT_EQ(active_color, kFilesNgTitleColor);
     // Active and Inactive should have the same color.
     EXPECT_EQ(active_color, inactive_color);

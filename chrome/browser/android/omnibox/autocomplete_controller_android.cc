@@ -51,6 +51,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/prefs/pref_service.h"
+#include "components/query_tiles/android/tile_conversion_bridge.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
@@ -66,6 +67,7 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
@@ -160,17 +162,19 @@ AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
     autocomplete_controller_->AddObserver(emitter);
 }
 
-void AutocompleteControllerAndroid::Start(JNIEnv* env,
-                                          const JavaRef<jobject>& obj,
-                                          const JavaRef<jstring>& j_text,
-                                          jint j_cursor_pos,
-                                          const JavaRef<jstring>& j_desired_tld,
-                                          const JavaRef<jstring>& j_current_url,
-                                          jint j_page_classification,
-                                          bool prevent_inline_autocomplete,
-                                          bool prefer_keyword,
-                                          bool allow_exact_keyword_match,
-                                          bool want_asynchronous_matches) {
+void AutocompleteControllerAndroid::Start(
+    JNIEnv* env,
+    const JavaRef<jobject>& obj,
+    const JavaRef<jstring>& j_text,
+    jint j_cursor_pos,
+    const JavaRef<jstring>& j_desired_tld,
+    const JavaRef<jstring>& j_current_url,
+    jint j_page_classification,
+    bool prevent_inline_autocomplete,
+    bool prefer_keyword,
+    bool allow_exact_keyword_match,
+    bool want_asynchronous_matches,
+    const JavaRef<jstring>& j_query_tile_id) {
   if (!autocomplete_controller_)
     return;
 
@@ -191,6 +195,8 @@ void AutocompleteControllerAndroid::Start(JNIEnv* env,
   input_.set_prefer_keyword(prefer_keyword);
   input_.set_allow_exact_keyword_match(allow_exact_keyword_match);
   input_.set_want_asynchronous_matches(want_asynchronous_matches);
+  if (!j_query_tile_id.is_null())
+    input_.set_query_tile_id(ConvertJavaStringToUTF8(env, j_query_tile_id));
   autocomplete_controller_->Start(input_);
 }
 
@@ -560,6 +566,9 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
     }
   }
 
+  ScopedJavaLocalRef<jobject> j_query_tiles =
+      upboarding::TileConversionBridge::CreateJavaTiles(env, match.query_tiles);
+
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);
   return Java_AutocompleteController_buildOmniboxSuggestion(
@@ -574,7 +583,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       match.SupportsDeletion(), post_content_type,
       ToJavaByteArray(env, post_content),
       match.suggestion_group_id.value_or(
-          SearchSuggestionParser::kNoSuggestionGroupId));
+          SearchSuggestionParser::kNoSuggestionGroupId),
+      j_query_tiles);
 }
 
 void AutocompleteControllerAndroid::PopulateOmniboxGroupHeaders(
@@ -600,7 +610,7 @@ AutocompleteControllerAndroid::GetTopSynchronousResult(
 
   inside_synchronous_start_ = true;
   Start(env, obj, j_text, -1, nullptr, nullptr, prevent_inline_autocomplete,
-        false, false, false, focused_from_fakebox);
+        false, false, false, focused_from_fakebox, JavaRef<jstring>());
   inside_synchronous_start_ = false;
   DCHECK(autocomplete_controller_->done());
   const AutocompleteResult& result = autocomplete_controller_->result();

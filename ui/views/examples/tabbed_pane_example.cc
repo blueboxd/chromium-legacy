@@ -42,7 +42,7 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   const int tabbed_pane_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(1 /* expand */, tabbed_pane_column);
   tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
 
@@ -56,7 +56,7 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   column_set = layout->AddColumnSet(button_column);
   for (size_t i = 0; i < 3; i++) {
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
 
   layout->StartRow(0 /* no expand */, button_column);

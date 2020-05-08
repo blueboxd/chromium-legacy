@@ -924,7 +924,8 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* column_set = grid_layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                        0 /*resize_percent*/, views::GridLayout::USE_PREF,
+                        0 /*resize_percent*/,
+                        views::GridLayout::ColumnSize::kUsePreferred,
                         0 /*fixed_width*/, 0 /*min_width*/);
   auto add_view = [&](views::View* view) {
     grid_layout->StartRow(0 /*vertical_resize*/, 0 /*column_set_id*/);

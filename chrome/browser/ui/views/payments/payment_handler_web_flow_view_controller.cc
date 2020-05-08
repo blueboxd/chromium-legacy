@@ -68,7 +68,7 @@ class ReadOnlyOriginView : public views::View {
 
     views::ColumnSet* columns = title_origin_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
-                       views::GridLayout::USE_PREF, 0, 0);
+                       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
     bool title_is_valid = !page_title.empty();
     if (title_is_valid) {
@@ -110,9 +110,9 @@ class ReadOnlyOriginView : public views::View {
     views::GridLayout* top_level_layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
-    top_level_columns->AddColumn(views::GridLayout::LEADING,
-                                 views::GridLayout::CENTER, 1.0,
-                                 views::GridLayout::USE_PREF, 0, 0);
+    top_level_columns->AddColumn(
+        views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
+        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     const bool has_icon = icon_image_skia.width() && icon_image_skia.height();
     float adjusted_width = base::checked_cast<float>(icon_image_skia.width());
     if (has_icon) {
@@ -123,7 +123,7 @@ class ReadOnlyOriginView : public views::View {
       // A column for the app icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
-          views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+          views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight);
       top_level_columns->AddPaddingColumn(views::GridLayout::kFixedSize, 8);

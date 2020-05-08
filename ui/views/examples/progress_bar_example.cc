@@ -34,13 +34,13 @@ void ProgressBarExample::CreateExampleView(View* container) {
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(0, 8);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::FIXED, 200, 0);
+                        GridLayout::ColumnSize::kFixed, 200, 0);
   column_set->AddPaddingColumn(0, 8);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(0, 0);
   minus_button_ =

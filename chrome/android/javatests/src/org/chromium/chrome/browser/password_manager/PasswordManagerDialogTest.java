@@ -67,7 +67,10 @@ public class PasswordManagerDialogTest {
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeActivity activity = (ChromeActivity) mActivityTestRule.getActivity();
-        mCoordinator = new PasswordManagerDialogCoordinator(activity.getModalDialogManager(),
+        ModalDialogManager dialogManager =
+                TestThreadUtils.runOnUiThreadBlockingNoException(activity::getModalDialogManager);
+
+        mCoordinator = new PasswordManagerDialogCoordinator(dialogManager,
                 activity.findViewById(android.R.id.content), activity.getFullscreenManager(),
                 activity.getControlContainerHeightResource());
         PasswordManagerDialogContents contents = new PasswordManagerDialogContents(TITLE, DETAILS,

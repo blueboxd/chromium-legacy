@@ -95,7 +95,7 @@
             </div>
             <cr-toggle
                 class="hr"
-                id="toggleActivationButton"
+                id="toggleActivationButton[[index]]"
                 checked="[[item.is_active]]"
                 data-port-number$="[[item.port_number]]"
                 data-protocol-type$="[[item.protocol_type]]"
@@ -105,7 +105,7 @@
                         "crostiniPort[[index]] crostiniPortLabel[[index]]"
                 disabled="[[!crostiniRunning_]]">
             </cr-toggle>
-            <cr-icon-button id="showRemoveSinglePortMenu"
+            <cr-icon-button id="showRemoveSinglePortMenu[[index]]"
                 class="icon-more-vert"
                 title="$i18n{moreActions}"
                 on-click="onShowRemoveSinglePortMenuClick_"

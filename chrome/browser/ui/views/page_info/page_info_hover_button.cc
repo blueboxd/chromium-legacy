@@ -39,11 +39,11 @@ PageInfoHoverButton::PageInfoHoverButton(views::ButtonListener* listener,
   constexpr int kColumnSetId = 0;
   views::ColumnSet* columns = grid_layout->AddColumnSet(kColumnSetId);
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize, icon_label_spacing);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Make sure hovering over the icon also hovers the |PageInfoHoverButton|.
   icon->set_can_process_events_within_subtree(false);

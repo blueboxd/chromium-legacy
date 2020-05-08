@@ -56,39 +56,6 @@ class GlobalConfirmInfoBarTest : public InProcessBrowserTest {
 
 }  // namespace
 
-// Creates a global confirm info bar on a browser with 2 tabs and closes it.
-IN_PROC_BROWSER_TEST_F(GlobalConfirmInfoBarTest, MultipleTabs) {
-  TabStripModel* tab_strip_model = browser()->tab_strip_model();
-
-  AddTab();
-  ASSERT_EQ(2, tab_strip_model->count());
-
-  // Make sure each tab has no info bars.
-  for (int i = 0; i < tab_strip_model->count(); i++)
-    EXPECT_EQ(0u, GetInfoBarServiceFromTabIndex(i)->infobar_count());
-
-  auto delegate = std::make_unique<TestConfirmInfoBarDelegate>();
-  TestConfirmInfoBarDelegate* delegate_ptr = delegate.get();
-
-  base::WeakPtr<GlobalConfirmInfoBar> global_confirm_info_bar =
-      GlobalConfirmInfoBar::Show(std::move(delegate));
-
-  // Verify that the info bar is shown on each tab.
-  for (int i = 0; i < tab_strip_model->count(); i++) {
-    InfoBarService* infobar_service = GetInfoBarServiceFromTabIndex(i);
-    ASSERT_EQ(1u, infobar_service->infobar_count());
-    EXPECT_TRUE(infobar_service->infobar_at(0)->delegate()->EqualsDelegate(
-        delegate_ptr));
-  }
-
-  EXPECT_TRUE(global_confirm_info_bar);
-  global_confirm_info_bar->Close();
-
-  EXPECT_FALSE(global_confirm_info_bar);
-  for (int i = 0; i < tab_strip_model->count(); i++)
-    EXPECT_EQ(0u, GetInfoBarServiceFromTabIndex(i)->infobar_count());
-}
-
 IN_PROC_BROWSER_TEST_F(GlobalConfirmInfoBarTest, UserInteraction) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 
@@ -102,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(GlobalConfirmInfoBarTest, UserInteraction) {
   auto delegate = std::make_unique<TestConfirmInfoBarDelegate>();
   TestConfirmInfoBarDelegate* delegate_ptr = delegate.get();
 
-  base::WeakPtr<GlobalConfirmInfoBar> global_confirm_info_bar =
-      GlobalConfirmInfoBar::Show(std::move(delegate));
+  GlobalConfirmInfoBar::Show(std::move(delegate));
 
   // Verify that the info bar is shown on each tab.
   for (int i = 0; i < tab_strip_model->count(); i++) {
@@ -122,10 +88,9 @@ IN_PROC_BROWSER_TEST_F(GlobalConfirmInfoBarTest, UserInteraction) {
 
   // Usually, clicking the button makes the info bar close itself if Accept()
   // returns true. In our case, since we interacted with the info bar delegate
-  // directly, the info bar must be removed manually
+  // directly, the info bar must be removed manually.
   first_tab_infobar->RemoveSelf();
 
-  EXPECT_FALSE(global_confirm_info_bar);
   for (int i = 0; i < tab_strip_model->count(); i++)
     EXPECT_EQ(0u, GetInfoBarServiceFromTabIndex(i)->infobar_count());
 }

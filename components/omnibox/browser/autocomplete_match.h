@@ -19,6 +19,7 @@
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#include "components/query_tiles/tile.h"
 #include "components/search_engines/template_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/page_transition_types.h"
@@ -645,6 +646,9 @@ struct AutocompleteMatch {
   // duplicates are deleted as well. This is also used for re-duping Search
   // Entity vs. plain Search suggestions.
   std::vector<AutocompleteMatch> duplicate_matches;
+
+  // A list of query tiles to be shown as part of this match.
+  std::vector<upboarding::Tile> query_tiles;
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.
   static const char kEllipsis[];

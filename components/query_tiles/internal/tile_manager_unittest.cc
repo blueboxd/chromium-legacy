@@ -93,8 +93,11 @@ class TileManagerTest : public testing::Test {
   void SaveTiles(std::vector<std::unique_ptr<Tile>> tiles,
                  TileGroupStatus expected_status) {
     base::RunLoop loop;
+    auto group = std::make_unique<TileGroup>();
+    group->last_updated_ts = clock_.Now();
+    group->tiles = std::move(tiles);
     manager()->SaveTiles(
-        std::move(tiles),
+        std::move(group),
         base::BindOnce(&TileManagerTest::OnTilesSaved, base::Unretained(this),
                        loop.QuitClosure(), expected_status));
     loop.Run();

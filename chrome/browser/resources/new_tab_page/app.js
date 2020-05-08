@@ -23,35 +23,6 @@ import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
 import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
 
-/**
- * Prints performance measurements to the console. Also, installs  performance
- * observer to continuously print performance measurements after.
- */
-function printPerformance() {
-  const entryTypes = ['paint', 'measure'];
-  const log = (entry) => {
-    const time = entry.duration ? entry.duration : entry.startTime;
-    const auxTime = entry.duration && entry.startTime ? entry.startTime : 0;
-    if (!auxTime) {
-      console.log(`${entry.name}: ${time}`);
-    } else {
-      console.log(`${entry.name}: ${time} (${auxTime})`);
-    }
-  };
-  const observer = new PerformanceObserver(list => {
-    list.getEntries().forEach((entry) => {
-      log(entry);
-    });
-  });
-  observer.observe({entryTypes: entryTypes});
-  performance.getEntries().forEach((entry) => {
-    if (!entryTypes.includes(entry.entryType)) {
-      return;
-    }
-    log(entry);
-  });
-}
-
 class AppElement extends PolymerElement {
   static get is() {
     return 'ntp-app';
@@ -207,6 +178,14 @@ class AppElement extends PolymerElement {
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
     this.loadOneGoogleBar_();
+
+    /** @private {boolean} */
+    this.shouldPrintPerformance_ =
+        new URLSearchParams(location.search).has('print_perf');
+    /** @private {number} */
+    this.backgroundImageLoadStartEpoch_ = 0;
+    /** @private {number} */
+    this.backgroundImageLoadStart_ = 0;
   }
 
   /** @override */
@@ -250,9 +229,8 @@ class AppElement extends PolymerElement {
     BrowserProxy.getInstance().waitForLazyRender().then(() => {
       this.lazyRender_ = true;
     });
-
-    if (new URLSearchParams(location.search).has('print_perf')) {
-      printPerformance();
+    if (!this.shouldPrintPerformance_) {
+      this.printPerformance_();
     }
     performance.measure('app-creation', 'app-creation-start');
   }
@@ -509,7 +487,8 @@ class AppElement extends PolymerElement {
         path = '';
     }
     if (path && this.$.backgroundImage.path !== path) {
-      performance.mark('background-image-load-start');
+      this.backgroundImageLoadStartEpoch_ = BrowserProxy.getInstance().now();
+      this.backgroundImageLoadStart_ = performance.now();
       this.$.backgroundImage.path = path;
     }
   }
@@ -583,9 +562,12 @@ class AppElement extends PolymerElement {
   handleBackgroundImageMessage_(data) {
     if (data.src === this.theme_.backgroundImageUrl.url &&
         data.messageType === 'loaded') {
-      performance.measure(
-          'background-image-load', 'background-image-load-start');
-      performance.measure('background-image-loaded');
+      const duration = data.time - this.backgroundImageLoadStartEpoch_;
+      this.printPerformanceDatum_(
+          'background-image-load', this.backgroundImageLoadStart_, duration);
+      this.printPerformanceDatum_(
+          'background-image-loaded', this.backgroundImageLoadStart_ + duration,
+          0);
     }
   }
 
@@ -658,6 +640,42 @@ class AppElement extends PolymerElement {
         iframe.style.pointerEvents = originalPointerEvents;
       }
     });
+  }
+
+  /** @private */
+  printPerformanceDatum_(name, time, auxTime) {
+    if (!this.shouldPrintPerformance_) {
+      return;
+    }
+    if (!auxTime) {
+      console.log(`${name}: ${time}`);
+    } else {
+      console.log(`${name}: ${time} (${auxTime})`);
+    }
+  }
+
+  /**
+   * Prints performance measurements to the console. Also, installs  performance
+   * observer to continuously print performance measurements after.
+   * @private
+   */
+  printPerformance_() {
+    const entryTypes = ['paint', 'measure'];
+    const log = (entry) => {
+      this.printPerformanceDatum_(
+          entry.name, entry.duration ? entry.duration : entry.startTime,
+          entry.duration && entry.startTime ? entry.startTime : 0);
+    };
+    const observer = new PerformanceObserver(list => {
+      list.getEntries().forEach(log);
+    });
+    observer.observe({entryTypes: entryTypes});
+    for (const entry of performance.getEntries()) {
+      if (!entryTypes.includes(entry.entryType)) {
+        return;
+      }
+      log(entry);
+    }
   }
 }
 

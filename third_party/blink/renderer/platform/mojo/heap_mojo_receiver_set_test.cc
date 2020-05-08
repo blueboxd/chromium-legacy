@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
 
+#include <utility>
+
 #include "base/test/null_task_runner.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -64,7 +66,6 @@ class GCOwner : public GarbageCollected<GCOwner<Mode>>,
   }
   void Dispose() {
     test_->set_is_owner_alive(false);
-    ;
   }
   void Trace(Visitor* visitor) { visitor->Trace(receiver_set_); }
 

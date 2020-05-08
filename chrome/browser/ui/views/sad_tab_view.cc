@@ -515,11 +515,13 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
           DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   columns->AddPaddingColumn(1.0, unrelated_horizontal_spacing);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, kMinColumnWidth);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0,
+                     kMinColumnWidth);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, kMinColumnWidth);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0,
+                     kMinColumnWidth);
   columns->AddPaddingColumn(1.0, unrelated_horizontal_spacing);
 
   auto image = std::make_unique<views::ImageView>();

@@ -110,7 +110,8 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   constexpr int kColumnId = 0;
   views::ColumnSet* bubble_col_set = bubble_layout->AddColumnSet(kColumnId);
   bubble_col_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                            1.0, views::GridLayout::USE_PREF, 0, 0);
+                            1.0, views::GridLayout::ColumnSize::kUsePreferred,
+                            0, 0);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const bool use_dark =
@@ -130,9 +131,9 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   views::ColumnSet* bottom_column_set = bottom_layout->AddColumnSet(0);
   bottom_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       insets.left());
-  bottom_column_set->AddColumn(views::GridLayout::LEADING,
-                               views::GridLayout::FILL, 1.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  bottom_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   bottom_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                       insets.right());
 
@@ -157,13 +158,13 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
   views::GridLayout* button_layout =
       button_view->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* button_column_set = button_layout->AddColumnSet(0);
-  button_column_set->AddColumn(views::GridLayout::LEADING,
-                               views::GridLayout::CENTER, 0.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  button_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   button_column_set->AddPaddingColumn(1.f, 1);
-  button_column_set->AddColumn(views::GridLayout::TRAILING,
-                               views::GridLayout::FILL, 0.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  button_column_set->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::FILL, 0.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   button_layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
 

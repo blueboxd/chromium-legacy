@@ -32,6 +32,8 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -76,7 +78,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     private long mOnCreateTimestampUptimeMs;
 
     private ActivityWindowAndroid mWindowAndroid;
-    private ModalDialogManager mModalDialogManager;
+    private final ObservableSupplierImpl<ModalDialogManager> mModalDialogManagerSupplier =
+            new ObservableSupplierImpl<>();
     private Bundle mSavedInstanceState;
     private int mCurrentOrientation;
     private boolean mDestroyed;
@@ -109,9 +112,9 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             mWindowAndroid = null;
         }
 
-        if (mModalDialogManager != null) {
-            mModalDialogManager.destroy();
-            mModalDialogManager = null;
+        if (mModalDialogManagerSupplier.get() != null) {
+            mModalDialogManagerSupplier.get().destroy();
+            mModalDialogManagerSupplier.set(null);
         }
 
         super.onDestroy();
@@ -326,7 +329,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         if (mWindowAndroid != null) {
             getWindowAndroid().restoreInstanceState(getSavedInstanceState());
         }
-        mModalDialogManager = createModalDialogManager();
+        mModalDialogManagerSupplier.set(createModalDialogManager());
 
         mStartupDelayed = shouldDelayBrowserStartup();
         ChromeBrowserInitializer.getInstance().handlePreNativeStartup(this);
@@ -614,14 +617,15 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
      */
     @Override
     public ModalDialogManager getModalDialogManager() {
-        return mModalDialogManager;
+        // TODO(jinsukkim): Remove this method in favor of getModalDialogManagerSupplier below.
+        return mModalDialogManagerSupplier.get();
     }
 
     /**
-     * Overrides the originally created modal dialog manager.
+     * @return The supplier of {@link ModalDialogManager} that manages the display of modal dialogs.
      */
-    public void overrideModalDialogManager(ModalDialogManager modalDialogManager) {
-        mModalDialogManager = modalDialogManager;
+    public ObservableSupplier<ModalDialogManager> getModalDialogManagerSupplier() {
+        return mModalDialogManagerSupplier;
     }
 
     /**

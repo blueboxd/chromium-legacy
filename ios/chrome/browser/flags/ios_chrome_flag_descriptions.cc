@@ -69,13 +69,6 @@ const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[] =
     "When enabled, the server card unmask prompt will not include the checkbox "
     "to also save the card locally on the current device upon success.";
 
-const char kAutofillNoLocalSaveOnUploadSuccessName[] =
-    "Disable saving local copy of uploaded card when credit card upload "
-    "succeeds";
-const char kAutofillNoLocalSaveOnUploadSuccessDescription[] =
-    "When enabled, no local copy of server card will be saved when credit card "
-    "upload succeeds.";
-
 const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";

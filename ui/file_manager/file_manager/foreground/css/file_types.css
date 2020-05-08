@@ -31,8 +31,7 @@ body.files-ng [file-type-icon] {
 }
 
 body.files-ng [file-type-icon='archive'] {
-  -webkit-mask-image: url(../images/filetype/filetype_archive.svg);
-  background-color: currentColor;
+  background-image: url(../images/filetype/filetype_archive.svg);
 }
 
 [file-type-icon='audio'] {

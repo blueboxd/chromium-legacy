@@ -19,13 +19,14 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "components/printing/common/print.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
-struct PrintHostMsg_SetOptionsFromDocument_Params;
 
 namespace base {
 class DictionaryValue;
@@ -42,17 +43,26 @@ namespace printing {
 class PrintPreviewHandler;
 struct PageSizeMargins;
 
-class PrintPreviewUI : public ConstrainedWebDialogUI {
+class PrintPreviewUI : public ConstrainedWebDialogUI,
+                       public mojom::PrintPreviewUI {
  public:
   explicit PrintPreviewUI(content::WebUI* web_ui);
 
   ~PrintPreviewUI() override;
+
+  mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> BindPrintPreviewUI();
 
   // Gets the print preview |data|. |index| is zero-based, and can be
   // |COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview document.
   virtual void GetPrintPreviewDataForIndex(
       int index,
       scoped_refptr<base::RefCountedMemory>* data) const;
+
+  // printing::mojo::PrintPreviewUI:
+  void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
+                              int32_t request_id) override;
+
+  bool IsBound() const;
 
   // Setters
   void SetInitiatorTitle(const base::string16& initiator_title);
@@ -182,11 +192,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Closes the print preview dialog.
   virtual void OnClosePrintPreviewDialog();
 
-  // Notifies the WebUI to set print preset options from source PDF.
-  void OnSetOptionsFromDocument(
-      const PrintHostMsg_SetOptionsFromDocument_Params& params,
-      int request_id);
-
   // Allows tests to wait until the print preview dialog is loaded.
   class TestDelegate {
    public:
@@ -295,6 +300,8 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
 
   // The printable area of the printed document pages.
   gfx::Rect printable_area_;
+
+  mojo::AssociatedReceiver<mojom::PrintPreviewUI> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

@@ -1947,6 +1947,8 @@ void MediaStreamManager::Opened(
     for (MediaStreamDevice& device : request->devices) {
       if (device.type == stream_type &&
           device.session_id() == capture_session_id) {
+        if (request->state(device.type) == MEDIA_REQUEST_STATE_DONE)
+          continue;
         CHECK_EQ(request->state(device.type), MEDIA_REQUEST_STATE_OPENING);
         // We've found a matching request.
         request->SetState(device.type, MEDIA_REQUEST_STATE_DONE);

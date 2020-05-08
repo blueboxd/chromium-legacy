@@ -318,18 +318,6 @@ void CreditCardSaveManager::OnDidUploadCard(
   }
 
   if (result == AutofillClient::SUCCESS) {
-    // If the upload succeeds and we can store unmasked cards on this OS, we
-    // will keep a copy of the card as a full server card on the device.
-    if (!server_id.empty() &&
-        OfferStoreUnmaskedCards(payments_client_->is_off_the_record()) &&
-        !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled()) {
-      upload_request_.card.set_record_type(CreditCard::FULL_SERVER_CARD);
-      upload_request_.card.SetServerStatus(CreditCard::OK);
-      upload_request_.card.set_server_id(server_id);
-      DCHECK(personal_data_manager_);
-      if (personal_data_manager_)
-        personal_data_manager_->AddFullServerCreditCard(upload_request_.card);
-    }
     // Log how many strikes the card had when it was saved.
     LogStrikesPresentWhenCardSaved(
         /*is_local=*/false,

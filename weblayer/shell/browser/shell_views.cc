@@ -120,7 +120,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddPaddingColumn(0, 2);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                          views::GridLayout::USE_PREF, 0, 0);
+                          views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(0, 2);
 
     // Add toolbar buttons and URL text field
@@ -136,7 +136,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     gfx::Size back_button_size = back_button->GetPreferredSize();
     toolbar_column_set->AddColumn(
         views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
-        views::GridLayout::FIXED, back_button_size.width(),
+        views::GridLayout::ColumnSize::kFixed, back_button_size.width(),
         back_button_size.width() / 2);
     // Forward button
     auto forward_button =
@@ -144,7 +144,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     gfx::Size forward_button_size = forward_button->GetPreferredSize();
     toolbar_column_set->AddColumn(
         views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
-        views::GridLayout::FIXED, forward_button_size.width(),
+        views::GridLayout::ColumnSize::kFixed, forward_button_size.width(),
         forward_button_size.width() / 2);
     // Refresh button
     auto refresh_button =
@@ -152,24 +152,25 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     gfx::Size refresh_button_size = refresh_button->GetPreferredSize();
     toolbar_column_set->AddColumn(
         views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
-        views::GridLayout::FIXED, refresh_button_size.width(),
+        views::GridLayout::ColumnSize::kFixed, refresh_button_size.width(),
         refresh_button_size.width() / 2);
     // Stop button
     auto stop_button =
         views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop (100%)"));
     int stop_button_width = stop_button->GetPreferredSize().width();
-    toolbar_column_set->AddColumn(
-        views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-        views::GridLayout::FIXED, stop_button_width, stop_button_width / 2);
+    toolbar_column_set->AddColumn(views::GridLayout::FILL,
+                                  views::GridLayout::CENTER, 0,
+                                  views::GridLayout::ColumnSize::kFixed,
+                                  stop_button_width, stop_button_width / 2);
     toolbar_column_set->AddPaddingColumn(0, 2);
     // URL entry
     auto url_entry = std::make_unique<views::Textfield>();
     url_entry->SetAccessibleName(base::ASCIIToUTF16("Enter URL"));
     url_entry->set_controller(this);
     url_entry->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
-    toolbar_column_set->AddColumn(views::GridLayout::FILL,
-                                  views::GridLayout::FILL, 1,
-                                  views::GridLayout::USE_PREF, 0, 0);
+    toolbar_column_set->AddColumn(
+        views::GridLayout::FILL, views::GridLayout::FILL, 1,
+        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     toolbar_column_set->AddPaddingColumn(0, 2);
 
     // Fill up the first row

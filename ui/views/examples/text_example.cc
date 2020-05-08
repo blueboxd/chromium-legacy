@@ -168,10 +168,10 @@ void TextExample::CreateExampleView(View* container) {
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddPaddingColumn(0, 8);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0.1f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   for (int i = 0; i < kNumColumns - 1; i++)
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.1f,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(0, 8);
 
   h_align_cb_ = AddCombobox(layout, "H-Align", kHorizontalAligments,
@@ -196,7 +196,7 @@ void TextExample::CreateExampleView(View* container) {
   column_set = layout->AddColumnSet(1);
   column_set->AddPaddingColumn(0, 16);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(0, 16);
   layout->StartRow(1, 1);
   text_view_ = layout->AddView(std::move(text_view));

@@ -85,8 +85,8 @@ public class AutocompleteMediatorUnitTest {
         mListModel.set(SuggestionListProperties.SUGGESTION_MODELS, mSuggestionModels);
 
         mMediator = new AutocompleteMediator(ContextUtils.getApplicationContext(),
-                mAutocompleteDelegate, mTextStateProvider, mAutocompleteController, mListModel,
-                mHandler);
+                mAutocompleteDelegate, mTextStateProvider, mAutocompleteController, null,
+                mListModel, mHandler);
         mMediator.setToolbarDataProvider(mToolbarDataProvider);
         mMediator.registerSuggestionProcessor(mMockProcessor);
         mMediator.setSuggestionVisibilityState(
@@ -127,7 +127,7 @@ public class AutocompleteMediatorUnitTest {
                     null /* fillIntoEdit */, GURL.emptyGURL() /* url */,
                     GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
                     false /* isStarred */, false /* isDeletable */, null /* postContentType */,
-                    null /* postData */, OmniboxSuggestion.INVALID_GROUP);
+                    null /* postData */, OmniboxSuggestion.INVALID_GROUP, null);
             list.add(suggestion);
         }
 
@@ -507,7 +507,8 @@ public class AutocompleteMediatorUnitTest {
 
         mMediator.onNativeInitialized();
         mMediator.onTextChanged("test", "testing");
-        verify(mAutocompleteController).start(profile, url, pageClassification, "test", 4, false);
+        verify(mAutocompleteController)
+                .start(profile, url, pageClassification, "test", 4, false, null);
     }
 
     @CalledByNativeJavaTest
@@ -530,7 +531,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onTextChanged("test", "testing");
         mMediator.onTextChanged("nottest", "nottesting");
         verify(mAutocompleteController)
-                .start(profile, url, pageClassification, "nottest", 4, false);
+                .start(profile, url, pageClassification, "nottest", 4, false, null);
     }
 
     @CalledByNativeJavaTest

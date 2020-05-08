@@ -258,21 +258,13 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
   if (current_bubble_type_ != BubbleType::UPLOAD_SAVE)
     return base::string16();
 
-  bool offer_to_save_on_device_message =
-      OfferStoreUnmaskedCards(
-          web_contents()->GetBrowserContext()->IsOffTheRecord()) &&
-      !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
   if (options_.should_request_name_from_user) {
     return l10n_util::GetStringUTF16(
-        offer_to_save_on_device_message
-            ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME_AND_DEVICE
-            : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
+        IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME);
   }
 
   return l10n_util::GetStringUTF16(
-      offer_to_save_on_device_message
-          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_DEVICE
-          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3);
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetAcceptButtonText() const {

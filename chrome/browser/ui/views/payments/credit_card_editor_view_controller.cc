@@ -298,13 +298,13 @@ CreditCardEditorViewController::CreateCustomFieldView(
         view->SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* columns = combobox_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                       1.0, views::GridLayout::USE_PREF, 0, 0);
+                       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     // Space between the two comboboxes.
     constexpr int kHorizontalSpacing = 8;
     columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                               kHorizontalSpacing);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                       1.0, views::GridLayout::USE_PREF, 0, 0);
+                       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
     combobox_layout->StartRow(views::GridLayout::kFixedSize, 0);
     constexpr int kInputFieldHeight = 28;

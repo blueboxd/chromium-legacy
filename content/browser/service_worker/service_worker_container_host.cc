@@ -669,6 +669,16 @@ void ServiceWorkerContainerHost::RemoveServiceWorkerObjectHost(
     int64_t version_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(base::Contains(service_worker_object_hosts_, version_id));
+
+  // ServiceWorkerObjectHost to be deleted may have the last reference to
+  // ServiceWorkerVersion that indirectly owns this ServiceWorkerContainerHost.
+  // If we erase the object host directly from the map, |this| could be deleted
+  // during the map operation and may crash. To avoid the case, we take the
+  // ownership of the object host from the map first, and then erase the entry
+  // from the map. See https://crbug.com/1056598 for details.
+  std::unique_ptr<ServiceWorkerObjectHost> to_be_deleted =
+      std::move(service_worker_object_hosts_[version_id]);
+  DCHECK(to_be_deleted);
   service_worker_object_hosts_.erase(version_id);
 }
 

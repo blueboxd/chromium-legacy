@@ -6,6 +6,7 @@ module printing.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "printing/mojom/print.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Parameters required to print the content of an out-of-process subframe.
@@ -18,6 +19,16 @@ struct PrintFrameContentParams {
   int32 document_cookie;
 };
 
+// Parameters required to set options from a document.
+struct OptionsFromDocumentParams {
+  // Specifies whether print scaling is enabled or not.
+  bool is_scaling_disabled;
+  // Specifies number of copies to be printed.
+  int32 copies;
+  // Specifies paper handling option.
+  DuplexMode duplex;
+};
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {
@@ -28,6 +39,16 @@ interface PrintRenderer {
   // the preview document.
   CreatePreviewDocument(mojo_base.mojom.DictionaryValue job_settings)
       => (mojo_base.mojom.ReadOnlySharedMemoryRegion? preview_document_region);
+};
+
+// Browser process interface exposed to the renderer to handle the print
+// preview UI.
+interface PrintPreviewUI {
+  // Notifies the WebUI to set print preset options from source PDF.
+  // |request_id| comes from the chrome://print WebUI when it requests to update
+  // the print preview.
+  [EnableIf=enable_print_preview]
+  SetOptionsFromDocument(OptionsFromDocumentParams params, int32 request_id);
 };
 
 // Render process interface exposed to the browser to handle most of the
@@ -47,6 +68,10 @@ interface PrintRenderFrame {
   [EnableIf=enable_print_preview]
   InitiatePrintPreview(pending_associated_remote<PrintRenderer>? print_renderer,
                        bool has_selection);
+
+  // Sets PrintPreviewUI interface to notify the browser of preview actions.
+  [EnableIf=enable_print_preview]
+  SetPrintPreviewUI(pending_associated_remote<PrintPreviewUI> preview);
 
   // Tells the RenderFrame to switch the CSS to print media type and render
   // every requested page for print preview using the given |settings|. This

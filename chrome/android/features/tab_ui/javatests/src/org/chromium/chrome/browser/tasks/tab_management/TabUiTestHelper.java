@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.Espresso.pressBack;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
@@ -108,6 +109,17 @@ public class TabUiTestHelper {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
         showWatcher.waitForBehavior();
+    }
+
+    /**
+     * Leave tab switcher by tapping "back".
+     * @param cta  The current running activity.
+     */
+    public static void leaveTabSwitcher(ChromeTabbedActivity cta) {
+        OverviewModeBehaviorWatcher hideWatcher = createOverviewHideWatcher(cta);
+        assertTrue(cta.getLayoutManager().overviewVisible());
+        pressBack();
+        hideWatcher.waitForBehavior();
     }
 
     /**

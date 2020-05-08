@@ -55,10 +55,10 @@ BulletedLabelListView::BulletedLabelListView(
   int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     width, width);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, width, width);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   for (const auto& text : texts)
     AddLabel(text);

@@ -48,6 +48,7 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
     "pedal",
     "text-from-clipboard",
     "image-from-clipboard",
+    "query-tiles",
   };
   // clang-format on
   static_assert(base::size(strings) == AutocompleteMatchType::NUM_TYPES,
@@ -126,6 +127,7 @@ base::string16 GetAccessibilityBaseLabel(const AutocompleteMatch& match,
       0,                                     // PEDAL
       IDS_ACC_AUTOCOMPLETE_CLIPBOARD_TEXT,   // CLIPBOARD_TEXT
       IDS_ACC_AUTOCOMPLETE_CLIPBOARD_IMAGE,  // CLIPBOARD_IMAGE
+      0,                                     // TILE_SUGGESTION
   };
   static_assert(base::size(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");

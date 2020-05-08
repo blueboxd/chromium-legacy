@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchCl
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.omnibox.SuggestionAnswer;
+import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
@@ -102,9 +103,10 @@ public class AutocompleteController {
      * @param cursorPosition The position of the cursor within the text.  Set to -1 if the cursor is
      *                       not focused on the text.
      * @param preventInlineAutocomplete Whether autocomplete suggestions should be prevented.
+     * @param queryTileId The ID of the query tile selected by the user, if any.
      */
     public void start(Profile profile, String url, int pageClassification, String text,
-            int cursorPosition, boolean preventInlineAutocomplete) {
+            int cursorPosition, boolean preventInlineAutocomplete, @Nullable String queryTileId) {
         assert mListener != null : "Ensure a listener is set prior to calling.";
         // crbug.com/764749
         Log.w(TAG, "starting autocomplete controller..[%b][%b]", profile == null,
@@ -117,7 +119,7 @@ public class AutocompleteController {
         if (mNativeAutocompleteControllerAndroid != 0) {
             AutocompleteControllerJni.get().start(mNativeAutocompleteControllerAndroid,
                     AutocompleteController.this, text, cursorPosition, null, url,
-                    pageClassification, preventInlineAutocomplete, false, false, true);
+                    pageClassification, preventInlineAutocomplete, false, false, true, queryTileId);
             mWaitingForSuggestionsToCache = false;
         }
     }
@@ -323,7 +325,7 @@ public class AutocompleteController {
             int[] descriptionClassificationOffsets, int[] descriptionClassificationStyles,
             SuggestionAnswer answer, String fillIntoEdit, GURL url, GURL imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
-            String postContentType, byte[] postData, int groupId) {
+            String postContentType, byte[] postData, int groupId, List<QueryTile> tiles) {
         assert contentClassificationOffsets.length == contentClassificationStyles.length;
         List<MatchClassification> contentClassifications = new ArrayList<>();
         for (int i = 0; i < contentClassificationOffsets.length; i++) {
@@ -341,7 +343,7 @@ public class AutocompleteController {
         return new OmniboxSuggestion(nativeType, isSearchType, relevance, transition, contents,
                 contentClassifications, description, descriptionClassifications, answer,
                 fillIntoEdit, url, imageUrl, imageDominantColor, isStarred, isDeletable,
-                postContentType, postData, groupId);
+                postContentType, postData, groupId, tiles);
     }
 
     /**
@@ -381,7 +383,8 @@ public class AutocompleteController {
         void start(long nativeAutocompleteControllerAndroid, AutocompleteController caller,
                 String text, int cursorPosition, String desiredTld, String currentUrl,
                 int pageClassification, boolean preventInlineAutocomplete, boolean preferKeyword,
-                boolean allowExactKeywordMatch, boolean wantAsynchronousMatches);
+                boolean allowExactKeywordMatch, boolean wantAsynchronousMatches,
+                String queryTileId);
         OmniboxSuggestion classify(long nativeAutocompleteControllerAndroid,
                 AutocompleteController caller, String text, boolean focusedFromFakebox);
         void stop(long nativeAutocompleteControllerAndroid, AutocompleteController caller,

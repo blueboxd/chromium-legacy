@@ -888,6 +888,10 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   if (!print_render_frame_.is_bound())
     rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame_);
 
+  if (!print_preview_ui()->IsBound()) {
+    print_render_frame_->SetPrintPreviewUI(
+        print_preview_ui()->BindPrintPreviewUI());
+  }
   print_render_frame_->PrintPreview(settings.Clone());
   last_preview_settings_ = std::move(settings);
 }

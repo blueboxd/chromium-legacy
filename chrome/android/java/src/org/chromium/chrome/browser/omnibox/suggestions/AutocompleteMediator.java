@@ -20,6 +20,7 @@ import androidx.annotation.Px;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -48,14 +49,17 @@ import org.chromium.chrome.browser.omnibox.suggestions.clipboard.ClipboardSugges
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.tiles.TileSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -133,6 +137,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     // it in the mSuggestionProcessors list. The processor currently cannot be combined with
     // other processors because of its unique requirements.
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
+    private final TileSuggestionProcessor mTileSuggestionProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
     private final List<SuggestionViewInfo> mAvailableSuggestions;
     private SparseArray<String> mGroupHeaders;
@@ -196,7 +201,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider,
-            AutocompleteController autocompleteController, PropertyModel listPropertyModel,
+            AutocompleteController autocompleteController,
+            Callback<List<QueryTile>> queryTileSuggestionCallback, PropertyModel listPropertyModel,
             Handler handler) {
         mContext = context;
         mDelegate = delegate;
@@ -205,6 +211,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mAutocomplete = autocompleteController;
         mAutocomplete.setOnSuggestionsReceivedListener(this);
         mHandler = handler;
+        mTileSuggestionProcessor =
+                new TileSuggestionProcessor(mContext, queryTileSuggestionCallback);
         mSuggestionProcessors = new ArrayList<>();
         mAvailableSuggestions = new ArrayList<>();
         mGroupHeaders = new SparseArray<>();
@@ -235,6 +243,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         registerSuggestionProcessor(
                 new EntitySuggestionProcessor(mContext, this, imageFetcherSupplier));
         registerSuggestionProcessor(new TailSuggestionProcessor(mContext, this));
+        registerSuggestionProcessor(mTileSuggestionProcessor);
         registerSuggestionProcessor(new BasicSuggestionProcessor(
                 mContext, this, mUrlBarEditingTextProvider, iconBridgeSupplier));
     }
@@ -655,6 +664,32 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         };
     }
 
+    /** Called when a query tile is selected by the user. */
+    void onQueryTileSelected(QueryTile queryTile) {
+        // For last level tile, start a search query.
+        if (queryTile.children.isEmpty()) {
+            String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(queryTile.queryText);
+            mDelegate.loadUrl(url, PageTransition.LINK, mLastActionUpTimestamp);
+            mDelegate.setKeyboardVisibility(false);
+            return;
+        }
+
+        // If the tile has sub-tiles, start a new request to the backend to get the new set
+        // of tiles. Also set the tile text in omnibox.
+        stopAutocomplete(false);
+        String refineText = TextUtils.concat(queryTile.queryText, " ").toString();
+        mDelegate.setOmniboxEditingText(refineText);
+
+        mNewOmniboxEditSessionTimestamp = SystemClock.elapsedRealtime();
+        mHasStartedNewOmniboxEditSession = true;
+
+        mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(),
+                mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox()),
+                mUrlBarEditingTextProvider.getTextWithoutAutocomplete(),
+                mUrlBarEditingTextProvider.getSelectionStart(),
+                !mUrlBarEditingTextProvider.shouldAutocomplete(), queryTile.id);
+    }
+
     /**
      * Triggered when the user selects one of the omnibox suggestions to navigate to.
      * @param suggestion The OmniboxSuggestion which was selected.
@@ -788,7 +823,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         assert mNativeInitialized
             : "updateSuggestionUrlIfNeeded called before native initialization";
 
-        if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST) return suggestion.getUrl();
+        if (suggestion.getType() == OmniboxSuggestionType.VOICE_SUGGEST
+                || suggestion.getType() == OmniboxSuggestionType.TILE_SUGGESTION) {
+            return suggestion.getUrl();
+        }
 
         int verifiedIndex = SUGGESTION_NOT_FOUND;
         if (!skipCheck) {
@@ -888,7 +926,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 int pageClassification =
                         mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
                 mAutocomplete.start(profile, mDataProvider.getCurrentUrl(), pageClassification,
-                        textWithoutAutocomplete, cursorPosition, preventAutocomplete);
+                        textWithoutAutocomplete, cursorPosition, preventAutocomplete, null);
             };
             if (mNativeInitialized) {
                 mHandler.postDelayed(mRequestSuggestions, OMNIBOX_SUGGESTION_START_DELAY_MS);
@@ -1289,7 +1327,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         stopAutocomplete(false);
         if (mDataProvider.hasTab()) {
             mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(),
-                    mDataProvider.getPageClassification(false), query, -1, false);
+                    mDataProvider.getPageClassification(false), query, -1, false, null);
         }
     }
 

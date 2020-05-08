@@ -50,7 +50,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2345-09-19');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2345-08-19');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     debug('');
     debug('==> Focus on the day field.');
@@ -61,7 +61,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2345-08-21');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2345-08-20');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     debug('');
     debug('==> Focus on the year field.');
@@ -72,7 +72,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2347-08-20');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2346-08-20');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     debug('');
     debug('==> Click on a disabled field.');

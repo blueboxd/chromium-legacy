@@ -135,9 +135,9 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets));
 
   views::ColumnSet* instructions_columns = layout->AddColumnSet(0);
-  instructions_columns->AddColumn(views::GridLayout::Alignment::FILL,
-                                  views::GridLayout::Alignment::LEADING, 1.0,
-                                  views::GridLayout::SizeType::USE_PREF, 0, 0);
+  instructions_columns->AddColumn(
+      views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
+      1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   // The prompt for server cards should reference Google Payments, whereas the
@@ -160,17 +160,17 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
       credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now());
   if (requesting_expiration) {
     // Month dropdown column
-    cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                                 views::GridLayout::Alignment::BASELINE,
-                                 views::GridLayout::kFixedSize,
-                                 views::GridLayout::SizeType::USE_PREF, 0, 0);
+    cvc_field_columns->AddColumn(
+        views::GridLayout::Alignment::LEADING,
+        views::GridLayout::Alignment::BASELINE, views::GridLayout::kFixedSize,
+        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     cvc_field_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                                         kPadding);
     // Year dropdown column
-    cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                                 views::GridLayout::Alignment::BASELINE,
-                                 views::GridLayout::kFixedSize,
-                                 views::GridLayout::SizeType::USE_PREF, 0, 0);
+    cvc_field_columns->AddColumn(
+        views::GridLayout::Alignment::LEADING,
+        views::GridLayout::Alignment::BASELINE, views::GridLayout::kFixedSize,
+        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     cvc_field_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                                         kPadding);
   }
@@ -178,13 +178,13 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
                                views::GridLayout::Alignment::BASELINE,
                                views::GridLayout::kFixedSize,
-                               views::GridLayout::SizeType::FIXED, 32, 32);
+                               views::GridLayout::ColumnSize::kFixed, 32, 32);
   cvc_field_columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPadding);
   // CVC field
   cvc_field_columns->AddColumn(views::GridLayout::Alignment::FILL,
                                views::GridLayout::Alignment::BASELINE,
                                views::GridLayout::kFixedSize,
-                               views::GridLayout::SizeType::FIXED, 80, 80);
+                               views::GridLayout::ColumnSize::kFixed, 80, 80);
 
   layout->StartRow(views::GridLayout::kFixedSize, 1);
   if (requesting_expiration) {
@@ -228,12 +228,12 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   error_columns->AddColumn(views::GridLayout::Alignment::LEADING,
                            views::GridLayout::Alignment::LEADING,
                            views::GridLayout::kFixedSize,
-                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+                           views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   error_columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPadding);
   // A column for the error label
   error_columns->AddColumn(views::GridLayout::Alignment::LEADING,
                            views::GridLayout::Alignment::LEADING, 1.0,
-                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+                           views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 2);
   auto error_icon = std::make_unique<views::ImageView>();

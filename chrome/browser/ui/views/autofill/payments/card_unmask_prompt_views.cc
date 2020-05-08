@@ -54,12 +54,12 @@ static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   views::ColumnSet* columns = overlay_layout->AddColumnSet(0);
   // The throbber's checkmark is 18dp.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0.5, views::GridLayout::FIXED, 18, 0);
+                     0.5, views::GridLayout::ColumnSize::kFixed, 18, 0);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             ChromeLayoutProvider::Get()->GetDistanceMetric(
                                 views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.5,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   overlay_layout->StartRow(1.0, 0);
   return overlay_layout;
 }

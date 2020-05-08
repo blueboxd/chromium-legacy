@@ -151,6 +151,7 @@ class AutocompleteProvider
     TYPE_DOCUMENT = 1 << 9,
     TYPE_ON_DEVICE_HEAD = 1 << 10,
     TYPE_ZERO_SUGGEST_LOCAL_HISTORY = 1 << 11,
+    TYPE_QUERY_TILE = 1 << 12,
   };
 
   explicit AutocompleteProvider(Type type);

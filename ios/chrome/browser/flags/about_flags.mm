@@ -426,12 +426,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"send-uma-cellular", flag_descriptions::kSendUmaOverAnyNetwork,
      flag_descriptions::kSendUmaOverAnyNetworkDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUmaCellular)},
-    {"autofill-no-local-save-on-upload-success",
-     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessName,
-     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillNoLocalSaveOnUploadSuccess)},
     {"autofill-no-local-save-on-unmask-success",
      flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
      flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription,

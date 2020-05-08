@@ -268,13 +268,13 @@ std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
   const int kReportColumnSetId = 0;
   views::ColumnSet* cs = uma_layout->AddColumnSet(kReportColumnSetId);
   cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(views::GridLayout::kFixedSize,
                        ChromeLayoutProvider::Get()->GetDistanceMetric(
                            views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                views::GridLayout::USE_PREF, 0, 0);
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   uma_layout->StartRow(views::GridLayout::kFixedSize, kReportColumnSetId);
   uma_option_ = uma_layout->AddView(std::move(uma_option));

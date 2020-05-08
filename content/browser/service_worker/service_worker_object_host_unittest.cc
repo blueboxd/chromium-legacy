@@ -200,6 +200,19 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     return registration_info;
   }
 
+  void CallOnConnectionError(ServiceWorkerContainerHost* container_host,
+                             int64_t version_id) {
+    // ServiceWorkerObjectHost has the last reference to the version.
+    ServiceWorkerObjectHost* object_host =
+        GetServiceWorkerObjectHost(container_host, version_id);
+    EXPECT_TRUE(object_host->version_->HasOneRef());
+
+    // Make sure that OnConnectionError induces destruction of the version and
+    // the object host.
+    object_host->receivers_.Clear();
+    object_host->OnConnectionError();
+  }
+
   BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
@@ -407,6 +420,31 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
             events[0]->source_info_for_client->client_uuid);
   EXPECT_EQ(container_host->GetClientType(),
             events[0]->source_info_for_client->client_type);
+}
+
+// This is a regression test for https://crbug.com/1056598.
+TEST_F(ServiceWorkerObjectHostTest, OnConnectionError) {
+  const GURL scope("https://www.example.com/");
+  const GURL script_url("https://www.example.com/service_worker.js");
+  Initialize(std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath()));
+  SetUpRegistration(scope, script_url);
+
+  // Create the provider host.
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StartServiceWorker(version_.get()));
+
+  // Set up the case where the last reference to the version is owned by the
+  // service worker object host.
+  ServiceWorkerContainerHost* container_host =
+      version_->provider_host()->container_host();
+  ServiceWorkerVersion* version_rawptr = version_.get();
+  version_ = nullptr;
+  ASSERT_TRUE(version_rawptr->HasOneRef());
+
+  // Simulate the connection error that induces the object host destruction.
+  // This shouldn't crash.
+  CallOnConnectionError(container_host, version_rawptr->version_id());
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace service_worker_object_host_unittest

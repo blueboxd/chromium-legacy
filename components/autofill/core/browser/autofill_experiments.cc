@@ -225,11 +225,6 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
   return group_name == "Disabled";
 }
 
-bool IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kAutofillNoLocalSaveOnUploadSuccess);
-}
-
 bool OfferStoreUnmaskedCards(bool is_off_the_record) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // The checkbox can be forced on with a flag, but by default we don't store

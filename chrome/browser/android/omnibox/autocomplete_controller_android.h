@@ -42,7 +42,8 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
              bool prevent_inline_autocomplete,
              bool prefer_keyword,
              bool allow_exact_keyword_match,
-             bool want_asynchronous_matches);
+             bool want_asynchronous_matches,
+             const base::android::JavaRef<jstring>& j_query_tile_id);
   base::android::ScopedJavaLocalRef<jobject> Classify(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

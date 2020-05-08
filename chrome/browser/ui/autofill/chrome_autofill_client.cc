@@ -376,8 +376,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
               /*upload=*/false, options, card, LegalMessageLines(),
               /*upload_save_card_callback=*/
               AutofillClient::UploadSaveCardPromptCallback(),
-              /*local_save_card_callback=*/std::move(callback), GetPrefs(),
-              payments_client_->is_off_the_record())));
+              /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
@@ -425,8 +424,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
               /*upload=*/true, options, card, legal_message_lines,
               /*upload_save_card_callback=*/std::move(callback),
               /*local_save_card_callback=*/
-              AutofillClient::LocalSaveCardPromptCallback(), GetPrefs(),
-              payments_client_->is_off_the_record());
+              AutofillClient::LocalSaveCardPromptCallback(), GetPrefs());
   InfoBarService::FromWebContents(web_contents())
       ->AddInfoBar(CreateSaveCardInfoBarMobile(
           std::move(save_card_info_bar_delegate_mobile)));

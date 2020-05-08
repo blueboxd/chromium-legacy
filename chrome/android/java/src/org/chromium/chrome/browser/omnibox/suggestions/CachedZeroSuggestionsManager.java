@@ -150,7 +150,7 @@ public class CachedZeroSuggestionsManager {
                     displayText, classifications, description, classifications, null, "", url,
                     GURL.emptyGURL(), null, isStarred, isDeletable,
                     postContentType.isEmpty() ? null : postContentType,
-                    postData.length == 0 ? null : postData, groupId);
+                    postData.length == 0 ? null : postData, groupId, null);
             suggestions.add(suggestion);
         }
 

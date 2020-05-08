@@ -216,8 +216,10 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     private void replyToPromptAndWaitForUpdates(PermissionUpdateWaiter updateWaiter, boolean allow,
             int nUpdates, boolean isDialog) throws Exception {
         if (isDialog) {
-            DialogShownCriteria criteria = new DialogShownCriteria(
-                    getActivity().getModalDialogManager(), "Dialog not shown", true);
+            ModalDialogManager dialogManager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                    getActivity()::getModalDialogManager);
+            DialogShownCriteria criteria =
+                    new DialogShownCriteria(dialogManager, "Dialog not shown", true);
             CriteriaHelper.pollUiThread(criteria);
             replyToDialogAndWaitForUpdates(updateWaiter, nUpdates, allow);
         } else {

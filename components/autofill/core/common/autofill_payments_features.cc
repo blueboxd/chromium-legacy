@@ -83,11 +83,6 @@ const base::Feature kAutofillEnableVirtualCard{
 const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
     "AutofillNoLocalSaveOnUnmaskSuccess", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When enabled, no local copy of server card will be saved when upload
-// succeeds.
-const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
-    "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, the Save Card infobar will be dismissed by a user initiated
 // navigation other than one caused by submitted form.
 const base::Feature kAutofillSaveCardDismissOnNavigation{

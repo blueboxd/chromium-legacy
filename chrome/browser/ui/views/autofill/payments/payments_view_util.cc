@@ -49,15 +49,16 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
       SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
+  using ColumnSize = views::GridLayout::ColumnSize;
   // Add columns for the Google Pay icon, the separator, and the title label.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     views::GridLayout::kFixedSize, ColumnSize::kUsePreferred,
                      0, 0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     views::GridLayout::kFixedSize, ColumnSize::kUsePreferred,
                      0, 0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1.f,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 

@@ -480,12 +480,13 @@ void DeepScanningDialogViews::Show() {
   views::GridLayout* layout =
       contents_view_->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(/*h_align=*/views::GridLayout::FILL,
-                     /*v_align=*/views::GridLayout::FILL,
-                     /*resize_percent=*/1.0,
-                     /*size_type=*/views::GridLayout::SizeType::USE_PREF,
-                     /*fixed_width=*/0,
-                     /*min_width=*/0);
+  columns->AddColumn(
+      /*h_align=*/views::GridLayout::FILL,
+      /*v_align=*/views::GridLayout::FILL,
+      /*resize_percent=*/1.0,
+      /*size_type=*/views::GridLayout::ColumnSize::kUsePreferred,
+      /*fixed_width=*/0,
+      /*min_width=*/0);
 
   // Add the top image.
   layout->StartRow(views::GridLayout::kFixedSize, 0);

@@ -56,7 +56,12 @@ static void RemoveFromNullOriginMapIfNecessary(const KURL& blob_url) {
 PublicURLManager::PublicURLManager(ExecutionContext* context)
     : ExecutionContextLifecycleObserver(context),
       is_stopped_(false),
-      url_store_(context) {}
+      url_store_(context) {
+  BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
+      context->GetSecurityOrigin(),
+      url_store_.BindNewEndpointAndPassReceiver(
+          context->GetTaskRunner(TaskType::kFileReading)));
+}
 
 String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   if (is_stopped_)
@@ -70,12 +75,6 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   if (registrable->IsMojoBlob()) {
     // Measure how much jank the following synchronous IPC introduces.
     SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterPublicURLTime");
-    if (!url_store_.is_bound()) {
-      BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-          origin,
-          url_store_.BindNewEndpointAndPassReceiver(
-              GetExecutionContext()->GetTaskRunner(TaskType::kFileReading)));
-    }
     mojo::PendingRemote<mojom::blink::Blob> blob_remote;
     mojo::PendingReceiver<mojom::blink::Blob> blob_receiver =
         blob_remote.InitWithNewPipeAndPassReceiver();
@@ -105,12 +104,6 @@ void PublicURLManager::Revoke(const KURL& url) {
           GetExecutionContext()->GetSecurityOrigin()))
     return;
 
-  if (!url_store_.is_bound()) {
-    BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-        GetExecutionContext()->GetSecurityOrigin(),
-        url_store_.BindNewEndpointAndPassReceiver(
-            GetExecutionContext()->GetTaskRunner(TaskType::kFileReading)));
-  }
   url_store_->Revoke(url);
   mojo_urls_.erase(url.GetString());
 
@@ -130,12 +123,6 @@ void PublicURLManager::Resolve(
     return;
 
   DCHECK(url.ProtocolIs("blob"));
-  if (!url_store_.is_bound()) {
-    BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-        GetExecutionContext()->GetSecurityOrigin(),
-        url_store_.BindNewEndpointAndPassReceiver(
-            GetExecutionContext()->GetTaskRunner(TaskType::kFileReading)));
-  }
   url_store_->ResolveAsURLLoaderFactory(url, std::move(factory_receiver));
 }
 
@@ -146,12 +133,6 @@ void PublicURLManager::Resolve(
     return;
 
   DCHECK(url.ProtocolIs("blob"));
-  if (!url_store_.is_bound()) {
-    BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-        GetExecutionContext()->GetSecurityOrigin(),
-        url_store_.BindNewEndpointAndPassReceiver(
-            GetExecutionContext()->GetTaskRunner(TaskType::kFileReading)));
-  }
   url_store_->ResolveForNavigation(url, std::move(token_receiver));
 }
 

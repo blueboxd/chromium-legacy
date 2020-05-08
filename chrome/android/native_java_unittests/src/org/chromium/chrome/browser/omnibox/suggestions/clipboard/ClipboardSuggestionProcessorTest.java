@@ -95,9 +95,9 @@ public class ClipboardSuggestionProcessorTest {
                 /* displayTextClassifications */ new ArrayList<>(), "test description",
                 /* descriptionClassifications */ new ArrayList<>(),
                 /* suggestionAnswer */ null, /* fillIntoEdit */ null, url,
-                /* imageUrl */  GURL.emptyGURL(), /* imageDominantColor */ "", false,
+                /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", false,
                 /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
-                OmniboxSuggestion.INVALID_GROUP);
+                OmniboxSuggestion.INVALID_GROUP, null);
         mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
         SuggestionViewViewBinder.bind(mModel, mRootView, SuggestionViewProperties.TEXT_LINE_1_TEXT);

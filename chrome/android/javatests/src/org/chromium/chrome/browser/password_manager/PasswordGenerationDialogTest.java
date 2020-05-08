@@ -52,10 +52,13 @@ public class PasswordGenerationDialogTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mDialog = new PasswordGenerationDialogCoordinator(mActivityTestRule.getActivity());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mDialog.showDialog(mGeneratedPassword, mExplanationString,
-                                mOnPasswordAcceptedOrRejectedCallback));
+        mDialog = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            PasswordGenerationDialogCoordinator dialog =
+                    new PasswordGenerationDialogCoordinator(mActivityTestRule.getActivity());
+            dialog.showDialog(
+                    mGeneratedPassword, mExplanationString, mOnPasswordAcceptedOrRejectedCallback);
+            return dialog;
+        });
     }
 
     @Test

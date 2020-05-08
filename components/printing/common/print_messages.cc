@@ -147,14 +147,4 @@ PrintHostMsg_PreviewIds::PrintHostMsg_PreviewIds(int request_id, int ui_id)
     : request_id(request_id), ui_id(ui_id) {}
 
 PrintHostMsg_PreviewIds::~PrintHostMsg_PreviewIds() {}
-
-PrintHostMsg_SetOptionsFromDocument_Params::
-    PrintHostMsg_SetOptionsFromDocument_Params()
-    : is_scaling_disabled(false),
-      copies(0),
-      duplex(printing::mojom::DuplexMode::kUnknownDuplexMode) {}
-
-PrintHostMsg_SetOptionsFromDocument_Params::
-    ~PrintHostMsg_SetOptionsFromDocument_Params() {
-}
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)

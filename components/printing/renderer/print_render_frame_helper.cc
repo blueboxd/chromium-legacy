@@ -1216,6 +1216,13 @@ void PrintRenderFrameHelper::PrintForSystemDialog() {
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+void PrintRenderFrameHelper::SetPrintPreviewUI(
+    mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> preview) {
+  preview_ui_.Bind(std::move(preview));
+  preview_ui_.set_disconnect_handler(base::BindOnce(
+      &PrintRenderFrameHelper::OnPreviewDisconnect, base::Unretained(this)));
+}
+
 void PrintRenderFrameHelper::InitiatePrintPreview(
     mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
     bool has_selection) {
@@ -1280,12 +1287,10 @@ void PrintRenderFrameHelper::PrintPreview(base::Value settings) {
   // message to browser.
   if (print_pages_params_->params.is_first_request &&
       !print_preview_context_.IsModifiable()) {
-    PrintHostMsg_SetOptionsFromDocument_Params options;
-    if (SetOptionsFromPdfDocument(&options)) {
-      PrintHostMsg_PreviewIds ids(
-          print_pages_params_->params.preview_request_id,
-          print_pages_params_->params.preview_ui_id);
-      Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), options, ids));
+    mojom::OptionsFromDocumentParamsPtr options = SetOptionsFromPdfDocument();
+    if (options) {
+      preview_ui_->SetOptionsFromDocument(
+          std::move(options), print_pages_params_->params.preview_request_id);
     }
   }
 
@@ -2069,22 +2074,21 @@ bool PrintRenderFrameHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-bool PrintRenderFrameHelper::SetOptionsFromPdfDocument(
-    PrintHostMsg_SetOptionsFromDocument_Params* options) {
+mojom::OptionsFromDocumentParamsPtr
+PrintRenderFrameHelper::SetOptionsFromPdfDocument() {
   blink::WebLocalFrame* source_frame = print_preview_context_.source_frame();
   const blink::WebNode& source_node = print_preview_context_.source_node();
 
   blink::WebPrintPresetOptions preset_options;
   if (!source_frame->GetPrintPresetOptionsForPlugin(source_node,
                                                     &preset_options)) {
-    return false;
+    return nullptr;
   }
 
-  options->is_scaling_disabled = PDFShouldDisableScalingBasedOnPreset(
-      preset_options, print_pages_params_->params, false);
-  options->copies = preset_options.copies;
-  options->duplex = preset_options.duplex_mode;
-  return true;
+  return mojom::OptionsFromDocumentParams::New(
+      PDFShouldDisableScalingBasedOnPreset(preset_options,
+                                           print_pages_params_->params, false),
+      preset_options.copies, preset_options.duplex_mode);
 }
 
 bool PrintRenderFrameHelper::UpdatePrintSettings(
@@ -2447,6 +2451,10 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
 
   Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params, ids));
   return true;
+}
+
+void PrintRenderFrameHelper::OnPreviewDisconnect() {
+  preview_ui_.reset();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

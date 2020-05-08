@@ -369,11 +369,11 @@ public class SearchActivityTest {
         OmniboxSuggestion mockSuggestion = new OmniboxSuggestion(0, true, 0, 0,
                 "https://google.com", classifications, "https://google.com", classifications, null,
                 "", new GURL("https://google.com"), GURL.emptyGURL(), null, false, false, null,
-                null, OmniboxSuggestion.INVALID_GROUP);
+                null, OmniboxSuggestion.INVALID_GROUP, null);
         OmniboxSuggestion mockSuggestion2 = new OmniboxSuggestion(0, true, 0, 0,
                 "https://android.com", classifications, "https://android.com", classifications,
                 null, "", new GURL("https://android.com"), GURL.emptyGURL(), null, false, false,
-                null, null, OmniboxSuggestion.INVALID_GROUP);
+                null, null, OmniboxSuggestion.INVALID_GROUP, null);
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

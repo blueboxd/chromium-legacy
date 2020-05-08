@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ class MODULES_EXPORT ScreenOrientationController final
   static ScreenOrientationController* FromIfExists(LocalDOMWindow&);
 
   void SetScreenOrientationAssociatedRemoteForTests(
-      mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>);
+      HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>);
 
   void Trace(Visitor*) override;
 
@@ -74,7 +74,7 @@ class MODULES_EXPORT ScreenOrientationController final
 
   Member<ScreenOrientation> orientation_;
   bool active_lock_ = false;
-  mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
+  HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>
       screen_orientation_service_;
   std::unique_ptr<WebLockOrientationCallback> pending_callback_;
   int request_id_ = 0;

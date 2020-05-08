@@ -205,26 +205,18 @@ void SearchResultRanker::InitializeRankers(
 
   app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
 
-  bool apps_enabled = app_list_features::IsAppRankerEnabled();
-  if (app_list_features::IsAggregatedMlAppRankingEnabled() ||
-      (apps_enabled &&
-       GetFieldTrialParamByFeatureAsBool(app_list_features::kEnableAppRanker,
-                                         "use_topcat_ranker", false))) {
-    using_aggregated_app_inference_ = true;
-    app_launch_event_logger_->CreateRankings();
-  } else if (apps_enabled) {
-    RecurrenceRankerConfigProto config;
-    config.set_min_seconds_between_saves(240u);
-    config.set_condition_limit(1u);
-    config.set_condition_decay(0.5);
-    config.set_target_limit(200);
-    config.set_target_decay(0.8);
-    config.mutable_predictor()->mutable_default_predictor();
+  // Initialize on-device app ranking model.
+  RecurrenceRankerConfigProto config;
+  config.set_min_seconds_between_saves(240u);
+  config.set_condition_limit(1u);
+  config.set_condition_decay(0.5);
+  config.set_target_limit(200);
+  config.set_target_decay(0.8);
+  config.mutable_predictor()->mutable_default_predictor();
 
-    app_ranker_ = std::make_unique<RecurrenceRanker>(
-        "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
-        chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
-  }
+  app_ranker_ = std::make_unique<RecurrenceRanker>(
+      "AppRanker", profile_->GetPath().AppendASCII("app_ranker.pb"), config,
+      chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
 }
 
 void SearchResultRanker::FetchRankings(const base::string16& query) {
@@ -282,21 +274,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
             [](const Mixer::SortData& a, const Mixer::SortData& b) {
               return a.score > b.score;
             });
-  std::map<std::string, float> search_ranker_score_map;
-  if (!last_query_.empty() && use_aggregated_search_ranking_inference_) {
-    search_ranking_event_logger_->CreateRankings(results, last_query_.size());
-    search_ranker_score_map = search_ranking_event_logger_->RetrieveRankings();
-  }
-
-  std::map<std::string, float> ranking_map;
-  if (using_aggregated_app_inference_)
-    ranking_map = app_launch_event_logger_->RetrieveRankings();
-  int aggregated_app_rank_success_count = 0;
-  int aggregated_app_rank_fail_count = 0;
 
   // Counts how many times a given type has been seen so far in the results
   // list.
   base::flat_map<RankingItemType, int> zero_state_type_counts;
+
   for (auto& result : *results) {
     const auto& type = RankingItemTypeFromSearchResult(*result.result);
     const auto& model = ModelForType(type);
@@ -305,43 +287,19 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
       if (last_query_.empty() && zero_state_group_ranker_) {
         LogZeroStateResultScore(type, result.score);
         ScoreZeroStateItem(&result, type, &zero_state_type_counts);
-      } else if (!last_query_.empty() &&
-                 use_aggregated_search_ranking_inference_) {
-        result.score = search_ranker_score_map[result.result->id()];
       }
     } else if (model == Model::APPS) {
       // Do not rerank apps for a query-based search.
       if (!last_query_.empty())
         continue;
 
-      if (using_aggregated_app_inference_) {
-        const std::string id = NormalizeAppId(result.result->id());
-
-        const auto& ranked = ranking_map.find(id);
-        if (ranked != ranking_map.end()) {
-          result.score =
-              kBoostOfApps + ReRange((ranked->second + 4.0) / 8.0, 0.67, 1.0);
-          ++aggregated_app_rank_success_count;
-        } else {
-          ++aggregated_app_rank_fail_count;
-        }
-      } else {
-        if (app_ranker_) {
-          const auto& it = app_ranks_.find(NormalizeAppId(result.result->id()));
-          if (it != app_ranks_.end()) {
-            result.score = kBoostOfApps + ReRange(it->second, 0.67, 1.0);
-          }
+      if (app_ranker_) {
+        const auto& it = app_ranks_.find(NormalizeAppId(result.result->id()));
+        if (it != app_ranks_.end()) {
+          result.score = kBoostOfApps + ReRange(it->second, 0.67, 1.0);
         }
       }
     }
-  }
-  if (using_aggregated_app_inference_ &&
-      (aggregated_app_rank_success_count != 0 ||
-       aggregated_app_rank_fail_count != 0)) {
-    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankSuccess",
-                              aggregated_app_rank_success_count);
-    UMA_HISTOGRAM_COUNTS_1000("Apps.AppList.AggregatedMlAppRankFail",
-                              aggregated_app_rank_fail_count);
   }
 }
 
@@ -386,10 +344,6 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
         app_launch_data.id, app_launch_data.suggestion_index,
         static_cast<int>(app_launch_data.launched_from));
   }
-
-  // Update rankings after logging the click.
-  if (using_aggregated_app_inference_)
-    app_launch_event_logger_->CreateRankings();
 
   auto model = ModelForType(app_launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {

@@ -64,6 +64,7 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -104,7 +105,8 @@ public class TabGridIphTest {
                                             .getTabModelSelector()
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
-        mModalDialogManager = mActivityTestRule.getActivity().getModalDialogManager();
+        mModalDialogManager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                mActivityTestRule.getActivity()::getModalDialogManager);
     }
 
     @After

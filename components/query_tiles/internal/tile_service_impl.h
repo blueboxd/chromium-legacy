@@ -33,7 +33,8 @@ class TileServiceImpl : public InitializableTileService {
   TileServiceImpl(std::unique_ptr<ImageLoader> image_loader,
                   std::unique_ptr<TileManager> tile_manager,
                   background_task::BackgroundTaskScheduler* scheduler,
-                  std::unique_ptr<TileFetcher> tile_fetcher);
+                  std::unique_ptr<TileFetcher> tile_fetcher,
+                  base::Clock* clock);
   ~TileServiceImpl() override;
 
   // Disallow copy/assign.
@@ -75,6 +76,9 @@ class TileServiceImpl : public InitializableTileService {
 
   // Fetcher to execute download jobs from Google server.
   std::unique_ptr<TileFetcher> tile_fetcher_;
+
+  // Clock object.
+  base::Clock* clock_;
 
   base::WeakPtrFactory<TileServiceImpl> weak_ptr_factory_{this};
 };

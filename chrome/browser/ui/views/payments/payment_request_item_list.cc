@@ -70,12 +70,12 @@ void PaymentRequestItemList::Item::Init() {
   // Add a column for the item's content view.
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Add a column for the checkmark shown next to the selected profile.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   std::unique_ptr<views::View> extra_view = CreateExtraView();
   if (extra_view) {
@@ -83,15 +83,16 @@ void PaymentRequestItemList::Item::Init() {
     // Add a column for the extra_view, which comes after the checkmark.
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        views::GridLayout::kFixedSize,
-                       views::GridLayout::USE_PREF, 0, 0);
+                       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
 
   if (show_edit_button_) {
     columns->AddPaddingColumn(views::GridLayout::kFixedSize, kExtraViewSpacing);
     // Add a column for the edit_button if it exists.
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                       kEditIconSize, kEditIconSize);
+                       views::GridLayout::kFixedSize,
+                       views::GridLayout::ColumnSize::kFixed, kEditIconSize,
+                       kEditIconSize);
   }
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);

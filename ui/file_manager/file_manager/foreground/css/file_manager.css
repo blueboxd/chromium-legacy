@@ -2207,6 +2207,10 @@ html[dir='rtl'] .badge {
   padding-inline-start: 26px;
 }
 
+.files-ng #default-tasks-list {
+  margin-top: 16px;
+}
+
 #list-container list > li[selected],
 #list-container list > li:active,
 #list-container list > li.accepts,
@@ -2953,17 +2957,21 @@ body.files-ng #list-container li .detail-thumbnail {
   flex: none;
 }
 
-#default-task-dialog {
+.cr-dialog-container:not(.files-ng) #default-task-dialog {
   min-width: 300px;
   width: auto;
 }
 
-#install-linux-package-dialog {
+.cr-dialog-container.files-ng #default-task-dialog {
+  width: 352px;
+}
+
+.cr-dialog-container:not(.files-ng) #install-linux-package-dialog {
   min-width: 300px;
   width: 40%;
 }
 
-#install-linux-package-dialog .cr-dialog-text {
+.cr-dialog-container:not(.files-ng) #install-linux-package-dialog .cr-dialog-text {
   min-height: 30px;
 }
 
@@ -2976,20 +2984,41 @@ body.files-ng #list-container li .detail-thumbnail {
   user-select: text;
 }
 
-.install-linux-package-details-label {
+.files-ng .install-linux-package-details-frame {
+  margin-top: 16px;
+}
+
+.cr-dialog-container:not(.files-ng) .install-linux-package-details-label {
   color: #5a5a5a;
   font-weight: 500;
   margin-bottom: 10px;
 }
 
-.install-linux-package-detail-label {
+.cr-dialog-container.files-ng .install-linux-package-details-label {
+  margin-bottom: 10px;
+}
+
+.cr-dialog-container:not(.files-ng) .install-linux-package-detail-label {
   color: #5a5a5a;
   display: inline;
   font-weight: 500;
   margin-inline-end: 5px;
 }
 
-.install-linux-package-detail-value {
+.cr-dialog-container.files-ng .install-linux-package-detail-label {
+  color: var(--cros-default-text-color);
+  display: inline;
+  margin-inline-end: 5px;
+}
+
+.cr-dialog-container:not(.files-ng) .install-linux-package-detail-value {
+  display: inline;
+  margin-bottom: 5px;
+  white-space: pre-wrap;
+}
+
+.cr-dialog-container.files-ng .install-linux-package-detail-value {
+  color: var(--cros-default-text-color-secondary);
   display: inline;
   margin-bottom: 5px;
   white-space: pre-wrap;
@@ -3067,6 +3096,12 @@ list.autocomplete-suggestions > [lead] {
   border: 0;
   padding: 0;
   width: auto;
+}
+
+.cr-dialog-container.files-ng #suggest-app-dialog.cr-dialog-frame {
+  max-width: unset !important;
+  min-width: unset !important;
+  width: 735px;
 }
 
 .cr-dialog-container:not(.files-ng) .suggest-apps-dialog-title.cr-dialog-title {

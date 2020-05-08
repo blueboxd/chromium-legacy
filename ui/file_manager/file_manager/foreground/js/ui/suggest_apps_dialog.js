@@ -224,6 +224,8 @@ class SuggestAppsDialog extends FileManagerDialogBase {
     this.text.hidden = true;
     this.dialogText_ = '';
 
+    this.frame.classList.toggle('no-title', !title);
+
     if (!this.widget_.isInInitialState()) {
       onDialogClosed(SuggestAppsDialog.Result.CANCELLED, null);
       return;

@@ -24,6 +24,9 @@ void FakePrintRenderFrame::PrintRequestedPages() {}
 
 void FakePrintRenderFrame::PrintForSystemDialog() {}
 
+void FakePrintRenderFrame::SetPrintPreviewUI(
+    mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> preview) {}
+
 void FakePrintRenderFrame::InitiatePrintPreview(
     mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
     bool has_selection) {}

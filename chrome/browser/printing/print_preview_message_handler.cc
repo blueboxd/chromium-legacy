@@ -313,15 +313,6 @@ void PrintPreviewMessageHandler::OnInvalidPrinterSettings(
   print_preview_ui->OnInvalidPrinterSettings(ids.request_id);
 }
 
-void PrintPreviewMessageHandler::OnSetOptionsFromDocument(
-    const PrintHostMsg_SetOptionsFromDocument_Params& params,
-    const PrintHostMsg_PreviewIds& ids) {
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
-    return;
-  print_preview_ui->OnSetOptionsFromDocument(params, ids.request_id);
-}
-
 void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
     PrintPreviewUI* print_preview_ui,
     int page_number,
@@ -535,8 +526,6 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
                         OnPrintPreviewCancelled)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
                         OnInvalidPrinterSettings)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_SetOptionsFromDocument,
-                        OnSetOptionsFromDocument)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

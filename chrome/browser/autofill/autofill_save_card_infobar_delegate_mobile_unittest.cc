@@ -131,8 +131,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
             base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
                                UploadSaveCardPromptCallback,
                            base::Unretained(this)),
-            /*local_save_card_callback=*/{}, profile()->GetPrefs(),
-            /*is_off_the_record=*/false));
+            /*local_save_card_callback=*/{}, profile()->GetPrefs()));
     return delegate;
   }
   // Local save infobar delegate:
@@ -146,7 +145,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
           base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
                              LocalSaveCardPromptCallback,
                          base::Unretained(this)),
-          profile()->GetPrefs(), /*is_off_the_record=*/false));
+          profile()->GetPrefs()));
   return delegate;
 }
 

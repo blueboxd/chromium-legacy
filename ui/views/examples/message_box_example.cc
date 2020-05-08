@@ -39,16 +39,16 @@ void MessageBoxExample::CreateExampleView(View* container) {
   const int message_box_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(message_box_column);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(1 /* expand */, message_box_column);
   message_box_view_ = layout->AddView(std::move(message_box_view));
 
   const int button_column = 1;
   column_set = layout->AddColumnSet(button_column);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(0 /* no expand */, button_column);
 

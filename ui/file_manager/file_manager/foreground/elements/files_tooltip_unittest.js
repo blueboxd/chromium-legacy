@@ -9,6 +9,9 @@ let chocolateButton;
 let cherriesButton;
 
 /** @type {Element} */
+let cheeseButton;
+
+/** @type {Element} */
 let otherButton;
 
 /** @type {FilesTooltip|Element} */
@@ -43,6 +46,8 @@ const bodyContent = `
     <button id="cherries" aria-label="Cherries!"></button>
   </div>
 
+  <button id="cheese" aria-label="Cheese!" show-card-tooltip></button>
+
   <!-- Button without a tooltip. -->
   <button id="other"></button>
 
@@ -72,6 +77,7 @@ function setUp() {
   document.body.innerHTML = bodyContent;
   chocolateButton = document.querySelector('#chocolate');
   cherriesButton = document.querySelector('#cherries');
+  cheeseButton = document.querySelector('#cheese');
   otherButton = document.querySelector('#other');
 
   tooltip = document.querySelector('files-tooltip');
@@ -79,7 +85,7 @@ function setUp() {
   assertEquals('0', window.getComputedStyle(tooltip).opacity);
   assertEquals(enableFilesNg, tooltip.hasAttribute('files-ng'));
 
-  tooltip.addTargets([chocolateButton, cherriesButton]);
+  tooltip.addTargets([chocolateButton, cherriesButton, cheeseButton]);
 }
 
 function waitForMutation(target) {
@@ -202,6 +208,63 @@ function testClickHides(callback) {
           .then(() => {
             assertFalse(tooltip.hasAttribute('visible'));
             assertEquals(tooltip.getAttribute('aria-hidden'), 'true');
+          }),
+      callback);
+}
+
+function testCardTooltipHover(callback) {
+  cheeseButton.dispatchEvent(new MouseEvent('mouseover'));
+
+  return reportPromise(
+      waitForMutation(tooltip)
+          .then(() => {
+            const label = tooltip.shadowRoot.querySelector('#label');
+            assertEquals('Cheese!', label.textContent.trim());
+            assertTrue(tooltip.hasAttribute('visible'));
+            assertEquals(tooltip.getAttribute('aria-hidden'), 'false');
+
+            assertEquals('card-tooltip', tooltip.className);
+            assertEquals('card-label', label.className);
+
+            assertEquals('38px', tooltip.style.left);
+            assertEquals('162px', tooltip.style.top);
+
+            cheeseButton.dispatchEvent(new MouseEvent('mouseout'));
+            return waitForMutation(tooltip);
+          })
+          .then(() => {
+            assertFalse(!!tooltip.getAttribute('visible'));
+          }),
+      callback);
+}
+
+function testCardtooltipRTL(callback) {
+  document.documentElement.setAttribute('dir', 'rtl');
+  document.body.setAttribute('dir', 'rtl');
+
+  cheeseButton.dispatchEvent(new MouseEvent('mouseover'));
+
+  return reportPromise(
+      waitForMutation(tooltip)
+          .then(() => {
+            const label = tooltip.shadowRoot.querySelector('#label');
+            assertEquals('Cheese!', label.textContent.trim());
+            assertTrue(tooltip.hasAttribute('visible'));
+            assertEquals(tooltip.getAttribute('aria-hidden'), 'false');
+
+            assertEquals('card-tooltip', tooltip.className);
+            assertEquals('card-label', label.className);
+
+            assertEquals('962px', tooltip.style.left);
+            assertEquals('162px', tooltip.style.top);
+
+            cheeseButton.dispatchEvent(new MouseEvent('mouseout'));
+            return waitForMutation(tooltip);
+          })
+          .then(() => {
+            // revert back document direction to not impact other tests.
+            document.documentElement.setAttribute('dir', 'ltr');
+            document.body.setAttribute('dir', 'ltr');
           }),
       callback);
 }

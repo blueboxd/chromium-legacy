@@ -231,7 +231,7 @@ void MessageBoxView::ResetLayoutManager() {
   constexpr int kMessageViewColumnSetId = 0;
   ColumnSet* column_set = layout->AddColumnSet(kMessageViewColumnSetId);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::FIXED, message_width_, 0);
+                        GridLayout::ColumnSize::kFixed, message_width_, 0);
 
   const LayoutProvider* provider = LayoutProvider::Get();
 
@@ -242,7 +242,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set = layout->AddColumnSet(kExtraViewColumnSetId);
     column_set->AddPaddingColumn(0, horizontal_insets.left());
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(0, horizontal_insets.right());
   }
 

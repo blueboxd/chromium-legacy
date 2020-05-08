@@ -35,6 +35,7 @@ mojom("mojo_interfaces") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//printing/mojom",
     "//ui/gfx/geometry/mojom",
   ]
 

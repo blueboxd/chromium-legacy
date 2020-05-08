@@ -154,7 +154,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
   static const int kHeaderColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                        views::GridLayout::FIXED, 0, 0);
+                        views::GridLayout::ColumnSize::kFixed, 0, 0);
 
   static const int kTableColumnSetId = 1;
   column_set = layout->AddColumnSet(kTableColumnSetId);
@@ -162,7 +162,7 @@ void CreateChromeApplicationShortcutView::InitControls() {
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kHeaderColumnSetId);
   layout->AddView(std::move(create_shortcuts_label));

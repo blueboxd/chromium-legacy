@@ -22,7 +22,7 @@ suite('cr-radio-button', function() {
     assertTrue(radioButton.hasAttribute('checked'));
     assertEquals('true', radioButton.$.button.getAttribute('aria-checked'));
     assertTrue(
-        getComputedStyle(radioButton.$$('.disc')).backgroundColor !=
+        getComputedStyle(radioButton.$$('.disc')).backgroundColor !==
         'rgba(0, 0, 0, 0)');
   }
 
@@ -38,7 +38,7 @@ suite('cr-radio-button', function() {
     assertTrue(radioButton.hasAttribute('disabled'));
     assertEquals('true', radioButton.$.button.getAttribute('aria-disabled'));
     assertEquals('none', getComputedStyle(radioButton).pointerEvents);
-    assertTrue('1' != getComputedStyle(radioButton).opacity);
+    assertTrue('1' !== getComputedStyle(radioButton).opacity);
   }
 
   function assertNotDisabled() {

@@ -336,36 +336,37 @@ void BookmarkEditorView::Init() {
   const int single_column_view_set_id = 1;
   const int buttons_column_set_id = 2;
 
+  using ColumnSize = views::GridLayout::ColumnSize;
   views::ColumnSet* column_set = layout->AddColumnSet(labels_column_set_id);
   column_set->AddColumn(
       provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
 
   column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
 
   column_set = layout->AddColumnSet(buttons_column_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       1.0,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        ColumnSize::kUsePreferred, 0, 0);
   column_set->LinkColumnSizes({0, 2, 4});
 
   layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);

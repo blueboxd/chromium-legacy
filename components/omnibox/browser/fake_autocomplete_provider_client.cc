@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
+#include "components/query_tiles/test/fake_tile_service.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 
@@ -38,6 +39,8 @@ FakeAutocompleteProviderClient::FakeAutocompleteProviderClient(
       GetTemplateURLService(), std::make_unique<SearchTermsData>(),
       GetHistoryService(), base::FilePath(), true);
   shortcuts_backend_->Init();
+
+  tile_service_ = std::make_unique<upboarding::FakeTileService>();
 }
 
 FakeAutocompleteProviderClient::~FakeAutocompleteProviderClient() {
@@ -82,6 +85,11 @@ FakeAutocompleteProviderClient::GetShortcutsBackend() {
 scoped_refptr<ShortcutsBackend>
 FakeAutocompleteProviderClient::GetShortcutsBackendIfExists() {
   return shortcuts_backend_;
+}
+
+upboarding::TileService* FakeAutocompleteProviderClient::GetQueryTileService()
+    const {
+  return tile_service_.get();
 }
 
 bool FakeAutocompleteProviderClient::IsTabOpenWithURL(

@@ -9,9 +9,11 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -57,8 +59,8 @@ class ScreenOrientationControllerTest : public PageTestBase {
  protected:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
-        screen_orientation;
+    HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>
+        screen_orientation(GetFrame().DomWindow());
     ignore_result(
         screen_orientation.BindNewEndpointAndPassDedicatedReceiverForTesting());
     Controller()->SetScreenOrientationAssociatedRemoteForTests(
@@ -66,8 +68,10 @@ class ScreenOrientationControllerTest : public PageTestBase {
   }
 
   void TearDown() override {
+    HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>
+        screen_orientation(GetFrame().DomWindow());
     Controller()->SetScreenOrientationAssociatedRemoteForTests(
-        mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>());
+        std::move(screen_orientation));
   }
 
   ScreenOrientationController* Controller() {

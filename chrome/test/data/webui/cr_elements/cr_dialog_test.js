@@ -371,7 +371,7 @@ suite('cr-dialog', function() {
     // calls callback before MutationObserver does.
     const observer = new MutationObserver(function(changes) {
       // Only care about class mutations.
-      if (changes[0].attributeName != 'class') {
+      if (changes[0].attributeName !== 'class') {
         return;
       }
 

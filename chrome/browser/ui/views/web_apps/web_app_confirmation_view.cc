@@ -57,14 +57,15 @@ WebAppConfirmationView::WebAppConfirmationView(
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                layout_provider->GetDistanceMetric(
                                    views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   constexpr int textfield_width = 320;
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                        textfield_width, 0);
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::ColumnSize::kFixed, textfield_width,
+                        0);
 
   auto icon_image_view = std::make_unique<views::ImageView>();
   gfx::Size image_size(web_app::kWebAppIconSmall, web_app::kWebAppIconSmall);

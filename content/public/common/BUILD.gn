@@ -316,21 +316,25 @@ mojom("interfaces") {
     sources += [ "font_cache_win.mojom" ]
   }
 
-  public_deps = [
-    ":client_hints_mojom",
+  public_deps = [ ":client_hints_mojom" ]
+
+  deps = [
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
-    "//services/network/public/mojom:mojom_ip_address",
-    "//services/network/public/mojom:websocket_mojom",
-    "//ui/accessibility:ax_enums_mojo",
     "//url/mojom:url_mojom_gurl",
-    "//url/mojom:url_mojom_origin",
+
+    # This dependency is really a dependency for the typemaps, but we need
+    # it here so that we can override it correctly for the component build.
+    "//third_party/blink/public/mojom:mojom_platform",
   ]
 
   component_output_prefix = "content_public_common_mojo_bindings"
   export_class_attribute = "CONTENT_EXPORT"
   export_define = "CONTENT_IMPLEMENTATION=1"
   export_header = "content/common/content_export.h"
+
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+  component_deps = [ "//third_party/blink/public/common" ]
 }
 
 mojom("renderer_type") {
@@ -340,7 +344,11 @@ mojom("renderer_type") {
 mojom("web_preferences_mojom") {
   sources = [ "web_preferences.mojom" ]
 
-  public_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
+  public_deps = [
+    # This dependency is really a dependency for the typemaps, but we need
+    # it here so that we can override it correctly for the component build.
+    "//third_party/blink/public/mojom:mojom_platform",
+  ]
 
   overridden_deps = [ "//third_party/blink/public/mojom:mojom_platform" ]
   component_deps = [ "//third_party/blink/public/common" ]

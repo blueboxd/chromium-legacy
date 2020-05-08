@@ -31,6 +31,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
 #include "net/http/http_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -526,8 +527,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
   EXPECT_EQ(expected_action_2, actual_actions[1]);
 }
 
-// Test that headers to be modified in modifyHeaders rules are attributed to the
-// correct extension.
+// Test that the correct modifyHeaders actions are returned for each extension.
 TEST_P(RulesetManagerTest, ModifyHeaders) {
   const Extension* extension_1 = nullptr;
   const Extension* extension_2 = nullptr;
@@ -542,8 +542,8 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
         std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
                                      TestHeaderInfo("header2", "remove")});
 
-    ASSERT_NO_FATAL_FAILURE(
-        CreateMatcherForRules({rule}, "test extension", &matcher));
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "test extension", &matcher, {URLPattern::kAllUrlsPattern}));
     extension_1 = last_loaded_extension();
     manager()->AddRuleset(extension_1->id(), std::move(matcher));
   }
@@ -559,19 +559,18 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
     rule.action->response_headers =
         std::vector<TestHeaderInfo>({TestHeaderInfo("header3", "remove")});
 
-    ASSERT_NO_FATAL_FAILURE(
-        CreateMatcherForRules({rule}, "test extension 2", &matcher));
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "test extension 2", &matcher, {URLPattern::kAllUrlsPattern}));
     extension_2 = last_loaded_extension();
     manager()->AddRuleset(extension_2->id(), std::move(matcher));
   }
 
-  EXPECT_EQ(2u, manager()->GetMatcherCountForTest());
+  ASSERT_EQ(2u, manager()->GetMatcherCountForTest());
 
   WebRequestInfo request(GetRequestParamsForURL("http://example.com"));
 
   const std::vector<RequestAction>& actual_actions =
       manager()->EvaluateRequest(request, false /*is_incognito_context*/);
-  ASSERT_EQ(2u, actual_actions.size());
 
   // Create the expected RequestAction for |extension_2|.
   RequestAction expected_action_1 = CreateRequestActionForTesting(
@@ -592,8 +591,63 @@ TEST_P(RulesetManagerTest, ModifyHeaders) {
 
   // Verify that the list of actions is sorted in descending order of extension
   // priority.
-  EXPECT_EQ(expected_action_1, actual_actions[0]);
-  EXPECT_EQ(expected_action_2, actual_actions[1]);
+  EXPECT_THAT(actual_actions,
+              ::testing::ElementsAre(
+                  ::testing::Eq(::testing::ByRef(expected_action_1)),
+                  ::testing::Eq(::testing::ByRef(expected_action_2))));
+}
+
+// Test that an extension's modify header rules are applied on a request only if
+// it has host permissions for the request.
+TEST_P(RulesetManagerTest, ModifyHeaders_HostPermissions) {
+  // Add an extension which removes the "header1" header with host permissions
+  // for example.com.
+  std::unique_ptr<CompositeMatcher> matcher;
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("*");
+  rule.action->type = std::string("modifyHeaders");
+  rule.action->request_headers =
+      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")});
+
+  ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+      {rule}, "test extension", &matcher, {"*://example.com/*"}));
+  const Extension* extension = last_loaded_extension();
+  manager()->AddRuleset(extension->id(), std::move(matcher));
+
+  ASSERT_EQ(1u, manager()->GetMatcherCountForTest());
+
+  {
+    WebRequestInfo request(GetRequestParamsForURL("http://example.com"));
+    const std::vector<RequestAction>& actual_actions =
+        manager()->EvaluateRequest(request, false /*is_incognito_context*/);
+
+    RequestAction expected_action = CreateRequestActionForTesting(
+        RequestActionType::MODIFY_HEADERS, kMinValidID, kDefaultPriority,
+        kMinValidStaticRulesetID, extension->id());
+    expected_action.request_headers_to_modify = {
+        RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)};
+
+    EXPECT_THAT(actual_actions, ::testing::ElementsAre(::testing::Eq(
+                                    ::testing::ByRef(expected_action))));
+  }
+
+  {
+    WebRequestInfo request(GetRequestParamsForURL("http://nopermissions.com"));
+    const std::vector<RequestAction>& actual_actions =
+        manager()->EvaluateRequest(request, false /*is_incognito_context*/);
+    EXPECT_TRUE(actual_actions.empty());
+  }
+
+  {
+    // Has access to url but no access to initiator, so no actions should be
+    // returned.
+    WebRequestInfo request(GetRequestParamsForURL(
+        "http://example.com",
+        url::Origin::Create(GURL("http://nopermissions.com"))));
+    const std::vector<RequestAction>& actual_actions =
+        manager()->EvaluateRequest(request, false /*is_incognito_context*/);
+    EXPECT_TRUE(actual_actions.empty());
+  }
 }
 
 TEST_P(RulesetManagerTest, HostPermissionForInitiator) {

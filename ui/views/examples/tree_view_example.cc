@@ -111,7 +111,7 @@ void TreeViewExample::CreateExampleView(View* container) {
   const int tree_view_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tree_view_column);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(1 /* expand */, tree_view_column);
   tree_view_ = tree_view.get();
   layout->AddView(TreeView::CreateScrollViewWithTree(std::move(tree_view)));
@@ -121,7 +121,7 @@ void TreeViewExample::CreateExampleView(View* container) {
   column_set = layout->AddColumnSet(button_column);
   for (size_t i = 0; i < 3; i++) {
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
 
   layout->StartRow(0 /* no expand */, button_column);

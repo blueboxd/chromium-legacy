@@ -12,6 +12,8 @@ import org.chromium.base.Log;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.concurrent.TimeoutException;
 
@@ -99,12 +101,16 @@ public abstract class WebXrTestFramework extends XrTestFramework {
 
             if (canvasClicked) break;
 
+
+            PropertyModel dialog = TestThreadUtils.runOnUiThreadBlockingNoException(() ->
+                    getRule().getActivity().getModalDialogManager().getCurrentDialogForTest());
+
             // If we get here, "nodeClicked" is true but "canvasClicked" is false. Before
             // retrying, check if there's a dialog visible. Polling Javascript doesn't
             // work while a dialog is showing, and sometimes the click is handled quickly
             // enough for the consent prompt to show before we got a chance to check the
             // canvasClicked variable. In that case, assume we got the click and continue.
-            if (getRule().getActivity().getModalDialogManager().getCurrentDialogForTest() != null) {
+            if (dialog != null) {
                 if (DEBUG_LOGS) Log.i(TAG, "Got a dialog, stop waiting for click");
                 canvasClicked = true;
                 break;

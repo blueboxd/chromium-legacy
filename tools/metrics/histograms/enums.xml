@@ -3982,6 +3982,7 @@ Unknown properties are collapsed to zero. -->
   <int value="25" label="PEDAL"/>
   <int value="26" label="CLIPBOARD_TEXT"/>
   <int value="27" label="CLIPBOARD_IMAGE"/>
+  <int value="28" label="TILE_SUGGESTION"/>
 </enum>
 
 <enum name="AutofillAssistantDropOutReason">
@@ -49991,6 +49992,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Ok"/>
   <int value="1" label="App service unavailable"/>
   <int value="2" label="No settings icon"/>
+  <int value="3" label="Search handler unavailable"/>
 </enum>
 
 <enum name="OsSuite">

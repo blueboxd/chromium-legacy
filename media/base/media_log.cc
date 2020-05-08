@@ -38,8 +38,7 @@ MediaLog::~MediaLog() {
   // We could get around this if we introduce a new NullMediaLog that handles
   // log invalidation, so we could dcheck here.  However, that seems like a lot
   // of boilerplate.
-  if (parent_log_record_->media_log == this)
-    InvalidateLog();
+  InvalidateLog();
 }
 
 // Default *Locked implementations
@@ -112,11 +111,10 @@ std::unique_ptr<MediaLogRecord> MediaLog::CreateRecord(
 
 void MediaLog::InvalidateLog() {
   base::AutoLock auto_lock(parent_log_record_->lock);
-  // It's almost certainly unintentional to invalidate a parent log.
-  DCHECK(parent_log_record_->media_log == nullptr ||
-         parent_log_record_->media_log == this);
-
-  parent_log_record_->media_log = nullptr;
+  // Do nothing if this log didn't create the record, i.e.
+  // it's not the parent log. The parent log should invalidate itself.
+  if (parent_log_record_->media_log == this)
+    parent_log_record_->media_log = nullptr;
   // Keep |parent_log_record_| around, since the lock must keep working.
 }
 

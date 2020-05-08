@@ -164,9 +164,9 @@ void MultilineExample::CreateExampleView(View* container) {
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0.0f,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
-                        GridLayout::FIXED, 0, 0);
+                        GridLayout::ColumnSize::kFixed, 0, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(

@@ -167,7 +167,7 @@ void RequestPinView::Init() {
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
 
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(0, column_view_set_id);
 
   // Information label.
@@ -184,7 +184,7 @@ void RequestPinView::Init() {
   column_view_set_id++;
   column_set = layout->AddColumnSet(column_view_set_id);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 100,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Textfield to enter the PIN/PUK.
   layout->StartRow(0, column_view_set_id);
@@ -201,7 +201,7 @@ void RequestPinView::Init() {
   column_view_set_id++;
   column_set = layout->AddColumnSet(column_view_set_id);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Error label.
   layout->StartRow(0, column_view_set_id);

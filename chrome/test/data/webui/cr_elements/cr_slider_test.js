@@ -34,7 +34,7 @@ suite('cr-slider', function() {
   function checkDisabled(expected) {
     assertEquals(
         expected,
-        window.getComputedStyle(crSlider)['pointer-events'] == 'none');
+        window.getComputedStyle(crSlider)['pointer-events'] === 'none');
     const expectedTabindex = expected ? '-1' : '0';
     assertEquals(expectedTabindex, crSlider.getAttribute('tabindex'));
   }

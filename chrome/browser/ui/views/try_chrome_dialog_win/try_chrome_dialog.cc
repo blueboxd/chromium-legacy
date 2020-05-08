@@ -1075,16 +1075,17 @@ void TryChromeDialog::OnContextInitialized() {
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             kLogoPadding - kTryChromeBorderThickness);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     logo_size.width(), logo_size.height());
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, logo_size.width(),
+                     logo_size.height());
   columns->AddPaddingColumn(views::GridLayout::kFixedSize, kLogoPadding);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::FIXED, kLabelWidth, 0);
+                     views::GridLayout::ColumnSize::kFixed, kLabelWidth, 0);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             kSpacingHeadingToClose);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       kCloseButtonRightPadding - kTryChromeBorderThickness);
@@ -1096,15 +1097,15 @@ void TryChromeDialog::OnContextInitialized() {
       views::GridLayout::kFixedSize,
       kLogoPadding - kTryChromeBorderThickness + logo_padding);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::FIXED, kLabelWidth, 0);
+                     views::GridLayout::ColumnSize::kFixed, kLabelWidth, 0);
 
   // Fourth row: [pad][buttons][pad].
   columns = layout->AddColumnSet(2);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             kTextButtonPadding - kTryChromeBorderThickness);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddPaddingColumn(views::GridLayout::kFixedSize,
                             kTextButtonPadding - kTryChromeBorderThickness);
 

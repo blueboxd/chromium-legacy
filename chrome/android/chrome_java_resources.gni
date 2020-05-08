@@ -1030,6 +1030,7 @@ chrome_java_resources = [
   "java/res/layout/omnibox_answer_suggestion.xml",
   "java/res/layout/omnibox_basic_suggestion.xml",
   "java/res/layout/omnibox_entity_suggestion.xml",
+  "java/res/layout/omnibox_query_tiles_suggestion.xml",
   "java/res/layout/omnibox_results_container.xml",
   "java/res/layout/optional_toolbar_button.xml",
   "java/res/layout/os_version_unsupported_preference.xml",

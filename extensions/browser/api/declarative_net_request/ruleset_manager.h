@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -116,21 +117,23 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
 
+  using RulesetAndPageAccess =
+      std::pair<const ExtensionRulesetData*, PermissionsData::PageAccess>;
+
   base::Optional<RequestAction> GetBeforeRequestAction(
-      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const std::vector<RulesetAndPageAccess>& rulesets,
       const WebRequestInfo& request,
-      const int tab_id,
-      const bool crosses_incognito,
       const RequestParams& params) const;
   std::vector<RequestAction> GetRemoveHeadersActions(
-      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const std::vector<RulesetAndPageAccess>& rulesets,
       const RequestParams& params) const;
 
   // Returns the list of matching modifyHeaders actions sorted in descending
   // order of priority (|rulesets| is sorted in descending order of extension
   // priority.)
   std::vector<RequestAction> GetModifyHeadersActions(
-      const std::vector<const ExtensionRulesetData*>& rulesets,
+      const std::vector<RulesetAndPageAccess>& rulesets,
+      const WebRequestInfo& request,
       const RequestParams& params) const;
 
   // Helper for EvaluateRequest.

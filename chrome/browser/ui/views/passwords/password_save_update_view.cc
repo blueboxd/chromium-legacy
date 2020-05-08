@@ -62,30 +62,31 @@ void BuildColumnSet(views::GridLayout* layout,
   views::ColumnSet* column_set = layout->AddColumnSet(type);
   const int column_divider = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  using ColumnSize = views::GridLayout::ColumnSize;
   switch (type) {
     case DOUBLE_VIEW_COLUMN_SET_USERNAME:
     case DOUBLE_VIEW_COLUMN_SET_PASSWORD:
       column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                             views::GridLayout::kFixedSize,
-                            views::GridLayout::USE_PREF, 0, 0);
+                            ColumnSize::kUsePreferred, 0, 0);
       column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                    column_divider);
       column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                            1.0, views::GridLayout::USE_PREF, 0, 0);
+                            1.0, ColumnSize::kUsePreferred, 0, 0);
       break;
     case TRIPLE_VIEW_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                             views::GridLayout::kFixedSize,
-                            views::GridLayout::USE_PREF, 0, 0);
+                            ColumnSize::kUsePreferred, 0, 0);
       column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                    column_divider);
       column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                            1.0, views::GridLayout::USE_PREF, 0, 0);
+                            1.0, ColumnSize::kUsePreferred, 0, 0);
       column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                    column_divider);
       column_set->AddColumn(
           views::GridLayout::TRAILING, views::GridLayout::FILL,
-          views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+          views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
       break;
   }
 }

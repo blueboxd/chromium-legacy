@@ -47,6 +47,7 @@ std::unique_ptr<TileService> CreateTileService(
   auto image_loader = std::make_unique<CachedImageLoader>(
       cached_image_fetcher, reduced_mode_image_fetcher);
 
+  auto* clock = base::DefaultClock::GetInstance();
   // Create tile store and manager.
   auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
@@ -55,8 +56,7 @@ std::unique_ptr<TileService> CreateTileService(
       leveldb_proto::ProtoDbType::UPBOARDING_QUERY_TILE_STORE, tile_store_dir,
       task_runner);
   auto tile_store = std::make_unique<TileStore>(std::move(tile_db));
-  auto tile_manager = TileManager::Create(std::move(tile_store),
-                                          base::DefaultClock::GetInstance());
+  auto tile_manager = TileManager::Create(std::move(tile_store), clock);
 
   // Create fetcher.
   auto tile_fetcher = TileFetcher::Create(
@@ -65,7 +65,7 @@ std::unique_ptr<TileService> CreateTileService(
 
   auto tile_service_impl = std::make_unique<TileServiceImpl>(
       std::move(image_loader), std::move(tile_manager), scheduler,
-      std::move(tile_fetcher));
+      std::move(tile_fetcher), clock);
   return std::make_unique<InitAwareTileService>(std::move(tile_service_impl));
 }
 

@@ -30,6 +30,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.leaveTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.switchTabModel;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
@@ -208,15 +209,19 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
+    public void testRenderGrid_3WebTabs() throws IOException {
         // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, "about:blank");
-        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
-        enterGTSWithThumbnailChecking();
+        // Make sure all thumbnails are there before switching tabs.
+        enterGTSWithThumbnailRetry();
+        leaveTabSwitcher(cta);
+
+        ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
+        enterTabSwitcher(cta);
         // See crbug.com/1063619
         mRenderTestRule.setPixelDiffThreshold(2);
-        mRenderTestRule.render(
-                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "3_web_tabs");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_web_tabs");
     }
 
     @Test
@@ -224,15 +229,19 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
+    public void testRenderGrid_10WebTabs() throws IOException {
         // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(10, 0, "about:blank");
-        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
-        enterGTSWithThumbnailChecking();
+        // Make sure all thumbnails are there before switching tabs.
+        enterGTSWithThumbnailRetry();
+        leaveTabSwitcher(cta);
+
+        ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
+        enterTabSwitcher(cta);
         // See crbug.com/1063619
         mRenderTestRule.setPixelDiffThreshold(2);
-        mRenderTestRule.render(
-                mActivityTestRule.getActivity().findViewById(R.id.tab_list_view), "10_web_tabs");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs");
     }
 
     @Test
@@ -240,16 +249,16 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
+    public void testRenderGrid_10WebTabs_InitialScroll() throws IOException {
         // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(10, 0, "about:blank");
-        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 9);
-        enterGTSWithThumbnailChecking();
+        assertEquals(9, cta.getTabModelSelector().getCurrentModel().index());
+        enterGTSWithThumbnailRetry();
         // See crbug.com/1063619
         mRenderTestRule.setPixelDiffThreshold(2);
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
-                "10_web_tabs-select_last");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs-select_last");
     }
 
     @Test
@@ -257,38 +266,45 @@ public class StartSurfaceLayoutTest {
     @Feature({"RenderTest"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @FlakyTest(message = "crbug.com/1075524")
-    public void testRenderGrid_Incognito() throws InterruptedException, IOException {
+    public void testRenderGrid_Incognito() throws IOException {
         // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Prepare some incognito tabs and enter tab switcher.
         prepareTabs(1, 3, "about:blank");
-        assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
-        enterGTSWithThumbnailChecking();
+        assertTrue(cta.getCurrentTabModel().isIncognito());
+        // Make sure all thumbnails are there before switching tabs.
+        enterGTSWithThumbnailRetry();
+        leaveTabSwitcher(cta);
+
+        ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
+        enterTabSwitcher(cta);
         // See crbug.com/1063619
         mRenderTestRule.setPixelDiffThreshold(2);
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
-                "3_incognito_web_tabs");
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_incognito_web_tabs");
     }
 
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS})
-    @FlakyTest(message = "crbug.com/1064157 This test is flaky")
-    public void testRenderGrid_3NativeTabs() throws InterruptedException, IOException {
+    public void testRenderGrid_3NativeTabs() throws IOException {
         // clang-format on
-        assertTrue(TabUiFeatureUtilities.isTabToGtsAnimationEnabled());
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Prepare some incognito native tabs and enter tab switcher.
         // NTP in incognito mode is chosen for its consistency in look, and we don't have to mock
         // away the MV tiles, login promo, feed, etc.
         prepareTabs(1, 3, null);
-        assertTrue(mActivityTestRule.getActivity().getCurrentTabModel().isIncognito());
-        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
-        enterGTSWithThumbnailChecking();
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
-                "3_incognito_ntps");
+        assertTrue(cta.getCurrentTabModel().isIncognito());
+        // Make sure all thumbnails are there before switching tabs.
+        enterGTSWithThumbnailRetry();
+        leaveTabSwitcher(cta);
+        // Espresso.pressBack();
+
+        ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
+        enterTabSwitcher(cta);
+        mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_incognito_ntps");
     }
 
     @Test
@@ -671,15 +687,13 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-            message = "https://crbug.com/1023833")
-    public void testIncognitoToggle_tabCount() throws InterruptedException {
+    public void testIncognitoToggle_tabCount() {
         mActivityTestRule.loadUrl(mUrl);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
         // Prepare two incognito tabs and enter tab switcher.
         prepareTabs(1, 2, mUrl);
-        enterGTSWithThumbnailChecking();
+        enterTabSwitcher(cta);
         onView(withId(R.id.tab_list_view))
                 .check(TabCountAssertion.havingTabCount(2));
 
@@ -1232,39 +1246,34 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1075787")
     @CommandLineFlags.Add({BASE_PARAMS})
-    public void testRecycling_defaultAspectRatio() throws InterruptedException {
+    public void testRecycling_defaultAspectRatio() {
         prepareTabs(10, 0, mUrl);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
-        enterGTSWithThumbnailChecking();
+        enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view)).perform(RecyclerViewActions.scrollToPosition(9));
     }
 
     @Test
     @MediumTest
     // clang-format off
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-        message = "https://crbug.com/1023833")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
-    public void testRecycling_aspectRatioPoint75() throws InterruptedException {
+    public void testRecycling_aspectRatioPoint75() {
         // clang-format on
         prepareTabs(10, 0, mUrl);
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
-        enterGTSWithThumbnailChecking();
+        enterTabSwitcher(mActivityTestRule.getActivity());
         onView(withId(R.id.tab_list_view)).perform(RecyclerViewActions.scrollToPosition(9));
     }
 
     @Test
     @MediumTest
     // clang-format off
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-        message = "https://crbug.com/1023833")
     @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
-    public void testExpandTab_withAspectRatioPoint75() throws InterruptedException {
+    public void testExpandTab_withAspectRatioPoint75() {
         // clang-format on
         prepareTabs(1, 0, mUrl);
-        enterGTSWithThumbnailChecking();
+        enterTabSwitcher(mActivityTestRule.getActivity());
         leaveGTSAndVerifyThumbnailsAreReleased();
     }
 
@@ -1665,9 +1674,25 @@ public class StartSurfaceLayoutTest {
     }
 
     /**
-     * TODO(wychen): create a version without thumbnail checking, which uses
-     *  {@link TabUiTestHelper#clickFirstCardFromTabSwitcher} or simply {@link Espresso#pressBack},
-     *  and {@link OverviewModeBehaviorWatcher}.
+     * Like {@link TabUiTestHelper#enterTabSwitcher}, but make sure all tabs have thumbnail.
+     */
+    private void enterGTSWithThumbnailRetry() {
+        enterTabSwitcher(mActivityTestRule.getActivity());
+        try {
+            TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                    mActivityTestRule.getActivity().getCurrentTabModel());
+        } catch (AssertionError ae) {
+            // If the last thumbnail is missing, try without animation.
+            Espresso.pressBack();
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+            TabUiTestHelper.verifyAllTabsHaveThumbnail(
+                    mActivityTestRule.getActivity().getCurrentTabModel());
+        }
+    }
+
+    /**
+     * If thumbnail checking is not needed, use {@link TabUiTestHelper#leaveTabSwitcher} instead.
      */
     private void leaveGTSAndVerifyThumbnailsAreReleased() {
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());

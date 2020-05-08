@@ -130,7 +130,7 @@ public class BasicSuggestionProcessorUnitTest {
                 /* suggestionAnswer */ null, /* fillIntoEdit */ null, url,
                 /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", isBookmark,
                 /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
-                OmniboxSuggestion.INVALID_GROUP);
+                OmniboxSuggestion.INVALID_GROUP, null);
         mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
     }

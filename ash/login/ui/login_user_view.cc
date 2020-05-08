@@ -593,7 +593,8 @@ void LoginUserView::SetLargeLayout() {
   {
     views::ColumnSet* image = layout->AddColumnSet(kImageColumnId);
     image->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                     1 /*resize_percent*/, views::GridLayout::USE_PREF,
+                     1 /*resize_percent*/,
+                     views::GridLayout::ColumnSize::kUsePreferred,
                      0 /*fixed_width*/, 0 /*min_width*/);
   }
 
@@ -608,15 +609,15 @@ void LoginUserView::SetLargeLayout() {
     }
     label_dropdown->AddColumn(views::GridLayout::CENTER,
                               views::GridLayout::CENTER, 0 /*resize_percent*/,
-                              views::GridLayout::USE_PREF, 0 /*fixed_width*/,
-                              0 /*min_width*/);
+                              views::GridLayout::ColumnSize::kUsePreferred,
+                              0 /*fixed_width*/, 0 /*min_width*/);
     if (dropdown_) {
       label_dropdown->AddPaddingColumn(0 /*resize_percent*/,
                                        kDistanceBetweenUsernameAndDropdownDp);
       label_dropdown->AddColumn(views::GridLayout::CENTER,
                                 views::GridLayout::CENTER, 0 /*resize_percent*/,
-                                views::GridLayout::USE_PREF, 0 /*fixed_width*/,
-                                0 /*min_width*/);
+                                views::GridLayout::ColumnSize::kUsePreferred,
+                                0 /*fixed_width*/, 0 /*min_width*/);
     }
     label_dropdown->AddPaddingColumn(1.0f /*resize_percent*/, 0 /*width*/);
   }
@@ -625,8 +626,8 @@ void LoginUserView::SetLargeLayout() {
     views::ColumnSet* label_domain = layout->AddColumnSet(kLabelDomainColumnId);
     label_domain->AddColumn(views::GridLayout::CENTER,
                             views::GridLayout::CENTER, 1 /*resize_percent*/,
-                            views::GridLayout::USE_PREF, 0 /*fixed_width*/,
-                            0 /*min_width*/);
+                            views::GridLayout::ColumnSize::kUsePreferred,
+                            0 /*fixed_width*/, 0 /*min_width*/);
   }
 
   auto add_padding = [&](int amount) {

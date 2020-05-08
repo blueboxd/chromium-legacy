@@ -5,6 +5,7 @@ include_rules = [
 specific_include_rules = {
   "appcache_fuzzer\.cc": [
     "+content/app/mojo/mojo_init.h",
+    "+services/network/test/test_url_loader_factory.h",
     "+third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h",
   ],
 }

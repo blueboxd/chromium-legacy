@@ -63,10 +63,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   // across the row up to the amount label. This way the first label elides as
   // required.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     kAmountSectionWidth, kAmountSectionWidth);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, kAmountSectionWidth,
+                     kAmountSectionWidth);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::Label> label_text;
@@ -98,10 +99,11 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);
   wrapper_columns->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
-  wrapper_columns->AddColumn(views::GridLayout::TRAILING,
-                             views::GridLayout::CENTER, 1.0,
-                             views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  wrapper_columns->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::CENTER, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   wrapper_layout->StartRow(views::GridLayout::kFixedSize, 0);
   currency_text->SetID(static_cast<int>(currency_label_id));

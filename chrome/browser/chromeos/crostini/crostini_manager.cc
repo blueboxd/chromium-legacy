@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
@@ -2069,6 +2070,26 @@ void CrostiniManager::RemoveCrostiniContainerPropertiesObserver(
   crostini_container_properties_observers_.RemoveObserver(observer);
 }
 
+void CrostiniManager::AddContainerStartedObserver(
+    ContainerStartedObserver* observer) {
+  container_started_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveContainerStartedObserver(
+    ContainerStartedObserver* observer) {
+  container_started_observers_.RemoveObserver(observer);
+}
+
+void CrostiniManager::AddContainerShutdownObserver(
+    ContainerShutdownObserver* observer) {
+  container_shutdown_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveContainerShutdownObserver(
+    ContainerShutdownObserver* observer) {
+  container_shutdown_observers_.RemoveObserver(observer);
+}
+
 void CrostiniManager::OnDBusShuttingDownForTesting() {
   RemoveDBusObservers();
 }
@@ -2551,6 +2572,7 @@ void CrostiniManager::OnContainerStarted(
     const vm_tools::cicerone::ContainerStartedSignal& signal) {
   if (signal.owner_id() != owner_id_)
     return;
+
   running_containers_.emplace(
       signal.vm_name(),
       ContainerInfo(signal.container_name(), signal.container_username(),
@@ -2572,6 +2594,20 @@ void CrostiniManager::OnContainerStarted(
   InvokeAndErasePendingContainerCallbacks(
       &start_container_callbacks_, signal.vm_name(), signal.container_name(),
       CrostiniResult::SUCCESS);
+
+  if (signal.vm_name() == kCrostiniDefaultVmName) {
+    AddShutdownContainerCallback(
+        signal.vm_name(), signal.container_name(),
+        base::Bind(&CrostiniManager::DeallocateForwardedPortsCallback,
+                   weak_ptr_factory_.GetWeakPtr(), std::move(profile_),
+                   ContainerId(signal.vm_name(), signal.container_name())));
+    if (signal.container_name() == kCrostiniDefaultContainerName) {
+      for (auto& observer : container_started_observers_) {
+        observer.OnContainerStarted(
+            ContainerId(signal.vm_name(), signal.container_name()));
+      }
+    }
+  }
 }
 
 void CrostiniManager::OnDefaultContainerConfigured(bool success) {
@@ -2616,6 +2652,13 @@ void CrostiniManager::OnContainerShutdown(
     const vm_tools::cicerone::ContainerShutdownSignal& signal) {
   if (signal.owner_id() != owner_id_)
     return;
+  if (signal.vm_name() == kCrostiniDefaultVmName &&
+      signal.container_name() == kCrostiniDefaultContainerName) {
+    for (auto& observer : container_shutdown_observers_) {
+      observer.OnContainerShutdown(
+          ContainerId(signal.vm_name(), signal.container_name()));
+    }
+  }
   // Find the callbacks to call, then erase them from the map.
   auto range_callbacks = shutdown_container_callbacks_.equal_range(
       ContainerId(signal.vm_name(), signal.container_name()));
@@ -3548,6 +3591,13 @@ void CrostiniManager::RemoveUncleanSshfsMounts() {
   file_manager::VolumeManager::Get(profile_)->RemoveSshfsCrostiniVolume(
       file_manager::util::GetCrostiniMountDirectory(profile_),
       base::DoNothing());
+}
+
+void CrostiniManager::DeallocateForwardedPortsCallback(
+    Profile* profile,
+    const ContainerId& container_id) {
+  crostini::CrostiniPortForwarder::GetForProfile(profile)
+      ->DeactivateAllActivePorts(container_id);
 }
 
 }  // namespace crostini

@@ -464,7 +464,7 @@ suite('CrostiniPageTests', function() {
         return flushAsync()
             .then(() => {
               subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-              subpage.$$('#showRemoveSinglePortMenu').click();
+              subpage.$$('#showRemoveSinglePortMenu0').click();
               return flushAsync();
             })
             .then(() => {
@@ -481,7 +481,7 @@ suite('CrostiniPageTests', function() {
         return flushAsync()
             .then(() => {
               subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-              subpage.$$('#toggleActivationButton').click();
+              subpage.$$('#toggleActivationButton0').click();
               return flushAsync();
             })
             .then(() => {
@@ -496,9 +496,9 @@ suite('CrostiniPageTests', function() {
         return flushAsync()
             .then(() => {
               subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-              const crToggle = subpage.$$('#toggleActivationButton');
+              const crToggle = subpage.$$('#toggleActivationButton0');
               crToggle.checked = true;
-              subpage.$$('#toggleActivationButton').click();
+              crToggle.click();
               return flushAsync();
             })
             .then(() => {
@@ -509,7 +509,7 @@ suite('CrostiniPageTests', function() {
             });
       });
 
-      test('ButtonDisabledDuringInstall', function() {
+      test('ActivePortsChanged', async function() {
         setCrostiniPrefs(true, {
           forwardedPorts: [
             {
@@ -519,13 +519,29 @@ suite('CrostiniPageTests', function() {
             },
           ]
         });
+        const crToggle = subpage.$$('#toggleActivationButton0');
+
         cr.webUIListenerCallback(
             'crostini-port-forwarder-active-ports-changed',
             [{'port_number': 5000, 'protocol_type': 0}]);
-        return flushAsync().then(() => {
-          const crToggle = subpage.$$('#toggleActivationButton');
-          assertTrue(crToggle.checked);
-        });
+        await flushAsync();
+        assertTrue(crToggle.checked);
+
+        cr.webUIListenerCallback(
+            'crostini-port-forwarder-active-ports-changed', []);
+        await flushAsync();
+        assertFalse(crToggle.checked);
+      });
+
+      test('CrostiniStopAndStart', function() {
+        const crToggle = subpage.$$('#toggleActivationButton0');
+        assertFalse(crToggle.disabled);
+
+        cr.webUIListenerCallback('crostini-status-changed', false);
+        assertTrue(crToggle.disabled);
+
+        cr.webUIListenerCallback('crostini-status-changed', true);
+        assertFalse(crToggle.disabled);
       });
     });
 

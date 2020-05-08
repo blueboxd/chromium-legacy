@@ -61,7 +61,7 @@ void UninstallView::SetupControls() {
   ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
   auto confirm_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_UNINSTALL_VERIFY));
@@ -90,7 +90,7 @@ void UninstallView::SetupControls() {
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize, checkbox_indent);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
   delete_profile_ = layout->AddView(std::make_unique<views::Checkbox>(
       l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE)));
@@ -111,14 +111,16 @@ void UninstallView::SetupControls() {
       column_set = layout->AddColumnSet(column_set_id);
       column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                    checkbox_indent);
-      column_set->AddColumn(
-          views::GridLayout::LEADING, views::GridLayout::CENTER,
-          views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddColumn(views::GridLayout::LEADING,
+                            views::GridLayout::CENTER,
+                            views::GridLayout::kFixedSize,
+                            views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
       column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                    related_horizontal_spacing);
-      column_set->AddColumn(
-          views::GridLayout::LEADING, views::GridLayout::CENTER,
-          views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddColumn(views::GridLayout::LEADING,
+                            views::GridLayout::CENTER,
+                            views::GridLayout::kFixedSize,
+                            views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
       layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
       change_default_browser_ =
           layout->AddView(std::make_unique<views::Checkbox>(

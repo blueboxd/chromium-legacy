@@ -119,19 +119,19 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
       SetLayoutManager(std::make_unique<views::GridLayout>());
 
   views::ColumnSet* reason_column_set = layout->AddColumnSet(0);
-  reason_column_set->AddColumn(views::GridLayout::LEADING,
-                               views::GridLayout::LEADING, 1.0,
-                               views::GridLayout::USE_PREF, 0, 0);
+  reason_column_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::LEADING, 1.0,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   views::ColumnSet* column_set = layout->AddColumnSet(1);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE));
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   reason_label_ = layout->AddView(std::move(reason_label));

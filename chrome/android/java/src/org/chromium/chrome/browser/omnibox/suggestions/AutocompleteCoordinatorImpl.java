@@ -33,11 +33,13 @@ import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestion
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionViewBinder;
+import org.chromium.chrome.browser.omnibox.suggestions.tiles.TileSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
+import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
@@ -52,6 +54,7 @@ import java.util.List;
  */
 public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     private final ViewGroup mParent;
+    private OmniboxQueryTileCoordinator mQueryTileCoordinator;
     private AutocompleteMediator mMediator;
 
     private OmniboxSuggestionsDropdown mDropdown;
@@ -70,8 +73,10 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
         MVCListAdapter.ModelList listItems = new MVCListAdapter.ModelList();
+        mQueryTileCoordinator = new OmniboxQueryTileCoordinator(context, this::onTileSelected);
         mMediator = new AutocompleteMediator(context, delegate, urlBarEditingTextProvider,
-                new AutocompleteController(), listModel, new Handler());
+                new AutocompleteController(), mQueryTileCoordinator::setTiles, listModel,
+                new Handler());
         mMediator.initDefaultProcessors();
 
         listModel.set(SuggestionListProperties.EMBEDDER, dropdownEmbedder);
@@ -91,6 +96,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
 
     @Override
     public void destroy() {
+        mQueryTileCoordinator.destroy();
+        mQueryTileCoordinator = null;
         mMediator.destroy();
         mMediator = null;
     }
@@ -156,6 +163,12 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                         parent -> new BaseSuggestionView<View>(
                                 parent.getContext(), R.layout.omnibox_basic_suggestion),
                         new BaseSuggestionViewBinder<View>(SuggestionViewViewBinder::bind));
+
+                adapter.registerType(
+                        OmniboxSuggestionUiType.TILE_SUGGESTION,
+                        parent -> mQueryTileCoordinator.createView(parent.getContext()),
+                        TileSuggestionViewBinder::bind);
+
                 // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, dropdown);
@@ -315,5 +328,9 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     @VisibleForTesting
     OnSuggestionsReceivedListener getSuggestionsReceivedListenerForTest() {
         return mMediator;
+    }
+
+    private void onTileSelected(QueryTile queryTile) {
+        mMediator.onQueryTileSelected(queryTile);
     }
 }

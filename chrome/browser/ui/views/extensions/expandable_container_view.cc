@@ -63,8 +63,9 @@ ExpandableContainerView::ExpandableContainerView(
   // Even though we only have one column, using a GridLayout here will
   // properly handle a 0 height row when |details_view_| is collapsed.
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                        available_width, 0);
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::ColumnSize::kFixed, available_width,
+                        0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   details_view_ = layout->AddView(std::make_unique<DetailsView>(details));

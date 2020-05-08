@@ -36,4 +36,8 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
   return *params;
 }
 
+float GetFontRenderParamsDeviceScaleFactor() {
+  return 1.0;
+}
+
 }  // namespace gfx

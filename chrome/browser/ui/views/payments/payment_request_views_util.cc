@@ -196,8 +196,8 @@ void PopulateSheetHeaderView(bool show_back_arrow,
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the optional back arrow.
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   constexpr int kPaddingBetweenArrowAndTitle = 8;
   if (show_back_arrow)
@@ -206,7 +206,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
 
   // A column for the title.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   if (!show_back_arrow) {

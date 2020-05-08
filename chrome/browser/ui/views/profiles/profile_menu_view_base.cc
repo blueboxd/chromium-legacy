@@ -772,8 +772,9 @@ void ProfileMenuViewBase::Reset() {
       SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                     kMenuWidth, kMenuWidth);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kFixed, kMenuWidth,
+                     kMenuWidth);
   layout->StartRow(1.0f, 0);
   layout->AddView(std::move(scroll_view));
 }

@@ -126,11 +126,12 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
 
+    using ColumnSize = views::GridLayout::ColumnSize;
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     if (!shell_->hide_toolbar())
       column_set->AddPaddingColumn(0, 2);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                          views::GridLayout::USE_PREF, 0, 0);
+                          ColumnSize::kUsePreferred, 0, 0);
     if (!shell_->hide_toolbar())
       column_set->AddPaddingColumn(0, 2);
 
@@ -147,38 +148,34 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       auto back_button =
           views::MdTextButton::Create(this, base::ASCIIToUTF16("Back"));
       gfx::Size back_button_size = back_button->GetPreferredSize();
-      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
-                                    views::GridLayout::CENTER, 0,
-                                    views::GridLayout::FIXED,
-                                    back_button_size.width(),
-                                    back_button_size.width() / 2);
+      toolbar_column_set->AddColumn(
+          views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+          ColumnSize::kFixed, back_button_size.width(),
+          back_button_size.width() / 2);
       // Forward button
       auto forward_button =
           views::MdTextButton::Create(this, base::ASCIIToUTF16("Forward"));
       gfx::Size forward_button_size = forward_button->GetPreferredSize();
-      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
-                                    views::GridLayout::CENTER, 0,
-                                    views::GridLayout::FIXED,
-                                    forward_button_size.width(),
-                                    forward_button_size.width() / 2);
+      toolbar_column_set->AddColumn(
+          views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+          ColumnSize::kFixed, forward_button_size.width(),
+          forward_button_size.width() / 2);
       // Refresh button
       auto refresh_button =
           views::MdTextButton::Create(this, base::ASCIIToUTF16("Refresh"));
       gfx::Size refresh_button_size = refresh_button->GetPreferredSize();
-      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
-                                    views::GridLayout::CENTER, 0,
-                                    views::GridLayout::FIXED,
-                                    refresh_button_size.width(),
-                                    refresh_button_size.width() / 2);
+      toolbar_column_set->AddColumn(
+          views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+          ColumnSize::kFixed, refresh_button_size.width(),
+          refresh_button_size.width() / 2);
       // Stop button
       auto stop_button =
           views::MdTextButton::Create(this, base::ASCIIToUTF16("Stop"));
       gfx::Size stop_button_size = stop_button->GetPreferredSize();
-      toolbar_column_set->AddColumn(views::GridLayout::CENTER,
-                                    views::GridLayout::CENTER, 0,
-                                    views::GridLayout::FIXED,
-                                    stop_button_size.width(),
-                                    stop_button_size.width() / 2);
+      toolbar_column_set->AddColumn(
+          views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+          ColumnSize::kFixed, stop_button_size.width(),
+          stop_button_size.width() / 2);
       toolbar_column_set->AddPaddingColumn(0, 2);
       // URL entry
       auto url_entry = std::make_unique<views::Textfield>();
@@ -187,7 +184,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       url_entry->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
       toolbar_column_set->AddColumn(views::GridLayout::FILL,
                                     views::GridLayout::FILL, 1,
-                                    views::GridLayout::USE_PREF, 0, 0);
+                                    ColumnSize::kUsePreferred, 0, 0);
       toolbar_column_set->AddPaddingColumn(0, 2);
 
       // Fill up the first row

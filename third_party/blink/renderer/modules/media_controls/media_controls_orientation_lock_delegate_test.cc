@@ -107,8 +107,8 @@ class MockChromeClientForOrientationLockDelegate final
   // ChromeClient overrides:
   void InstallSupplements(LocalFrame& frame) override {
     EmptyChromeClient::InstallSupplements(frame);
-    mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
-        screen_orientation;
+    HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>
+        screen_orientation(frame.DomWindow());
     ScreenOrientationClient().BindPendingReceiver(
         screen_orientation.BindNewEndpointAndPassDedicatedReceiverForTesting());
     ScreenOrientationController::From(*frame.DomWindow())

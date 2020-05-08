@@ -34,6 +34,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -354,7 +355,7 @@ public class VrShell extends GvrLayout
         mVrModalPresenter = new VrModalPresenter(mActivity, this);
         mVrModalDialogManager =
                 new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
-        mActivity.overrideModalDialogManager(mVrModalDialogManager);
+        setModalDialogManager(mVrModalDialogManager);
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
         mUiView = new FrameLayout(decor.getContext());
@@ -363,6 +364,11 @@ public class VrShell extends GvrLayout
         decor.addView(mUiView, params);
         mVrUiViewContainer = new VrViewContainer(mActivity);
         mUiView.addView(mVrUiViewContainer);
+    }
+
+    private void setModalDialogManager(ModalDialogManager modalDialogManager) {
+        ((ObservableSupplierImpl) mActivity.getModalDialogManagerSupplier())
+                .set(mVrModalDialogManager);
     }
 
     private void removeVrRootView() {
@@ -783,7 +789,7 @@ public class VrShell extends GvrLayout
         if (mVrBrowsingEnabled) {
             if (mVrModalDialogManager != null) {
                 mVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-                mActivity.overrideModalDialogManager(mNonVrModalDialogManager);
+                setModalDialogManager(mNonVrModalDialogManager);
                 mVrModalDialogManager = null;
             }
             mNonVrViews.destroy();

@@ -2173,7 +2173,13 @@ void RenderTextHarfBuzz::ShapeRunsWithFont(
 }
 
 void RenderTextHarfBuzz::EnsureLayoutRunList() {
-  if (update_layout_run_list_) {
+  // Update layout run list if the device scale factor has changed since the
+  // layout run list was last updated, as changes in device scale factor change
+  // subpixel positioning, at least on Linux and Chrome OS.
+  const float device_scale_factor = GetFontRenderParamsDeviceScaleFactor();
+
+  if (update_layout_run_list_ || device_scale_factor_ != device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
     layout_run_list_.Reset();
 
     const base::string16& text = GetLayoutText();

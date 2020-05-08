@@ -9,6 +9,18 @@
 
 ConfirmInfoBarDelegate::~ConfirmInfoBarDelegate() = default;
 
+bool ConfirmInfoBarDelegate::EqualsDelegate(
+    infobars::InfoBarDelegate* delegate) const {
+  ConfirmInfoBarDelegate* confirm_delegate =
+      delegate->AsConfirmInfoBarDelegate();
+  return confirm_delegate &&
+         (confirm_delegate->GetMessageText() == GetMessageText());
+}
+
+ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
+  return this;
+}
+
 infobars::InfoBarDelegate::InfoBarAutomationType
 ConfirmInfoBarDelegate::GetInfoBarAutomationType() const {
   return CONFIRM_INFOBAR;
@@ -41,15 +53,3 @@ bool ConfirmInfoBarDelegate::Cancel() {
 }
 
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate() = default;
-
-bool ConfirmInfoBarDelegate::EqualsDelegate(
-    infobars::InfoBarDelegate* delegate) const {
-  ConfirmInfoBarDelegate* confirm_delegate =
-      delegate->AsConfirmInfoBarDelegate();
-  return confirm_delegate &&
-      (confirm_delegate->GetMessageText() == GetMessageText());
-}
-
-ConfirmInfoBarDelegate* ConfirmInfoBarDelegate::AsConfirmInfoBarDelegate() {
-  return this;
-}

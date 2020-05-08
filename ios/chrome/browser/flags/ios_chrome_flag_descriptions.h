@@ -49,11 +49,6 @@ extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 extern const char kAutofillNoLocalSaveOnUnmaskSuccessName[];
 extern const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[];
 
-// Title and description for the flag to control saving FULL_SERVER_CARDS upon
-// success of credit card upload.
-extern const char kAutofillNoLocalSaveOnUploadSuccessName[];
-extern const char kAutofillNoLocalSaveOnUploadSuccessDescription[];
-
 // Title and description for the flag that controls whether the maximum number
 // of Autofill suggestions shown is pruned.
 extern const char kAutofillPruneSuggestionsName[];

@@ -43,8 +43,7 @@ NotificationControlButtonsView::~NotificationControlButtonsView() = default;
 
 void NotificationControlButtonsView::ShowCloseButton(bool show) {
   if (show && !close_button_) {
-    close_button_ = std::make_unique<PaddedButton>(this);
-    close_button_->set_owned_by_client();
+    close_button_ = AddChildView(std::make_unique<PaddedButton>(this));
     close_button_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kNotificationCloseButtonIcon, icon_color_));
@@ -54,20 +53,20 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
         IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
     close_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
-
-    // Add the button at the last.
-    AddChildView(close_button_.get());
     Layout();
   } else if (!show && close_button_) {
-    DCHECK(Contains(close_button_.get()));
-    close_button_.reset();
+    DCHECK(Contains(close_button_));
+    RemoveChildViewT(close_button_);
+    close_button_ = nullptr;
   }
 }
 
 void NotificationControlButtonsView::ShowSettingsButton(bool show) {
   if (show && !settings_button_) {
-    settings_button_ = std::make_unique<PaddedButton>(this);
-    settings_button_->set_owned_by_client();
+    // Add the button next right to the snooze button.
+    const int position = snooze_button_ ? 1 : 0;
+    settings_button_ =
+        AddChildViewAt(std::make_unique<PaddedButton>(this), position);
     settings_button_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kNotificationSettingsButtonIcon, icon_color_));
@@ -77,21 +76,18 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
         IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
     settings_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
-
-    // Add the button next right to the snooze button.
-    int position = snooze_button_ ? 1 : 0;
-    AddChildViewAt(settings_button_.get(), position);
     Layout();
   } else if (!show && settings_button_) {
-    DCHECK(Contains(settings_button_.get()));
-    settings_button_.reset();
+    DCHECK(Contains(settings_button_));
+    RemoveChildViewT(settings_button_);
+    settings_button_ = nullptr;
   }
 }
 
 void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
   if (show && !snooze_button_) {
-    snooze_button_ = std::make_unique<PaddedButton>(this);
-    snooze_button_->set_owned_by_client();
+    // Snooze button should appear as the first child.
+    snooze_button_ = AddChildViewAt(std::make_unique<PaddedButton>(this), 0);
     snooze_button_->SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kNotificationSnoozeButtonIcon, icon_color_));
@@ -101,13 +97,11 @@ void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
         IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP));
     snooze_button_->SetBackground(
         views::CreateSolidBackground(SK_ColorTRANSPARENT));
-
-    // Add the button at the first.
-    AddChildViewAt(snooze_button_.get(), 0);
     Layout();
   } else if (!show && snooze_button_) {
-    DCHECK(Contains(snooze_button_.get()));
-    snooze_button_.reset();
+    DCHECK(Contains(snooze_button_));
+    RemoveChildViewT(snooze_button_);
+    snooze_button_ = nullptr;
   }
 }
 
@@ -147,18 +141,6 @@ void NotificationControlButtonsView::SetButtonIconColors(SkColor color) {
   }
 }
 
-views::Button* NotificationControlButtonsView::close_button() const {
-  return close_button_.get();
-}
-
-views::Button* NotificationControlButtonsView::settings_button() const {
-  return settings_button_.get();
-}
-
-views::Button* NotificationControlButtonsView::snooze_button() const {
-  return snooze_button_.get();
-}
-
 const char* NotificationControlButtonsView::GetClassName() const {
   return kViewClassName;
 }
@@ -173,11 +155,11 @@ void NotificationControlButtonsView::OnThemeChanged() {
 
 void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
-  if (close_button_ && sender == close_button_.get()) {
+  if (close_button_ && sender == close_button_) {
     message_view_->OnCloseButtonPressed();
-  } else if (settings_button_ && sender == settings_button_.get()) {
+  } else if (settings_button_ && sender == settings_button_) {
     message_view_->OnSettingsButtonPressed(event);
-  } else if (snooze_button_ && sender == snooze_button_.get()) {
+  } else if (snooze_button_ && sender == snooze_button_) {
     message_view_->OnSnoozeButtonPressed(event);
   }
 }

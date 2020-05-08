@@ -1678,7 +1678,7 @@ void ThreadState::CollectAllGarbageForTesting(BlinkGC::StackState stack_state) {
       unified_heap_controller()->GarbageCollectionForTesting(
           stack_state == BlinkGC::kNoHeapPointersOnStack
               ? v8::EmbedderHeapTracer::EmbedderStackState::kEmpty
-              : v8::EmbedderHeapTracer::kUnknown);
+              : v8::EmbedderHeapTracer::EmbedderStackState::kUnknown);
     } else {
       CollectGarbage(BlinkGC::CollectionType::kMajor, stack_state,
                      BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping,

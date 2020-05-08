@@ -41,9 +41,10 @@ views::ColumnSet* ConfigureTextfieldStack(views::GridLayout* layout,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
 
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddColumn(
-      provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(provider->GetControlLabelGridAlignment(),
+                        views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   // TODO(tapted): This column may need some additional alignment logic under
   // Harmony so that its x-offset is not wholly dictated by the string length
   // of labels in the first column.
@@ -54,7 +55,7 @@ views::ColumnSet* ConfigureTextfieldStack(views::GridLayout* layout,
   // fill the preferred size of the containing View, or the GridLayout's
   // minimum size.
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                        views::GridLayout::FIXED, 0, 0);
+                        views::GridLayout::ColumnSize::kFixed, 0, 0);
   return column_set;
 }
 

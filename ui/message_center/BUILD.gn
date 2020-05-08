@@ -196,6 +196,7 @@ if (enable_message_center) {
     if (toolkit_views) {
       sources += [
         "views/message_popup_collection_unittest.cc",
+        "views/notification_control_buttons_unittest.cc",
         "views/notification_header_view_unittest.cc",
         "views/notification_view_md_unittest.cc",
         "views/relative_time_formatter_unittest.cc",

@@ -43,7 +43,7 @@ class TileManager {
   virtual void GetTile(const std::string& tile_id, TileCallback callback) = 0;
 
   // Save the query tiles into database.
-  virtual void SaveTiles(std::vector<std::unique_ptr<Tile>> top_level_tiles,
+  virtual void SaveTiles(std::unique_ptr<TileGroup> tile_group,
                          TileGroupStatusCallback callback) = 0;
 
   TileManager();

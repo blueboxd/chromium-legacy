@@ -67,7 +67,6 @@ class ReceiverOwner : public GarbageCollected<ReceiverOwner<Mode>>,
   void Dispose() {
     if (test_)
       test_->set_is_owner_alive(false);
-    ;
   }
 
   HeapMojoReceiver<sample::blink::Service, ReceiverOwner, Mode>& receiver() {

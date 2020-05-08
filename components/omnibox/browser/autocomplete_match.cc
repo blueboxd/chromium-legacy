@@ -167,7 +167,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                        ? new TemplateURLRef::PostContent(*match.post_content)
                        : nullptr),
       additional_info(match.additional_info),
-      duplicate_matches(match.duplicate_matches) {}
+      duplicate_matches(match.duplicate_matches),
+      query_tiles(match.query_tiles) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept =
     default;
@@ -226,6 +227,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
                          : nullptr);
   additional_info = match.additional_info;
   duplicate_matches = match.duplicate_matches;
+  query_tiles = match.query_tiles;
   return *this;
 }
 
@@ -258,6 +260,7 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
     case Type::VOICE_SUGGEST:
     case Type::CLIPBOARD_TEXT:
     case Type::CLIPBOARD_IMAGE:
+    case Type::TILE_SUGGESTION:
       return vector_icons::kSearchIcon;
 
     case Type::SEARCH_HISTORY:
@@ -392,6 +395,7 @@ base::string16 AutocompleteMatch::GetWhyThisSuggestionText() const {
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
     case Type::NUM_TYPES:
+    case Type::TILE_SUGGESTION:
       NOTREACHED();
       return base::string16();
   }
@@ -617,6 +621,7 @@ bool AutocompleteMatch::IsSpecializedSearchType(Type type) {
   return type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
+         type == AutocompleteMatchType::TILE_SUGGESTION ||
          type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
@@ -997,6 +1002,7 @@ AutocompleteMatch::AsOmniboxEventResultType() const {
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
+    case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::NUM_TYPES:
       break;
   }

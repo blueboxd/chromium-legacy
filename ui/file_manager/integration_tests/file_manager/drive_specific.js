@@ -295,7 +295,6 @@ function formatDate(date) {
  */
 testcase.driveBackupPhotos = async () => {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
-  let date;
 
   // Open Files app on local downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
@@ -315,7 +314,7 @@ testcase.driveBackupPhotos = async () => {
       appId, '#cloud-import-button [icon="files:cloud-upload"]');
 
   // Start the import.
-  date = new Date();
+  const date = new Date();
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['#cloud-import-button']));
 
@@ -503,4 +502,34 @@ testcase.driveLinkOpenFileThroughTransitiveLink = async () => {
   chrome.test.assertTrue(
       await galleryApp.closeWindowAndWait(galleryAppId),
       'Failed to close Gallery window');
+};
+
+/**
+ * Tests that the welcome banner appears when a Drive volume is opened.
+ */
+testcase.driveWelcomeBanner = async () => {
+  // Open Files app on Drive.
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
+
+  // Open the Drive volume in the files-list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['.drive-volume']));
+
+  // Check: the Drive welcome banner should appear.
+  await remoteCall.waitForElement(appId, '.drive-welcome-wrapper');
+
+  // Close the Drive welcome banner.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['cr-button.banner-close']));
+
+  // Check: the Drive banner should close.
+  const caller = getCaller();
+  await repeatUntil(async () => {
+    const banner = await remoteCall.waitForElementStyles(
+        appId, '.drive-welcome', ['visibility']);
+
+    if (banner.styles.visibility !== 'hidden') {
+      return pending(caller, 'Welcome banner is still visible.');
+    }
+  });
 };

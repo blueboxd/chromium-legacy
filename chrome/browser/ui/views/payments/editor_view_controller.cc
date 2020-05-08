@@ -257,19 +257,20 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   constexpr int kShortFieldMinimumWidth = 176;
   constexpr int kLongFieldMinimumWidth = 272;
 
+  using ColumnSize = views::GridLayout::ColumnSize;
   views::GridLayout* editor_layout =
       editor_view->SetLayoutManager(std::make_unique<views::GridLayout>());
   // Column set for short fields.
   views::ColumnSet* columns_short = editor_layout->AddColumnSet(0);
   columns_short->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::FIXED, kLabelWidth, 0);
+      views::GridLayout::kFixedSize, ColumnSize::kFixed, kLabelWidth, 0);
   columns_short->AddPaddingColumn(views::GridLayout::kFixedSize,
                                   kLabelInputFieldHorizontalPadding);
   // The field view column stretches.
   columns_short->AddColumn(views::GridLayout::LEADING,
                            views::GridLayout::CENTER, 1.0,
-                           views::GridLayout::USE_PREF, 0, 0);
+                           ColumnSize::kUsePreferred, 0, 0);
   columns_short->AddPaddingColumn(views::GridLayout::kFixedSize,
                                   kFieldExtraViewHorizontalPadding);
   // The extra field view column is fixed size, computed from the largest
@@ -278,8 +279,8 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
       ComputeWidestExtraViewWidth(EditorField::LengthHint::HINT_SHORT);
   columns_short->AddColumn(views::GridLayout::LEADING,
                            views::GridLayout::CENTER,
-                           views::GridLayout::kFixedSize,
-                           views::GridLayout::FIXED, short_extra_view_width, 0);
+                           views::GridLayout::kFixedSize, ColumnSize::kFixed,
+                           short_extra_view_width, 0);
   // The padding at the end is fixed, computed to make sure the short field
   // maintains its minimum width.
   int short_padding = kDialogMinWidth - kShortFieldMinimumWidth - kLabelWidth -
@@ -291,13 +292,13 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   // Column set for long fields.
   views::ColumnSet* columns_long = editor_layout->AddColumnSet(1);
   columns_long->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          views::GridLayout::kFixedSize,
-                          views::GridLayout::FIXED, kLabelWidth, 0);
+                          views::GridLayout::kFixedSize, ColumnSize::kFixed,
+                          kLabelWidth, 0);
   columns_long->AddPaddingColumn(views::GridLayout::kFixedSize,
                                  kLabelInputFieldHorizontalPadding);
   // The field view column stretches.
   columns_long->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          1.0, views::GridLayout::USE_PREF, 0, 0);
+                          1.0, ColumnSize::kUsePreferred, 0, 0);
   columns_long->AddPaddingColumn(views::GridLayout::kFixedSize,
                                  kFieldExtraViewHorizontalPadding);
   // The extra field view column is fixed size, computed from the largest
@@ -305,8 +306,8 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   int long_extra_view_width =
       ComputeWidestExtraViewWidth(EditorField::LengthHint::HINT_LONG);
   columns_long->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          views::GridLayout::kFixedSize,
-                          views::GridLayout::FIXED, long_extra_view_width, 0);
+                          views::GridLayout::kFixedSize, ColumnSize::kFixed,
+                          long_extra_view_width, 0);
   // The padding at the end is fixed, computed to make sure the long field
   // maintains its minimum width.
   int long_padding = kDialogMinWidth - kLongFieldMinimumWidth - kLabelWidth -
@@ -319,12 +320,12 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   views::ColumnSet* columns_error = editor_layout->AddColumnSet(2);
   columns_error->AddColumn(
       views::GridLayout::LEADING, views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::FIXED, kLabelWidth, 0);
+      views::GridLayout::kFixedSize, ColumnSize::kFixed, kLabelWidth, 0);
   columns_error->AddPaddingColumn(views::GridLayout::kFixedSize,
                                   kLabelInputFieldHorizontalPadding);
   columns_error->AddColumn(views::GridLayout::LEADING,
                            views::GridLayout::CENTER, 1.0,
-                           views::GridLayout::USE_PREF, 0, 0);
+                           ColumnSize::kUsePreferred, 0, 0);
 
   views::View* first_field = nullptr;
   for (const auto& field : GetFieldDefinitions()) {
@@ -346,7 +347,7 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(3);
   required_field_columns->AddColumn(views::GridLayout::LEADING,
                                     views::GridLayout::CENTER, 1.0,
-                                    views::GridLayout::USE_PREF, 0, 0);
+                                    ColumnSize::kUsePreferred, 0, 0);
   editor_layout->StartRow(views::GridLayout::kFixedSize, 3);
 
   // Adds the "* indicates a required field" label in "hint" grey text.

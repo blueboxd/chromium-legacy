@@ -89,7 +89,7 @@ void ScrollViewExample::CreateExampleView(View* container) {
   // Add scroll view.
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   layout->StartRow(1, 0);
   scroll_view_ = layout->AddView(std::move(scroll_view));
 
@@ -97,7 +97,7 @@ void ScrollViewExample::CreateExampleView(View* container) {
   column_set = layout->AddColumnSet(1);
   for (size_t i = 0; i < 5; i++) {
     column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
   }
   layout->StartRow(0, 1);
   wide_ = layout->AddView(std::make_unique<LabelButton>(

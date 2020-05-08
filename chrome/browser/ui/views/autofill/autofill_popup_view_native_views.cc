@@ -101,11 +101,11 @@ void BuildColumnSet(views::GridLayout* layout) {
 
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddPaddingColumn(views::GridLayout::kFixedSize, column_divider);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                         views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
+                        views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 }
 
 gfx::ImageSkia GetIconImageByName(const std::string& icon_str) {

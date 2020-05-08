@@ -263,8 +263,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
       std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
           /*upload=*/false, options, card, LegalMessageLines(),
           /*upload_save_card_callback=*/UploadSaveCardPromptCallback(),
-          /*local_save_card_callback=*/std::move(callback), GetPrefs(),
-          payments_client_->is_off_the_record())));
+          /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 }
 
 void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
@@ -308,7 +307,7 @@ void ChromeAutofillClientIOS::ConfirmSaveCreditCardToCloud(
           /*upload=*/true, options, card, legal_message_lines,
           /*upload_save_card_callback=*/std::move(callback),
           /*local_save_card_callback=*/LocalSaveCardPromptCallback(),
-          GetPrefs(), payments_client_->is_off_the_record());
+          GetPrefs());
 
   infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
       std::move(save_card_info_bar_delegate_mobile)));

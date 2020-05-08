@@ -499,10 +499,10 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
       throbber_overlay->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
   throbber_columns->AddPaddingColumn(0.5, 0);
-  throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
-                              views::GridLayout::Alignment::TRAILING,
-                              views::GridLayout::kFixedSize,
-                              views::GridLayout::SizeType::USE_PREF, 0, 0);
+  throbber_columns->AddColumn(
+      views::GridLayout::Alignment::CENTER,
+      views::GridLayout::Alignment::TRAILING, views::GridLayout::kFixedSize,
+      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   throbber_columns->AddPaddingColumn(0.5, 0);
 
   views::ColumnSet* label_columns = layout->AddColumnSet(1);
@@ -510,7 +510,7 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   label_columns->AddColumn(views::GridLayout::Alignment::CENTER,
                            views::GridLayout::Alignment::LEADING,
                            views::GridLayout::kFixedSize,
-                           views::GridLayout::SizeType::USE_PREF, 0, 0);
+                           views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   label_columns->AddPaddingColumn(0.5, 0);
 
   layout->StartRow(0.5, 0);

@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_INFOBARS_CORE_CONFIRM_INFOBAR_DELEGATE_H_
 #define COMPONENTS_INFOBARS_CORE_CONFIRM_INFOBAR_DELEGATE_H_
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -25,7 +24,13 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
     BUTTON_CANCEL = 1 << 1,
   };
 
+  ConfirmInfoBarDelegate(const ConfirmInfoBarDelegate&) = delete;
+  ConfirmInfoBarDelegate& operator=(const ConfirmInfoBarDelegate&) = delete;
   ~ConfirmInfoBarDelegate() override;
+
+  // InfoBarDelegate:
+  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
+  ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() override;
 
   // Returns the InfoBar type to be displayed for the InfoBar.
   InfoBarAutomationType GetInfoBarAutomationType() const override;
@@ -60,13 +65,6 @@ class ConfirmInfoBarDelegate : public infobars::InfoBarDelegate {
 
  protected:
   ConfirmInfoBarDelegate();
-
- private:
-  // InfoBarDelegate:
-  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
-  ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() override;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBarDelegate);
 };
 
 #endif  // COMPONENTS_INFOBARS_CORE_CONFIRM_INFOBAR_DELEGATE_H_

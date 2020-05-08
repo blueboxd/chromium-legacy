@@ -50,7 +50,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2345-09-19T10:00');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2345-08-19T10:00');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     debug('');
     debug('==> Focus on the day field.');
@@ -61,7 +61,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2345-08-21T10:00');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2345-08-20T10:00');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     debug('');
     debug('==> Focus on the year field.');
@@ -72,7 +72,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2347-08-20T10:00');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2346-08-20T10:00');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     // With ICU 52 on Linux/Android, a comma is used to delimete date and time and
     // the hour and time field positions are shifted.
@@ -87,7 +87,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2346-08-20T00:00');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2346-08-20T11:00');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     debug('');
     debug('==> Focus on the minute field.');
@@ -98,7 +98,7 @@ onload = function() {
     shouldBeEqualToString('input.value', '2346-08-20T11:02');
     mouseClickOn(input.offsetWidth - spinButtonOffset, center + 1);
     shouldBeEqualToString('input.value', '2346-08-20T11:01');
-    shouldBeZero('window.getSelection().rangeCount'); // No text selection.
+    shouldBe('window.getSelection().rangeCount', '1');
 
     // Set the value explicitly to prevent a earlier failure from leading to a
     // failure in the subsequent tests.

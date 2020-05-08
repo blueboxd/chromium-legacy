@@ -4,6 +4,11 @@
 
 function onImageLoad(img) {
   window.parent.postMessage(
-      {frameType: 'background-image', messageType: 'loaded', src: img.src},
+      {
+        frameType: 'background-image',
+        messageType: 'loaded',
+        src: img.src,
+        time: Date.now(),
+      },
       'chrome://new-tab-page');
 }

@@ -301,6 +301,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   bool update_display_run_list_ : 1;
   bool update_display_text_ : 1;
 
+  // The device scale factor for which the text was laid out.
+  float device_scale_factor_ = 1.0f;
+
   // The total size of the layouted text.
   SizeF total_size_;
 

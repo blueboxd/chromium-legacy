@@ -18,7 +18,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
-#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -97,16 +96,6 @@ struct PrintHostMsg_PreviewIds {
   ~PrintHostMsg_PreviewIds();
   int request_id;
   int ui_id;
-};
-
-struct PrintHostMsg_SetOptionsFromDocument_Params {
-  PrintHostMsg_SetOptionsFromDocument_Params();
-  ~PrintHostMsg_SetOptionsFromDocument_Params();
-
-  bool is_scaling_disabled;
-  int copies;
-  printing::mojom::DuplexMode duplex;
-  printing::PageRanges page_ranges;
 };
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -220,20 +209,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_PreviewIds)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(ui_id)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_SetOptionsFromDocument_Params)
-  // Specifies whether print scaling is enabled or not.
-  IPC_STRUCT_TRAITS_MEMBER(is_scaling_disabled)
-
-  // Specifies number of copies to be printed.
-  IPC_STRUCT_TRAITS_MEMBER(copies)
-
-  // Specifies paper handling option.
-  IPC_STRUCT_TRAITS_MEMBER(duplex)
-
-  // Specifies page range to be printed.
-  IPC_STRUCT_TRAITS_MEMBER(page_ranges)
 IPC_STRUCT_TRAITS_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -481,11 +456,6 @@ IPC_SYNC_MESSAGE_ROUTED0_0(PrintHostMsg_SetupScriptedPrintPreview)
 // loaded such that the renderer can determine whether it is modifiable or not.
 IPC_MESSAGE_ROUTED1(PrintHostMsg_ShowScriptedPrintPreview,
                     bool /* is_modifiable */)
-
-// Notify the browser to set print presets based on source PDF document.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_SetOptionsFromDocument,
-                    PrintHostMsg_SetOptionsFromDocument_Params /* params */,
-                    PrintHostMsg_PreviewIds /* ids */)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #endif  // COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_

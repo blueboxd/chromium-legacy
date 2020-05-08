@@ -219,11 +219,11 @@ void EnterpriseStartupDialogView::SetupLayout(
   columnset->AddPaddingColumn(1.0, 0);
   columnset->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                        views::GridLayout::kFixedSize,
-                       views::GridLayout::USE_PREF, 0, 0);
+                       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columnset->AddPaddingColumn(views::GridLayout::kFixedSize, text_padding);
   columnset->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                        views::GridLayout::kFixedSize,
-                       views::GridLayout::USE_PREF, 0, 0);
+                       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columnset->AddPaddingColumn(1.0, 0);
 
   layout->AddPaddingRow(1.0, 0);

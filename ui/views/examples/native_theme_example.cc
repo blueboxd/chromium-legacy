@@ -71,9 +71,9 @@ std::unique_ptr<View> CreateAllColorsView() {
   auto* layout = container->SetLayoutManager(std::make_unique<GridLayout>());
   auto* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
-                        GridLayout::USE_PREF, 0, 0);
+                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_WindowBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogForeground));

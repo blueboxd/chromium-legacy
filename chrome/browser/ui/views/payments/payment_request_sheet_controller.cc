@@ -232,7 +232,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // Note: each view is responsible for its own padding (insets).
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   auto header_view = std::make_unique<views::View>();
@@ -257,7 +257,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
   pane_columns->AddColumn(
       views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
-      views::GridLayout::kFixedSize, views::GridLayout::SizeType::FIXED,
+      views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
       dialog_->GetActualDialogWidth(), dialog_->GetActualDialogWidth());
   pane_layout->StartRow(views::GridLayout::kFixedSize, 0);
   // This is owned by its parent. It's the container passed to FillContentView.
@@ -435,12 +435,12 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   columns->AddPaddingColumn(1.0, 0);
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
+                     views::GridLayout::kFixedSize,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::View> extra_view = CreateExtraFooterView();

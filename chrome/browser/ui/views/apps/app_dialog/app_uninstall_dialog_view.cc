@@ -245,13 +245,13 @@ void AppUninstallDialogView::InitializeCheckbox(const GURL& app_launch_url) {
   const int kReportColumnSetId = 0;
   views::ColumnSet* cs = checkbox_layout->AddColumnSet(kReportColumnSetId);
   cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
-                0);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   cs->AddPaddingColumn(views::GridLayout::kFixedSize,
                        ChromeLayoutProvider::Get()->GetDistanceMetric(
                            views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                views::GridLayout::USE_PREF, 0, 0);
+                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   checkbox_layout->StartRow(views::GridLayout::kFixedSize, kReportColumnSetId);
   clear_site_data_checkbox_ =

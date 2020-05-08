@@ -94,11 +94,7 @@ editing/inserting/5156401-2.html
 editing/inserting/5685601-2.html
 editing/pasteboard/drag-prioritizes-draggable-container-over-image.html
 editing/pasteboard/drop-text-without-selection.html
-editing/pasteboard/paste-line-endings-001.html
-editing/pasteboard/paste-line-endings-002.html
-editing/pasteboard/paste-line-endings-003.html
-editing/pasteboard/paste-line-endings-004.html
-editing/pasteboard/paste-line-endings-005.html
+editing/pasteboard/paste_line_endings_2.html
 editing/pasteboard/paste-text-016.html
 editing/pasteboard/pasting-empty-html-falls-back-to-text.html
 editing/selection/select_all/select_all_in_contenteditable.html

@@ -37,6 +37,7 @@ import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.concurrent.TimeoutException;
@@ -189,10 +190,9 @@ public class PasswordGenerationIntegrationTest {
 
     private void waitForGenerationDialog() {
         waitForModalDialogPresenter();
-        Window window = ((AppModalPresenter) mSyncTestRule.getActivity()
-                                 .getModalDialogManager()
-                                 .getCurrentPresenterForTest())
-                                .getWindow();
+        ModalDialogManager manager = TestThreadUtils.runOnUiThreadBlockingNoException(
+                mSyncTestRule.getActivity()::getModalDialogManager);
+        Window window = ((AppModalPresenter) manager.getCurrentPresenterForTest()).getWindow();
         mHelper.waitForViewOnRoot(
                 window.getDecorView().getRootView(), withId(password_generation_dialog));
     }

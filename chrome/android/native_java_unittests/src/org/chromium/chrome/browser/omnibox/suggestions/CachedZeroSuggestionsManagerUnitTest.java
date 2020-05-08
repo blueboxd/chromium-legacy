@@ -77,7 +77,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
                     false /* isStarred */, false /* isDeletable */,
                     hasPostData ? "Dummy Content Type" + (index + 1) : null /* postContentType */,
                     hasPostData ? new byte[] {4, 5, 6, (byte) (index + 1)} : null /* postData */,
-                    OmniboxSuggestion.INVALID_GROUP);
+                    OmniboxSuggestion.INVALID_GROUP, null /* queryTiles */);
             list.add(suggestion);
         }
 
@@ -95,7 +95,8 @@ public class CachedZeroSuggestionsManagerUnitTest {
                 classifications /* descriptionClassifications */, null /* answer */,
                 "" /* fillIntoEdit */, GURL.emptyGURL() /* url */, GURL.emptyGURL() /* imageUrl */,
                 null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, OmniboxSuggestion.INVALID_GROUP);
+                null /* postContentType */, null /* postData */, OmniboxSuggestion.INVALID_GROUP,
+                null /* queryTiles */);
     }
 
     @CalledByNativeJavaTest
@@ -183,7 +184,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
                         null /* fillIntoEdit */, new GURL("http://dummy.url") /* url */,
                         GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
                         false /* isStarred */, false /* isDeletable */, null /* postContentType */,
-                        null /* postData */, 1);
+                        null /* postData */, 1 /* groupId */, null /* queryTiles */);
         list.add(suggestionWithHeader);
         SparseArray<String> headers = new SparseArray<>();
         headers.put(1, "Valid Header");
@@ -205,7 +206,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
                 null /* answer */, null /* fillIntoEdit */, new GURL("dummy url") /* url */,
                 GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
                 false /* isStarred */, false /* isDeletable */, null /* postContentType */,
-                null /* postData */, 1);
+                null /* postData */, 1 /* groupId */, null /* queryTiles */);
         listToCache.add(suggestionWithHeader);
 
         AutocompleteResult dataExpected = new AutocompleteResult(listExpected, null);
@@ -298,7 +299,8 @@ public class CachedZeroSuggestionsManagerUnitTest {
                 null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
                 new GURL("http://url.com") /* url */, GURL.emptyGURL() /* imageUrl */,
                 null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 12));
+                null /* postContentType */, null /* postData */, 12 /* groupId */,
+                null /* queryTiles */));
 
         List<OmniboxSuggestion> listWithInvalidItems = buildDummySuggestionsList(2, false);
         listWithInvalidItems.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
@@ -307,21 +309,24 @@ public class CachedZeroSuggestionsManagerUnitTest {
                 null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
                 new GURL("http://url.com") /* url */, GURL.emptyGURL() /* imageUrl */,
                 null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 12));
+                null /* postContentType */, null /* postData */, 12 /* groupId */,
+                null /* queryTiles */));
         listWithInvalidItems.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
                 true /* isSearchType */, 0 /* relevance */, 0 /* transition */, "dummy text",
                 null /* displayTextClassifications */, "dummy description" /* description */,
                 null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
                 new GURL("bad url") /* url */, GURL.emptyGURL() /* imageUrl */,
                 null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 12));
+                null /* postContentType */, null /* postData */, 12 /* groupId */,
+                null /* queryTiles */));
         listWithInvalidItems.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
                 true /* isSearchType */, 0 /* relevance */, 0 /* transition */, "dummy text",
                 null /* displayTextClassifications */, "dummy description" /* description */,
                 null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
                 new GURL("http://url.com") /* url */, GURL.emptyGURL() /* imageUrl */,
                 null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 34 /* bad group */));
+                null /* postContentType */, null /* postData */, 34 /* bad group */,
+                null /* queryTiles */));
 
         AutocompleteResult dataWithInvalidItems =
                 new AutocompleteResult(listWithInvalidItems, headersWithInvalidItems);

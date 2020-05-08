@@ -68,7 +68,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -357,11 +356,10 @@ public class AppBannerManagerTest {
     }
 
     private void clickButton(final ChromeActivity activity, @ButtonType final int buttonType) {
-        ModalDialogManager manager = activity.getModalDialogManager();
-        PropertyModel model = manager.getCurrentDialogForTest();
-        ModalDialogProperties.Controller dialogController =
-                model.get(ModalDialogProperties.CONTROLLER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> dialogController.onClick(model, buttonType));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PropertyModel model = activity.getModalDialogManager().getCurrentDialogForTest();
+            model.get(ModalDialogProperties.CONTROLLER).onClick(model, buttonType);
+        });
     }
 
     @Test

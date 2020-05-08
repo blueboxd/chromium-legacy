@@ -293,9 +293,9 @@ def bind_callback_local_vars(code_node, cg_context):
            "ScriptState::From(${receiver_context});")),
     ])
 
-    is_receiver_context = (cg_context.member_like
-                           and not cg_context.member_like.is_static
-                           and not cg_context.constructor)
+    is_receiver_context = not (
+        (cg_context.member_like and cg_context.member_like.is_static)
+        or cg_context.constructor)
 
     # creation_context
     pattern = "const v8::Local<v8::Context>& ${creation_context} = {_1};"
@@ -339,7 +339,7 @@ def bind_callback_local_vars(code_node, cg_context):
         _1 = "ExceptionState::kGetterContext"
     elif cg_context.attribute_set:
         _1 = "ExceptionState::kSetterContext"
-    elif cg_context.constructor:
+    elif cg_context.constructor_group:
         _1 = "ExceptionState::kConstructionContext"
     elif cg_context.indexed_property_getter:
         _1 = "ExceptionState::kIndexedGetterContext"
@@ -358,10 +358,13 @@ def bind_callback_local_vars(code_node, cg_context):
 
     # exception_state
     pattern = "ExceptionState ${exception_state}({_1});{_2}"
-    _1 = [
-        "${isolate}", "${exception_state_context_type}", "${class_like_name}",
-    ]
-    if cg_context.property_ and cg_context.property_.identifier:
+    _1 = ["${isolate}", "${exception_state_context_type}"]
+    if cg_context.is_named_constructor:
+        _1.append("\"{}\"".format(cg_context.property_.identifier))
+    else:
+        _1.append("${class_like_name}")
+    if (cg_context.property_ and cg_context.property_.identifier
+            and not cg_context.constructor_group):
         _1.append("${property_name}")
     _2 = ""
     if cg_context.is_return_type_promise_type:
@@ -795,8 +798,7 @@ def make_check_constructor_call(cg_context):
         CxxUnlikelyIfNode(
             cond="!${info}.IsConstructCall()",
             body=T("${exception_state}.ThrowTypeError("
-                   "ExceptionMessages::ConstructorNotCallableAsFunction("
-                   "${class_like_name}));\n"
+                   "ExceptionMessages::ConstructorCalledAsFunction());\n"
                    "return;")),
     ])
     if not cg_context.is_named_constructor:
@@ -1146,12 +1148,19 @@ def make_overload_dispatcher(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
     overload_group = cg_context.property_
     items = overload_group.effective_overload_set()
     args_size = lambda item: len(item.type_list)
     items_grouped_by_arg_size = itertools.groupby(
         sorted(items, key=args_size, reverse=True), key=args_size)
+
+    # TODO(yukishiino): Runtime-enabled features should be taken into account
+    # when calculating the max argument size.
+    max_arg_size = max(map(args_size, items))
+    arg_count_def = F("const int arg_count = std::min(${info}.Length(), {});",
+                      max_arg_size)
 
     branches = SequenceNode()
     did_use_break = False
@@ -1163,7 +1172,7 @@ def make_overload_dispatcher(cg_context):
 
         if arg_size > 0:
             node = CxxLikelyIfNode(
-                cond=_format("${info}.Length() >= {}", arg_size),
+                cond="arg_count == {}".format(arg_size),
                 body=[node, T("break;") if can_fail else None])
             did_use_break = did_use_break or can_fail
 
@@ -1177,6 +1186,10 @@ def make_overload_dispatcher(cg_context):
 
     if did_use_break:
         branches = CxxBreakableBlockNode(branches)
+    branches = SequenceNode([
+        arg_count_def,
+        branches,
+    ])
 
     if not did_use_break and arg_size == 0 and conditional.is_always_true:
         return branches

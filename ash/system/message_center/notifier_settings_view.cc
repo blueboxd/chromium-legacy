@@ -397,18 +397,18 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   ColumnSet* cs = layout->AddColumnSet(0);
   // Add a column for the checkbox.
   cs->AddPaddingColumn(0, kInnateCheckboxRightPadding);
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                kComputedCheckboxSize, 0);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                GridLayout::ColumnSize::kFixed, kComputedCheckboxSize, 0);
   cs->AddPaddingColumn(0, kInternalHorizontalSpacing);
 
   // Add a column for the icon.
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                kEntryIconSize, 0);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                GridLayout::ColumnSize::kFixed, kEntryIconSize, 0);
   cs->AddPaddingColumn(0, kSmallerInternalHorizontalSpacing);
 
   // Add a column for the name.
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
+                GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   // Add a padding column which contains expandable blank space.
   cs->AddPaddingColumn(1, 0);
@@ -424,8 +424,8 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
         kSystemMenuBusinessIcon, kEntryIconSize,
         AshColorProvider::Get()->GetContentLayerColor(
             ContentLayerType::kIconPrimary, AshColorMode::kDark)));
-    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
-                  kEntryIconSize, 0);
+    cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                  GridLayout::ColumnSize::kFixed, kEntryIconSize, 0);
     layout->AddView(std::move(policy_enforced_icon));
   }
 

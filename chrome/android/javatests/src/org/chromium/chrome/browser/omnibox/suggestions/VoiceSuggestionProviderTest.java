@@ -42,7 +42,8 @@ public class VoiceSuggestionProviderTest {
         classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         return new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST, true, 0, 1, text,
                 classifications, null, classifications, null, "", new GURL("http://www.google.com"),
-                GURL.emptyGURL(), null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP);
+                GURL.emptyGURL(), null, false, false, null, null, OmniboxSuggestion.INVALID_GROUP,
+                null);
     }
 
     private static List<OmniboxSuggestion> createDummySuggestions(String... texts) {

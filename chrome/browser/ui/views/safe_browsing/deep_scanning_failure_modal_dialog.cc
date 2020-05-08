@@ -59,8 +59,8 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
   const int kMaxMessageWidth = 400;
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::FIXED,
-                kMaxMessageWidth, false);
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kFixed, kMaxMessageWidth, false);
 
   // Add the message label.
   auto label = std::make_unique<views::Label>(

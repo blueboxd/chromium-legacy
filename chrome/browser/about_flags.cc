@@ -3928,11 +3928,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
-    {"autofill-no-local-save-on-upload-success",
-     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessName,
-     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillNoLocalSaveOnUploadSuccess)},
     {"autofill-rich-metadata-queries",
      flag_descriptions::kAutofillRichMetadataQueriesName,
      flag_descriptions::kAutofillRichMetadataQueriesDescription, kOsAll,

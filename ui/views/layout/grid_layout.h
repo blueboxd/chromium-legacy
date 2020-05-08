@@ -26,12 +26,14 @@
 //                    FILL, // Views starting in this column are vertically
 //                          // resized.
 //                    1.0,  // This column has a resize weight of 1.
-//                    USE_PREF, // Use the preferred size of the view.
-//                    0,   // Ignored for USE_PREF.
+//                    ColumnSize::kUsePreferred, // Use the preferred size of
+//                    the
+//                                          // view.
+//                    0,   // Ignored for kUsePref.
 //                    0);  // A minimum width of 0.
 // columns->AddPaddingColumn(kFixedSize, // The padding column is not resizable.
 //                           10);        // And has a width of 10 pixels.
-// columns->AddColumn(FILL, FILL, kFixedSize, USE_PREF, 0, 0);
+// columns->AddColumn(FILL, FILL, kFixedSize, ColumnSize::kUsePreferred, 0, 0);
 // Now add the views:
 // // First start a row.
 // layout->StartRow(kFixedSize,  // This row isn't vertically resizable.
@@ -104,12 +106,12 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   };
 
   // An enumeration of the possible ways the size of a column may be obtained.
-  enum SizeType {
+  enum class ColumnSize {
     // The column size is fixed.
-    FIXED,
+    kFixed,
 
     // The preferred size of the view is used to determine the column size.
-    USE_PREF
+    kUsePreferred
   };
 
   GridLayout();
@@ -330,7 +332,7 @@ class VIEWS_EXPORT ColumnSet {
   void AddColumn(GridLayout::Alignment h_align,
                  GridLayout::Alignment v_align,
                  float resize_percent,
-                 GridLayout::SizeType size_type,
+                 GridLayout::ColumnSize size_type,
                  int fixed_width,
                  int min_width);
 
@@ -358,7 +360,7 @@ class VIEWS_EXPORT ColumnSet {
   void AddColumn(GridLayout::Alignment h_align,
                  GridLayout::Alignment v_align,
                  float resize_percent,
-                 GridLayout::SizeType size_type,
+                 GridLayout::ColumnSize size_type,
                  int fixed_width,
                  int min_width,
                  bool is_padding);

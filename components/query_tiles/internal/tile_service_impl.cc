@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/rand_util.h"
 #include "components/query_tiles/internal/proto_conversion.h"
 #include "components/query_tiles/internal/tile_config.h"
@@ -33,11 +34,13 @@ TileServiceImpl::TileServiceImpl(
     std::unique_ptr<ImageLoader> image_loader,
     std::unique_ptr<TileManager> tile_manager,
     background_task::BackgroundTaskScheduler* scheduler,
-    std::unique_ptr<TileFetcher> tile_fetcher)
+    std::unique_ptr<TileFetcher> tile_fetcher,
+    base::Clock* clock)
     : image_loader_(std::move(image_loader)),
       tile_manager_(std::move(tile_manager)),
       scheduler_(scheduler),
-      tile_fetcher_(std::move(tile_fetcher)) {
+      tile_fetcher_(std::move(tile_fetcher)),
+      clock_(clock) {
   // TODO(crbug.com/1077172): Initialize tile_db within tile_manager from
   // init_aware layer.
   ScheduleDailyTask();
@@ -108,9 +111,10 @@ void TileServiceImpl::OnFetchFinished(
     if (parse_success) {
       TileGroup group;
       TileGroupFromResponse(response_proto, &group);
-      // TODO(crbug.com/1077288): Validate tile group.
+      group.id = base::GenerateGUID();
+      group.last_updated_ts = clock_->Now();
       tile_manager_->SaveTiles(
-          std::move(group.tiles),
+          std::make_unique<TileGroup>(group),
           base::BindOnce(&TileServiceImpl::OnTilesSaved,
                          weak_ptr_factory_.GetWeakPtr(),
                          std::move(task_finished_callback)));

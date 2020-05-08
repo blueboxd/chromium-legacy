@@ -171,6 +171,8 @@ void CrostiniHandler::OnJavascriptAllowed() {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
   crostini_manager->AddCrostiniDialogStatusObserver(this);
   crostini_manager->AddCrostiniContainerPropertiesObserver(this);
+  crostini_manager->AddContainerStartedObserver(this);
+  crostini_manager->AddContainerShutdownObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->AddUsbDeviceObserver(this);
   }
@@ -182,6 +184,8 @@ void CrostiniHandler::OnJavascriptDisallowed() {
   auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile_);
   crostini_manager->RemoveCrostiniDialogStatusObserver(this);
   crostini_manager->RemoveCrostiniContainerPropertiesObserver(this);
+  crostini_manager->RemoveContainerStartedObserver(this);
+  crostini_manager->RemoveContainerShutdownObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->RemoveUsbDeviceObserver(this);
   }
@@ -682,6 +686,16 @@ void CrostiniHandler::HandleCheckCrostiniIsRunning(
 
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(crostini::IsCrostiniRunning(profile_)));
+}
+
+void CrostiniHandler::OnContainerStarted(
+    const crostini::ContainerId& container_id) {
+  FireWebUIListener("crostini-status-changed", base::Value(true));
+}
+
+void CrostiniHandler::OnContainerShutdown(
+    const crostini::ContainerId& container_id) {
+  FireWebUIListener("crostini-status-changed", base::Value(false));
 }
 
 }  // namespace settings

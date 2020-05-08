@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,18 +34,12 @@ class TileManagerImpl : public TileManager {
                                        std::move(callback)));
   }
 
-  void SaveTiles(std::vector<std::unique_ptr<Tile>> top_level_tiles,
+  void SaveTiles(std::unique_ptr<TileGroup> group,
                  TileGroupStatusCallback callback) override {
     if (!initialized_) {
       std::move(callback).Run(TileGroupStatus::kUninitialized);
       return;
     }
-
-    auto group = std::make_unique<TileGroup>();
-    group->id = base::GenerateGUID();
-    group->last_updated_ts = clock_->Now();
-    group->tiles = std::move(top_level_tiles);
-    // TODO(qinmin) : get locale from response.
 
     store_->Update(group->id, *group.get(),
                    base::BindOnce(&TileManagerImpl::OnGroupSaved,

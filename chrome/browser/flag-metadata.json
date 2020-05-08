@@ -319,11 +319,6 @@
     "expiry_milestone": 84
   },
   {
-    "name": "autofill-no-local-save-on-upload-success",
-    "owners": [ "jsaul@google.com", "annelim@google.com" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "autofill-off-no-server-data",
     "owners": [ "seblalancette" ],
     "expiry_milestone": 79

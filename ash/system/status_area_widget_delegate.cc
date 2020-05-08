@@ -187,7 +187,7 @@ void StatusAreaWidgetDelegate::CalculateTargetBounds() {
         continue;
       columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
                          0, /* resize percent */
-                         views::GridLayout::USE_PREF, 0, 0);
+                         views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     }
     layout->StartRow(0, 0);
     for (auto* child : children()) {
@@ -197,7 +197,7 @@ void StatusAreaWidgetDelegate::CalculateTargetBounds() {
   } else {
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                        0, /* resize percent */
-                       views::GridLayout::USE_PREF, 0, 0);
+                       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
     for (auto* child : children()) {
       if (!child->GetVisible())
         continue;

@@ -354,20 +354,16 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
 
 void CrostiniPortForwarder::DeactivateAllActivePorts(
     const ContainerId& container_id) {
-  for (const auto& port : forwarded_ports_) {
-    if (port.first.container_id == container_id) {
-      TryDeactivatePort(port.first, container_id, base::DoNothing());
-    }
-  }
-
   auto it = forwarded_ports_.begin();
   while (it != forwarded_ports_.end()) {
     if (it->first.container_id == container_id) {
+      TryDeactivatePort(it->first, container_id, base::DoNothing());
       it = forwarded_ports_.erase(it);
     } else {
       ++it;
     }
   }
+  SignalActivePortsChanged();
 }
 
 void CrostiniPortForwarder::RemoveAllPorts(const ContainerId& container_id) {

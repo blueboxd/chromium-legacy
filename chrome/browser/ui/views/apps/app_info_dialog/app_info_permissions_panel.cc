@@ -94,21 +94,22 @@ class BulletedPermissionsList : public views::View {
   BulletedPermissionsList() {
     layout_ = SetLayoutManager(std::make_unique<views::GridLayout>());
 
+    using ColumnSize = views::GridLayout::ColumnSize;
     // Create 3 columns: the bullet, the bullet text, and the revoke button.
     views::ColumnSet* column_set = layout_->AddColumnSet(kBulletColumnSetId);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                           views::GridLayout::kFixedSize,
-                          views::GridLayout::USE_PREF, 0, 0);
+                          ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                  kSpacingBetweenBulletAndStartOfText);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                           1.0 /* stretch to fill space */,
-                          views::GridLayout::USE_PREF, 0, 0);
+                          ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                  kSpacingBetweenTextAndRevokeButton);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
                           views::GridLayout::kFixedSize,
-                          views::GridLayout::USE_PREF, 0, 0);
+                          ColumnSize::kUsePreferred, 0, 0);
 
     views::ColumnSet* nested_column_set =
         layout_->AddColumnSet(kNestedBulletColumnSetId);
@@ -116,17 +117,17 @@ class BulletedPermissionsList : public views::View {
                                         kIndentationBeforeNestedBullet);
     nested_column_set->AddColumn(
         views::GridLayout::FILL, views::GridLayout::LEADING,
-        views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+        views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
     nested_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                         kSpacingBetweenBulletAndStartOfText);
     nested_column_set->AddColumn(
         views::GridLayout::FILL, views::GridLayout::LEADING,
-        1.0 /* stretch to fill space */, views::GridLayout::USE_PREF, 0, 0);
+        1.0 /* stretch to fill space */, ColumnSize::kUsePreferred, 0, 0);
     nested_column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                         kSpacingBetweenTextAndRevokeButton);
     nested_column_set->AddColumn(
         views::GridLayout::FILL, views::GridLayout::LEADING,
-        views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+        views::GridLayout::kFixedSize, ColumnSize::kUsePreferred, 0, 0);
   }
   ~BulletedPermissionsList() override {}
 

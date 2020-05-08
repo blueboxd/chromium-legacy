@@ -32,7 +32,7 @@ class ButtonLayout : public views::LayoutManager {
   // The dialog's one or two action button(s) must be the only children of
   // |view|. |view_width| is the desired width of the view, which controls the
   // width of the individual buttons as above. The layout manager of |view|'s
-  // parent must respect this width (by, for example, using SizeType::USE_PREF
+  // parent must respect this width (by, for example, using ColumnSize::kUsePref
   // for the hosting column's size_type if it uses GridLayout).
   explicit ButtonLayout(int view_width);
   ~ButtonLayout() override;

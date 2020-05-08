@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
@@ -239,6 +240,17 @@ class AutocompleteInput {
     return terms_prefixed_by_http_or_https_;
   }
 
+  // Returns the ID of the query tile selected by the user, if any.
+  // If no tile was selected, returns base::nullopt.
+  base::Optional<std::string> query_tile_id() const { return query_tile_id_; }
+
+  // Called to indicate that the query tile represented by |tile_id| was
+  // clicked by the user. In the absence of a |query_tile_id_|, top level tiles
+  // will be displayed.
+  void set_query_tile_id(const std::string& tile_id) {
+    query_tile_id_ = tile_id;
+  }
+
   // Resets all internal variables to the null-constructed state.
   void Clear();
 
@@ -256,7 +268,7 @@ class AutocompleteInput {
             const AutocompleteSchemeClassifier& scheme_classifier);
 
   // NOTE: Whenever adding a new field here, please make sure to update Clear()
-  // method.
+  // and EstimateMemoryUsage() methods.
   base::string16 text_;
   size_t cursor_position_;
   GURL current_url_;
@@ -274,6 +286,7 @@ class AutocompleteInput {
   bool want_asynchronous_matches_;
   bool from_omnibox_focus_;
   std::vector<base::string16> terms_prefixed_by_http_or_https_;
+  base::Optional<std::string> query_tile_id_;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_INPUT_H_

@@ -169,19 +169,21 @@ const FilesTooltip = Polymer({
 
     this.visibleTooltipTarget_ = target;
 
+    const useCardTooltip = target.hasAttribute('show-card-tooltip');
+
     const label = target.getAttribute('aria-label');
     if (!label) {
       return;
     }
 
-    this.$.label.innerHTML = label;
+    this.$.label.textContent = label;
     const invert = 'invert-tooltip';
     this.$.label.toggleAttribute('invert', target.hasAttribute(invert));
 
     const rect = target.getBoundingClientRect();
 
     let top = rect.top + rect.height;
-    if (util.isFilesNg()) {
+    if (util.isFilesNg() && !useCardTooltip) {
       top += 8;
     }
 
@@ -190,8 +192,6 @@ const FilesTooltip = Polymer({
     }
 
     this.style.top = `${Math.round(top)}px`;
-
-    const useCardTooltip = target.hasAttribute('show-card-tooltip');
 
     let left;
 

@@ -398,7 +398,8 @@ void IntentPickerBubbleView::Initialize() {
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                views::GridLayout::kFixedSize,
+                views::GridLayout::ColumnSize::kFixed,
                 kMaxIntentPickerLabelButtonWidth, 0);
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetId,
@@ -413,7 +414,7 @@ void IntentPickerBubbleView::Initialize() {
     cs_origin->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
     cs_origin->AddColumn(
         views::GridLayout::FILL, views::GridLayout::CENTER,
-        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+        views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
         kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
 
     layout->StartRowWithPadding(views::GridLayout::kFixedSize,
@@ -439,7 +440,7 @@ void IntentPickerBubbleView::Initialize() {
     cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
     cs_padded->AddColumn(
         views::GridLayout::FILL, views::GridLayout::CENTER,
-        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+        views::GridLayout::kFixedSize, views::GridLayout::ColumnSize::kFixed,
         kMaxIntentPickerLabelButtonWidth - 2 * kTitlePadding, 0);
 
     layout->StartRowWithPadding(views::GridLayout::kFixedSize,

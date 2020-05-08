@@ -125,6 +125,18 @@ class VmShutdownObserver : public base::CheckedObserver {
   virtual void OnVmShutdown(const std::string& vm_name) = 0;
 };
 
+class ContainerStartedObserver : public base::CheckedObserver {
+ public:
+  // Called when the container has started.
+  virtual void OnContainerStarted(const ContainerId& container_id) = 0;
+};
+
+class ContainerShutdownObserver : public base::CheckedObserver {
+ public:
+  // Called when the container has shutdown.
+  virtual void OnContainerShutdown(const ContainerId& container_id) = 0;
+};
+
 // CrostiniManager is a singleton which is used to check arguments for
 // ConciergeClient and CiceroneClient. ConciergeClient is dedicated to
 // communication with the Concierge service, CiceroneClient is dedicated to
@@ -603,6 +615,11 @@ class CrostiniManager : public KeyedService,
   void RemoveCrostiniContainerPropertiesObserver(
       CrostiniContainerPropertiesObserver* observer);
 
+  void AddContainerStartedObserver(ContainerStartedObserver* observer);
+  void RemoveContainerStartedObserver(ContainerStartedObserver* observer);
+  void AddContainerShutdownObserver(ContainerShutdownObserver* observer);
+  void RemoveContainerShutdownObserver(ContainerShutdownObserver* observer);
+
   void OnDBusShuttingDownForTesting();
 
   bool IsContainerUpgradeable(const ContainerId& container_id) const;
@@ -613,6 +630,8 @@ class CrostiniManager : public KeyedService,
   bool IsUncleanStartup() const;
   void SetUncleanStartupForTesting(bool is_unclean_startup);
   void RemoveUncleanSshfsMounts();
+  void DeallocateForwardedPortsCallback(Profile* profile,
+                                        const ContainerId& container_id);
 
  private:
   class CrostiniRestarter;
@@ -893,6 +912,9 @@ class CrostiniManager : public KeyedService,
       crostini_dialog_status_observers_;
   base::ObserverList<CrostiniContainerPropertiesObserver>
       crostini_container_properties_observers_;
+
+  base::ObserverList<ContainerStartedObserver> container_started_observers_;
+  base::ObserverList<ContainerShutdownObserver> container_shutdown_observers_;
 
   // Contains the types of crostini dialogs currently open. It is generally
   // invalid to show more than one. e.g. uninstalling and installing are

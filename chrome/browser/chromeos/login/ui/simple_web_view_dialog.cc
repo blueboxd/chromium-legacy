@@ -73,19 +73,20 @@ class ToolbarRowView : public views::View {
     // Back button.
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(0, related_horizontal_spacing);
     // Forward button.
     column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(0, related_horizontal_spacing);
     // Reload button.
     column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                          GridLayout::USE_PREF, 0, 0);
+                          GridLayout::ColumnSize::kUsePreferred, 0, 0);
     column_set->AddPaddingColumn(0, related_horizontal_spacing);
     // Location bar.
     column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                          GridLayout::FIXED, kLocationBarHeight, 0);
+                          GridLayout::ColumnSize::kFixed, kLocationBarHeight,
+                          0);
     column_set->AddPaddingColumn(0, related_horizontal_spacing);
 
     layout->StartRow(0, 0);
@@ -215,12 +216,12 @@ void SimpleWebViewDialog::Init() {
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::FIXED, 0, 0);
+                        GridLayout::ColumnSize::kFixed, 0, 0);
 
   column_set = layout->AddColumnSet(1);
   column_set->AddPaddingColumn(0, kInnerMargin);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::FIXED, 0, 0);
+                        GridLayout::ColumnSize::kFixed, 0, 0);
   column_set->AddPaddingColumn(0, kInnerMargin);
 
   // Setup layout rows.

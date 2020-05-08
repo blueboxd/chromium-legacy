@@ -44,11 +44,15 @@ ScreenOrientationController* ScreenOrientationController::FromIfExists(
 ScreenOrientationController::ScreenOrientationController(LocalDOMWindow& window)
     : ExecutionContextLifecycleObserver(&window),
       PageVisibilityObserver(window.GetFrame()->GetPage()),
-      Supplement<LocalDOMWindow>(window) {
+      Supplement<LocalDOMWindow>(window),
+      screen_orientation_service_(&window) {
   AssociatedInterfaceProvider* provider =
       window.GetFrame()->GetRemoteNavigationAssociatedInterfaces();
-  if (provider)
-    provider->GetInterface(&screen_orientation_service_);
+  if (provider) {
+    provider->GetInterface(
+        screen_orientation_service_.BindNewEndpointAndPassReceiver(
+            window.GetTaskRunner(TaskType::kMiscPlatformAPI)));
+  }
 }
 
 // Compute the screen orientation using the orientation angle and the screen
@@ -109,7 +113,7 @@ void ScreenOrientationController::UpdateOrientation() {
 }
 
 bool ScreenOrientationController::IsActive() const {
-  return orientation_ && screen_orientation_service_;
+  return orientation_ && screen_orientation_service_.is_bound();
 }
 
 bool ScreenOrientationController::IsVisible() const {
@@ -191,7 +195,7 @@ void ScreenOrientationController::lock(
     WebScreenOrientationLockType orientation,
     std::unique_ptr<WebLockOrientationCallback> callback) {
   // When detached, the |screen_orientation_service_| is no longer valid.
-  if (!screen_orientation_service_)
+  if (!screen_orientation_service_.is_bound())
     return;
 
   CancelPendingLocks();
@@ -206,7 +210,7 @@ void ScreenOrientationController::lock(
 
 void ScreenOrientationController::unlock() {
   // When detached, the |screen_orientation_service_| is no longer valid.
-  if (!screen_orientation_service_)
+  if (!screen_orientation_service_.is_bound())
     return;
 
   CancelPendingLocks();
@@ -219,19 +223,19 @@ bool ScreenOrientationController::MaybeHasActiveLock() const {
 }
 
 void ScreenOrientationController::ContextDestroyed() {
-  screen_orientation_service_.reset();
   active_lock_ = false;
 }
 
 void ScreenOrientationController::Trace(Visitor* visitor) {
   visitor->Trace(orientation_);
+  visitor->Trace(screen_orientation_service_);
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 void ScreenOrientationController::SetScreenOrientationAssociatedRemoteForTests(
-    mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation> remote) {
+    HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation> remote) {
   screen_orientation_service_ = std::move(remote);
 }
 

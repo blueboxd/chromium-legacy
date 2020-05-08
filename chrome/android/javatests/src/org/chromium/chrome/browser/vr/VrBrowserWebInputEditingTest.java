@@ -178,7 +178,7 @@ public class VrBrowserWebInputEditingTest {
         // click while the dialog is technically present, but not fully ready, resulting in the
         // click not registering. Since there doesn't seem to be a good way to wait for the dialog
         // to be ready, try several times.
-        CriteriaHelper.pollInstrumentationThread(
+        CriteriaHelper.pollUiThread(
                 ()
                         -> {
                     if (!mVrTestRule.getActivity().getModalDialogManager().isShowing()) return true;

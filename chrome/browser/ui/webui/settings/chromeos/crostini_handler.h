@@ -30,6 +30,8 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
                         public crostini::CrostiniExportImport::Observer,
                         public crostini::CrostiniContainerPropertiesObserver,
                         public crostini::CrostiniPortForwarder::Observer,
+                        public crostini::ContainerStartedObserver,
+                        public crostini::ContainerShutdownObserver,
                         public chromeos::CrosUsbDeviceObserver {
  public:
   explicit CrostiniHandler(Profile* profile);
@@ -127,6 +129,10 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleGetCrostiniActivePorts(const base::ListValue* args);
   // Checks if Crostini is running.
   void HandleCheckCrostiniIsRunning(const base::ListValue* args);
+  // crostini::ContainerStartedObserver
+  void OnContainerStarted(const crostini::ContainerId& container_id) override;
+  // crostini::ContainerShutdownObserver
+  void OnContainerShutdown(const crostini::ContainerId& container_id) override;
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

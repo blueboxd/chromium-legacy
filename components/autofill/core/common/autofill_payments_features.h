@@ -31,7 +31,6 @@ extern const base::Feature kAutofillEnableSurfacingServerCardNickname;
 extern const base::Feature kAutofillEnableToolbarStatusChip;
 extern const base::Feature kAutofillEnableVirtualCard;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
-extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardDismissOnNavigation;
 extern const base::Feature kAutofillSaveCardInfobarEditSupport;
 extern const base::Feature kAutofillUpstream;

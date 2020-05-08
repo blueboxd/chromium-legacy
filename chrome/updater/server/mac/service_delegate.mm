@@ -15,6 +15,7 @@
 #import "chrome/updater/server/mac/service_protocol.h"
 #import "chrome/updater/server/mac/update_service_wrappers.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/updater_version.h"
 
 @interface CRUUpdateCheckXPCServiceImpl : NSObject <CRUUpdateChecking>
 
@@ -48,12 +49,19 @@
   return [self initWithUpdateService:nullptr callbackRunner:nullptr];
 }
 
+- (void)getUpdaterVersionWithReply:
+    (void (^_Nonnull)(NSString* _Nullable version))reply {
+  if (reply)
+    reply(@UPDATER_VERSION_STRING);
+}
+
 - (void)checkForUpdatesWithUpdateState:(id<CRUUpdateStateObserving>)updateState
-                                 reply:(void (^_Nullable)(int rc))reply {
+                                 reply:(void (^_Nonnull)(int rc))reply {
   auto cb =
       base::BindOnce(base::RetainBlock(^(updater::UpdateService::Result error) {
         VLOG(0) << "UpdateAll complete: error = " << static_cast<int>(error);
-        reply(static_cast<int>(error));
+        if (reply)
+          reply(static_cast<int>(error));
       }));
 
   auto sccb = base::BindRepeating(
@@ -83,11 +91,12 @@
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
                     updateState:(id<CRUUpdateStateObserving>)updateState
-                          reply:(void (^_Nullable)(int rc))reply {
+                          reply:(void (^_Nonnull)(int rc))reply {
   auto cb =
       base::BindOnce(base::RetainBlock(^(updater::UpdateService::Result error) {
         VLOG(0) << "Update complete: error = " << static_cast<int>(error);
-        reply(static_cast<int>(error));
+        if (reply)
+          reply(static_cast<int>(error));
       }));
 
   auto sccb = base::BindRepeating(
@@ -121,7 +130,7 @@
                                 tag:(NSString* _Nullable)tag
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
-                              reply:(void (^_Nullable)(int rc))reply {
+                              reply:(void (^_Nonnull)(int rc))reply {
   updater::RegistrationRequest request;
   request.app_id = base::SysNSStringToUTF8(appId);
   request.brand_code = base::SysNSStringToUTF8(brandCode);
@@ -134,7 +143,8 @@
       base::RetainBlock(^(const updater::RegistrationResponse& response) {
         VLOG(0) << "Registration complete: status code = "
                 << response.status_code;
-        reply(response.status_code);
+        if (reply)
+          reply(response.status_code);
       }));
 
   _callbackRunner->PostTask(

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.payments.PaymentApp.PaymentRequestUpdateEventCallback;
+import org.chromium.chrome.browser.payments.PaymentApp.PaymentRequestUpdateEventListener;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -86,6 +87,13 @@ public interface PaymentAppFactoryParams {
 
     /**
      * @return The listener for payment method, shipping address, and shipping option change events.
+     */
+    default PaymentRequestUpdateEventListener getPaymentRequestUpdateEventListener() {
+        return null;
+    }
+
+    /**
+     * Stub method to be removed after resolving clank dependencies.
      */
     default PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback() {
         return null;

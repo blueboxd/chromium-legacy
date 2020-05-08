@@ -463,6 +463,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._apk_under_test_incremental_install_json = None
     self._modules = None
     self._fake_modules = None
+    self._additional_locales = None
     self._package_info = None
     self._suite = None
     self._test_apk = None
@@ -567,6 +568,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
     self._modules = args.modules
     self._fake_modules = args.fake_modules
+    self._additional_locales = args.additional_locales
 
     self._test_jar = args.test_jar
     self._test_support_apk = apk_helper.ToHelper(os.path.join(
@@ -750,6 +752,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def fake_modules(self):
     return self._fake_modules
+
+  @property
+  def additional_locales(self):
+    return self._additional_locales
 
   @property
   def coverage_directory(self):

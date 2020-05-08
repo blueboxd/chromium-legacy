@@ -476,6 +476,11 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   // Used to display accessibility floating menu.
   std::unique_ptr<FloatingAccessibilityController> floating_menu_controller_;
+  // By default, floating accessibility menu is not shown unless
+  // ShowFloatingMenuIfEnabled() is called. This is used in kiosk mode to
+  // postpone the showing of the menu till the splash screen closes. This value
+  // makes floating menu visible as soon as it is enabled.
+  bool always_show_floating_menu_when_enabled_ = false;
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;

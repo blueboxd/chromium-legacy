@@ -81,6 +81,10 @@ class FeedService : public KeyedService {
 
   void ClearCachedData();
 
+  RefreshTaskScheduler* GetRefreshTaskScheduler() {
+    return refresh_task_scheduler_.get();
+  }
+
  private:
   class StreamDelegateImpl;
   class NetworkDelegateImpl;

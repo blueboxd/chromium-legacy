@@ -178,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2887d35ca9dc81101d2354f9e2fc257fee2c93b8',
+  'skia_revision': 'ac09f7cd7a283292e81d57e94936dfd3cc8ca018',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'c6dd3220c3d4d77813ab804c49f789f13eb795ba',
+  'v8_revision': '2042676e67ca7f6560585a2194901a1910d8cabf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,7 +190,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '555de000d75e902a1ae2b26de378e0f7037eef29',
+  'angle_revision': '25e21f9f496815421d35f223e1dfad8418220f5b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -205,7 +205,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '78987bb7bb4764ca3a8b08b0a6f7bd14b53c3e4f',
+  'boringssl_revision': '5f43b12d52e94b50e481bae2ccb74ab95904123d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a445287b964468bdea7eb0e76d1b9e19bf74dcd6',
+  'devtools_frontend_revision': '906108beba6107af7259dff5366375f70f78267e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -851,7 +851,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '561b606eae71751b623159ede422379900bcdc50',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '5ac14364328118b3e02ccf3af5147d011b98c38a',
       'condition': 'checkout_linux',
   },
 
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ddcba7ca3c7f0432aee6bd9740c21f785c32a982',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6afaa6ca97affa418c408c735574614fdff52343',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1453,7 +1453,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '04e1bab1b324e08b8dec4bf617e2afb13b6bde3b',
+    Var('webrtc_git') + '/src.git' + '@' + '33d81a05ebd4d4e3e50be08d64ed944c2f8d42fd',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0f178efa6d43cbcdb3ef2ff5048ac96d8cbeff74',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b09c8838f0605044c140e0d0f89f8c40fc9a44b0',
     'condition': 'checkout_src_internal',
   },
 

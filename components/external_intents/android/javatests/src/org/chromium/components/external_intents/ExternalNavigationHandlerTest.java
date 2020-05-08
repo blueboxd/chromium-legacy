@@ -1968,7 +1968,10 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public void startActivity(Intent intent, boolean proxy) {
+        public void dispatchAuthenticatedIntent(Intent intent) {}
+
+        @Override
+        public void didStartActivity(Intent intent) {
             startActivityIntent = intent;
         }
 
@@ -2354,7 +2357,6 @@ public class ExternalNavigationHandlerTest {
 
         @Override
         public void startActivity(Intent intent) {
-            throw new UnsupportedOperationException();
         }
 
         @Override

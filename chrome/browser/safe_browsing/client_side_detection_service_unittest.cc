@@ -238,7 +238,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
 TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
   SetModelFetchResponses();
   csd_service_ =
-      ClientSideDetectionService::Create(test_shared_loader_factory_);
+      std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
   csd_service_->SetEnabledAndRefreshState(true);
   EXPECT_TRUE(csd_service_.get() != NULL);
   // We delete the client-side detection service class even though the callbacks
@@ -252,7 +252,7 @@ TEST_F(ClientSideDetectionServiceTest, ServiceObjectDeletedBeforeCallbackDone) {
 TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetModelFetchResponses();
   csd_service_ =
-      ClientSideDetectionService::Create(test_shared_loader_factory_);
+      std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
   csd_service_->SetEnabledAndRefreshState(true);
 
   GURL url("http://a.com/");
@@ -300,7 +300,7 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
 TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   SetModelFetchResponses();
   csd_service_ =
-      ClientSideDetectionService::Create(test_shared_loader_factory_);
+      std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
 
   base::queue<base::Time>& report_times = GetPhishingReportTimes();
   base::Time now = base::Time::Now();
@@ -316,7 +316,7 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
 TEST_F(ClientSideDetectionServiceTest, CacheTest) {
   SetModelFetchResponses();
   csd_service_ =
-      ClientSideDetectionService::Create(test_shared_loader_factory_);
+      std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
 
   TestCache();
 }
@@ -324,7 +324,7 @@ TEST_F(ClientSideDetectionServiceTest, CacheTest) {
 TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   SetModelFetchResponses();
   csd_service_ =
-      ClientSideDetectionService::Create(test_shared_loader_factory_);
+      std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
 
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("10.1.2.3"));
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("127.0.0.1"));
@@ -348,7 +348,7 @@ TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
 TEST_F(ClientSideDetectionServiceTest, SetEnabledAndRefreshState) {
   // Check that the model isn't downloaded until the service is enabled.
   csd_service_ =
-      ClientSideDetectionService::Create(test_shared_loader_factory_);
+      std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
   EXPECT_FALSE(csd_service_->enabled());
   EXPECT_TRUE(csd_service_->model_loader_standard_->url_loader_.get() == NULL);
 

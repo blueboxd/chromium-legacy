@@ -14,6 +14,7 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
+#include "components/feed/core/v2/tasks/upload_actions_task.h"
 #include "components/offline_pages/task/task.h"
 #include "components/version_info/channel.h"
 
@@ -66,6 +67,7 @@ class LoadStreamTask : public offline_pages::Task {
   }
 
   void LoadFromStoreComplete(LoadStreamFromStoreTask::Result result);
+  void UploadActionsComplete(UploadActionsTask::Result result);
   void QueryRequestComplete(FeedNetwork::QueryRequestResult result);
   void Done(LoadStreamStatus status);
 
@@ -79,6 +81,7 @@ class LoadStreamTask : public offline_pages::Task {
 
   base::TimeTicks fetch_start_time_;
   base::OnceCallback<void(Result)> done_callback_;
+  std::unique_ptr<UploadActionsTask> upload_actions_task_;
   base::WeakPtrFactory<LoadStreamTask> weak_ptr_factory_{this};
 };
 }  // namespace feed

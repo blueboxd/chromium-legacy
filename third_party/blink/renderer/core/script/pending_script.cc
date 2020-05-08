@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
@@ -60,7 +61,7 @@ PendingScript::PendingScript(ScriptElementBase* element,
       virtual_time_pauser_(CreateWebScopedVirtualTimePauser(element)),
       client_(nullptr),
       original_element_document_(&element->GetDocument()),
-      original_context_document_(element->GetDocument().ContextDocument()),
+      original_execution_context_(element->GetExecutionContext()),
       created_during_document_write_(
           element->GetDocument().IsInDocumentWrite()) {}
 
@@ -128,20 +129,19 @@ void PendingScript::MarkParserBlockingLoadStartTime() {
 // <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
 void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   TRACE_EVENT0("blink", "PendingScript::ExecuteScriptBlock");
-  Document* context_document = element_->GetDocument().ContextDocument();
-  if (!context_document) {
+  ExecutionContext* context = element_->GetExecutionContext();
+  if (!context) {
     Dispose();
     return;
   }
 
-  LocalFrame* frame = context_document->GetFrame();
-  if (!frame) {
+  if (!To<LocalDOMWindow>(context)->GetFrame()) {
     Dispose();
     return;
   }
 
-  if (OriginalContextDocument() != context_document) {
-    // Do not execute scripts if they are moved between context documents.
+  if (original_execution_context_ != context) {
+    // Do not execute scripts if they are moved between contexts.
     Dispose();
     return;
   }
@@ -181,7 +181,8 @@ void PendingScript::ExecuteScriptBlockInternal(
     base::TimeTicks parser_blocking_load_start_time,
     bool is_controlled_by_script_runner) {
   Document& element_document = element->GetDocument();
-  Document* context_document = element_document.ContextDocument();
+  Document* context_document =
+      To<LocalDOMWindow>(element_document.GetExecutionContext())->document();
 
   // <spec step="2">If the script's script is null, fire an event named error at
   // the element, and return.</spec>
@@ -291,7 +292,7 @@ void PendingScript::ExecuteScriptBlockInternal(
 void PendingScript::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(client_);
-  visitor->Trace(original_context_document_);
+  visitor->Trace(original_execution_context_);
   visitor->Trace(original_element_document_);
 }
 

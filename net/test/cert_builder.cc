@@ -50,14 +50,6 @@ std::string Sha1WithRSAEncryption() {
                      std::end(kSha1WithRSAEncryption));
 }
 
-std::string Md5WithRSAEncryption() {
-  const uint8_t kMd5WithRSAEncryption[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
-                                           0x86, 0x48, 0x86, 0xf7, 0x0d,
-                                           0x01, 0x01, 0x04, 0x05, 0x00};
-  return std::string(std::begin(kMd5WithRSAEncryption),
-                     std::end(kMd5WithRSAEncryption));
-}
-
 // Adds bytes (specified as a StringPiece) to the given CBB.
 // The argument ordering follows the boringssl CBB_* api style.
 bool CBBAddBytes(CBB* cbb, base::StringPiece bytes) {
@@ -70,29 +62,6 @@ bool CBBAddBytes(CBB* cbb, base::StringPiece bytes) {
 template <size_t N>
 bool CBBAddBytes(CBB* cbb, const uint8_t (&data)[N]) {
   return CBB_add_bytes(cbb, data, N);
-}
-
-// Adds a RFC 5280 Time value to the given CBB.
-// The argument ordering follows the boringssl CBB_* api style.
-bool CBBAddTime(CBB* cbb, const base::Time& time) {
-  der::GeneralizedTime generalized_time;
-  if (!der::EncodeTimeAsGeneralizedTime(time, &generalized_time))
-    return false;
-  CBB time_cbb;
-  if (generalized_time.year < 2050) {
-    uint8_t out[der::kUTCTimeLength];
-    if (!der::EncodeUTCTime(generalized_time, out) ||
-        !CBB_add_asn1(cbb, &time_cbb, CBS_ASN1_UTCTIME) ||
-        !CBBAddBytes(&time_cbb, out) || !CBB_flush(cbb))
-      return false;
-  } else {
-    uint8_t out[der::kGeneralizedTimeLength];
-    if (!der::EncodeGeneralizedTime(generalized_time, out) ||
-        !CBB_add_asn1(cbb, &time_cbb, CBS_ASN1_GENERALIZEDTIME) ||
-        !CBBAddBytes(&time_cbb, out) || !CBB_flush(cbb))
-      return false;
-  }
-  return true;
 }
 
 // Finalizes the CBB to a std::string.
@@ -409,8 +378,8 @@ void CertBuilder::SetValidity(base::Time not_before, base::Time not_after) {
   CBB validity;
   ASSERT_TRUE(CBB_init(cbb.get(), 64));
   ASSERT_TRUE(CBB_add_asn1(cbb.get(), &validity, CBS_ASN1_SEQUENCE));
-  ASSERT_TRUE(CBBAddTime(&validity, not_before));
-  ASSERT_TRUE(CBBAddTime(&validity, not_after));
+  ASSERT_TRUE(x509_util::CBBAddTime(&validity, not_before));
+  ASSERT_TRUE(x509_util::CBBAddTime(&validity, not_after));
   validity_tlv_ = FinishCBB(cbb.get());
 }
 
@@ -499,118 +468,6 @@ scoped_refptr<X509Certificate> CertBuilder::GetX509CertificateChain() {
 
 std::string CertBuilder::GetDER() {
   return x509_util::CryptoBufferAsStringPiece(GetCertBuffer()).as_string();
-}
-
-// static
-std::string CertBuilder::CreateCrl(CertBuilder* crl_issuer,
-                                   const std::vector<uint64_t>& revoked_serials,
-                                   DigestAlgorithm digest) {
-  std::string signature_algorithm;
-  const EVP_MD* md = nullptr;
-  switch (digest) {
-    case DigestAlgorithm::Sha256: {
-      signature_algorithm = Sha256WithRSAEncryption();
-      md = EVP_sha256();
-      break;
-    }
-
-    case DigestAlgorithm::Sha1: {
-      signature_algorithm = Sha1WithRSAEncryption();
-      md = EVP_sha1();
-      break;
-    }
-
-    case DigestAlgorithm::Md5: {
-      signature_algorithm = Md5WithRSAEncryption();
-      md = EVP_md5();
-      break;
-    }
-
-    default:
-      ADD_FAILURE();
-      return std::string();
-  }
-  //    TBSCertList  ::=  SEQUENCE  {
-  //         version                 Version OPTIONAL,
-  //                                      -- if present, MUST be v2
-  //         signature               AlgorithmIdentifier,
-  //         issuer                  Name,
-  //         thisUpdate              Time,
-  //         nextUpdate              Time OPTIONAL,
-  //         revokedCertificates     SEQUENCE OF SEQUENCE  {
-  //              userCertificate         CertificateSerialNumber,
-  //              revocationDate          Time,
-  //              crlEntryExtensions      Extensions OPTIONAL
-  //                                       -- if present, version MUST be v2
-  //                                   }  OPTIONAL,
-  //         crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
-  //                                       -- if present, version MUST be v2
-  //                                   }
-  bssl::ScopedCBB tbs_cbb;
-  CBB tbs_cert_list, revoked_serials_cbb;
-  if (!CBB_init(tbs_cbb.get(), 10) ||
-      !CBB_add_asn1(tbs_cbb.get(), &tbs_cert_list, CBS_ASN1_SEQUENCE) ||
-      !CBB_add_asn1_uint64(&tbs_cert_list, 1 /* V2 */) ||
-      !CBBAddBytes(&tbs_cert_list, signature_algorithm) ||
-      !CBBAddBytes(&tbs_cert_list, crl_issuer->GetSubject()) ||
-      !CBBAddTime(&tbs_cert_list,
-                  base::Time::Now() - base::TimeDelta::FromDays(1)) ||
-      !CBBAddTime(&tbs_cert_list,
-                  base::Time::Now() + base::TimeDelta::FromDays(6))) {
-    ADD_FAILURE();
-    return std::string();
-  }
-  if (!revoked_serials.empty()) {
-    if (!CBB_add_asn1(&tbs_cert_list, &revoked_serials_cbb,
-                      CBS_ASN1_SEQUENCE)) {
-      ADD_FAILURE();
-      return std::string();
-    }
-    for (const int64_t revoked_serial : revoked_serials) {
-      CBB revoked_serial_cbb;
-      if (!CBB_add_asn1(&revoked_serials_cbb, &revoked_serial_cbb,
-                        CBS_ASN1_SEQUENCE) ||
-          !CBB_add_asn1_uint64(&revoked_serial_cbb, revoked_serial) ||
-          !CBBAddTime(&revoked_serial_cbb,
-                      base::Time::Now() - base::TimeDelta::FromDays(1)) ||
-          !CBB_flush(&revoked_serials_cbb)) {
-        ADD_FAILURE();
-        return std::string();
-      }
-    }
-  }
-
-  std::string tbs_tlv = FinishCBB(tbs_cbb.get());
-
-  //    CertificateList  ::=  SEQUENCE  {
-  //         tbsCertList          TBSCertList,
-  //         signatureAlgorithm   AlgorithmIdentifier,
-  //         signatureValue       BIT STRING  }
-  bssl::ScopedCBB crl_cbb;
-  CBB cert_list, signature;
-  bssl::ScopedEVP_MD_CTX ctx;
-  uint8_t* sig_out;
-  size_t sig_len;
-  if (!CBB_init(crl_cbb.get(), 10) ||
-      !CBB_add_asn1(crl_cbb.get(), &cert_list, CBS_ASN1_SEQUENCE) ||
-      !CBBAddBytes(&cert_list, tbs_tlv) ||
-      !CBBAddBytes(&cert_list, signature_algorithm) ||
-      !CBB_add_asn1(&cert_list, &signature, CBS_ASN1_BITSTRING) ||
-      !CBB_add_u8(&signature, 0 /* no unused bits */) ||
-      !EVP_DigestSignInit(ctx.get(), nullptr, md, nullptr,
-                          crl_issuer->GetKey()) ||
-      !EVP_DigestSign(ctx.get(), nullptr, &sig_len,
-                      reinterpret_cast<const uint8_t*>(tbs_tlv.data()),
-                      tbs_tlv.size()) ||
-      !CBB_reserve(&signature, &sig_out, sig_len) ||
-      !EVP_DigestSign(ctx.get(), sig_out, &sig_len,
-                      reinterpret_cast<const uint8_t*>(tbs_tlv.data()),
-                      tbs_tlv.size()) ||
-      !CBB_did_write(&signature, sig_len)) {
-    ADD_FAILURE();
-    return std::string();
-  }
-  return FinishCBB(crl_cbb.get());
 }
 
 void CertBuilder::Invalidate() {

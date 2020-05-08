@@ -28,6 +28,7 @@
 #include "components/feed/core/v2/surface_updater.h"
 #include "components/feed/core/v2/tasks/clear_all_task.h"
 #include "components/feed/core/v2/tasks/load_stream_task.h"
+#include "components/feed/core/v2/tasks/upload_actions_task.h"
 #include "components/feed/core/v2/tasks/wait_for_store_initialize_task.h"
 #include "components/offline_pages/task/closure_task.h"
 #include "components/prefs/pref_service.h"
@@ -55,6 +56,29 @@ RefreshResponseData FeedStream::WireResponseTranslator::TranslateWireResponse(
                                        current_time);
 }
 
+FeedStream::Metadata::Metadata(FeedStore* store) : store_(store) {}
+FeedStream::Metadata::~Metadata() = default;
+
+void FeedStream::Metadata::Populate(feedstore::Metadata metadata) {
+  metadata_ = std::move(metadata);
+}
+
+std::string FeedStream::Metadata::GetConsistencyToken() const {
+  return metadata_.consistency_token();
+}
+
+void FeedStream::Metadata::SetConsistencyToken(std::string consistency_token) {
+  metadata_.set_consistency_token(std::move(consistency_token));
+  store_->WriteMetadata(metadata_, base::DoNothing());
+}
+
+LocalActionId FeedStream::Metadata::GetNextActionId() {
+  uint32_t id = metadata_.next_action_id();
+  metadata_.set_next_action_id(id + 1);
+  store_->WriteMetadata(metadata_, base::DoNothing());
+  return LocalActionId(id);
+}
+
 FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
                        MetricsReporter* metrics_reporter,
                        Delegate* delegate,
@@ -74,7 +98,8 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
       tick_clock_(tick_clock),
       chrome_info_(chrome_info),
       task_queue_(this),
-      request_throttler_(profile_prefs, clock) {
+      request_throttler_(profile_prefs, clock),
+      metadata_(feed_store) {
   static WireResponseTranslator default_translator;
   wire_response_translator_ = &default_translator;
 
@@ -82,7 +107,7 @@ FeedStream::FeedStream(RefreshTaskScheduler* refresh_task_scheduler,
 
   // Inserting this task first ensures that |store_| is initialized before
   // it is used.
-  task_queue_.AddTask(std::make_unique<WaitForStoreInitializeTask>(store_));
+  task_queue_.AddTask(std::make_unique<WaitForStoreInitializeTask>(this));
 }
 
 void FeedStream::InitializeScheduling() {
@@ -389,6 +414,14 @@ void FeedStream::ClearAll() {
   task_queue_.AddTask(std::make_unique<ClearAllTask>(this));
 }
 
+void FeedStream::UploadAction(
+    feedwire::FeedAction action,
+    bool upload_now,
+    base::OnceCallback<void(UploadActionsTask::Result)> callback) {
+  task_queue_.AddTask(std::make_unique<UploadActionsTask>(
+      std::move(action), upload_now, this, std::move(callback)));
+}
+
 void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
   DCHECK(!model_);
   model_ = std::move(model);
@@ -397,9 +430,10 @@ void FeedStream::LoadModel(std::unique_ptr<StreamModel> model) {
 }
 
 void FeedStream::SetRequestSchedule(RequestSchedule schedule) {
-  base::Time run_time = NextScheduledRequestTime(clock_->Now(), &schedule);
+  const base::Time now = clock_->Now();
+  base::Time run_time = NextScheduledRequestTime(now, &schedule);
   if (!run_time.is_null()) {
-    refresh_task_scheduler_->EnsureScheduled(run_time);
+    refresh_task_scheduler_->EnsureScheduled(run_time - now);
   } else {
     refresh_task_scheduler_->Cancel();
   }

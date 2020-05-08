@@ -1059,13 +1059,6 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Flings the panel up to its maximized state.
-     */
-    private void flingPanelUpToTop() {
-        fling(0.5f, 0.95f, 0.5f, 0.05f, 1000);
-    }
-
-    /**
      * Scrolls the base page.
      */
     private void scrollBasePage() {
@@ -1199,12 +1192,16 @@ public class ContextualSearchManagerTest {
      * Force the Panel to close.
      */
     private void closePanel() {
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mPanel.closePanel(StateChangeReason.UNKNOWN, false);
-            }
-        });
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> { mPanel.closePanel(StateChangeReason.UNKNOWN, false); });
+    }
+
+    /**
+     * Force the Panel to maximize.
+     */
+    private void maximizePanel() {
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                () -> { mPanel.maximizePanel(StateChangeReason.UNKNOWN); });
     }
 
     /**
@@ -1822,7 +1819,7 @@ public class ContextualSearchManagerTest {
         // -------- TEST ---------
         // Start a slow-resolve search and maximize the Panel.
         simulateSlowResolveSearch("search");
-        flingPanelUpToTop();
+        maximizePanel();
         waitForPanelToMaximize();
 
         // A click should not promote since we are still waiting to Resolve.
@@ -2063,7 +2060,7 @@ public class ContextualSearchManagerTest {
     public void testAppMenuSuppressedWhenMaximized(@EnabledFeature int enabledFeature)
             throws Exception {
         triggerResolve("states");
-        flingPanelUpToTop();
+        maximizePanel();
         waitForPanelToMaximize();
 
         pressAppMenuKey();

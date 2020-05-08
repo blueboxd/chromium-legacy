@@ -5444,6 +5444,8 @@ Unknown properties are collapsed to zero. -->
   <int value="20" label="Notification scheduler task"/>
   <int value="21" label="Notification trigger task"/>
   <int value="22" label="Periodic Background Sync wake up task"/>
+  <int value="23" label="Query Tile task"/>
+  <int value="24" label="Feedv2 refresh task"/>
 </enum>
 
 <enum name="BackgroundTracingState">
@@ -11004,6 +11006,8 @@ Called by update_net_error_codes.py.-->
   <int value="65" label="AR"/>
   <int value="66" label="Native file system read guard"/>
   <int value="67" label="Storage Access Grants"/>
+  <int value="68" label="Camera pan tilt zoom"/>
+  <int value="69" label="Window placement"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -27330,6 +27334,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="70" label="StorageAccessAPI"/>
   <int value="71" label="ClientHintUAFullVersion"/>
   <int value="72" label="TrustTokenRedemption"/>
+  <int value="73" label="ConversionMeasurement"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -27454,6 +27459,29 @@ Called by update_feature_policy_enum.py.-->
   <int value="3" label="More button"/>
   <int value="4" label="Synthetic token"/>
   <int value="5" label="Infinite feed"/>
+</enum>
+
+<enum name="FeedUploadActionsBatchStatus">
+  <int value="0" label="Actions batch store/upload not attempted"/>
+  <int value="1" label="Failed to update store"/>
+  <int value="2" label="Failed to upload (got empty response body)"/>
+  <int value="3" label="Failed to remove uploaded actions from store"/>
+  <int value="4" label="Ran out of actions upload quota"/>
+  <int value="5" label="All actions were stale"/>
+  <int value="6" label="Successfully uploaded batch"/>
+</enum>
+
+<enum name="FeedUploadActionsStatus">
+  <int value="0" label="Action store/upload task not attempted"/>
+  <int value="1" label="No pending actions to upload"/>
+  <int value="2" label="Failed to store pending action"/>
+  <int value="3" label="Pending action was stored for later upload"/>
+  <int value="4"
+      label="Successfully uploaded some actions and stored a new consistency
+             token"/>
+  <int value="5"
+      label="Updated and tried to upload all pending actions and finished
+             without receiving a new consistency token"/>
 </enum>
 
 <enum name="FeedUserActionType">
@@ -37179,6 +37207,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Loaded because hidden"/>
 </enum>
 
+<enum name="LCDTextDisallowedReason">
+  <int value="0" label="None"/>
+  <int value="1" label="Setting"/>
+  <int value="2" label="Background color not opaque"/>
+  <int value="3" label="Other contents not opaque"/>
+  <int value="4" label="Non-integral translation"/>
+  <int value="5" label="Non-integral x offset"/>
+  <int value="6" label="Non-integral y offset"/>
+  <int value="7" label="Will-change: transform"/>
+</enum>
+
 <enum name="LevelDBCorruptionRestoreValue">
   <int value="0" label="Database Delete Success"/>
   <int value="1" label="Database Delete Failure"/>
@@ -38016,6 +38055,7 @@ from previous Chrome versions.
   <int value="-2103664329" label="EnableHighResolutionMouseScrolling:disabled"/>
   <int value="-2101682955" label="EnableNotificationIndicator:enabled"/>
   <int value="-2101337189" label="AutofillOffNoServerData:disabled"/>
+  <int value="-2099486626" label="DownloadLater:enabled"/>
   <int value="-2099457894" label="Mash:enabled"/>
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
   <int value="-2098610409" label="disable-lcd-text"/>
@@ -40816,6 +40856,7 @@ from previous Chrome versions.
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
   <int value="1101062411" label="Rar2Fs:disabled"/>
+  <int value="1101421005" label="DownloadLater:disabled"/>
   <int value="1102780374" label="ClickToCallDetectionV2:disabled"/>
   <int value="1104948452" label="manual-enhanced-bookmarks-optout"/>
   <int value="1105439588" label="enable-swipe-selection"/>

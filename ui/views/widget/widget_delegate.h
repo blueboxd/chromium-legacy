@@ -38,6 +38,11 @@ class VIEWS_EXPORT WidgetDelegate {
     bool center_title = false;
 #endif
 
+    // Controls focus traversal past the first/last focusable view.
+    // If true, focus moves out of this Widget and to this Widget's toplevel
+    // Widget; if false, focus cycles within this Widget.
+    bool focus_traverses_out = false;
+
     // The widget's icon, if any.
     gfx::ImageSkia icon;
 
@@ -214,11 +219,6 @@ class VIEWS_EXPORT WidgetDelegate {
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetWidgetHitTestMask(SkPath* mask) const;
 
-  // Returns true if focus should advance to the top level widget when
-  // tab/shift-tab is hit and on the last/first focusable view. Default returns
-  // false, which means tab/shift-tab never advance to the top level Widget.
-  virtual bool ShouldAdvanceFocusToTopLevelWidget() const;
-
   // Returns true if event handling should descend into |child|.
   // |location| is in terms of the Window.
   virtual bool ShouldDescendIntoChildForEventHandling(
@@ -231,6 +231,7 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
+  void SetFocusTraversesOut(bool focus_traverses_out);
   void SetIcon(const gfx::ImageSkia& icon);
   void SetShowCloseButton(bool show_close_button);
   void SetShowIcon(bool show_icon);
@@ -250,6 +251,8 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Returns true if the title text should be centered.
   bool ShouldCenterWindowTitleText() const;
+
+  bool focus_traverses_out() const { return params_.focus_traverses_out; }
 
  protected:
   virtual ~WidgetDelegate();

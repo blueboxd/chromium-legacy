@@ -29,7 +29,7 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
   ~InternalPopupMenu() override;
   void Trace(Visitor*) override;
 
-  void Update();
+  void Update(bool force_update) override;
 
   void Dispose();
 

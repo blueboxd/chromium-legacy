@@ -120,6 +120,29 @@ TEST_F(FloatingAccessibilityControllerTest, ShowingMenu) {
             accessibility_controller()->GetFloatingMenuPosition());
 }
 
+TEST_F(FloatingAccessibilityControllerTest, ShowingMenuAfterPrefUpdate) {
+  SetUpKioskSession();
+
+  // If we try to show the floating menu before it is enabled, nothing happens.
+  accessibility_controller()->ShowFloatingMenuIfEnabled();
+  EXPECT_TRUE(controller() == nullptr);
+
+  // As soon as we enable the floating menu, it will show the floating menu
+  // because we tried to show it earlier.
+  accessibility_controller()->floating_menu().SetEnabled(true);
+  EXPECT_FALSE(controller() == nullptr);
+
+  // Disable the floating menu, which should cause it to be hidden.
+  accessibility_controller()->floating_menu().SetEnabled(false);
+  EXPECT_TRUE(controller() == nullptr);
+
+  // Enabling it again will show the menu since we already tried to show
+  // it earlier. As soon as it we request it to be shown at least once, it
+  // should show/hide on enabled state change.
+  accessibility_controller()->floating_menu().SetEnabled(true);
+  EXPECT_FALSE(controller() == nullptr);
+}
+
 TEST_F(FloatingAccessibilityControllerTest, CanChangePosition) {
   SetUpVisibleMenu();
 

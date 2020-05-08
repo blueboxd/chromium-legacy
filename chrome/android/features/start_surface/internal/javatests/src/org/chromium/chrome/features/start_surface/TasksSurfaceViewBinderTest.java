@@ -6,11 +6,12 @@ package org.chromium.chrome.features.start_surface;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
 import android.support.test.annotation.UiThreadTest;
@@ -61,6 +62,7 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
     @SmallTest
     public void testSetShowAndHideOverview() {
         assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
+        assertFalse(mPropertyModel.get(IS_SHOWING_STACK_TAB_SWITCHER));
         assertNull(mTasksSurfaceView.getParent());
 
         mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
@@ -68,14 +70,45 @@ public class TasksSurfaceViewBinderTest extends DummyUiActivityTestCase {
 
         mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
         assertEquals(mTasksSurfaceView.getVisibility(), View.VISIBLE);
-        assertNotEquals(mTasksSurfaceView.getParent(), null);
+        assertNotNull(mTasksSurfaceView.getParent());
         MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
         assertEquals(10, layoutParams.bottomMargin);
         assertEquals(20, layoutParams.topMargin);
 
         mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
         assertEquals(mTasksSurfaceView.getVisibility(), View.GONE);
-        assertNotEquals(mTasksSurfaceView.getParent(), null);
+        assertNotNull(mTasksSurfaceView.getParent());
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetShowAndHideStackTabSwitcher() {
+        assertFalse(mPropertyModel.get(IS_SHOWING_OVERVIEW));
+        assertFalse(mPropertyModel.get(IS_SHOWING_STACK_TAB_SWITCHER));
+        assertNull(mTasksSurfaceView.getParent());
+
+        mPropertyModel.set(BOTTOM_BAR_HEIGHT, 10);
+        mPropertyModel.set(TOP_BAR_HEIGHT, 20);
+
+        mPropertyModel.set(IS_SHOWING_OVERVIEW, true);
+        assertEquals(mTasksSurfaceView.getVisibility(), View.VISIBLE);
+        assertNotNull(mTasksSurfaceView.getParent());
+        MarginLayoutParams layoutParams = (MarginLayoutParams) mTasksSurfaceView.getLayoutParams();
+        assertEquals(10, layoutParams.bottomMargin);
+        assertEquals(20, layoutParams.topMargin);
+
+        mPropertyModel.set(IS_SHOWING_STACK_TAB_SWITCHER, true);
+        assertEquals(mTasksSurfaceView.getVisibility(), View.GONE);
+        assertNotNull(mTasksSurfaceView.getParent());
+
+        mPropertyModel.set(IS_SHOWING_STACK_TAB_SWITCHER, false);
+        assertEquals(mTasksSurfaceView.getVisibility(), View.VISIBLE);
+        assertNotNull(mTasksSurfaceView.getParent());
+
+        mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
+        assertEquals(mTasksSurfaceView.getVisibility(), View.GONE);
+        assertNotNull(mTasksSurfaceView.getParent());
     }
 
     @Test

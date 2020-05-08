@@ -7,9 +7,11 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -65,10 +67,15 @@ class ImpressionObserver : public WebContentsObserver {
 
 class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
  public:
+  ImpressionDeclarationBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
+  }
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->ServeFilesFromSourceDirectory(
         "content/test/data/conversions");
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -78,6 +85,7 @@ class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
     net::test_server::RegisterDefaultHandlers(https_server_.get());
     https_server_->ServeFilesFromSourceDirectory(
         "content/test/data/conversions");
+    https_server_->ServeFilesFromSourceDirectory("content/test/data");
     SetupCrossSiteRedirector(https_server_.get());
     ASSERT_TRUE(https_server_->Start());
   }
@@ -87,6 +95,7 @@ class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
@@ -264,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionOnInsecureSite_NotDeclared) {
+                       ImpressionOnInsecureSite_NotRegistered) {
   // Navigate to a page with the non-https server.
   EXPECT_TRUE(NavigateToURL(
       web_contents(), embedded_test_server()->GetURL(
@@ -283,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionWithInsecureDestination_NotDeclared) {
+                       ImpressionWithInsecureDestination_NotRegistered) {
   // Navigate to a page with the non-https server.
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -302,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
-                       ImpressionWithInsecureReportingOrigin_NotDeclared) {
+                       ImpressionWithInsecureReportingOrigin_NotRegistered) {
   // Navigate to a page with the non-https server.
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -320,6 +329,72 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 
   // We should see a null impression on the navigation
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       ImpressionWithFeaturePolicyDisabled_NotRegistered) {
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "b.test", "/page_with_conversion_measurement_disabled.html")));
+
+  ImpressionObserver impression_observer(web_contents());
+  EXPECT_TRUE(ExecJs(web_contents(), R"(
+    createImpressionTag("link",
+                        "page_with_conversion_redirect.html",
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+  EXPECT_TRUE(ExecJs(shell(), "simulateClick('link');"));
+
+  // We should see a null impression on the navigation
+  EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       ImpressionInSubframeWithoutFeaturePolicy_NotRegistered) {
+  GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  GURL subframe_url =
+      https_server()->GetURL("c.test", "/page_with_impression_creator.html");
+  NavigateIframeToURL(web_contents(), "test_iframe", subframe_url);
+
+  ImpressionObserver impression_observer(web_contents());
+  RenderFrameHost* subframe = ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  EXPECT_TRUE(ExecJs(subframe, R"(
+    createImpressionTag("link",
+                        "page_with_conversion_redirect.html",
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+  EXPECT_TRUE(ExecJs(subframe, "simulateClick('link');"));
+
+  // We should see a null impression on the navigation
+  EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
+}
+
+IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+                       ImpressionInSubframeWithFeaturePolicy_Registered) {
+  GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+  EXPECT_TRUE(ExecJs(shell(), R"(
+     let frame = document.getElementById('test_iframe');
+     frame.setAttribute('allow', 'conversion-measurement');)"));
+
+  GURL subframe_url =
+      https_server()->GetURL("c.test", "/page_with_impression_creator.html");
+  NavigateIframeToURL(web_contents(), "test_iframe", subframe_url);
+
+  ImpressionObserver impression_observer(web_contents());
+  RenderFrameHost* subframe = ChildFrameAt(web_contents()->GetMainFrame(), 0);
+  EXPECT_TRUE(ExecJs(subframe, R"(
+    createImpressionTag("link",
+                        "page_with_conversion_redirect.html",
+                        "1" /* impression data */,
+                        "https://a.com" /* conversion_destination */);)"));
+  EXPECT_TRUE(ExecJs(subframe, "simulateClick('link');"));
+
+  // We should see a null impression on the navigation
+  EXPECT_EQ(1u, impression_observer.WaitForImpression().impression_data);
 }
 
 IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,

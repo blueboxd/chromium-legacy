@@ -53,6 +53,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/text_edit_commands.h"
@@ -1806,11 +1807,10 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
     return ui::DragDropTypes::DRAG_NONE;
 
   base::string16 text;
-  if (data.HasURL(ui::OSExchangeData::CONVERT_FILENAMES)) {
+  if (data.HasURL(ui::CONVERT_FILENAMES)) {
     GURL url;
     base::string16 title;
-    if (data.GetURLAndTitle(ui::OSExchangeData::CONVERT_FILENAMES, &url,
-                            &title)) {
+    if (data.GetURLAndTitle(ui::CONVERT_FILENAMES, &url, &title)) {
       text = StripJavascriptSchemas(base::UTF8ToUTF16(url.spec()));
     }
   } else if (data.HasString() && data.GetString(&text)) {

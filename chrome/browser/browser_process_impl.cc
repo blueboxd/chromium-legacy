@@ -997,14 +997,6 @@ BrowserProcessImpl::safe_browsing_service() {
   return safe_browsing_service_.get();
 }
 
-safe_browsing::ClientSideDetectionService*
-    BrowserProcessImpl::safe_browsing_detection_service() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (safe_browsing_service())
-    return safe_browsing_service()->safe_browsing_detection_service();
-  return NULL;
-}
-
 subresource_filter::RulesetService*
 BrowserProcessImpl::subresource_filter_ruleset_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

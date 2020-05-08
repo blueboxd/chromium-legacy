@@ -41,6 +41,7 @@ public interface TabManagementDelegate {
         int GRID = 0;
         int CAROUSEL = 1;
         int SINGLE = 2;
+        int NONE = 3;
     }
 
     /**

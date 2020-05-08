@@ -109,6 +109,9 @@ Do you want to allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to use co
 
 This will otherwise be blocked by your privacy settings. This will allow the content you interacted with to work correctly, but may allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to track your activity.
   </message>
+  <message name="IDS_WINDOW_PLACEMENT_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to place windows. Follows a prompt: 'This site would like to:'">
+    Open and place windows on your screens
+  </message>
   <message name="IDS_PERMISSION_ALLOW" desc="Label on button to allow a permissions request.">
     Allow
   </message>

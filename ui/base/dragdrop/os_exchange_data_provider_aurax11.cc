@@ -28,8 +28,8 @@ OSExchangeDataProviderAuraX11::~OSExchangeDataProviderAuraX11() {
     X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
-std::unique_ptr<OSExchangeData::Provider>
-OSExchangeDataProviderAuraX11::Clone() const {
+std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderAuraX11::Clone()
+    const {
   std::unique_ptr<OSExchangeDataProviderAuraX11> ret(
       new OSExchangeDataProviderAuraX11());
   ret->set_format_map(format_map());

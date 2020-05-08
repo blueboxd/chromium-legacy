@@ -40,11 +40,10 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
   SetTitle(l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_TITLE));
   SetShowCloseButton(false);
 
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
-      &LogoutConfirmationDialog::OnDialogAccepted, base::Unretained(this)));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON));
+  SetAcceptCallback(base::BindOnce(&LogoutConfirmationDialog::OnDialogAccepted,
+                                   base::Unretained(this)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(

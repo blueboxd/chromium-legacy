@@ -12,7 +12,7 @@ option java_package = "org.chromium.components.feed.core.proto.wire";
 option java_outer_classname = "CapabilityProto";
 
 // Feature capability of either the client or the server.
-// Next ID: 15.
+// Next ID: 16.
 enum Capability {
   UNKNOWN_CAPABILITY = 0;
   BASE_UI = 1;

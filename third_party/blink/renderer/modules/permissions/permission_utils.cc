@@ -229,6 +229,13 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     }
     return CreatePermissionDescriptor(PermissionName::STORAGE_ACCESS);
   }
+  if (name == "window-placement") {
+    if (!RuntimeEnabledFeatures::WindowPlacementEnabled()) {
+      exception_state.ThrowTypeError("Window Placement is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::WINDOW_PLACEMENT);
+  }
   return nullptr;
 }
 

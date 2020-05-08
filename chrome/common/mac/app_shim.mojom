@@ -23,7 +23,7 @@ enum AppShimLaunchResult {
   kSuccess,
   // The app launched successfully, but is not using a host (e.g, is an
   // open-in-a-tab bookmark app), or the host has closed.
-  kNoHost,
+  kSuccessAndDisconnect,
   // There is already a host registered for this app.
   kDuplicateHost,
   // The profile was not found.

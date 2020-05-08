@@ -93,19 +93,18 @@ bool Widget::g_disable_activation_change_handling_ = false;
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
  public:
-  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {}
+  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {
+    // In most situations where a Widget is used without a delegate the Widget
+    // is used as a container, so that we want focus to advance to the top-level
+    // widget. A good example of this is the find bar.
+    SetFocusTraversesOut(true);
+  }
   ~DefaultWidgetDelegate() override = default;
 
   // WidgetDelegate:
   void DeleteDelegate() override { delete this; }
   Widget* GetWidget() override { return widget_; }
   const Widget* GetWidget() const override { return widget_; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override {
-    // In most situations where a Widget is used without a delegate the Widget
-    // is used as a container, so that we want focus to advance to the top-level
-    // widget. A good example of this is the find bar.
-    return true;
-  }
 
  private:
   Widget* widget_;

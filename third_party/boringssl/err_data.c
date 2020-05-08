@@ -50,8 +50,8 @@ OPENSSL_STATIC_ASSERT(ERR_LIB_HMAC == 28, "library value changed");
 OPENSSL_STATIC_ASSERT(ERR_LIB_DIGEST == 29, "library value changed");
 OPENSSL_STATIC_ASSERT(ERR_LIB_CIPHER == 30, "library value changed");
 OPENSSL_STATIC_ASSERT(ERR_LIB_HKDF == 31, "library value changed");
-OPENSSL_STATIC_ASSERT(ERR_LIB_USER == 32, "library value changed");
-OPENSSL_STATIC_ASSERT(ERR_LIB_TRUST_TOKEN == 33, "library value changed");
+OPENSSL_STATIC_ASSERT(ERR_LIB_TRUST_TOKEN == 32, "library value changed");
+OPENSSL_STATIC_ASSERT(ERR_LIB_USER == 33, "library value changed");
 OPENSSL_STATIC_ASSERT(ERR_NUM_LIBS == 34, "number of libraries changed");
 
 const uint32_t kOpenSSLReasonValues[] = {
@@ -758,21 +758,21 @@ const uint32_t kOpenSSLReasonValues[] = {
     0x783e0aa2,
     0x783e8a54,
     0x7c3211d7,
-    0x843213ed,
-    0x84328083,
-    0x84332fe1,
-    0x843380ac,
-    0x84342ff0,
-    0x8434af58,
-    0x84352f76,
-    0x8435b004,
-    0x84362fb8,
-    0x8436af67,
-    0x84372faa,
-    0x8437af45,
-    0x84382fcb,
-    0x8438af87,
-    0x84392f9c,
+    0x803213ed,
+    0x80328083,
+    0x80332fe1,
+    0x803380ac,
+    0x80342ff0,
+    0x8034af58,
+    0x80352f76,
+    0x8035b004,
+    0x80362fb8,
+    0x8036af67,
+    0x80372faa,
+    0x8037af45,
+    0x80382fcb,
+    0x8038af87,
+    0x80392f9c,
 };
 
 const size_t kOpenSSLReasonValuesLen = sizeof(kOpenSSLReasonValues) / sizeof(kOpenSSLReasonValues[0]);

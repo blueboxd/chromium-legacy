@@ -182,6 +182,8 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {ContentSettingsType::AR, IDS_PAGE_INFO_TYPE_AR},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
      IDS_PAGE_INFO_TYPE_CAMERA_PAN_TILT_ZOOM},
+    {ContentSettingsType::WINDOW_PLACEMENT,
+     IDS_PAGE_INFO_TYPE_WINDOW_PLACEMENT},
   };
   return kPermissionsUIInfo;
 }
@@ -625,6 +627,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       break;
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       icon = &vector_icons::kCameraPanTiltZoomIcon;
+      break;
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      icon = &vector_icons::kWindowPlacementIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are

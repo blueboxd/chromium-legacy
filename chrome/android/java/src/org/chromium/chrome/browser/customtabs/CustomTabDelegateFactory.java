@@ -99,8 +99,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         }
 
         @Override
-        public void startActivity(Intent intent, boolean proxy) {
-            super.startActivity(intent, proxy);
+        public void didStartActivity(Intent intent) {
             mHasActivityStarted = true;
         }
 

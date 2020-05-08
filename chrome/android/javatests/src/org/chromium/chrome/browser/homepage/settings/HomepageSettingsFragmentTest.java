@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UserActionTester;
@@ -23,6 +25,7 @@ import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageMetricsEnums.HomepageLocationType;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -79,7 +82,7 @@ public class HomepageSettingsFragmentTest {
             "Switch should not be visible when duet is enabled.";
 
     private static final String ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT =
-            "Count for user action <Settings.Homepage.LocationChanged> is different.";
+            "Count for user action <Settings.Homepage.LocationChanged_V2> is different.";
     private static final String ASSERT_HOMEPAGE_LOCATION_TYPE_MISMATCH =
             "HomepageLocationType is different than test settings.";
 
@@ -128,6 +131,18 @@ public class HomepageSettingsFragmentTest {
         Assert.assertNotNull("Title text view is null.", mTitleTextView);
         Assert.assertNotNull("Chrome NTP radio button is null.", mChromeNtpRadioButton);
         Assert.assertNotNull("Custom URI radio button is null.", mCustomUriRadioButton);
+    }
+
+    private void finishSettingsActivity() {
+        SettingsActivity activity = mTestRule.getActivity();
+        activity.finish();
+        CriteriaHelper.pollUiThread(new Criteria("Activity should be destroyed, current state: "
+                + ApplicationStatus.getStateForActivity(activity)) {
+            @Override
+            public boolean isSatisfied() {
+                return ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED;
+            }
+        });
     }
 
     @Test
@@ -481,17 +496,15 @@ public class HomepageSettingsFragmentTest {
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 0, counter.locationChangedCount);
 
-        // Check radio button to select NTP as homepage
+        // Check radio button to select NTP as homepage. Homepage is not changed yet at this time.
         checkRadioButtonAndWait(mChromeNtpRadioButton);
 
         Assert.assertFalse(
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_FOO,
                 mCustomUriRadioButton.getPrimaryText().toString());
-        Assert.assertTrue(ASSERT_HOMEPAGE_MANAGER_SETTINGS,
-                NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
         Assert.assertEquals(
-                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 1, counter.locationChangedCount);
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 0, counter.locationChangedCount);
 
         // Check back to customized radio button
         checkRadioButtonAndWait(mCustomUriRadioButton);
@@ -500,10 +513,14 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_NTP_CHECK, mChromeNtpRadioButton.isChecked());
         Assert.assertEquals(ASSERT_MESSAGE_EDIT_TEXT, TEST_URL_FOO,
                 mCustomUriRadioButton.getPrimaryText().toString());
+
+        // End the activity. The homepage should be the customized url, and the location counter
+        // should stay at 0 as nothing is changed.
+        finishSettingsActivity();
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_FOO, HomepageManager.getHomepageUri());
         Assert.assertEquals(
-                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 2, counter.locationChangedCount);
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 0, counter.locationChangedCount);
     }
 
     /**
@@ -547,18 +564,16 @@ public class HomepageSettingsFragmentTest {
                 ASSERT_MESSAGE_RADIO_BUTTON_NTP_CHECK, mChromeNtpRadioButton.isChecked());
         Assert.assertTrue(
                 ASSERT_MESSAGE_RADIO_BUTTON_CUSTOMIZED_CHECK, mCustomUriRadioButton.isChecked());
-        Assert.assertEquals(
-                ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_FOO, HomepageManager.getHomepageUri());
-        Assert.assertEquals(
-                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 1, actionCounter.locationChangedCount);
 
-        // Update the text box, homepage should change accordingly.
+        // Update the text box and exit the activity, homepage should change accordingly.
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mCustomUriRadioButton.setPrimaryText(TEST_URL_BAR));
+        finishSettingsActivity();
+
         Assert.assertEquals(
                 ASSERT_HOMEPAGE_MANAGER_SETTINGS, TEST_URL_BAR, HomepageManager.getHomepageUri());
         Assert.assertEquals(
-                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 2, actionCounter.locationChangedCount);
+                ASSERT_HOMEPAGE_LOCATION_HISTOGRAM_COUNT, 1, actionCounter.locationChangedCount);
 
         actionCounter.tearDown();
     }
@@ -577,7 +592,7 @@ public class HomepageSettingsFragmentTest {
 
         @Override
         public void onActionRecorded(String action) {
-            if (action.equals("Settings.Homepage.LocationChanged")) ++locationChangedCount;
+            if (action.equals("Settings.Homepage.LocationChanged_V2")) ++locationChangedCount;
         }
     }
 }

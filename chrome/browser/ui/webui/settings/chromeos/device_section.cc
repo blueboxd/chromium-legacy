@@ -13,6 +13,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_dlc_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
@@ -459,6 +460,9 @@ void AddDeviceStylusStrings(content::WebUIDataSource* html_source) {
       {"stylusNoteTakingAppWaitingForAndroid",
        IDS_SETTINGS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID}};
   AddLocalizedStringsBulk(html_source, kStylusStrings);
+
+  html_source->AddBoolean("hasInternalStylus",
+                          ash::stylus_utils::HasInternalStylus());
 }
 
 void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
@@ -719,6 +723,9 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"touchPadScrollLabel", IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kDeviceStrings);
+
+  html_source->AddBoolean("isDemoSession",
+                          chromeos::DemoSession::IsDeviceInDemoMode());
 
   AddDevicePointersStrings(html_source);
   AddDeviceKeyboardStrings(html_source);

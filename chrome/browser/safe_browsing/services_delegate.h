@@ -34,7 +34,6 @@ class TrackedPreferenceValidationDelegate;
 
 namespace safe_browsing {
 
-class ClientSideDetectionService;
 #if !defined(OS_ANDROID)
 class DownloadProtectionService;
 #endif
@@ -97,10 +96,6 @@ class ServicesDelegate {
   // Initializes internal state using the ServicesCreator.
   virtual void Initialize() = 0;
 
-  // Creates the CSD service for the given |url_loader_factory|.
-  virtual void InitializeCsdService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
-
   virtual void SetDatabaseManagerForTest(
       SafeBrowsingDatabaseManager* database_manager) = 0;
 
@@ -120,7 +115,6 @@ class ServicesDelegate {
       content::DownloadManager* download_manager) = 0;
 
   // Returns nullptr for any service that is not available.
-  virtual ClientSideDetectionService* GetCsdService() = 0;
 #if !defined(OS_ANDROID)
   virtual DownloadProtectionService* GetDownloadService() = 0;
 #endif

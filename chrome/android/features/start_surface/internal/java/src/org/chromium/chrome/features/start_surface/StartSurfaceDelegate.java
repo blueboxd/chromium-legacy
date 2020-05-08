@@ -15,6 +15,9 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 public class StartSurfaceDelegate {
     public static Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
             LayoutRenderHost renderHost, StartSurface startSurface) {
+        if (StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()) {
+            return new StartSurfaceStackLayout(context, updateHost, renderHost, startSurface);
+        }
         return new StartSurfaceLayout(context, updateHost, renderHost, startSurface);
     }
 

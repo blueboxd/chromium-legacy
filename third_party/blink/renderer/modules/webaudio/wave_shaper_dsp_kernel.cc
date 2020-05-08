@@ -145,14 +145,17 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
   // Interpolation factor: virtual_index - index.
   float f[frames_to_process];
 
+  int max_index = curve_length - 1;
   unsigned k = 0;
 #if defined(ARCH_CPU_X86_FAMILY)
   {
+    int loop_limit = frames_to_process / 4;
+
     // one = 1
     __m128i one = _mm_set1_epi32(1);
 
     // Do 4 eleemnts at a time
-    for (; k < frames_to_process; k += 4) {
+    for (int loop = 0; loop < loop_limit; ++loop, k += 4) {
       // v = virtual_index[k]
       __m128 v = _mm_loadu_ps(virtual_index + k);
 
@@ -172,15 +175,16 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
       int32_t* i2 = reinterpret_cast<int32_t*>(&index2);
 
       // Get the curve_data values and save them in v1 and v2,
-      // carfully clamping index2 values.
-      v1[k] = curve_data[i1[0]];
-      v2[k] = curve_data[clampTo(i2[0], 0, curve_length - 1)];
-      v1[k + 1] = curve_data[i1[1]];
-      v2[k + 1] = curve_data[clampTo(i2[1], 0, curve_length - 1)];
-      v1[k + 2] = curve_data[i1[2]];
-      v2[k + 2] = curve_data[clampTo(i2[2], 0, curve_length - 1)];
-      v1[k + 3] = curve_data[i1[3]];
-      v2[k + 3] = curve_data[clampTo(i2[3], 0, curve_length - 1)];
+      // carfully clamping the values.  If the input is NaN, index1
+      // could be 0x8000000.
+      v1[k] = curve_data[clampTo(i1[0], 0, max_index)];
+      v2[k] = curve_data[clampTo(i2[0], 0, max_index)];
+      v1[k + 1] = curve_data[clampTo(i1[1], 0, max_index)];
+      v2[k + 1] = curve_data[clampTo(i2[1], 0, max_index)];
+      v1[k + 2] = curve_data[clampTo(i1[2], 0, max_index)];
+      v2[k + 2] = curve_data[clampTo(i2[2], 0, max_index)];
+      v1[k + 3] = curve_data[clampTo(i1[3], 0, max_index)];
+      v2[k + 3] = curve_data[clampTo(i2[3], 0, max_index)];
     }
   }
 #endif
@@ -188,8 +192,9 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
 
   // Compute values for index1 and load the curve_data corresponding to indices.
   for (; k < frames_to_process; ++k) {
-    unsigned index1 = static_cast<unsigned>(virtual_index[k]);
-    unsigned index2 = clampTo(index1 + 1, 0, curve_length - 1);
+    unsigned index1 =
+        clampTo(static_cast<unsigned>(virtual_index[k]), 0, max_index);
+    unsigned index2 = clampTo(index1 + 1, 0, max_index);
     index[k] = index1;
     v1[k] = curve_data[index1];
     v2[k] = curve_data[index2];

@@ -243,7 +243,7 @@ TEST_F(UseAddressActionTest, FallbackFails) {
               OnSetFieldValue(Eq(Selector({"#first_name"})), kFirstName, _))
       .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
-  EXPECT_EQ(ProcessedActionStatusProto::MANUAL_FALLBACK,
+  EXPECT_EQ(ProcessedActionStatusProto::AUTOFILL_INCOMPLETE,
             ProcessAction(action_proto));
 }
 

@@ -74,7 +74,8 @@ export const DeviceReportingType = {
   CROSTINI: 'crostini',
   USERNAME: 'username',
   EXTENSION: 'extension',
-  ANDROID_APPLICATION: 'android application'
+  ANDROID_APPLICATION: 'android application',
+  PROXY_SERVER: 'proxy server'
 };
 
 

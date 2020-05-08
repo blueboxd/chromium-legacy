@@ -32,8 +32,6 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager()
       const override;
   void Initialize() override;
-  void InitializeCsdService(scoped_refptr<network::SharedURLLoaderFactory>
-                                url_loader_factory) override;
   void SetDatabaseManagerForTest(
       SafeBrowsingDatabaseManager* database_manager) override;
   void ShutdownServices() override;
@@ -44,7 +42,6 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   void RegisterDelayedAnalysisCallback(
       const DelayedAnalysisCallback& callback) override;
   void AddDownloadManager(content::DownloadManager* download_manager) override;
-  ClientSideDetectionService* GetCsdService() override;
   DownloadProtectionService* GetDownloadService() override;
 
   void StartOnIOThread(
@@ -65,7 +62,6 @@ class ServicesDelegateDesktop : public ServicesDelegate {
   IncidentReportingService* CreateIncidentReportingService();
   ResourceRequestDetector* CreateResourceRequestDetector();
 
-  std::unique_ptr<ClientSideDetectionService> csd_service_;
   std::unique_ptr<DownloadProtectionService> download_service_;
   std::unique_ptr<IncidentReportingService> incident_service_;
   std::unique_ptr<ResourceRequestDetector> resource_request_detector_;

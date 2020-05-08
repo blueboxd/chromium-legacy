@@ -104,7 +104,13 @@ public class StartSurfaceCoordinator implements StartSurface {
                                                         : null,
                 mSurfaceMode, mActivity.getNightModeStateProvider(),
                 mActivity.getFullscreenManager(), this::isActivityFinishingOrDestroyed,
-                excludeMVTiles);
+                excludeMVTiles,
+                StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
+    }
+
+    boolean isShowingTabSwitcher() {
+        assert StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled();
+        return mStartSurfaceMediator.isShowingTabSwitcher();
     }
 
     // Implements StartSurface.
@@ -294,7 +300,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
         mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, propertyModel, TabSwitcherType.GRID, false);
+                mActivity, propertyModel,
+                StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()
+                        ? TabSwitcherType.NONE
+                        : TabSwitcherType.GRID,
+                false);
         if (mIsInitializedWithNative) {
             mSecondaryTasksSurface.onFinishNativeInitialization(
                     mActivity, mActivity.getToolbarManager().getFakeboxDelegate());

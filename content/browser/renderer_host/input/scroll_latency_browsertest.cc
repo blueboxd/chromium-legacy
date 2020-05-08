@@ -46,6 +46,7 @@ const char kDataURL[] =
     "<style>"
     "body {"
     "  height:9000px;"
+    "  overscroll-behavior:none;"
     "}"
     "</style>"
     "</head>"
@@ -215,17 +216,8 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, MultipleWheelScrollOnMain) {
   RunMultipleWheelScroll();
 }
 
-// Do an upward wheel scroll, and verify that no scroll metrics is recorded when
+// Do an upward touch scroll, and verify that no scroll metrics is recorded when
 // the scroll event is ignored.
-// TODO(https://crbug.com/1067492): This test fails pn MacOS builders in release
-// mode.
-#if defined(OS_MACOSX)
-#define MAYBE_ScrollLatencyNotRecordedIfGSUIgnored \
-  DISABLED_ScrollLatencyNotRecordedIfGSUIgnored
-#else
-#define MAYBE_ScrollLatencyNotRecordedIfGSUIgnored \
-  ScrollLatencyNotRecordedIfGSUIgnored
-#endif
 IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
                        ScrollLatencyNotRecordedIfGSUIgnored) {
   LoadURL();

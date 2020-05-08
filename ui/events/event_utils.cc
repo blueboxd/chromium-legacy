@@ -145,7 +145,6 @@ void ConvertEventLocationToTargetWindowLocation(
   gfx::PointF location_in_pixel_in_host =
       located_event->location_f() + gfx::Vector2dF(offset);
   located_event->set_location_f(location_in_pixel_in_host);
-  located_event->set_root_location_f(location_in_pixel_in_host);
 }
 
 const char* EventTypeName(EventType type) {

@@ -100,6 +100,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/scoped_active_url.h"
+#include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -5052,21 +5053,7 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
   if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
           this, url,
           /* is_renderer_initiated_check */ true)) {
-    // TODO(nasko): Once this is known to not happen in reality, change the
-    // return value to CanCommitStatus::CANNOT_COMMIT_URL and remove the
-    // instrumentation.
-    base::debug::ScopedCrashKeyString scoped_url(
-        base::debug::AllocateCrashKeyString("disallowed_url",
-                                            base::debug::CrashKeySize::Size256),
-        url.possibly_invalid_spec());
-
-    base::debug::ScopedCrashKeyString scoped_process_lock(
-        base::debug::AllocateCrashKeyString("site_lock",
-                                            base::debug::CrashKeySize::Size256),
-        ChildProcessSecurityPolicyImpl::GetInstance()
-            ->GetOriginLock(process_->GetID())
-            .possibly_invalid_spec());
-    base::debug::DumpWithoutCrashing();
+    return CanCommitStatus::CANNOT_COMMIT_URL;
   }
 
   // MHTML subframes can supply URLs at commit time that do not match the
@@ -6896,6 +6883,13 @@ void RenderFrameHostImpl::GetFeatureObserver(
         client, GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
   }
   feature_observer_->GetFeatureObserver(std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindScreenEnumerationReceiver(
+    mojo::PendingReceiver<blink::mojom::ScreenEnumeration> receiver) {
+  if (!screen_enumeration_impl_)
+    screen_enumeration_impl_ = std::make_unique<ScreenEnumerationImpl>(this);
+  screen_enumeration_impl_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(

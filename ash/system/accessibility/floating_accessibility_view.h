@@ -29,6 +29,7 @@ class FloatingAccessibilityBubbleView : public TrayBubbleView {
 
   // TrayBubbleView:
   bool IsAnchoredToStatusArea() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // views::View:
   const char* GetClassName() const override;
@@ -74,6 +75,8 @@ class FloatingAccessibilityView : public views::View,
 
   void SetMenuPosition(FloatingMenuPosition position);
   void SetDetailedViewShown(bool shown);
+
+  void FocusOnDetailedViewButton();
 
  private:
   // views::ButtonListener:

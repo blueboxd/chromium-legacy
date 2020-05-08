@@ -2080,8 +2080,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
 }
 
 // Test that Autofill does not fill in Company Name if disabled
+// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
+#if defined(OS_MACOSX)
+#define MAYBE_NoAutofillForCompanyName DISABLED_NoAutofillForCompanyName
+#else
+#define MAYBE_NoAutofillForCompanyName NoAutofillForCompanyName
+#endif
 IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
-                       NoAutofillForCompanyName) {
+                       MAYBE_NoAutofillForCompanyName) {
   std::string addr_line1("1234 H St.");
   std::string company_name("Company X");
 
@@ -2213,8 +2219,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test forms with multiple email addresses are filled properly.
 // Entire form should be filled with one user gesture.
+// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
+#if defined(OS_MACOSX)
+#define MAYBE_MultipleEmailFilledByOneUserGesture \
+  DISABLED_MultipleEmailFilledByOneUserGesture
+#else
+#define MAYBE_MultipleEmailFilledByOneUserGesture \
+  MultipleEmailFilledByOneUserGesture
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MultipleEmailFilledByOneUserGesture) {
+                       MAYBE_MultipleEmailFilledByOneUserGesture) {
   std::string email("bsmith@gmail.com");
 
   AutofillProfile profile;
@@ -2482,7 +2496,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test that we can Autofill forms where some fields name change during the
 // fill.
-IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
+// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
+#if defined(OS_MACOSX)
+#define MAYBE_FieldsChangeName DISABLED_FieldsChangeName
+#else
+#define MAYBE_FieldsChangeName FieldsChangeName
+#endif
+IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, MAYBE_FieldsChangeName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2964,8 +2984,14 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone_form1", "15125551234");
 }
 
+// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
+#if defined(OS_MACOSX)
+#define MAYBE_TwoDynamicChangingFormsFill DISABLED_TwoDynamicChangingFormsFill
+#else
+#define MAYBE_TwoDynamicChangingFormsFill TwoDynamicChangingFormsFill
+#endif
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       TwoDynamicChangingFormsFill) {
+                       MAYBE_TwoDynamicChangingFormsFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
 
@@ -3301,8 +3327,16 @@ IN_PROC_BROWSER_TEST_P(
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
+// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
+#if defined(OS_MACOSX)
+#define MAYBE_DynamicFormFill_FirstElementDisappearsUnowned \
+  DISABLED_DynamicFormFill_FirstElementDisappearsUnowned
+#else
+#define MAYBE_DynamicFormFill_FirstElementDisappearsUnowned \
+  DynamicFormFill_FirstElementDisappearsUnowned
+#endif
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       DynamicFormFill_FirstElementDisappearsUnowned) {
+                       MAYBE_DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(

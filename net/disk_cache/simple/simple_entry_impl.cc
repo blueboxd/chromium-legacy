@@ -1744,8 +1744,10 @@ void SimpleEntryImpl::UpdateDataFromEntryStat(
     data_size_[i] = entry_stat.data_size(i);
   }
   sparse_data_size_ = entry_stat.sparse_data_size();
-  if (doom_state_ == DOOM_NONE && backend_.get()) {
-    backend_->index()->UpdateEntrySize(
+
+  SimpleBackendImpl* backend_ptr = backend_.get();
+  if (doom_state_ == DOOM_NONE && backend_ptr) {
+    backend_ptr->index()->UpdateEntrySize(
         entry_hash_, base::checked_cast<uint32_t>(GetDiskUsage()));
   }
 }

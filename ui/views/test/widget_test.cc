@@ -100,10 +100,13 @@ void DesktopWidgetTestInteractive::SetUp() {
   DesktopWidgetTest::SetUp();
 }
 
-TestDesktopWidgetDelegate::TestDesktopWidgetDelegate() : widget_(new Widget) {}
+TestDesktopWidgetDelegate::TestDesktopWidgetDelegate()
+    : TestDesktopWidgetDelegate(nullptr) {}
 
 TestDesktopWidgetDelegate::TestDesktopWidgetDelegate(Widget* widget)
-    : widget_(widget) {}
+    : widget_(widget ? widget : new Widget) {
+  SetFocusTraversesOut(true);
+}
 
 TestDesktopWidgetDelegate::~TestDesktopWidgetDelegate() {
   if (widget_)
@@ -132,10 +135,6 @@ const Widget* TestDesktopWidgetDelegate::GetWidget() const {
 
 View* TestDesktopWidgetDelegate::GetContentsView() {
   return contents_view_ ? contents_view_ : WidgetDelegate::GetContentsView();
-}
-
-bool TestDesktopWidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
-  return true;  // Same default as DefaultWidgetDelegate in widget.cc.
 }
 
 bool TestDesktopWidgetDelegate::OnCloseRequested(

@@ -43,12 +43,20 @@ public interface ExternalNavigationDelegate {
     boolean handlesInstantAppLaunchingInternally();
 
     /**
-     * Start an activity for the intent. Used for intents that must be handled externally.
-     * @param intent The intent we want to send.
-     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
-     *              used by Instant Apps intents).
+     * Dispatches the intent through a proxy activity, so that startActivityForResult can be used
+     * and the intent recipient can verify the caller. Will be invoked only in flows where
+     * ExternalNavigationDelegate#isIntentForInstantApp() returns true for |intent|. In particular,
+     * if that method always returns false in the given embedder, then the embedder's implementation
+     * of this method will never be invoked and can just assert false.
+     * @param intent The bare intent we were going to send.
      */
-    void startActivity(Intent intent, boolean proxy);
+    void dispatchAuthenticatedIntent(Intent intent);
+
+    /**
+     * Informs the delegate that an Activity was started for an external intent (some embedders wish
+     * to log this information, primarily for testing purposes).
+     */
+    void didStartActivity(Intent intent);
 
     /**
      * Start an activity for the intent. Used for intents that may be handled internally or

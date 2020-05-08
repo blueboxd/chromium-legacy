@@ -293,11 +293,10 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   }
 
   // Returns the next focusable view. Traversal starts at |starting_view|. If
-  // |starting_view| is NULL |starting_widget| is consuled to determine which
-  // Widget to start from. See
-  // WidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() for details. If both
-  // |starting_view| and |starting_widget| are NULL, traversal starts at
-  // |widget_|.
+  // |starting_view| is null, |starting_widget| is consulted to determine which
+  // Widget to start from. See WidgetDelegate::Params::focus_traverses_out for
+  // details. If both |starting_view| and |starting_widget| are null, traversal
+  // starts at |widget_|.
   View* GetNextFocusableView(View* starting_view,
                              Widget* starting_widget,
                              bool reverse,

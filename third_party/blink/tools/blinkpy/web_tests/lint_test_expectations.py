@@ -56,9 +56,11 @@ def PresubmitCheckTestExpectations(input_api, output_api):
             output_api.PresubmitError("lint_test_expectations.py failed "
                                       "to produce output; check by hand. ")
         ]
-    if errs.strip() != 'Lint succeeded.':
-        return [output_api.PresubmitError(errs)]
-    return []
+    if errs.strip() == 'Lint succeeded.':
+        return []
+    if errs.rstrip().endswith('Lint succeeded with warnings.'):
+        return [output_api.PresubmitPromptWarning(errs)]
+    return [output_api.PresubmitError(errs)]
 
 
 def lint(host, options):
@@ -90,6 +92,7 @@ def lint(host, options):
     # (the default Port for this host) and it would work the same.
 
     failures = []
+    warnings = []
     expectations_dict = {}
     all_system_specifiers = set()
     all_build_specifiers = set(ports_to_lint[0].ALL_BUILD_TYPES)
@@ -121,15 +124,16 @@ def lint(host, options):
             test_expectations = TestExpectations(
                 ports_to_lint[0], expectations_dict={path: content})
             # Check each expectation for issues
-            failures.extend(
-                _check_expectations(host, ports_to_lint[0], path,
-                                    test_expectations))
+            f, w = _check_expectations(host, ports_to_lint[0], path,
+                                       test_expectations)
+            failures += f
+            warnings += w
         except ParseError as error:
             _log.error(str(error))
             failures.append(str(error))
             _log.error('')
 
-    return failures
+    return failures, warnings
 
 
 def _check_expectations_file_content(content):
@@ -234,7 +238,8 @@ def _check_redundant_virtual_expectations(host, port, path, expectations):
                 error = "{}:{} Expectation '{}' is redundant with '{}' in line {}".format(
                     host.filesystem.basename(path), exp.lineno, exp.test,
                     base_test, base_exp.lineno)
-                _log.error(error)
+                # TODO(crbug.com/1080691): Change to error once it's fixed.
+                _log.warning(error)
                 failures.append(error)
 
     return failures
@@ -246,9 +251,11 @@ def _check_expectations(host, port, path, test_expectations):
     expectations = test_expectations.get_updated_lines(path)
     failures = _check_existence(host, port, path, expectations)
     failures.extend(_check_directory_glob(host, port, path, expectations))
-    failures.extend(
-        _check_redundant_virtual_expectations(host, port, path, expectations))
-    return failures
+    # TODO(crbug.com/1080691): Change this to failures once
+    # wpt_expectations_updater is fixed.
+    warnings = _check_redundant_virtual_expectations(host, port, path,
+                                                     expectations)
+    return failures, warnings
 
 
 def check_virtual_test_suites(host, options):
@@ -342,7 +349,11 @@ def check_smoke_tests(host, options):
 
 def run_checks(host, options):
     failures = []
-    failures.extend(lint(host, options))
+    warnings = []
+
+    f, w = lint(host, options)
+    failures += f
+    warnings += w
     failures.extend(check_virtual_test_suites(host, options))
     failures.extend(check_smoke_tests(host, options))
 
@@ -353,6 +364,9 @@ def run_checks(host, options):
     if failures:
         _log.error('Lint failed.')
         return 1
+    elif warnings:
+        _log.warning('Lint succeeded with warnings.')
+        return 2
     else:
         _log.info('Lint succeeded.')
         return 0

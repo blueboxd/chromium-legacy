@@ -38,6 +38,7 @@ extern const char kManagementCrostini[];
 extern const char kManagementCrostiniContainerConfiguration[];
 extern const char kManagementReportExtensions[];
 extern const char kManagementReportAndroidApplications[];
+extern const char kManagementReportProxyServer[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kCloudReportingExtensionId[];

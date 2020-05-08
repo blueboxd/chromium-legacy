@@ -686,6 +686,9 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
+const char kDownloadLaterName[] = "Enable download later";
+const char kDownloadLaterDescription[] = "Enables download later feature.";
+
 const char kEnableLayoutNGName[] = "Enable LayoutNG";
 const char kEnableLayoutNGDescription[] =
     "Enable Blink's next generation layout engine.";

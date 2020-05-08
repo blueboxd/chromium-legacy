@@ -172,8 +172,8 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
      */
     private void startDownload(boolean hasSDCard) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(
-                    DownloadPromptStatus.SHOW_INITIAL, DownloadUtils.getPromptForDownloadAndroid());
+            Assert.assertEquals(DownloadPromptStatus.SHOW_INITIAL,
+                    DownloadLocationDialogBridge.getPromptForDownloadAndroid());
 
             simulateDownloadDirectories(hasSDCard);
 
@@ -212,6 +212,6 @@ public class DownloadLocationChangeTest implements CustomMainActivityStart {
 
     private void promptDownloadLocationDialog(@DownloadPromptStatus int promptStatus) {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { DownloadUtils.setPromptForDownloadAndroid(promptStatus); });
+                () -> { DownloadLocationDialogBridge.setPromptForDownloadAndroid(promptStatus); });
     }
 }

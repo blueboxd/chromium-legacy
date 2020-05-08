@@ -44,9 +44,6 @@ ServicesDelegateAndroid::~ServicesDelegateAndroid() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void ServicesDelegateAndroid::InitializeCsdService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {}
-
 const scoped_refptr<SafeBrowsingDatabaseManager>&
 ServicesDelegateAndroid::database_manager() const {
   return database_manager_;
@@ -85,10 +82,6 @@ void ServicesDelegateAndroid::RegisterDelayedAnalysisCallback(
 
 void ServicesDelegateAndroid::AddDownloadManager(
     content::DownloadManager* download_manager) {}
-
-ClientSideDetectionService* ServicesDelegateAndroid::GetCsdService() {
-  return nullptr;
-}
 
 void ServicesDelegateAndroid::StartOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,

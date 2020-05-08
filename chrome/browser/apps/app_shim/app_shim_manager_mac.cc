@@ -340,7 +340,7 @@ void AppShimManager::OnShimProcessConnectedForRegisterOnly(
   OnShimProcessConnectedAndAllLaunchesDone(
       profile_state,
       profile_state ? chrome::mojom::AppShimLaunchResult::kSuccess
-                    : chrome::mojom::AppShimLaunchResult::kNoHost,
+                    : chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect,
       std::move(bootstrap));
 }
 
@@ -459,7 +459,7 @@ void AppShimManager::OnShimProcessConnectedAndProfilesToLaunchLoaded(
     if (profile_state)
       launched_profile_state = profile_state;
     else
-      launch_result = chrome::mojom::AppShimLaunchResult::kNoHost;
+      launch_result = chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect;
 
     // If this was the first profile in |profile_paths_to_launch|, then this
     // was the profile specified in the bootstrap, so stop here.
@@ -467,15 +467,9 @@ void AppShimManager::OnShimProcessConnectedAndProfilesToLaunchLoaded(
       break;
   }
 
-  if (launched_profile_state) {
-    // If we launched any profile, report success.
+  // If we launched any profile, report success.
+  if (launched_profile_state)
     launch_result = chrome::mojom::AppShimLaunchResult::kSuccess;
-  } else {
-    // Otherwise, if the app specified a URL, open that URL in a new window.
-    const GURL& url = bootstrap->GetAppURL();
-    if (url.is_valid())
-      OpenAppURLInBrowserWindow(bootstrap->GetProfilePath(), url);
-  }
 
   OnShimProcessConnectedAndAllLaunchesDone(launched_profile_state,
                                            launch_result, std::move(bootstrap));
@@ -489,9 +483,19 @@ void AppShimManager::OnShimProcessConnectedAndAllLaunchesDone(
   if (result == chrome::mojom::AppShimLaunchResult::kProfileLocked)
     LaunchUserManager();
 
+  // If the app specified a URL, but we tried and failed to launch it, then
+  // open that URL in a new browser window.
+  if (result != chrome::mojom::AppShimLaunchResult::kSuccess &&
+      result != chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect &&
+      bootstrap->GetLaunchType() == chrome::mojom::AppShimLaunchType::kNormal) {
+    const GURL& url = bootstrap->GetAppURL();
+    if (url.is_valid())
+      OpenAppURLInBrowserWindow(bootstrap->GetProfilePath(), url);
+  }
+
   // If we failed to find a AppShimHost (in a ProfileState) for |bootstrap|
-  // to attempt to connect to, then quit the shim. This may not represent an
-  // actual failure (e.g, for open-in-a-tab bookmarks).
+  // to connect to, then quit the shim. This may not represent an actual
+  // failure (e.g, open-in-a-tab bookmarks return kSuccessAndDisconnect).
   if (result != chrome::mojom::AppShimLaunchResult::kSuccess) {
     DCHECK(!profile_state);
     bootstrap->OnFailedToConnectToHost(result);

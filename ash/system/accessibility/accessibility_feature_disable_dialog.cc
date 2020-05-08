@@ -28,17 +28,15 @@ AccessibilityFeatureDisableDialog::AccessibilityFeatureDisableDialog(
     base::OnceClosure on_cancel_callback)
     : on_cancel_callback_(std::move(on_cancel_callback)) {
   SetTitle(l10n_util::GetStringUTF16(window_title_text_id));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_YES_BUTTON));
-  DialogDelegate::SetAcceptCallback(std::move(on_accept_callback));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_ASH_YES_BUTTON));
+  SetAcceptCallback(std::move(on_accept_callback));
 
   auto on_cancel = [](AccessibilityFeatureDisableDialog* dialog) {
     std::move(dialog->on_cancel_callback_).Run();
   };
-  DialogDelegate::SetCancelCallback(
-      base::BindOnce(on_cancel, base::Unretained(this)));
-  DialogDelegate::SetCloseCallback(
-      base::BindOnce(on_cancel, base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(on_cancel, base::Unretained(this)));
+  SetCloseCallback(base::BindOnce(on_cancel, base::Unretained(this)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(

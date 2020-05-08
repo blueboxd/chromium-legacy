@@ -59,6 +59,7 @@ crypto_test_sources = [
   "src/crypto/fipsmodule/md5/md5_test.cc",
   "src/crypto/fipsmodule/modes/gcm_test.cc",
   "src/crypto/fipsmodule/rand/ctrdrbg_test.cc",
+  "src/crypto/fipsmodule/rand/fork_detect_test.cc",
   "src/crypto/fipsmodule/sha/sha_test.cc",
   "src/crypto/hkdf/hkdf_test.cc",
   "src/crypto/hmac_extra/hmac_test.cc",

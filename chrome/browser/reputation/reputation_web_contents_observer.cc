@@ -114,7 +114,7 @@ void ReputationWebContentsObserver::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
-    MaybeCallReputationCheckCallback();
+    MaybeCallReputationCheckCallback(false);
     return;
   }
 
@@ -155,6 +155,7 @@ ReputationWebContentsObserver::ReputationWebContentsObserver(
     content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      reputation_check_pending_for_testing_(true),
       weak_factory_(this) {
   last_navigation_safety_tip_info_ = {security_state::SafetyTipStatus::kUnknown,
                                       GURL()};
@@ -165,11 +166,13 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip(
     bool record_ukm_if_tip_not_shown) {
   if (web_contents()->GetMainFrame()->GetVisibilityState() !=
       content::PageVisibilityState::kVisible) {
+    MaybeCallReputationCheckCallback(false);
     return;
   }
 
   const GURL& url = web_contents()->GetLastCommittedURL();
   if (!url.SchemeIsHTTPOrHTTPS()) {
+    MaybeCallReputationCheckCallback(false);
     return;
   }
 
@@ -245,10 +248,13 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
                       result.suggested_url,
                       base::BindOnce(OnSafetyTipClosed, result,
                                      base::Time::Now(), navigation_source_id));
-  MaybeCallReputationCheckCallback();
+  MaybeCallReputationCheckCallback(true);
 }
 
-void ReputationWebContentsObserver::MaybeCallReputationCheckCallback() {
+void ReputationWebContentsObserver::MaybeCallReputationCheckCallback(
+    bool heuristics_checked) {
+  if (heuristics_checked)
+    reputation_check_pending_for_testing_ = false;
   if (reputation_check_callback_for_testing_.is_null())
     return;
   std::move(reputation_check_callback_for_testing_).Run();
@@ -262,7 +268,7 @@ void ReputationWebContentsObserver::FinalizeReputationCheckWhenTipNotShown(
     RecordHeuristicsUKMData(result, navigation_source_id,
                             SafetyTipInteraction::kNotShown);
   }
-  MaybeCallReputationCheckCallback();
+  MaybeCallReputationCheckCallback(true);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ReputationWebContentsObserver)

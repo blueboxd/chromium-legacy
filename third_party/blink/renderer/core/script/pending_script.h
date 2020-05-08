@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class PendingScript;
 
 class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
@@ -119,9 +120,6 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
     DCHECK_EQ(scheduling_type_, ScriptSchedulingType::kNotSet);
     scheduling_type_ = scheduling_type;
   }
-  Document* OriginalContextDocument() const {
-    return original_context_document_;
-  }
 
   bool WasCreatedDuringDocumentWrite() {
     return created_during_document_write_;
@@ -171,7 +169,7 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   // These are only used to check whether the script element is moved between
   // documents and thus don't retain a strong references.
   WeakMember<Document> original_element_document_;
-  WeakMember<Document> original_context_document_;
+  WeakMember<ExecutionContext> original_execution_context_;
 
   const bool created_during_document_write_;
 

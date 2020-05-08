@@ -28,7 +28,8 @@ import {loadTimeData} from '../i18n_setup.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
 import {PluralStringProxyImpl} from '../plural_string_proxy.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
-import {Router} from '../router.m.js';
+import {Route, Router, RouteObserverBehavior} from '../router.m.js';
+import {routes} from '../route.js';
 
 import {PasswordCheckBehavior} from './password_check_behavior.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
@@ -49,6 +50,7 @@ Polymer({
     I18nBehavior,
     PasswordCheckBehavior,
     PrefsBehavior,
+    RouteObserverBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -150,6 +152,17 @@ Polymer({
    */
   activeListItem_: null,
 
+  /** @private {boolean} */
+  startCheckAutomaticallySucceeded: false,
+
+  /**
+   * Observer for saved passwords to update startCheckAutomaticallySucceeded
+   * once they are changed. It's needed to run password check on navigation
+   * again once passwords changed.
+   * @private {?function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
+   */
+  setSavedPasswordsListener_: null,
+
   /** @override */
   attached() {
     // <if expr="chromeos">
@@ -164,6 +177,14 @@ Polymer({
 
     // </if>
     this.activeDialogAnchorStack_ = [];
+
+    const setSavedPasswordsListener = list => {
+      this.startCheckAutomaticallySucceeded = false;
+    };
+    this.setSavedPasswordsListener_ = setSavedPasswordsListener;
+    this.passwordManager.addSavedPasswordListChangedListener(
+        setSavedPasswordsListener);
+
     // Set the manager. These can be overridden by tests.
     const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
@@ -183,15 +204,39 @@ Polymer({
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
     this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
     // </if>
+  },
 
-    // Start the check if instructed to do so.
+  /** @override */
+  detached() {
+    this.passwordManager.removeSavedPasswordListChangedListener(
+        assert(this.setSavedPasswordsListener_));
+  },
+
+  /**
+   * Tries to start bulk password check on page open if instructed to do so and
+   * didn't start successfully before
+   * @private
+   */
+  currentRouteChanged(currentRoute) {
     const router = Router.getInstance();
-    if (router.getQueryParameters().get('start') == 'true') {
+
+    if (currentRoute.path == routes.CHECK_PASSWORDS.path &&
+        !this.startCheckAutomaticallySucceeded &&
+        router.getQueryParameters().get('start') == 'true') {
       this.passwordManager.recordPasswordCheckInteraction(
           PasswordManagerProxy.PasswordCheckInteraction
               .START_CHECK_AUTOMATICALLY);
-      this.passwordManager.startBulkPasswordCheck();
+      this.passwordManager.startBulkPasswordCheck().then(
+          () => {
+            this.startCheckAutomaticallySucceeded = true;
+          },
+          error => {
+            // Catching error
+          });
     }
+    // Requesting status on navigation to update elapsedTimeSinceLastCheck
+    this.passwordManager.getPasswordCheckStatus().then(
+        status => this.status = status);
   },
 
   /**

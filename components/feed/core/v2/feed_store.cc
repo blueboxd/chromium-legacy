@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,9 +30,11 @@ namespace {
 // c/<content-id>                   -> content
 // a/<id>                           -> action
 // s/<content-id>                   -> shared_state
+// m                                -> metadata
 constexpr char kMainStreamId[] = "0";
 const char kStreamDataKey[] = "S/0";
 const char kLocalActionPrefix[] = "a/";
+const char kMetadataKey[] = "m";
 
 leveldb::ReadOptions CreateReadOptions() {
   leveldb::ReadOptions opts;
@@ -54,8 +57,12 @@ std::string SharedStateKey(const feedwire::ContentId& content_id) {
   return KeyForContentId("s/", content_id);
 }
 
-std::string LocalActionKey(int32_t id) {
+std::string LocalActionKey(int64_t id) {
   return kLocalActionPrefix + base::NumberToString(id);
+}
+
+std::string LocalActionKey(const LocalActionId& id) {
+  return LocalActionKey(id.GetUnsafeValue());
 }
 
 // Returns true if the record key is for stream data (stream_data,
@@ -84,6 +91,8 @@ std::string KeyForRecord(const feedstore::Record& record) {
       return LocalActionKey(record.local_action().id());
     case feedstore::Record::kSharedState:
       return SharedStateKey(record.shared_state().content_id());
+    case feedstore::Record::kMetadata:
+      return kMetadataKey;
     case feedstore::Record::DATA_NOT_SET:
       break;
   }
@@ -121,6 +130,18 @@ feedstore::Record MakeRecord(feedstore::StreamData stream_data) {
   return record;
 }
 
+feedstore::Record MakeRecord(feedstore::StoredAction action) {
+  feedstore::Record record;
+  *record.mutable_local_action() = std::move(action);
+  return record;
+}
+
+feedstore::Record MakeRecord(feedstore::Metadata metadata) {
+  feedstore::Record record;
+  *record.mutable_metadata() = std::move(metadata);
+  return record;
+}
+
 template <typename T>
 std::pair<std::string, feedstore::Record> MakeKeyAndRecord(T record_data) {
   std::pair<std::string, feedstore::Record> result;
@@ -155,6 +176,12 @@ MakeUpdatesForStreamModelUpdateRequest(
   return updates;
 }
 
+void SortActions(std::vector<feedstore::StoredAction>* actions) {
+  std::sort(actions->begin(), actions->end(),
+            [](const feedstore::StoredAction& a,
+               const feedstore::StoredAction& b) { return a.id() < b.id(); });
+}
+
 }  // namespace
 
 FeedStore::LoadStreamResult::LoadStreamResult() = default;
@@ -176,8 +203,8 @@ void FeedStore::Initialize(base::OnceClosure initialize_complete) {
     std::move(initialize_complete).Run();
   } else {
     initialize_callback_ = std::move(initialize_complete);
-    database_->Init(base::BindOnce(&FeedStore::OnDatabaseInitialized,
-                                   weak_ptr_factory_.GetWeakPtr()));
+    database_->Init(
+        base::BindOnce(&FeedStore::OnDatabaseInitialized, GetWeakPtr()));
   }
 }
 
@@ -240,8 +267,10 @@ void FeedStore::LoadStream(
     return;
   }
   auto filter = [](const std::string& key) {
+    // Read stream data, stream structures, and pending actions.
     return key == kStreamDataKey ||
-           base::StartsWith(key, "T/0/", base::CompareCase::SENSITIVE);
+           base::StartsWith(key, "T/0/", base::CompareCase::SENSITIVE) ||
+           IsLocalActionKey(key);
   };
   database_->LoadEntriesWithFilter(
       base::BindRepeating(filter), CreateReadOptions(),
@@ -259,14 +288,25 @@ void FeedStore::OnLoadStreamFinished(
     result.read_error = true;
   } else {
     for (feedstore::Record& record : *records) {
-      if (record.has_stream_structures()) {
-        result.stream_structures.push_back(
-            std::move(*record.mutable_stream_structures()));
-      } else if (record.has_stream_data()) {
-        result.stream_data = std::move(*record.mutable_stream_data());
+      switch (record.data_case()) {
+        case feedstore::Record::kStreamData:
+          result.stream_data = std::move(*record.mutable_stream_data());
+          break;
+        case feedstore::Record::kStreamStructures:
+          result.stream_structures.push_back(
+              std::move(*record.mutable_stream_structures()));
+          break;
+        case feedstore::Record::kLocalAction:
+          result.pending_actions.push_back(
+              std::move(*record.mutable_local_action()));
+          break;
+        default:
+          break;
       }
     }
   }
+
+  SortActions(&result.pending_actions);
   std::move(callback).Run(std::move(result));
 }
 
@@ -398,9 +438,9 @@ void FeedStore::OnReadContentFinished(
 void FeedStore::ReadActions(
     base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback) {
   database_->LoadEntriesWithFilter(
-      base::BindRepeating(&IsLocalActionKey),
-      base::BindOnce(&FeedStore::OnReadActionsFinished,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindRepeating(IsLocalActionKey),
+      base::BindOnce(&FeedStore::OnReadActionsFinished, GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void FeedStore::OnReadActionsFinished(
@@ -414,9 +454,10 @@ void FeedStore::OnReadActionsFinished(
 
   std::vector<feedstore::StoredAction> actions;
   actions.reserve(records->size());
-  for (auto& record : *records) {
+  for (auto& record : *records)
     actions.push_back(std::move(record.local_action()));
-  }
+
+  SortActions(&actions);
   std::move(callback).Run(std::move(actions));
 }
 
@@ -429,7 +470,25 @@ void FeedStore::WriteActions(std::vector<feedstore::StoredAction> actions,
     *record.mutable_local_action() = std::move(action);
     records.push_back(record);
   }
+
   Write(std::move(records), std::move(callback));
+}
+
+void FeedStore::UpdateActions(
+    std::vector<feedstore::StoredAction> actions_to_update,
+    std::vector<LocalActionId> ids_to_remove,
+    base::OnceCallback<void(bool)> callback) {
+  auto entries_to_save = std::make_unique<
+      leveldb_proto::ProtoDatabase<feedstore::Record>::KeyEntryVector>();
+  for (auto& action : actions_to_update)
+    entries_to_save->push_back(MakeKeyAndRecord(std::move(action)));
+
+  auto keys_to_remove = std::make_unique<std::vector<std::string>>();
+  for (LocalActionId id : ids_to_remove)
+    keys_to_remove->push_back(LocalActionKey(id));
+
+  database_->UpdateEntries(std::move(entries_to_save),
+                           std::move(keys_to_remove), std::move(callback));
 }
 
 void FeedStore::RemoveActions(std::vector<LocalActionId> ids,
@@ -437,7 +496,7 @@ void FeedStore::RemoveActions(std::vector<LocalActionId> ids,
   auto keys = std::make_unique<std::vector<std::string>>();
   keys->reserve(ids.size());
   for (LocalActionId id : ids)
-    keys->push_back(LocalActionKey(id.GetUnsafeValue()));
+    keys->push_back(LocalActionKey(id));
 
   database_->UpdateEntries(
       /*entries_to_save=*/std::make_unique<
@@ -458,13 +517,36 @@ void FeedStore::Write(std::vector<feedstore::Record> records,
   database_->UpdateEntries(
       std::move(entries_to_save),
       /*keys_to_remove=*/std::make_unique<leveldb_proto::KeyVector>(),
-      base::BindOnce(&FeedStore::OnWriteFinished,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(&FeedStore::OnWriteFinished, GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void FeedStore::OnWriteFinished(base::OnceCallback<void(bool)> callback,
                                 bool success) {
   std::move(callback).Run(success);
+}
+
+void FeedStore::ReadMetadata(
+    base::OnceCallback<void(std::unique_ptr<feedstore::Metadata>)> callback) {
+  ReadSingle(kMetadataKey, base::BindOnce(&FeedStore::OnReadMetadataFinished,
+                                          GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStore::OnReadMetadataFinished(
+    base::OnceCallback<void(std::unique_ptr<feedstore::Metadata>)> callback,
+    bool read_ok,
+    std::unique_ptr<feedstore::Record> record) {
+  if (!record || !read_ok) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  std::move(callback).Run(base::WrapUnique(record->release_metadata()));
+}
+
+void FeedStore::WriteMetadata(feedstore::Metadata metadata,
+                              base::OnceCallback<void(bool)> callback) {
+  Write({MakeRecord(std::move(metadata))}, std::move(callback));
 }
 
 }  // namespace feed

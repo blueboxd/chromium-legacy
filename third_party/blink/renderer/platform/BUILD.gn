@@ -503,7 +503,6 @@ jumbo_component("platform") {
     "exported/web_audio_device.cc",
     "exported/web_blob_info.cc",
     "exported/web_cache.cc",
-    "exported/web_coalesced_input_event.cc",
     "exported/web_content_decryption_module.cc",
     "exported/web_content_decryption_module_access.cc",
     "exported/web_content_decryption_module_result.cc",

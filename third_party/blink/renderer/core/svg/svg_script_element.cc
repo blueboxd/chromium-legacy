@@ -147,6 +147,10 @@ Document& SVGScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
 
+ExecutionContext* SVGScriptElement::GetExecutionContext() const {
+  return Node::GetExecutionContext();
+}
+
 Element& SVGScriptElement::CloneWithoutAttributesAndChildren(
     Document& factory) const {
   CreateElementFlags flags =

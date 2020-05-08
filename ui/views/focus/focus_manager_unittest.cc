@@ -851,24 +851,15 @@ namespace {
 // ShouldAdvanceFocusToTopLevelWidget().
 class AdvanceFocusWidgetDelegate : public WidgetDelegate {
  public:
-  explicit AdvanceFocusWidgetDelegate(Widget* widget)
-      : widget_(widget), should_advance_focus_to_parent_(false) {}
+  explicit AdvanceFocusWidgetDelegate(Widget* widget) : widget_(widget) {}
   ~AdvanceFocusWidgetDelegate() override = default;
 
-  void set_should_advance_focus_to_parent(bool value) {
-    should_advance_focus_to_parent_ = value;
-  }
-
   // WidgetDelegate:
-  bool ShouldAdvanceFocusToTopLevelWidget() const override {
-    return should_advance_focus_to_parent_;
-  }
   Widget* GetWidget() override { return widget_; }
   const Widget* GetWidget() const override { return widget_; }
 
  private:
   Widget* widget_;
-  bool should_advance_focus_to_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(AdvanceFocusWidgetDelegate);
 };
@@ -950,7 +941,7 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
 
   // Allow focus to go to the parent, and focus backwards which should now move
   // up |widget_view| (in the parent).
-  delegate->set_should_advance_focus_to_parent(true);
+  delegate->SetFocusTraversesOut(true);
   GetFocusManager()->AdvanceFocus(true);
   EXPECT_EQ(widget_view, GetFocusManager()->GetFocusedView());
 }

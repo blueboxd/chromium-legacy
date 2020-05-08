@@ -51,12 +51,13 @@ void ActivityRecord::RemoveClient(const std::string& client_id) {
 }
 
 CastSession* ActivityRecord::GetSession() const {
-  DCHECK(session_id_);
+  if (!session_id_)
+    return nullptr;
   CastSession* session = session_tracker_->GetSessionById(*session_id_);
   if (!session) {
     // TODO(crbug.com/905002): Add UMA metrics for this and other error
     // conditions.
-    LOG(ERROR) << "Session not found: " << session_id_.value_or("<missing>");
+    LOG(ERROR) << "Session not found: " << *session_id_;
   }
   return session;
 }

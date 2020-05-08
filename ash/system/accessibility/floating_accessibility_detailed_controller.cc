@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -42,10 +43,13 @@ class FloatingAccessibilityDetailedController::DetailedBubbleView
 
 FloatingAccessibilityDetailedController::
     FloatingAccessibilityDetailedController(Delegate* delegate)
-    : DetailedViewDelegate(/*tray_controller*/ nullptr), delegate_(delegate) {}
+    : DetailedViewDelegate(/*tray_controller*/ nullptr), delegate_(delegate) {
+  Shell::Get()->activation_client()->AddObserver(this);
+}
 
 FloatingAccessibilityDetailedController::
     ~FloatingAccessibilityDetailedController() {
+  Shell::Get()->activation_client()->RemoveObserver(this);
   if (!bubble_widget_ || bubble_widget_->IsClosed())
     return;
   bubble_widget_->CloseNow();
@@ -65,6 +69,7 @@ void FloatingAccessibilityDetailedController::Show(
   init_params.anchor_rect = anchor_rect;
   init_params.insets = gfx::Insets(0, kUnifiedMenuPadding, kUnifiedMenuPadding,
                                    kUnifiedMenuPadding);
+  init_params.close_on_deactivate = false;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.translucent = true;
@@ -82,6 +87,7 @@ void FloatingAccessibilityDetailedController::Show(
   detailed_view_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
+  bubble_view_->SetCanActivate(true);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
@@ -102,6 +108,8 @@ void FloatingAccessibilityDetailedController::UpdateAnchorRect(
 }
 
 void FloatingAccessibilityDetailedController::CloseBubble() {
+  if (delegate_->GetBubbleWidget())
+    delegate_->GetBubbleWidget()->Activate();
   if (!bubble_widget_ || bubble_widget_->IsClosed())
     return;
   bubble_widget_->Close();
@@ -141,6 +149,25 @@ void FloatingAccessibilityDetailedController::BubbleViewDestroyed() {
 void FloatingAccessibilityDetailedController::OnAccessibilityStatusChanged() {
   if (detailed_view_)
     detailed_view_->OnAccessibilityStatusChanged();
+}
+
+void FloatingAccessibilityDetailedController::OnWindowActivated(
+    ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (!gained_active || !bubble_widget_)
+    return;
+
+  views::Widget* gained_widget =
+      views::Widget::GetWidgetForNativeView(gained_active);
+  // Do not close the view if our bubble was activated.
+  // Also, do not close the view the floating menu was activated, since it
+  // controls our visibility.
+  if (gained_widget == bubble_widget_ ||
+      gained_widget == delegate_->GetBubbleWidget())
+    return;
+
+  bubble_widget_->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 
 }  // namespace ash

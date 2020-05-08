@@ -40,7 +40,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
         l10n_util::GetStringUTF16(IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_TITLE));
     SetShowTitle(true);
     SetShowCloseButton(true);
-    DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+    SetButtons(ui::DIALOG_BUTTON_NONE);
     set_close_on_deactivate(true);
     SetCanActivate(false);
     set_accept_events(true);

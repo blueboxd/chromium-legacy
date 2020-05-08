@@ -104,7 +104,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
       callback =
           base::BindOnce([](const ClientStatus& status,
                             const base::Optional<ClientStatus>& detail_status) {
-            EXPECT_EQ(status.proto_status(), MANUAL_FALLBACK);
+            EXPECT_EQ(status.proto_status(), AUTOFILL_INCOMPLETE);
             ASSERT_TRUE(detail_status.has_value());
             ASSERT_EQ(detail_status.value()
                           .details()
@@ -166,7 +166,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, AddsFirstFieldFillingError) {
       callback =
           base::BindOnce([](const ClientStatus& status,
                             const base::Optional<ClientStatus>& detail_status) {
-            EXPECT_EQ(status.proto_status(), MANUAL_FALLBACK);
+            EXPECT_EQ(status.proto_status(), AUTOFILL_INCOMPLETE);
             ASSERT_TRUE(detail_status.has_value());
             ASSERT_EQ(detail_status.value()
                           .details()
@@ -306,7 +306,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FailsIfForcedFieldDidNotGetFilled) {
       callback =
           base::BindOnce([](const ClientStatus& status,
                             const base::Optional<ClientStatus>& detail_status) {
-            EXPECT_EQ(status.proto_status(), MANUAL_FALLBACK);
+            EXPECT_EQ(status.proto_status(), AUTOFILL_INCOMPLETE);
             ASSERT_TRUE(detail_status.has_value());
             ASSERT_EQ(detail_status.value()
                           .details()
@@ -392,7 +392,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
       callback =
           base::BindOnce([](const ClientStatus& status,
                             const base::Optional<ClientStatus>& detail_status) {
-            EXPECT_EQ(status.proto_status(), MANUAL_FALLBACK);
+            EXPECT_EQ(status.proto_status(), AUTOFILL_INCOMPLETE);
             ASSERT_TRUE(detail_status.has_value());
             ASSERT_EQ(detail_status.value()
                           .details()

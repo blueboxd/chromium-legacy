@@ -843,6 +843,15 @@ template("test_runner_script") {
       }
     }
 
+    if (defined(invoker.additional_locales)) {
+      foreach(locale, invoker.additional_locales) {
+        executable_args += [
+          "--additional-locale",
+          locale,
+        ]
+      }
+    }
+
     if (defined(invoker.extra_args)) {
       executable_args += invoker.extra_args
     }

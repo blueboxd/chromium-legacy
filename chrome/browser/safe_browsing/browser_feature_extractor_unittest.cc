@@ -52,7 +52,10 @@ class MockClientSideDetectionHost : public ClientSideDetectionHost {
   explicit MockClientSideDetectionHost(content::WebContents* tab)
       : ClientSideDetectionHost(tab) {}
 
-  ~MockClientSideDetectionHost() override {}
+  ~MockClientSideDetectionHost() override = default;
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {}
 };
 }  // namespace
 

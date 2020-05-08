@@ -101,6 +101,8 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return vector_icons::kCookieIcon;
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       return vector_icons::kCameraPanTiltZoomIcon;
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      return vector_icons::kWindowPlacementIcon;
     default:
       NOTREACHED();
       return vector_icons::kExtensionIcon;
@@ -242,6 +244,9 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
           url_formatter::FormatUrlForSecurityDisplay(
               GetEmbeddingOrigin(),
               url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      message_id = IDS_WINDOW_PLACEMENT_PERMISSION_FRAGMENT;
+      break;
     default:
       NOTREACHED();
       return base::string16();

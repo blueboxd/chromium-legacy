@@ -243,7 +243,8 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
         mActivityStart.customMainActivityStart();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            DownloadUtils.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
+            DownloadLocationDialogBridge.setPromptForDownloadAndroid(
+                    DownloadPromptStatus.DONT_SHOW);
         });
 
         cleanUpAllDownloads();

@@ -29,6 +29,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -158,27 +159,14 @@ bool ScriptRunner::RemovePendingInOrderScript(PendingScript* pending_script) {
 void ScriptRunner::MovePendingScript(Document& old_document,
                                      Document& new_document,
                                      ScriptLoader* script_loader) {
-  Document* new_context_document = new_document.ContextDocument();
-  if (!new_context_document) {
-    // Document's contextDocument() method will return no Document if the
-    // following conditions both hold:
-    //
-    //   - The Document wasn't created with an explicit context document
-    //     and that document is otherwise kept alive.
-    //   - The Document itself is detached from its frame.
-    //
-    // The script element's loader is in that case moved to document() and
-    // its script runner, which is the non-null Document that contextDocument()
-    // would return if not detached.
-    DCHECK(!new_document.GetFrame());
-    new_context_document = &new_document;
-  }
-  Document* old_context_document = old_document.ContextDocument();
-  if (!old_context_document) {
-    DCHECK(!old_document.GetFrame());
-    old_context_document = &old_document;
-  }
-
+  Document* new_context_document =
+      new_document.GetExecutionContext()
+          ? To<LocalDOMWindow>(new_document.GetExecutionContext())->document()
+          : &new_document;
+  Document* old_context_document =
+      old_document.GetExecutionContext()
+          ? To<LocalDOMWindow>(old_document.GetExecutionContext())->document()
+          : &old_document;
   if (old_context_document == new_context_document)
     return;
 

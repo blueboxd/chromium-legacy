@@ -1029,9 +1029,8 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
   if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled())
     return false;
 
-  if (GetResourceFetcherProperties().IsDetached()) {
+  if (GetResourceFetcherProperties().IsDetached())
     return false;
-  }
 
   LocalFrame* frame = document_->GetFrame();
   DCHECK(frame);
@@ -1048,6 +1047,17 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
       "/.well-known/register-conversion";
   if (url.GetPath() != kWellKnownConversionRegsitrationPath)
     return false;
+
+  if (!document_->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
+    String message =
+        "The 'conversion-measurement' feature policy must be enabled to "
+        "register a conversion.";
+    document_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError, message));
+    return false;
+  }
 
   // Only allow conversion registration on secure pages with a secure conversion
   // redirect.

@@ -6,6 +6,7 @@
 
 #include "base/hash/sha1.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +23,22 @@ std::string Sha256WithRSAEncryption() {
                                               0x01, 0x01, 0x0b, 0x05, 0x00};
   return std::string(std::begin(kSha256WithRSAEncryption),
                      std::end(kSha256WithRSAEncryption));
+}
+
+std::string Sha1WithRSAEncryption() {
+  const uint8_t kSha1WithRSAEncryption[] = {0x30, 0x0D, 0x06, 0x09, 0x2a,
+                                            0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                            0x01, 0x01, 0x05, 0x05, 0x00};
+  return std::string(std::begin(kSha1WithRSAEncryption),
+                     std::end(kSha1WithRSAEncryption));
+}
+
+std::string Md5WithRSAEncryption() {
+  const uint8_t kMd5WithRSAEncryption[] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
+                                           0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                           0x01, 0x01, 0x04, 0x05, 0x00};
+  return std::string(std::begin(kMd5WithRSAEncryption),
+                     std::end(kMd5WithRSAEncryption));
 }
 
 std::string Sha1() {
@@ -380,4 +397,115 @@ std::string BuildOCSPResponseWithResponseData(
                             FinishCBB(basic_ocsp_response_cbb.get()));
 }
 
+std::string BuildCrl(const std::string& crl_issuer_subject,
+                     EVP_PKEY* crl_issuer_key,
+                     const std::vector<uint64_t>& revoked_serials,
+                     DigestAlgorithm digest) {
+  std::string signature_algorithm;
+  const EVP_MD* md = nullptr;
+  switch (digest) {
+    case DigestAlgorithm::Sha256: {
+      signature_algorithm = Sha256WithRSAEncryption();
+      md = EVP_sha256();
+      break;
+    }
+
+    case DigestAlgorithm::Sha1: {
+      signature_algorithm = Sha1WithRSAEncryption();
+      md = EVP_sha1();
+      break;
+    }
+
+    case DigestAlgorithm::Md5: {
+      signature_algorithm = Md5WithRSAEncryption();
+      md = EVP_md5();
+      break;
+    }
+
+    default:
+      ADD_FAILURE();
+      return std::string();
+  }
+  //    TBSCertList  ::=  SEQUENCE  {
+  //         version                 Version OPTIONAL,
+  //                                      -- if present, MUST be v2
+  //         signature               AlgorithmIdentifier,
+  //         issuer                  Name,
+  //         thisUpdate              Time,
+  //         nextUpdate              Time OPTIONAL,
+  //         revokedCertificates     SEQUENCE OF SEQUENCE  {
+  //              userCertificate         CertificateSerialNumber,
+  //              revocationDate          Time,
+  //              crlEntryExtensions      Extensions OPTIONAL
+  //                                       -- if present, version MUST be v2
+  //                                   }  OPTIONAL,
+  //         crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
+  //                                       -- if present, version MUST be v2
+  //                                   }
+  bssl::ScopedCBB tbs_cbb;
+  CBB tbs_cert_list, revoked_serials_cbb;
+  if (!CBB_init(tbs_cbb.get(), 10) ||
+      !CBB_add_asn1(tbs_cbb.get(), &tbs_cert_list, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1_uint64(&tbs_cert_list, 1 /* V2 */) ||
+      !CBBAddBytes(&tbs_cert_list, signature_algorithm) ||
+      !CBBAddBytes(&tbs_cert_list, crl_issuer_subject) ||
+      !x509_util::CBBAddTime(
+          &tbs_cert_list, base::Time::Now() - base::TimeDelta::FromDays(1)) ||
+      !x509_util::CBBAddTime(
+          &tbs_cert_list, base::Time::Now() + base::TimeDelta::FromDays(6))) {
+    ADD_FAILURE();
+    return std::string();
+  }
+  if (!revoked_serials.empty()) {
+    if (!CBB_add_asn1(&tbs_cert_list, &revoked_serials_cbb,
+                      CBS_ASN1_SEQUENCE)) {
+      ADD_FAILURE();
+      return std::string();
+    }
+    for (const int64_t revoked_serial : revoked_serials) {
+      CBB revoked_serial_cbb;
+      if (!CBB_add_asn1(&revoked_serials_cbb, &revoked_serial_cbb,
+                        CBS_ASN1_SEQUENCE) ||
+          !CBB_add_asn1_uint64(&revoked_serial_cbb, revoked_serial) ||
+          !x509_util::CBBAddTime(
+              &revoked_serial_cbb,
+              base::Time::Now() - base::TimeDelta::FromDays(1)) ||
+          !CBB_flush(&revoked_serials_cbb)) {
+        ADD_FAILURE();
+        return std::string();
+      }
+    }
+  }
+
+  std::string tbs_tlv = FinishCBB(tbs_cbb.get());
+
+  //    CertificateList  ::=  SEQUENCE  {
+  //         tbsCertList          TBSCertList,
+  //         signatureAlgorithm   AlgorithmIdentifier,
+  //         signatureValue       BIT STRING  }
+  bssl::ScopedCBB crl_cbb;
+  CBB cert_list, signature;
+  bssl::ScopedEVP_MD_CTX ctx;
+  uint8_t* sig_out;
+  size_t sig_len;
+  if (!CBB_init(crl_cbb.get(), 10) ||
+      !CBB_add_asn1(crl_cbb.get(), &cert_list, CBS_ASN1_SEQUENCE) ||
+      !CBBAddBytes(&cert_list, tbs_tlv) ||
+      !CBBAddBytes(&cert_list, signature_algorithm) ||
+      !CBB_add_asn1(&cert_list, &signature, CBS_ASN1_BITSTRING) ||
+      !CBB_add_u8(&signature, 0 /* no unused bits */) ||
+      !EVP_DigestSignInit(ctx.get(), nullptr, md, nullptr, crl_issuer_key) ||
+      !EVP_DigestSign(ctx.get(), nullptr, &sig_len,
+                      reinterpret_cast<const uint8_t*>(tbs_tlv.data()),
+                      tbs_tlv.size()) ||
+      !CBB_reserve(&signature, &sig_out, sig_len) ||
+      !EVP_DigestSign(ctx.get(), sig_out, &sig_len,
+                      reinterpret_cast<const uint8_t*>(tbs_tlv.data()),
+                      tbs_tlv.size()) ||
+      !CBB_did_write(&signature, sig_len)) {
+    ADD_FAILURE();
+    return std::string();
+  }
+  return FinishCBB(crl_cbb.get());
+}
 }  // namespace net

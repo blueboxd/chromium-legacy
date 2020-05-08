@@ -174,6 +174,7 @@ source_set("platform") {
     "//ipc",
     "//services/service_manager/public/cpp",
     "//skia",
+    "//ui/base:data_exchange",
     "//ui/display/types",
     "//ui/events",
     "//ui/events/devices",

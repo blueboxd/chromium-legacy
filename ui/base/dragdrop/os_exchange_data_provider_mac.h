@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -23,9 +24,8 @@
 
 namespace ui {
 
-// OSExchangeData::Provider implementation for Mac.
-class UI_BASE_EXPORT OSExchangeDataProviderMac
-    : public OSExchangeData::Provider {
+// OSExchangeDataProvider implementation for Mac.
+class UI_BASE_EXPORT OSExchangeDataProviderMac : public OSExchangeDataProvider {
  public:
   ~OSExchangeDataProviderMac() override;
 
@@ -37,7 +37,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
   static std::unique_ptr<OSExchangeDataProviderMac>
   CreateProviderWrappingPasteboard(NSPasteboard* pasteboard);
 
-  // Overridden from OSExchangeData::Provider:
+  // Overridden from OSExchangeDataProvider:
   void MarkOriginatedFromRenderer() override;
   bool DidOriginateFromRenderer() const override;
   void SetString(const base::string16& data) override;
@@ -47,7 +47,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   bool GetString(base::string16* data) const override;
-  bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
+  bool GetURLAndTitle(FilenameToURLPolicy policy,
                       GURL* url,
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
@@ -55,7 +55,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
   bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
   bool HasString() const override;
-  bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const override;
+  bool HasURL(FilenameToURLPolicy policy) const override;
   bool HasFile() const override;
   bool HasCustomFormat(const ClipboardFormatType& format) const override;
   void SetDragImage(const gfx::ImageSkia& image,

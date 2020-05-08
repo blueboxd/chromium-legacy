@@ -20,6 +20,7 @@
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/tasks/upload_actions_task.h"
 
 namespace feed {
 
@@ -40,12 +41,20 @@ void LoadMoreTask::Run() {
   if (final_status != LoadStreamStatus::kNoStatus)
     return Done(final_status);
 
+  upload_actions_task_ = std::make_unique<UploadActionsTask>(
+      stream_,
+      base::BindOnce(&LoadMoreTask::UploadActionsComplete, GetWeakPtr()));
+  upload_actions_task_->Execute(base::DoNothing());
+}
+
+void LoadMoreTask::UploadActionsComplete(UploadActionsTask::Result result) {
   // Send network request.
   fetch_start_time_ = stream_->GetTickClock()->NowTicks();
   stream_->GetNetwork()->SendQueryRequest(
-      CreateFeedQueryLoadMoreRequest(stream_->GetRequestMetadata(),
-                                     model->GetConsistencyToken(),
-                                     model->GetNextPageToken()),
+      CreateFeedQueryLoadMoreRequest(
+          stream_->GetRequestMetadata(),
+          stream_->GetMetadata()->GetConsistencyToken(),
+          stream_->GetModel()->GetNextPageToken()),
       base::BindOnce(&LoadMoreTask::QueryRequestComplete, GetWeakPtr()));
 }
 

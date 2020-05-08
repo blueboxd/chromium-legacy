@@ -51,17 +51,6 @@ ServicesDelegateDesktop::~ServicesDelegateDesktop() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void ServicesDelegateDesktop::InitializeCsdService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if BUILDFLAG(SAFE_BROWSING_CSD)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableClientSidePhishingDetection)) {
-    csd_service_ = ClientSideDetectionService::Create(url_loader_factory);
-  }
-#endif  // BUILDFLAG(SAFE_BROWSING_CSD)
-}
-
 ExtendedReportingLevel
 ServicesDelegateDesktop::GetEstimatedExtendedReportingLevel() const {
   return safe_browsing_service_->estimated_extended_reporting_by_prefs();
@@ -111,11 +100,6 @@ void ServicesDelegateDesktop::ShutdownServices() {
 
   download_service_.reset();
 
-  // The IO thread is going away, so make sure the ClientSideDetectionService
-  // dtor executes now since it may call the dtor of URLFetcher which relies
-  // on it.
-  csd_service_.reset();
-
   resource_request_detector_.reset();
   incident_service_.reset();
 
@@ -124,8 +108,6 @@ void ServicesDelegateDesktop::ShutdownServices() {
 
 void ServicesDelegateDesktop::RefreshState(bool enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (csd_service_)
-    csd_service_->SetEnabledAndRefreshState(enable);
   if (download_service_)
     download_service_->SetEnabled(enable);
 }
@@ -153,11 +135,6 @@ void ServicesDelegateDesktop::AddDownloadManager(
     content::DownloadManager* download_manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   incident_service_->AddDownloadManager(download_manager);
-}
-
-ClientSideDetectionService* ServicesDelegateDesktop::GetCsdService() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return csd_service_.get();
 }
 
 DownloadProtectionService* ServicesDelegateDesktop::GetDownloadService() {

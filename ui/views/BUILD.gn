@@ -1160,6 +1160,8 @@ test("views_unittests") {
       "//third_party/wtl",
     ]
 
+    deps += [ "//ui/base:data_exchange" ]
+
     libs = [
       "imm32.lib",
       "oleacc.lib",

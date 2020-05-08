@@ -61,10 +61,10 @@ TokenKeyPair GenerateTokenKeys(uint32_t key_id) {
   keys.signing.resize(TRUST_TOKEN_MAX_PRIVATE_KEY_SIZE);
   keys.verification.resize(TRUST_TOKEN_MAX_PUBLIC_KEY_SIZE);
   size_t signing_key_len, verification_key_len;
-  CHECK(TRUST_TOKEN_generate_key(keys.signing.data(), &signing_key_len,
-                                 keys.signing.size(), keys.verification.data(),
-                                 &verification_key_len,
-                                 keys.verification.size(), key_id));
+  CHECK(TRUST_TOKEN_generate_key(
+      TRUST_TOKEN_experiment_v0(), keys.signing.data(), &signing_key_len,
+      keys.signing.size(), keys.verification.data(), &verification_key_len,
+      keys.verification.size(), key_id));
   keys.signing.resize(signing_key_len);
   keys.verification.resize(verification_key_len);
 
@@ -130,7 +130,7 @@ void RequestManyTokensAndRetainOneArbitrarily(
 
   constexpr uint8_t kPrivateMetadata = 0;
   ScopedBoringsslBytes raw_issuance_response;
-  uint8_t num_tokens_issued;
+  size_t num_tokens_issued;
   ASSERT_TRUE(TRUST_TOKEN_ISSUER_issue(
       issuer_ctx, raw_issuance_response.mutable_ptr(),
       raw_issuance_response.mutable_len(), &num_tokens_issued,
@@ -234,8 +234,8 @@ TEST(TrustTokenCryptographersTest, IssuanceAndRedemption) {
 
   // Initialization: provide the issuer context the token-signing and
   // SRR-signing keys.
-  bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx(
-      TRUST_TOKEN_ISSUER_new(/*max_batchsize=*/kNumTokensToRequest));
+  bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx(TRUST_TOKEN_ISSUER_new(
+      TRUST_TOKEN_experiment_v0(), /*max_batchsize=*/kNumTokensToRequest));
   ASSERT_TRUE(issuer_ctx);
   for (const TokenKeyPair& token_key_pair : keys.token_keys) {
     ASSERT_TRUE(TRUST_TOKEN_ISSUER_add_key(issuer_ctx.get(),
@@ -274,8 +274,8 @@ TEST(TrustTokenCryptographersTest, IssuanceAndRedemptionWithMultipleKeys) {
 
   // Initialization: provide the issuer context the token-signing and
   // SRR-signing keys.
-  bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx(
-      TRUST_TOKEN_ISSUER_new(/*max_batchsize=*/kNumTokensToRequest));
+  bssl::UniquePtr<TRUST_TOKEN_ISSUER> issuer_ctx(TRUST_TOKEN_ISSUER_new(
+      TRUST_TOKEN_experiment_v0(), /*max_batchsize=*/kNumTokensToRequest));
   ASSERT_TRUE(issuer_ctx);
   for (const TokenKeyPair& token_key_pair : keys.token_keys) {
     ASSERT_TRUE(TRUST_TOKEN_ISSUER_add_key(issuer_ctx.get(),

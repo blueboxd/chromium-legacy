@@ -25,9 +25,9 @@ namespace protocol {
 
 namespace {
 
-// Ensure ICE config is correct at least one hour after session starts.
-constexpr base::TimeDelta kMinimumIceConfigLifetime =
-    base::TimeDelta::FromHours(1);
+// Use a cooldown period to prevent multiple service requests in case of a bug.
+constexpr base::TimeDelta kIceConfigRequestCooldown =
+    base::TimeDelta::FromMinutes(2);
 
 void PrintIceConfig(const IceConfig& ice_config) {
   HOST_LOG << "IceConfig: {";
@@ -108,17 +108,25 @@ void TransportContext::EnsureFreshIceConfig() {
     return;
   }
 
-  if ((base::Time::Now() + kMinimumIceConfigLifetime) >
-      ice_config_.expiration_time) {
+  if (last_request_completion_time_.is_max()) {
+    HOST_LOG << "Skipping ICE Config request as refreshing is disabled";
+    return;
+  }
+
+  if (base::Time::Now() >
+      (last_request_completion_time_ + kIceConfigRequestCooldown)) {
     ice_config_request_ = std::make_unique<RemotingIceConfigRequest>();
     ice_config_request_->Send(
         base::BindOnce(&TransportContext::OnIceConfig, base::Unretained(this)));
+  } else {
+    HOST_LOG << "Skipping ICE Config request made during the cooldown period.";
   }
 }
 
 void TransportContext::OnIceConfig(const IceConfig& ice_config) {
   ice_config_ = ice_config;
   ice_config_request_.reset();
+  last_request_completion_time_ = base::Time::Now();
 
   HOST_LOG << "Using newly requested ICE Config:";
   PrintIceConfig(ice_config);

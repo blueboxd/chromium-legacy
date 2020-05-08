@@ -653,7 +653,8 @@ public class ChromeTabbedActivity
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForPhone")) {
             CompositorViewHolder compositorViewHolder = getCompositorViewHolder();
-            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled()
+                    || StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()) {
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 if (tabManagementDelegate != null) {
@@ -718,7 +719,7 @@ public class ChromeTabbedActivity
                     }
                 }
 
-                if (isInOverviewMode() && !TabUiFeatureUtilities.isGridTabSwitcherEnabled()) {
+                if (isInOverviewMode() && !StartSurfaceConfiguration.isStartSurfaceEnabled()) {
                     hideOverview();
                 } else {
                     showOverview(OverviewModeState.SHOWING_TABSWITCHER);

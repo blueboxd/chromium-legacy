@@ -790,7 +790,8 @@ TEST_F(AppShimManagerTest, DontCreateHost) {
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _)).Times(1);
   NormalLaunch(bootstrap_ab_, std::move(host_ab_unique_));
   // But the bootstrap should be closed.
-  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kNoHost, *bootstrap_ab_result_);
+  EXPECT_EQ(chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect,
+            *bootstrap_ab_result_);
   // And we should create no host.
   EXPECT_FALSE(manager_->FindHost(&profile_a_, kTestAppIdB));
 }

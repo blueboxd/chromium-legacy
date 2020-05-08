@@ -248,7 +248,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
                     ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, customUri);
         }
 
-        RecordUserAction.record("Settings.Homepage.LocationChanged");
+        RecordUserAction.record("Settings.Homepage.LocationChanged_V2");
         notifyHomepageUpdated();
     }
 

@@ -424,7 +424,7 @@ public class ExternalNavigationHandler {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
             intent.setPackage(packageName);
-            mDelegate.startActivity(intent, false);
+            startActivity(intent, false, mDelegate);
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
     }
@@ -592,11 +592,10 @@ public class ExternalNavigationHandler {
         if (!params.getUrl().startsWith(WTAI_MC_URL_PREFIX)) return false;
         // wtai://wp/mc;number
         // number=string(phone-number)
-        mDelegate.startActivity(
-                new Intent(Intent.ACTION_VIEW,
-                        Uri.parse(WebView.SCHEME_TEL
-                                + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))),
-                false);
+        startActivity(new Intent(Intent.ACTION_VIEW,
+                              Uri.parse(WebView.SCHEME_TEL
+                                      + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))),
+                false, mDelegate);
         if (DEBUG) Log.i(TAG, "wtai:// link handled");
         RecordUserAction.record("Android.PhoneIntent");
         return true;
@@ -1146,7 +1145,7 @@ public class ExternalNavigationHandler {
             if (DEBUG) Log.i(TAG, "Incognito intent to Play Store.");
             return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
         } else {
-            mDelegate.startActivity(intent, false);
+            startActivity(intent, false, mDelegate);
             if (DEBUG) Log.i(TAG, "Intent to Play Store.");
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
@@ -1253,7 +1252,7 @@ public class ExternalNavigationHandler {
         Intent webApkIntent = new Intent(targetIntent);
         webApkIntent.setPackage(packages.get(0));
         try {
-            mDelegate.startActivity(webApkIntent, false);
+            startActivity(webApkIntent, false, mDelegate);
             if (DEBUG) Log.i(TAG, "Launched WebAPK");
             return true;
         } catch (ActivityNotFoundException e) {
@@ -1386,6 +1385,31 @@ public class ExternalNavigationHandler {
             }
         }
         return !canSelfOpen || allowSelfOpen || hasPdfViewer;
+    }
+
+    /**
+     * Start an activity for the intent. Used for intents that must be handled externally.
+     * @param intent The intent we want to send.
+     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
+     *              used by Instant Apps intents).
+     */
+    public static void startActivity(
+            Intent intent, boolean proxy, ExternalNavigationDelegate delegate) {
+        try {
+            forcePdfViewerAsIntentHandlerIfNeeded(intent);
+            if (proxy) {
+                delegate.dispatchAuthenticatedIntent(intent);
+            } else {
+                Context context = getAvailableContext(delegate);
+                if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
+            recordExternalNavigationDispatched(intent);
+        } catch (RuntimeException e) {
+            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
+        }
+
+        delegate.didStartActivity(intent);
     }
 
     /**

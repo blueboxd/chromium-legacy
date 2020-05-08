@@ -39,6 +39,14 @@ tools/clang/scripts/generate_compdb.py -p out/Release > compile_commands.json
 Note: the compilation database is not re-generated automatically, you'd need to
 regenerate it manually when you have new files checked in.
 
+If using Windows PowerShell, use the following command instead to set the
+output's encoding to UTF-8 (otherwise Clangd will hit "YAML:1:4: error: Got
+empty plain scalar" while parsing it).
+
+```
+tools/clang/scripts/generate_compdb.py -p out/Release | out-file -encoding utf8 compile_commands.json
+```
+
 3. Optional: build chrome normally. This ensures generated headers exist and are
 up-to-date. clangd will still work without this step, but it may give errors or
 inaccurate results for files which depend on generated headers.

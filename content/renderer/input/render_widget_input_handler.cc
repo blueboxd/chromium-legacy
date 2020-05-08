@@ -143,10 +143,10 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
 
 blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     const WebPointerEvent& pointer_event,
-    blink::WebVector<const WebInputEvent*> coalesced_events,
-    blink::WebVector<const WebInputEvent*> predicted_events) {
-  blink::WebVector<WebPointerEvent> related_pointer_events;
-  for (const WebInputEvent* event : coalesced_events) {
+    const std::vector<std::unique_ptr<WebInputEvent>>& coalesced_events,
+    const std::vector<std::unique_ptr<WebInputEvent>>& predicted_events) {
+  std::vector<std::unique_ptr<WebInputEvent>> related_pointer_events;
+  for (const std::unique_ptr<WebInputEvent>& event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
     const WebTouchEvent& touch_event =
         static_cast<const WebTouchEvent&>(*event);
@@ -154,13 +154,13 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
       if (touch_event.touches[i].id == pointer_event.id &&
           touch_event.touches[i].state !=
               WebTouchPoint::State::kStateStationary) {
-        related_pointer_events.emplace_back(
-            WebPointerEvent(touch_event, touch_event.touches[i]));
+        related_pointer_events.emplace_back(std::make_unique<WebPointerEvent>(
+            touch_event, touch_event.touches[i]));
       }
     }
   }
-  blink::WebVector<WebPointerEvent> predicted_pointer_events;
-  for (const WebInputEvent* event : predicted_events) {
+  std::vector<std::unique_ptr<WebInputEvent>> predicted_pointer_events;
+  for (const std::unique_ptr<WebInputEvent>& event : predicted_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
     const WebTouchEvent& touch_event =
         static_cast<const WebTouchEvent&>(*event);
@@ -168,14 +168,15 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
       if (touch_event.touches[i].id == pointer_event.id &&
           touch_event.touches[i].state !=
               WebTouchPoint::State::kStateStationary) {
-        predicted_pointer_events.emplace_back(
-            WebPointerEvent(touch_event, touch_event.touches[i]));
+        predicted_pointer_events.emplace_back(std::make_unique<WebPointerEvent>(
+            touch_event, touch_event.touches[i]));
       }
     }
   }
 
-  return blink::WebCoalescedInputEvent(pointer_event, related_pointer_events,
-                                       predicted_pointer_events);
+  return blink::WebCoalescedInputEvent(pointer_event.Clone(),
+                                       std::move(related_pointer_events),
+                                       std::move(predicted_pointer_events));
 }
 
 viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {

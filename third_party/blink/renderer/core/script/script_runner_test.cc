@@ -65,6 +65,8 @@ class MockPendingScript : public PendingScript {
     MockScriptElementBase* element = MockScriptElementBase::Create();
     EXPECT_CALL(*element, GetDocument())
         .WillRepeatedly(testing::ReturnRef(*document));
+    EXPECT_CALL(*element, GetExecutionContext())
+        .WillRepeatedly(testing::Return(document->GetExecutionContext()));
     MockPendingScript* pending_script =
         MakeGarbageCollected<MockPendingScript>(element, scheduling_type);
     EXPECT_CALL(*pending_script, IsExternal()).WillRepeatedly(Return(true));

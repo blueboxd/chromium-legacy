@@ -78,12 +78,10 @@ struct ConvertedGlobalData {
 };
 
 struct ConvertedDataOperation {
-  bool has_stream_structure = false;
   feedstore::StreamStructure stream_structure;
-  bool has_content = false;
-  feedstore::Content content;
-  bool has_shared_state = false;
-  feedstore::StreamSharedState shared_state;
+  base::Optional<feedstore::Content> content;
+  base::Optional<feedstore::StreamSharedState> shared_state;
+  base::Optional<std::string> next_page_token;
 };
 
 bool TranslateFeature(feedwire::Feature* feature,
@@ -101,11 +99,11 @@ bool TranslateFeature(feedwire::Feature* feature,
     // TODO(iwells): We still need score, availability_time_seconds,
     // offline_metadata, and representation_data to populate content_info.
 
-    *(result->content.mutable_content_id()) =
+    result->content.emplace();
+    *(result->content->mutable_content_id()) =
         result->stream_structure.content_id();
-    result->content.set_allocated_frame(
+    result->content->set_allocated_frame(
         wire_content->mutable_xsurface_content()->release_xsurface_output());
-    result->has_content = true;
   }
   return true;
 }
@@ -141,22 +139,15 @@ bool TranslatePayload(base::Time now,
       feedwire::Token* token = operation.mutable_next_page_token();
       result->stream_structure.set_allocated_parent_id(
           token->release_parent_id());
-      // TODO(iwells): We should be setting token bytes here.
-      // result->stream_structure.set_allocated_next_page_token(
-      //   token->MutableExtension(
-      //     components::feed::core::proto::ui
-      //       ::stream::NextPageToken::next_page_token_extension
-      //   )->release_next_page_token());
+      result->next_page_token = std::move(
+          *token->mutable_next_page_token()->mutable_next_page_token());
     } break;
     case feedwire::DataOperation::kRenderData: {
-      base::Optional<feedstore::StreamSharedState> shared_state =
+      result->shared_state =
           TranslateSharedState(result->stream_structure.content_id(),
                                operation.mutable_render_data());
-      if (!shared_state)
+      if (!result->shared_state)
         return false;
-
-      result->shared_state = std::move(shared_state.value());
-      result->has_shared_state = true;
     } break;
     case feedwire::DataOperation::kRequestSchedule: {
       if (global_data) {
@@ -181,7 +172,6 @@ base::Optional<ConvertedDataOperation> TranslateDataOperationInternal(
 
   ConvertedDataOperation result;
   result.stream_structure.set_operation(operation_type);
-  result.has_stream_structure = true;
 
   switch (operation_type) {
     case feedstore::StreamStructure::CLEAR_ALL:
@@ -242,11 +232,10 @@ base::Optional<feedstore::DataOperation> TranslateDataOperation(
   if (!converted)
     return base::nullopt;
 
-  if (!converted->has_stream_structure && !converted->has_content)
-    return base::nullopt;
-
   *store_operation.mutable_structure() = std::move(converted->stream_structure);
-  *store_operation.mutable_content() = std::move(converted->content);
+  if (converted->content)
+    *store_operation.mutable_content() = std::move(*converted->content);
+
   return store_operation;
 }
 
@@ -272,16 +261,18 @@ RefreshResponseData TranslateWireResponse(
     if (!operation)
       continue;
 
-    if (operation->has_stream_structure) {
-      result->stream_structures.push_back(
-          std::move(operation->stream_structure));
+    result->stream_structures.push_back(std::move(operation->stream_structure));
+
+    if (operation->content)
+      result->content.push_back(std::move(*operation->content));
+
+    if (operation->shared_state)
+      result->shared_states.push_back(std::move(*operation->shared_state));
+
+    if (operation->next_page_token) {
+      result->stream_data.set_next_page_token(
+          std::move(*operation->next_page_token));
     }
-
-    if (operation->has_content)
-      result->content.push_back(std::move(operation.value().content));
-
-    if (operation->has_shared_state)
-      result->shared_states.push_back(std::move(operation->shared_state));
   }
 
   // TODO(harringtond): If there's more than one shared state, record some

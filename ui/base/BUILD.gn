@@ -99,7 +99,6 @@ jumbo_component("base") {
     "default_style.h",
     "device_form_factor.h",
     "device_form_factor_desktop.cc",
-    "dragdrop/download_file_interface.h",
     "dragdrop/drag_drop_types.h",
     "dragdrop/drop_target_event.cc",
     "dragdrop/drop_target_event.h",
@@ -441,6 +440,7 @@ jumbo_component("base") {
     "//third_party/modp_b64",
     "//third_party/zlib:zlib",
     "//third_party/zlib/google:compression_utils",
+    "//ui/base:data_exchange",
     "//ui/base/clipboard:clipboard_types",
     "//ui/display",
     "//ui/events",
@@ -650,6 +650,28 @@ jumbo_component("base") {
   if (is_android || is_ios) {
     sources -= [ "device_form_factor_desktop.cc" ]
   }
+}
+
+component("data_exchange") {
+  defines = [ "IS_UI_BASE_DATA_EXCHANGE_IMPL" ]
+
+  sources = [
+    "dragdrop/download_file_info.cc",
+    "dragdrop/download_file_info.h",
+    "dragdrop/download_file_interface.h",
+    "dragdrop/os_exchange_data_provider.h",
+    "dragdrop/os_exchange_data_provider_factory_ozone.cc",
+    "dragdrop/os_exchange_data_provider_factory_ozone.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/base/clipboard:clipboard_types",
+    "//ui/base/dragdrop/file_info",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//url",
+  ]
 }
 
 component("features") {
@@ -940,6 +962,7 @@ test("ui_base_unittests") {
     "//third_party/icu",
     "//third_party/zlib/google:compression_utils",
     "//ui/base",
+    "//ui/base:data_exchange",
     "//ui/base:test_support",
     "//ui/base:ui_data_pack",
     "//ui/base/clipboard:clipboard_test",

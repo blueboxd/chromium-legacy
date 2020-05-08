@@ -66,6 +66,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementReportExtensions, IDS_MANAGEMENT_REPORT_EXTENSIONS},
     {kManagementReportAndroidApplications,
      IDS_MANAGEMENT_REPORT_ANDROID_APPLICATIONS},
+    {kManagementReportProxyServer, IDS_MANAGEMENT_REPORT_PROXY_SERVER},
 #endif  // defined(OS_CHROMEOS)
     {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
     {"browserReportingExplanation",

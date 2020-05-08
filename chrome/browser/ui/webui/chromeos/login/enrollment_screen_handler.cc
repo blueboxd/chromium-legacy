@@ -553,8 +553,6 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   // Do not use AddF for this string as it will be rendered by the JS code.
   builder->Add("oauthEnrollAbeSuccessDomain",
                IDS_ENTERPRISE_ENROLLMENT_SUCCESS_DOMAIN);
-  builder->Add("oauthEnrollAbeSuccessSupport",
-               IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ABE_SUPPORT);
 
   /* Active Directory strings */
   builder->Add("oauthEnrollAdMachineNameInput", IDS_AD_DEVICE_NAME_INPUT_LABEL);

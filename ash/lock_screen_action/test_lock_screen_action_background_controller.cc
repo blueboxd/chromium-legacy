@@ -16,7 +16,9 @@ const char kTestingWidgetName[] = "TestingLockScreenActionBackgroundWidget";
 
 class TestWindowDelegate : public views::WidgetDelegate {
  public:
-  explicit TestWindowDelegate(views::Widget* widget) : widget_(widget) {}
+  explicit TestWindowDelegate(views::Widget* widget) : widget_(widget) {
+    SetFocusTraversesOut(true);
+  }
   ~TestWindowDelegate() override = default;
 
   // views::WidgetDelegate:
@@ -26,7 +28,6 @@ class TestWindowDelegate : public views::WidgetDelegate {
   bool CanActivate() const override { return false; }
   bool CanResize() const override { return true; }
   bool CanMaximize() const override { return true; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
  private:
   views::Widget* widget_ = nullptr;

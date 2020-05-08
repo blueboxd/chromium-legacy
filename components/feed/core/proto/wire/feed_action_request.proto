@@ -24,4 +24,14 @@ message FeedActionRequest {
   repeated FeedAction feed_action = 1;
   // Token used to write to the same storage.
   optional ConsistencyToken consistency_token = 2;
+
+  // Diagnostic information about the current state of the client.
+  optional DiagnosticInfo diagnostic_info = 3;
+
+  // Diagnostics from the client.
+  message DiagnosticInfo {
+    // Count of un-uploaded actions remaining on the client at the time
+    // of a feed content generation request.
+    optional int32 actions_remaining = 1;
+  }
 }

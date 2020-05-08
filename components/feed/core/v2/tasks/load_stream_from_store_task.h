@@ -33,14 +33,17 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
     LoadStreamStatus status = LoadStreamStatus::kNoStatus;
     // Only provided if using |LoadType::kFullLoad| AND successful.
     std::unique_ptr<StreamModelUpdateRequest> update_request;
-    // This data is provided when |LoadType::kConsistencyTokenOnly|, or when
-    // loading fails.
+    // This data is provided when |LoadType::kPendingActionsOnly|, or
+    // when loading fails.
     std::string consistency_token;
+    // Pending actions to be uploaded if the stream is to be loaded from the
+    // network.
+    std::vector<feedstore::StoredAction> pending_actions;
   };
 
   enum class LoadType {
     kFullLoad = 0,
-    kConsistencyTokenOnly = 1,
+    kPendingActionsOnly = 1,
   };
 
   LoadStreamFromStoreTask(LoadType load_type,
@@ -74,6 +77,7 @@ class LoadStreamFromStoreTask : public offline_pages::Task {
   // Data to be stuffed into the Result when the task is complete.
   std::unique_ptr<StreamModelUpdateRequest> update_request_;
   std::string consistency_token_;
+  std::vector<feedstore::StoredAction> pending_actions_;
 
   base::WeakPtrFactory<LoadStreamFromStoreTask> weak_ptr_factory_{this};
 };

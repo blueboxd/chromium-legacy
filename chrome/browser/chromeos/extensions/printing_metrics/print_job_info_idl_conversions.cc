@@ -64,6 +64,7 @@ idl::PrintJobSource PrintJobSourceProtoToIdl(
     proto::PrintJobInfo_PrintJobSource print_job_source_proto) {
   switch (print_job_source_proto) {
     case proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW:
+    case proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW_INCOGNITO:
       return idl::PRINT_JOB_SOURCE_PRINT_PREVIEW;
     case proto::PrintJobInfo_PrintJobSource_ARC:
       return idl::PRINT_JOB_SOURCE_ANDROID_APP;

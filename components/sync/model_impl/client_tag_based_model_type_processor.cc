@@ -772,6 +772,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
       continue;
     }
     if (update.entity.is_deleted()) {
+      SyncRecordModelTypeUpdateDropReason(
+          UpdateDropReason::kTombstoneInFullUpdate, type_);
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
                     << "client_tag_hash = " << client_tag_hash << " for "
                     << ModelTypeToString(type_);
@@ -780,6 +782,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     if (bridge_->SupportsGetClientTag() &&
         client_tag_hash != ClientTagHash::FromUnhashed(
                                type_, bridge_->GetClientTag(update.entity))) {
+      SyncRecordModelTypeUpdateDropReason(
+          UpdateDropReason::kInconsistentClientTag, type_);
       DLOG(WARNING) << "Received unexpected client tag hash: "
                     << client_tag_hash << " for " << ModelTypeToString(type_);
       continue;
@@ -789,6 +793,8 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     if (bridge_->SupportsGetStorageKey()) {
       storage_key = bridge_->GetStorageKey(update.entity);
       if (storage_key.empty()) {
+        SyncRecordModelTypeUpdateDropReason(
+            UpdateDropReason::kCannotGenerateStorageKey, type_);
         DLOG(WARNING) << "Received entity with invalid update for "
                       << ModelTypeToString(type_);
         continue;

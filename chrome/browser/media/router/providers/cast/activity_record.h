@@ -135,6 +135,7 @@ class ActivityRecord {
   using ClientMap =
       base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
 
+  // Gets the session associated with this activity.  May return nullptr.
   CastSession* GetSession() const;
 
   CastSessionClient* GetClient(const std::string& client_id) {

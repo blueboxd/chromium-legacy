@@ -45,6 +45,7 @@ class PagePopup {
   virtual AXObject* RootAXObject() = 0;
   virtual void SetWindowRect(const IntRect&) = 0;
   virtual void PostMessageToPopup(const String& message) = 0;
+  virtual void Update() = 0;
 
  protected:
   virtual ~PagePopup() = default;

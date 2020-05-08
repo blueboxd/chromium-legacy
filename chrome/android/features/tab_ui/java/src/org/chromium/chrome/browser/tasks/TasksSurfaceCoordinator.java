@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -51,6 +53,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         } else if (tabSwitcherType == TabSwitcherType.SINGLE) {
             mTabSwitcher = new SingleTabSwitcherCoordinator(
                     activity, mView.getCarouselTabSwitcherContainer());
+        } else if (tabSwitcherType == TabSwitcherType.NONE) {
+            mTabSwitcher = null;
         } else {
             mTabSwitcher = null;
             assert false : "Unsupported tab switcher type";
@@ -84,17 +88,19 @@ public class TasksSurfaceCoordinator implements TasksSurface {
 
     @Override
     public void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
-        mTabSwitcher.setOnTabSelectingListener(listener);
+        if (mTabSwitcher != null) {
+            mTabSwitcher.setOnTabSelectingListener(listener);
+        }
     }
 
     @Override
-    public TabSwitcher.Controller getController() {
-        return mTabSwitcher.getController();
+    public @Nullable TabSwitcher.Controller getController() {
+        return mTabSwitcher != null ? mTabSwitcher.getController() : null;
     }
 
     @Override
-    public TabSwitcher.TabListDelegate getTabListDelegate() {
-        return mTabSwitcher.getTabListDelegate();
+    public @Nullable TabSwitcher.TabListDelegate getTabListDelegate() {
+        return mTabSwitcher != null ? mTabSwitcher.getTabListDelegate() : null;
     }
 
     @Override
@@ -109,10 +115,12 @@ public class TasksSurfaceCoordinator implements TasksSurface {
 
     @Override
     public void onFinishNativeInitialization(Context context, FakeboxDelegate fakeboxDelegate) {
-        ChromeActivity activity = (ChromeActivity) context;
-        mTabSwitcher.initWithNative(activity, activity.getTabContentManager(),
-                activity.getCompositorViewHolder().getDynamicResourceLoader(), activity,
-                activity.getModalDialogManager());
+        if (mTabSwitcher != null) {
+            ChromeActivity activity = (ChromeActivity) context;
+            mTabSwitcher.initWithNative(activity, activity.getTabContentManager(),
+                    activity.getCompositorViewHolder().getDynamicResourceLoader(), activity,
+                    activity.getModalDialogManager());
+        }
 
         mMediator.initWithNative(fakeboxDelegate);
     }

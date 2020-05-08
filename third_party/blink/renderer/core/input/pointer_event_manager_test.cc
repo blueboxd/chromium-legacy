@@ -163,12 +163,14 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
 
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::Type::kPointerDown,
-                             WebPointerProperties::PointerType::kTouch),
+                             WebPointerProperties::PointerType::kTouch)
+          .Clone(),
       {}, {}));
 
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::Type::kPointerDown,
-                             WebPointerProperties::PointerType::kPen),
+                             WebPointerProperties::PointerType::kPen)
+          .Clone(),
       {}, {}));
 
   GetEventHandler().HandleMousePressEvent(CreateTestMouseEvent(
@@ -180,7 +182,8 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
 
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::Type::kPointerCausedUaAction,
-                             WebPointerProperties::PointerType::kPen),
+                             WebPointerProperties::PointerType::kPen)
+          .Clone(),
       {}, {}));
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 1);
@@ -188,7 +191,8 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
 
   WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::Type::kPointerCausedUaAction,
-                             WebPointerProperties::PointerType::kTouch),
+                             WebPointerProperties::PointerType::kTouch)
+          .Clone(),
       {}, {}));
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 1);
@@ -221,7 +225,8 @@ TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
       CreateTestPointerEvent(WebInputEvent::Type::kPointerDown,
                              WebPointerProperties::PointerType::kTouch,
                              gfx::PointF(150, 200), gfx::PointF(100, 50), 10,
-                             10, 16, 24),
+                             10, 16, 24)
+          .Clone(),
       {}, {}));
 
   ASSERT_EQ(callback->last_client_x_, 75);
@@ -256,7 +261,8 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
         CreateTestPointerEvent(WebInputEvent::Type::kPointerMove,
                                WebPointerProperties::PointerType::kMouse,
                                gfx::PointF(150, 210), gfx::PointF(100, 50), 10,
-                               10),
+                               10)
+            .Clone(),
         {}, {}));
     // The first pointermove event has movement_x/y 0.
     ASSERT_EQ(callback->last_screen_x_, 100);
@@ -268,7 +274,8 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
         CreateTestPointerEvent(WebInputEvent::Type::kPointerMove,
                                WebPointerProperties::PointerType::kMouse,
                                gfx::PointF(150, 200), gfx::PointF(132, 29), 10,
-                               10),
+                               10)
+            .Clone(),
         {}, {}));
     // pointermove event movement = event.screenX/Y - last_event.screenX/Y.
     ASSERT_EQ(callback->last_screen_x_, 132);
@@ -280,7 +287,8 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
         CreateTestPointerEvent(WebInputEvent::Type::kPointerMove,
                                WebPointerProperties::PointerType::kMouse,
                                gfx::PointF(150, 210), gfx::PointF(113.8, 32.7),
-                               10, 10),
+                               10, 10)
+            .Clone(),
         {}, {}));
     // fractional screen coordinates result in fractional movement.
     ASSERT_FLOAT_EQ(callback->last_screen_x_, 113.8);
@@ -298,7 +306,8 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
         CreateTestPointerEvent(WebInputEvent::Type::kPointerMove,
                                WebPointerProperties::PointerType::kMouse,
                                gfx::PointF(150, 210), gfx::PointF(100, 16.25),
-                               1024, -8765),
+                               1024, -8765)
+            .Clone(),
         {}, {}));
     ASSERT_EQ(callback->last_screen_x_, 100);
     ASSERT_EQ(callback->last_screen_y_, 16.25);
@@ -372,7 +381,8 @@ TEST_F(PointerEventManagerTest, PointerRawUpdateMovements) {
       CreateTestPointerEvent(WebInputEvent::Type::kPointerRawUpdate,
                              WebPointerProperties::PointerType::kMouse,
                              gfx::PointF(150, 210), gfx::PointF(100, 50), 10,
-                             10),
+                             10)
+          .Clone(),
       {}, {}));
   // The first pointerrawupdate event has movement_x/y 0.
   ASSERT_EQ(callback->last_screen_x_, 100);
@@ -384,7 +394,8 @@ TEST_F(PointerEventManagerTest, PointerRawUpdateMovements) {
       CreateTestPointerEvent(WebInputEvent::Type::kPointerRawUpdate,
                              WebPointerProperties::PointerType::kMouse,
                              gfx::PointF(150, 200), gfx::PointF(132, 29), 10,
-                             10),
+                             10)
+          .Clone(),
       {}, {}));
   // pointerrawupdate event movement = event.screenX/Y - last_event.screenX/Y.
   ASSERT_EQ(callback->last_screen_x_, 132);
@@ -396,7 +407,8 @@ TEST_F(PointerEventManagerTest, PointerRawUpdateMovements) {
       CreateTestPointerEvent(WebInputEvent::Type::kPointerMove,
                              WebPointerProperties::PointerType::kMouse,
                              gfx::PointF(150, 200), gfx::PointF(144, 30), 10,
-                             10),
+                             10)
+          .Clone(),
       {}, {}));
   // First pointermove, have 0 movements.
   ASSERT_EQ(callback->last_screen_x_, 144);
@@ -408,7 +420,8 @@ TEST_F(PointerEventManagerTest, PointerRawUpdateMovements) {
       CreateTestPointerEvent(WebInputEvent::Type::kPointerRawUpdate,
                              WebPointerProperties::PointerType::kMouse,
                              gfx::PointF(150, 200), gfx::PointF(142, 32), 10,
-                             10),
+                             10)
+          .Clone(),
       {}, {}));
   // pointerrawupdate event's movement is independent from pointermoves.
   ASSERT_EQ(callback->last_screen_x_, 142);
@@ -435,7 +448,7 @@ TEST_F(PointerEventManagerTest, PointerUnadjustedMovement) {
       gfx::PointF(100, 50), 120, -321);
   event.is_raw_movement_event = true;
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(event, {}, {}));
+      WebCoalescedInputEvent(event.Clone(), {}, {}));
 
   // If is_raw_movement_event is true, PE use the raw movement value from
   // movement_x/y.

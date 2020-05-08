@@ -48,6 +48,7 @@ class ASH_EXPORT FloatingAccessibilityController
   void OnLayoutChanged() override;
   // FloatingAccessibilityDetailedController::Delegate:
   void OnDetailedMenuClosed() override;
+  views::Widget* GetBubbleWidget() override;
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
   // LocaleChangeObserver:

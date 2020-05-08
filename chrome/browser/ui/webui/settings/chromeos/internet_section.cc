@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -27,66 +28,356 @@ namespace {
 
 const std::vector<SearchConcept>& GetNetworkSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_SETTINGS_TAG_NETWORK_SETTINGS,
-       chromeos::settings::mojom::kWifiNetworksSubpagePath,
+      {IDS_OS_SETTINGS_TAG_NETWORK_SETTINGS,
+       mojom::kNetworkSectionPath,
        mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kWifiNetworks},
-       {IDS_SETTINGS_TAG_NETWORK_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
+       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultType::kSection,
+       {.section = mojom::Section::kNetwork},
+       {IDS_OS_SETTINGS_TAG_NETWORK_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetEthernetSearchConcepts() {
+const std::vector<SearchConcept>& GetEthernetConnectedSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_SETTINGS_TAG_ETHERNET_SETTINGS,
-       chromeos::settings::mojom::kEthernetDetailsSubpagePath,
+      {IDS_OS_SETTINGS_TAG_ETHERNET_CONFIGURE,
+       mojom::kEthernetDetailsSubpagePath,
+       mojom::SearchResultIcon::kEthernet,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kConfigureEthernet}},
+      {IDS_OS_SETTINGS_TAG_ETHERNET,
+       mojom::kEthernetDetailsSubpagePath,
        mojom::SearchResultIcon::kEthernet,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kEthernetDetails},
-       {IDS_SETTINGS_TAG_ETHERNET_SETTINGS_ALT1, SearchConcept::kAltTagEnd}},
+       {.subpage = mojom::Subpage::kEthernetDetails}},
+      {IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY,
+       mojom::kEthernetDetailsSubpagePath,
+       mojom::SearchResultIcon::kEthernet,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kEthernetAutoConfigureIp},
+       {IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY_ALT1,
+        IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_NAME_SERVERS,
+       mojom::kEthernetDetailsSubpagePath,
+       mojom::SearchResultIcon::kEthernet,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kEthernetDns},
+       {IDS_OS_SETTINGS_TAG_NAME_SERVERS_ALT1,
+        IDS_OS_SETTINGS_TAG_NAME_SERVERS_ALT2, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_PROXY,
+       mojom::kEthernetDetailsSubpagePath,
+       mojom::SearchResultIcon::kEthernet,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kEthernetProxy},
+       {IDS_OS_SETTINGS_TAG_PROXY_ALT1, IDS_OS_SETTINGS_TAG_PROXY_ALT2,
+        IDS_OS_SETTINGS_TAG_PROXY_ALT3, IDS_OS_SETTINGS_TAG_PROXY_ALT4,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetWifiSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_SETTINGS_TAG_WIFI_SETTINGS,
-       chromeos::settings::mojom::kWifiNetworksSubpagePath,
+      {IDS_OS_SETTINGS_TAG_WIFI,
+       mojom::kWifiNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kWifiNetworks}},
-      {IDS_SETTINGS_TAG_TURN_ON_WIFI,
-       chromeos::settings::mojom::kWifiNetworksSubpagePath,
-       mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kWifiNetworks},
-       {IDS_SETTINGS_TAG_TURN_ON_WIFI_ALT1, SearchConcept::kAltTagEnd}},
-      {IDS_SETTINGS_TAG_TURN_OFF_WIFI,
-       chromeos::settings::mojom::kWifiNetworksSubpagePath,
+       {IDS_OS_SETTINGS_TAG_WIFI_ALT1, IDS_OS_SETTINGS_TAG_WIFI_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_KNOWN_NETWORKS,
+       mojom::kKnownNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kWifiNetworks},
-       {IDS_SETTINGS_TAG_TURN_OFF_WIFI_ALT1, SearchConcept::kAltTagEnd}},
-      {IDS_SETTINGS_TAG_CONNECT_WIFI,
-       chromeos::settings::mojom::kWifiNetworksSubpagePath,
-       mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kWifiNetworks}},
-      {IDS_SETTINGS_TAG_DISCONNECT_WIFI,
-       chromeos::settings::mojom::kWifiNetworksSubpagePath,
-       mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kWifiNetworks}},
+       {.subpage = mojom::Subpage::kKnownNetworks},
+       {IDS_OS_SETTINGS_TAG_KNOWN_NETWORKS_ALT1,
+        IDS_OS_SETTINGS_TAG_KNOWN_NETWORKS_ALT2, SearchConcept::kAltTagEnd}},
   });
   return *tags;
+}
+
+const std::vector<SearchConcept>& GetWifiOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_WIFI_TURN_OFF,
+       mojom::kWifiNetworksSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiOnOff},
+       {IDS_OS_SETTINGS_TAG_WIFI_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetWifiOffSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_WIFI_TURN_ON,
+       mojom::kWifiNetworksSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiOnOff},
+       {IDS_OS_SETTINGS_TAG_WIFI_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetWifiConnectedSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_DISCONNECT_WIFI,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisconnectWifiNetwork}},
+      {IDS_OS_SETTINGS_TAG_PREFER_WIFI_NETWORK,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPreferWifiNetwork},
+       {IDS_OS_SETTINGS_TAG_PREFER_WIFI_NETWORK_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_WIFI_CONFIGURE,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kConfigureWifi}},
+      {IDS_OS_SETTINGS_TAG_FORGET_WIFI,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kForgetWifiNetwork}},
+      {IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiAutoConfigureIp},
+       {IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY_ALT1,
+        IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_NAME_SERVERS,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiDns},
+       {IDS_OS_SETTINGS_TAG_NAME_SERVERS_ALT1,
+        IDS_OS_SETTINGS_TAG_NAME_SERVERS_ALT2, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_PROXY,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiProxy},
+       {IDS_OS_SETTINGS_TAG_PROXY_ALT1, IDS_OS_SETTINGS_TAG_PROXY_ALT2,
+        IDS_OS_SETTINGS_TAG_PROXY_ALT3, IDS_OS_SETTINGS_TAG_PROXY_ALT4,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiAutoConnectToNetwork},
+       {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCellularSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CELLULAR,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kCellularDetails},
+       {IDS_OS_SETTINGS_TAG_CELLULAR_ALT1, IDS_OS_SETTINGS_TAG_CELLULAR_ALT2,
+        IDS_OS_SETTINGS_TAG_CELLULAR_ALT3, IDS_OS_SETTINGS_TAG_CELLULAR_ALT4,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCellularOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CELLULAR_SIM_LOCK,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularSimLock},
+       {IDS_OS_SETTINGS_TAG_CELLULAR_SIM_LOCK_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CELLULAR_ROAMING,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularRoaming}},
+      {IDS_OS_SETTINGS_TAG_CELLULAR_TURN_OFF,
+       mojom::kNetworkSectionPath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMobileOnOff},
+       {IDS_OS_SETTINGS_TAG_CELLULAR_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_CELLULAR_APN,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularApn}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCellularOffSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CELLULAR_TURN_ON,
+       mojom::kNetworkSectionPath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMobileOnOff},
+       {IDS_OS_SETTINGS_TAG_CELLULAR_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetCellularConnectedSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_CELLULAR_DISCONNECT,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisconnectCellularNetwork}},
+      {IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularAutoConfigureIp},
+       {IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY_ALT1,
+        IDS_OS_SETTINGS_TAG_CONFIGURE_IP_AUTOMATICALLY_ALT2,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_NAME_SERVERS,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularDns},
+       {IDS_OS_SETTINGS_TAG_NAME_SERVERS_ALT1,
+        IDS_OS_SETTINGS_TAG_NAME_SERVERS_ALT2, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_PROXY,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularProxy},
+       {IDS_OS_SETTINGS_TAG_PROXY_ALT1, IDS_OS_SETTINGS_TAG_PROXY_ALT2,
+        IDS_OS_SETTINGS_TAG_PROXY_ALT3, IDS_OS_SETTINGS_TAG_PROXY_ALT4,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularAutoConnectToNetwork},
+       {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetInstantTetheringSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_INSTANT_MOBILE_NETWORKS,
+       mojom::kMobileDataNetworksSubpagePath,
+       mojom::SearchResultIcon::kInstantTethering,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kMobileDataNetworks}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetInstantTetheringOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF,
+       mojom::kMobileDataNetworksSubpagePath,
+       mojom::SearchResultIcon::kInstantTethering,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kInstantTetheringOnOff},
+       {IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_OFF_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetInstantTetheringOffSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON,
+       mojom::kMobileDataNetworksSubpagePath,
+       mojom::SearchResultIcon::kInstantTethering,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kInstantTetheringOnOff},
+       {IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_TURN_ON_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetInstantTetheringConnectedSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_INSTANT_TETHERING_DISCONNECT,
+       mojom::kTetherDetailsSubpagePath,
+       mojom::SearchResultIcon::kInstantTethering,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisconnectTetherNetwork}},
+      {IDS_OS_SETTINGS_TAG_INSTANT_TETHERING,
+       mojom::kTetherDetailsSubpagePath,
+       mojom::SearchResultIcon::kInstantTethering,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kTetherDetails}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetVpnConnectedSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_VPN,
+       mojom::kVpnDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kVpnDetails}},
+  });
+  return *tags;
+}
+
+bool IsConnected(network_config::mojom::ConnectionStateType connection_state) {
+  return connection_state ==
+             network_config::mojom::ConnectionStateType::kOnline ||
+         connection_state ==
+             network_config::mojom::ConnectionStateType::kConnected;
 }
 
 }  // namespace
@@ -101,8 +392,9 @@ InternetSection::InternetSection(Profile* profile, Delegate* per_page_delegate)
       cros_network_config_.BindNewPipeAndPassReceiver());
   cros_network_config_->AddObserver(receiver_.BindNewPipeAndPassRemote());
 
-  // Fetch initial list of devices.
+  // Fetch initial list of devices and active networks.
   FetchDeviceList();
+  FetchActiveNetworks();
 }
 
 InternetSection::~InternetSection() = default;
@@ -251,8 +543,17 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           GetHelpUrlWithBoard(chrome::kInstantTetheringLearnMoreURL)));
 }
 
+void InternetSection::AddHandlers(content::WebUI* web_ui) {
+  web_ui->AddMessageHandler(std::make_unique<InternetHandler>(profile()));
+}
+
 void InternetSection::OnDeviceStateListChanged() {
   FetchDeviceList();
+}
+
+void InternetSection::OnActiveNetworksChanged(
+    std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
+  OnActiveNetworks(std::move(networks));
 }
 
 void InternetSection::FetchDeviceList() {
@@ -262,16 +563,101 @@ void InternetSection::FetchDeviceList() {
 
 void InternetSection::OnDeviceList(
     std::vector<network_config::mojom::DeviceStatePropertiesPtr> devices) {
-  // Start with no search tags.
-  delegate()->RemoveSearchTags(GetEthernetSearchConcepts());
-  delegate()->RemoveSearchTags(GetWifiSearchConcepts());
+  using network_config::mojom::DeviceStateType;
+  using network_config::mojom::NetworkType;
 
-  // Add a search tag each time we see a device type.
+  delegate()->RemoveSearchTags(GetWifiSearchConcepts());
+  delegate()->RemoveSearchTags(GetWifiOnSearchConcepts());
+  delegate()->RemoveSearchTags(GetWifiOffSearchConcepts());
+  delegate()->RemoveSearchTags(GetCellularSearchConcepts());
+  delegate()->RemoveSearchTags(GetCellularOnSearchConcepts());
+  delegate()->RemoveSearchTags(GetCellularOffSearchConcepts());
+  delegate()->RemoveSearchTags(GetInstantTetheringSearchConcepts());
+  delegate()->RemoveSearchTags(GetInstantTetheringOnSearchConcepts());
+  delegate()->RemoveSearchTags(GetInstantTetheringOffSearchConcepts());
+
   for (const auto& device : devices) {
-    if (device->type == network_config::mojom::NetworkType::kEthernet)
-      delegate()->AddSearchTags(GetEthernetSearchConcepts());
-    else if (device->type == network_config::mojom::NetworkType::kWiFi)
-      delegate()->AddSearchTags(GetWifiSearchConcepts());
+    switch (device->type) {
+      case NetworkType::kWiFi:
+        delegate()->AddSearchTags(GetWifiSearchConcepts());
+        if (device->device_state == DeviceStateType::kEnabled)
+          delegate()->AddSearchTags(GetWifiOnSearchConcepts());
+        else if (device->device_state == DeviceStateType::kDisabled)
+          delegate()->AddSearchTags(GetWifiOffSearchConcepts());
+        break;
+
+      case NetworkType::kCellular:
+        delegate()->AddSearchTags(GetCellularSearchConcepts());
+        if (device->device_state == DeviceStateType::kEnabled)
+          delegate()->AddSearchTags(GetCellularOnSearchConcepts());
+        else if (device->device_state == DeviceStateType::kDisabled)
+          delegate()->AddSearchTags(GetCellularOffSearchConcepts());
+        break;
+
+      case NetworkType::kTether:
+        delegate()->AddSearchTags(GetInstantTetheringSearchConcepts());
+        if (device->device_state == DeviceStateType::kEnabled)
+          delegate()->AddSearchTags(GetInstantTetheringOnSearchConcepts());
+        else if (device->device_state == DeviceStateType::kDisabled)
+          delegate()->AddSearchTags(GetInstantTetheringOffSearchConcepts());
+        break;
+
+      default:
+        // Note: Ethernet and VPN only show search tags when connected, and
+        // categories such as Mobile/Wireless do not have search tags.
+        break;
+    }
+  }
+}
+
+void InternetSection::FetchActiveNetworks() {
+  cros_network_config_->GetNetworkStateList(
+      network_config::mojom::NetworkFilter::New(
+          network_config::mojom::FilterType::kActive,
+          network_config::mojom::NetworkType::kAll,
+          network_config::mojom::kNoLimit),
+      base::Bind(&InternetSection::OnActiveNetworks, base::Unretained(this)));
+}
+
+void InternetSection::OnActiveNetworks(
+    std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
+  using network_config::mojom::NetworkType;
+
+  delegate()->RemoveSearchTags(GetEthernetConnectedSearchConcepts());
+  delegate()->RemoveSearchTags(GetWifiConnectedSearchConcepts());
+  delegate()->RemoveSearchTags(GetCellularConnectedSearchConcepts());
+  delegate()->RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
+  delegate()->RemoveSearchTags(GetVpnConnectedSearchConcepts());
+
+  for (const auto& network : networks) {
+    if (!IsConnected(network->connection_state))
+      continue;
+
+    switch (network->type) {
+      case NetworkType::kEthernet:
+        delegate()->AddSearchTags(GetEthernetConnectedSearchConcepts());
+        break;
+
+      case NetworkType::kWiFi:
+        delegate()->AddSearchTags(GetWifiConnectedSearchConcepts());
+        break;
+
+      case NetworkType::kCellular:
+        delegate()->AddSearchTags(GetCellularConnectedSearchConcepts());
+        break;
+
+      case NetworkType::kTether:
+        delegate()->AddSearchTags(GetInstantTetheringConnectedSearchConcepts());
+        break;
+
+      case NetworkType::kVPN:
+        delegate()->AddSearchTags(GetVpnConnectedSearchConcepts());
+        break;
+
+      default:
+        // Note: Category types such as Mobile/Wireless do not have search tags.
+        break;
+    }
   }
 }
 

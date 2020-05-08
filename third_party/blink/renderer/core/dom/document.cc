@@ -8152,13 +8152,8 @@ FrameOrWorkerScheduler* Document::GetScheduler() {
 scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
     TaskType type) {
   DCHECK(IsMainThread());
-
-  if (ContextDocument() && ContextDocument()->GetFrame())
-    return ContextDocument()->GetFrame()->GetTaskRunner(type);
-  // In most cases, ContextDocument() will get us to a relevant Frame. In some
-  // cases, though, there isn't a good candidate (most commonly when either the
-  // passed-in document or ContextDocument() used to be attached to a Frame but
-  // has since been detached).
+  if (GetExecutionContext())
+    return GetExecutionContext()->GetTaskRunner(type);
   return Thread::Current()->GetTaskRunner();
 }
 

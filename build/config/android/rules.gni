@@ -3697,6 +3697,7 @@ if (enable_java_templates) {
       forward_variables_from(invoker,
                              [
                                "additional_apks",
+                               "additional_locales",
                                "apk_under_test",
                                "data",
                                "data_deps",

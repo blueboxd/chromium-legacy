@@ -115,7 +115,7 @@ import java.util.Set;
  */
 public class PaymentRequestImpl
         implements PaymentRequest, PaymentRequestUI.Client, PaymentAppFactoryDelegate,
-                   PaymentAppFactoryParams, PaymentApp.PaymentRequestUpdateEventCallback,
+                   PaymentAppFactoryParams, PaymentApp.PaymentRequestUpdateEventListener,
                    PaymentApp.AbortCallback, PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
@@ -2612,7 +2612,7 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryParams implementation.
     @Override
-    public PaymentApp.PaymentRequestUpdateEventCallback getPaymentRequestUpdateEventCallback() {
+    public PaymentApp.PaymentRequestUpdateEventListener getPaymentRequestUpdateEventListener() {
         return this;
     }
 

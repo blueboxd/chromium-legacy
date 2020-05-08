@@ -193,7 +193,7 @@
 
     var result = null;
     if (attributeName === 'd')
-      result = element.getAttribute('d');
+      result = getComputedStyle(element).getPropertyValue('d');
     else if (attributeName === 'points')
       result = element['animatedPoints'];
     else

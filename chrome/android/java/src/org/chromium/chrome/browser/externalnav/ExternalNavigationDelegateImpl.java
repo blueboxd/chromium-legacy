@@ -140,21 +140,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void startActivity(Intent intent, boolean proxy) {
-        try {
-            ExternalNavigationHandler.forcePdfViewerAsIntentHandlerIfNeeded(intent);
-            if (proxy) {
-                dispatchAuthenticatedIntent(intent);
-            } else {
-                Context context = getAvailableContext();
-                if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-            }
-            ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-        }
-    }
+    public void didStartActivity(Intent intent) {}
 
     @Override
     public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
@@ -227,7 +213,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 try {
-                                    startActivity(intent, proxy);
+                                    ExternalNavigationHandler.startActivity(
+                                            intent, proxy, ExternalNavigationDelegateImpl.this);
                                     if (mTab != null && !mTab.isClosing() && mTab.isInitialized()
                                             && needsToCloseTab) {
                                         closeTab();
@@ -279,7 +266,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         intent.setClassName(packageName, ChromeLauncherActivity.class.getName());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.addTrustedIntentExtras(intent);
-        startActivity(intent, false);
+        ExternalNavigationHandler.startActivity(intent, false, this);
     }
 
     @Override
@@ -384,12 +371,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         return mTab.getWebContents();
     }
 
-    /**
-     * Dispatches the intent through a proxy activity, so that startActivityForResult can be used
-     * and the intent recipient can verify the caller.
-     * @param intent The bare intent we were going to send.
-     */
-    protected void dispatchAuthenticatedIntent(Intent intent) {
+    @Override
+    public void dispatchAuthenticatedIntent(Intent intent) {
         Intent proxyIntent = new Intent(Intent.ACTION_MAIN);
         proxyIntent.setClass(getAvailableContext(), AuthenticatedProxyActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

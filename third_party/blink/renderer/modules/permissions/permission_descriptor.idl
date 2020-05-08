@@ -33,6 +33,7 @@ enum PermissionName {
     "periodic-background-sync",
     "system-wake-lock",
     "storage-access",
+    "window-placement",
 };
 
 // The PermissionDescriptor dictionary is a base to describe permissions. Some

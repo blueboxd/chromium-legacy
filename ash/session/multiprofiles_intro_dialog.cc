@@ -54,13 +54,13 @@ MultiprofilesIntroDialog::MultiprofilesIntroDialog(OnAcceptCallback on_accept)
   never_show_again_checkbox_->SetChecked(true);
   SetTitle(l10n_util::GetStringUTF16(IDS_ASH_MULTIPROFILES_INTRO_HEADLINE));
   SetShowCloseButton(false);
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](MultiprofilesIntroDialog* dialog) {
         std::move(dialog->on_accept_)
             .Run(true, dialog->never_show_again_checkbox_->GetChecked());
       },
       base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](MultiprofilesIntroDialog* dialog) {
         std::move(dialog->on_accept_).Run(false, false);
       },

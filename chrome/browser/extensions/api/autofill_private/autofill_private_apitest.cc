@@ -66,9 +66,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateAddress) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateAddress")) << message_;
 }
 
-// TODO(crbug.com/934631) Disabled for flakiness.
-IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest,
-                       DISABLED_AddAndUpdateCreditCard) {
+IN_PROC_BROWSER_TEST_F(AutofillPrivateApiTest, AddAndUpdateCreditCard) {
   EXPECT_TRUE(RunAutofillSubtest("addAndUpdateCreditCard")) << message_;
 }
 

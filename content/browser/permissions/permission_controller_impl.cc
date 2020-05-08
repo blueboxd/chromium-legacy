@@ -65,6 +65,7 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::AR:
     case PermissionType::VR:
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
+    case PermissionType::WINDOW_PLACEMENT:
       return base::nullopt;
   }
 }

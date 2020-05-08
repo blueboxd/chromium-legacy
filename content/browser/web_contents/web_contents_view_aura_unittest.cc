@@ -39,7 +39,10 @@ namespace content {
 namespace {
 constexpr gfx::Rect kBounds = gfx::Rect(0, 0, 20, 20);
 constexpr gfx::PointF kClientPt = {5, 10};
+
+#if !defined(USE_OZONE) || defined(OS_WIN) || defined(USE_X11)
 constexpr gfx::PointF kScreenPt = {17, 3};
+#endif
 
 // Runs a specified callback when a ui::MouseEvent is received.
 class RunCallbackOnActivation : public WebContentsDelegate {
@@ -198,6 +201,20 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
 }
 
+#if !defined(USE_OZONE) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1070483): Enable this test on Ozone.
+//
+// The expectations for the X11 implementation differ from other ones because
+// the GetString() method of the X11 data provider returns an empty string
+// if file data is also present, which is not the same for other
+// implementations.  (See the code under USE_X11 in the body of the test.)
+//
+// Ozone spawns the platform at run time, which would require this test to query
+// Ozone about the current platform, which would pull the Ozone platform as the
+// dependency here.
+//
+// Another solution could be fixing the X11 platform implementation so it
+// would behave the same way as other Ozone platforms do.
 TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
@@ -279,6 +296,8 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
               retrieved_file_infos[i].display_name);
   }
 }
+
+#endif  // !defined(USE_OZONE) && !defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(USE_X11)
 TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {

@@ -25,17 +25,21 @@
 // Protocol for the XPC update checking service.
 @protocol CRUUpdateChecking <NSObject>
 
+// Checks for the version of the Updater. Returns the result in the reply block.
+- (void)getUpdaterVersionWithReply:
+    (void (^_Nonnull)(NSString* _Nonnull version))reply;
+
 // Checks for updates and returns the result in the reply block.
 - (void)checkForUpdatesWithUpdateState:
             (CRUUpdateStateObserver* _Nonnull)updateState
-                                 reply:(void (^_Nullable)(int rc))reply;
+                                 reply:(void (^_Nonnull)(int rc))reply;
 
 // Checks for update of a given app, with specified priority. Sends repeated
 // updates of progress and returns the result in the reply block.
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
                     updateState:(CRUUpdateStateObserver* _Nonnull)updateState
-                          reply:(void (^_Nullable)(int rc))reply;
+                          reply:(void (^_Nonnull)(int rc))reply;
 
 // Registers app and returns the result in the reply block.
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -43,7 +47,7 @@
                                 tag:(NSString* _Nullable)tag
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
-                              reply:(void (^_Nullable)(int rc))reply;
+                              reply:(void (^_Nonnull)(int rc))reply;
 
 @end
 

@@ -126,6 +126,8 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
       return ContentSettingsType::STORAGE_ACCESS;
     case PermissionType::CAMERA_PAN_TILT_ZOOM:
       return ContentSettingsType::CAMERA_PAN_TILT_ZOOM;
+    case PermissionType::WINDOW_PLACEMENT:
+      return ContentSettingsType::WINDOW_PLACEMENT;
     case PermissionType::NUM:
       break;
   }

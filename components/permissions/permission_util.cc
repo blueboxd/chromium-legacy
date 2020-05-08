@@ -67,6 +67,8 @@ std::string PermissionUtil::GetPermissionString(
       return "StorageAccess";
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       return "CameraPanTiltZoom";
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      return "WindowPlacement";
     default:
       break;
   }
@@ -106,6 +108,8 @@ PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
       return PermissionRequestType::PERMISSION_STORAGE_ACCESS;
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       return PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM;
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      return PermissionRequestType::PERMISSION_WINDOW_PLACEMENT;
     default:
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;
@@ -167,6 +171,8 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
     *out = PermissionType::STORAGE_ACCESS_GRANT;
   } else if (type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM) {
     *out = PermissionType::CAMERA_PAN_TILT_ZOOM;
+  } else if (type == ContentSettingsType::WINDOW_PLACEMENT) {
+    *out = PermissionType::WINDOW_PLACEMENT;
   } else {
     return false;
   }
@@ -199,6 +205,7 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case ContentSettingsType::AR:
     case ContentSettingsType::STORAGE_ACCESS:
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
+    case ContentSettingsType::WINDOW_PLACEMENT:
       return true;
     default:
       return false;

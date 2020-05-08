@@ -198,7 +198,7 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
   if (fallback_data == nullptr) {
     // Validation failed and we don't want to try the fallback.
     std::move(status_update_callback_)
-        .Run(ClientStatus(MANUAL_FALLBACK), client_status_);
+        .Run(ClientStatus(AUTOFILL_INCOMPLETE), client_status_);
     return;
   }
 
@@ -219,7 +219,7 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
   }
   if (!has_fallbacks) {
     std::move(status_update_callback_)
-        .Run(ClientStatus(MANUAL_FALLBACK), client_status_);
+        .Run(ClientStatus(AUTOFILL_INCOMPLETE), client_status_);
     return;
   }
 
@@ -313,7 +313,7 @@ void RequiredFieldsFallbackHandler::OnSetFallbackFieldValue(
 
     // Fallback failed: we stop the script without checking the other fields.
     std::move(status_update_callback_)
-        .Run(ClientStatus(MANUAL_FALLBACK), client_status_);
+        .Run(ClientStatus(AUTOFILL_INCOMPLETE), client_status_);
     return;
   }
 

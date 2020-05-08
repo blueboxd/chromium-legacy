@@ -12,7 +12,6 @@
 
 namespace feedwire {
 class ActionRequest;
-class FeedActionResponse;
 class Request;
 class Response;
 }  // namespace feedwire
@@ -40,7 +39,7 @@ class FeedNetwork {
     ActionRequestResult& operator=(ActionRequestResult&&);
     NetworkResponseInfo response_info;
     // Response body if one was received.
-    std::unique_ptr<feedwire::FeedActionResponse> response_body;
+    std::unique_ptr<feedwire::Response> response_body;
   };
 
   virtual ~FeedNetwork();

@@ -52,4 +52,12 @@ public class StartSurfaceConfiguration {
                         || SharedPreferencesManager.getInstance().readBoolean(
                                 ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false));
     }
+
+    /**
+     *@return Whether the Start Surface Stack Tab Switcher is enabled.
+     */
+    public static boolean isStartSurfaceStackTabSwitcherEnabled() {
+        return isStartSurfaceSinglePaneEnabled()
+                && START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue();
+    }
 }

@@ -5,14 +5,13 @@
 #ifndef REMOTING_PROTOCOL_TRANSPORT_CONTEXT_H_
 #define REMOTING_PROTOCOL_TRANSPORT_CONTEXT_H_
 
-#include <array>
 #include <list>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
@@ -46,6 +45,12 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
                    TransportRole role);
 
   void set_turn_ice_config(const IceConfig& ice_config) {
+    // If an external entity is providing the ICE Config, then disable the
+    // local caching logic and use the provided config.
+    //
+    // Note: Using this method to provide a config means the caller is
+    // responsible for ensuring the ICE config's validity and freshness.
+    last_request_completion_time_ = base::Time::Max();
     ice_config_ = ice_config;
   }
 
@@ -95,8 +100,10 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   rtc::NetworkManager* network_manager_ = nullptr;
 
+  IceConfig ice_config_;
+
+  base::Time last_request_completion_time_;
   std::unique_ptr<IceConfigRequest> ice_config_request_;
-  IceConfig ice_config_ = {};
 
   // Called once |ice_config_request_| completes.
   std::list<GetIceConfigCallback> pending_ice_config_callbacks_;

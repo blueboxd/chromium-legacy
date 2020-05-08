@@ -942,11 +942,15 @@ Element* HTMLConstructionSite::CreateElement(
     // reactions stack."
     CEReactionsScope reactions;
 
-    // 7. Let element be the result of creating an element given document,
+    // "7. Let element be the result of creating an element given document,
     // localName, given namespace, null, and is. If will execute script is true,
-    // set the synchronous custom elements flag; otherwise, leave it unset.
-    element =
-        definition->CreateElement(document, tag_name, GetCreateElementFlags());
+    // set the synchronous custom elements flag; otherwise, leave it unset."
+    // TODO(crbug.com/1080673): We clear the CreatedbyParser flag here, so that
+    // elements get fully constructed. Some elements (e.g. HTMLInputElement)
+    // only partially construct themselves when created by the parser, but since
+    // this is a custom element, we need a fully-constructed element here.
+    element = definition->CreateElement(
+        document, tag_name, GetCreateElementFlags().SetCreatedByParser(false));
 
     // "8. Append each attribute in the given token to element." We don't use
     // setAttributes here because the custom element constructor may have

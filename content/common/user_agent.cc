@@ -89,6 +89,29 @@ std::string BuildCpuInfo() {
   return cpuinfo;
 }
 
+std::string GetLowEntropyCpuArchitecture() {
+#if !defined(OS_MACOSX) && defined(OS_POSIX)
+  std::string cpu_info = content::BuildCpuInfo();
+  if ((cpu_info.find("arm") != std::string::npos) ||
+      (cpu_info.find("aarch") != std::string::npos)) {
+    return "arm";
+  } else if ((cpu_info.find("86") != std::string::npos) ||
+             (cpu_info.find("x64") != std::string::npos)) {
+    return "x86";
+  }
+#elif defined(OS_WIN)
+  base::win::OSInfo::WindowsArchitecture windows_architecture =
+      base::win::OSInfo::GetInstance()->GetArchitecture();
+  if (windows_architecture == base::win::OSInfo::ARM64_ARCHITECTURE) {
+    return "arm";
+  } else if ((windows_architecture == base::win::OSInfo::X86_ARCHITECTURE) ||
+             (windows_architecture == base::win::OSInfo::X64_ARCHITECTURE)) {
+    return "x86";
+  }
+#endif
+  return std::string();
+}
+
 std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
                          IncludeAndroidModel include_android_model) {
   std::string os_version;

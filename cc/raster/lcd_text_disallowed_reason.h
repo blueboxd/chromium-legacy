@@ -13,18 +13,21 @@
 
 namespace cc {
 
+// These values are used in UMA and benchmarks. Entries should not be renumbered
+// and numeric values should never be reused.
 enum class LCDTextDisallowedReason : uint8_t {
-  kNone,
-  kSetting,
-  kBackgroundColorNotOpaque,
-  kContentsNotOpaque,
-  kNonIntegralTranslation,
-  kNonIntegralXOffset,
-  kNonIntegralYOffset,
-  kWillChangeTransform,
+  kNone = 0,
+  kSetting = 1,
+  kBackgroundColorNotOpaque = 2,
+  kContentsNotOpaque = 3,
+  kNonIntegralTranslation = 4,
+  kNonIntegralXOffset = 5,
+  kNonIntegralYOffset = 6,
+  kWillChangeTransform = 7,
+  kMaxValue = kWillChangeTransform,
 };
 constexpr size_t kLCDTextDisallowedReasonCount =
-    static_cast<size_t>(LCDTextDisallowedReason::kWillChangeTransform) + 1;
+    static_cast<size_t>(LCDTextDisallowedReason::kMaxValue) + 1;
 CC_EXPORT const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason);
 
 CC_EXPORT std::ostream& operator<<(std::ostream&, LCDTextDisallowedReason);

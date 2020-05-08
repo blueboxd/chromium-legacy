@@ -12,7 +12,9 @@
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
+#include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/tts_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -501,6 +503,9 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<::settings::AccessibilityMainHandler>());
   web_ui->AddMessageHandler(std::make_unique<AccessibilityHandler>(profile()));
+  web_ui->AddMessageHandler(std::make_unique<::settings::TtsHandler>());
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::FontHandler>(profile()));
 }
 
 void AccessibilitySection::UpdateSearchTags() {

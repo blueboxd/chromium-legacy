@@ -131,7 +131,6 @@ TEST_F(FeedStoreTest, OverwriteStream) {
       content_domain: "root"
     }
     next_page_token: "page-2"
-    consistency_token: "token-1"
     shared_state_id {
       content_domain: "render_data"
     }
@@ -345,19 +344,18 @@ TEST_F(FeedStoreTest, WriteOperations) {
 
 TEST_F(FeedStoreTest, ReadNonexistentContentAndSharedStates) {
   MakeFeedStore({});
+  CallbackReceiver<std::vector<feedstore::Content>,
+                   std::vector<feedstore::StreamSharedState>>
+      cr;
 
-  bool did_read = false;
-  store_->ReadContent(
-      {MakeContentContentId(0)}, {MakeSharedStateContentId(0)},
-      base::BindLambdaForTesting(
-          [&](std::vector<feedstore::Content> content,
-              std::vector<feedstore::StreamSharedState> shared_states) {
-            did_read = true;
-            EXPECT_EQ(content.size(), 0ul);
-            EXPECT_EQ(shared_states.size(), 0ul);
-          }));
+  store_->ReadContent({MakeContentContentId(0)}, {MakeSharedStateContentId(0)},
+                      cr.Bind());
   fake_db_->LoadCallback(true);
-  EXPECT_TRUE(did_read);
+
+  ASSERT_NE(cr.GetResult<0>(), base::nullopt);
+  EXPECT_EQ(cr.GetResult<0>()->size(), 0ul);
+  ASSERT_NE(cr.GetResult<1>(), base::nullopt);
+  EXPECT_EQ(cr.GetResult<1>()->size(), 0ul);
 }
 
 TEST_F(FeedStoreTest, ReadContentAndSharedStates) {
@@ -380,76 +378,77 @@ TEST_F(FeedStoreTest, ReadContentAndSharedStates) {
   std::vector<feedwire::ContentId> shared_state_ids = {shared1.content_id(),
                                                        shared2.content_id()};
 
-  // Successful read
-  bool did_successful_read = false;
-  store_->ReadContent(
-      content_ids, shared_state_ids,
-      base::BindLambdaForTesting(
-          [&](std::vector<feedstore::Content> content,
-              std::vector<feedstore::StreamSharedState> shared_states) {
-            did_successful_read = true;
-            ASSERT_EQ(content.size(), 2ul);
-            EXPECT_EQ(ToTextProto(content[0].content_id()),
-                      ToTextProto(content1.content_id()));
-            EXPECT_EQ(content[0].frame(), content1.frame());
+  CallbackReceiver<std::vector<feedstore::Content>,
+                   std::vector<feedstore::StreamSharedState>>
+      cr;
 
-            ASSERT_EQ(shared_states.size(), 2ul);
-            EXPECT_EQ(ToTextProto(shared_states[0].content_id()),
-                      ToTextProto(shared1.content_id()));
-            EXPECT_EQ(shared_states[0].shared_state_data(),
-                      shared1.shared_state_data());
-          }));
+  // Successful read
+  store_->ReadContent(content_ids, shared_state_ids, cr.Bind());
   fake_db_->LoadCallback(true);
-  EXPECT_TRUE(did_successful_read);
+
+  ASSERT_NE(cr.GetResult<0>(), base::nullopt);
+  std::vector<feedstore::Content> content = *cr.GetResult<0>();
+  ASSERT_NE(cr.GetResult<1>(), base::nullopt);
+  std::vector<feedstore::StreamSharedState> shared_states = *cr.GetResult<1>();
+
+  ASSERT_EQ(content.size(), 2ul);
+  EXPECT_EQ(ToTextProto(content[0].content_id()),
+            ToTextProto(content1.content_id()));
+  EXPECT_EQ(content[0].frame(), content1.frame());
+
+  ASSERT_EQ(shared_states.size(), 2ul);
+  EXPECT_EQ(ToTextProto(shared_states[0].content_id()),
+            ToTextProto(shared1.content_id()));
+  EXPECT_EQ(shared_states[0].shared_state_data(), shared1.shared_state_data());
 
   // Failed read
-  bool did_failed_read = false;
-  store_->ReadContent(
-      content_ids, shared_state_ids,
-      base::BindLambdaForTesting(
-          [&](std::vector<feedstore::Content> content,
-              std::vector<feedstore::StreamSharedState> shared_states) {
-            did_failed_read = true;
-            EXPECT_EQ(content.size(), 0ul);
-            EXPECT_EQ(shared_states.size(), 0ul);
-          }));
+  cr.Clear();
+  store_->ReadContent(content_ids, shared_state_ids, cr.Bind());
   fake_db_->LoadCallback(false);
-  EXPECT_TRUE(did_failed_read);
+
+  ASSERT_NE(cr.GetResult<0>(), base::nullopt);
+  EXPECT_EQ(cr.GetResult<0>()->size(), 0ul);
+  ASSERT_NE(cr.GetResult<1>(), base::nullopt);
+  EXPECT_EQ(cr.GetResult<1>()->size(), 0ul);
 }
 
 TEST_F(FeedStoreTest, ReadActions) {
-  feedstore::StoredAction action0 = MakeAction(0);
-  feedstore::StoredAction action1 = MakeAction(1);
-  feedstore::StoredAction action2 = MakeAction(2);
-  MakeFeedStore({{"a/0", RecordForAction(action0)},
-                 {"a/1", RecordForAction(action1)},
-                 {"a/2", RecordForAction(action2)}});
+  MakeFeedStore({{"a/0", RecordForAction(MakeAction(0))},
+                 {"a/1", RecordForAction(MakeAction(1))},
+                 {"a/2", RecordForAction(MakeAction(2))}});
 
   // Successful read
   CallbackReceiver<std::vector<feedstore::StoredAction>> receiver;
   store_->ReadActions(receiver.Bind());
   fake_db_->LoadCallback(true);
-  EXPECT_NE(receiver.GetResult(), base::nullopt);
-  EXPECT_EQ(receiver.GetResult()->size(), 3ul);
+  ASSERT_NE(base::nullopt, receiver.GetResult());
+  std::vector<feedstore::StoredAction> result =
+      std::move(*receiver.GetResult());
+
+  EXPECT_EQ(3ul, result.size());
+  EXPECT_EQ(2, result[2].id());
 
   // Failed read
-  receiver.GetResult().reset();
+  receiver.Clear();
   store_->ReadActions(receiver.Bind());
   fake_db_->LoadCallback(false);
-  EXPECT_NE(receiver.GetResult(), base::nullopt);
-  EXPECT_EQ(receiver.GetResult()->size(), 0ul);
+  ASSERT_NE(base::nullopt, receiver.GetResult());
+  result = std::move(*receiver.GetResult());
+  EXPECT_EQ(0ul, result.size());
 }
 
 TEST_F(FeedStoreTest, WriteActions) {
   MakeFeedStore({});
-  feedstore::StoredAction action = MakeAction(5);
+  feedstore::StoredAction action;
 
   CallbackReceiver<bool> receiver;
   store_->WriteActions({action}, receiver.Bind());
   fake_db_->UpdateCallback(true);
-  EXPECT_EQ(receiver.GetResult().value(), true);
-  ASSERT_EQ(db_entries_.size(), 1ul);
-  EXPECT_EQ(db_entries_["a/5"].local_action().id(), 5);
+  ASSERT_TRUE(receiver.GetResult());
+  EXPECT_TRUE(*receiver.GetResult());
+
+  ASSERT_EQ(1ul, db_entries_.size());
+  EXPECT_EQ(0, db_entries_["a/0"].local_action().id());
 
   receiver.GetResult().reset();
   store_->WriteActions({action}, receiver.Bind());
@@ -459,12 +458,9 @@ TEST_F(FeedStoreTest, WriteActions) {
 }
 
 TEST_F(FeedStoreTest, RemoveActions) {
-  feedstore::StoredAction action0 = MakeAction(0);
-  feedstore::StoredAction action1 = MakeAction(1);
-  feedstore::StoredAction action2 = MakeAction(2);
-  MakeFeedStore({{"a/0", RecordForAction(action0)},
-                 {"a/1", RecordForAction(action1)},
-                 {"a/2", RecordForAction(action2)}});
+  MakeFeedStore({{"a/0", RecordForAction(MakeAction(0))},
+                 {"a/1", RecordForAction(MakeAction(1))},
+                 {"a/2", RecordForAction(MakeAction(2))}});
 
   const std::vector<LocalActionId> ids = {LocalActionId(0), LocalActionId(1),
                                           LocalActionId(2)};
@@ -512,6 +508,46 @@ TEST_F(FeedStoreTest, ClearAllFail) {
 
   ASSERT_TRUE(receiver.GetResult());
   EXPECT_FALSE(*receiver.GetResult());
+}
+
+TEST_F(FeedStoreTest, ReadMetadata) {
+  feedstore::Record record;
+  record.mutable_metadata()->set_consistency_token("token");
+  record.mutable_metadata()->set_next_action_id(20);
+  MakeFeedStore({{"m", record}});
+
+  CallbackReceiver<std::unique_ptr<feedstore::Metadata>> cr;
+  store_->ReadMetadata(cr.Bind());
+  fake_db_->GetCallback(true);
+  ASSERT_TRUE(cr.GetResult());
+
+  std::unique_ptr<feedstore::Metadata> metadata = std::move(*cr.GetResult());
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ("token", metadata->consistency_token());
+  EXPECT_EQ(20, metadata->next_action_id());
+
+  store_->ReadMetadata(cr.Bind());
+  fake_db_->GetCallback(false);
+  ASSERT_TRUE(cr.GetResult());
+  EXPECT_FALSE(*cr.GetResult());
+}
+
+TEST_F(FeedStoreTest, WriteMetadata) {
+  MakeFeedStore({});
+
+  feedstore::Metadata metadata;
+  metadata.set_consistency_token("token");
+  metadata.set_next_action_id(20);
+
+  CallbackReceiver<bool> cr;
+  store_->WriteMetadata(metadata, cr.Bind());
+  fake_db_->UpdateCallback(true);
+  ASSERT_TRUE(cr.GetResult());
+  EXPECT_TRUE(*cr.GetResult());
+
+  ASSERT_EQ(1ul, db_entries_.size());
+  EXPECT_EQ("token", db_entries_["m"].metadata().consistency_token());
+  EXPECT_EQ(20, db_entries_["m"].metadata().next_action_id());
 }
 
 }  // namespace feed

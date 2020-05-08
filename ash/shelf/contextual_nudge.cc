@@ -49,7 +49,7 @@ ContextualNudge::ContextualNudge(views::View* anchor,
   SetCanActivate(false);
   set_adjust_if_offscreen(false);
   set_shadow(views::BubbleBorder::NO_ASSETS);
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetButtons(ui::DIALOG_BUTTON_NONE);
 
   if (parent_window) {
     set_parent_window(parent_window);

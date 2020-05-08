@@ -200,14 +200,14 @@ void WidgetDelegate::GetWidgetHitTestMask(SkPath* mask) const {
   DCHECK(mask);
 }
 
-bool WidgetDelegate::ShouldAdvanceFocusToTopLevelWidget() const {
-  return false;
-}
-
 bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
   return true;
+}
+
+void WidgetDelegate::SetFocusTraversesOut(bool focus_traverses_out) {
+  params_.focus_traverses_out = focus_traverses_out;
 }
 
 void WidgetDelegate::SetIcon(const gfx::ImageSkia& icon) {

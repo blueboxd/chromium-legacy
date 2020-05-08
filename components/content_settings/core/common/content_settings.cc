@@ -89,6 +89,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, 66},
     {ContentSettingsType::STORAGE_ACCESS, 67},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, 68},
+    {ContentSettingsType::WINDOW_PLACEMENT, 69},
 };
 
 }  // namespace

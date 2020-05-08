@@ -85,7 +85,7 @@ if (crashpad_is_mac || crashpad_is_ios) {
         # relative…
         args += [
           "--sdk",
-          rebase_path(sysroot, root_build_dir)
+          rebase_path(sysroot, root_build_dir),
         ]
       } else {
         # …but that’s not an option in the standalone Crashpad build, where the
@@ -723,6 +723,7 @@ source_set("util_test") {
       "mach/mach_extensions_test.cc",
       "mach/mach_message_test.cc",
       "mach/symbolic_constants_mach_test.cc",
+      "misc/capture_context_test_util_mac.cc",
     ]
   }
 
@@ -740,7 +741,6 @@ source_set("util_test") {
       "mach/mach_message_server_test.cc",
       "mach/notify_server_test.cc",
       "mach/scoped_task_suspend_test.cc",
-      "misc/capture_context_test_util_mac.cc",
       "process/process_memory_mac_test.cc",
     ]
   }
@@ -749,7 +749,6 @@ source_set("util_test") {
     sources += [ "ios/exception_processor_test.mm" ]
 
     sources -= [
-      "misc/capture_context_test.cc",
       "process/process_memory_range_test.cc",
       "process/process_memory_test.cc",
     ]
@@ -809,8 +808,8 @@ source_set("util_test") {
     "../client",
     "../compat",
     "../test",
-    "../third_party/gtest:gmock",
-    "../third_party/gtest:gtest",
+    "../third_party/googletest:googlemock",
+    "../third_party/googletest:googletest",
     "../third_party/mini_chromium:base",
     "../third_party/zlib",
   ]

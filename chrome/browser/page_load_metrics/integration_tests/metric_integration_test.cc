@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/tracing_controller.h"
+#include "content/public/common/content_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -110,6 +111,7 @@ WebContents* MetricIntegrationTest::web_contents() const {
 void MetricIntegrationTest::SetUpCommandLine(CommandLine* command_line) {
   // Set a default window size for consistency.
   command_line->AppendSwitchASCII(switches::kWindowSize, "800,600");
+  command_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
 }
 
 std::unique_ptr<HttpResponse> MetricIntegrationTest::HandleRequest(

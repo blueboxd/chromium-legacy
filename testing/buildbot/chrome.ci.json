@@ -1368,12 +1368,15 @@
         "args": [
           "--stop-ui",
           "--env-var",
+          "LIBVA_DRIVER_NAME",
+          "i965",
+          "--env-var",
           "LIBVA_FOOL_DECODE",
           "1",
           "--env-var",
           "LIBVA_FOOL_POSTP",
           "1",
-          "--gtest_filter=\"-*Jpeg*:*WebP*\""
+          "--gtest_filter=\"VaapiTest.*\""
         ],
         "experiment_percentage": 100,
         "merge": {

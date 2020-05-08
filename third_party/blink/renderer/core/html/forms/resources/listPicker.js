@@ -99,12 +99,8 @@ ListPicker.prototype._handleWindowMessage = function(event) {
             window.updateData.anchorRectInScreen.width ||
         this._config.anchorRectInScreen.height !==
             window.updateData.anchorRectInScreen.height) {
-      // TODO(tkent): Don't fix window size here due to a bug of Aura or
-      // compositor. crbug.com/863770
-      if (!navigator.platform.startsWith('Win')) {
         this._config.anchorRectInScreen = window.updateData.anchorRectInScreen;
         this._fixWindowSize();
-      }
     }
   }
   delete window.updateData;

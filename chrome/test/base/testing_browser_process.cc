@@ -264,11 +264,6 @@ TestingBrowserProcess::safe_browsing_service() {
   return sb_service_.get();
 }
 
-safe_browsing::ClientSideDetectionService*
-TestingBrowserProcess::safe_browsing_detection_service() {
-  return nullptr;
-}
-
 subresource_filter::RulesetService*
 TestingBrowserProcess::subresource_filter_ruleset_service() {
   return subresource_filter_ruleset_service_.get();

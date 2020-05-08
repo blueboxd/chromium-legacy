@@ -31,22 +31,27 @@ class InternetSection
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  void AddHandlers(content::WebUI* web_ui) override;
 
   // network_config::mojom::CrosNetworkConfigObserver:
   void OnActiveNetworksChanged(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks)
-      override {}
+      override;
+  void OnDeviceStateListChanged() override;
   void OnNetworkStateChanged(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr network)
       override {}
   void OnNetworkStateListChanged() override {}
   void OnVpnProvidersChanged() override {}
   void OnNetworkCertificatesChanged() override {}
-  void OnDeviceStateListChanged() override;
 
   void FetchDeviceList();
   void OnDeviceList(
       std::vector<network_config::mojom::DeviceStatePropertiesPtr> devices);
+
+  void FetchActiveNetworks();
+  void OnActiveNetworks(
+      std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks);
 
   mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver> receiver_{
       this};

@@ -71,12 +71,22 @@ std::unique_ptr<views::View> CreateButtonRowContainer(int padding) {
 
 FloatingAccessibilityBubbleView::FloatingAccessibilityBubbleView(
     const TrayBubbleView::InitParams& init_params)
-    : TrayBubbleView(init_params) {}
+    : TrayBubbleView(init_params) {
+  // Intercept ESC keypresses.
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+}
 
 FloatingAccessibilityBubbleView::~FloatingAccessibilityBubbleView() = default;
 
 bool FloatingAccessibilityBubbleView::IsAnchoredToStatusArea() const {
   return false;
+}
+
+bool FloatingAccessibilityBubbleView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  GetWidget()->Deactivate();
+  return true;
 }
 
 const char* FloatingAccessibilityBubbleView::GetClassName() const {
@@ -167,6 +177,10 @@ void FloatingAccessibilityView::SetMenuPosition(FloatingMenuPosition position) {
 
 void FloatingAccessibilityView::SetDetailedViewShown(bool shown) {
   a11y_tray_button_->SetToggled(shown);
+}
+
+void FloatingAccessibilityView::FocusOnDetailedViewButton() {
+  a11y_tray_button_->RequestFocus();
 }
 
 void FloatingAccessibilityView::ButtonPressed(views::Button* sender,

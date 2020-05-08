@@ -293,8 +293,8 @@ OSExchangeDataProviderWin::OSExchangeDataProviderWin()
 OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 }
 
-std::unique_ptr<OSExchangeData::Provider>
-OSExchangeDataProviderWin::Clone() const {
+std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderWin::Clone()
+    const {
   return std::make_unique<OSExchangeDataProviderWin>(data_object());
 }
 
@@ -538,14 +538,13 @@ bool OSExchangeDataProviderWin::GetString(base::string16* data) const {
   return ClipboardUtil::GetPlainText(source_object_.Get(), data);
 }
 
-bool OSExchangeDataProviderWin::GetURLAndTitle(
-    OSExchangeData::FilenameToURLPolicy policy,
-    GURL* url,
-    base::string16* title) const {
+bool OSExchangeDataProviderWin::GetURLAndTitle(FilenameToURLPolicy policy,
+                                               GURL* url,
+                                               base::string16* title) const {
   base::string16 url_str;
-  bool success = ClipboardUtil::GetUrl(
-      source_object_.Get(), url, title,
-      policy == OSExchangeData::CONVERT_FILENAMES ? true : false);
+  bool success =
+      ClipboardUtil::GetUrl(source_object_.Get(), url, title,
+                            policy == CONVERT_FILENAMES ? true : false);
   if (success) {
     DCHECK(url->is_valid());
     return true;
@@ -657,11 +656,9 @@ bool OSExchangeDataProviderWin::HasString() const {
   return ClipboardUtil::HasPlainText(source_object_.Get());
 }
 
-bool OSExchangeDataProviderWin::HasURL(
-    OSExchangeData::FilenameToURLPolicy policy) const {
-  return (ClipboardUtil::HasUrl(
-              source_object_.Get(),
-              policy == OSExchangeData::CONVERT_FILENAMES ? true : false) ||
+bool OSExchangeDataProviderWin::HasURL(FilenameToURLPolicy policy) const {
+  return (ClipboardUtil::HasUrl(source_object_.Get(),
+                                policy == CONVERT_FILENAMES ? true : false) ||
           HasPlainTextURL(source_object_.Get()));
 }
 
@@ -684,7 +681,7 @@ bool OSExchangeDataProviderWin::HasCustomFormat(
 }
 
 void OSExchangeDataProviderWin::SetDownloadFileInfo(
-    OSExchangeData::DownloadFileInfo* download) {
+    DownloadFileInfo* download) {
   // If the filename is not provided, set storage to NULL to indicate that
   // the delay rendering will be used.
   // TODO(dcheng): Is it actually possible for filename to be empty here? I
@@ -754,7 +751,7 @@ void OSExchangeDataProviderWin::SetDragImage(
 gfx::ImageSkia OSExchangeDataProviderWin::GetDragImage() const {
   // This class sets the image on data_object() so it shouldn't be used in
   // situations where the drag image is later queried. In that case a different
-  // OSExchangeData::Provider should be used.
+  // OSExchangeDataProvider should be used.
   NOTREACHED();
   return gfx::ImageSkia();
 }
@@ -762,7 +759,7 @@ gfx::ImageSkia OSExchangeDataProviderWin::GetDragImage() const {
 gfx::Vector2d OSExchangeDataProviderWin::GetDragImageOffset() const {
   // This class sets the image on data_object() so it shouldn't be used in
   // situations where the drag image is later queried. In that case a different
-  // OSExchangeData::Provider should be used.
+  // OSExchangeDataProvider should be used.
   NOTREACHED();
   return gfx::Vector2d();
 }

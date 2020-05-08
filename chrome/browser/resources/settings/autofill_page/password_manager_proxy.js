@@ -159,6 +159,7 @@ export class PasswordManagerProxy {
 
   /**
    * Requests the start of the bulk password check.
+   * @return {!Promise<(void)>}
    */
   startBulkPasswordCheck() {}
 
@@ -454,7 +455,15 @@ export class PasswordManagerImpl {
 
   /** @override */
   startBulkPasswordCheck() {
-    chrome.passwordsPrivate.startPasswordCheck();
+    return new Promise((resolve, reject) => {
+      chrome.passwordsPrivate.startPasswordCheck(() => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError.message);
+          return;
+        }
+        resolve();
+      });
+    });
   }
 
   /** @override */

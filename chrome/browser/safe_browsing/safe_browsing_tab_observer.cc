@@ -20,6 +20,7 @@
 
 #if BUILDFLAG(SAFE_BROWSING_CSD)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #endif
@@ -48,8 +49,10 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
         base::Bind(&SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost,
                    base::Unretained(this)));
 
+    ClientSideDetectionService* csd_service =
+        ClientSideDetectionServiceFactory::GetForProfile(profile);
     if (IsSafeBrowsingEnabled(*prefs) &&
-        g_browser_process->safe_browsing_detection_service()) {
+        g_browser_process->safe_browsing_service() && csd_service) {
       safebrowsing_detection_host_ =
           ClientSideDetectionHost::Create(web_contents);
     }
@@ -69,8 +72,9 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   bool safe_browsing = IsSafeBrowsingEnabled(*prefs);
-  if (safe_browsing &&
-      g_browser_process->safe_browsing_detection_service()) {
+  ClientSideDetectionService* csd_service =
+      ClientSideDetectionServiceFactory::GetForProfile(profile);
+  if (safe_browsing && csd_service) {
     if (!safebrowsing_detection_host_.get()) {
       safebrowsing_detection_host_ =
           ClientSideDetectionHost::Create(web_contents_);

@@ -436,12 +436,12 @@ if (enable_mojom_typemapping) {
 #       integrated directly into the dependent mojom's generated type-mapping
 #       targets.
 #
-#       Prefer using |public_deps| over inlined |traits_sources|, as this will
-#       generally lead to easier build maintenance over time.
+#       Prefer using |traits_public_deps| over inlined |traits_sources|, as this
+#       will generally lead to easier build maintenance over time.
 #
 #       NOTE: If a typemap is shared by Blink and non-Blink bindings, you cannot
-#       use this and MUST use |public_deps| to reference traits built within
-#       a separate target.
+#       use this and MUST use |traits_public_deps| to reference traits built
+#       within a separate target.
 #
 #   traits_deps / traits_public_deps (optional)
 #       Any dependencies of sources in |traits_headers| or |traits_sources| must

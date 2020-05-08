@@ -9,7 +9,10 @@
 
 #include "base/message_loop/message_pump_type.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -34,9 +37,11 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(OS_CHROMEOS)
+#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/base/ime/chromeos/input_method_chromeos.h"
 #else
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/ozone/platform/x11/x11_os_exchange_data_provider_ozone.h"
 #endif
 
 #if BUILDFLAG(USE_GTK)
@@ -67,9 +72,10 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
 };
 
 // Singleton OzonePlatform implementation for X11 platform.
-class OzonePlatformX11 : public OzonePlatform {
+class OzonePlatformX11 : public OzonePlatform,
+                         public ui::OSExchangeDataProviderFactoryOzone {
  public:
-  OzonePlatformX11() {}
+  OzonePlatformX11() { SetInstance(this); }
 
   ~OzonePlatformX11() override {}
 
@@ -140,6 +146,14 @@ class OzonePlatformX11 : public OzonePlatform {
     if (!ui::LinuxInputMethodContextFactory::instance())
       return nullptr;
     return std::make_unique<InputMethodAuraLinux>(delegate);
+#endif
+  }
+
+  std::unique_ptr<OSExchangeDataProvider> CreateProvider() override {
+#if defined(OS_CHROMEOS)
+    return std::make_unique<OSExchangeDataProviderAura>();
+#else
+    return std::make_unique<X11OSExchangeDataProviderOzone>();
 #endif
   }
 

@@ -47,7 +47,7 @@ void WaylandDataSource::Offer(const ui::OSExchangeData& data) {
   if (data.HasFile()) {
     mime_types.push_back(kMimeTypeURIList);
   }
-  if (data.HasURL(ui::OSExchangeData::FilenameToURLPolicy::CONVERT_FILENAMES)) {
+  if (data.HasURL(ui::CONVERT_FILENAMES)) {
     mime_types.push_back(kMimeTypeMozillaURL);
   }
   if (data.HasHtml()) {

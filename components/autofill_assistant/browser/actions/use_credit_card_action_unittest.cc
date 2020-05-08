@@ -441,5 +441,43 @@ TEST_F(UseCreditCardActionTest, FallbackForCardExpirationSucceeds) {
             ProcessAction(action_proto));
 }
 
+TEST_F(UseCreditCardActionTest, FallbackFails) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
+  ActionProto action_proto = CreateUseCreditCardAction();
+  AddRequiredField(&action_proto, "57", "#expiration_date");
+
+  // Autofill succeeds.
+  autofill::CreditCard credit_card;
+  credit_card.SetExpirationMonth(9);
+  credit_card.SetExpirationYear(2050);
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
+                         base::UTF8ToUTF16("Jon Doe"));
+  credit_card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                         base::UTF8ToUTF16("4111111111111111"));
+  user_data_.selected_card_ =
+      std::make_unique<autofill::CreditCard>(credit_card);
+  EXPECT_CALL(mock_action_delegate_, OnGetFullCard(_))
+      .WillOnce(RunOnceCallback<0>(credit_card, base::UTF8ToUTF16("123")));
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillCardForm(_, base::UTF8ToUTF16("123"),
+                             Selector({kFakeSelector}).MustBeVisible(), _))
+      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
+
+  // Validation fails when getting expiration date.
+  EXPECT_CALL(mock_web_controller_,
+              OnGetFieldValue(Eq(Selector({"#expiration_date"})), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+
+  // Fallback fails.
+  EXPECT_CALL(mock_action_delegate_,
+              OnSetFieldValue(Eq(Selector({"#expiration_date"})), "09/2050", _))
+      .WillOnce(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
+
+  EXPECT_EQ(ProcessedActionStatusProto::AUTOFILL_INCOMPLETE,
+            ProcessAction(action_proto));
+}
+
 }  // namespace
 }  // namespace autofill_assistant

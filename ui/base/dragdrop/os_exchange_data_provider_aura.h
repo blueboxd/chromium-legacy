@@ -19,15 +19,15 @@ namespace ui {
 
 class ClipboardFormatType;
 
-// OSExchangeData::Provider implementation for aura on linux.
+// OSExchangeDataProvider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAura
-    : public OSExchangeData::Provider {
+    : public OSExchangeDataProvider {
  public:
   OSExchangeDataProviderAura();
   ~OSExchangeDataProviderAura() override;
 
-  // Overridden from OSExchangeData::Provider:
-  std::unique_ptr<Provider> Clone() const override;
+  // Overridden from OSExchangeDataProvider:
+  std::unique_ptr<OSExchangeDataProvider> Clone() const override;
   void MarkOriginatedFromRenderer() override;
   bool DidOriginateFromRenderer() const override;
   void SetString(const base::string16& data) override;
@@ -37,7 +37,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
   void SetPickledData(const ClipboardFormatType& format,
                       const base::Pickle& data) override;
   bool GetString(base::string16* data) const override;
-  bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
+  bool GetURLAndTitle(FilenameToURLPolicy policy,
                       GURL* url,
                       base::string16* title) const override;
   bool GetFilename(base::FilePath* path) const override;
@@ -45,7 +45,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
   bool GetPickledData(const ClipboardFormatType& format,
                       base::Pickle* data) const override;
   bool HasString() const override;
-  bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const override;
+  bool HasURL(FilenameToURLPolicy policy) const override;
   bool HasFile() const override;
   bool HasCustomFormat(const ClipboardFormatType& format) const override;
 

@@ -4501,7 +4501,9 @@ TEST_P(SplitViewTabDraggingTestWithClamshellSupport,
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
-  TestWindowDelegateWithWidget(bool can_resize) : can_resize_(can_resize) {}
+  TestWindowDelegateWithWidget(bool can_resize) : can_resize_(can_resize) {
+    SetFocusTraversesOut(true);
+  }
   ~TestWindowDelegateWithWidget() override = default;
 
   // views::WidgetDelegate:
@@ -4511,7 +4513,6 @@ class TestWindowDelegateWithWidget : public views::WidgetDelegate {
   bool CanActivate() const override { return true; }
   bool CanResize() const override { return can_resize_; }
   bool CanMaximize() const override { return true; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
   void set_widget(views::Widget* widget) { widget_ = widget; }
 

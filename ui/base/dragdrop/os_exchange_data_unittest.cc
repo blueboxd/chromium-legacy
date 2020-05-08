@@ -15,6 +15,7 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "url/gurl.h"
 
@@ -39,7 +40,7 @@ TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
   EXPECT_TRUE(data.HasString());
 
   OSExchangeData data2(
-      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
+      std::unique_ptr<OSExchangeDataProvider>(data.provider().Clone()));
   base::string16 output;
   EXPECT_TRUE(data2.HasString());
   EXPECT_TRUE(data2.GetString(&output));
@@ -47,8 +48,7 @@ TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
   std::string url_spec = "http://www.goats.com/";
   GURL url(url_spec);
   base::string16 title;
-  EXPECT_FALSE(data2.GetURLAndTitle(
-      OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &title));
+  EXPECT_FALSE(data2.GetURLAndTitle(DO_NOT_CONVERT_FILENAMES, &url, &title));
   // No URLs in |data|, so url should be untouched.
   EXPECT_EQ(url_spec, url.spec());
 }
@@ -58,19 +58,19 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
   base::string16 url_title = base::ASCIIToUTF16("www.google.com");
-  EXPECT_FALSE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+  EXPECT_FALSE(data.HasURL(DO_NOT_CONVERT_FILENAMES));
   data.SetURL(url, url_title);
-  EXPECT_TRUE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+  EXPECT_TRUE(data.HasURL(DO_NOT_CONVERT_FILENAMES));
 
   OSExchangeData data2(
-      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
+      std::unique_ptr<OSExchangeDataProvider>(data.provider().Clone()));
 
   // URL spec and title should match
   GURL output_url;
   base::string16 output_title;
-  EXPECT_TRUE(data2.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::DO_NOT_CONVERT_FILENAMES, &output_url, &output_title));
+  EXPECT_TRUE(data2.HasURL(DO_NOT_CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.GetURLAndTitle(DO_NOT_CONVERT_FILENAMES, &output_url,
+                                   &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
   base::string16 output_string;
@@ -96,16 +96,16 @@ TEST_F(OSExchangeDataTest, URLAndString) {
 
   GURL output_url;
   base::string16 output_title;
-  EXPECT_TRUE(data.GetURLAndTitle(
-      OSExchangeData::DO_NOT_CONVERT_FILENAMES, &output_url, &output_title));
+  EXPECT_TRUE(data.GetURLAndTitle(DO_NOT_CONVERT_FILENAMES, &output_url,
+                                  &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
 }
 
 TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
   OSExchangeData data;
-  EXPECT_FALSE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
-  EXPECT_FALSE(data.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_FALSE(data.HasURL(DO_NOT_CONVERT_FILENAMES));
+  EXPECT_FALSE(data.HasURL(CONVERT_FILENAMES));
   EXPECT_FALSE(data.HasFile());
 
   base::FilePath current_directory;
@@ -114,21 +114,21 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
   data.SetFilename(current_directory);
 
   {
-    EXPECT_FALSE(data.HasURL(OSExchangeData::DO_NOT_CONVERT_FILENAMES));
+    EXPECT_FALSE(data.HasURL(DO_NOT_CONVERT_FILENAMES));
     GURL actual_url;
     base::string16 actual_title;
-    EXPECT_FALSE(data.GetURLAndTitle(
-        OSExchangeData::DO_NOT_CONVERT_FILENAMES, &actual_url, &actual_title));
+    EXPECT_FALSE(data.GetURLAndTitle(DO_NOT_CONVERT_FILENAMES, &actual_url,
+                                     &actual_title));
     EXPECT_EQ(GURL(), actual_url);
     EXPECT_EQ(base::string16(), actual_title);
   }
 
   {
-    EXPECT_TRUE(data.HasURL(OSExchangeData::CONVERT_FILENAMES));
+    EXPECT_TRUE(data.HasURL(CONVERT_FILENAMES));
     GURL actual_url;
     base::string16 actual_title;
-    EXPECT_TRUE(data.GetURLAndTitle(OSExchangeData::CONVERT_FILENAMES,
-                                    &actual_url, &actual_title));
+    EXPECT_TRUE(
+        data.GetURLAndTitle(CONVERT_FILENAMES, &actual_url, &actual_title));
     // Some Mac OS versions return the URL in file://localhost form instead
     // of file:///, so we compare the url's path not its absolute string.
     EXPECT_EQ(net::FilePathToFileURL(current_directory).path(),
@@ -152,7 +152,7 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
   data.SetPickledData(kTestFormat, saved_pickle);
 
   OSExchangeData copy(
-      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
+      std::unique_ptr<OSExchangeDataProvider>(data.provider().Clone()));
   EXPECT_TRUE(copy.HasCustomFormat(kTestFormat));
 
   base::Pickle restored_pickle;
@@ -200,7 +200,7 @@ TEST_F(OSExchangeDataTest, TestHTML) {
   data.SetHtml(html, url);
 
   OSExchangeData copy(
-      std::unique_ptr<OSExchangeData::Provider>(data.provider().Clone()));
+      std::unique_ptr<OSExchangeDataProvider>(data.provider().Clone()));
   base::string16 read_html;
   EXPECT_TRUE(copy.HasHtml());
   EXPECT_TRUE(copy.GetHtml(&read_html, &url));

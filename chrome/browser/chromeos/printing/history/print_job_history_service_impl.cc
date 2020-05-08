@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
+#include "chrome/browser/printing/print_job.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -63,6 +64,13 @@ void PrintJobHistoryServiceImpl::OnPrintJobCancelled(
 void PrintJobHistoryServiceImpl::SavePrintJob(base::WeakPtr<CupsPrintJob> job) {
   if (!job)
     return;
+
+  // Prevent saving print jobs if it's from incognito browser sessions.
+  // TODO(crbug/1053704): Add policy pref to enable storing incognito print
+  // jobs.
+  if (job->source() == ::printing::PrintJob::Source::PRINT_PREVIEW_INCOGNITO)
+    return;
+
   printing::proto::PrintJobInfo print_job_info =
       CupsPrintJobToProto(*job, /*id=*/base::GenerateGUID(), base::Time::Now());
   print_job_database_->SavePrintJob(

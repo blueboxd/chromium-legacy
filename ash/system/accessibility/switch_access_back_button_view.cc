@@ -21,42 +21,21 @@
 namespace ash {
 
 namespace {
-// The width of a single color focus ring, in density-independent pixels.
-constexpr int kFocusRingSingleColorWidthDp = 2;
-// Additional buffer needed to prevent clipping at the focus ring's edges.
-constexpr int kFocusRingBufferDp = 1;
-
 constexpr char kUniqueId[] = "switch_access_back_button";
-constexpr int kRadiusDp = 18;
 }  // namespace
 
-SwitchAccessBackButtonView::SwitchAccessBackButtonView()
-    : back_button_(
+SwitchAccessBackButtonView::SwitchAccessBackButtonView(int diameter)
+    : diameter_(diameter),
+      back_button_(
           new FloatingMenuButton(this,
                                  kSwitchAccessBackIcon,
                                  IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION,
                                  /*flip_for_rtl=*/false,
-                                 2 * kRadiusDp)) {
-  views::BoxLayout* layout =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets()));
-  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
+                                 diameter)) {
+  std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets());
+  SetLayoutManager(std::move(layout));
   AddChildView(back_button_);
-
-  // Calculate the side length of the bounding box, with room for the two-color
-  // focus ring on either side.
-  int focus_ring_width_per_side =
-      2 * kFocusRingSingleColorWidthDp + kFocusRingBufferDp;
-  int side_length = 2 * (kRadiusDp + focus_ring_width_per_side);
-  gfx::Size size(side_length, side_length);
-  SetSize(size);
-}
-
-void SwitchAccessBackButtonView::SetFocusRing(bool should_show) {
-  if (show_focus_ring_ == should_show)
-    return;
-  show_focus_ring_ = should_show;
-  SchedulePaint();
 }
 
 void SwitchAccessBackButtonView::ButtonPressed(views::Button* sender,
@@ -71,10 +50,6 @@ void SwitchAccessBackButtonView::GetAccessibleNodeData(
   node_data->html_attributes.push_back(std::make_pair("id", kUniqueId));
 }
 
-int SwitchAccessBackButtonView::GetHeightForWidth(int w) const {
-  return w;
-}
-
 const char* SwitchAccessBackButtonView::GetClassName() const {
   return "SwitchAccessBackButtonView";
 }
@@ -85,20 +60,7 @@ void SwitchAccessBackButtonView::OnPaint(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setColor(gfx::kGoogleGrey800);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kRadiusDp, flags);
-
-  if (!show_focus_ring_)
-    return;
-
-  flags.setColor(gfx::kGoogleBlue300);
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(kFocusRingSingleColorWidthDp);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()),
-                     kRadiusDp + kFocusRingSingleColorWidthDp, flags);
-
-  flags.setColor(SK_ColorBLACK);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()),
-                     kRadiusDp + (2 * kFocusRingSingleColorWidthDp), flags);
+  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), diameter_ / 2.f, flags);
 }
 
 }  // namespace ash

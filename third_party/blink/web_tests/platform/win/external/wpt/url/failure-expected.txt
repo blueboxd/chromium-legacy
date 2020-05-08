@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 313 tests; 143 PASS, 170 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 331 tests; 152 PASS, 179 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS URL's constructor's base argument: file://example:1/ should throw
 FAIL URL's href: file://example:1/ should throw assert_throws_js: function "() => url.href = test.input" did not throw
@@ -313,5 +313,23 @@ FAIL XHR: a// should throw assert_throws_dom: function "() => client.open("GET",
 FAIL sendBeacon(): a// should throw assert_throws_js: function "() => self.navigator.sendBeacon(test.input)" did not throw
 FAIL Location's href: a// should throw assert_throws_js: function "() => self[0].location = test.input" did not throw
 FAIL window.open(): a// should throw assert_throws_dom: function "() => self.open(test.input).close()" did not throw
+PASS URL's constructor's base argument: file://­/p should throw
+FAIL URL's href: file://­/p should throw assert_throws_js: function "() => url.href = test.input" did not throw
+PASS XHR: file://­/p should throw
+PASS sendBeacon(): file://­/p should throw
+FAIL Location's href: file://­/p should throw assert_throws_js: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'file://­/p' is not a valid URL." ("SyntaxError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
+PASS window.open(): file://­/p should throw
+PASS URL's constructor's base argument: file://%C2%AD/p should throw
+FAIL URL's href: file://%C2%AD/p should throw assert_throws_js: function "() => url.href = test.input" did not throw
+PASS XHR: file://%C2%AD/p should throw
+PASS sendBeacon(): file://%C2%AD/p should throw
+FAIL Location's href: file://%C2%AD/p should throw assert_throws_js: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'file://%C2%AD/p' is not a valid URL." ("SyntaxError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
+PASS window.open(): file://%C2%AD/p should throw
+FAIL URL's constructor's base argument: file://xn--/p should throw assert_throws_js: function "() => new URL("about:blank", test.input)" did not throw
+FAIL URL's href: file://xn--/p should throw assert_throws_js: function "() => url.href = test.input" did not throw
+FAIL XHR: file://xn--/p should throw assert_throws_dom: function "() => client.open("GET", test.input)" did not throw
+PASS sendBeacon(): file://xn--/p should throw
+FAIL Location's href: file://xn--/p should throw assert_throws_js: function "() => self[0].location = test.input" did not throw
+FAIL window.open(): file://xn--/p should throw assert_throws_dom: function "() => self.open(test.input).close()" threw object "TypeError: Cannot read property 'close' of null" that is not a DOMException SyntaxError: property "code" is equal to undefined, expected 12
 Harness: the test ran to completion.
 

@@ -69,6 +69,7 @@ void FloatingAccessibilityController::Show(FloatingMenuPosition position) {
   init_params.has_shadow = false;
   init_params.max_height = kFloatingMenuHeight;
   init_params.translucent = true;
+  init_params.close_on_deactivate = false;
   bubble_view_ = new FloatingAccessibilityBubbleView(init_params);
 
   menu_view_ = new FloatingAccessibilityView(this);
@@ -80,6 +81,7 @@ void FloatingAccessibilityController::Show(FloatingMenuPosition position) {
   menu_view_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
+  bubble_view_->SetCanActivate(true);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
@@ -169,6 +171,12 @@ void FloatingAccessibilityController::OnDetailedMenuClosed() {
   if (!menu_view_)
     return;
   menu_view_->SetDetailedViewShown(false);
+  if (bubble_widget_->IsActive())
+    menu_view_->FocusOnDetailedViewButton();
+}
+
+views::Widget* FloatingAccessibilityController::GetBubbleWidget() {
+  return bubble_widget_;
 }
 
 void FloatingAccessibilityController::BubbleViewDestroyed() {

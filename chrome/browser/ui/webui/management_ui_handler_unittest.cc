@@ -49,12 +49,20 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
+#include "components/onc/onc_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/proxy_config/pref_proxy_config_tracker_impl.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "ui/chromeos/devicetype_utils.h"
 #endif  // defined(OS_CHROMEOS)
@@ -319,8 +327,10 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 
     crostini_features_ = std::make_unique<crostini::FakeCrostiniFeatures>();
     SetUpConnectManager();
+    chromeos::NetworkHandler::Initialize();
   }
   void TearDown() override {
+    chromeos::NetworkHandler::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     DeviceSettingsTestBase::TearDown();
   }
@@ -439,6 +449,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   std::unique_ptr<crostini::FakeCrostiniFeatures> crostini_features_;
   TestingPrefServiceSimple local_state_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  TestingPrefServiceSimple user_prefs_;
   std::unique_ptr<TestDeviceCloudPolicyManagerChromeOS> manager_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   policy::ServerBackedStateKeysBroker state_keys_broker_;
@@ -835,6 +846,47 @@ TEST_F(ManagementUIHandlerTests, AllDisabledDeviceReportingInfo) {
   ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
                       expected_elements);
 }
+
+TEST_F(ManagementUIHandlerTests, ProxyServerShowReport) {
+  PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
+  chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                          &local_state_);
+  // Set pref to use a proxy.
+  base::Value policy_prefs_config = ProxyConfigDictionary::CreateAutoDetect();
+  user_prefs_.SetUserPref(
+      proxy_config::prefs::kProxy,
+      base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
+  base::RunLoop().RunUntilIdle();
+
+  ResetTestConfig(false);
+  const base::Value info = SetUpForReportingInfo();
+
+  const std::map<std::string, std::string> expected_elements = {
+      {kManagementReportProxyServer, "proxy server"}};
+
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+                      expected_elements);
+}
+
+TEST_F(ManagementUIHandlerTests, ProxyServerHideReportForDirectProxy) {
+  PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
+  chromeos::NetworkHandler::Get()->InitializePrefServices(&user_prefs_,
+                                                          &local_state_);
+  // Set pref not to use proxy.
+  base::Value policy_prefs_config = ProxyConfigDictionary::CreateDirect();
+  user_prefs_.SetUserPref(
+      proxy_config::prefs::kProxy,
+      base::Value::ToUniquePtrValue(std::move(policy_prefs_config)));
+  base::RunLoop().RunUntilIdle();
+
+  ResetTestConfig(false);
+  const base::Value info = SetUpForReportingInfo();
+
+  const std::map<std::string, std::string> expected_elements = {};
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+                      expected_elements);
+}
+
 #endif
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoNoPolicySetNoMessage) {

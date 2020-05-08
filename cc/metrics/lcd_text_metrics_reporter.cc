@@ -4,6 +4,7 @@
 
 #include "cc/metrics/lcd_text_metrics_reporter.h"
 
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "cc/base/histograms.h"
 #include "cc/layers/picture_layer_impl.h"
@@ -21,10 +22,14 @@ constexpr unsigned kMinimumFrameInterval = 500;
 // This must be the same as that used in DeviceScaleEnsuresTextQuality() in
 // content/renderer/render_widget.cc.
 constexpr float kHighDPIDeviceScaleFactorThreshold = 1.5f;
-constexpr char kLCDTextMetricNameHighDPI[] =
-    "Compositing.Renderer.LCDTextEligiblePixelPercentage.HighDPI";
-constexpr char kLCDTextMetricNameLowDPI[] =
-    "Compositing.Renderer.LCDTextEligiblePixelPercentage.LowDPI";
+constexpr char kMetricNameLCDTextKPixelsHighDPI[] =
+    "Compositing.Renderer.LCDTextDisallowedReasonKPixels.HighDPI";
+constexpr char kMetricNameLCDTextKPixelsLowDPI[] =
+    "Compositing.Renderer.LCDTextDisallowedReasonKPixels.LowDPI";
+constexpr char kMetricNameLCDTextLayersHighDPI[] =
+    "Compositing.Renderer.LCDTextDisallowedReasonLayers.HighDPI";
+constexpr char kMetricNameLCDTextLayersLowDPI[] =
+    "Compositing.Renderer.LCDTextDisallowedReasonLayers.LowDPI";
 
 }  // anonymous namespace
 
@@ -61,8 +66,12 @@ void LCDTextMetricsReporter::NotifyPauseFrameProduction() {
   last_report_frame_time_ = current_frame_time_;
   frame_count_since_last_report_ = 0;
 
-  double total_lcd_text_area = 0;
-  double total_text_area = 0;
+  float device_scale_factor =
+      layer_tree_host_impl_->settings().use_painted_device_scale_factor
+          ? layer_tree_host_impl_->active_tree()->painted_device_scale_factor()
+          : layer_tree_host_impl_->active_tree()->device_scale_factor();
+  bool is_high_dpi = device_scale_factor >= kHighDPIDeviceScaleFactorThreshold;
+
   for (const auto* layer :
        layer_tree_host_impl_->active_tree()->picture_layers()) {
     if (!layer->DrawsContent() || !layer->GetRasterSource())
@@ -72,25 +81,22 @@ void LCDTextMetricsReporter::NotifyPauseFrameProduction() {
     if (!display_item_list)
       continue;
 
-    double text_area =
-        display_item_list->AreaOfDrawText(layer->visible_layer_rect());
-    total_text_area += text_area;
-    if (layer->can_use_lcd_text())
-      total_lcd_text_area += text_area;
+    int text_pixels = static_cast<int>(
+        display_item_list->AreaOfDrawText(layer->visible_layer_rect()));
+    if (!text_pixels)
+      continue;
+
+    auto reason = layer->lcd_text_disallowed_reason();
+    if (is_high_dpi) {
+      UMA_HISTOGRAM_SCALED_ENUMERATION(kMetricNameLCDTextKPixelsHighDPI, reason,
+                                       text_pixels, 1000);
+      UMA_HISTOGRAM_ENUMERATION(kMetricNameLCDTextLayersHighDPI, reason);
+    } else {
+      UMA_HISTOGRAM_SCALED_ENUMERATION(kMetricNameLCDTextKPixelsLowDPI, reason,
+                                       text_pixels, 1000);
+      UMA_HISTOGRAM_ENUMERATION(kMetricNameLCDTextLayersLowDPI, reason);
+    }
   }
-
-  if (!total_text_area)
-    return;
-
-  float device_scale_factor =
-      layer_tree_host_impl_->settings().use_painted_device_scale_factor
-          ? layer_tree_host_impl_->active_tree()->painted_device_scale_factor()
-          : layer_tree_host_impl_->active_tree()->device_scale_factor();
-  UMA_HISTOGRAM_PERCENTAGE(
-      device_scale_factor >= kHighDPIDeviceScaleFactorThreshold
-          ? kLCDTextMetricNameHighDPI
-          : kLCDTextMetricNameLowDPI,
-      roundf(total_lcd_text_area * 100.f / total_text_area));
 }
 
 }  // namespace cc

@@ -233,6 +233,8 @@ Polymer({
         return 'cr:extension';
       case DeviceReportingType.ANDROID_APPLICATION:
         return 'management:play-store';
+      case DeviceReportingType.PROXY_SERVER:
+        return 'management:vpn-lock';
       default:
         return 'cr:computer';
     }

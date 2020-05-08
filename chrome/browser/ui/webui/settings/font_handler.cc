@@ -26,11 +26,10 @@
 
 namespace settings {
 
-FontHandler::FontHandler(content::WebUI* webui)
-    : profile_(Profile::FromWebUI(webui)) {
+FontHandler::FontHandler(Profile* profile) {
 #if defined(OS_MACOSX)
   // Perform validation for saved fonts.
-  settings_utils::ValidateSavedFonts(profile_->GetPrefs());
+  settings_utils::ValidateSavedFonts(profile->GetPrefs());
 #endif
 }
 

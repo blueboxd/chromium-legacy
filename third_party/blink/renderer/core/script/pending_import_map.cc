@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/script/import_map.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
@@ -16,28 +17,26 @@ namespace blink {
 PendingImportMap* PendingImportMap::CreateInline(ScriptElementBase& element,
                                                  const String& import_map_text,
                                                  const KURL& base_url) {
-  Document& element_document = element.GetDocument();
-  Document* context_document = element_document.ContextDocument();
+  ExecutionContext* context = element.GetExecutionContext();
   ScriptState* script_state =
-      ToScriptStateForMainWorld(context_document->GetFrame());
+      ToScriptStateForMainWorld(To<LocalDOMWindow>(context)->GetFrame());
   Modulator* modulator = Modulator::From(script_state);
 
   ScriptValue error_to_rethrow;
   ImportMap* import_map = ImportMap::Parse(
-      *modulator, import_map_text, base_url,
-      *context_document->GetExecutionContext(), &error_to_rethrow);
+      *modulator, import_map_text, base_url, *context, &error_to_rethrow);
   return MakeGarbageCollected<PendingImportMap>(
-      script_state, element, import_map, error_to_rethrow, *context_document);
+      script_state, element, import_map, error_to_rethrow, *context);
 }
 
 PendingImportMap::PendingImportMap(ScriptState* script_state,
                                    ScriptElementBase& element,
                                    ImportMap* import_map,
                                    ScriptValue error_to_rethrow,
-                                   const Document& original_context_document)
+                                   const ExecutionContext& original_context)
     : element_(&element),
       import_map_(import_map),
-      original_context_document_(&original_context_document) {
+      original_execution_context_(&original_context) {
   if (!error_to_rethrow.IsEmpty()) {
     ScriptState::Scope scope(script_state);
     error_to_rethrow_.Set(script_state->GetIsolate(),
@@ -72,14 +71,12 @@ void PendingImportMap::RegisterImportMap() const {
   //
   // <spec step="6">If element’s node document’s relevant settings object is not
   // equal to settings object, then return. ...</spec>
-  Document* context_document = element_->GetDocument().ContextDocument();
-  if (!context_document)
-    return;
-  if (original_context_document_ != context_document)
+  ExecutionContext* context = element_->GetExecutionContext();
+  if (original_execution_context_ != context)
     return;
 
   // Steps 7 and 8.
-  LocalFrame* frame = context_document->GetFrame();
+  LocalFrame* frame = To<LocalDOMWindow>(context)->GetFrame();
   if (!frame)
     return;
 
@@ -104,7 +101,7 @@ void PendingImportMap::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(import_map_);
   visitor->Trace(error_to_rethrow_);
-  visitor->Trace(original_context_document_);
+  visitor->Trace(original_execution_context_);
 }
 
 }  // namespace blink

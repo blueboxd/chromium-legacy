@@ -102,6 +102,7 @@ js_library("password_check") {
     ":password_manager_proxy",
     "..:plural_string_proxy",
     "../prefs:prefs_behavior.m",
+    "..:route",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",

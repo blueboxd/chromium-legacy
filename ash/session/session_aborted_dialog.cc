@@ -64,12 +64,11 @@ SessionAbortedDialog::SessionAbortedDialog() {
       l10n_util::GetStringUTF16(IDS_ASH_MULTIPROFILES_SESSION_ABORT_HEADLINE));
   SetShowCloseButton(false);
 
-  DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_MULTIPROFILES_SESSION_ABORT_BUTTON_LABEL));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetButtons(ui::DIALOG_BUTTON_OK);
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(
+                     IDS_ASH_MULTIPROFILES_SESSION_ABORT_BUTTON_LABEL));
+  SetAcceptCallback(base::BindOnce(
       []() { Shell::Get()->session_controller()->RequestSignOut(); }));
 }
 

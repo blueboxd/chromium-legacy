@@ -258,6 +258,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
         updateDefaultColor();
         updateDefaultBackgroundColor();
+        updateIfNeeded(/* didWebContentsThemeColorChange= */ true);
     }
 
     @Override

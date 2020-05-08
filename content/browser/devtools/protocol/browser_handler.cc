@@ -201,6 +201,8 @@ Response PermissionDescriptorToPermissionType(
     }
   } else if (name == "nfc") {
     *permission_type = PermissionType::NFC;
+  } else if (name == "window-placement") {
+    *permission_type = PermissionType::WINDOW_PLACEMENT;
   } else {
     return Response::InvalidParams("Invalid PermissionDescriptor name: " +
                                    name);

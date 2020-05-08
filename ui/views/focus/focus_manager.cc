@@ -312,7 +312,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
   // the starting views widget or |widget_|.
   Widget* widget = starting_view ? starting_view->GetWidget()
                                  : original_starting_view->GetWidget();
-  if (widget->widget_delegate()->ShouldAdvanceFocusToTopLevelWidget())
+  if (widget->widget_delegate()->focus_traverses_out())
     widget = widget_;
   return GetNextFocusableView(nullptr, widget, reverse, true);
 }

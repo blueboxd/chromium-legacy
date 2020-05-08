@@ -4918,12 +4918,16 @@ jumbo_static_library("browser") {
       "android/feed/feed_scheduler_bridge.h",
       "android/feed/history/feed_history_helper.cc",
       "android/feed/history/feed_history_helper.h",
+      "android/feed/v2/background_refresh_task.cc",
+      "android/feed/v2/background_refresh_task.h",
       "android/feed/v2/feed_service_bridge.cc",
       "android/feed/v2/feed_service_bridge.h",
       "android/feed/v2/feed_service_factory.cc",
       "android/feed/v2/feed_service_factory.h",
       "android/feed/v2/feed_stream_surface.cc",
       "android/feed/v2/feed_stream_surface.h",
+      "android/feed/v2/refresh_task_scheduler_impl.cc",
+      "android/feed/v2/refresh_task_scheduler_impl.h",
     ]
     deps += [
       "//components/feed/content:feed_content",
@@ -5083,6 +5087,8 @@ jumbo_static_library("browser") {
         "offline_pages/android/request_coordinator_bridge.h",
         "offline_pages/android/request_coordinator_factory.cc",
       ]
+
+      deps += [ "//chrome/browser/offline_pages/android:jni_headers" ]
     }
 
     public_deps += [

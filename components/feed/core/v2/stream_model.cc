@@ -245,15 +245,10 @@ const std::string& StreamModel::GetNextPageToken() const {
   return stream_data_.next_page_token();
 }
 
-const std::string& StreamModel::GetConsistencyToken() const {
-  return stream_data_.consistency_token();
-}
-
 std::string StreamModel::DumpStateForTesting() {
   std::stringstream ss;
   ss << "StreamModel{\n";
   ss << "next_page_token='" << GetNextPageToken() << "'\n";
-  ss << "consistency_token='" << GetConsistencyToken() << "'\n";
   for (auto& entry : shared_states_) {
     ss << "shared_state[" << entry.first
        << "]=" << base::GetQuotedJSONString(entry.second.data.substr(0, 100))

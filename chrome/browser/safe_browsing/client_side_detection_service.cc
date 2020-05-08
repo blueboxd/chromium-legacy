@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -67,16 +68,32 @@ struct ClientSideDetectionService::ClientPhishingReportInfo {
 ClientSideDetectionService::CacheState::CacheState(bool phish, base::Time time)
     : is_phishing(phish), timestamp(time) {}
 
+ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
+    : ClientSideDetectionService(profile ? profile->GetURLLoaderFactory()
+                                         : nullptr) {
+  profile_ = profile;
+
+  // profile_ can be null in unit tests
+  if (!profile_)
+    return;
+
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kSafeBrowsingEnabled,
+      base::Bind(&ClientSideDetectionService::OnPrefsUpdated,
+                 base::Unretained(this)));
+}
+
 ClientSideDetectionService::ClientSideDetectionService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : enabled_(false), url_loader_factory_(url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader)
+    : enabled_(false), url_loader_factory_(url_loader) {
   base::Closure update_renderers =
       base::Bind(&ClientSideDetectionService::SendModelToRenderers,
                  base::Unretained(this));
   model_loader_standard_.reset(
-      new ModelLoader(update_renderers, url_loader_factory, false));
+      new ModelLoader(update_renderers, url_loader_factory_, false));
   model_loader_extended_.reset(
-      new ModelLoader(update_renderers, url_loader_factory, true));
+      new ModelLoader(update_renderers, url_loader_factory_, true));
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -86,11 +103,12 @@ ClientSideDetectionService::~ClientSideDetectionService() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-// static
-std::unique_ptr<ClientSideDetectionService> ClientSideDetectionService::Create(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return base::WrapUnique(new ClientSideDetectionService(url_loader_factory));
+void ClientSideDetectionService::Shutdown() {
+  url_loader_factory_.reset();
+}
+
+void ClientSideDetectionService::OnPrefsUpdated() {
+  SetEnabledAndRefreshState(IsSafeBrowsingEnabled(*profile_->GetPrefs()));
 }
 
 void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
@@ -169,22 +187,21 @@ void ClientSideDetectionService::Observe(
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
-  SendModelToProcess(content::Source<content::RenderProcessHost>(source).ptr());
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  if (process->GetBrowserContext() == profile_)
+    SendModelToProcess(process);
 }
 
 void ClientSideDetectionService::SendModelToProcess(
     content::RenderProcessHost* process) {
   DCHECK(process->IsInitializedAndNotDead());
+  DCHECK_EQ(process->GetBrowserContext(), profile_);
 
-  // The ClientSideDetectionService is enabled if _any_ active profile has
-  // SafeBrowsing turned on.  Here we check the profile for each renderer
-  // process and only send the model to those that have SafeBrowsing enabled,
-  // and we select the model based on the extended reporting setting.
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
-  if (IsSafeBrowsingEnabled(*profile->GetPrefs())) {
-    if (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
-        IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
+  if (IsSafeBrowsingEnabled(*profile_->GetPrefs())) {
+    if (IsExtendedReportingEnabled(*profile_->GetPrefs()) ||
+        IsEnhancedProtectionEnabled(*profile_->GetPrefs())) {
       DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()
                << " to RenderProcessHost @" << process;
       model = model_loader_extended_->model_str();
@@ -208,7 +225,8 @@ void ClientSideDetectionService::SendModelToRenderers() {
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     content::RenderProcessHost* process = i.GetCurrentValue();
-    if (process->IsInitializedAndNotDead())
+    if (process->IsInitializedAndNotDead() &&
+        process->GetBrowserContext() == profile_)
       SendModelToProcess(process);
   }
 }

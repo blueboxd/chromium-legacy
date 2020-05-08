@@ -83,7 +83,7 @@ bool Equal(const WebMouseWheelEvent& lhs, const WebMouseWheelEvent& rhs) {
 
 class HandledTask {
  public:
-  virtual ~HandledTask() {}
+  virtual ~HandledTask() = default;
 
   virtual blink::WebCoalescedInputEvent* taskAsEvent() = 0;
   virtual unsigned taskAsClosure() const = 0;
@@ -92,10 +92,8 @@ class HandledTask {
 class HandledEvent : public HandledTask {
  public:
   explicit HandledEvent(const blink::WebCoalescedInputEvent& event)
-      : event_(event.Event(),
-               event.GetCoalescedEventsPointers(),
-               event.GetPredictedEventsPointers()) {}
-  ~HandledEvent() override {}
+      : event_(event) {}
+  ~HandledEvent() override = default;
 
   blink::WebCoalescedInputEvent* taskAsEvent() override { return &event_; }
   unsigned taskAsClosure() const override {
@@ -110,7 +108,7 @@ class HandledEvent : public HandledTask {
 class HandledClosure : public HandledTask {
  public:
   explicit HandledClosure(unsigned closure_id) : closure_id_(closure_id) {}
-  ~HandledClosure() override {}
+  ~HandledClosure() override = default;
 
   blink::WebCoalescedInputEvent* taskAsEvent() override {
     NOTREACHED();
@@ -369,17 +367,17 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   {
     WebMouseWheelEvent coalesced_event = kEvents[0];
-    blink::WebVector<const WebInputEvent*> coalesced_events =
+    const auto& coalesced_events =
         handled_tasks_[0]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebMouseWheelEvent* coalesced_wheel_event0 =
-        static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[0].get());
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *coalesced_wheel_event0));
 
     coalesced_event = kEvents[1];
     const WebMouseWheelEvent* coalesced_wheel_event1 =
-        static_cast<const WebMouseWheelEvent*>(coalesced_events[1]);
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[1].get());
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *coalesced_wheel_event1));
@@ -398,17 +396,17 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   {
     WebMouseWheelEvent coalesced_event = kEvents[2];
-    blink::WebVector<const WebInputEvent*> coalesced_events =
+    const auto& coalesced_events =
         handled_tasks_[1]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebMouseWheelEvent* coalesced_wheel_event0 =
-        static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[0].get());
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *coalesced_wheel_event0));
 
     coalesced_event = kEvents[3];
     const WebMouseWheelEvent* coalesced_wheel_event1 =
-        static_cast<const WebMouseWheelEvent*>(coalesced_events[1]);
+        static_cast<const WebMouseWheelEvent*>(coalesced_events[1].get());
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *coalesced_wheel_event1));
@@ -454,8 +452,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   {
     EXPECT_EQ(1u, handled_tasks_[0]->taskAsEvent()->CoalescedEventSize());
     const WebTouchEvent* coalesced_touch_event =
-        static_cast<const WebTouchEvent*>(
-            handled_tasks_[0]->taskAsEvent()->GetCoalescedEventsPointers()[0]);
+        static_cast<const WebTouchEvent*>(handled_tasks_[0]
+                                              ->taskAsEvent()
+                                              ->GetCoalescedEventsPointers()[0]
+                                              .get());
     EXPECT_TRUE(Equal(kEvents[0], *coalesced_touch_event));
   }
 
@@ -470,8 +470,10 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   {
     EXPECT_EQ(1u, handled_tasks_[1]->taskAsEvent()->CoalescedEventSize());
     const WebTouchEvent* coalesced_touch_event =
-        static_cast<const WebTouchEvent*>(
-            handled_tasks_[1]->taskAsEvent()->GetCoalescedEventsPointers()[0]);
+        static_cast<const WebTouchEvent*>(handled_tasks_[1]
+                                              ->taskAsEvent()
+                                              ->GetCoalescedEventsPointers()[0]
+                                              .get());
     EXPECT_TRUE(Equal(kEvents[1], *coalesced_touch_event));
   }
 
@@ -488,17 +490,17 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   {
     EXPECT_EQ(2u, handled_tasks_[2]->taskAsEvent()->CoalescedEventSize());
     WebTouchEvent coalesced_event = kEvents[2];
-    blink::WebVector<const WebInputEvent*> coalesced_events =
+    const auto& coalesced_events =
         handled_tasks_[2]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebTouchEvent* coalesced_touch_event0 =
-        static_cast<const WebTouchEvent*>(coalesced_events[0]);
+        static_cast<const WebTouchEvent*>(coalesced_events[0].get());
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *coalesced_touch_event0));
 
     coalesced_event = kEvents[3];
     const WebTouchEvent* coalesced_touch_event1 =
-        static_cast<const WebTouchEvent*>(coalesced_events[1]);
+        static_cast<const WebTouchEvent*>(coalesced_events[1].get());
     coalesced_event.dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(Equal(coalesced_event, *coalesced_touch_event1));
@@ -1144,7 +1146,7 @@ class MainThreadEventQueueInitializationTest
     : public testing::Test,
       public MainThreadEventQueueClient {
  public:
-  MainThreadEventQueueInitializationTest() {}
+  MainThreadEventQueueInitializationTest() = default;
 
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
                         const ui::LatencyInfo& latency,

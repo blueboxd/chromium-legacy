@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_
 
 #include <string>
+#include <unordered_map>
 
 #include "chrome/browser/ui/caption_bubble_controller.h"
-
-class Browser;
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 namespace views {
 class Widget;
@@ -19,12 +19,22 @@ namespace captions {
 
 class CaptionBubble;
 
+struct CaptionText {
+  std::string final_text;
+  std::string partial_text;
+
+  bool empty() { return final_text.empty() && partial_text.empty(); }
+
+  std::string full_text() { return final_text + partial_text; }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Bubble Controller for Views
 //
 //  The implementation of the caption bubble controller for Views.
 //
-class CaptionBubbleControllerViews : public CaptionBubbleController {
+class CaptionBubbleControllerViews : public CaptionBubbleController,
+                                     public TabStripModelObserver {
  public:
   explicit CaptionBubbleControllerViews(Browser* browser);
   ~CaptionBubbleControllerViews() override;
@@ -33,11 +43,9 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
       delete;
 
   // Called when a transcription is received from the service.
-  void OnTranscription(const chrome::mojom::TranscriptionResultPtr&
-                           transcription_result) override;
-
-  // Called when the active tab changes.
-  void OnActiveTabChanged(int index) override;
+  void OnTranscription(
+      const chrome::mojom::TranscriptionResultPtr& transcription_result,
+      content::WebContents* web_contents) override;
 
   // Called when the caption style changes.
   void UpdateCaptionStyle(
@@ -45,14 +53,33 @@ class CaptionBubbleControllerViews : public CaptionBubbleController {
 
  private:
   friend class CaptionBubbleControllerViewsTest;
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
   // A callback passed to the CaptionBubble which is called when the
   // CaptionBubble is destroyed.
   void OnCaptionBubbleDestroyed();
 
+  // Sets the caption bubble text to the text belonging to the active tab.
+  void SetCaptionBubbleText();
+
   CaptionBubble* caption_bubble_;
   views::Widget* caption_widget_;
+  Browser* browser_;
 
-  std::string final_text_;
+  // The web contents corresponding to the active tab.
+  content::WebContents* active_contents_;
+
+  // Stores web contents that have received transcription, mapped to their
+  // corresponding caption bubble texts. Store the partial texts as well as the
+  // final texts in order to show the latest partial text to a user when they
+  // switch back to the tab in case the speech service has not sent a final
+  // transcription in a while.
+  std::unordered_map<content::WebContents*, CaptionText> caption_texts_;
 };
 
 }  // namespace captions

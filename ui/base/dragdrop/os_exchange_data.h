@@ -20,18 +20,13 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "ui/base/dragdrop/download_file_interface.h"
+#include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/base/ui_base_export.h"
 
 class GURL;
 
 namespace base {
 class Pickle;
-}
-
-namespace gfx {
-class ImageSkia;
-class Vector2d;
 }
 
 namespace ui {
@@ -69,100 +64,16 @@ class UI_BASE_EXPORT OSExchangeData {
 #endif
   };
 
-  // Controls whether or not filenames should be converted to file: URLs when
-  // getting a URL.
-  enum FilenameToURLPolicy { CONVERT_FILENAMES, DO_NOT_CONVERT_FILENAMES, };
-
-  // Encapsulates the info about a file to be downloaded.
-  struct UI_BASE_EXPORT DownloadFileInfo {
-    DownloadFileInfo(const base::FilePath& filename,
-                     std::unique_ptr<DownloadFileProvider> downloader);
-    ~DownloadFileInfo();
-
-    base::FilePath filename;
-    std::unique_ptr<DownloadFileProvider> downloader;
-  };
-
-  // Provider defines the platform specific part of OSExchangeData that
-  // interacts with the native system.
-  class UI_BASE_EXPORT Provider {
-   public:
-    Provider() {}
-    virtual ~Provider() {}
-
-    virtual std::unique_ptr<Provider> Clone() const = 0;
-
-    virtual void MarkOriginatedFromRenderer() = 0;
-    virtual bool DidOriginateFromRenderer() const = 0;
-
-    virtual void SetString(const base::string16& data) = 0;
-    virtual void SetURL(const GURL& url, const base::string16& title) = 0;
-    virtual void SetFilename(const base::FilePath& path) = 0;
-    virtual void SetFilenames(const std::vector<FileInfo>& file_names) = 0;
-    virtual void SetPickledData(const ClipboardFormatType& format,
-                                const base::Pickle& data) = 0;
-
-    virtual bool GetString(base::string16* data) const = 0;
-    virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
-                                GURL* url,
-                                base::string16* title) const = 0;
-    virtual bool GetFilename(base::FilePath* path) const = 0;
-    virtual bool GetFilenames(std::vector<FileInfo>* file_names) const = 0;
-    virtual bool GetPickledData(const ClipboardFormatType& format,
-                                base::Pickle* data) const = 0;
-
-    virtual bool HasString() const = 0;
-    virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
-    virtual bool HasFile() const = 0;
-    virtual bool HasCustomFormat(const ClipboardFormatType& format) const = 0;
-
-#if defined(USE_X11) || defined(OS_WIN)
-    virtual void SetFileContents(const base::FilePath& filename,
-                                 const std::string& file_contents) = 0;
-#endif
-#if defined(OS_WIN)
-    virtual bool GetFileContents(base::FilePath* filename,
-                                 std::string* file_contents) const = 0;
-    virtual bool HasFileContents() const = 0;
-    virtual bool HasVirtualFilenames() const = 0;
-    virtual bool GetVirtualFilenames(
-        std::vector<FileInfo>* file_names) const = 0;
-    virtual bool GetVirtualFilesAsTempFiles(
-        base::OnceCallback<void(
-            const std::vector<std::pair</*temp path*/ base::FilePath,
-                                        /*display name*/ base::FilePath>>&)>
-            callback) const = 0;
-    virtual void SetVirtualFileContentsForTesting(
-        const std::vector<std::pair<base::FilePath, std::string>>&
-            filenames_and_contents,
-        DWORD tymed) = 0;
-    virtual void SetDownloadFileInfo(DownloadFileInfo* download) = 0;
-#endif
-
-#if defined(USE_AURA)
-    virtual void SetHtml(const base::string16& html, const GURL& base_url) = 0;
-    virtual bool GetHtml(base::string16* html, GURL* base_url) const = 0;
-    virtual bool HasHtml() const = 0;
-#endif
-
-#if defined(USE_AURA) || defined(OS_MACOSX)
-    virtual void SetDragImage(const gfx::ImageSkia& image,
-                              const gfx::Vector2d& cursor_offset) = 0;
-    virtual gfx::ImageSkia GetDragImage() const = 0;
-    virtual gfx::Vector2d GetDragImageOffset() const = 0;
-#endif
-  };
-
   OSExchangeData();
   // Creates an OSExchangeData with the specified provider. OSExchangeData
   // takes ownership of the supplied provider.
-  explicit OSExchangeData(std::unique_ptr<Provider> provider);
+  explicit OSExchangeData(std::unique_ptr<OSExchangeDataProvider> provider);
 
   ~OSExchangeData();
 
   // Returns the Provider, which actually stores and manages the data.
-  const Provider& provider() const { return *provider_; }
-  Provider& provider() { return *provider_; }
+  const OSExchangeDataProvider& provider() const { return *provider_; }
+  OSExchangeDataProvider& provider() { return *provider_; }
 
   // Marks drag data as tainted if it originates from the renderer. This is used
   // to avoid granting privileges to a renderer when dragging in tainted data,
@@ -280,7 +191,7 @@ class UI_BASE_EXPORT OSExchangeData {
 
  private:
   // Provides the actual data.
-  std::unique_ptr<Provider> provider_;
+  std::unique_ptr<OSExchangeDataProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeData);
 };

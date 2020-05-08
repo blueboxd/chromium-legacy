@@ -24,6 +24,9 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kParallelDownloading;
 
 #if defined(OS_ANDROID)
+// Whether to enable download later feature.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDownloadLater;
+
 // Whether download expiration date will be refreshed on resumption.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 #endif

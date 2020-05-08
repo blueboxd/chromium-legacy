@@ -109,8 +109,9 @@ class LintTest(LoggingTestCase):
             'platform': 'a',
             'additional_expectations': []
         })
-        res = lint_test_expectations.lint(host, options)
-        self.assertEqual(res, [])
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertEqual(failures, [])
+        self.assertEqual(warnings, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
     @unittest.skip(
@@ -124,8 +125,9 @@ class LintTest(LoggingTestCase):
 
         host.port_factory.all_port_names = lambda platform=None: [platform]
 
-        res = lint_test_expectations.lint(host, options)
-        self.assertEqual(res, [])
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertEqual(failures, [])
+        self.assertEqual(warnings, [])
 
     def test_lint_test_files_errors(self):
         options = optparse.Values({
@@ -141,9 +143,10 @@ class LintTest(LoggingTestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertTrue(failures)
+        self.assertEqual(warnings, [])
 
-        self.assertTrue(res)
         all_logs = ''.join(self.logMessages())
         self.assertIn('foo', all_logs)
         self.assertIn('bar', all_logs)
@@ -164,9 +167,10 @@ class LintTest(LoggingTestCase):
         host.filesystem.write_text_file(WEB_TEST_DIR + '/LeakExpectations',
                                         '-- syntax error')
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertTrue(failures)
+        self.assertEqual(warnings, [])
 
-        self.assertTrue(res)
         all_logs = ''.join(self.logMessages())
         self.assertIn('LeakExpectations', all_logs)
 
@@ -184,9 +188,10 @@ class LintTest(LoggingTestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertTrue(failures)
+        self.assertEqual(warnings, [])
 
-        self.assertTrue(res)
         all_logs = ''.join(self.logMessages())
         self.assertIn('flag-specific', all_logs)
         self.assertIn('does/not/exist', all_logs)
@@ -212,9 +217,10 @@ class LintTest(LoggingTestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertTrue(failures)
+        self.assertEqual(warnings, [])
 
-        self.assertTrue(res)
         all_logs = ''.join(self.logMessages())
         self.assertIn('conflict', all_logs)
 
@@ -260,10 +266,11 @@ class LintTest(LoggingTestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertTrue(failures)
+        self.assertEqual(warnings, [])
 
-        self.assertTrue(res)
-        self.assertEquals(len(res), 6)
+        self.assertEquals(len(failures), 6)
         expected_non_existence = [
             'test1/*',
             'test2/bar.html',
@@ -272,9 +279,9 @@ class LintTest(LoggingTestCase):
             'virtual/bar/*',
             'virtual/bar/test2/foo.html',
         ]
-        for i in range(len(res)):
-            self.assertIn('Test does not exist', res[i])
-            self.assertIn(expected_non_existence[i], res[i])
+        for i in range(len(failures)):
+            self.assertIn('Test does not exist', failures[i])
+            self.assertIn(expected_non_existence[i], failures[i])
 
     def test_lint_globs(self):
         options = optparse.Values({
@@ -297,9 +304,10 @@ class LintTest(LoggingTestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertTrue(failures)
+        self.assertEqual(warnings, [])
 
-        self.assertTrue(res)
         all_logs = ''.join(self.logMessages())
         self.assertIn('directory', all_logs)
 
@@ -330,10 +338,12 @@ class LintTest(LoggingTestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        res = lint_test_expectations.lint(host, options)
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertEqual(failures, [])
+        self.assertTrue(warnings)
 
-        self.assertEquals(len(res), 1)
-        self.assertIn('redundant', res[0])
+        self.assertEquals(len(warnings), 1)
+        self.assertIn('redundant', warnings[0])
 
 
 class CheckVirtualSuiteTest(unittest.TestCase):
@@ -412,13 +422,29 @@ class MainTest(unittest.TestCase):
         lint_test_expectations.check_virtual_test_suites = self.orig_check_fn
 
     def test_success(self):
-        lint_test_expectations.lint = lambda host, options: []
+        lint_test_expectations.lint = lambda host, options: ([], [])
         res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
         self.assertEqual('Lint succeeded.', self.stderr.getvalue().strip())
         self.assertEqual(res, 0)
 
+    def test_success_with_warning(self):
+        lint_test_expectations.lint = lambda host, options: ([],
+                                                             ['test warning'])
+        res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
+        self.assertEqual('Lint succeeded with warnings.',
+                         self.stderr.getvalue().strip())
+        self.assertEqual(res, 2)
+
     def test_failure(self):
-        lint_test_expectations.lint = lambda host, options: ['test failure']
+        lint_test_expectations.lint = lambda host, options: (['test failure'],
+                                                             [])
+        res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
+        self.assertEqual('Lint failed.', self.stderr.getvalue().strip())
+        self.assertEqual(res, 1)
+
+    def test_failure_with_warning(self):
+        lint_test_expectations.lint = lambda host, options: (['test failure'],
+                                                             ['test warning'])
         res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
         self.assertEqual('Lint failed.', self.stderr.getvalue().strip())
         self.assertEqual(res, 1)

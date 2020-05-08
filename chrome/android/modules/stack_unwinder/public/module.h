@@ -25,8 +25,8 @@ class Module {
   // module is already installed.
   static void RequestInstallation();
 
-  // Attempts to load the module. Returns non-null if IsInstalled().
-  static std::unique_ptr<Module> TryLoad();
+  // Attempts to load the module. May be invoked only if IsInstalled().
+  static std::unique_ptr<Module> Load();
 
   // Returns a map representing the current memory regions (modules, stacks,
   // etc.).
@@ -37,8 +37,10 @@ class Module {
       MemoryRegionsMap* memory_regions_map);
 
  private:
-  using CreateMemoryRegionsMapFunction = MemoryRegionsMap* (*)();
-  using CreateNativeUnwinderFunction = base::Unwinder* (*)(MemoryRegionsMap*);
+  using CreateMemoryRegionsMapFunction =
+      std::unique_ptr<MemoryRegionsMap> (*)();
+  using CreateNativeUnwinderFunction =
+      std::unique_ptr<base::Unwinder> (*)(MemoryRegionsMap*);
 
   Module(CreateMemoryRegionsMapFunction create_memory_regions_map,
          CreateNativeUnwinderFunction create_native_unwinder);

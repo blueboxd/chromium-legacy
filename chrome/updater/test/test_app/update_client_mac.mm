@@ -70,12 +70,23 @@ NSString* GetMachServiceName() {
   return self;
 }
 
+- (void)getUpdaterVersionWithReply:(void (^_Nonnull)(NSString* version))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(nil);
+  };
+
+  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
+      getUpdaterVersionWithReply:reply];
+}
+
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
                                 tag:(NSString* _Nullable)tag
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
-                              reply:(void (^_Nullable)(int rc))reply {
+                              reply:(void (^_Nonnull)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC Connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);
@@ -93,14 +104,14 @@ NSString* GetMachServiceName() {
 
 - (void)checkForUpdatesWithUpdateState:
             (id<CRUUpdateStateObserving> _Nonnull)updateState
-                                 reply:(void (^_Nullable)(int rc))reply {
+                                 reply:(void (^_Nonnull)(int rc))reply {
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
                        priority:(CRUPriorityWrapper* _Nonnull)priority
                     updateState:
                         (id<CRUUpdateStateObserving> _Nonnull)updateState
-                          reply:(void (^_Nullable)(int rc))reply {
+                          reply:(void (^_Nonnull)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC Connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);

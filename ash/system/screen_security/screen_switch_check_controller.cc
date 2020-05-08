@@ -28,13 +28,13 @@ class CancelCastingDialog : public views::DialogDelegateView {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     SetTitle(l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_TITLE));
     SetShowCloseButton(false);
-    DialogDelegate::SetButtonLabel(
+    SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_CONTINUE));
-    DialogDelegate::SetAcceptCallback(base::BindOnce(
-        &CancelCastingDialog::OnDialogAccepted, base::Unretained(this)));
-    DialogDelegate::SetCancelCallback(base::BindOnce(
-        &CancelCastingDialog::OnDialogCancelled, base::Unretained(this)));
+    SetAcceptCallback(base::BindOnce(&CancelCastingDialog::OnDialogAccepted,
+                                     base::Unretained(this)));
+    SetCancelCallback(base::BindOnce(&CancelCastingDialog::OnDialogCancelled,
+                                     base::Unretained(this)));
   }
   ~CancelCastingDialog() override = default;
 

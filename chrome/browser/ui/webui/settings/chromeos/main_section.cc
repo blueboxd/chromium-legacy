@@ -4,17 +4,24 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/main_section.h"
 
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/os_settings_resources.h"
+#include "chromeos/components/web_applications/manifest_request_filter.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -104,8 +111,33 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
+  // This handler is for chrome://os-settings.
+  html_source->AddBoolean("isOSSettings", true);
+
   html_source->AddBoolean("isGuest", features::IsGuestModeActive());
   html_source->AddBoolean("isSupervised", profile()->IsSupervised());
+
+  // Add the System Web App resources for Settings.
+  if (web_app::SystemWebAppManager::IsEnabled()) {
+    html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
+    html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
+    web_app::SetManifestRequestFilter(html_source, IDR_OS_SETTINGS_MANIFEST,
+                                      IDS_SETTINGS_SETTINGS);
+  }
+
+  html_source->AddResourcePath("constants/routes.mojom-lite.js",
+                               IDR_OS_SETTINGS_ROUTES_MOJOM_LITE_JS);
+  html_source->AddResourcePath("constants/setting.mojom-lite.js",
+                               IDR_OS_SETTINGS_SETTING_MOJOM_LITE_JS);
+
+  html_source->AddResourcePath(
+      "search/user_action_recorder.mojom-lite.js",
+      IDR_OS_SETTINGS_USER_ACTION_RECORDER_MOJOM_LITE_JS);
+  html_source->AddResourcePath(
+      "search/search_result_icon.mojom-lite.js",
+      IDR_OS_SETTINGS_SEARCH_RESULT_ICON_MOJOM_LITE_JS);
+  html_source->AddResourcePath("search/search.mojom-lite.js",
+                               IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
   html_source->AddString("browserSettingsBannerText",
                          l10n_util::GetStringFUTF16(
@@ -116,6 +148,14 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddChromeOSUserStrings(html_source);
 
   policy_indicator::AddLocalizedStrings(html_source);
+}
+
+void MainSection::AddHandlers(content::WebUI* web_ui) {
+  // Add the metrics handler to write uma stats.
+  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
+
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::BrowserLifetimeHandler>());
 }
 
 void MainSection::AddChromeOSUserStrings(

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 
+#include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -42,7 +43,7 @@ void StartLeakingMemory() {
 // present, the main thread will be frozen for that number of seconds. If a
 // crash parameter is "true" (which is the default value), the browser will
 // crash after this delay. Any other value will not trigger a crash.
-void InduceBrowserCrash(const GURL& url) {
+NOINLINE void InduceBrowserCrash(const GURL& url) {
   std::string delay_string;
   if (net::GetValueForKeyInQuery(url, "delay", &delay_string)) {
     int delay = 0;

@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/renderer/input/main_thread_event_queue.h"
-#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_types.h"

@@ -20,6 +20,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/client_tag_hash.h"
+#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -195,9 +196,13 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         // Cannot decrypt now, copy the sync entity for later decryption.
         entries_pending_decryption_[update_entity->id_string()] =
             *update_entity;
+        SyncRecordModelTypeUpdateDropReason(
+            UpdateDropReason::kDecryptionPending, type_);
         break;
       case FAILED_TO_DECRYPT:
         // Failed to decrypt the entity. Likely it is corrupt. Move on.
+        SyncRecordModelTypeUpdateDropReason(UpdateDropReason::kFailedToDecrypt,
+                                            type_);
         break;
     }
   }

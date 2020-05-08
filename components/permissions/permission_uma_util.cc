@@ -103,6 +103,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "StorageAccess";
     case PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM:
       return "CameraPanTiltZoom";
+    case PermissionRequestType::PERMISSION_WINDOW_PLACEMENT:
+      return "WindowPlacement";
     default:
       NOTREACHED();
       return "";
@@ -556,6 +558,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       break;
     case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       base::UmaHistogramEnumeration("Permissions.Action.CameraPanTiltZoom",
+                                    action, PermissionAction::NUM);
+      break;
+    case ContentSettingsType::WINDOW_PLACEMENT:
+      base::UmaHistogramEnumeration("Permissions.Action.WindowPlacement",
                                     action, PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no

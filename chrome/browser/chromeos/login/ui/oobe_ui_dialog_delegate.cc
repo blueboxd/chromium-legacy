@@ -121,6 +121,7 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
   LayoutWidgetDelegateView(OobeUIDialogDelegate* dialog_delegate,
                            OobeWebDialogView* oobe_view)
       : dialog_delegate_(dialog_delegate), oobe_view_(oobe_view) {
+    SetFocusTraversesOut(true);
     AddChildView(oobe_view_);
   }
 
@@ -142,8 +143,6 @@ class LayoutWidgetDelegateView : public views::WidgetDelegateView {
 
   // views::WidgetDelegateView:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
-
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
   void Layout() override {
     if (fullscreen_) {

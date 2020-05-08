@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 class ImportMap;
 class KURL;
 class ScriptElementBase;
@@ -44,7 +44,7 @@ class CORE_EXPORT PendingImportMap final
                    ScriptElementBase&,
                    ImportMap*,
                    ScriptValue error_to_rethrow,
-                   const Document& original_context_document);
+                   const ExecutionContext& original_context);
 
   void RegisterImportMap() const;
 
@@ -61,10 +61,10 @@ class CORE_EXPORT PendingImportMap final
   WorldSafeV8Reference<v8::Value> error_to_rethrow_;
 
   // https://wicg.github.io/import-maps/#import-map-parse-result-settings-object
-  // The context document at the time when PrepareScript() is executed.
+  // The context at the time when PrepareScript() is executed.
   // This is only used to check whether the script element is moved between
-  // documents and thus doesn't retain a strong reference.
-  WeakMember<const Document> original_context_document_;
+  // context and thus doesn't retain a strong reference.
+  WeakMember<const ExecutionContext> original_execution_context_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingImportMap);
 };

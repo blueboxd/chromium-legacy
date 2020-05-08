@@ -120,7 +120,6 @@ void SafeBrowsingService::Initialize() {
   navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
 
   services_delegate_->Initialize();
-  services_delegate_->InitializeCsdService(GetURLLoaderFactory());
 
   // Needs to happen after |ui_manager_| is created.
   CreateTriggerManager();

@@ -614,6 +614,19 @@ Polymer({
   },
 
   /**
+   * Get the appropriate label for the clear data confirmation
+   * dialog, depending on whether the user is clearing data for a
+   * single origin or an entire site group.
+   * @return {string}
+   * @private
+   */
+  getLogoutLabel_: function() {
+    return this.actionMenuModel_.actionScope === 'origin' ?
+        this.i18n('siteSettingsSiteClearStorageSignOut') :
+        this.i18n('siteSettingsSiteGroupDeleteSignOut');
+  },
+
+  /**
    * @param {!Array<string>} scopes
    * @private
    */

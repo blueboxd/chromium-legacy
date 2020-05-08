@@ -1158,55 +1158,6 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   contents()->SetDelegate(nullptr);
 }
 
-// Ensure that NavigationEntries track which bindings their RenderViewHost had
-// at the time they committed.  http://crbug.com/173672.
-TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
-  NavigationControllerImpl& controller = controller_impl();
-  std::vector<GURL> url_chain;
-
-  const GURL url1("http://foo1");
-  const GURL url2("http://foo2");
-
-  // Navigate to a first, unprivileged URL.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
-  EXPECT_EQ(controller.GetEntryCount(), 1);
-  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(0, controller.GetLastCommittedEntry()
-                   ->GetFrameEntry(root_ftn())
-                   ->bindings());
-
-  // Manually increase the number of active frames in the SiteInstance
-  // that orig_rfh belongs to, to prevent it from being destroyed when
-  // it gets swapped out, so that we can reuse orig_rfh when the
-  // controller goes back.
-  main_test_rfh()->GetSiteInstance()->IncrementActiveFrameCount();
-
-  // Navigate to a second URL, simulate the beforeunload ack for the cross-site
-  // transition, and set bindings on the pending RenderFrameHost to simulate a
-  // privileged url.
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(url2, contents());
-  navigation->ReadyToCommit();
-  TestRenderFrameHost* new_rfh = contents()->GetPendingMainFrame();
-  new_rfh->AllowBindings(BINDINGS_POLICY_WEB_UI);
-  navigation->Commit();
-
-  // The second load should be committed, and bindings should be remembered.
-  EXPECT_EQ(controller.GetEntryCount(), 2);
-  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
-  EXPECT_TRUE(controller.CanGoBack());
-  EXPECT_EQ(1, controller.GetLastCommittedEntry()
-                   ->GetFrameEntry(root_ftn())
-                   ->bindings());
-
-  // Going back, the first entry should still appear unprivileged.
-  NavigationSimulator::GoBack(contents());
-  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(0, controller.GetLastCommittedEntry()
-                   ->GetFrameEntry(root_ftn())
-                   ->bindings());
-}
-
 TEST_F(NavigationControllerTest, Reload) {
   NavigationControllerImpl& controller = controller_impl();
 

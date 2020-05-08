@@ -279,6 +279,10 @@ Document& HTMLScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
 
+ExecutionContext* HTMLScriptElement::GetExecutionContext() const {
+  return Node::GetExecutionContext();
+}
+
 void HTMLScriptElement::DispatchLoadEvent() {
   DispatchEvent(*Event::Create(event_type_names::kLoad));
 }

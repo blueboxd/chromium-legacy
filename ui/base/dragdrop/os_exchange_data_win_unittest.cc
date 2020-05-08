@@ -100,11 +100,10 @@ TEST_F(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.HasURL(CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &url_from_data, &title));
   GURL reference_url(input);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
@@ -148,11 +147,10 @@ TEST_F(OSExchangeDataWinTest, RemoveData) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(data2.HasURL(CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &url_from_data, &title));
   EXPECT_EQ(GURL(input2).spec(), url_from_data.spec());
 }
 
@@ -855,11 +853,10 @@ TEST_F(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   data.SetString(L"http://google.com");
 
   OSExchangeData data2(data.provider().Clone());
-  ASSERT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
+  ASSERT_TRUE(data2.HasURL(CONVERT_FILENAMES));
   GURL read_url;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(
-      OSExchangeData::CONVERT_FILENAMES, &read_url, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(CONVERT_FILENAMES, &read_url, &title));
   EXPECT_EQ(GURL("http://google.com"), read_url);
 }
 
@@ -890,7 +887,7 @@ TEST_F(OSExchangeDataWinTest, OnDownloadCompleted) {
 
   auto download_file_provider = std::make_unique<MockDownloadFileProvider>();
   auto weak_ptr = download_file_provider->GetWeakPtr();
-  OSExchangeData::DownloadFileInfo file_info(
+  DownloadFileInfo file_info(
       base::FilePath(FILE_PATH_LITERAL("file_with_no_contents.txt")),
       std::move(download_file_provider));
   provider.SetDownloadFileInfo(&file_info);

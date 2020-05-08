@@ -100,7 +100,9 @@ Next, we will install some useful extensions. Jump to the extensions window
 every day:
 
 *   ***C/C++*** -
-    Code formatting, debugging, Intellisense.
+    Code formatting, debugging, Intellisense. Enables the use of clang-format
+    (via the `C_Cpp.clang_format_path` setting) and format-on-save (via the
+    `editor.formatOnSave` setting).
 *   ***Python*** -
     Linting, intellisense, code formatting, refactoring, debugging, snippets.
 *   ***Toggle Header/Source*** -
@@ -114,30 +116,19 @@ every day:
     [language server](https://microsoft.github.io/language-server-protocol/)
     for .mojom files. This isn't available on the VS Code marketplace for now.
     You need to install it manually.
-*   ***you-complete-me*** -
-    YouCompleteMe code completion for VS Code. It works fairly well in Chromium.
+*   ***vscode-clangd*** -
+    If you do not plan to use VSCode for debugging, vscode-clangd is a great
+    alternative to C/C++ IntelliSense. It knows about how to compile Chromium,
+    enabling it to provide smarter autocomplete than C/C++ IntelliSense as well
+    as allowing you to jump from functions to their definitions. See
+    [clangd.md](clangd.md) for setup instructions.
+    If you need to debug, disable the vscode-clangd extension, enable C/C++
+    Intellisense, and restart VSCode.
 *   ***Rewrap*** -
     Wrap lines at 80 characters with `Alt+Q`.
 *   ***Remote*** -
     Remotely connect to your workstation through SSH using your laptop. See the
     [Remote](#Remote) section for more information about how to set this up.
-
-To install You-Complete-Me, enter these commands in a terminal:
-
-```
-$ git clone https://github.com/Valloric/ycmd.git ~/.ycmd
-$ cd ~/.ycmd
-$ git submodule update --init --recursive
-$ ./build.py --clang-completer
-```
-If it fails with "Your C++ compiler does NOT fully support C++11." but you know
-you have a good compiler, hack cpp/CMakeLists.txt to set CPP11_AVAILABLE true.
-
-On Mac, replace the last command above with the following.
-
-```
-$ ./build.py --clang-completer --system-libclang
-```
 
 The following extensions might be useful for you as well:
 
@@ -146,36 +137,23 @@ The following extensions might be useful for you as well:
 *   ***Git History (git log)*** -
     Git history view.
 *   ***chromium-codesearch*** -
-    Code search (CS) integration, see [Chromium Code
-    Search](https://cs.chromium.org/), in particular *open current line in CS*,
-    *show references* and *go to definition*. Very useful for existing code. By
-    design, won't work for code not checked in yet. Overrides default C/C++
-    functionality. Had some issues last time I tried (extensions stopped
-    working), so use with care.
+    Mac and Linux only: adds ability to open the current line in [Chromium Code
+    Search](https://cs.chromium.org/). All other functionality is deprecated, so
+    currently only of limited usefulness.
 *   ***change-case*** -
     Quickly change the case of the current selection or current word.
 *   ***Instant Markdown*** -
     Instant markdown (.md) preview in your browser as you type. This document
     was written with this extension!
-*   ***Clang-Format*** -
-    Format your code using clang-format. The C/C++ extension already supports
-    format-on-save (see `C_Cpp.clang_format_formatOnSave` setting). This
-    extension adds the ability to format a document or the current selection on
-    demand.
-*   ***vscode-clangd*** -
-    If you do not plan to use VSCode for debugging, vscode-clangd is a great
-    alternative to C/C++ IntelliSense. It knows about how to compile Chromium,
-    enabling it to provide smarter autocomplete than C/C++ IntelliSense as well
-    as allowing you to jump from functions to their definitions. See
-    [clangd.md](clangd.md) for details.
-
-    If you need to debug, disable the vscode-clangd extension, enable C/C++
-    Intellisense, and restart VSCode.
-
+*   ***you-complete-me*** -
+    Alternative autocomplete extension. Can be configured to use a variety of
+    language servers, so helpful if not using clangd for code completion.
+    See [You-Complete-Me extension setup](#You-Complete-Me-extension-setup)
+    for additional setup instructions.
 
 Also be sure to take a look at the
-[VS Code marketplace](https://marketplace.visualstudio.com/VSCode) to check out other
-useful extensions.
+[VS Code marketplace](https://marketplace.visualstudio.com/VSCode) to check out
+other useful extensions.
 
 ### Color Scheme
 Press `Ctrl+Shift+P, color, Enter` to pick a color scheme for the editor. There
@@ -275,6 +253,10 @@ at the src directory:
 $ mkdir .vscode/
 $ cp tools/vscode/settings.json5 .vscode/settings.json
 ```
+
+Note: these settings assume that the workspace folder (the root folder displayed
+in the Explorer tab) is chromium/src. If this is not the case, replace any
+references to ${workspaceFolder} with the path to chromium/src.
 
 ### Tasks
 Next, we'll tell VS Code how to compile our code and how to read warnings and
@@ -424,6 +406,32 @@ Chromium [recently changed](https://docs.google.com/document/d/1OX4jY_bOCeNK7PNj
 the file path to be relative to the output dir. Check
 `gn args out/$dir --list` if `strip_absolute_paths_from_debug_symbols` is true (which is the default),
 set `cwd` to the output dir. otherwise, set `cwd` to `${workspaceRoot}`.
+
+### You-Complete-Me extension setup
+If using the You-Complete-Me extension, complete its installation by entering
+these commands in a terminal:
+
+```
+$ git clone https://github.com/Valloric/ycmd.git ~/.ycmd
+$ cd ~/.ycmd
+$ git submodule update --init --recursive
+$ ./build.py --clang-completer
+```
+If it fails with "Your C++ compiler does NOT fully support C++11." but you know
+you have a good compiler, hack cpp/CMakeLists.txt to set CPP11_AVAILABLE true.
+
+On Mac, replace the last command above with the following.
+
+```
+$ ./build.py --clang-completer --system-libclang
+```
+
+On Windows, if depot_tools' Python is the only one installed, a separate Python
+3 install is needed. The last command should then be run as follows.
+
+```
+> <Python 3 directory>/python.exe build.py --clang-completer
+```
 
 ### More
 More tips and tricks can be found

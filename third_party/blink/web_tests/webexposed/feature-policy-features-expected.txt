@@ -19,6 +19,7 @@ ch-ua-model
 ch-ua-platform
 ch-viewport-width
 ch-width
+conversion-measurement
 document-domain
 document-write
 downloads

@@ -32,13 +32,13 @@ TeleportWarningDialog::TeleportWarningDialog(OnAcceptCallback callback)
   never_show_again_checkbox_->SetChecked(true);
   SetShowCloseButton(false);
   SetTitle(l10n_util::GetStringUTF16(IDS_ASH_TELEPORT_WARNING_TITLE));
-  DialogDelegate::SetAcceptCallback(base::BindOnce(
+  SetAcceptCallback(base::BindOnce(
       [](TeleportWarningDialog* dialog) {
         std::move(dialog->on_accept_)
             .Run(true, dialog->never_show_again_checkbox_->GetChecked());
       },
       base::Unretained(this)));
-  DialogDelegate::SetCancelCallback(base::BindOnce(
+  SetCancelCallback(base::BindOnce(
       [](TeleportWarningDialog* dialog) {
         std::move(dialog->on_accept_).Run(false, false);
       },

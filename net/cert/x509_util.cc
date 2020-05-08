@@ -145,7 +145,22 @@ bool AddName(CBB* cbb, base::StringPiece name) {
   return true;
 }
 
-bool AddTime(CBB* cbb, base::Time time) {
+class BufferPoolSingleton {
+ public:
+  BufferPoolSingleton() : pool_(CRYPTO_BUFFER_POOL_new()) {}
+  CRYPTO_BUFFER_POOL* pool() { return pool_; }
+
+ private:
+  // The singleton is leaky, so there is no need to use a smart pointer.
+  CRYPTO_BUFFER_POOL* pool_;
+};
+
+base::LazyInstance<BufferPoolSingleton>::Leaky g_buffer_pool_singleton =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+bool CBBAddTime(CBB* cbb, base::Time time) {
   der::GeneralizedTime generalized_time;
   if (!der::EncodeTimeAsGeneralizedTime(time, &generalized_time))
     return false;
@@ -164,21 +179,6 @@ bool AddTime(CBB* cbb, base::Time time) {
          CBB_add_space(&child, &out, der::kGeneralizedTimeLength) &&
          der::EncodeGeneralizedTime(generalized_time, out) && CBB_flush(cbb);
 }
-
-class BufferPoolSingleton {
- public:
-  BufferPoolSingleton() : pool_(CRYPTO_BUFFER_POOL_new()) {}
-  CRYPTO_BUFFER_POOL* pool() { return pool_; }
-
- private:
-  // The singleton is leaky, so there is no need to use a smart pointer.
-  CRYPTO_BUFFER_POOL* pool_;
-};
-
-base::LazyInstance<BufferPoolSingleton>::Leaky g_buffer_pool_singleton =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
                                         std::string* token) {
@@ -297,8 +297,8 @@ bool CreateSelfSignedCert(EVP_PKEY* key,
       !AddRSASignatureAlgorithm(&tbs_cert, alg) ||  // signature
       !AddName(&tbs_cert, subject) ||               // issuer
       !CBB_add_asn1(&tbs_cert, &validity, CBS_ASN1_SEQUENCE) ||
-      !AddTime(&validity, not_valid_before) ||
-      !AddTime(&validity, not_valid_after) ||
+      !CBBAddTime(&validity, not_valid_before) ||
+      !CBBAddTime(&validity, not_valid_after) ||
       !AddName(&tbs_cert, subject) ||             // subject
       !EVP_marshal_public_key(&tbs_cert, key)) {  // subjectPublicKeyInfo
     return false;

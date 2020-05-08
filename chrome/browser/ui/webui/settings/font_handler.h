@@ -13,22 +13,18 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
+class Profile;
+
 namespace base {
 class ListValue;
-}
-
-namespace content {
-class WebUI;
-}
-
-class Profile;
+}  // namespace base
 
 namespace settings {
 
 // Handle OS font list and font preference settings.
 class FontHandler : public SettingsPageUIHandler {
  public:
-  explicit FontHandler(content::WebUI* webui);
+  explicit FontHandler(Profile* profile);
   ~FontHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -43,8 +39,6 @@ class FontHandler : public SettingsPageUIHandler {
   // Callback to handle fonts loading.
   void FontListHasLoaded(std::string callback_id,
                          std::unique_ptr<base::ListValue> list);
-
-  Profile* profile_;  // Weak pointer.
 
   base::WeakPtrFactory<FontHandler> weak_ptr_factory_{this};
 

@@ -63,7 +63,7 @@ message DateList {
   repeated DateProto values = 1;
 }
 
-// Next: 22
+// Next: 25
 enum ProcessedActionStatusProto {
   UNKNOWN_ACTION_STATUS = 0;
 
@@ -120,7 +120,6 @@ enum ProcessedActionStatusProto {
   // This is currently returned by the autofill action, when it could not find
   // the credit card or the address it needs in the client memory. This is
   // usually the sign that the CollectUserDataAction was not run or failed.
-  //
   PRECONDITION_FAILED = 10;
 
   // The action definition returned by the server was rejected.
@@ -134,8 +133,6 @@ enum ProcessedActionStatusProto {
 
   // Failed to get a stable position for the element, usually to click on it.
   ELEMENT_UNSTABLE = 14;
-
-  reserved 15;
 
   // The value passed to the select option action does not exist in the element.
   // This is usually a scripting error.
@@ -166,6 +163,18 @@ enum ProcessedActionStatusProto {
 
   // An unexpected error occurred during element resolution.
   FRAME_HOST_NOT_FOUND = 22;
+
+  // Autofill could not fully fill the form as expected.
+  //
+  // Possible causes:
+  // - The fallback data was not available.
+  // - A field defined as required was empty after the action completed.
+  // - Filling a field resulted in error, e.g. the field was not found.
+  //
+  // ProcessedActionStatusProto.AutofillErrorInfoProto contains more details.
+  AUTOFILL_INCOMPLETE = 24;
+
+  reserved 15, 23;
 }
 
 // A message to describe a chip.

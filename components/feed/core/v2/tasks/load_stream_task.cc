@@ -21,6 +21,7 @@
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/stream_model.h"
+#include "components/feed/core/v2/tasks/upload_actions_task.h"
 
 namespace feed {
 namespace {
@@ -71,7 +72,7 @@ void LoadStreamTask::Run() {
   auto load_from_store_type =
       (load_type_ == LoadType::kInitialLoad)
           ? LoadStreamFromStoreTask::LoadType::kFullLoad
-          : LoadStreamFromStoreTask::LoadType::kConsistencyTokenOnly;
+          : LoadStreamFromStoreTask::LoadType::kPendingActionsOnly;
 
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
       load_from_store_type, stream_->GetStore(), stream_->GetClock(),
@@ -101,10 +102,18 @@ void LoadStreamTask::LoadFromStoreComplete(
     return;
   }
 
+  // If making a request, first try to upload pending actions.
+  upload_actions_task_ = std::make_unique<UploadActionsTask>(
+      std::move(result.pending_actions), stream_,
+      base::BindOnce(&LoadStreamTask::UploadActionsComplete, GetWeakPtr()));
+  upload_actions_task_->Execute(base::DoNothing());
+}
+
+void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
   stream_->GetNetwork()->SendQueryRequest(
-      CreateFeedQueryRefreshRequest(GetRequestReason(load_type_),
-                                    stream_->GetRequestMetadata(),
-                                    result.consistency_token),
+      CreateFeedQueryRefreshRequest(
+          GetRequestReason(load_type_), stream_->GetRequestMetadata(),
+          stream_->GetMetadata()->GetConsistencyToken()),
       base::BindOnce(&LoadStreamTask::QueryRequestComplete, GetWeakPtr()));
 }
 

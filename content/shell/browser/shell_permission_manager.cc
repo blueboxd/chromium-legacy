@@ -37,6 +37,8 @@ bool IsWhitelistedPermissionType(PermissionType permission) {
     // Storage Access API web platform tests require permission to be granted by
     // default.
     case PermissionType::STORAGE_ACCESS_GRANT:
+    // Window Placement tests require permission to be granted by default.
+    case PermissionType::WINDOW_PLACEMENT:
       return true;
     case PermissionType::MIDI_SYSEX:
     case PermissionType::NOTIFICATIONS:

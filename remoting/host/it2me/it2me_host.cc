@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -111,10 +110,11 @@ void It2MeHost::Connect(
 
   OnPolicyUpdate(std::move(policies));
 
-  desktop_environment_factory_.reset(new It2MeDesktopEnvironmentFactory(
-      host_context_->network_task_runner(),
-      host_context_->video_capture_task_runner(),
-      host_context_->input_task_runner(), host_context_->ui_task_runner()));
+  desktop_environment_factory_ =
+      std::make_unique<It2MeDesktopEnvironmentFactory>(
+          host_context_->network_task_runner(),
+          host_context_->video_capture_task_runner(),
+          host_context_->input_task_runner(), host_context_->ui_task_runner());
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
@@ -186,9 +186,9 @@ void It2MeHost::ConnectOnNetworkThread(
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          base::WrapUnique(new protocol::ChromiumPortAllocatorFactory()),
-          base::WrapUnique(new ChromiumUrlRequestFactory(
-              host_context_->url_loader_factory())),
+          std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
+          std::make_unique<ChromiumUrlRequestFactory>(
+              host_context_->url_loader_factory()),
           network_settings, protocol::TransportRole::SERVER);
   transport_context->set_turn_ice_config(ice_config);
 
@@ -208,13 +208,13 @@ void It2MeHost::ConnectOnNetworkThread(
   options.set_enable_user_interface(enable_dialogs_);
   options.set_enable_notifications(enable_notifications_);
   options.set_terminate_upon_input(terminate_upon_input_);
-  host_.reset(new ChromotingHost(
+  host_ = std::make_unique<ChromotingHost>(
       desktop_environment_factory_.get(), std::move(session_manager),
       transport_context, host_context_->audio_task_runner(),
-      host_context_->video_encode_task_runner(), options));
+      host_context_->video_encode_task_runner(), options);
   host_->status_monitor()->AddStatusObserver(this);
-  host_status_logger_.reset(
-      new HostStatusLogger(host_->status_monitor(), log_to_server_.get()));
+  host_status_logger_ = std::make_unique<HostStatusLogger>(
+      host_->status_monitor(), log_to_server_.get());
 
   // Create event logger.
   host_event_logger_ =
@@ -567,9 +567,9 @@ void It2MeHost::ValidateConnectionDetails(
   // Show a confirmation dialog to the user to allow them to confirm/reject it.
   // If dialogs are suppressed, just call the callback directly.
   if (enable_dialogs_) {
-    confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
+    confirmation_dialog_proxy_ = std::make_unique<It2MeConfirmationDialogProxy>(
         host_context_->ui_task_runner(),
-        confirmation_dialog_factory_->Create()));
+        confirmation_dialog_factory_->Create());
     confirmation_dialog_proxy_->Show(
         client_username,
         base::Bind(&It2MeHost::OnConfirmationResult, base::Unretained(this),

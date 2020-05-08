@@ -1906,6 +1906,10 @@
     "label": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
     "type": "console_test_launcher",
   },
+  "weblayer_bundle_test": {
+    "label": "//weblayer/browser/android/javatests:weblayer_bundle_test",
+    "type": "console_test_launcher",
+  },
   "weblayer_instrumentation_test_apk": {
     "label": "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk",
     "type": "console_test_launcher",

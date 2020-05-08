@@ -580,6 +580,7 @@
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -1130,7 +1131,7 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
   metadata.platform_version =
       content::GetOSVersion(content::IncludeAndroidBuildNumber::Exclude,
                             content::IncludeAndroidModel::Exclude);
-  metadata.architecture = content::BuildCpuInfo();
+  metadata.architecture = content::GetLowEntropyCpuArchitecture();
   metadata.model = content::BuildModelInfo();
 
   metadata.mobile = false;
@@ -2114,13 +2115,16 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         }
       }
 
+#if defined(FULL_SAFE_BROWSING)
       // Disable client-side phishing detection in the renderer if it is
-      // disabled in the Profile preferences or the browser process.
+      // disabled in the Profile preferences, or by command line flag.
       if (!safe_browsing::IsSafeBrowsingEnabled(*prefs) ||
-          !g_browser_process->safe_browsing_detection_service()) {
+          !safe_browsing::ClientSideDetectionServiceFactory::GetForProfile(
+              profile)) {
         command_line->AppendSwitch(
             switches::kDisableClientSidePhishingDetection);
       }
+#endif
 
       if (prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kDisablePrintPreview);

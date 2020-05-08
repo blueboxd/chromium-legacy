@@ -43,10 +43,54 @@ std::ostream& operator<<(std::ostream& out, LoadStreamStatus value) {
       return out << "kLoadNotAllowedEulaNotAccepted";
     case LoadStreamStatus::kLoadNotAllowedArticlesListHidden:
       return out << "kLoadNotAllowedArticlesListHidden";
-    case LoadStreamStatus::kCannotParseNetorkResponseBody:
-      return out << "kCannotParseNetorkResponseBody";
+    case LoadStreamStatus::kCannotParseNetworkResponseBody:
+      return out << "kCannotParseNetworkResponseBody";
     case LoadStreamStatus::kLoadMoreModelIsNotLoaded:
       return out << "kLoadMoreModelIsNotLoaded";
+  }
+#else
+  return out << (static_cast<int>(value));
+#endif  // ifndef NDEBUG
+}
+
+std::ostream& operator<<(std::ostream& out, UploadActionsStatus value) {
+#ifndef NDEBUG
+  switch (value) {
+    case UploadActionsStatus::kNoStatus:
+      return out << "kNoStatus";
+    case UploadActionsStatus::kNoPendingActions:
+      return out << "kNoPendingActions";
+    case UploadActionsStatus::kFailedToStorePendingAction:
+      return out << "kFailedToStorePendingAction";
+    case UploadActionsStatus::kStoredPendingAction:
+      return out << "kStoredPendingAction";
+    case UploadActionsStatus::kUpdatedConsistencyToken:
+      return out << "kUpdatedConsistencyToken";
+    case UploadActionsStatus::kFinishedWithoutUpdatingConsistencyToken:
+      return out << "kFinishedWithoutUpdatingConsistencyToken";
+  }
+#else
+  return out << (static_cast<int>(value));
+#endif  // ifndef NDEBUG
+}
+
+std::ostream& operator<<(std::ostream& out, UploadActionsBatchStatus value) {
+#ifndef NDEBUG
+  switch (value) {
+    case UploadActionsBatchStatus::kNoStatus:
+      return out << "kNoStatus";
+    case UploadActionsBatchStatus::kFailedToUpdateStore:
+      return out << "kFailedToUpdateStore";
+    case UploadActionsBatchStatus::kFailedToUpload:
+      return out << "kFailedToUpload";
+    case UploadActionsBatchStatus::kFailedToRemoveUploadedActions:
+      return out << "kFailedToRemoveUploadedActions";
+    case UploadActionsBatchStatus::kExhaustedUploadQuota:
+      return out << "kExhaustedUploadQuota";
+    case UploadActionsBatchStatus::kAllActionsWereStale:
+      return out << "kAllActionsWereStale";
+    case UploadActionsBatchStatus::kSuccessfullyUploadedBatch:
+      return out << "kSuccessfullyUploadedBatch";
   }
 #else
   return out << (static_cast<int>(value));

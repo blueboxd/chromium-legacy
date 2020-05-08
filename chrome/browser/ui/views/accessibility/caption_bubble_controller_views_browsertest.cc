@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/caption.mojom.h"
@@ -99,14 +100,27 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 48);
   }
 
-  void OnPartialTranscription(std::string text) {
+  void OnPartialTranscription(std::string text, int tab_index = 0) {
     GetController()->OnTranscription(
-        chrome::mojom::TranscriptionResult::New(text, false));
+        chrome::mojom::TranscriptionResult::New(text, false),
+        browser()->tab_strip_model()->GetWebContentsAt(tab_index));
   }
 
-  void OnFinalTranscription(std::string text) {
+  void OnFinalTranscription(std::string text, int tab_index = 0) {
     GetController()->OnTranscription(
-        chrome::mojom::TranscriptionResult::New(text, true));
+        chrome::mojom::TranscriptionResult::New(text, true),
+        browser()->tab_strip_model()->GetWebContentsAt(tab_index));
+  }
+
+  void ActivateTabAt(int index) {
+    browser()->tab_strip_model()->ActivateTabAt(index);
+  }
+
+  void InsertNewTab() { chrome::AddTabAt(browser(), GURL(), -1, true); }
+
+  void CloseTabAt(int index) {
+    browser()->tab_strip_model()->CloseWebContentsAt(index,
+                                                     TabStripModel::CLOSE_NONE);
   }
 
  private:
@@ -525,6 +539,62 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesBubble) {
   browser()->window()->SetBounds(gfx::Rect(50, 50, 800, 400));
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ChangeActiveTab) {
+  // This test will have three tabs.
+  // Tab 0 will have the text "Polar bears are the largest carnivores on land".
+  // Tab 1 will have the text "A snail can sleep for three years".
+  // Tab 2 will have the text "A rhino's horn is made of hair".
+
+  OnPartialTranscription("Polar bears are the largest carnivores on land", 0);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("Polar bears are the largest carnivores on land", GetLabelText());
+
+  // Insert a new tab and switch to it.
+  InsertNewTab();
+  ActivateTabAt(1);
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("", GetLabelText());
+
+  // Switch back to tab 0.
+  ActivateTabAt(0);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("Polar bears are the largest carnivores on land", GetLabelText());
+
+  // Switch back to tab 1 and send transcriptions.
+  ActivateTabAt(1);
+  OnFinalTranscription("A snail can sleep", 1);
+  OnPartialTranscription(" for two years", 1);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("A snail can sleep for two years", GetLabelText());
+
+  // Send a transcription to tab 2 before activating it.
+  InsertNewTab();
+  OnPartialTranscription("A rhino's horn is made of hair", 2);
+  ActivateTabAt(2);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("A rhino's horn is made of hair", GetLabelText());
+
+  // Switch back to tab 1 and check that the partial transcription was saved.
+  ActivateTabAt(1);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("A snail can sleep for two years", GetLabelText());
+
+  // Add a new final transcription.
+  OnFinalTranscription(" for three years", 1);
+  EXPECT_EQ("A snail can sleep for three years", GetLabelText());
+
+  // Close tab 1 and check that the bubble is still visible on tabs 0 and 2.
+  CloseTabAt(1);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("A rhino's horn is made of hair", GetLabelText());
+  ActivateTabAt(0);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("Polar bears are the largest carnivores on land", GetLabelText());
+
+  // TODO(1055150): Test tab switching when there is an error message.
+  // TODO(1055150): Test tab switching when the close button is pressed.
 }
 
 }  // namespace captions

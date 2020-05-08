@@ -258,9 +258,8 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
   DCHECK(GetResource());
   ScriptElementBase* element = GetElement();
   if (element) {
-    SubresourceIntegrityHelper::DoReport(
-        *element->GetDocument().GetExecutionContext(),
-        GetResource()->IntegrityReportInfo());
+    SubresourceIntegrityHelper::DoReport(*element->GetExecutionContext(),
+                                         GetResource()->IntegrityReportInfo());
 
     // It is possible to get back a script resource with integrity metadata
     // for a request with an empty integrity attribute. In that case, the

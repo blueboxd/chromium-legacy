@@ -52,6 +52,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/management_ui_handler_chromeos.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/proxy/proxy_config_handler.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -144,6 +147,7 @@ const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
 const char kManagementCrostiniContainerConfiguration[] =
     "managementCrostiniContainerConfiguration";
+const char kManagementReportProxyServer[] = "managementReportProxyServer";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
 const char kOverview[] = "overview";
@@ -187,7 +191,8 @@ enum class DeviceReportingType {
   kCrostini,
   kUsername,
   kExtensions,
-  kAndroidApplication
+  kAndroidApplication,
+  kProxyServer
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -215,6 +220,8 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "extension";
     case DeviceReportingType::kAndroidApplication:
       return "android application";
+    case DeviceReportingType::kProxyServer:
+      return "proxy server";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -567,6 +574,31 @@ void ManagementUIHandler::AddDeviceReportingInfo(
     AddDeviceReportingElement(report_sources,
                               kManagementReportAndroidApplications,
                               DeviceReportingType::kAndroidApplication);
+  }
+
+  chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
+  base::Value proxy_settings(base::Value::Type::DICTIONARY);
+  // |ui_proxy_config_service| may be missing in tests.
+  if (network_handler->has_ui_proxy_config_service()) {
+    // Check if proxy is enforced by user policy, a forced install extension or
+    // ONC policies. This will only read managed settings.
+    network_handler->ui_proxy_config_service()->MergeEnforcedProxyConfig(
+        network_handler->network_state_handler()->DefaultNetwork()->guid(),
+        &proxy_settings);
+  }
+  if (!proxy_settings.DictEmpty()) {
+    // Proxies can be specified by web server url, via a PAC script or via the
+    // web proxy auto-discovery protocol. Chrome also supports the "direct"
+    // mode, in which no proxy is used.
+    base::Value* proxy_specification_mode = proxy_settings.FindPath(
+        {::onc::network_config::kType, ::onc::kAugmentationActiveSetting});
+    bool use_proxy =
+        proxy_specification_mode &&
+        proxy_specification_mode->GetString() != ::onc::proxy::kDirect;
+    if (use_proxy) {
+      AddDeviceReportingElement(report_sources, kManagementReportProxyServer,
+                                DeviceReportingType::kProxyServer);
+    }
   }
 }
 #endif

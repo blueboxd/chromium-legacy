@@ -645,8 +645,19 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   // This makes sure no extra information is added to the platform version.
   EXPECT_EQ(metadata.platform_version.find(";"), std::string::npos);
   EXPECT_EQ(metadata.platform, version_info::GetOSType());
-  EXPECT_EQ(metadata.architecture, content::BuildCpuInfo());
+  EXPECT_EQ(metadata.architecture, content::GetLowEntropyCpuArchitecture());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());
+}
+
+TEST(ChromeContentBrowserClientTest, LowEntropyCpuArchitecture) {
+  std::string arch = content::GetLowEntropyCpuArchitecture();
+
+  // Everything not Linux and Windows should return a blank string
+#if !defined(OS_POSIX) && !defined(OS_WIN) || defined(OS_MACOSX)
+  EXPECT_EQ("", arch);
+#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_WIN)
+  EXPECT_TRUE("arm" == arch || "x86" == arch);
+#endif
 }
 
 #if defined(OS_CHROMEOS)

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//android_webview/system_webview_apk_tmpl.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
@@ -88,6 +89,7 @@ android_library("weblayer_java_test_support") {
     "src/org/chromium/weblayer/test/BoundedCountDownLatch.java",
     "src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
     "src/org/chromium/weblayer/test/NavigationWaiter.java",
+    "src/org/chromium/weblayer/test/ResourceUtil.java",
     "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
   ]
   deps = [
@@ -175,4 +177,38 @@ copy("weblayer_instrumentation_test_versions_apk") {
   deps = [ ":weblayer_instrumentation_test_apk" ]
 
   data_deps = [ ":weblayer_instrumentation_test_apk" ]
+}
+
+android_test_apk("weblayer_bundle_test_apk") {
+  apk_name = "WebLayerBundleTest"
+  android_manifest = "AndroidManifest_bundle.xml"
+  sources = [ "src/org/chromium/weblayer/test/BundleLanguageTest.java" ]
+  deps = [
+    ":weblayer_java_test_support",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit:junit",
+    "//weblayer/public/java",
+    "//weblayer/public/javatestutil:test_java",
+  ]
+  never_incremental = true
+}
+
+instrumentation_test_runner("weblayer_bundle_test") {
+  apk_under_test = "//android_webview:system_webview_bundle_apks"
+
+  # TODO(cduvall): use_webview_provider is needed to make sure a custom WebView
+  # is installable. Unfortunately, bundles are not currently supported for the
+  # use_webview_provider arg, so the APK is specified. It will end up being
+  # replaced by the bundle in apk_under_test.
+  use_webview_provider = system_webview_apk_target
+  data_deps = [ system_webview_apk_target ]
+
+  additional_locales = [
+    "es-ES",
+    "fr-CA",
+  ]
+  android_test_apk = ":weblayer_bundle_test_apk"
+  android_test_apk_name = "WebLayerBundleTest"
+  never_incremental = true
 }

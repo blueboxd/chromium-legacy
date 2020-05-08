@@ -100,6 +100,9 @@ class SourceUrlRecorderWebContentsObserver
   void MaybeRecordUrl(content::NavigationHandle* navigation_handle,
                       const GURL& initial_url);
 
+  // Whether URLs should be recorded in UKM Sources.
+  bool ShouldRecordURLs() const;
+
   // Receives document source IDs from the renderer.
   content::WebContentsFrameReceiverSet<blink::mojom::UkmSourceIdFrameHost>
       receivers_;
@@ -157,6 +160,14 @@ SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
       opener_source_id_(ukm::kInvalidSourceId),
       tab_id_(CreateUniqueTabId()),
       num_same_document_sources_for_full_navigation_source_(0) {}
+
+bool SourceUrlRecorderWebContentsObserver::ShouldRecordURLs() const {
+  // TODO(crbug/1078349): ensure we only record URLs for tabs in a tab strip.
+
+  // If there is an outer WebContents, then this WebContents is embedded into
+  // another one (e.g it is a portal or a Chrome App <webview>).
+  return web_contents()->GetOuterWebContents() == nullptr;
+}
 
 void SourceUrlRecorderWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -359,6 +370,11 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
     content::NavigationHandle* navigation_handle,
     const GURL& initial_url) {
   DCHECK(navigation_handle->IsInMainFrame());
+
+  // TODO(crbug/1078355): If ShouldRecordURLs is false, we should still create a
+  // UKM source, but not add any URLs to it.
+  if (!ShouldRecordURLs())
+    return;
 
   ukm::DelegatingUkmRecorder* ukm_recorder = ukm::DelegatingUkmRecorder::Get();
   if (!ukm_recorder)

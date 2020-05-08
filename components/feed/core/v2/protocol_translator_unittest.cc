@@ -42,10 +42,40 @@ feedwire::Response TestWireResponse() {
   return response;
 }
 
+feedwire::Response EmptyWireResponse() {
+  feedwire::Response response;
+  response.set_response_version(feedwire::Response::FEED_RESPONSE);
+  return response;
+}
+
+// Helper to add some common params.
+RefreshResponseData TranslateWireResponse(feedwire::Response response) {
+  return TranslateWireResponse(
+      response, StreamModelUpdateRequest::Source::kNetworkUpdate, kCurrentTime);
+}
+
 }  // namespace
 
-// TODO(iwells): Test failure cases once the new protos are ready.
-TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
+// TODO(iwells): Test failure cases.
+
+TEST(ProtocolTranslatorTest, NextPageToken) {
+  feedwire::Response response = EmptyWireResponse();
+  feedwire::DataOperation* operation =
+      response.mutable_feed_response()->add_data_operation();
+  operation->set_operation(feedwire::DataOperation::UPDATE_OR_APPEND);
+  operation->mutable_metadata()->mutable_content_id()->set_id(1);
+  operation->mutable_next_page_token()
+      ->mutable_next_page_token()
+      ->set_next_page_token("token");
+
+  RefreshResponseData translated = TranslateWireResponse(response);
+  ASSERT_TRUE(translated.model_update_request);
+  EXPECT_EQ(1ul, translated.model_update_request->stream_structures.size());
+  EXPECT_EQ("token",
+            translated.model_update_request->stream_data.next_page_token());
+}
+
+TEST(ProtocolTranslatorTest, TranslateRealResponse) {
   // Tests how proto translation works on a real response from the server.
   //
   // The response will periodically need to be updated as changes are made to
@@ -54,8 +84,7 @@ TEST(StreamModelUpdateRequestTest, TranslateRealResponse) {
 
   feedwire::Response response = TestWireResponse();
 
-  RefreshResponseData translated = TranslateWireResponse(
-      response, StreamModelUpdateRequest::Source::kNetworkUpdate, kCurrentTime);
+  RefreshResponseData translated = TranslateWireResponse(response);
 
   ASSERT_TRUE(translated.model_update_request);
   ASSERT_TRUE(translated.request_schedule);

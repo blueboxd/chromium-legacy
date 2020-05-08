@@ -25,6 +25,7 @@ std::string ToTextProto(const feedwire::Version& v);
 std::string ToTextProto(const feedwire::DisplayInfo& v);
 std::string ToTextProto(const feedwire::ClientInfo& v);
 std::string ToTextProto(const feedstore::StreamData& v);
+std::string ToTextProto(const feedstore::Metadata& v);
 std::string ToTextProto(const feedstore::StreamStructureSet& v);
 std::string ToTextProto(const feedstore::StreamStructure& v);
 std::string ToTextProto(const feedstore::Content& v);
@@ -50,6 +51,10 @@ inline std::ostream& operator<<(std::ostream& os,
 }
 inline std::ostream& operator<<(std::ostream& os,
                                 const feedstore::StreamData& v) {
+  return os << ToTextProto(v);
+}
+inline std::ostream& operator<<(std::ostream& os,
+                                const feedstore::Metadata& v) {
   return os << ToTextProto(v);
 }
 inline std::ostream& operator<<(std::ostream& os,

@@ -71,6 +71,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ElementConditionProt
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.IntList;
+import org.chromium.chrome.browser.autofill_assistant.proto.KeyboardValueFillStrategy;
 import org.chromium.chrome.browser.autofill_assistant.proto.ModelProto.ModelValue;
 import org.chromium.chrome.browser.autofill_assistant.proto.PopupListSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
@@ -83,6 +84,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.InputType;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto.RequiredField;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.VisibilityRequirement;
@@ -151,8 +153,21 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                                             TermsAndConditionsState.ACCEPTED))
                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setUseCard(UseCreditCardProto.newBuilder().setFormFieldElement(
-                                 ElementReferenceProto.newBuilder().addSelectors("#card_number")))
+                         .setUseCard(
+                                 UseCreditCardProto.newBuilder()
+                                         .setFormFieldElement(
+                                                 ElementReferenceProto.newBuilder().addSelectors(
+                                                         "#card_number"))
+                                         .addRequiredFields(
+                                                 RequiredField.newBuilder()
+                                                         .setValueExpression("57")
+                                                         .setElement(
+                                                                 ElementReferenceProto.newBuilder()
+                                                                         .addSelectors(
+                                                                                 "#fallback_entry"))
+                                                         .setFillStrategy(
+                                                                 KeyboardValueFillStrategy
+                                                                         .SIMULATE_KEY_PRESSES)))
                          .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -187,6 +202,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         assertThat(getElementValue(getWebContents(), "cv2_number"), is("123"));
         assertThat(getElementValue(getWebContents(), "exp_month"), is("12"));
         assertThat(getElementValue(getWebContents(), "exp_year"), is("2050"));
+        assertThat(getElementValue(getWebContents(), "fallback_entry"), is("12/2050"));
     }
 
     /**

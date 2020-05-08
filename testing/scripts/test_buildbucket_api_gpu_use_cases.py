@@ -89,6 +89,7 @@ def main(argv):
 
   # Run actual tests
   failures = []
+  retval = 1
   for test_name in BuildBucketApiGpuUseCaseTests.GenerateTests():
     test = getattr(BuildBucketApiGpuUseCaseTests, test_name)
     error_msg = test()
@@ -99,6 +100,7 @@ def main(argv):
 
   if not failures:
     print 'PASS: test_buildbucket_api_gpu_use_cases ran successfully.'
+    retval = 0
 
   with open(args.isolated_script_test_output, 'w') as json_file:
     json.dump({
@@ -106,7 +108,7 @@ def main(argv):
         'failures': failures,
     }, json_file)
 
-  return 0
+  return retval
 
 
 # This is not really a "script test" so does not need to manually add

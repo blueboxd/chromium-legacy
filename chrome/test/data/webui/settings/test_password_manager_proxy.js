@@ -175,6 +175,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   /** @override */
   startBulkPasswordCheck() {
     this.methodCalled('startBulkPasswordCheck');
+    if (this.data.checkStatus.state ===
+        chrome.passwordsPrivate.PasswordCheckState.NO_PASSWORDS) {
+      return Promise.reject('error');
+    }
+    return Promise.resolve();
   }
 
   /** @override */

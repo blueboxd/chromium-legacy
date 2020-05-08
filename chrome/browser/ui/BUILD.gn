@@ -594,6 +594,7 @@ jumbo_static_library("ui") {
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/base:data_exchange",
     "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/compositor",

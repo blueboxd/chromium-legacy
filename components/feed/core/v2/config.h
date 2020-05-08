@@ -21,6 +21,13 @@ struct Config {
   // fetch schedule has been assigned.
   base::TimeDelta default_background_refresh_interval =
       base::TimeDelta::FromHours(24);
+  // Maximum number of times to attempt to upload a pending action before
+  // deleting it.
+  int max_action_upload_attempts = 3;
+  // Maximum age for a pending action. Actions older than this are deleted.
+  base::TimeDelta max_action_age = base::TimeDelta::FromHours(24);
+  // Maximum payload size for one action upload batch.
+  size_t max_action_upload_bytes = 20000;
 };
 
 // Gets the current configuration.

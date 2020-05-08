@@ -54,6 +54,10 @@ public class BottomControlsTest {
         // Poll until the top view becomes visible.
         CriteriaHelper.pollUiThread(Criteria.equals(
                 View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mMaxControlsHeight = activity.getTopContentsContainer().getHeight();
+            Assert.assertTrue(mMaxControlsHeight > 0);
+        });
 
         // Ask for the page height. While the height isn't needed, the call to the renderer helps
         // ensure the renderer's height has updated based on the top-control.
@@ -76,8 +80,7 @@ public class BottomControlsTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Scrolling code ends up using the max height.
-            mMaxControlsHeight = Math.max(
-                    activity.getTopContentsContainer().getHeight(), bottomView.getHeight());
+            mMaxControlsHeight = Math.max(mMaxControlsHeight, bottomView.getHeight());
             Assert.assertTrue(mMaxControlsHeight > 0);
             Assert.assertTrue(bottomView.getHeight() > 0);
         });

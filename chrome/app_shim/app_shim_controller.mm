@@ -371,8 +371,8 @@ void AppShimController::OnShimConnectedResponse(
     switch (result) {
       case chrome::mojom::AppShimLaunchResult::kSuccess:
         break;
-      case chrome::mojom::AppShimLaunchResult::kNoHost:
-        LOG(ERROR) << "No AppShimHost accepted connection.";
+      case chrome::mojom::AppShimLaunchResult::kSuccessAndDisconnect:
+        LOG(ERROR) << "Launched successfully, but do not maintain connection.";
         break;
       case chrome::mojom::AppShimLaunchResult::kDuplicateHost:
         LOG(ERROR) << "An AppShimHostBootstrap already exists for this app.";

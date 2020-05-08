@@ -6,8 +6,10 @@
 
 #include <stdint.h>
 #include <utility>
+#include <vector>
 
 #include "base/check_op.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/value_conversions.h"
 #include "ui/gfx/geometry/rect.h"
@@ -16,10 +18,19 @@ namespace media {
 
 namespace {
 
-// Map enum key to internal std::string key used by base::DictionaryValue.
-inline std::string ToInternalKey(VideoFrameMetadata::Key key) {
+std::vector<std::string> CreateInternalKeys() {
+  std::vector<std::string> result(VideoFrameMetadata::NUM_KEYS);
+  for (size_t i = 0; i < result.size(); i++)
+    result[i] = base::NumberToString(i);
+  return result;
+}
+
+// Map enum key to internal StringPiece key used by base::DictionaryValue.
+inline base::StringPiece ToInternalKey(VideoFrameMetadata::Key key) {
   DCHECK_LT(key, VideoFrameMetadata::NUM_KEYS);
-  return base::NumberToString(static_cast<int>(key));
+  static const base::NoDestructor<std::vector<std::string>> internal_keys(
+      CreateInternalKeys());
+  return (*internal_keys)[int{key}];
 }
 
 }  // namespace

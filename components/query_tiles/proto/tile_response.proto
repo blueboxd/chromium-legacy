@@ -42,10 +42,15 @@ message TileInfo {
   repeated string sub_tile_ids = 7;
 }
 
-// Tile group for a particular locale.
-message ServerResponse {
+// A group of tile info for a given locale.
+message TileInfoGroup {
   repeated TileInfo tiles = 1;
 
   // Language for this tile group.
   string locale = 2;
+}
+
+// Response from the server.
+message ServerResponse {
+  TileInfoGroup tile_group = 1;
 }

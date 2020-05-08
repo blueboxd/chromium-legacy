@@ -13,6 +13,10 @@
 
 class Browser;
 
+namespace content {
+class WebContents;
+}
+
 namespace captions {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -35,10 +39,8 @@ class CaptionBubbleController {
 
   // Called when a transcription is received from the service.
   virtual void OnTranscription(
-      const chrome::mojom::TranscriptionResultPtr& transcription_result) {}
-
-  // Called when the active tab changes.
-  virtual void OnActiveTabChanged(int index) {}
+      const chrome::mojom::TranscriptionResultPtr& transcription_result,
+      content::WebContents* web_contents) {}
 
   // Called when the caption style changes.
   virtual void UpdateCaptionStyle(

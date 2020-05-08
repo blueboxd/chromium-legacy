@@ -28,10 +28,10 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
     base::OnceClosure on_accept_callback,
     base::OnceClosure on_cancel_callback) {
   SetTitle(l10n_util::GetStringUTF16(window_title_text_id));
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON));
-  DialogDelegate::SetAcceptCallback(std::move(on_accept_callback));
-  DialogDelegate::SetCancelCallback(std::move(on_cancel_callback));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON));
+  SetAcceptCallback(std::move(on_accept_callback));
+  SetCancelCallback(std::move(on_cancel_callback));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(

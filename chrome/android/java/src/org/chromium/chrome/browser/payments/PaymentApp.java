@@ -41,7 +41,7 @@ public abstract class PaymentApp extends EditableOption {
      * events. Note: What the spec calls "payment methods" in the context of a "change event", this
      * code calls "apps".
      */
-    public interface PaymentRequestUpdateEventCallback {
+    public interface PaymentRequestUpdateEventListener {
         /**
          * Called to notify merchant of payment method change. The payment app should block user
          * interaction until updateWith() or onPaymentDetailsNotUpdated().
@@ -76,6 +76,11 @@ public abstract class PaymentApp extends EditableOption {
          */
         boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress);
     }
+
+    /**
+     * Stub interface to be removed after resolving clank dependencies.
+     */
+    public interface PaymentRequestUpdateEventCallback {}
 
     /**
      * The interface for the requester of payment details from the app.

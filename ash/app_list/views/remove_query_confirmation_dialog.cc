@@ -32,18 +32,16 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   SetTitle(l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE));
   SetShowCloseButton(false);
 
-  DialogDelegate::SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
-      l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL));
-  DialogDelegate::SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                                   l10n_util::GetStringUTF16(IDS_APP_CANCEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+                 l10n_util::GetStringUTF16(IDS_REMOVE_SUGGESTION_BUTTON_LABEL));
+  SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                 l10n_util::GetStringUTF16(IDS_APP_CANCEL));
 
   auto run_callback = [](RemoveQueryConfirmationDialog* dialog, bool accept) {
     std::move(dialog->confirm_callback_).Run(accept, dialog->event_flags_);
   };
-  DialogDelegate::SetAcceptCallback(
-      base::BindOnce(run_callback, base::Unretained(this), true));
-  DialogDelegate::SetCancelCallback(
+  SetAcceptCallback(base::BindOnce(run_callback, base::Unretained(this), true));
+  SetCancelCallback(
       base::BindOnce(run_callback, base::Unretained(this), false));
 
   const views::LayoutProvider* provider = views::LayoutProvider::Get();

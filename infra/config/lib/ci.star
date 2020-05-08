@@ -154,7 +154,7 @@ def _level_sort_key(category, ordering):
   return (len(ordering), category)
 
 
-def _builder_sort_key(console_ordering, category, short_name, names):
+def _builder_sort_key(console_ordering, category, short_name, name):
   """Compute the key for a builder.
 
   Builders are sorted lexicographically by the sequence of category
@@ -193,7 +193,7 @@ def _builder_sort_key(console_ordering, category, short_name, names):
   return (
       category_key,
       short_name_key,
-      list(names),
+      name,
   )
 
 

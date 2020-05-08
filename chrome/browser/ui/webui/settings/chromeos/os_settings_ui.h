@@ -17,11 +17,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
-namespace content {
-class WebUIDataSource;
-class WebUIMessageHandler;
-}  // namespace content
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
@@ -40,9 +35,6 @@ class OSSettingsUI : public ui::MojoWebUIController {
 
   explicit OSSettingsUI(content::WebUI* web_ui);
   ~OSSettingsUI() override;
-
-  // Initializes the WebUI message handlers for OS-specific settings.
-  void InitOSWebUIHandlers(content::WebUIDataSource* html_source);
 
   // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
   // passing the pending receiver that will be internally bound.
@@ -64,9 +56,6 @@ class OSSettingsUI : public ui::MojoWebUIController {
           receiver);
 
  private:
-  void AddSettingsPageUIHandler(
-      std::unique_ptr<content::WebUIMessageHandler> handler);
-
   base::TimeTicks time_when_opened_;
 
   WebuiLoadTimer webui_load_timer_;

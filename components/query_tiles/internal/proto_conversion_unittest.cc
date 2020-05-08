@@ -12,6 +12,8 @@
 namespace upboarding {
 namespace {
 
+using TileInfoGroup = query_tiles::proto::TileInfoGroup;
+
 constexpr char kTestLocale[] = "en";
 
 std::string BuildIdForSampleTile(size_t level, size_t pos) {
@@ -26,17 +28,18 @@ void VerifySampleTileId(int level, int pos, const std::string& id) {
 // Build a fake two level response proto.
 void InitResponseProto(ResponseGroupProto* response,
                        size_t num_tiles_each_tile) {
-  response->set_locale(kTestLocale);
+  TileInfoGroup* info_group = response->mutable_tile_group();
+  info_group->set_locale(kTestLocale);
   // Add top level tiles.
   for (size_t i = 0; i < num_tiles_each_tile; i++) {
-    auto* new_top_level_tile = response->add_tiles();
+    auto* new_top_level_tile = info_group->add_tiles();
     new_top_level_tile->set_tile_id(BuildIdForSampleTile(0, i));
     new_top_level_tile->set_is_top_level(true);
     // Add sub-tiles.
     for (size_t j = 0; j < num_tiles_each_tile; j++) {
       auto new_tile_id = BuildIdForSampleTile(1, i * num_tiles_each_tile + j);
       new_top_level_tile->add_sub_tile_ids(new_tile_id);
-      auto* new_tile = response->add_tiles();
+      auto* new_tile = info_group->add_tiles();
       new_tile->set_tile_id(new_tile_id);
       new_tile->set_is_top_level(false);
     }

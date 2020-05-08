@@ -32,5 +32,14 @@ message FeedAction {
   message ClientData {
     // When the action was recorded on the client
     optional int64 timestamp_seconds = 1;
+
+    // A monotonically-increasing sequence number that increments per
+    // user + device. Used in experiments to measure action loss between client
+    // and server.
+    optional int64 sequence_number = 2;
+
+    // The duration for the action in milliseconds. In case of view actions this
+    // is the duration for which the content is considered "viewed".
+    optional int64 duration_ms = 3;
   }
 }

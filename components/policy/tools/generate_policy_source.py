@@ -82,7 +82,7 @@ class PolicyDetails:
 
     self.platforms = []
     for platform, version_range in [
-        p.split(':') for p in policy['supported_on']
+        p.split(':') for p in policy.get('supported_on', [])
     ]:
       if self.is_device_only and platform != 'chrome_os':
         raise RuntimeError(

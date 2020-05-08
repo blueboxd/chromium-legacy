@@ -545,7 +545,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
       &RenderFrameHostImpl::GetSpeechSynthesis, base::Unretained(host)));
 
   map->Add<blink::mojom::ScreenEnumeration>(
-      base::BindRepeating(&ScreenEnumerationImpl::Create));
+      base::BindRepeating(&RenderFrameHostImpl::BindScreenEnumerationReceiver,
+                          base::Unretained(host)));
 
   if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
     map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
@@ -792,8 +793,6 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
 
   // static binders
-  map->Add<blink::mojom::ScreenEnumeration>(
-      base::BindRepeating(&ScreenEnumerationImpl::Create));
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
       base::BindRepeating(&BindBarcodeDetectionProvider));
   map->Add<shape_detection::mojom::FaceDetectionProvider>(
@@ -878,8 +877,6 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
 
   // static binders
-  map->Add<blink::mojom::ScreenEnumeration>(
-      base::BindRepeating(&ScreenEnumerationImpl::Create));
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
       base::BindRepeating(&BindBarcodeDetectionProvider));
   map->Add<shape_detection::mojom::FaceDetectionProvider>(
@@ -953,8 +950,6 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
   map->Add<blink::mojom::FeatureObserver>(base::DoNothing());
 
   // static binders
-  map->Add<blink::mojom::ScreenEnumeration>(
-      base::BindRepeating(&ScreenEnumerationImpl::Create));
   map->Add<shape_detection::mojom::BarcodeDetectionProvider>(
       base::BindRepeating(&BindBarcodeDetectionProvider));
   map->Add<shape_detection::mojom::FaceDetectionProvider>(

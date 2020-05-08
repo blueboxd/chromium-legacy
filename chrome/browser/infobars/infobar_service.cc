@@ -5,7 +5,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 
 #include "base/command_line.h"
-#include "chrome/common/render_messages.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"

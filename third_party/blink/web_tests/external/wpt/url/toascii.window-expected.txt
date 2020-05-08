@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 298 tests; 122 PASS, 176 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 343 tests; 144 PASS, 199 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS aa-- (using URL)
 PASS aa-- (using URL.host)
@@ -298,5 +298,50 @@ FAIL 01234567890123456789012345678901234567890123456789.012345678901234567890123
 FAIL 01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.0123456789012345678901234567890123456789012345678.β (using <area>) Failed to construct 'URL': Invalid URL
 FAIL 01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.0123456789012345678901234567890123456789012345678.β (using <area>.host) assert_equals: expected "01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.0123456789012345678901234567890123456789012345678.xn--nxa" but got ""
 FAIL 01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.0123456789012345678901234567890123456789012345678.β (using <area>.hostname) assert_equals: expected "01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.01234567890123456789012345678901234567890123456789.0123456789012345678901234567890123456789012345678.xn--nxa" but got ""
+PASS a­b (using URL)
+PASS a­b (using URL.host)
+PASS a­b (using URL.hostname)
+PASS a­b (using <a>)
+PASS a­b (using <a>.host)
+PASS a­b (using <a>.hostname)
+PASS a­b (using <area>)
+PASS a­b (using <area>.host)
+PASS a­b (using <area>.hostname)
+PASS a%C2%ADb (using URL)
+PASS a%C2%ADb (using URL.host)
+PASS a%C2%ADb (using URL.hostname)
+PASS a%C2%ADb (using <a>)
+PASS a%C2%ADb (using <a>.host)
+PASS a%C2%ADb (using <a>.hostname)
+PASS a%C2%ADb (using <area>)
+PASS a%C2%ADb (using <area>.host)
+PASS a%C2%ADb (using <area>.hostname)
+PASS ­ (using URL)
+FAIL ­ (using URL.host) assert_equals: expected "x" but got ""
+FAIL ­ (using URL.hostname) assert_equals: expected "x" but got ""
+FAIL ­ (using <a>) assert_equals: expected "https://­/x" but got "https://%C2%AD/x"
+FAIL ­ (using <a>.host) assert_equals: expected "x" but got ""
+FAIL ­ (using <a>.hostname) assert_equals: expected "x" but got ""
+FAIL ­ (using <area>) assert_equals: expected "https://­/x" but got "https://%C2%AD/x"
+FAIL ­ (using <area>.host) assert_equals: expected "x" but got ""
+FAIL ­ (using <area>.hostname) assert_equals: expected "x" but got ""
+PASS %C2%AD (using URL)
+FAIL %C2%AD (using URL.host) assert_equals: expected "x" but got ""
+FAIL %C2%AD (using URL.hostname) assert_equals: expected "x" but got ""
+PASS %C2%AD (using <a>)
+FAIL %C2%AD (using <a>.host) assert_equals: expected "x" but got ""
+FAIL %C2%AD (using <a>.hostname) assert_equals: expected "x" but got ""
+PASS %C2%AD (using <area>)
+FAIL %C2%AD (using <area>.host) assert_equals: expected "x" but got ""
+FAIL %C2%AD (using <area>.hostname) assert_equals: expected "x" but got ""
+FAIL xn-- (using URL) assert_throws_js: function "() => makeURL("url", hostTest.input)" did not throw
+FAIL xn-- (using URL.host) assert_equals: expected "x" but got "xn--"
+FAIL xn-- (using URL.hostname) assert_equals: expected "x" but got "xn--"
+FAIL xn-- (using <a>) assert_equals: expected "" but got "xn--"
+FAIL xn-- (using <a>.host) assert_equals: expected "x" but got "xn--"
+FAIL xn-- (using <a>.hostname) assert_equals: expected "x" but got "xn--"
+FAIL xn-- (using <area>) assert_equals: expected "" but got "xn--"
+FAIL xn-- (using <area>.host) assert_equals: expected "x" but got "xn--"
+FAIL xn-- (using <area>.hostname) assert_equals: expected "x" but got "xn--"
 Harness: the test ran to completion.
 

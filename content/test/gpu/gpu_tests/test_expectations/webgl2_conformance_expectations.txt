@@ -155,7 +155,6 @@ crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/ge
 crbug.com/angleproject/1465 [ win no-use-gl ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 
 # Win / NVidia
-crbug.com/1079245 [ win nvidia ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ RetryOnFailure ]
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]
 crbug.com/679639 [ d3d11 win nvidia ] conformance2/rendering/draw-with-integer-texture-base-level.html [ Failure ]
 # Flake seen once.

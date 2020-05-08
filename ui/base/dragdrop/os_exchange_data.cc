@@ -9,27 +9,18 @@
 
 #include "base/callback.h"
 #include "base/pickle.h"
-#include "build/build_config.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "url/gurl.h"
 
 namespace ui {
 
-OSExchangeData::DownloadFileInfo::DownloadFileInfo(
-    const base::FilePath& filename,
-    std::unique_ptr<DownloadFileProvider> downloader)
-    : filename(filename), downloader(std::move(downloader)) {}
-
-OSExchangeData::DownloadFileInfo::~DownloadFileInfo() = default;
-
 OSExchangeData::OSExchangeData()
     : provider_(OSExchangeDataProviderFactory::CreateProvider()) {
 }
 
-OSExchangeData::OSExchangeData(std::unique_ptr<Provider> provider)
-    : provider_(std::move(provider)) {
-}
+OSExchangeData::OSExchangeData(std::unique_ptr<OSExchangeDataProvider> provider)
+    : provider_(std::move(provider)) {}
 
 OSExchangeData::~OSExchangeData() {
 }

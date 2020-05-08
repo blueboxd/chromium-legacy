@@ -88,6 +88,9 @@ public class TabUiFeatureUtilities {
      * @return Whether the Grid Tab Switcher UI is enabled and available for use.
      */
     public static boolean isGridTabSwitcherEnabled() {
+        // Disable grid tab switcher if stack tab switcher is enabled for the start surface.
+        if (StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()) return false;
+
         // Having Tab Groups or Start implies Grid Tab Switcher.
         return (!DeviceClassManager.enableAccessibilityLayout()
                        && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID)
@@ -99,6 +102,9 @@ public class TabUiFeatureUtilities {
      * @return Whether the tab group feature is enabled and available for use.
      */
     public static boolean isTabGroupsAndroidEnabled() {
+        // Disable tab groups if stack tab switcher is enabled for the start surface.
+        if (StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()) return false;
+
         return !DeviceClassManager.enableAccessibilityLayout()
                 && CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID)
                 && isTabManagementModuleSupported();
@@ -156,7 +162,10 @@ public class TabUiFeatureUtilities {
      * @return Whether the instant start is supported.
      */
     public static boolean supportInstantStart(boolean isTablet) {
-        return CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START) && !isTablet;
+        // TODO(crbug.com/1076449): Support instant start when the stack tab switcher is
+        // enabled.
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START) && !isTablet
+                && !StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled();
     }
 
     /**

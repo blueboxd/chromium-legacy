@@ -171,7 +171,8 @@ void CaptionController::DispatchTranscription(
     return;
   if (!caption_bubble_controllers_.count(browser))
     return;
-  caption_bubble_controllers_[browser]->OnTranscription(transcription_result);
+  caption_bubble_controllers_[browser]->OnTranscription(transcription_result,
+                                                        web_contents);
 }
 
 void CaptionController::UpdateCaptionStyle() {

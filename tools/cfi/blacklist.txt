@@ -162,7 +162,7 @@ src:*device/udev_linux/udev1_loader.cc
 src:*ui/gl/gl_bindings_autogen_*
 
 # Calls to vulkan function pointers from shared library.
-src:*third_party/vulkanmemoryallocator/vk_mem_alloc.h
+src:*third_party/vulkan_memory_allocator/src/vk_mem_alloc.h
 
 src:*components/os_crypt/*
 

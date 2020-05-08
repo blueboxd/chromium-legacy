@@ -123,8 +123,8 @@ HRESULT MediaEngineNotifyImpl::EventNotify(DWORD event_code,
       // |param1| - A member of the MF_MEDIA_ENGINE_ERR enumeration.
       // |param2| - An HRESULT error code, or zero.
       MF_MEDIA_ENGINE_ERR error = static_cast<MF_MEDIA_ENGINE_ERR>(param1);
-      DLOG(ERROR) << __func__ << ": error=" << error
-                  << ", hr=" << PrintHr(param2);
+      LOG(ERROR) << __func__ << ": error=" << error
+                 << ", hr=" << PrintHr(param2);
       error_cb_.Run(MediaEngineStatusToPipelineStatus(error));
       break;
     }

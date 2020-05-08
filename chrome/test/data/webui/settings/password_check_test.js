@@ -1216,4 +1216,35 @@ suite('PasswordsCheckSection', function() {
       assertEquals('test4', node.$.leakedPassword.value);
     });
   }
+
+  test('automaticallyCheckOnNavigationWhenFailEachTime', async function() {
+    passwordManager.data.checkStatus =
+        makePasswordCheckStatus(PasswordCheckState.NO_PASSWORDS);
+    Router.getInstance().navigateTo(
+        routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+    const section = createCheckPasswordSection();
+    await passwordManager.whenCalled('startBulkPasswordCheck');
+    Router.getInstance().resetRouteForTesting();
+    flush();
+    passwordManager.resetResolver('startBulkPasswordCheck');
+    Router.getInstance().navigateTo(
+        routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+    await passwordManager.whenCalled('startBulkPasswordCheck');
+    assertFalse(section.startCheckAutomaticallySucceeded);
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  test('automaticallyCheckOnNavigationOnce', async function() {
+    Router.getInstance().navigateTo(
+        routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+    const section = createCheckPasswordSection();
+    await passwordManager.whenCalled('startBulkPasswordCheck');
+    Router.getInstance().resetRouteForTesting();
+    flush();
+    passwordManager.resetResolver('startBulkPasswordCheck');
+    Router.getInstance().navigateTo(
+        routes.CHECK_PASSWORDS, new URLSearchParams('start=true'));
+    assertTrue(section.startCheckAutomaticallySucceeded);
+    Router.getInstance().resetRouteForTesting();
+  });
 });

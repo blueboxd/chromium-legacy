@@ -6,7 +6,8 @@
 
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
-#include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_util.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
+#include "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -49,12 +50,10 @@ void InfobarBannerOverlayRequestCancelHandler::HandleReplacement(
   // a request for the replacement's banner should be inserted in back of the
   // handler's request.
   size_t index = 0;
-  while (index < queue()->size()) {
-    if (GetOverlayRequestInfobar(queue()->GetRequest(index)) == infobar())
-      break;
-    ++index;
-  }
-  DCHECK_LT(index, queue()->size());
+  bool request_found =
+      GetInfobarOverlayRequestIndex(queue(), infobar(), &index);
+  DCHECK(request_found);
+
   InsertParams params(replacement);
   params.overlay_type = InfobarOverlayType::kBanner;
   params.insertion_index = index + 1;

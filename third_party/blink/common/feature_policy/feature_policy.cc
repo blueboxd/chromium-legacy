@@ -500,6 +500,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
        {mojom::FeaturePolicyFeature::kStorageAccessAPI,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForAll)},
        {mojom::FeaturePolicyFeature::kTrustTokenRedemption,
+        FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
+       {mojom::FeaturePolicyFeature::kConversionMeasurement,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)}});
   return *default_feature_list;
 }

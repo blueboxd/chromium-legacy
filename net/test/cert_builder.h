@@ -139,14 +139,6 @@ class CertBuilder {
   // Returns a copy of the certificate's DER.
   std::string GetDER();
 
-  // TODO(mattm): move CreateCrl into revocation_builder.h
-  // Creates a CRL issued and signed by |crl_issuer|, marking |revoked_serials|
-  // as revoked.
-  // Returns the DER-encoded CRL.
-  static std::string CreateCrl(CertBuilder* crl_issuer,
-                               const std::vector<uint64_t>& revoked_serials,
-                               DigestAlgorithm digest);
-
  private:
   // Marks the generated certificate DER as invalid, so it will need to
   // be re-generated next time the DER is accessed.

@@ -603,9 +603,10 @@
           '--stop-ui',
           # Tell libva to do dummy encoding/decoding. For more info, see:
           # https://github.com/intel/libva/blob/master/va/va_fool.c#L47
+          '--env-var', 'LIBVA_DRIVER_NAME', 'i965',
           '--env-var', 'LIBVA_FOOL_DECODE', '1',
           '--env-var', 'LIBVA_FOOL_POSTP', '1',
-          '--gtest_filter="-*Jpeg*:*WebP*"',
+          '--gtest_filter="VaapiTest.*"',
         ],
         # TODO(crbug.com/1075843): Promote out of experimental.
         'experiment_percentage': 100,
@@ -3728,6 +3729,8 @@
     },
 
     'weblayer_android_gtests': {
+      'weblayer_bundle_test': {
+      },
       'weblayer_instrumentation_test_apk': {
       },
       'weblayer_private_instrumentation_test_apk': {

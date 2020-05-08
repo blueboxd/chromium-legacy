@@ -39,6 +39,19 @@ void OverrideWithFinch(Config* config) {
       base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "default_background_refresh_interval_seconds",
           config->stale_content_threshold.InSecondsF()));
+
+  config->max_action_upload_attempts = base::GetFieldTrialParamByFeatureAsInt(
+      kInterestFeedV2, "max_action_upload_attempts",
+      config->max_action_upload_attempts);
+
+  config->max_action_age =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kInterestFeedV2, "max_action_age_seconds",
+          config->max_action_age.InSecondsF()));
+
+  config->max_action_upload_bytes = base::GetFieldTrialParamByFeatureAsInt(
+      kInterestFeedV2, "max_action_upload_bytes",
+      config->max_action_upload_bytes);
 }
 
 }  // namespace

@@ -11,7 +11,7 @@ PASS Supported label: gbk
 PASS Supported label: gb_2312-80
 PASS Supported label: ibm819
 PASS Supported label: ibm866
-FAIL Supported label: iso-10646-ucs-2 assert_true: iso-10646-ucs-2 should only be supported if it is specified expected true got false
+PASS Supported label: iso-10646-ucs-2
 PASS Supported label: iso-2022-jp
 PASS Supported label: iso-8859-1
 PASS Supported label: iso-8859-10
@@ -31,13 +31,13 @@ PASS Supported label: iso-8859-8-i
 PASS Supported label: koi8-r
 PASS Supported label: koi8-u
 PASS Supported label: shift_jis
-FAIL Supported label: ucs-2 assert_true: ucs-2 should only be supported if it is specified expected true got false
+PASS Supported label: ucs-2
 PASS Supported label: us-ascii
 PASS Supported label: utf-16
 PASS Supported label: utf-16be
 PASS Supported label: utf-16le
 PASS Supported label: utf-8
-FAIL Supported label: unicode assert_true: unicode should only be supported if it is specified expected true got false
+PASS Supported label: unicode
 PASS Supported label: arabic
 PASS Supported label: asmo-708
 PASS Supported label: chinese
@@ -56,7 +56,7 @@ PASS Supported label: cp866
 PASS Supported label: csgb2312
 PASS Supported label: csiso88598i
 PASS Supported label: csisolatin1
-FAIL Supported label: csunicode assert_true: csunicode should only be supported if it is specified expected true got false
+PASS Supported label: csunicode
 PASS Supported label: csbig5
 PASS Supported label: cseuckr
 PASS Supported label: cseucpkdfmtjapanese
@@ -191,10 +191,10 @@ PASS Supported label: sjis
 PASS Supported label: sun_eu_greek
 PASS Supported label: tis-620
 PASS Supported label: unicode-1-1-utf-8
-FAIL Supported label: unicode11utf8 assert_true: unicode11utf8 should only be supported if it is specified expected true got false
-FAIL Supported label: unicode20utf8 assert_true: unicode20utf8 should only be supported if it is specified expected true got false
-FAIL Supported label: unicodefeff assert_true: unicodefeff should only be supported if it is specified expected true got false
-FAIL Supported label: unicodefffe assert_true: unicodefffe should only be supported if it is specified expected true got false
+PASS Supported label: unicode11utf8
+PASS Supported label: unicode20utf8
+PASS Supported label: unicodefeff
+PASS Supported label: unicodefffe
 PASS Supported label: utf8
 PASS Supported label: visual
 PASS Supported label: windows-1250
@@ -225,7 +225,7 @@ PASS Supported label: x-mac-cyrillic
 PASS Supported label: x-mac-roman
 PASS Supported label: x-mac-ukrainian
 PASS Supported label: x-sjis
-FAIL Supported label: x-unicode20utf8 assert_true: x-unicode20utf8 should only be supported if it is specified expected true got false
+PASS Supported label: x-unicode20utf8
 PASS Supported label: x-user-defined
 PASS Supported label: x-x-big5
 Harness: the test ran to completion.

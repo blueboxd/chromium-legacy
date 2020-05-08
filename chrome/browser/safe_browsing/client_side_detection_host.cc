@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -296,7 +297,8 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(tab);
   // Note: csd_service_ and sb_service will be NULL here in testing.
-  csd_service_ = g_browser_process->safe_browsing_detection_service();
+  csd_service_ = ClientSideDetectionServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(tab->GetBrowserContext()));
   feature_extractor_.reset(new BrowserFeatureExtractor(tab));
 
   scoped_refptr<SafeBrowsingService> sb_service =

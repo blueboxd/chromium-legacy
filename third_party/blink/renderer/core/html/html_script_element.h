@@ -62,6 +62,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
   bool IsScriptElement() const override { return true; }
   Document& GetDocument() const override;
+  ExecutionContext* GetExecutionContext() const override;
 
   void Trace(Visitor*) override;
 

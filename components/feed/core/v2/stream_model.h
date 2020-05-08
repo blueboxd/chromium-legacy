@@ -115,7 +115,6 @@ class StreamModel {
   bool RejectEphemeralChange(EphemeralChangeId id);
 
   const std::string& GetNextPageToken() const;
-  const std::string& GetConsistencyToken() const;
 
   // Outputs a string representing the model state for debugging or testing.
   std::string DumpStateForTesting();

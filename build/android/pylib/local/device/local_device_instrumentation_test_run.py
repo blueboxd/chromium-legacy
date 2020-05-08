@@ -204,18 +204,21 @@ class LocalDeviceInstrumentationTestRun(
 
         steps.append(use_webview_provider)
 
-      def install_helper(apk, modules=None, fake_modules=None,
-                         permissions=None):
+      def install_helper(apk,
+                         modules=None,
+                         fake_modules=None,
+                         permissions=None,
+                         additional_locales=None):
 
         @instrumentation_tracing.no_tracing
         @trace_event.traced
         def install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          d.Install(
-              apk,
-              modules=modules,
-              fake_modules=fake_modules,
-              permissions=permissions)
+          d.Install(apk,
+                    modules=modules,
+                    fake_modules=fake_modules,
+                    permissions=permissions,
+                    additional_locales=additional_locales)
 
         return install_helper_internal
 
@@ -257,7 +260,8 @@ class LocalDeviceInstrumentationTestRun(
           steps.append(
               install_helper(self._test_instance.apk_under_test,
                              self._test_instance.modules,
-                             self._test_instance.fake_modules, permissions))
+                             self._test_instance.fake_modules, permissions,
+                             self._test_instance.additional_locales))
 
       @trace_event.traced
       def set_debug_app(dev):

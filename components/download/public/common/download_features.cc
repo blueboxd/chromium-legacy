@@ -31,6 +31,9 @@ const base::Feature kParallelDownloading {
 };
 
 #if defined(OS_ANDROID)
+const base::Feature kDownloadLater{"DownloadLater",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kRefreshExpirationDate{"RefreshExpirationDate",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif

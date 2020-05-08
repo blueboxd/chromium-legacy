@@ -435,6 +435,12 @@ def AddInstrumentationTestOptions(parser):
       help='Specify Android App Bundle modules to fake install in addition to '
       'the real modules.')
   parser.add_argument(
+      '--additional-locale',
+      action='append',
+      dest='additional_locales',
+      help='Specify locales in addition to the device locale to install splits '
+      'for when --apk-under-test is an Android App Bundle.')
+  parser.add_argument(
       '--coverage-dir',
       type=os.path.realpath,
       help='Directory in which to place all generated '

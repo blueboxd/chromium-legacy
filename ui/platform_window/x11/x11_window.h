@@ -49,7 +49,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   explicit X11Window(PlatformWindowDelegate* platform_window_delegate);
   ~X11Window() override;
 
-  void Initialize(PlatformWindowInitProperties properties);
+  virtual void Initialize(PlatformWindowInitProperties properties);
 
   void SetXEventDelegate(XEventDelegate* delegate);
 
@@ -135,10 +135,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // XWindow:
   void OnXWindowCreated() override;
 
- private:
-  // PlatformEventDispatcher:
-  bool CanDispatchEvent(const PlatformEvent& event) override;
-  uint32_t DispatchEvent(const PlatformEvent& event) override;
+  virtual bool DispatchDraggingUiEvent(ui::Event* event);
 
   // XWindow:
   void OnXWindowStateChanged() override;
@@ -154,6 +151,11 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   base::Optional<gfx::Size> GetMaximumSizeForXWindow() override;
   void GetWindowMaskForXWindow(const gfx::Size& size,
                                SkPath* window_mask) override;
+
+ private:
+  // PlatformEventDispatcher:
+  bool CanDispatchEvent(const PlatformEvent& event) override;
+  uint32_t DispatchEvent(const PlatformEvent& event) override;
 
   void DispatchUiEvent(ui::Event* event, XEvent* xev);
 

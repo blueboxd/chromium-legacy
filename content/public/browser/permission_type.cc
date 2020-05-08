@@ -95,6 +95,8 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
       return PermissionType::NFC;
     case PermissionName::STORAGE_ACCESS:
       return PermissionType::STORAGE_ACCESS_GRANT;
+    case PermissionName::WINDOW_PLACEMENT:
+      return PermissionType::WINDOW_PLACEMENT;
   }
 
   NOTREACHED();

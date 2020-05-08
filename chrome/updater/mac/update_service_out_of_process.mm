@@ -69,12 +69,24 @@ using base::SysUTF8ToNSString;
   [super dealloc];
 }
 
+- (void)getUpdaterVersionWithReply:
+    (void (^_Nonnull)(NSString* _Nullable version))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(nil);
+  };
+
+  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
+      getUpdaterVersionWithReply:reply];
+}
+
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
                           brandCode:(NSString* _Nullable)brandCode
                                 tag:(NSString* _Nullable)tag
                             version:(NSString* _Nullable)version
                existenceCheckerPath:(NSString* _Nullable)existenceCheckerPath
-                              reply:(void (^_Nullable)(int rc))reply {
+                              reply:(void (^_Nonnull)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);
@@ -92,7 +104,7 @@ using base::SysUTF8ToNSString;
 
 - (void)checkForUpdatesWithUpdateState:
             (id<CRUUpdateStateObserving> _Nonnull)updateState
-                                 reply:(void (^_Nullable)(int rc))reply {
+                                 reply:(void (^_Nonnull)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);
@@ -108,7 +120,7 @@ using base::SysUTF8ToNSString;
                        priority:(CRUPriorityWrapper* _Nonnull)priority
                     updateState:
                         (id<CRUUpdateStateObserving> _Nonnull)updateState
-                          reply:(void (^_Nullable)(int rc))reply {
+                          reply:(void (^_Nonnull)(int rc))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);

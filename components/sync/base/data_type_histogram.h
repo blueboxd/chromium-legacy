@@ -11,14 +11,33 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 
+namespace syncer {
+
+// The enum values are used for histogram suffixes. When adding a new type here,
+// extend also the "SyncModelTypeUpdateDrop" <histogram_suffixes> in
+// histograms.xml.
+enum class UpdateDropReason {
+  kInconsistentClientTag,
+  kCannotGenerateStorageKey,
+  kTombstoneInFullUpdate,
+  kTombstoneForNonexistentInIncrementalUpdate,
+  kDecryptionPending,
+  kFailedToDecrypt
+};
+
+// Records that a remote update of an entity of type |type| got dropped into a
+// |reason| related histogram.
+void SyncRecordModelTypeUpdateDropReason(UpdateDropReason reason,
+                                         ModelType type);
+
 // Converts memory size |bytes| into kilobytes and records it into |model_type|
 // related histogram for memory footprint of sync data.
-void SyncRecordModelTypeMemoryHistogram(syncer::ModelType model_type,
-                                        size_t bytes);
+void SyncRecordModelTypeMemoryHistogram(ModelType model_type, size_t bytes);
 
 // Records |count| into a |model_type| related histogram for count of sync
 // entities.
-void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
-                                       size_t count);
+void SyncRecordModelTypeCountHistogram(ModelType model_type, size_t count);
+
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_DATA_TYPE_HISTOGRAM_H_

@@ -145,7 +145,7 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete:
     case LoadStreamStatus::kLoadNotAllowedEulaNotAccepted:
     case LoadStreamStatus::kLoadNotAllowedArticlesListHidden:
-    case LoadStreamStatus::kCannotParseNetorkResponseBody:
+    case LoadStreamStatus::kCannotParseNetworkResponseBody:
     case LoadStreamStatus::kLoadMoreModelIsNotLoaded:
       break;
   }

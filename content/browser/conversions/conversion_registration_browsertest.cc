@@ -136,6 +136,25 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+                       FeaturePolicyDisabled_ConversionNotRegistered) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "/page_with_conversion_measurement_disabled.html")));
+  std::unique_ptr<TestConversionHost> host =
+      TestConversionHost::ReplaceAndGetConversionHost(web_contents());
+
+  GURL redirect_url = embedded_test_server()->GetURL(
+      "/server-redirect?" + kWellKnownUrl + "?conversion-data=200");
+  ResourceLoadObserver load_observer(shell());
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createTrackingPixel($1);", redirect_url)));
+  load_observer.WaitForResourceCompletion(redirect_url);
+
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  EXPECT_EQ(0u, host->num_conversions());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
                        ConversionRegistrationNotRedirect_NotReceived) {
   EXPECT_TRUE(NavigateToURL(
       shell(),

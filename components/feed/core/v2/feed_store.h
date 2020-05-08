@@ -27,12 +27,12 @@ class FeedStore {
     ~LoadStreamResult();
     LoadStreamResult(LoadStreamResult&&);
     LoadStreamResult& operator=(LoadStreamResult&&);
-    LoadStreamResult(const LoadStreamResult&) = delete;
-    LoadStreamResult& operator=(const LoadStreamResult&) = delete;
 
     bool read_error = false;
     feedstore::StreamData stream_data;
     std::vector<feedstore::StreamStructureSet> stream_structures;
+    // These are sorted by increasing ID.
+    std::vector<feedstore::StoredAction> pending_actions;
   };
 
   explicit FeedStore(
@@ -84,7 +84,15 @@ class FeedStore {
       base::OnceCallback<void(std::vector<feedstore::StoredAction>)> callback);
   void WriteActions(std::vector<feedstore::StoredAction> actions,
                     base::OnceCallback<void(bool)> callback);
+  void UpdateActions(std::vector<feedstore::StoredAction> actions_to_update,
+                     std::vector<LocalActionId> ids_to_remove,
+                     base::OnceCallback<void(bool)> callback);
   void RemoveActions(std::vector<LocalActionId> ids,
+                     base::OnceCallback<void(bool)> callback);
+
+  void ReadMetadata(
+      base::OnceCallback<void(std::unique_ptr<feedstore::Metadata>)> callback);
+  void WriteMetadata(feedstore::Metadata metadata,
                      base::OnceCallback<void(bool)> callback);
 
   // TODO(iwells): implement this
@@ -138,6 +146,10 @@ class FeedStore {
       bool success,
       std::unique_ptr<std::vector<feedstore::Record>> records);
   void OnWriteFinished(base::OnceCallback<void(bool)> callback, bool success);
+  void OnReadMetadataFinished(
+      base::OnceCallback<void(std::unique_ptr<feedstore::Metadata>)> callback,
+      bool read_ok,
+      std::unique_ptr<feedstore::Record> record);
 
   // TODO(iwells): implement
   // bool OldRecordFilter(const std::string& key);

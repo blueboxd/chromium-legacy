@@ -25,7 +25,7 @@
 
 #if defined(USE_OZONE)
 #include "ui/events/ozone/events_ozone.h"
-#endif
+#endif  // defined(USE_OZONE)
 
 #if BUILDFLAG(USE_ATK)
 #include "ui/platform_window/x11/atk_event_conversion.h"
@@ -571,6 +571,9 @@ void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
   auto* window_manager = X11WindowManager::GetInstance();
   DCHECK(window_manager);
 
+  if (DispatchDraggingUiEvent(event))
+    return;
+
   // Process X11-specific bits
   if (XWindow::IsTargetedBy(*xev))
     XWindow::ProcessEvent(xev);
@@ -635,6 +638,10 @@ void X11Window::OnXWindowCreated() {
   SetWmMoveLoopHandler(this, static_cast<WmMoveLoopHandler*>(this));
 
   platform_window_delegate_->OnAcceleratedWidgetAvailable(GetWidget());
+}
+
+bool X11Window::DispatchDraggingUiEvent(ui::Event* event) {
+  return false;
 }
 
 void X11Window::OnXWindowStateChanged() {

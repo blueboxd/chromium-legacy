@@ -30,7 +30,9 @@ namespace {
 // A login implementation of WidgetDelegate.
 class LoginTestWidgetDelegate : public views::WidgetDelegate {
  public:
-  explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {}
+  explicit LoginTestWidgetDelegate(views::Widget* widget) : widget_(widget) {
+    SetFocusTraversesOut(true);
+  }
   ~LoginTestWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
@@ -38,7 +40,6 @@ class LoginTestWidgetDelegate : public views::WidgetDelegate {
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
   bool CanActivate() const override { return true; }
-  bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
  private:
   views::Widget* widget_;

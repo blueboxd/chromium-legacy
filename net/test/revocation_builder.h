@@ -50,6 +50,14 @@ std::string BuildOCSPResponse(
 std::string BuildOCSPResponseWithResponseData(EVP_PKEY* responder_key,
                                               const std::string& response_data);
 
+// Creates a CRL issued by |crl_issuer_subject| and signed by |crl_issuer_key|,
+// marking |revoked_serials| as revoked.
+// Returns the DER-encoded CRL.
+std::string BuildCrl(const std::string& crl_issuer_subject,
+                     EVP_PKEY* crl_issuer_key,
+                     const std::vector<uint64_t>& revoked_serials,
+                     DigestAlgorithm digest);
+
 }  // namespace net
 
 #endif  // NET_TEST_REVOCATION_BUILDER_H_

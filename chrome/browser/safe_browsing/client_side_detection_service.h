@@ -28,10 +28,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/client_side_model_loader.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
+
+class Profile;
 
 namespace content {
 class RenderProcessHost;
@@ -47,27 +52,20 @@ class ClientPhishingRequest;
 
 // Main service which pushes models to the renderers, responds to classification
 // requests. This owns two ModelLoader objects.
-class ClientSideDetectionService : public content::NotificationObserver {
+class ClientSideDetectionService : public content::NotificationObserver,
+                                   public KeyedService {
  public:
   // void(GURL phishing_url, bool is_phishing).
   typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
 
+  explicit ClientSideDetectionService(Profile* profile);
+
+  // Create a ClientSideDetectionService with no associated profile, for tests.
+  explicit ClientSideDetectionService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader);
   ~ClientSideDetectionService() override;
 
-  // Creates a client-side detection service.  The service is initially
-  // disabled, use SetEnabledAndRefreshState() to start it.  The caller takes
-  // ownership of the object.  This function may return NULL.
-  static std::unique_ptr<ClientSideDetectionService> Create(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-
-  // Enables or disables the service, and refreshes the state of all renderers.
-  // This is usually called by the SafeBrowsingService, which tracks whether
-  // any profile uses these services at all.  Disabling cancels any pending
-  // requests; existing ClientSideDetectionHosts will have their callbacks
-  // called with "false" verdicts.  Enabling starts downloading the model after
-  // a delay.  In all cases, each render process is updated to match the state
-  // of the SafeBrowsing preference for that profile.
-  void SetEnabledAndRefreshState(bool enabled);
+  void Shutdown() override;
 
   bool enabled() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -128,15 +126,14 @@ class ClientSideDetectionService : public content::NotificationObserver {
   // regular).
   ModelLoader::ClientModelStatus GetLastModelStatus(bool use_extended_model);
 
- protected:
-  // Use Create() method to create an instance of this object.
-  explicit ClientSideDetectionService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-
  private:
   friend class ClientSideDetectionServiceTest;
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            SetEnabledAndRefreshState);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           ServiceObjectDeletedBeforeCallbackDone);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
+                           SendClientReportPhishingRequest);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.
@@ -153,6 +150,16 @@ class ClientSideDetectionService : public content::NotificationObserver {
   static const int kReportsIntervalDays;
   static const int kNegativeCacheIntervalDays;
   static const int kPositiveCacheIntervalMinutes;
+
+  // Called when the prefs have changed in a way we may need to respond to.
+  void OnPrefsUpdated();
+
+  // Enables or disables the service, and refreshes the state of all renderers.
+  // Disabling cancels any pending requests; existing ClientSideDetectionHosts
+  // will have their callbacks called with "false" verdicts.  Enabling starts
+  // downloading the model after a delay.  In all cases, each render process is
+  // updated to match the state
+  void SetEnabledAndRefreshState(bool enabled);
 
   // Starts sending the request to the client-side detection frontends.
   // This method takes ownership of both pointers.
@@ -185,6 +192,9 @@ class ClientSideDetectionService : public content::NotificationObserver {
 
   // Returns the URL that will be used for phishing requests.
   static GURL GetClientReportUrl(const std::string& report_url);
+
+  // The profile this ClientSideDetectionService is attached to.
+  Profile* profile_;
 
   // Whether the service is running or not.  When the service is not running,
   // it won't download the model nor report detected phishing URLs.
@@ -219,6 +229,9 @@ class ClientSideDetectionService : public content::NotificationObserver {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   content::NotificationRegistrar registrar_;
+
+  // PrefChangeRegistrar used to track when the Safe Browsing pref changes.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Used to asynchronously call the callbacks for
   // SendClientReportPhishingRequest.

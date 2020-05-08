@@ -179,7 +179,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<CookiesViewHandler>());
   AddSettingsPageUIHandler(std::make_unique<DownloadsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ExtensionControlHandler>());
-  AddSettingsPageUIHandler(std::make_unique<FontHandler>(web_ui));
+  AddSettingsPageUIHandler(std::make_unique<FontHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ImportDataHandler>());
   AddSettingsPageUIHandler(std::make_unique<HatsHandler>());
 
@@ -297,9 +297,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   // This is the browser settings page.
   html_source->AddBoolean("isOSSettings", false);
 #endif
-  // TODO(crbug.com/1026455): Delete this as part of the SplitSettings cleanup.
-  html_source->AddBoolean("showOSSettings", false);
-
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>());
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
 

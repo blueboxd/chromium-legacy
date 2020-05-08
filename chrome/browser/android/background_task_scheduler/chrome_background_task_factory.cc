@@ -4,9 +4,11 @@
 
 #include "chrome/browser/android/background_task_scheduler/chrome_background_task_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "chrome/android/chrome_jni_headers/ChromeBackgroundTaskFactory_jni.h"
+#include "chrome/browser/android/feed/v2/background_refresh_task.h"
 #include "chrome/browser/query_tiles/tile_background_task.h"
 #include "components/background_task_scheduler/task_ids.h"
 
@@ -22,6 +24,8 @@ ChromeBackgroundTaskFactory::GetNativeBackgroundTaskFromTaskId(int task_id) {
   switch (task_id) {
     case static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID):
       return std::make_unique<upboarding::TileBackgroundTask>();
+    case static_cast<int>(background_task::TaskIds::FEEDV2_REFRESH_JOB_ID):
+      return std::make_unique<feed::BackgroundRefreshTask>();
     default:
       break;
   }

@@ -36,6 +36,9 @@ namespace x509_util {
 // Supported digest algorithms for signing certificates.
 enum DigestAlgorithm { DIGEST_SHA256 };
 
+// Adds a RFC 5280 Time value to the given CBB.
+NET_EXPORT bool CBBAddTime(CBB* cbb, base::Time time);
+
 // Generate a 'tls-server-end-point' channel binding based on the specified
 // certificate. Channel bindings are based on RFC 5929.
 NET_EXPORT_PRIVATE bool GetTLSServerEndPointChannelBinding(

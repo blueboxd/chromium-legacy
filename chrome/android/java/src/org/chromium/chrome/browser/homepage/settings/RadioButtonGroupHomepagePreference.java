@@ -144,7 +144,6 @@ public final class RadioButtonGroupHomepagePreference
                                                    : HomepageOption.ENTRY_CUSTOM_URI;
 
         mPreferenceValues.mCheckedOption = checkedOption;
-        callChangeListener(mPreferenceValues);
     }
 
     @Override
@@ -183,7 +182,6 @@ public final class RadioButtonGroupHomepagePreference
 
         mPreferenceValues.mCheckedOption = HomepageOption.ENTRY_CUSTOM_URI;
         mPreferenceValues.mCustomizedText = newText.toString();
-        callChangeListener(mPreferenceValues);
     }
 
     /**
@@ -215,6 +213,13 @@ public final class RadioButtonGroupHomepagePreference
         // Lastly, store the value as current value the preference is displaying.
         // Doing it last to keep the previous value for necessary comparing in #onTextChanged.
         mPreferenceValues = value;
+    }
+
+    /**
+     * @return The current preference value stored in the preference.
+     */
+    PreferenceValues getPreferenceValue() {
+        return mPreferenceValues;
     }
 
     @VisibleForTesting

@@ -855,11 +855,7 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
     WebMouseEvent mouse_event = static_cast<const WebMouseEvent&>(input_event);
     if (mouse_event.GetType() == WebInputEvent::Type::kMouseMove) {
       return OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
-          mouse_event,
-          TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                       WebVector<const WebInputEvent*>()),
-          TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                       WebVector<const WebInputEvent*>()));
+          mouse_event, {}, {});
     }
     if (mouse_event.GetType() == WebInputEvent::Type::kMouseDown) {
       return OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(

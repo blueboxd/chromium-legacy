@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "content/public/browser/web_contents.h"
 
 namespace captions {
 
@@ -19,43 +20,72 @@ std::unique_ptr<CaptionBubbleController> CaptionBubbleController::Create(
 }
 
 CaptionBubbleControllerViews::CaptionBubbleControllerViews(Browser* browser)
-    : CaptionBubbleController(browser) {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+    : CaptionBubbleController(browser), browser_(browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   caption_bubble_ = new CaptionBubble(
       browser_view->GetContentsView(),
       base::BindOnce(&CaptionBubbleControllerViews::OnCaptionBubbleDestroyed,
                      base::Unretained(this)));
   caption_widget_ =
       views::BubbleDialogDelegateView::CreateBubble(caption_bubble_);
+  browser_->tab_strip_model()->AddObserver(this);
+  active_contents_ = browser_->tab_strip_model()->GetActiveWebContents();
 }
 
 CaptionBubbleControllerViews::~CaptionBubbleControllerViews() {
   if (caption_widget_)
     caption_widget_->CloseNow();
+  if (browser_) {
+    DCHECK(browser_->tab_strip_model());
+    browser_->tab_strip_model()->RemoveObserver(this);
+  }
 }
 
 void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
   caption_bubble_ = nullptr;
   caption_widget_ = nullptr;
+
+  // The caption bubble is destroyed when the browser is destroyed. So if the
+  // caption bubble was destroyed, then browser_ must also be nullptr.
+  browser_ = nullptr;
 }
 
 void CaptionBubbleControllerViews::OnTranscription(
-    const chrome::mojom::TranscriptionResultPtr& transcription_result) {
+    const chrome::mojom::TranscriptionResultPtr& transcription_result,
+    content::WebContents* web_contents) {
   if (!caption_bubble_)
     return;
 
-  std::string partial_text = transcription_result->transcription;
-  caption_bubble_->SetText(final_text_ + partial_text);
-  if (transcription_result->is_final)
-    final_text_ += partial_text;
+  caption_texts_[web_contents].partial_text =
+      transcription_result->transcription;
+  SetCaptionBubbleText();
+  if (transcription_result->is_final) {
+    caption_texts_[web_contents].final_text +=
+        caption_texts_[web_contents].partial_text;
+  }
   // TODO(1055150): Truncate final_text_ when it gets very long.
 }
 
-void CaptionBubbleControllerViews::OnActiveTabChanged(int index) {
-  // Cache the index of the tab on which the caption bubble is meant to be
-  // shown. When the caption bubble switches to that tab, show the widget. When
-  // the caption bubble switches away from that tab, hide it.
-  NOTIMPLEMENTED();
+void CaptionBubbleControllerViews::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (!caption_bubble_ || !caption_widget_)
+    return;
+  if (!selection.active_tab_changed())
+    return;
+  if (selection.selected_tabs_were_removed)
+    caption_texts_.erase(selection.old_contents);
+
+  active_contents_ = selection.new_contents;
+  SetCaptionBubbleText();
+}
+
+void CaptionBubbleControllerViews::SetCaptionBubbleText() {
+  std::string text;
+  if (active_contents_ && caption_texts_.count(active_contents_))
+    text = caption_texts_[active_contents_].full_text();
+  caption_bubble_->SetText(text);
 }
 
 void CaptionBubbleControllerViews::UpdateCaptionStyle(

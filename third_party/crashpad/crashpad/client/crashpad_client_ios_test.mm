@@ -32,34 +32,23 @@ TEST_F(CrashpadIOSClient, DumpWithoutCrash) {
   client.StartCrashpadInProcessHandler();
 
   NativeCPUContext context;
-#if defined(ARCH_CPU_X86_64)
   CaptureContext(&context);
-#elif defined(ARCH_CPU_ARM64)
-  // TODO(justincohen): Implement CaptureContext for ARM64.
-  mach_msg_type_number_t thread_state_count = MACHINE_THREAD_STATE_COUNT;
-  kern_return_t kr =
-      thread_get_state(mach_thread_self(),
-                       MACHINE_THREAD_STATE,
-                       reinterpret_cast<thread_state_t>(&context),
-                       &thread_state_count);
-  ASSERT_EQ(kr, KERN_SUCCESS);
-#endif
   client.DumpWithoutCrash(&context);
 }
 
-// This test is covered by a similar XCUITest, but for development purposes
-// it's sometimes easier and faster to run as a gtest.  However, there's no
-// way to correctly run this as a gtest. Leave the test here, disabled, for use
+// This test is covered by a similar XCUITest, but for development purposes it's
+// sometimes easier and faster to run in Google Test.  However, there's no way
+// to correctly run this in Google Test. Leave the test here, disabled, for use
 // during development only.
 TEST_F(CrashpadIOSClient, DISABLED_ThrowNSException) {
   CrashpadClient client;
   client.StartCrashpadInProcessHandler();
-  [NSException raise:@"GtestNSException" format:@"ThrowException"];
+  [NSException raise:@"GoogleTestNSException" format:@"ThrowException"];
 }
 
-// This test is covered by a similar XCUITest, but for development purposes
-// it's sometimes easier and faster to run as a gtest.  However, there's no
-// way to correctly run this as a gtest. Leave the test here, disabled, for use
+// This test is covered by a similar XCUITest, but for development purposes it's
+// sometimes easier and faster to run in Google Test.  However, there's no way
+// to correctly run this in Google Test. Leave the test here, disabled, for use
 // during development only.
 TEST_F(CrashpadIOSClient, DISABLED_ThrowException) {
   CrashpadClient client;

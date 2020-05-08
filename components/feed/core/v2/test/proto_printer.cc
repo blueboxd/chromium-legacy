@@ -160,10 +160,15 @@ class TextProtoPrinter {
     BeginMessage();
     PRINT_FIELD(content_id);
     PRINT_FIELD(next_page_token);
-    PRINT_FIELD(consistency_token);
     PRINT_FIELD(last_added_time_millis);
-    PRINT_FIELD(next_action_id);
     PRINT_FIELD(shared_state_id);
+    EndMessage();
+    return *this;
+  }
+  TextProtoPrinter& operator<<(const feedstore::Metadata& v) {
+    BeginMessage();
+    PRINT_FIELD(consistency_token);
+    PRINT_FIELD(next_action_id);
     EndMessage();
     return *this;
   }
@@ -303,6 +308,9 @@ std::string ToTextProto(const feedwire::ClientInfo& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::StreamData& v) {
+  return TextProtoPrinter::ToString(v);
+}
+std::string ToTextProto(const feedstore::Metadata& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::StreamStructureSet& v) {

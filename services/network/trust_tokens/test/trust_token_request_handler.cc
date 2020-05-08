@@ -47,9 +47,10 @@ IssuanceKeyPair GenerateIssuanceKeyPair(int id) {
   keys.signing.resize(TRUST_TOKEN_MAX_PRIVATE_KEY_SIZE);
   keys.verification.resize(TRUST_TOKEN_MAX_PUBLIC_KEY_SIZE);
   size_t signing_key_len, verification_key_len;
-  TRUST_TOKEN_generate_key(keys.signing.data(), &signing_key_len,
-                           keys.signing.size(), keys.verification.data(),
-                           &verification_key_len, keys.verification.size(), id);
+  CHECK(TRUST_TOKEN_generate_key(
+      TRUST_TOKEN_experiment_v0(), keys.signing.data(), &signing_key_len,
+      keys.signing.size(), keys.verification.data(), &verification_key_len,
+      keys.verification.size(), id));
   keys.signing.resize(signing_key_len);
   keys.verification.resize(verification_key_len);
 
@@ -105,7 +106,8 @@ struct TrustTokenRequestHandler::Rep {
 
 bssl::UniquePtr<TRUST_TOKEN_ISSUER>
 TrustTokenRequestHandler::Rep::CreateIssuerContextFromUnexpiredKeys() const {
-  bssl::UniquePtr<TRUST_TOKEN_ISSUER> ret(TRUST_TOKEN_ISSUER_new(batch_size));
+  bssl::UniquePtr<TRUST_TOKEN_ISSUER> ret(
+      TRUST_TOKEN_ISSUER_new(TRUST_TOKEN_experiment_v0(), batch_size));
   if (!ret)
     return nullptr;
 
@@ -250,7 +252,7 @@ base::Optional<std::string> TrustTokenRequestHandler::Issue(
   constexpr uint8_t kPrivateMetadata = 0;
 
   ScopedBoringsslBytes decoded_issuance_response;
-  uint8_t num_tokens_issued = 0;
+  size_t num_tokens_issued = 0;
   bool ok = false;
 
   for (size_t i = 0; i < rep_->issuance_keys.size(); ++i) {

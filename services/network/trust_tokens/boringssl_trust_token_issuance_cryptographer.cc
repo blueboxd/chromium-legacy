@@ -30,12 +30,12 @@ BoringsslTrustTokenIssuanceCryptographer::
 
 bool BoringsslTrustTokenIssuanceCryptographer::Initialize(
     int issuer_configured_batch_size) {
-  if (!base::IsValueInRangeForNumericType<uint16_t>(
-          issuer_configured_batch_size))
+  if (!base::IsValueInRangeForNumericType<size_t>(issuer_configured_batch_size))
     return false;
 
   ctx_ = bssl::UniquePtr<TRUST_TOKEN_CLIENT>(TRUST_TOKEN_CLIENT_new(
-      static_cast<uint16_t>(issuer_configured_batch_size)));
+      TRUST_TOKEN_experiment_v0(),
+      static_cast<size_t>(issuer_configured_batch_size)));
   return !!ctx_;
 }
 

@@ -59,19 +59,14 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void startActivity(Intent intent, boolean proxy) {
-        assert !proxy
-            : "|proxy| should be true only for instant apps, which WebLayer doesn't handle";
-        try {
-            ExternalNavigationHandler.forcePdfViewerAsIntentHandlerIfNeeded(intent);
-            Context context = getAvailableContext();
-            if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-            ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-        }
+    public void dispatchAuthenticatedIntent(Intent intent) {
+        // This method should never be invoked in WebLayer as this class always returns false for
+        // isIntentToInstantApp().
+        assert false;
     }
+
+    @Override
+    public void didStartActivity(Intent intent) {}
 
     @Override
     public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
@@ -110,7 +105,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public boolean startIncognitoIntent(final Intent intent, final String referrerUrl,
             final String fallbackUrl, final boolean needsToCloseTab, final boolean proxy) {
         // TODO(crbug.com/1063399): Determine if this behavior should be refined.
-        startActivity(intent, proxy);
+        ExternalNavigationHandler.startActivity(intent, proxy, this);
         return true;
     }
 

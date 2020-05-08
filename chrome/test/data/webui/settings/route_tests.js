@@ -217,7 +217,6 @@ suite('route', function() {
       onStartup: false,
       reset: false,
     });
-    loadTimeData.overrideValues({showOSSettings: false});
 
     const router = buildRouter();
     const hasRoute = route => router.getRoutes().hasOwnProperty(route);

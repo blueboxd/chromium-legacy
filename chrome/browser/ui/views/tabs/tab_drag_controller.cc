@@ -390,12 +390,7 @@ TabDragController::TabDragController()
       last_move_screen_loc_(0),
       source_view_index_(std::numeric_limits<size_t>::max()),
       initial_move_(true),
-#if defined(USE_OZONE) && !defined(OS_CHROMEOS)
-      // TODO(crbug.com/896640): Support detachable tabs
-      detach_behavior_(NOT_DETACHABLE),
-#else
       detach_behavior_(DETACHABLE),
-#endif
       move_behavior_(REORDER),
       mouse_has_ever_moved_left_(false),
       mouse_has_ever_moved_right_(false),

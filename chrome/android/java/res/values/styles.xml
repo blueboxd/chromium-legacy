@@ -133,7 +133,6 @@
     </style>
 
     <style name="Base.Theme.Chromium.Settings" parent="Theme.Chromium.WithActionBar">
-        <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="actionBarStyle">@style/SettingsActionBarModern</item>
         <item name="preferenceTheme">@style/PreferenceTheme</item>
         <item name="alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
@@ -230,9 +229,6 @@
              a 16dp padding overall. -->
         <item name="android:paddingStart">@dimen/pref_autofill_content_spacing</item>
         <item name="android:paddingEnd">@dimen/pref_autofill_content_spacing</item>
-    </style>
-    <style name="PreferenceSpinnerItem">
-        <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
     <style name="TextAppearance.AccessibilityTextPreference">
         <item name="android:textColor">?android:attr/textColorPrimary</item>

@@ -95,6 +95,7 @@ class SVGScriptElement final : public SVGElement,
                                const WTF::OrdinalNumber&,
                                const String& script_content) override;
   Document& GetDocument() const override;
+  ExecutionContext* GetExecutionContext() const override;
   void DispatchLoadEvent() override;
   void DispatchErrorEvent() override;
   void SetScriptElementForBinding(

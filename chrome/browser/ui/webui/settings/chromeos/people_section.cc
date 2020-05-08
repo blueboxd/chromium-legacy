@@ -19,12 +19,15 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/chromeos/sync/os_sync_handler.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/fingerprint_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/kerberos_accounts_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
+#include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
@@ -729,6 +732,13 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 void PeopleSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<::settings::PeopleHandler>(profile()));
+  web_ui->AddMessageHandler(
+      std::make_unique<::settings::ProfileInfoHandler>(profile()));
+
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString("profileLabel",
+                                            IDS_OS_SETTINGS_PROFILE_LABEL);
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // TODO(jamescook): Sort out how account management is split between Chrome OS
   // and browser settings.
@@ -758,6 +768,14 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::ParentalControlsHandler>(
             profile()));
+  }
+
+  std::unique_ptr<chromeos::settings::KerberosAccountsHandler>
+      kerberos_accounts_handler =
+          KerberosAccountsHandler::CreateIfKerberosEnabled(profile());
+  if (kerberos_accounts_handler) {
+    // Note that the UI is enabled only if Kerberos is enabled.
+    web_ui->AddMessageHandler(std::move(kerberos_accounts_handler));
   }
 }
 

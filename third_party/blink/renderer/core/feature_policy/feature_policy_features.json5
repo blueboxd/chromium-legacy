@@ -114,6 +114,11 @@
       depends_on: ["FeaturePolicyForClientHints"],
     },
     {
+      name: "ConversionMeasurement",
+      feature_policy_name: "conversion-measurement",
+      depends_on: ["ConversionMeasurement"],
+    },
+    {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
     },

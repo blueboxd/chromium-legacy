@@ -42,6 +42,9 @@ class FeedStreamApi {
   virtual void SetArticlesListVisible(bool is_visible) = 0;
   virtual bool IsArticlesListVisible() = 0;
 
+  // Invoked by RefreshTaskScheduler's scheduled task.
+  virtual void ExecuteRefreshTask() = 0;
+
   // Request to load additional content at the end of the stream.
   // Calls |callback| when complete. If no content could be added, the parameter
   // is false, and the caller should expect |LoadMore| to fail if called

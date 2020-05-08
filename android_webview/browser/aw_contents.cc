@@ -1450,14 +1450,17 @@ void AwContents::DidFinishNavigation(
   // We do not call OnReceivedError for requests that were blocked due to an
   // interstitial showing. OnReceivedError is handled directly by the blocking
   // page for interstitials.
-  security_interstitials::SecurityInterstitialTabHelper*
-      security_interstitial_tab_helper = security_interstitials::
-          SecurityInterstitialTabHelper::FromWebContents(web_contents_.get());
-  if (security_interstitial_tab_helper &&
-      (security_interstitial_tab_helper->IsInterstitialPendingForNavigation(
-           navigation_handle->GetNavigationId()) ||
-       security_interstitial_tab_helper->IsDisplayingInterstitial())) {
-    return;
+  if (web_contents_) {
+    // We can't be showing an interstitial if there is no web_contents.
+    security_interstitials::SecurityInterstitialTabHelper*
+        security_interstitial_tab_helper = security_interstitials::
+            SecurityInterstitialTabHelper::FromWebContents(web_contents_.get());
+    if (security_interstitial_tab_helper &&
+        (security_interstitial_tab_helper->IsInterstitialPendingForNavigation(
+             navigation_handle->GetNavigationId()) ||
+         security_interstitial_tab_helper->IsDisplayingInterstitial())) {
+      return;
+    }
   }
 
   AwContentsClientBridge* client =

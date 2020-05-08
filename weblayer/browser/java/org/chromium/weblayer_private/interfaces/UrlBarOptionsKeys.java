@@ -6,6 +6,9 @@ package org.chromium.weblayer_private.interfaces;
 
 /** Keys for the Bundle of arguments with which BrowserFragments are created. */
 public interface UrlBarOptionsKeys {
+    /**
+     * If true, clicking on the url shows page info. Default is false.
+     */
     String SHOW_PAGE_INFO_WHEN_URL_TEXT_CLICKED = "ShowPageInfoWhenUrlTextClicked";
     String URL_ICON_COLOR = "UrlIconColor";
     String URL_TEXT_COLOR = "UrlTextColor";

@@ -10,6 +10,9 @@
 #if defined(USE_X11)
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #elif defined(OS_LINUX)
+#if defined(USE_OZONE)
+#include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
+#endif
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/dragdrop/os_exchange_data_provider_builder_mac.h"
@@ -20,11 +23,22 @@
 namespace ui {
 
 //static
-std::unique_ptr<OSExchangeData::Provider>
+std::unique_ptr<OSExchangeDataProvider>
 OSExchangeDataProviderFactory::CreateProvider() {
 #if defined(USE_X11)
   return std::make_unique<OSExchangeDataProviderAuraX11>();
 #elif defined(OS_LINUX)
+#if defined(USE_OZONE)
+  // The instance can be nullptr in tests that do not instantiate the platform,
+  // or on platforms that do not implement specific drag'n'drop.  For them,
+  // falling back to the Aura provider should be fine.
+  if (OSExchangeDataProviderFactoryOzone::Instance()) {
+    auto provider =
+        OSExchangeDataProviderFactoryOzone::Instance()->CreateProvider();
+    if (provider)
+      return provider;
+  }
+#endif
   return std::make_unique<OSExchangeDataProviderAura>();
 #elif defined(OS_MACOSX)
   return BuildOSExchangeDataProviderMac();

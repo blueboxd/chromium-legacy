@@ -90,15 +90,6 @@ public class HomepageSettings extends PreferenceFragmentCompat {
             });
         }
 
-        if (isHomepageSettingsUIConversionEnabled()) {
-            mRadioButtons.setOnPreferenceChangeListener((preference, newValue) -> {
-                assert newValue instanceof PreferenceValues;
-
-                onRadioGroupPreferenceChange((PreferenceValues) newValue);
-                return true;
-            });
-        }
-
         RecordUserAction.record("Settings.Homepage.Opened");
 
         // Update preference views and state.
@@ -155,6 +146,16 @@ public class HomepageSettings extends PreferenceFragmentCompat {
         updatePreferenceState();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Save the final shared preference data.
+        if (isHomepageSettingsUIConversionEnabled()) {
+            updateHomepageFromRadioGroupPreference(mRadioButtons.getPreferenceValue());
+        }
+    }
+
     /**
      * Handle the preference changes when we toggled the homepage switch.
      * @param isChecked Whether switch is turned on.
@@ -169,7 +170,7 @@ public class HomepageSettings extends PreferenceFragmentCompat {
      * @param newValue The {@link PreferenceValues} that the {@link
      *         RadioButtonGroupHomepagePreference} is holding.
      */
-    private void onRadioGroupPreferenceChange(PreferenceValues newValue) {
+    private void updateHomepageFromRadioGroupPreference(PreferenceValues newValue) {
         // When the preference is changed by code during initialization due to policy, ignore the
         // changes of the preference.
         if (HomepagePolicyManager.isHomepageManagedByPolicy()) return;

@@ -63,7 +63,6 @@ class SafeBrowsingPrivateApiUnitTest;
 namespace safe_browsing {
 class PingManager;
 class VerdictCacheManager;
-class ClientSideDetectionService;
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 class DownloadProtectionService;
 #endif
@@ -113,10 +112,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   bool enabled_by_prefs() const {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return enabled_by_prefs_;
-  }
-
-  ClientSideDetectionService* safe_browsing_detection_service() const {
-    return services_delegate_->GetCsdService();
   }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

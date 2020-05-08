@@ -50,6 +50,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/gtest_util.h"
+#include "net/test/revocation_builder.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
@@ -3030,8 +3031,8 @@ class CertVerifyProcInternalWithNetFetchingTest
   GURL CreateAndServeCrl(CertBuilder* crl_issuer,
                          const std::vector<uint64_t>& revoked_serials,
                          DigestAlgorithm digest = DigestAlgorithm::Sha256) {
-    std::string crl =
-        CertBuilder::CreateCrl(crl_issuer, revoked_serials, digest);
+    std::string crl = BuildCrl(crl_issuer->GetSubject(), crl_issuer->GetKey(),
+                               revoked_serials, digest);
     std::string crl_path = MakeRandomPath(".crl");
     return RegisterSimpleTestServerHandler(crl_path, HTTP_OK,
                                            "application/pkix-crl", crl);

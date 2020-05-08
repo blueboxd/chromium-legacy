@@ -3,10 +3,9 @@ def _validate_builders_in_console(ctx):
 
   for console in ctx.output['luci-milo.cfg'].consoles:
     for builder in console.builders:
-      for name in builder.name:
-        _, long_bucket, builder_name = name.split('/')
-        _, _, bucket = long_bucket.split('.', 2)
-        builders.setdefault(bucket, {})[builder_name] = True
+      _, long_bucket, builder_name = builder.name.split('/')
+      _, _, bucket = long_bucket.split('.', 2)
+      builders.setdefault(bucket, {})[builder_name] = True
 
   builders_without_console = []
 

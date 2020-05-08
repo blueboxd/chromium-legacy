@@ -107,10 +107,6 @@ class ResourceCoordinatorParts;
 class TabManager;
 }
 
-namespace safe_browsing {
-class ClientSideDetectionService;
-}
-
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.
 class BrowserProcess {
@@ -213,11 +209,6 @@ class BrowserProcess {
 
   // Returns the SafeBrowsing service.
   virtual safe_browsing::SafeBrowsingService* safe_browsing_service() = 0;
-
-  // Returns an object which handles communication with the SafeBrowsing
-  // client-side detection servers.
-  virtual safe_browsing::ClientSideDetectionService*
-      safe_browsing_detection_service() = 0;
 
   // Returns the service providing versioned storage for rules used by the Safe
   // Browsing subresource filter.

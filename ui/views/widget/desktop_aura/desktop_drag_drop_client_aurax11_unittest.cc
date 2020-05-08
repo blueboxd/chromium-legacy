@@ -310,7 +310,7 @@ void TestDragDropClient::OnStatus(XID target_window,
   event.data.l[2] = 0;
   event.data.l[3] = 0;
   event.data.l[4] = accepted_action;
-  OnXdndStatus(event);
+  HandleXdndEvent(event);
 }
 
 void TestDragDropClient::OnFinished(XID target_window,
@@ -325,7 +325,7 @@ void TestDragDropClient::OnFinished(XID target_window,
   event.data.l[2] = performed_action;
   event.data.l[3] = 0;
   event.data.l[4] = 0;
-  OnXdndFinished(event);
+  HandleXdndEvent(event);
 }
 
 void TestDragDropClient::SetTopmostXWindowAndMoveMouse(::Window xid) {

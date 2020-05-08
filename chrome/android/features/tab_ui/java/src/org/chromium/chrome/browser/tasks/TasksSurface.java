@@ -8,6 +8,8 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -35,11 +37,13 @@ public interface TasksSurface {
     /**
      * @return Controller implementation for overview observation and visibility changes.
      */
+    @Nullable
     TabSwitcher.Controller getController();
 
     /**
      * @return TabListDelegate implementation to access the tab grid.
      */
+    @Nullable
     TabSwitcher.TabListDelegate getTabListDelegate();
 
     /**

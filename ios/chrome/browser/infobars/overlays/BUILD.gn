@@ -47,8 +47,8 @@ source_set("overlay_type") {
 source_set("util") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "overlay_request_infobar_util.h",
-    "overlay_request_infobar_util.mm",
+    "infobar_overlay_util.h",
+    "infobar_overlay_util.mm",
   ]
   deps = [
     "//base",
@@ -86,6 +86,7 @@ source_set("unit_tests") {
     "infobar_overlay_request_factory_impl_unittest.mm",
     "infobar_overlay_request_inserter_unittest.mm",
     "infobar_overlay_tab_helper_unittest.mm",
+    "infobar_overlay_util_unittest.mm",
     "translate_infobar_placeholder_overlay_request_cancel_handler_unittest.mm",
   ]
   deps = [

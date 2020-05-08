@@ -51,8 +51,11 @@ bool AccountManagerWelcomeDialog::ShowIfRequired() {
   }
 
   // Check if the dialog should be shown.
+  // It should not be shown in kiosk mode since there are no actual accounts to
+  // manage, but the service account.
   if (user_manager::UserManager::Get()
-          ->IsCurrentUserCryptohomeDataEphemeral()) {
+          ->IsCurrentUserCryptohomeDataEphemeral() ||
+      user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
     return false;
   }
   PrefService* pref_service =

@@ -65,34 +65,36 @@ class OsSettingsManagerTest : public testing::Test {
 // To prevent this from becoming a change-detector test, this test simply
 // verifies that when the provider starts up, it adds *some* strings without
 // checking the exact number. It also checks one specific canonical tag.
-TEST_F(OsSettingsManagerTest, WifiTags) {
+TEST_F(OsSettingsManagerTest, NetworkTags) {
   uint64_t initial_num_items = index_->GetSize();
   EXPECT_GT(initial_num_items, 0u);
 
   const SearchConcept* network_settings_concept =
-      manager_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_NETWORK_SETTINGS);
+      manager_->GetCanonicalTagMetadata(IDS_OS_SETTINGS_TAG_NETWORK_SETTINGS);
   ASSERT_TRUE(network_settings_concept);
-  EXPECT_EQ(chromeos::settings::mojom::kWifiNetworksSubpagePath,
+  EXPECT_EQ(chromeos::settings::mojom::kNetworkSectionPath,
             network_settings_concept->url_path_with_parameters);
   EXPECT_EQ(mojom::SearchResultIcon::kWifi, network_settings_concept->icon);
 
   // Ethernet is not present by default, so no Ethernet concepts have yet been
   // added.
   const SearchConcept* ethernet_settings_concept =
-      manager_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_ETHERNET_SETTINGS);
+      manager_->GetCanonicalTagMetadata(IDS_OS_SETTINGS_TAG_ETHERNET_CONFIGURE);
   ASSERT_FALSE(ethernet_settings_concept);
 
   // Add Ethernet and let asynchronous handlers run. This should cause Ethernet
   // tags to be added.
   network_config_helper_.network_state_helper().device_test()->AddDevice(
       "/device/stub_eth_device", shill::kTypeEthernet, "stub_eth_device");
+  network_config_helper_.network_state_helper().ConfigureService(
+      R"({"GUID": "eth_guid", "Type": "ethernet", "State": "online"})");
   base::RunLoop().RunUntilIdle();
 
   uint64_t num_items_after_adding_ethernet = index_->GetSize();
   EXPECT_GT(num_items_after_adding_ethernet, initial_num_items);
 
   ethernet_settings_concept =
-      manager_->GetCanonicalTagMetadata(IDS_SETTINGS_TAG_ETHERNET_SETTINGS);
+      manager_->GetCanonicalTagMetadata(IDS_OS_SETTINGS_TAG_ETHERNET_CONFIGURE);
   ASSERT_TRUE(ethernet_settings_concept);
   EXPECT_EQ(chromeos::settings::mojom::kEthernetDetailsSubpagePath,
             ethernet_settings_concept->url_path_with_parameters);

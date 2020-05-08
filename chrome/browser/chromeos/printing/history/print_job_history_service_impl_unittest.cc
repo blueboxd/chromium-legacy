@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_impl.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chrome/browser/chromeos/printing/history/test_print_job_database.h"
@@ -12,6 +13,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -107,6 +109,26 @@ TEST_F(PrintJobHistoryServiceImplTest, SaveObservedCupsPrintJob) {
   EXPECT_EQ(kPagesNumber, entries[0].number_of_pages());
   EXPECT_EQ(printing::proto::PrintJobInfo_PrintJobStatus_CANCELED,
             entries[0].status());
+}
+
+TEST_F(PrintJobHistoryServiceImplTest, DoesNotSaveIncognitoPrintJobs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPrintJobManagementApp);
+
+  // Expect no initial print jobs saved.
+  std::vector<printing::proto::PrintJobInfo> entries = GetPrintJobs();
+  EXPECT_EQ(0u, entries.size());
+
+  auto print_job = std::make_unique<CupsPrintJob>(
+      chromeos::Printer(), /*job_id=*/0, kTitle, kPagesNumber,
+      ::printing::PrintJob::Source::PRINT_PREVIEW_INCOGNITO,
+      /*source_id=*/"", printing::proto::PrintSettings());
+  print_job_manager_->CreatePrintJob(print_job.get());
+  print_job_manager_->CancelPrintJob(print_job.get());
+
+  // Expect no print jobs saved from incognito source.
+  entries = GetPrintJobs();
+  EXPECT_EQ(0u, entries.size());
 }
 
 TEST_F(PrintJobHistoryServiceImplTest, ObserverTest) {

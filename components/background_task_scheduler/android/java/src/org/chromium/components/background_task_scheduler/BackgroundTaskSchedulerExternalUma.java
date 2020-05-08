@@ -36,8 +36,9 @@ public abstract class BackgroundTaskSchedulerExternalUma {
     public static final int BACKGROUND_TASK_NOTIFICATION_TRIGGER = 21;
     public static final int BACKGROUND_TASK_PERIODIC_SYNC_WAKE_UP = 22;
     public static final int BACKGROUND_TASK_QUERY_TILE = 23;
+    public static final int BACKGROUND_TASK_FEEDV2_REFRESH = 24;
     // Keep this one at the end and increment appropriately when adding new tasks.
-    public static final int BACKGROUND_TASK_COUNT = 24;
+    public static final int BACKGROUND_TASK_COUNT = 25;
 
     protected BackgroundTaskSchedulerExternalUma() {}
 
@@ -144,6 +145,8 @@ public abstract class BackgroundTaskSchedulerExternalUma {
                 return BACKGROUND_TASK_PERIODIC_SYNC_WAKE_UP;
             case TaskIds.QUERY_TILE_JOB_ID:
                 return BACKGROUND_TASK_QUERY_TILE;
+            case TaskIds.FEEDV2_REFRESH_JOB_ID:
+                return BACKGROUND_TASK_FEEDV2_REFRESH;
             default:
                 assert false;
         }

@@ -130,12 +130,7 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
   // window to able to be made active automatically. Returns false for platforms
   // where these conditions are not met.
   bool ShouldRunPopupTest() {
-    // TODO(justinlin): http://crbug.com/177163
-#if defined(OS_WIN) && !defined(NDEBUG)
-    return false;
-#else
     return true;
-#endif
   }
 
   void EnsurePopupActive() {
@@ -915,6 +910,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
   GURL other_extension_url = other_extension().GetResourceURL("other.html");
   TestPopupNavigationViaGet(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
 }
+
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
                        PageInOtherExtension_Post) {
   GURL other_extension_url = other_extension().GetResourceURL("other.html");

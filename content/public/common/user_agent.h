@@ -42,6 +42,10 @@ CONTENT_EXPORT std::string GetWebKitRevision();
 // otherwise).
 CONTENT_EXPORT std::string BuildCpuInfo();
 
+// Takes the cpu info (see BuildCpuInfo()) and extracts the architecture for
+// most common cases.
+CONTENT_EXPORT std::string GetLowEntropyCpuArchitecture();
+
 // Builds a User-agent compatible string that describes the OS and CPU type.
 // On Android, the string will only include the build number and model if
 // relevant enums indicate they should be included.

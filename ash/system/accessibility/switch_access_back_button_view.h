@@ -16,26 +16,23 @@ class FloatingMenuButton;
 class SwitchAccessBackButtonView : public views::View,
                                    public views::ButtonListener {
  public:
-  explicit SwitchAccessBackButtonView();
+  explicit SwitchAccessBackButtonView(int button_size);
   ~SwitchAccessBackButtonView() override = default;
 
   SwitchAccessBackButtonView(const SwitchAccessBackButtonView&) = delete;
   SwitchAccessBackButtonView& operator=(const SwitchAccessBackButtonView&) =
       delete;
 
-  void SetFocusRing(bool should_show);
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  int GetHeightForWidth(int w) const override;
   const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  bool show_focus_ring_;
+  int diameter_;
 
   // Owned by views hierarchy.
   FloatingMenuButton* back_button_;

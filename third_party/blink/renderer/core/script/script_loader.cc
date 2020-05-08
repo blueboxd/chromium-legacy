@@ -440,12 +440,12 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   if (!integrity_attr.IsEmpty()) {
     SubresourceIntegrity::IntegrityFeatures integrity_features =
         SubresourceIntegrityHelper::GetFeatures(
-            element_->GetDocument().GetExecutionContext());
+            element_->GetExecutionContext());
     SubresourceIntegrity::ReportInfo report_info;
     SubresourceIntegrity::ParseIntegrityAttribute(
         integrity_attr, integrity_features, integrity_metadata, &report_info);
-    SubresourceIntegrityHelper::DoReport(
-        *element_->GetDocument().GetExecutionContext(), report_info);
+    SubresourceIntegrityHelper::DoReport(*element_->GetExecutionContext(),
+                                         report_info);
   }
 
   // <spec step="20">Let referrer policy be the current state of the element's
@@ -1043,9 +1043,9 @@ String ScriptLoader::GetScriptText() const {
   String script_text_internal_slot = element_->ScriptTextInternalSlot();
   if (child_text_content == script_text_internal_slot)
     return child_text_content;
-  return GetStringForScriptExecution(
-      child_text_content, element_->GetScriptElementType(),
-      element_->GetDocument().GetExecutionContext());
+  return GetStringForScriptExecution(child_text_content,
+                                     element_->GetScriptElementType(),
+                                     element_->GetExecutionContext());
 }
 
 }  // namespace blink

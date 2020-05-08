@@ -27,6 +27,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -349,6 +351,18 @@ base::Optional<WebImpression> HTMLAnchorElement::GetImpressionForNavigation()
     const {
   DCHECK(HasImpression());
 
+  if (!GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
+    String message =
+        "The 'conversion-measurement' feature policy must be enabled to "
+        "declare an impression.";
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther,
+            mojom::blink::ConsoleMessageLevel::kError, message));
+    return base::nullopt;
+  }
+
   // Conversion measurement is only allowed when both the frame and the main
   // frame (if different) have a secure origin.
   LocalFrame* frame = GetDocument().GetFrame();
@@ -527,7 +541,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   }
 
   // Only attach impressions for main frame navigations.
-  if (target_frame && target_frame->IsMainFrame() && request.HasUserGesture() &&
+  if (RuntimeEnabledFeatures::ConversionMeasurementEnabled() && target_frame &&
+      target_frame->IsMainFrame() && request.HasUserGesture() &&
       HasImpression()) {
     base::Optional<WebImpression> impression = GetImpressionForNavigation();
     if (impression)

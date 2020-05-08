@@ -72,12 +72,14 @@ message Printer {
   PrinterSource source = 3;
 }
 
-// Print job information.
+// Print job information. The ordering of these enums must match that of
+// chrome/browser/printing/print_job.h.
 message PrintJobInfo {
   enum PrintJobSource {
     PRINT_PREVIEW = 0;
     ARC = 1;
     EXTENSION = 2;
+    PRINT_PREVIEW_INCOGNITO = 3;
   }
 
   enum PrintJobStatus {

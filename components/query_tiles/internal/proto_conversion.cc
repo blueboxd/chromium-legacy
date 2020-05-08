@@ -114,10 +114,12 @@ void TileGroupFromProto(TileGroupProto* proto, TileGroup* group) {
 
 void TileGroupFromResponse(const ResponseGroupProto& response,
                            TileGroup* tile_group) {
+  if (!response.has_tile_group())
+    return;
   std::vector<ResponseTileProto> top_level_tiles;
   std::map<std::string, ResponseTileProto> sub_tiles;
-  tile_group->locale = response.locale();
-  for (const auto& tile : response.tiles()) {
+  tile_group->locale = response.tile_group().locale();
+  for (const auto& tile : response.tile_group().tiles()) {
     if (tile.is_top_level()) {
       top_level_tiles.emplace_back(tile);
     } else {

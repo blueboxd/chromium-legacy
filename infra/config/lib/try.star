@@ -132,7 +132,7 @@ def _sort_consoles(ctx):
     graph_key = _sorted_list_view_graph_key(console.id)
     node = graph.node(graph_key)
     if node:
-      console.builders = sorted(console.builders, lambda b: list(b.name))
+      console.builders = sorted(console.builders, lambda b: b.name)
   milo.consoles = sorted(milo.consoles, lambda c: c.id)
 
 lucicfg.generator(_sort_consoles)

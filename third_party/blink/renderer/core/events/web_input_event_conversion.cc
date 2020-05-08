@@ -322,9 +322,9 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
 
 Vector<WebMouseEvent> TransformWebMouseEventVector(
     LocalFrameView* frame_view,
-    const WebVector<const WebInputEvent*>& coalesced_events) {
+    const std::vector<std::unique_ptr<WebInputEvent>>& coalesced_events) {
   Vector<WebMouseEvent> result;
-  for (auto* const event : coalesced_events) {
+  for (const auto& event : coalesced_events) {
     DCHECK(WebInputEvent::IsMouseEventType(event->GetType()));
     result.push_back(TransformWebMouseEvent(
         frame_view, static_cast<const WebMouseEvent&>(*event)));
@@ -334,11 +334,11 @@ Vector<WebMouseEvent> TransformWebMouseEventVector(
 
 Vector<WebPointerEvent> TransformWebPointerEventVector(
     LocalFrameView* frame_view,
-    const WebVector<const WebInputEvent*>& coalesced_events) {
+    const std::vector<std::unique_ptr<WebInputEvent>>& coalesced_events) {
   float scale = FrameScale(frame_view);
   gfx::Vector2dF translation = FrameTranslation(frame_view);
   Vector<WebPointerEvent> result;
-  for (auto* const event : coalesced_events) {
+  for (const auto& event : coalesced_events) {
     DCHECK(WebInputEvent::IsPointerEventType(event->GetType()));
     result.push_back(TransformWebPointerEvent(
         scale, translation, static_cast<const WebPointerEvent&>(*event)));

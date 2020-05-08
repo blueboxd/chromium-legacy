@@ -19428,12 +19428,29 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Settings.Homepage.LocationChanged">
+  <obsolete>
+    Removed as original metrics is over counting. Replaced with
+    Settings.Homepage.LocationChanged_V2.
+  </obsolete>
   <owner>wenyufu@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
     Recorded when the user changes their homepage location in settings. Note
     that this metric is only recorded on user action and does not capture
     changes caused by enterprise policy. Recorded for Android only.
+  </description>
+</action>
+
+<action name="Settings.Homepage.LocationChanged_V2">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    Recorded once when exiting homepage settings if the user changed their
+    homepage location. Note that this is only recorded if the homepage location
+    actually changes. So, if for example, the user goes to the settings screen
+    and toggles between options ultimately ending up at the original state an
+    event will not be recorded. This metric does not capture changes caused by
+    enterprise policy. Recorded for Android only.
   </description>
 </action>
 

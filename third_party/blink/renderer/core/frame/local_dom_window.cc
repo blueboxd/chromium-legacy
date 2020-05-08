@@ -385,7 +385,13 @@ FrameOrWorkerScheduler* LocalDOMWindow::GetScheduler() {
 
 scoped_refptr<base::SingleThreadTaskRunner> LocalDOMWindow::GetTaskRunner(
     TaskType type) {
-  return document()->GetTaskRunner(type);
+  if (GetFrame())
+    return GetFrame()->GetTaskRunner(type);
+  // In most cases, the ExecutionContext will get us to a relevant Frame. In
+  // some cases, though, there isn't a good candidate (most commonly when either
+  // the passed-in document or the ExecutionContext used to be attached to a
+  // Frame but has since been detached).
+  return Thread::Current()->GetTaskRunner();
 }
 
 void LocalDOMWindow::CountPotentialFeaturePolicyViolation(

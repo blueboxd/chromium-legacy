@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/common/infobar_modal_interaction_handler.h"
-#include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_util.h"
+#include "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
 #include "ios/chrome/browser/overlays/public/infobar_modal/infobar_modal_overlay_responses.h"
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"

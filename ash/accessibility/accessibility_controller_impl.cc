@@ -1174,11 +1174,12 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForVirtualKeyboard() {
 }
 
 void AccessibilityControllerImpl::ShowFloatingMenuIfEnabled() {
-  if (floating_menu().enabled()) {
-    DCHECK(!floating_menu_controller_);
+  if (floating_menu().enabled() && !floating_menu_controller_) {
     floating_menu_controller_ =
         std::make_unique<FloatingAccessibilityController>(this);
     floating_menu_controller_->Show(GetFloatingMenuPosition());
+  } else {
+    always_show_floating_menu_when_enabled_ = true;
   }
 }
 
@@ -1843,6 +1844,10 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
     case FeatureType::kDictation:
       break;
     case FeatureType::kFloatingMenu:
+      if (enabled && always_show_floating_menu_when_enabled_)
+        ShowFloatingMenuIfEnabled();
+      else
+        floating_menu_controller_.reset();
       break;
     case FeatureType::kFocusHighlight:
       UpdateAccessibilityHighlightingFromPrefs();

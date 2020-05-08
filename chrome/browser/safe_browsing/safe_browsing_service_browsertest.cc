@@ -560,19 +560,6 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void CreateCSDService() {
-#if BUILDFLAG(SAFE_BROWSING_CSD)
-    SafeBrowsingService* sb_service =
-        g_browser_process->safe_browsing_service();
-
-    // A CSD service should already exist.
-    EXPECT_TRUE(sb_service->safe_browsing_detection_service());
-
-    sb_service->services_delegate_->InitializeCsdService(nullptr);
-    sb_service->RefreshState();
-#endif
-  }
-
   bool ShowingInterstitialPage(Browser* browser) {
     WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
     security_interstitials::SecurityInterstitialTabHelper* helper =

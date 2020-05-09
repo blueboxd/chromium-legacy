@@ -148,6 +148,11 @@ source_set("gbm") {
     "//ui/platform_window",
   ]
 
+  data_deps = [
+    "//third_party/angle:libEGL",
+    "//third_party/angle:libGLESv2",
+  ]
+
   if (is_chromeos) {
     deps += [ "//ui/base/ime/chromeos" ]
   }

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_IDLE_IDLE_DETECTOR_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/idle/idle_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -50,8 +49,9 @@ class IdleDetector final : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // IdleDetector IDL interface.
+  String userState() const;
+  String screenState() const;
   ScriptPromise start(ScriptState*, const IdleOptions*, ExceptionState&);
-  blink::IdleState* state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
   void Trace(Visitor*) override;
@@ -67,7 +67,7 @@ class IdleDetector final : public EventTargetWithInlineData,
                     mojom::blink::IdleManagerError,
                     mojom::blink::IdleStatePtr);
 
-  Member<blink::IdleState> state_;
+  mojom::blink::IdleStatePtr state_;
 
   base::TimeDelta threshold_ = base::TimeDelta::FromSeconds(60);
   Member<AbortSignal> signal_;

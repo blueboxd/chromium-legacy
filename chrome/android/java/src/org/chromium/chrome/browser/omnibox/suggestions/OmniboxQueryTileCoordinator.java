@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
@@ -21,6 +22,7 @@ import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinato
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinatorFactory;
 import org.chromium.components.browser_ui.widget.image_tiles.TileConfig;
 import org.chromium.components.query_tiles.QueryTile;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
@@ -97,6 +99,10 @@ public class OmniboxQueryTileCoordinator {
         }
 
         QueryTile queryTile = (QueryTile) tile;
+        if (queryTile.urls.isEmpty()) {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
+            return;
+        }
         getImageFetcher().fetchImage(queryTile.urls.get(0), ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME,
                 mTileWidth, mTileWidth, bitmap -> callback.onResult(Arrays.asList(bitmap)));
     }

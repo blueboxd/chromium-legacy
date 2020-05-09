@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Callback;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
@@ -26,6 +27,7 @@ import org.chromium.components.browser_ui.widget.image_tiles.TileConfig;
 import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.components.query_tiles.TileProvider;
 import org.chromium.components.query_tiles.TileUmaLogger;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 
@@ -64,7 +66,6 @@ public class QueryTileSection {
         mSubmitQueryCallback = performSearchQueryCallback;
         if (!isFeatureEnabled()) return;
 
-        TileProviderFactory.setFakeTileProvider(new FakeTileProvider());
         mTileProvider = TileProviderFactory.getForProfile(profile);
         TileConfig tileConfig = new TileConfig.Builder().setUmaPrefix(UMA_PREFIX).build();
         mTileUmaLogger = new TileUmaLogger(UMA_PREFIX);
@@ -139,6 +140,11 @@ public class QueryTileSection {
     }
 
     private void fetchImage(QueryTile queryTile, int size, Callback<Bitmap> callback) {
+        if (queryTile.urls.isEmpty()) {
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
+            return;
+        }
+
         String url = queryTile.urls.get(0);
         // TODO(crbug.com/1058534) : Replace with correct API.
         mImageFetcher.fetchImage(

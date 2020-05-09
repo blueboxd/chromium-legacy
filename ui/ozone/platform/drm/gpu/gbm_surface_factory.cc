@@ -248,6 +248,7 @@ std::vector<gl::GLImplementation>
 GbmSurfaceFactory::GetAllowedGLImplementations() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
+                                           gl::kGLImplementationEGLANGLE,
                                            gl::kGLImplementationSwiftShaderGL};
 }
 
@@ -255,6 +256,7 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
   switch (implementation) {
     case gl::kGLImplementationEGLGLES2:
     case gl::kGLImplementationSwiftShaderGL:
+    case gl::kGLImplementationEGLANGLE:
       return egl_implementation_.get();
     default:
       return nullptr;

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 202 tests; 200 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 208 tests; 204 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS the registerProtocolHandler method should exist on the navigator object
 PASS the unregisterProtocolHandler method should exist on the navigator object
 PASS registerProtocolHandler: Valid URL "%s" should work.
@@ -20,20 +20,22 @@ PASS registerProtocolHandler: Valid URL "https://web-platform.test:8444/html/web
 PASS unregisterProtocolHandler: Valid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%s/bar/baz/?foo=1337&bar#baz" should work.
 PASS registerProtocolHandler: Valid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%s/foo/%s/" should work.
 PASS unregisterProtocolHandler: Valid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%s/foo/%s/" should work.
-PASS registerProtocolHandler: Invalid URL "" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "" should throw SYNTAX_ERR.
-PASS registerProtocolHandler: Invalid URL "%S" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "%S" should throw SYNTAX_ERR.
-PASS registerProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html" should throw SYNTAX_ERR.
-PASS registerProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%" should throw SYNTAX_ERR.
-PASS registerProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%a" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%a" should throw SYNTAX_ERR.
-PASS registerProtocolHandler: Invalid URL "http://example.com" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "http://example.com" should throw SYNTAX_ERR.
-PASS registerProtocolHandler: Invalid URL "http://[v8.:::]//url=%s" should throw SYNTAX_ERR.
-PASS unregisterProtocolHandler: Invalid URL "http://[v8.:::]//url=%s" should throw SYNTAX_ERR.
+PASS registerProtocolHandler: Invalid URL "" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "%S" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "%S" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%a" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "https://web-platform.test:8444/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.https.html/%a" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "http://example.com" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "http://example.com" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "http://[v8.:::]//url=%s" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "http://[v8.:::]//url=%s" should throw (but after scheme)
+PASS registerProtocolHandler: Invalid URL "https://test:test/" should throw (but after scheme)
+PASS unregisterProtocolHandler: Invalid URL "https://test:test/" should throw (but after scheme)
 PASS registerProtocolHandler: Invalid URL "http://%s.com" should throw SECURITY_ERR.
 PASS unregisterProtocolHandler: Invalid URL "http://%s.com" should throw SECURITY_ERR.
 PASS registerProtocolHandler: Invalid URL "http://%s.example.com" should throw SECURITY_ERR.
@@ -144,8 +146,6 @@ PASS registerProtocolHandler: Attempting to override the "web+dashes-are-forbidd
 PASS unregisterProtocolHandler: Attempting to override the "web+dashes-are-forbidden" protocol should throw SECURITY_ERR.
 PASS registerProtocolHandler: Attempting to override the "web+digits123areforbidden" protocol should throw SECURITY_ERR.
 PASS unregisterProtocolHandler: Attempting to override the "web+digits123areforbidden" protocol should throw SECURITY_ERR.
-FAIL registerProtocolHandler: Attempting to override the "web+UpperCasesAreForbidden" protocol should throw SECURITY_ERR. assert_throws_dom: function "() => { navigator.registerProtocolHandler(scheme, location.href + '/%s', 'foo'); }" did not throw
-FAIL unregisterProtocolHandler: Attempting to override the "web+UpperCasesAreForbidden" protocol should throw SECURITY_ERR. assert_throws_dom: function "() => { navigator.unregisterProtocolHandler(scheme, location.href + '/%s'); }" did not throw
 PASS registerProtocolHandler: overriding the "bitcoin" protocol should work
 PASS unregisterProtocolHandler: overriding the "bitcoin" protocol should work
 PASS registerProtocolHandler: overriding the "geo" protocol should work
@@ -204,5 +204,11 @@ PASS registerProtocolHandler: overriding the "WTAI" protocol should work
 PASS unregisterProtocolHandler: overriding the "WTAI" protocol should work
 PASS registerProtocolHandler: overriding the "web+myprotocol" protocol should work
 PASS unregisterProtocolHandler: overriding the "web+myprotocol" protocol should work
+PASS registerProtocolHandler: overriding the "web+UpperCasedIsLowercased" protocol should work
+PASS unregisterProtocolHandler: overriding the "web+UpperCasedIsLowercased" protocol should work
+FAIL registerProtocolHandler: overriding the "WEB+seeabove" protocol should work Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'WEB+seeabove' doesn't belong to the scheme allowlist. Please prefix non-allowlisted schemes with the string 'web+'.
+FAIL unregisterProtocolHandler: overriding the "WEB+seeabove" protocol should work Failed to execute 'unregisterProtocolHandler' on 'Navigator': The scheme 'WEB+seeabove' doesn't belong to the scheme allowlist. Please prefix non-allowlisted schemes with the string 'web+'.
+FAIL registerProtocolHandler: overriding the "WeB+SeEaBoVe" protocol should work Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'WeB+SeEaBoVe' doesn't belong to the scheme allowlist. Please prefix non-allowlisted schemes with the string 'web+'.
+FAIL unregisterProtocolHandler: overriding the "WeB+SeEaBoVe" protocol should work Failed to execute 'unregisterProtocolHandler' on 'Navigator': The scheme 'WeB+SeEaBoVe' doesn't belong to the scheme allowlist. Please prefix non-allowlisted schemes with the string 'web+'.
 Harness: the test ran to completion.
 

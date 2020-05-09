@@ -8,10 +8,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/rand_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/query_tiles/internal/proto_conversion.h"
 #include "components/query_tiles/internal/tile_config.h"
+#include "components/query_tiles/switches.h"
 
 namespace upboarding {
 namespace {
@@ -28,6 +32,8 @@ constexpr base::TimeDelta kBackgroundTaskRandomWindow =
 constexpr base::TimeDelta kBackgroundTaskFlexTime =
     base::TimeDelta::FromHours(2);
 
+void OnInstantFetchComplete(bool success) {}
+
 }  // namespace
 
 TileServiceImpl::TileServiceImpl(
@@ -41,8 +47,6 @@ TileServiceImpl::TileServiceImpl(
       scheduler_(scheduler),
       tile_fetcher_(std::move(tile_fetcher)),
       clock_(clock) {
-  // TODO(crbug.com/1077172): Initialize tile_db within tile_manager from
-  // init_aware layer.
   ScheduleDailyTask();
 }
 
@@ -60,6 +64,16 @@ void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
   DCHECK(callback);
   // TODO(xingliu): Handle TileGroupStatus::kInvalidGroup.
   std::move(callback).Run(success);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kQueryTilesInstantBackgroundTask)) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&TileServiceImpl::StartFetchForTiles,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::BindOnce(&OnInstantFetchComplete)),
+        base::TimeDelta::FromSeconds(2));
+  }
 }
 
 void TileServiceImpl::GetQueryTiles(GetTilesCallback callback) {

@@ -4498,15 +4498,11 @@ interface IdleDeadline
 interface IdleDetector : EventTarget
     attribute @@toStringTag
     getter onchange
-    getter state
+    getter screenState
+    getter userState
     method constructor
     method start
     setter onchange
-interface IdleState
-    attribute @@toStringTag
-    getter screen
-    getter user
-    method constructor
 interface Image
     attribute @@toStringTag
     getter align

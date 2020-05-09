@@ -4430,8 +4430,9 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
     } else if (HasOverrideContainingBlockContentLogicalWidth() &&
                IsOrthogonalWritingModeRoot()) {
       return OverrideContainingBlockContentLogicalWidth();
-    } else if (HasOverrideContainingBlockContentLogicalHeight()) {
-      return OverrideContainingBlockContentLogicalHeight();
+    } else if (HasOverrideLogicalHeight() &&
+               IsOverrideLogicalHeightDefinite()) {
+      return OverrideContentLogicalHeight();
     } else if (const auto* previous_result = GetCachedLayoutResult()) {
       const NGConstraintSpace& space =
           previous_result->GetConstraintSpaceForCaching();

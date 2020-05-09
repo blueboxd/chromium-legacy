@@ -45,4 +45,8 @@ ContextFactory* TestContextFactories::GetContextFactory() const {
   return implicit_factory_.get();
 }
 
+void TestContextFactories::SetUseTestSurface(bool use_test_surface) {
+  implicit_factory_->set_use_test_surface(use_test_surface);
+}
+
 }  // namespace ui

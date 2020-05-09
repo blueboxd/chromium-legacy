@@ -53,16 +53,10 @@ void NGFragmentItems::FinalizeAfterLayout(
         To<NGPhysicalBoxFragment>(result->PhysicalFragment());
     const NGFragmentItems* current = fragment.Items();
     DCHECK(current);
-    const Span items = current->Items();
-    // items_[0] can be:
-    //  - kBox  for list marker, e.g. <li>abc</li>
-    //  - kLine for line, e.g. <div>abc</div>
-    DCHECK(items.empty() || items[0]->IsContainer());
-    if (current->Size() <= 1)
-      continue;
     HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
+    const Span items = current->Items();
     wtf_size_t index = 0;
-    for (const scoped_refptr<const NGFragmentItem>& item : items.subspan(1)) {
+    for (const scoped_refptr<const NGFragmentItem>& item : items) {
       ++index;
       if (item->Type() == NGFragmentItem::kLine) {
         DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
@@ -100,8 +94,9 @@ void NGFragmentItems::FinalizeAfterLayout(
       DCHECK_GT(last_index, 0u) << *item;
       DCHECK_LT(last_index, items.size());
       DCHECK_LT(last_index, index);
-      DCHECK_EQ(items[last_index]->DeltaToNextForSameLayoutObject(), 0u);
-      items[last_index]->SetDeltaToNextForSameLayoutObject(index - last_index);
+      DCHECK_EQ(items[last_index - 1]->DeltaToNextForSameLayoutObject(), 0u);
+      items[last_index - 1]->SetDeltaToNextForSameLayoutObject(index -
+                                                               last_index);
     }
   }
   if (!ShouldSetFirstAndLastForNode())

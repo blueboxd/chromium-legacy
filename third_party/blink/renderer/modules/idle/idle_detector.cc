@@ -61,6 +61,30 @@ bool IdleDetector::HasPendingActivity() const {
   return GetExecutionContext() && HasEventListeners();
 }
 
+String IdleDetector::userState() const {
+  if (!state_)
+    return String();
+
+  switch (state_->user) {
+    case mojom::blink::UserIdleState::kActive:
+      return "active";
+    case mojom::blink::UserIdleState::kIdle:
+      return "idle";
+  }
+}
+
+String IdleDetector::screenState() const {
+  if (!state_)
+    return String();
+
+  switch (state_->screen) {
+    case mojom::blink::ScreenIdleState::kLocked:
+      return "locked";
+    case mojom::blink::ScreenIdleState::kUnlocked:
+      return "unlocked";
+  }
+}
+
 ScriptPromise IdleDetector::start(ScriptState* script_state,
                                   const IdleOptions* options,
                                   ExceptionState& exception_state) {
@@ -171,25 +195,20 @@ void IdleDetector::OnAddMonitor(ScriptPromiseResolver* resolver,
   resolver_ = nullptr;
 }
 
-blink::IdleState* IdleDetector::state() const {
-  return state_;
-}
-
 void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
   DCHECK(receiver_.is_bound());
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
 
-  if (state_ && state.get()->Equals(state_->state()))
+  if (state_ && state->Equals(*state_))
     return;
 
-  state_ = MakeGarbageCollected<blink::IdleState>(std::move(state));
+  state_ = std::move(state);
 
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
 void IdleDetector::Trace(Visitor* visitor) {
-  visitor->Trace(state_);
   visitor->Trace(signal_);
   visitor->Trace(resolver_);
   visitor->Trace(receiver_);

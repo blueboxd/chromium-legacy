@@ -20,17 +20,27 @@ const base::FilePath::CharType kDefaultEglSoname[] =
     FILE_PATH_LITERAL("libEGL.dll");
 const base::FilePath::CharType kDefaultGlesSoname[] =
     FILE_PATH_LITERAL("libGLESv2.dll");
-#elif defined(OS_FUCHSIA)
+const base::FilePath::CharType kAngleEglSoname[] =
+    FILE_PATH_LITERAL("libEGL.dll");
+const base::FilePath::CharType kAngleGlesSoname[] =
+    FILE_PATH_LITERAL("libGLESv2.dll");
+#else
+#if defined(OS_FUCHSIA)
 const base::FilePath::CharType kDefaultEglSoname[] =
     FILE_PATH_LITERAL("libEGL.so");
 const base::FilePath::CharType kDefaultGlesSoname[] =
     FILE_PATH_LITERAL("libGLESv2.so");
-#else   // !defined(OS_WIN) && !defined(OS_FUCHSIA)
+#else  // !defined(OS_FUCHSIA)
 const base::FilePath::CharType kDefaultEglSoname[] =
     FILE_PATH_LITERAL("libEGL.so.1");
 const base::FilePath::CharType kDefaultGlesSoname[] =
     FILE_PATH_LITERAL("libGLESv2.so.2");
-#endif  // !defined(OS_WIN) && !defined(OS_FUCHSIA)
+#endif
+const base::FilePath::CharType kAngleEglSoname[] =
+    FILE_PATH_LITERAL("libEGL.so");
+const base::FilePath::CharType kAngleGlesSoname[] =
+    FILE_PATH_LITERAL("libGLESv2.so");
+#endif  // !defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
 #if defined(OS_WIN)
@@ -109,6 +119,9 @@ bool LoadDefaultEGLGLES2Bindings(gl::GLImplementation implementation) {
 #else
     return false;
 #endif
+  } else if (implementation == gl::kGLImplementationEGLANGLE) {
+    glesv2_path = base::FilePath(kAngleGlesSoname);
+    egl_path = base::FilePath(kAngleEglSoname);
   } else {
     glesv2_path = base::FilePath(kDefaultGlesSoname);
     egl_path = base::FilePath(kDefaultEglSoname);

@@ -35,7 +35,7 @@ promise_test(async t => {
   await detector.start({threshold: 60000, signal: controller.signal});
   await initial_state;
 
-  assert_equals(detector.state.user, "active");
+  assert_equals(detector.userState, "active");
 
   testRunner.setPageVisibility("hidden");
 
@@ -46,7 +46,7 @@ promise_test(async t => {
 
   // Assert that the detector works while the page is not visible.
   await watcher.wait_for("change");
-  assert_equals(detector.state.user, "idle");
+  assert_equals(detector.userState, "idle");
 
   testRunner.setPageVisibility("visible");
 
@@ -56,7 +56,7 @@ promise_test(async t => {
   });
 
   await watcher.wait_for("change");
-  assert_equals(detector.state.user, "active");
+  assert_equals(detector.userState, "active");
 
   controller.abort();
 }, 'Page visibility.');

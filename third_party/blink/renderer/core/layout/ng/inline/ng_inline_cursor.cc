@@ -1337,6 +1337,8 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
       MakeNull();
       return;
     }
+    // |FirstInlineFragmentItemIndex| is 1-based. Convert to 0-based index.
+    --item_index;
     DCHECK_EQ(SlowFirstItemIndexFor(layout_object, fragment_items_->Items()),
               item_index);
 

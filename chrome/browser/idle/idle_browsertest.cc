@@ -83,8 +83,7 @@ IN_PROC_BROWSER_TEST_F(IdleBrowserTest, Start) {
         let promise = new Promise(function(resolve) {
           let states = [];
           idleDetector.addEventListener('change', e => {
-            let {user, screen} = idleDetector.state;
-            states.push(`${user}-${screen}`)
+            states.push(`${idleDetector.userState}-${idleDetector.screenState}`)
             if (states.length >= 3) {
               let states_str = states.join(',');
               resolve(states_str);

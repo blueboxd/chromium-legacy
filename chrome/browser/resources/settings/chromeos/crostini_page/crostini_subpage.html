@@ -93,7 +93,7 @@
             [[diskSizeLabel_]]
           </div>
         </div>
-        <cr-button on-click="onDiskResizeClick_"
+        <cr-button on-click="onDiskResizeClick_" hidden="[[!canDiskResize_]]"
             aria-label="[[diskResizeButtonAriaLabel_]]"
             aria-describedby="diskSizeDescription"
             id="showDiskResizeButton">

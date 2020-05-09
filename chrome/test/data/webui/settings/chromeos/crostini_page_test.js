@@ -344,7 +344,8 @@ suite('CrostiniPageTests', function() {
       test('DiskResizeOpensWhenClicked', async function() {
         assertTrue(!!subpage.$$('#showDiskResizeButton'));
         await crostiniBrowserProxy.resolvePromise(
-            'getCrostiniDiskInfo', {succeeded: true, isUserChosenSize: true});
+            'getCrostiniDiskInfo',
+            {succeeded: true, canResize: true, isUserChosenSize: true});
         subpage.$$('#showDiskResizeButton').click();
 
         await flushAsync();
@@ -587,7 +588,7 @@ suite('CrostiniPageTests', function() {
       async function clickShowDiskResize(userChosen) {
         await crostiniBrowserProxy.resolvePromise(
             'getCrostiniDiskInfo',
-            {succeeded: true, isUserChosenSize: userChosen});
+            {succeeded: true, canResize: true, isUserChosenSize: userChosen});
         subpage.$$('#showDiskResizeButton').click();
         await flushAsync();
         dialog = subpage.$$('settings-crostini-disk-resize-dialog');
@@ -602,6 +603,16 @@ suite('CrostiniPageTests', function() {
 
       setup(async function() {
         assertTrue(!!subpage.$$('#showDiskResizeButton'));
+        const subtext = subpage.$$('#diskSizeDescription');
+      });
+
+      test('ResizeUnsupported', async function() {
+        await crostiniBrowserProxy.resolvePromise(
+            'getCrostiniDiskInfo', {succeeded: true, canResize: false});
+        assertFalse(isVisible(subpage.$$('#showDiskResizeButton')));
+        assertEquals(
+            subpage.$$('#diskSizeDescription').innerText,
+            loadTimeData.getString('crostiniDiskResizeNotSupportedSubtext'));
       });
 
       test('ResizeButtonAndSubtextCorrectlySet', async function() {

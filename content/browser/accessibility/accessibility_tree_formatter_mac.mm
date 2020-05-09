@@ -274,8 +274,18 @@ AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {}
 
 void AccessibilityTreeFormatterMac::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {
-  AddPropertyFilter(property_filters, "AXValueAutofill*");
-  AddPropertyFilter(property_filters, "AXAutocomplete*");
+  static NSArray* default_attributes = [@[
+    @"AXValueAutofill*", @"AXAutocomplete*", @"AXDescription=*", @"AXTitle=*",
+    @"AXTitleUIElement=*", @"AXHelp=*", @"AXValue=*"
+  ] retain];
+
+  for (NSString* attribute : default_attributes) {
+    AddPropertyFilter(property_filters, SysNSStringToUTF8(attribute));
+  }
+
+  if (show_ids()) {
+    AddPropertyFilter(property_filters, "id");
+  }
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -364,18 +374,10 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
     return error_value;
 
   base::string16 line;
-  if (show_ids()) {
-    int id_value;
-    dict.GetInteger("id", &id_value);
-    WriteAttribute(true, base::NumberToString16(id_value), &line);
-  }
+  int id_value;
+  dict.GetInteger("id", &id_value);
+  WriteAttribute(false, base::NumberToString16(id_value), &line);
 
-  NSArray* defaultAttributes =
-      [NSArray arrayWithObjects:NSAccessibilityTitleAttribute,
-                                NSAccessibilityTitleUIElementAttribute,
-                                NSAccessibilityDescriptionAttribute,
-                                NSAccessibilityHelpAttribute,
-                                NSAccessibilityValueAttribute, nil];
   string s_value;
   dict.GetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), &s_value);
   WriteAttribute(true, s_value, &line);
@@ -390,7 +392,7 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
   for (NSString* requestedAttribute in AllAttributesArray()) {
     string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
     if (dict.GetString(requestedAttributeUTF8, &s_value)) {
-      WriteAttribute([defaultAttributes containsObject:requestedAttribute],
+      WriteAttribute(false,
                      StringPrintf("%s='%s'", requestedAttributeUTF8.c_str(),
                                   s_value.c_str()),
                      &line);
@@ -400,7 +402,7 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
     if (dict.Get(requestedAttributeUTF8, &value)) {
       std::string json_value;
       base::JSONWriter::Write(*value, &json_value);
-      WriteAttribute([defaultAttributes containsObject:requestedAttribute],
+      WriteAttribute(false,
                      StringPrintf("%s=%s", requestedAttributeUTF8.c_str(),
                                   json_value.c_str()),
                      &line);

@@ -174,6 +174,12 @@ Polymer({
       type: String,
       value: loadTimeData.getString('crostiniDiskResizeShowButtonAriaLabel'),
     },
+
+    /** @private {boolean} */
+    canDiskResize_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -270,6 +276,12 @@ Polymer({
    * @private
    */
   setResizeLabels_(diskInfo) {
+    this.canDiskResize_ = diskInfo.canResize;
+    if (!this.canDiskResize_) {
+      this.diskSizeLabel_ =
+          loadTimeData.getString('crostiniDiskResizeNotSupportedSubtext');
+      return;
+    }
     this.isDiskUserChosenSize_ = diskInfo.isUserChosenSize;
     if (this.isDiskUserChosenSize_) {
       if (diskInfo.ticks) {

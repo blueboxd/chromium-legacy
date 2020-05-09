@@ -346,6 +346,8 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"crostiniDiskResizeLabel", IDS_SETTINGS_CROSTINI_DISK_RESIZE_LABEL},
       {"crostiniDiskResizeDynamicallyAllocatedSubtext",
        IDS_SETTINGS_CROSTINI_DISK_RESIZE_DYNAMICALLY_ALLOCATED_SUBTEXT},
+      {"crostiniDiskResizeNotSupportedSubtext",
+       IDS_SETTINGS_CROSTINI_DISK_RESIZE_NOT_SUPPORTED_SUBTEXT},
       {"crostiniDiskResizeUnsupported",
        IDS_SETTINGS_CROSTINI_DISK_RESIZE_UNSUPPORTED},
       {"crostiniDiskResizeLoading", IDS_SETTINGS_CROSTINI_DISK_RESIZE_LOADING},

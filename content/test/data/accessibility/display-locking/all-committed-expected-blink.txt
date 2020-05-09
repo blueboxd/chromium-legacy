@@ -24,3 +24,6 @@ rootWebArea
 ++++++++++++inlineTextBox offscreen name='nested non-activatable locked element will not be in AX tree'
 ++++++++staticText offscreen name='normal text 3'
 ++++++++++inlineTextBox offscreen name='normal text 3'
+++++++++genericContainer offscreen
+++++++++++staticText offscreen name='doneCommitting'
+++++++++++++inlineTextBox offscreen name='doneCommitting'

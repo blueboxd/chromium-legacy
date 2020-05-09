@@ -303,15 +303,23 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_NoSource) {
   base::WriteFile(default_prop, kDefaultProp, strlen(kDefaultProp));
   EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir));
 
-  // Add build.prop too. Then the call should succeed.
+  // Add build.prop too. The call should not succeed still.
   base::FilePath build_prop = source_dir.Append("build.prop");
   constexpr const char kBuildProp[] = "ro.baz=boo\n";
   base::WriteFile(build_prop, kBuildProp, strlen(kBuildProp));
+  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir));
+
+  // Add vendor_build.prop too. Then the call should succeed.
+  base::FilePath vendor_build_prop = source_dir.Append("vendor_build.prop");
+  constexpr const char kVendorBuildProp[] = "ro.a=b\n";
+  base::WriteFile(vendor_build_prop, kVendorBuildProp,
+                  strlen(kVendorBuildProp));
   EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir));
 
-  // Verify two dest files are there.
+  // Verify all dest files are there.
   EXPECT_TRUE(base::PathExists(dest_dir.Append("default.prop")));
   EXPECT_TRUE(base::PathExists(dest_dir.Append("build.prop")));
+  EXPECT_TRUE(base::PathExists(dest_dir.Append("vendor_build.prop")));
 
   // Verify their content.
   // Note: ExpandPropertyFile() adds a trailing LF.
@@ -321,6 +329,9 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_NoSource) {
   EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
   EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
   EXPECT_EQ(std::string(kBuildProp) + "\n", content);
+  EXPECT_TRUE(
+      base::ReadFileToString(dest_dir.Append("vendor_build.prop"), &content));
+  EXPECT_EQ(std::string(kVendorBuildProp) + "\n", content);
 
   // Finally, test the case where source is valid but the dest is not.
   EXPECT_FALSE(ExpandPropertyFiles(source_dir, base::FilePath("/nonexistent")));

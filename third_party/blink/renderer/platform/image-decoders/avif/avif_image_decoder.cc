@@ -37,20 +37,7 @@
 namespace {
 
 gfx::ColorSpace GetColorSpace(const avifImage* image) {
-  if (image->profileFormat == AVIF_PROFILE_FORMAT_NCLX) {
-    media::VideoColorSpace color_space(image->nclx.colourPrimaries,
-                                       image->nclx.transferCharacteristics,
-                                       image->nclx.matrixCoefficients,
-                                       image->nclx.range == AVIF_RANGE_FULL
-                                           ? gfx::ColorSpace::RangeID::FULL
-                                           : gfx::ColorSpace::RangeID::LIMITED);
-    if (color_space.IsSpecified())
-      return color_space.ToGfxColorSpace();
-    if (image->nclx.range == AVIF_RANGE_FULL)
-      return gfx::ColorSpace::CreateJpeg();
-    return gfx::ColorSpace::CreateREC709();
-  }
-  if (image->profileFormat == AVIF_PROFILE_FORMAT_ICC) {
+  if (image->icc.size) {
     auto iccp = gfx::ICCProfile::FromData(image->icc.data, image->icc.size);
     if (iccp.IsValid())
       return iccp.GetColorSpace();
@@ -62,7 +49,16 @@ gfx::ColorSpace GetColorSpace(const avifImage* image) {
     // SetEmbeddedColorProfile() rather than handling all the color space
     // conversion during decode.
   }
-  return gfx::ColorSpace();
+  media::VideoColorSpace color_space(
+      image->colorPrimaries, image->transferCharacteristics,
+      image->matrixCoefficients,
+      image->yuvRange == AVIF_RANGE_FULL ? gfx::ColorSpace::RangeID::FULL
+                                         : gfx::ColorSpace::RangeID::LIMITED);
+  if (color_space.IsSpecified())
+    return color_space.ToGfxColorSpace();
+  if (image->yuvRange == AVIF_RANGE_FULL)
+    return gfx::ColorSpace::CreateJpeg();
+  return gfx::ColorSpace::CreateREC709();
 }
 
 media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {

@@ -1923,33 +1923,18 @@ String AXObject::RecursiveTextAlternative(const AXObject& ax_obj,
                                 name_from, nullptr, nullptr);
 }
 
-base::Optional<bool> AXObject::HiddenByDisplayLocking(const Node& node) const {
-  // content-visibility: hidden subtrees are always hidden.
-  if (DisplayLockUtilities::ShouldIgnoreNodeDueToDisplayLock(
-          node, DisplayLockActivationReason::kAccessibility)) {
-    return true;
-  }
-  // TODO(crbug.com/1072447):
-  // content-visibility: auto with dirty layout tree info are assumed to be
-  // visible. In order to get correct visibility value, the caller must
-  // make sure to update style and layout tree for this node.
-  if (node.GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
-          node, true /* ignore_adjacent_style */)) {
-    DCHECK(DisplayLockUtilities::NearestLockedExclusiveAncestor(node));
-    return false;
-  }
-  return base::nullopt;
-}
-
 bool AXObject::IsHiddenViaStyle() const {
-  if (GetLayoutObject())
-    return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
-
   Node* node = GetNode();
   if (!node)
     return false;
-  if (auto hidden_result = HiddenByDisplayLocking(*node))
-    return hidden_result.value();
+
+  // Display-locked nodes are always hidden.
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node))
+    return true;
+
+  if (GetLayoutObject())
+    return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
+
   if (Element* element = DynamicTo<Element>(node)) {
     const ComputedStyle* style = element->GetComputedStyle();
     return !style || style->IsEnsuredInDisplayNone() ||
@@ -1962,9 +1947,18 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
     return false;
 
+  auto* node = GetNode();
+  if (!node)
+    return false;
+
+  // Display-locked elements are available for text/name resolution.
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*node))
+    return false;
+
   if (GetLayoutObject())
     return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
-  else if (GetNode() && IsA<HTMLNoScriptElement>(GetNode()))
+
+  if (IsA<HTMLNoScriptElement>(node))
     return true;
 
   // This is an obscure corner case: if a node has no LayoutObject, that means
@@ -1976,17 +1970,13 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   Document* document = GetDocument();
   if (!document || !document->GetFrame())
     return false;
-  if (Node* node = GetNode()) {
-    auto* element = DynamicTo<Element>(node);
-    if (element && node->isConnected()) {
-      if (auto hidden_result = HiddenByDisplayLocking(*element))
-        return hidden_result.value();
-      const ComputedStyle* style = element->EnsureComputedStyle();
-      if (!style)
-        return false;
-      return style->Display() == EDisplay::kNone ||
-             style->Visibility() != EVisibility::kVisible;
-    }
+  auto* element = DynamicTo<Element>(node);
+  if (element && node->isConnected()) {
+    const ComputedStyle* style = element->EnsureComputedStyle();
+    if (!style)
+      return false;
+    return style->Display() == EDisplay::kNone ||
+           style->Visibility() != EVisibility::kVisible;
   }
   return false;
 }

@@ -19,7 +19,8 @@ bool CreateFilesAndDirectories(const base::FilePath& temp_dir,
 
   // Create empty prop files so ArcSessionManager's property expansion code
   // works like production.
-  for (const char* filename : {"build.prop", "default.prop"}) {
+  for (const char* filename :
+       {"default.prop", "build.prop", "vendor_build.prop"}) {
     if (base::WriteFile(source_dir->Append(filename), "", 1) != 1)
       return false;
   }

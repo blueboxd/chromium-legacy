@@ -1,13 +1,16 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer ignored
-++++++genericContainer
-++++++++staticText name='<newline>    '
+++++++genericContainer ignored
 ++++++++genericContainer
-++++++++++staticText name='child'
-++++++++staticText name='<newline>    '
-++++++++genericContainer
-++++++++++staticText name='nested locked element!'
-++++++++staticText name='<newline>    '
-++++++++genericContainer
-++++++++staticText name='<newline>  '
+++++++++genericContainer offscreen
+++++++++++staticText invisible offscreen name='<newline>    '
+++++++++++genericContainer invisible offscreen
+++++++++++++staticText invisible offscreen name='child'
+++++++++++staticText invisible offscreen name='<newline>    '
+++++++++++genericContainer invisible offscreen
+++++++++++++staticText invisible offscreen name='nested locked element!'
+++++++++++staticText invisible offscreen name='<newline>    '
+++++++++++genericContainer invisible offscreen
+++++++++++++staticText invisible offscreen name='nested non activatable locked element'
+++++++++++staticText invisible offscreen name='<newline>  '

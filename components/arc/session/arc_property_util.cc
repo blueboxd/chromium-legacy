@@ -287,14 +287,16 @@ bool ExpandPropertyFile(const base::FilePath& input,
 bool ExpandPropertyFiles(const base::FilePath& source_path,
                          const base::FilePath& dest_path) {
   CrosConfig config;
-  for (const char* file : {"default.prop", "build.prop"}) {
+  for (const char* file : {"default.prop", "build.prop", "vendor_build.prop"}) {
     if (!ExpandPropertyFile(source_path.Append(file), dest_path.Append(file),
                             &config)) {
       LOG(ERROR) << "Failed to expand " << source_path.Append(file);
       return false;
     }
   }
-  return true;
+  // Use the same permissions as stock Android for /vendor/build.prop.
+  return base::SetPosixFilePermissions(dest_path.Append("vendor_build.prop"),
+                                       0600);
 }
 
 }  // namespace arc

@@ -60,11 +60,7 @@ async_test(async (t) => {
   for (let i = 0; i < axTarget.childrenCount; ++i) {
     const axChild = axTarget.childAtIndex(i);
     t.step(() => { assert_false(axChild.isIgnored, "After acquire, isIgnored is false on child #" + i); });
-    if (i == displayNoneIndex || i == visibilityHiddenIndex) {
-      t.step(() => { assert_false(axChild.isVisible, "After acquire, isVisible is false on child #" + i); });
-    } else {
-      t.step(() => { assert_true(axChild.isVisible, "After acquire, isVisible is true on child #" + i); });
-    }
+    t.step(() => { assert_false(axChild.isVisible, "After acquire, isVisible is false on child #" + i); });
   }
 
   // Check that nodes in content-visibility:auto are available for aria-labelledby.
@@ -77,8 +73,8 @@ async_test(async (t) => {
     axTarget = axElementById("target");
 
     // Now that #target is not locked, it is saved as a normal AXLayout object and has  4 children:
-    // the text node "target" and 3 div children (#child, #displayNone, and #hidden).
-    t.step(() => { assert_equals(axTarget.childrenCount, 4, "Children count when not locked"); });
+    // the text node "target" and 4 div children (#child, #displayNone, #hidden, and #target_label).
+    t.step(() => { assert_equals(axTarget.childrenCount, 5, "Children count when not locked"); });
 
     for (let i = 0; i < axTarget.childrenCount; ++i) {
       const axChild = axTarget.childAtIndex(i);
@@ -91,8 +87,8 @@ async_test(async (t) => {
       }
     }
 
-    // Check that nodes in content-visibility:hidden is not available for aria-labelledby.
-    t.step(() => assert_equals(axTarget.name, ""));
+    // Check that nodes in content-visibility:auto are available for aria-labelledby.
+    t.step(() => assert_equals(axTarget.name, "Label"));
     t.done();
   }));
 }, "Nodes in a content-visibility auto tree are exposed to accessibility tree");

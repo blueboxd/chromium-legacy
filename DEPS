@@ -325,7 +325,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libavif
   # and whatever else without interference from each other.
-  'libavif_revision': 'f0a91c6e28fb3e230fef99e42ba440b7d57711c1',
+  'libavif_revision': 'aee0c3f1ebcc7d637efd2fd304a005464fe14172',
 
   # TODO(crbug.com/941824): The values below need to be kept in sync
   # between //DEPS and //buildtools/DEPS, so if you're updating one,
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f4615f5cf0cf1e8ef0156f14f9370297bfeede32',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0a4f3c86a62ee9aac0e486f568d8f81bb6bb74c9',
     'condition': 'checkout_src_internal',
   },
 

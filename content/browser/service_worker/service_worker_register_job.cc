@@ -498,12 +498,13 @@ void ServiceWorkerRegisterJob::StartWorkerForUpdate(
         update_checker_->updated_script_url(),
         update_checker_->cross_origin_embedder_policy());
     update_checker_.reset();
-  }
-
-  if (!registration()->GetNewestVersion()) {
-    // Subresource loader factories needs to be updated after the main script is
-    // loaded. This flag lets the script evaluation wait until the browser sends
-    // a message with a new subresoruce loader factories.
+  } else {
+    // When the update checker is not used, subresource loader factories needs
+    // to be updated after the main script is loaded because COEP header is not
+    // available until then. This flag lets the script evaluation wait until the
+    // browser sends a message with a new subresoruce loader factories.
+    // This happens when this is (1) a new registration, or (2) an old
+    // registration where the script URL is changed.
     new_version()->set_initialize_global_scope_after_main_script_loaded();
   }
 

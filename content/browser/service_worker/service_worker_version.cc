@@ -989,7 +989,6 @@ void ServiceWorkerVersion::InitializeGlobalScope(
   if (subresource_loader_factories) {
     // |subresource_loader_factories| is valid only when the service worker is
     // a new worker.
-    DCHECK_EQ(nullptr, registration->GetNewestVersion());
     DCHECK_EQ(NEW, status());
 
     // |script_loader_factories| should be updated too.

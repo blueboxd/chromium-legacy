@@ -1,5 +1,6 @@
 <!--
 @BLINK-ALLOW:offscreen
+@WAIT-FOR:doneCommitting
 -->
 <div>
   <div style="height:10000px;">spacer so that everything below will be offscreen (and won't get viewport-activated)</div>
@@ -18,6 +19,7 @@
     nested non-activatable locked element will not be in AX tree
   </div>
   normal text 3
+  <div id="statusDiv"></div>
 </div>
 
 <script>
@@ -26,4 +28,9 @@
   nested.removeAttribute("style");
   nonViewportActivatable.removeAttribute("style");
   nonActivatable.removeAttribute("style");
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      statusDiv.innerText = "doneCommitting";
+    });
+  });
 </script>

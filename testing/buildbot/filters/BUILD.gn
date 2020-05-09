@@ -127,12 +127,10 @@ source_set("fuchsia_filters") {
   data = [
     "//testing/buildbot/filters/fuchsia.base_perftests.filter",
     "//testing/buildbot/filters/fuchsia.components_unittests.filter",
-    "//testing/buildbot/filters/fuchsia.cc_unittests.filter",
     "//testing/buildbot/filters/fuchsia.content_unittests.filter",
     "//testing/buildbot/filters/fuchsia.mojo_unittests.filter",
     "//testing/buildbot/filters/fuchsia.net_perftests.filter",
     "//testing/buildbot/filters/fuchsia.net_unittests.filter",
-    "//testing/buildbot/filters/fuchsia.qemu.media_unittests.filter",
     "//testing/buildbot/filters/fuchsia.services_unittests.filter",
     "//testing/buildbot/filters/fuchsia.storage_unittests.filter",
     "//testing/buildbot/filters/fuchsia.ui_base_unittests.filter",

@@ -720,16 +720,6 @@ base::Optional<double> Animation::CalculateCurrentTime() const {
 // https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation
 void Animation::setStartTime(base::Optional<double> start_time_ms,
                              ExceptionState& exception_state) {
-  // TODO(crbug.com/916117): Implement setting start time for scroll-linked
-  // animations.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Scroll-linked WebAnimation currently does not support setting start"
-        " time.");
-    return;
-  }
-
   bool had_start_time = start_time_.has_value();
 
   // 1. Let timeline time be the current time value of the timeline that
@@ -799,12 +789,12 @@ void Animation::setStartTime(base::Optional<double> start_time_ms,
 
   // Update user agent.
   base::Optional<double> new_current_time = CurrentTimeInternal();
-  if (previous_current_time != new_current_time) {
+  // Even when the animation is not outdated,call SetOutdated to ensure
+  // the animation is tracked by its timeline for future timing
+  // updates.
+  if (previous_current_time != new_current_time ||
+      (!had_start_time && start_time_)) {
     SetOutdated();
-  } else if (!had_start_time && start_time_) {
-    // Even though this animation is not outdated, time to effect change is
-    // infinity until start time is set.
-    ForceServiceOnNextFrame();
   }
   SetCompositorPending(/*effect_changed=*/false);
 
@@ -1754,12 +1744,15 @@ void Animation::StartAnimationOnCompositor(
   // the playback rate preserve current time even if the start time is set.
   // Asynchronous updates have an associated pending play or pending pause
   // task associated with them.
-  if (start_time_ && !PendingInternal() && timeline_->IsDocumentTimeline()) {
-    start_time = To<DocumentTimeline>(*timeline_)
-                     .ZeroTime()
-                     .since_origin()
-                     .InSecondsF() +
-                 start_time_.value();
+  if (start_time_ && !PendingInternal()) {
+    double zero_time = 0;
+    if (timeline_->IsDocumentTimeline()) {
+      zero_time = To<DocumentTimeline>(*timeline_)
+                      .ZeroTime()
+                      .since_origin()
+                      .InSecondsF();
+    }
+    start_time = zero_time + start_time_.value();
     if (reversed) {
       start_time =
           start_time.value() - (EffectEnd() / fabs(EffectivePlaybackRate()));

@@ -276,7 +276,7 @@ public class FeedNewTabPageTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.FEED_HEADER_MENU)
+    @Features.EnableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(SigninPromoParams.class)
     public void testArticleSectionHeaderWithMenu(boolean disableSigninPromoCard) throws Exception {

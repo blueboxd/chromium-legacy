@@ -118,7 +118,6 @@
 <translation id="1147991416141538220">За да побарате пристап, контактирајте со администраторот на уредов.</translation>
 <translation id="1149401351239820326">Месец на истекување</translation>
 <translation id="1150565364351027703">Очила за сонце</translation>
-<translation id="1151841030700667295">Ќе ве одјавиме од сите сајтови, вклучително и од отворените картички.</translation>
 <translation id="1151917987301063366">Секогаш дозволувај <ph name="HOST" /> да пристапува до сензорите</translation>
 <translation id="1153356358378277386">Спарени уреди</translation>
 <translation id="1153636665119721804">Програма за „Напредна заштита на Google“</translation>
@@ -294,7 +293,6 @@
 <translation id="1390548061267426325">Отвори како обична картичка</translation>
 <translation id="1392232653471491344">Потребно е да се рестартира Linux</translation>
 <translation id="1393283411312835250">Сонце и облаци</translation>
-<translation id="1393787139683794508">Ова ќе ги избрише сите податоци и колачиња складирани од <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1395730723686586365">Ажурирањето започна</translation>
 <translation id="1396139853388185343">Грешка при поставување на печатачот</translation>
 <translation id="1396259464226642517">Дали резултатов беше неочекуван? <ph name="BEGIN_LINK" />Испратете повратни информации<ph name="END_LINK" /></translation>
@@ -856,7 +854,6 @@
 <translation id="2101225219012730419">Верзија:</translation>
 <translation id="211144231511833662">Избриши ги типовите</translation>
 <translation id="2111670510994270194">Нова картичка надесно</translation>
-<translation id="2112004299911874330">Ова ќе избрише <ph name="TOTAL_USAGE" /> од податоците меморирани од сајтовите.</translation>
 <translation id="21133533946938348">Прикачи картичка</translation>
 <translation id="2113479184312716848">Отвори &amp;датотека...</translation>
 <translation id="2113921862428609753">Пристап до информации на орган</translation>
@@ -2162,6 +2159,7 @@
 <translation id="3760460896538743390">Страница за проверка на &amp;заднина</translation>
 <translation id="37613671848467444">Отвори во &amp;Инкогнито прозорец</translation>
 <translation id="3761556954875533505">Да се дозволи сајтот да изменува датотеки?</translation>
+<translation id="3764314093345384080">Детални информации за верзијата</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Комуницирај со USB-уред}one{Комуницирај со # USB-уред}other{Комуницирај со # USB-уреди}}</translation>
 <translation id="3765246971671567135">Не можеше да се вчита правилото за офлајн демо-режим.</translation>
 <translation id="3768037234834996183">Се синхронизираат вашите претпочитања...</translation>
@@ -3484,7 +3482,6 @@
 <translation id="5546865291508181392">Најди</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{„<ph name="TAB_TITLE" />“}=1{„<ph name="TAB_TITLE" />“ и уште 1 картичка}one{„<ph name="TAB_TITLE" />“ и уште # картичка}other{„<ph name="TAB_TITLE" />“ и уште # картички}}</translation>
 <translation id="5548606607480005320">Безбедносна проверка</translation>
-<translation id="5549467165017213645">Ова ќе избрише <ph name="TOTAL_USAGE" /> од податоците меморирани од сајтовите и инсталираните апликации.</translation>
 <translation id="5551573675707792127">Тастатура и внесување текст</translation>
 <translation id="5553089923092577885">Сертификат на политика за мапирање</translation>
 <translation id="5554489410841842733">Оваа икона ќе биде видлива кога наставката може да дејствува на тековната страница.</translation>
@@ -3628,6 +3625,7 @@
 <translation id="5734362860645681824">Комуникации</translation>
 <translation id="5734697361979786483">Додајте споделување датотеки</translation>
 <translation id="5736796278325406685">Внесете важечко корисничко име</translation>
+<translation id="573759479754913123">За Chrome OS</translation>
 <translation id="5739017626473506901">Најавете се за да му помогнете на корисникот <ph name="USER_NAME" /> да додаде училишна сметка</translation>
 <translation id="5739235828260127894">Се чека потврда. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Многу голем</translation>
@@ -4142,7 +4140,6 @@
 <translation id="641081527798843608">Совпаѓање на предмети</translation>
 <translation id="6412673304250309937">Ги проверува URL-адресите во список со небезбедни сајтови меморирани во Chrome. Ако некој сајт се обиде да ви ја украде лозинката или кога ќе преземете штетна датотека, Chrome може да испрати и URL-адреси, вклучувајќи и делови од содржините на страницата, во „Безбедно прелистување“.</translation>
 <translation id="6412931879992742813">Нов инкогнито прозорец</translation>
-<translation id="6413591858632097328">Ова ќе ги избрише сите податоци и колачиња складирани од <ph name="ORIGIN_NAME" /> и нејзините инсталирани апликации.</translation>
 <translation id="641469293210305670">Инсталирајте ажурирања и апликации</translation>
 <translation id="6414888972213066896">Го прашавте родителот дали е во ред да го посетите сајтов</translation>
 <translation id="6415659939354280526">Избирање извор за „Амбиентален режим“</translation>
@@ -4191,7 +4188,6 @@
 <translation id="6467304607960172345">Оптимизирајте ги видеата на цел екран</translation>
 <translation id="6468485451923838994">Фонтови</translation>
 <translation id="6472207088655375767">ОТП</translation>
-<translation id="6472804939621540371">Ова ќе ги избрише сите податоци и колачиња меморирани од <ph name="SITE_GROUP_NAME" />, сите подредени сајтови и нејзината инсталирана апликација.</translation>
 <translation id="6472893788822429178">Прикажи копче Дома</translation>
 <translation id="6473842110411557830">Илустрација на фабричко ресетирање</translation>
 <translation id="6474498546677193336">Не можеше да се откаже споделувањето бидејќи некоја апликација ја користи папкава. Споделувањето на папкава ќе се откаже кога Linux ќе се исклучи нареден пат.</translation>
@@ -5073,7 +5069,6 @@
 <translation id="7664620655576155379">Неподдржан уред со Bluetooth: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="7665082356120621510">Резервирај големина</translation>
 <translation id="7665369617277396874">Додајте сметка</translation>
-<translation id="7665940458857700755">Ова ќе ги избрише сите податоци и колачиња меморирани од <ph name="SITE_GROUP_NAME" /> и сите подредени сајтови.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Погрешен PIN. Имате уште еден обид.}one{Погрешен PIN. Имате уште # обид.}other{Погрешен PIN. Имате уште # обиди.}}</translation>
 <translation id="7671130400130574146">Користи системска лента за наслови и граници</translation>
 <translation id="767127784612208024">Допрете за да го потврдите ресетирањето</translation>
@@ -5199,6 +5194,7 @@
 <translation id="7817361223956157679">Тастатурата на екран сѐ уште не функционира во апликациите на Linux</translation>
 <translation id="7818135753970109980">Додадена е нова тема (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA или RSN)</translation>
+<translation id="7819992334107904369">Синхронизација на Chrome</translation>
 <translation id="782057141565633384">К&amp;опирај ја адресата на видеото</translation>
 <translation id="7824864914877854148">Бекапот не може да се заврши поради грешка</translation>
 <translation id="782590969421016895">Користи тековни страници</translation>
@@ -5415,7 +5411,6 @@
 <translation id="8063235345342641131">Стандарден зелен аватар</translation>
 <translation id="8063535366119089408">Прикажи датотека</translation>
 <translation id="8068253693380742035">Допрете за да се најавите</translation>
-<translation id="8068809649322155577">Ова ќе ги избрише сите податоци и колачиња меморирани од <ph name="SITE_GROUP_NAME" />, сите подредени сајтови и нејзините инсталирани апликации.</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Отпечати како слика</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Податоците за апликации може да се секакви податоци што ги зачувала одредена апликација (според поставките на програмерот), вклучувајќи податоци како што се контактите, пораките и фотографиите.<ph name="END_PARAGRAPH1" />

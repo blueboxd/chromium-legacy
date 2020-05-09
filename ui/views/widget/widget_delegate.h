@@ -33,6 +33,12 @@ class VIEWS_EXPORT WidgetDelegate {
     Params();
     ~Params();
 
+    // Whether the window should display controls for the user to minimize,
+    // maximize, or resize it.
+    bool can_maximize = false;
+    bool can_minimize = false;
+    bool can_resize = false;
+
 #if defined(USE_AURA)
     // Whether to center the widget's title within the frame.
     bool center_title = false;
@@ -231,6 +237,9 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
+  void SetCanMaximize(bool can_maximize);
+  void SetCanMinimize(bool can_minimize);
+  void SetCanResize(bool can_resize);
   void SetFocusTraversesOut(bool focus_traverses_out);
   void SetIcon(const gfx::ImageSkia& icon);
   void SetShowCloseButton(bool show_close_button);

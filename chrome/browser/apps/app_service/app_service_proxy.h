@@ -45,6 +45,7 @@ namespace apps {
 class AppServiceImpl;
 
 #if defined(OS_CHROMEOS)
+class LacrosApps;
 class UninstallDialog;
 
 struct PauseData {
@@ -375,6 +376,7 @@ class AppServiceProxy : public KeyedService,
   std::unique_ptr<CrostiniApps> crostini_apps_;
   std::unique_ptr<ExtensionAppsChromeOs> extension_apps_;
   std::unique_ptr<PluginVmApps> plugin_vm_apps_;
+  std::unique_ptr<LacrosApps> lacros_apps_;
   // TODO(crbug.com/877898): Erase extension_web_apps_. One of these is always
   // nullptr.
   std::unique_ptr<ExtensionAppsChromeOs> extension_web_apps_;

@@ -577,7 +577,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   if (extension_id.empty()) {
     create_params.initial_bounds = window_bounds;
   } else {
-    create_params = Browser::CreateParams::CreateForApp(
+    // extension_id is only set for CREATE_TYPE_POPUP.
+    create_params = Browser::CreateParams::CreateForAppPopup(
         web_app::GenerateApplicationNameFromAppId(extension_id),
         false /* trusted_source */, window_bounds, window_profile,
         user_gesture());

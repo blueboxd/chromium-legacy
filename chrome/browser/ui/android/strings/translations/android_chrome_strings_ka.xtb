@@ -471,6 +471,7 @@
 <translation id="4913169188695071480">განახლების შეწყვეტა</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />მიიღეთ დახმარება<ph name="END_LINK" />, სანამ მოწყობილობების სკანირება მიმდინარეობს…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# გვერდი}other{# გვერდი}}</translation>
+<translation id="49268022542405662">თქვენი პაროლების ექსპორტირება და ჩამოტვირთვა მოხდება ტექსტური ფაილის სახით. ისინი ხილული იქნება ყველა ადამიანისა თუ აპისთვის, რომელსაც სამიზნე საქაღალდეზე წვდომა აქვს.</translation>
 <translation id="4932247056774066048">ვინაიდან <ph name="DOMAIN_NAME" />-ის მიერ მართული ანგარიშიდან გადიხართ, თქვენი Chrome მონაცემები წაიშლება ამ მოწყობილობიდან. ისინი შენარჩუნდება თქვენს Google ანგარიშში.</translation>
 <translation id="4943703118917034429">ვირტუალური რეალობა</translation>
 <translation id="4943872375798546930">შედეგები არ არის</translation>
@@ -753,6 +754,7 @@
 <translation id="7302081693174882195">დეტალები: დალაგებულია დაზოგილი მონაცემების მიხედვით</translation>
 <translation id="7328017930301109123">Lite რეჟიმში Chrome უფრო სწრაფად ტვირთავს გვერდებს და 60 პროცენტით ნაკლებ ტრაფიკს მოიხმარს.</translation>
 <translation id="7333031090786104871">ჯერ კიდევ მიმდინარეობს წინა საიტის დამატება</translation>
+<translation id="7340958967809483333">Discover-ის ვარიანტები</translation>
 <translation id="7352939065658542140">ვიდეო</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 არჩეული ერთეულის გაზიარება}other{# არჩეული ერთეულის გაზიარება}}</translation>
 <translation id="7359002509206457351">გადახდის მეთოდებზე წვდომა</translation>
@@ -817,6 +819,7 @@
 <translation id="780301667611848630">არა, მადლობთ</translation>
 <translation id="7810647596859435254">გახსნა აპით…</translation>
 <translation id="7821588508402923572">აქ გამოჩნდება ინტერნეტის ტრაფიკის თქვენ მიერ დაზოგილი მოცულობა</translation>
+<translation id="7835852323729233924">გაშვებული მედია</translation>
 <translation id="783819812427904514">ვიდეოს დადუმების მოხსნა</translation>
 <translation id="784934925303690534">დროის დიაპაზონი</translation>
 <translation id="7851858861565204677">სხვა მოწყობილობები</translation>

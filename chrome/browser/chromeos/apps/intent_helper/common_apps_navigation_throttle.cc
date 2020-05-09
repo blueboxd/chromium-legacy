@@ -29,6 +29,7 @@ apps::PickerEntryType GetPickerEntryType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kCrostini:
     case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kLacros:
       break;
     case apps::mojom::AppType::kArc:
       picker_entry_type = apps::PickerEntryType::kArc;

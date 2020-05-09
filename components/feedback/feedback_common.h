@@ -42,6 +42,9 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
 
   void AddLog(std::string name, std::string value);
   void AddLogs(SystemLogsMap logs);
+  // Remove a log with the specified name.
+  // Returns true iff there was a log with the specified name.
+  bool RemoveLog(std::string name);
 
   // Fill in |feedback_data| with all the data that we have collected.
   // CompressLogs() must have already been called.

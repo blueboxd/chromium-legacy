@@ -118,6 +118,7 @@ class UpdateService : public KeyedService,
   scoped_refptr<UpdateDataProvider> update_data_provider_;
 
   // The set of extension IDs that are being checked for update.
+  std::set<std::string> updating_extension_ids_;
   std::vector<InProgressUpdate> in_progress_updates_;
 
   THREAD_CHECKER(thread_checker_);

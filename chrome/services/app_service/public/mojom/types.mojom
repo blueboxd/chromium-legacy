@@ -92,6 +92,7 @@ enum AppType {
   kWeb,        // Web app.
   kMacNative,  // Native Mac app.
   kPluginVm,   // Plugin VM app.
+  kLacros,     // Lacros app.
 };
 
 // Whether an app is ready to launch, i.e. installed.

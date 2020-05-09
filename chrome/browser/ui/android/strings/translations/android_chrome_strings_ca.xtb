@@ -2,11 +2,11 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1028699632127661925">S'està enviant a <ph name="DEVICE_NAME" />...</translation>
-<translation id="103269572468856066">Esborrar dades d'aquests llocs i apps?</translation>
+<translation id="103269572468856066">Vols esborrar també les dades d'aquests llocs web i aplicacions?</translation>
 <translation id="1036348656032585052">Desactiva</translation>
 <translation id="1036727731225946849">S'està afegint <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">De llocs web</translation>
-<translation id="1045899828449635435">Esborrar dades d'aquests llocs?</translation>
+<translation id="1045899828449635435">Vols esborrar també les dades d'aquests llocs web?</translation>
 <translation id="1049743911850919806">Incògnit</translation>
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
 <translation id="1067922213147265141">Altres serveis de Google</translation>

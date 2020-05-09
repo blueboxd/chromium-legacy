@@ -571,7 +571,7 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
       2, 1.0, views::GridLayout::LEADING, views::GridLayout::LEADING);
 
   std::unique_ptr<views::LabelButton> action_button =
-      views::MdTextButton::CreateSecondaryUiBlueButton(
+      views::MdTextButton::CreateSecondaryUiProminentButton(
           this, l10n_util::GetStringUTF16(GetButtonTitle()));
   auto help_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(GetHelpLinkTitle()));

@@ -89,7 +89,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
@@ -484,6 +483,8 @@ void DeprecateSameSiteCookies(
        net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() ||
        base::FeatureList::IsEnabled(features::kCookieDeprecationMessages));
 
+  bool breaking_context_downgrade = false;
+
   for (const net::CookieWithStatus& excluded_cookie : cookie_list) {
     std::string cookie_url =
         net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
@@ -518,6 +519,9 @@ void DeprecateSameSiteCookies(
           net::cookie_util::IsSameSiteByDefaultCookiesEnabled(),
           net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled());
     }
+
+    breaking_context_downgrade = breaking_context_downgrade ||
+                                 excluded_cookie.status.HasDowngradeWarning();
   }
 
   // TODO(crbug.com/990439): Do we need separate UseCounter metrics for
@@ -530,6 +534,34 @@ void DeprecateSameSiteCookies(
   if (samesite_none_insecure_cookies) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         frame, blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
+  }
+
+  if (breaking_context_downgrade) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame, blink::mojom::WebFeature::kSchemefulSameSiteContextDowngrade);
+  }
+}
+
+void RecordContextDowngradeUKM(
+    WebContents* web_contents,
+    CookieAccessDetails::Type access_type,
+    const net::CanonicalCookie::CookieInclusionStatus& status,
+    const GURL& url) {
+  DCHECK(web_contents);
+
+  ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
+                                ->GetMainFrame()
+                                ->GetPageUkmSourceId();
+
+  if (access_type == CookieAccessDetails::Type::kRead) {
+    ukm::builders::SchemefulSameSiteContextDowngrade(source_id)
+        .SetRequestPerCookie(status.GetBreakingDowngradeMetricsEnumValue(url))
+        .Record(ukm::UkmRecorder::Get());
+  } else {
+    DCHECK(access_type == CookieAccessDetails::Type::kChange);
+    ukm::builders::SchemefulSameSiteContextDowngrade(source_id)
+        .SetResponsePerCookie(status.GetBreakingDowngradeMetricsEnumValue(url))
+        .Record(ukm::UkmRecorder::Get());
   }
 }
 
@@ -550,7 +582,8 @@ void ReportCookiesAccessedOnUI(
   }
 
   net::CookieList accepted, blocked;
-  std::vector<net::CanonicalCookie::CookieInclusionStatus> accepted_status;
+  std::vector<net::CanonicalCookie::CookieInclusionStatus> accepted_status,
+      blocked_status_for_metrics;
   for (auto& cookie_and_status : cookie_list) {
     if (cookie_and_status.status.HasExclusionReason(
             net::CanonicalCookie::CookieInclusionStatus::
@@ -559,6 +592,11 @@ void ReportCookiesAccessedOnUI(
     } else if (cookie_and_status.status.IsInclude()) {
       accepted.push_back(std::move(cookie_and_status.cookie));
       accepted_status.push_back(std::move(cookie_and_status.status));
+    } else if (cookie_and_status.status.ShouldRecordDowngradeMetrics()) {
+      // Must run after the case for |accepted_status| because
+      // ShouldRecordDowngradeMetrics() will match on status.IsInclude() which
+      // would steal the status from |accepted_status|.
+      blocked_status_for_metrics.push_back(std::move(cookie_and_status.status));
     }
   }
 
@@ -572,6 +610,10 @@ void ReportCookiesAccessedOnUI(
           ->OnCookiesAccessed({access_type, url,
                                site_for_cookies.RepresentativeUrl(), accepted,
                                /* blocked_by_policy =*/false});
+
+      for (const auto& status : accepted_status) {
+        RecordContextDowngradeUKM(web_contents, access_type, status, url);
+      }
     }
   }
 
@@ -585,6 +627,17 @@ void ReportCookiesAccessedOnUI(
           ->OnCookiesAccessed({access_type, url,
                                site_for_cookies.RepresentativeUrl(), blocked,
                                /* blocked_by_policy =*/true});
+    }
+  }
+
+  for (const auto& status : blocked_status_for_metrics) {
+    for (const GlobalFrameRoutingId& id : destinations) {
+      WebContents* web_contents =
+          GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
+      if (!web_contents)
+        continue;
+
+      RecordContextDowngradeUKM(web_contents, access_type, status, url);
     }
   }
 }

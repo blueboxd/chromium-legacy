@@ -491,13 +491,18 @@ ScriptPromise USBDevice::controlTransferOut(
 ScriptPromise USBDevice::clearHalt(ScriptState* script_state,
                                    String direction,
                                    uint8_t endpoint_number) {
+  UsbTransferDirection mojo_direction = direction == "in"
+                                            ? UsbTransferDirection::INBOUND
+                                            : UsbTransferDirection::OUTBOUND;
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   if (EnsureEndpointAvailable(direction == "in", endpoint_number, resolver)) {
     device_requests_.insert(resolver);
-    device_->ClearHalt(endpoint_number, WTF::Bind(&USBDevice::AsyncClearHalt,
-                                                  WrapPersistent(this),
-                                                  WrapPersistent(resolver)));
+    device_->ClearHalt(
+        mojo_direction, endpoint_number,
+        WTF::Bind(&USBDevice::AsyncClearHalt, WrapPersistent(this),
+                  WrapPersistent(resolver)));
   }
   return promise;
 }

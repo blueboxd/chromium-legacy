@@ -325,11 +325,6 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     feedback_data->set_screenshot_uuid(*feedback_info.screenshot_blob_uuid);
   }
 
-  const bool send_histograms =
-      feedback_info.send_histograms && *feedback_info.send_histograms;
-  const bool send_bluetooth_logs =
-      feedback_info.send_bluetooth_logs && *feedback_info.send_bluetooth_logs;
-
 #if defined(OS_CHROMEOS)
   feedback_data->set_from_assistant(feedback_info.from_assistant &&
                                     *feedback_info.from_assistant);
@@ -338,6 +333,13 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
       *feedback_info.assistant_debug_info_allowed);
 #endif  // defined(OS_CHROMEOS)
 
+  const bool send_histograms =
+      feedback_info.send_histograms && *feedback_info.send_histograms;
+  const bool send_bluetooth_logs =
+      feedback_info.send_bluetooth_logs && *feedback_info.send_bluetooth_logs;
+  const bool send_tab_titles =
+      feedback_info.send_tab_titles && *feedback_info.send_tab_titles;
+
   if (params->feedback.system_information) {
     for (SystemInformation& info : *params->feedback.system_information)
       feedback_data->AddLog(std::move(info.key), std::move(info.value));
@@ -345,12 +347,14 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     delegate->FetchExtraLogs(
         feedback_data,
         base::BindOnce(&FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched,
-                       this, send_histograms, send_bluetooth_logs));
+                       this, send_histograms, send_bluetooth_logs,
+                       send_tab_titles));
     return RespondLater();
 #endif  // defined(OS_CHROMEOS)
   }
 
-  OnAllLogsFetched(send_histograms, send_bluetooth_logs, feedback_data);
+  OnAllLogsFetched(send_histograms, send_bluetooth_logs, send_tab_titles,
+                   feedback_data);
 
   return RespondLater();
 }
@@ -358,8 +362,12 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
 void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
     bool send_histograms,
     bool send_bluetooth_logs,
+    bool send_tab_titles,
     scoped_refptr<feedback::FeedbackData> feedback_data) {
-
+  if (!send_tab_titles) {
+    feedback_data->RemoveLog(
+        feedback::FeedbackReport::kMemUsageWithTabTitlesKey);
+  }
   feedback_data->CompressSystemInfo();
 
   if (send_histograms) {

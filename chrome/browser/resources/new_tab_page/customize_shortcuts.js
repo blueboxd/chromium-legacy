@@ -110,6 +110,11 @@ class CustomizeShortcutsElement extends PolymerElement {
 
   /** @private */
   onCustomLinksClick_() {
+    if (!this.customLinksEnabled_) {
+      this.pageHandler_.onCustomizeDialogAction(
+          newTabPage.mojom.CustomizeDialogAction
+              .SHORTCUTS_CUSTOM_LINKS_CLICKED);
+    }
     this.customLinksEnabled_ = true;
     this.hide_ = false;
   }
@@ -119,12 +124,20 @@ class CustomizeShortcutsElement extends PolymerElement {
    * @private
    */
   onHideChange_(e) {
+    this.pageHandler_.onCustomizeDialogAction(
+        newTabPage.mojom.CustomizeDialogAction
+            .SHORTCUTS_VISIBILITY_TOGGLE_CLICKED);
     this.hide_ = e.detail;
   }
 
 
   /** @private */
   onMostVisitedClick_() {
+    if (this.customLinksEnabled_) {
+      this.pageHandler_.onCustomizeDialogAction(
+          newTabPage.mojom.CustomizeDialogAction
+              .SHORTCUTS_MOST_VISITED_CLICKED);
+    }
     this.customLinksEnabled_ = false;
     this.hide_ = false;
   }

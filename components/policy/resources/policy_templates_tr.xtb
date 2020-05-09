@@ -295,6 +295,15 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="1474273443907024088">TLS Yanlış Başlatma'yı devre dışı bırak</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Arka ışık bilgilerini raporla</translation>
+<translation id="1488406778491620405"><ph name="PRODUCT_NAME" /> erişilebilirlik özelliği, görme engelli ekran okuyucu kullanıcılarının web'deki etiketsiz resimlerin açıklamalarını almalarını sağlar. Bu özelliği etkinleştirmeyi seçen kullanıcıların, web'de karşılaştıkları etiketlenmemiş resimlerin otomatik olarak açıklamalarını sağlayacak anonim bir Google hizmetini kullanma seçenekleri olur.
+
+          Bu özellik etkinleştirilirse resimlerin içeriği, açıklama oluşturmak için Google sunucularına gönderilir. Çerez veya başka kullanıcı verileri gönderilmez. Google, hiçbir resim içeriğini saklamaz veya günlüğe kaydetmez.
+
+          Bu politika true (doğru) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> özelliği etkinleştirilir, ancak bundan yalnızca ekran okuyucu veya benzeri başka yardımcı teknolojileri kullanan kullanıcılar etkilenir.
+
+          Bu politika false (yanlış) değerine ayarlanırsa kullanıcıların özelliği etkinleştirme seçeneği olmaz.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="1497640071678474358">Pop-up'lar açmasına izin verilmeyen siteleri belirten bir url kalıpları listesi ayarlamanıza olanak sağlar.
 
           Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultPopupsSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
@@ -1623,6 +1632,7 @@ Bu politika False (Yanlış) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> y
 
       Bu politika yalnızca öneride bulunabilir. Önerilen yerel ayarları en üste taşımak için bu politikayı kullanabilirsiniz, ancak kullanıcıların oturumları için <ph name="PRODUCT_OS_NAME" /> tarafından desteklenen herhangi bir yerel ayarı seçmesine her zaman izin verilir.
       </translation>
+<translation id="3373381043600809954"><ph name="PRODUCT_NAME" /> özelliğini etkinleştir</translation>
 <translation id="3378482432905539452">Bu politika kullanımdan kaldırılmıştır. Lütfen Flash eklentisinin kullanılabilirliğini kontrol etmek için <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> politikasını, PDF dosyaları açılırken entegre PDF görüntüleyicisinin kullanılıp kullanılmayacağını kontrol etmek için de <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> politikasını kullanın.
 
       Kullanıcıların <ph name="PRODUCT_NAME" /> içinde etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirtir.
@@ -3038,7 +3048,6 @@ politikayı geçersiz kılamaz.
 
       Bu politika, yöneticinin başlangıçta VPN bağlantısı kurmaya karar vermesini sağlayan "Her zaman açık VPN" özelliğiyle birlikte kullanılmak üzere tasarlanmıştır.</translation>
 <translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> bağlantısını etkinleştir</translation>
-<translation id="5404635530342514143">Bu özellik, kullanıcının bir düğmeyi tıklayarak şifreyi kilit/başlama ekranında görüntülemesine olanak tanır.</translation>
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> oturum açma ekranında hangi klavye düzenlerine izin verileceğini yapılandırır.
 
       Bu politika bir giriş yöntemi tanımlayıcıları listesine ayarlanırsa belirtilen giriş yöntemleri oturum açma ekranında kullanılabilir. Belirtilen ilk giriş yöntemi önceden seçilir. Oturum açma ekranında bir kullanıcı simgesine odaklanılmışken, kullanıcının kullandığı son giriş yöntemi de bu politikada belirtilen giriş yöntemlerine ek olarak gösterilir. Bu politika ayarlanmazsa oturum açma ekranındaki giriş yöntemleri, oturum açma ekranının görüntülendiği yerel ayardan türetilir. Geçerli giriş yöntemi tanımlayıcıları olmayan değerler yok sayılır.</translation>
@@ -3050,6 +3059,10 @@ politikayı geçersiz kılamaz.
       yalnızca AudioCaptureAllowedUrls içinde yapılandırılmış olan URL'ler için kullanılabilir.
 
       Bu politika yalnızca dahili mikrofonu değil, her tür ses girişini etkiler.</translation>
+<translation id="5417906792459853336">Cihazın uygulama envanteri ve kullanımı için bilgi raporlayın.
+
+      Bu politika false (yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa bilgi raporlanmaz.
+      True (doğru) değerine ayarlanırsa cihazın uygulamaları ve kullanımı raporlanır.</translation>
 <translation id="5422643441807528365"><ph name="PLUGIN_VM_NAME" /> lisans anahtarı</translation>
 <translation id="5423001109873148185">Bu politika etkinleştirilirse, mevcut varsayılan tarayıcıdan arama motorlarının içe aktarılmasını zorlar. Etkinleştirilirse, bu politika içe aktarma iletişim kutusunu da etkiler.
 
@@ -3102,6 +3115,7 @@ politikayı geçersiz kılamaz.
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırabilmenizi sağlar.
           Bu politika ayarlanmadan bırakılırsa kullanılan varsayılan ayar, oluşturma işlemini ana makine tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bu ayarı geçersiz kılabilir ve HTML sayfalarını oluşturma işleminin varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> tarafından yapılmasını sağlayabilirsiniz.</translation>
 <translation id="5464816904705580310">Yönetilen kullanıcılar için ayarları yapılandırın.</translation>
+<translation id="5466596281866046569">Uygulama bilgilerini bildir</translation>
 <translation id="546726650689747237">AC güçle çalışırken ekran karartma gecikmesi</translation>
 <translation id="5469143988693423708">Kullanıcının Crostini'yi çalıştırmasına izin verilir</translation>
 <translation id="5469825884154817306">Bu sitelerdeki resimleri engelle</translation>
@@ -4105,7 +4119,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
           Ölçekleme faktörü en az %100 olmalıdır.</translation>
 <translation id="7086720321892395256">Gizlilik ekranı özelliği için kullanıcı ve cihaz politikalarını kontrol eder.</translation>
-<translation id="7095145887485705461">Kilit/başlangıç ekranında şifre görüntüleme düğmesini etkinleştirir.</translation>
 <translation id="710003290625031750">Geniş şema açıklaması:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
 

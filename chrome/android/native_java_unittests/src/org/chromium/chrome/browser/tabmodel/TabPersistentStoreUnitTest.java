@@ -78,7 +78,7 @@ public class TabPersistentStoreUnitTest {
         when(mTabCreatorManager.getTabCreator(true)).thenReturn(mIncognitoTabCreator);
 
         when(mPersistencePolicy.getStateFileName())
-                .thenReturn(TabPersistencePolicy.SAVED_STATE_FILE_PREFIX + "state_files_yay");
+                .thenReturn(TabPersistentStore.SAVED_STATE_FILE_PREFIX + "state_files_yay");
         when(mPersistencePolicy.isMergeInProgress()).thenReturn(false);
         when(mPersistencePolicy.performInitialization(any(TaskRunner.class))).thenReturn(false);
     }

@@ -482,6 +482,34 @@ void ImageReaderGLOwner::OnFrameAvailable(void* context, AImageReader* reader) {
   image_reader_ptr->frame_available_cb_.Run();
 }
 
+void ImageReaderGLOwner::GetCodedSizeAndVisibleRect(
+    gfx::Size rotated_visible_size,
+    gfx::Size* coded_size,
+    gfx::Rect* visible_rect) {
+  DCHECK(visible_rect);
+  DCHECK(coded_size);
+
+  AHardwareBuffer* buffer = nullptr;
+  if (current_image_ref_) {
+    loader_.AImage_getHardwareBuffer(current_image_ref_->image(), &buffer);
+    if (!buffer) {
+      DLOG(ERROR) << "Unable to get an AHardwareBuffer from the image";
+    }
+  }
+  if (!buffer) {
+    *coded_size = gfx::Size();
+    *visible_rect = gfx::Rect();
+    return;
+  }
+  // Get the buffer descriptor. Note that for querying the buffer descriptor, we
+  // do not need to wait on the AHB to be ready.
+  AHardwareBuffer_Desc desc;
+  base::AndroidHardwareBufferCompat::GetInstance().Describe(buffer, &desc);
+
+  *visible_rect = GetCropRect();
+  *coded_size = gfx::Size(desc.width, desc.height);
+}
+
 ImageReaderGLOwner::ImageRef::ImageRef() = default;
 ImageReaderGLOwner::ImageRef::~ImageRef() = default;
 ImageReaderGLOwner::ImageRef::ImageRef(ImageRef&& other) = default;

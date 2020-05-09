@@ -114,7 +114,6 @@
 <translation id="1147991416141538220">पहुँच माग्न यस यन्त्रका प्रशासकलाई सम्पर्क गर्नुहोस्।</translation>
 <translation id="1149401351239820326">म्याद सकिने महिना</translation>
 <translation id="1150565364351027703">शीतल चस्मा</translation>
-<translation id="1151841030700667295">तपाईंलाई खुला रहेका ट्याबहरूसहित सबै साइटहरूबाट साइन आउट गरिने छ।</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> लाई सेन्सरहरूमाथि पहुँच राख्न सधै अनुमति दिनुहोस्‌</translation>
 <translation id="1153356358378277386">जोडा बनाइएका यन्त्रहरू</translation>
 <translation id="1153636665119721804">Google को सुरक्षासम्बन्धी उन्नत सुविधा कार्यक्रम</translation>
@@ -290,7 +289,6 @@
 <translation id="1390548061267426325">नियमित ट्याबको रूपमा खोल्नुहोस्</translation>
 <translation id="1392232653471491344">Linux पुनः सुरु गर्न आवश्यक छ</translation>
 <translation id="1393283411312835250">घाम र बादल</translation>
-<translation id="1393787139683794508">यस कार्यले <ph name="ORIGIN_NAME" /> ले भण्डारण गरेका सबै डेटा र कुकीहरू खाली गर्ने छ।</translation>
 <translation id="1395730723686586365">अद्यतनकर्ता सुरु भयो</translation>
 <translation id="1396139853388185343">प्रिन्टर सेटअप गर्दा त्रुटि</translation>
 <translation id="1396259464226642517">तपाईंलाई यस्तो परिणाम आउला भन्ने लागेको थियो? <ph name="BEGIN_LINK" />प्रतिक्रिया पठाउनुहोस्<ph name="END_LINK" /></translation>
@@ -843,7 +841,6 @@
 <translation id="2101225219012730419">संस्करण:</translation>
 <translation id="211144231511833662">प्रकारहरू हटाउनुहोस्</translation>
 <translation id="2111670510994270194">दायाँपट्टि नयाँ ट्याब</translation>
-<translation id="2112004299911874330">यसले साइटहरूले भण्डारण गरेको <ph name="TOTAL_USAGE" /> डेटा मेटाउने छ।</translation>
 <translation id="21133533946938348">ट्याबलाई पिन गर्नुहोस्</translation>
 <translation id="2113479184312716848">&amp;फाइल खोल्नुहोस्...</translation>
 <translation id="2113921862428609753">अख्यतियार जानकारी पहुँच</translation>
@@ -1014,7 +1011,7 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% सम्पन्न भयो</translation>
 <translation id="2318143611928805047">कागज परिमाण</translation>
 <translation id="2318817390901984578">Android एपहरू प्रयोग गर्न, आफ्नो <ph name="DEVICE_TYPE" /> लाई चार्ज गर्दै अद्यावधिक गर्नुहोस्।</translation>
-<translation id="2319993584768066746">साइन इन गर्ने स्क्रिनमा देखाइने फोटाहरू</translation>
+<translation id="2319993584768066746">साइन इन गर्ने स्क्रिनमा देखाइने फोटोहरू</translation>
 <translation id="2322193970951063277">हेडर तथा फुटरहरू</translation>
 <translation id="2322318151094136999">कुनै साइटले सिरियल पोर्टहरूमाथि पहुँच गर्न खोज्दा सोध्नुहोस् (सिफारिस गरिएको)</translation>
 <translation id="2325444234681128157">पासवर्ड सम्झनुहोस्</translation>
@@ -2133,6 +2130,7 @@
 <translation id="3760460896538743390">&amp;पृष्ठभूमि पृष्ठ निरीक्षण गर्नुहोस्</translation>
 <translation id="37613671848467444">&amp;इनकगनिटो विण्डोमा खोल्नुहोस्</translation>
 <translation id="3761556954875533505">साइटलाई फाइलहरू सम्पादन गर्न दिने हो?</translation>
+<translation id="3764314093345384080">बिल्ड बारे विस्तृत जानकारी</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{ एउटा USB यन्त्रमार्फत संचार गर्नुहोस्}other{ # USB यन्त्रहरूमार्फत संचार गर्नुहोस्}}</translation>
 <translation id="3765246971671567135">अफलाइन डेमो मोड नीति पढ्न सकिएन।</translation>
 <translation id="3768037234834996183">तपाईँका प्राथमिकताहरू सिंक गर्दै...</translation>
@@ -2328,7 +2326,7 @@
 <translation id="3982375475032951137">केही सरल चरणमार्फत आफ्नो ब्राउजर सेटअप गर्नुहोस्</translation>
 <translation id="3983400541576569538">केही अनुप्रयोगहरूका डेटा हराउन सक्छन्</translation>
 <translation id="3983586614702900908">एक अज्ञात विक्रेता देखि उपकरणहरू</translation>
-<translation id="3983764759749072418">Play स्टोरका अनुप्रयोगहरूले यस यन्त्रमाथि पहुँच राख्न सक्छन्।</translation>
+<translation id="3983764759749072418">Play स्टोरका एपहरूले यस यन्त्रमाथि पहुँच राख्न सक्छन्।</translation>
 <translation id="3983769721878416534">क्लिक गर्नुभन्दा अघिको ढिलाइ</translation>
 <translation id="3984159763196946143">डेमो मोड सुरु गर्न सकिएन</translation>
 <translation id="3984431586879874039">यस साइटलाई तपाईंको सुरक्षा साँचो हेर्न दिने हो?</translation>
@@ -3435,7 +3433,6 @@
 <translation id="5546865291508181392">भेटाउनुहोस्</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" र अरू १ ट्याब}other{"<ph name="TAB_TITLE" />" र अरू # ट्याबहरू}}</translation>
 <translation id="5548606607480005320">सुरक्षा जाँच</translation>
-<translation id="5549467165017213645">यसले साइट तथा स्थापना गरिएका अनुप्रयोगहरूले भण्डारण गरेको <ph name="TOTAL_USAGE" /> डेटा मेटाउने छ।</translation>
 <translation id="5551573675707792127">किबोर्ड र पाठ इनपुट</translation>
 <translation id="5553089923092577885">प्रमाणपत्र नीति मानचित्रहरू</translation>
 <translation id="5554489410841842733">यो प्रतिमा जब देखा पर्छ जब विस्तारले हालको पृष्ठमा काम गर्न सक्दैन।</translation>
@@ -3523,7 +3520,7 @@
 <translation id="5658415415603568799">अतिरिक्त सुरक्षाका खातिर Smart Lock ले तपाईंलाई २० घन्टापछि आफ्नो पासवर्ड प्रविष्ट गर्न लगाउन सक्छ।</translation>
 <translation id="5659593005791499971">इमेल</translation>
 <translation id="5659833766619490117">यस पृष्ठलाई अनुवाद गर्न सकिएन</translation>
-<translation id="5662513737565158057">Linux अनुप्रयोगहरूले काम गर्ने तरिका परिवर्तन गर्नुहोस्।</translation>
+<translation id="5662513737565158057">Linux एपहरूले काम गर्ने तरिका परिवर्तन गर्नुहोस्।</translation>
 <translation id="5667546120811588575">Google Play सेटअप गरिँदै छ…</translation>
 <translation id="5669267381087807207">सक्रिय गर्दै</translation>
 <translation id="5669691691057771421">नयाँ PIN प्रविष्टि गर्नुहोस्</translation>
@@ -3575,6 +3572,7 @@
 <translation id="5734362860645681824">सञ्चारहरू</translation>
 <translation id="5734697361979786483">फाइल आदान प्रदान गर्ने सुविधा थप्नुहोस्</translation>
 <translation id="5736796278325406685">कृपया एउटा मान्य प्रयोगकर्ता नाम थप्नुहोस्</translation>
+<translation id="573759479754913123">क्रोम OS का बारेमा</translation>
 <translation id="5739017626473506901"><ph name="USER_NAME" /> लाई विद्यालयको खाता थप्न मद्दत गर्न साइन इन गर्नुहोस्</translation>
 <translation id="5739235828260127894">पुष्टिका लागि प्रतीक्षा गर्दै। <ph name="LINK_BEGIN" />थप जान्नुहोस्।<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">धेरै ठुलो</translation>
@@ -4082,7 +4080,6 @@
 <translation id="641081527798843608">विषयको मिलान</translation>
 <translation id="6412673304250309937">Chrome मा भण्डारण गरिएका असुरक्षित साइटको सूची जाँच गरी URL हरू सुरक्षित छन् वा छैनन् भन्ने कुरा यकिन गर्छ। कुनै साइटले तपाईंको पासवर्ड चोरी गर्न खोज्दा वा तपाईंले कुनै हानिकारक फाइल डाउनलोड गर्दा Chrome ले पृष्ठका केही सामग्रीसहित URL हरूलाई सुरक्षित ब्राउजिङमा पठाउन पनि सक्छ।</translation>
 <translation id="6412931879992742813">नयाँ गुप्त विण्डो</translation>
-<translation id="6413591858632097328">यस कार्यले <ph name="ORIGIN_NAME" /> ले भण्डारण गरेका सबै डेटा र कुकीका साथै यसले स्थापना गरेका एपहरू मेटाउने छ।</translation>
 <translation id="641469293210305670">अद्यावधिक र एपहरू स्थापना गर्नुहोस्</translation>
 <translation id="6414888972213066896">तपाईंले यो साइटमा जानु ठिक हुन्छ वा हुँदैन भनेर आफ्नो अभिभावकलाई सोध्नुभएको थियो</translation>
 <translation id="6415900369006735853">आफ्नो फोनमार्फत इन्टरनेटमा जोडिनुहोस्</translation>
@@ -4130,7 +4127,6 @@
 <translation id="6467304607960172345">पूर्ण स्क्रिनका भिडियोहरूलाई अप्टिमाइज गर्नुहोस्</translation>
 <translation id="6468485451923838994">फन्टहरू</translation>
 <translation id="6472207088655375767">OTP</translation>
-<translation id="6472804939621540371">यसले <ph name="SITE_GROUP_NAME" /> ले भण्डारण गरेका सबै डेटा, कुकीहरू र यसअन्तर्गतका सबै साइट र यसमा स्थापना गरिएका एपहरू हटाउने छ।</translation>
 <translation id="6472893788822429178">गृह बटन देखाउनुहोस्</translation>
 <translation id="6473842110411557830">पावरवाशका चित्रणहरू</translation>
 <translation id="6474498546677193336">एउटा अनुप्रयोगले यो फोल्डर प्रयोग गरिरहेका कारण आदान प्रदान गर्ने कार्य रद्द गर्न सकिएन। अर्को पटक Linux बन्द हुँदा उक्त फोल्डरको आदान प्रदान रद्द गरिने छ।</translation>
@@ -5004,7 +5000,6 @@
 <translation id="7664620655576155379">असमर्थित ब्लुतुथ यन्त्र: "<ph name="DEVICE_NAME" />"।</translation>
 <translation id="7665082356120621510">आकार रिजर्भ गर्नुहोस्</translation>
 <translation id="7665369617277396874">खाता थप्नुहोस्</translation>
-<translation id="7665940458857700755">यसले <ph name="SITE_GROUP_NAME" /> र यसअन्तर्गतका सबै साइटहरूले भण्डारण गरेका सबै डेटा र कुकीहरू हटाउने छ।</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN मिलेन। तपाईं अब एक पटक मात्र प्रयास गर्न सक्नुहुन्छ।}other{PIN मिलेन। तपाईं अब # पटक मात्र प्रयास गर्न सक्नुहुन्छ।}}</translation>
 <translation id="7671130400130574146">प्रणाली शीर्षक पट्टी तथा किनाराहरू प्रयोग गर्नुहोस्</translation>
 <translation id="767127784612208024">रिसेट गर्ने कार्य पुष्टि गर्न छुनुहोस्</translation>
@@ -5129,6 +5124,7 @@
 <translation id="7817361223956157679">अनस्क्रिन किबोर्डले Linux का अनुप्रयोगहरूमा अझै काम गर्दैन</translation>
 <translation id="7818135753970109980">नयाँ थिम थपियो (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA वा RSN)</translation>
+<translation id="7819992334107904369">Chrome सिंक</translation>
 <translation id="782057141565633384">भिडियो ठेगानाको प्रतिलिपि बनाउनुहोस्</translation>
 <translation id="7824864914877854148">कुनै त्रुटि भएकाले ब्याकअप पूरा गर्न सकिएन</translation>
 <translation id="782590969421016895">हालका पृष्ठहरू प्रयोग गर्नुहोस्</translation>
@@ -5341,7 +5337,6 @@
 <translation id="8063235345342641131">पूर्वनिर्धारित हरियो अवतार</translation>
 <translation id="8063535366119089408">फाइल हेर्नुहोस्</translation>
 <translation id="8068253693380742035">साइन इन गर्न छुनुहोस्</translation>
-<translation id="8068809649322155577">यसले <ph name="SITE_GROUP_NAME" /> ले भण्डारण गरेका सबै डेटा, कुकीहरू र यसअन्तर्गतका सबै साइट र यसमा स्थापना गरिएका एपहरू हटाउने छ।</translation>
 <translation id="8069615408251337349">Google क्लाउड प्रिन्टिङ</translation>
 <translation id="8071432093239591881">छविको रूपमा प्रिन्ट गर्नुहोस्</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />अनुप्रयोगका डेटा भनेको सम्पर्क, सन्देश र तस्बिरहरू जस्ता डेटालगायत कुनै अनुप्रयोगले सुरक्षित गरेको (विकासकर्ताको सेटिङहरूका आधारमा) जुनसुकै डेटा हुन सक्छ।<ph name="END_PARAGRAPH1" />

@@ -124,6 +124,8 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void OnThemeChanged() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void RequestFocus() override;
+  bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
+  void OnVisibleBoundsChanged() override;
 
   // Overridden from TextfieldController:
   void ContentsChanged(Textfield* sender,

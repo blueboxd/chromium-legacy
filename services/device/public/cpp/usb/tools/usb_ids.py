@@ -70,7 +70,7 @@ def GenerateVendorDefinitions(table):
   for vendor_id in sorted(table.keys()):
     vendor = table[vendor_id]
 
-    product_table = "NULL"
+    product_table = "nullptr"
     if len(vendor["products"]) != 0:
       product_table = "vendor_%.4x_products" % (vendor["id"])
     output += "  {\"%s\", %s, 0x%.4x, %d},\n" % (EscapeName(vendor["name"]),

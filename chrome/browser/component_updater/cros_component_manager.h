@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 
 namespace base {
 class FilePath;
@@ -16,8 +17,31 @@ class FilePath;
 namespace component_updater {
 
 // This class contains functions used to register and install a component.
-class CrOSComponentManager {
+//
+// This innocuous looking class unfortunately cannot be pure abstract and must
+// inherit from base::RefCountedThreadSafe. This class has two concrete
+// subclasses: FakeCrOSComponentManager (for tests) and CrOSComponentInstaller
+// (for production). The implementation of
+// CrOSComponentInstaller::IsRegisteredMayBlock must be called from a thread
+// that allows disk IO, whereas all other methods are intended to be called from
+// the main thread. There are only two ways to ensure that the base pointer and
+// corresponding vtable are still valid from another thread: using a lock or
+// ensuring the object is not destroyed. We can't use the former for performance
+// reasons -- the entire reason we're dispatching onto another thread is to
+// avoid blocking the main thread on disk IO. So the only remaining option is to
+// ensure the object stays alive, which we do by using ref-counting. The
+// implementation of CrOSComponentInstaller::IsRegisteredMayBlock looks like it
+// could be made a static method, but FakeCrOSComponentManager requires a
+// non-static method.
+//
+// This class, with the exception of the method IsRegisteredMayBlock() must only
+// be used from the main thread. IsRegisteredMayBlock() must only be used from a
+// thread that allows disk IO.
+class CrOSComponentManager
+    : public base::RefCountedThreadSafe<CrOSComponentManager> {
  public:
+  CrOSComponentManager();
+
   // Error needs to be consistent with CrosComponentManagerError in
   // src/tools/metrics/histograms/enums.xml.
   enum class Error {
@@ -64,8 +88,6 @@ class CrOSComponentManager {
     virtual void EmitInstalledSignal(const std::string& component) = 0;
   };
 
-  virtual ~CrOSComponentManager() = default;
-
   virtual void SetDelegate(Delegate* delegate) = 0;
 
   // Installs a component and keeps it up-to-date.
@@ -93,10 +115,17 @@ class CrOSComponentManager {
 
   // Returns true if any previously registered version of a component exists,
   // even if it is incompatible.
-  virtual bool IsRegistered(const std::string& name) const = 0;
+  // This method must only be called on a thread that allows disk IO.
+  virtual bool IsRegisteredMayBlock(const std::string& name) = 0;
 
   // Register all installed components.
   virtual void RegisterInstalled() = 0;
+
+ protected:
+  virtual ~CrOSComponentManager();
+
+ private:
+  friend class base::RefCountedThreadSafe<CrOSComponentManager>;
 };
 
 }  // namespace component_updater

@@ -11,6 +11,7 @@
 #include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/feedback/feedback_data.h"
+#include "components/feedback/feedback_report.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 #include "extensions/browser/api/feedback_private/feedback_service.h"
@@ -31,6 +32,7 @@ void OnGetSystemInformation(
     Profile* profile,
     const std::string& description,
     const SendSysLogFeedbackCallback& callback,
+    bool send_tab_titles,
     std::unique_ptr<system_logs::SystemLogsResponse> sys_info) {
   scoped_refptr<FeedbackData> feedback_data =
       base::MakeRefCounted<FeedbackData>(
@@ -41,6 +43,11 @@ void OnGetSystemInformation(
   feedback_data->set_description(description);
   if (sys_info)
     feedback_data->AddLogs(std::move(*sys_info));
+
+  if (!send_tab_titles) {
+    feedback_data->RemoveLog(
+        feedback::FeedbackReport::kMemUsageWithTabTitlesKey);
+  }
   feedback_data->CompressSystemInfo();
 
   GetFeedbackService(profile)->SendFeedback(feedback_data, callback);
@@ -50,12 +57,13 @@ void OnGetSystemInformation(
 
 void SendSysLogFeedback(Profile* profile,
                         const std::string& description,
-                        const SendSysLogFeedbackCallback& callback) {
+                        const SendSysLogFeedbackCallback& callback,
+                        bool send_tab_titles) {
   // |fetcher| deletes itself after calling its callback.
   system_logs::SystemLogsFetcher* fetcher =
       system_logs::BuildChromeSystemLogsFetcher();
-  fetcher->Fetch(
-      base::BindOnce(&OnGetSystemInformation, profile, description, callback));
+  fetcher->Fetch(base::BindOnce(&OnGetSystemInformation, profile, description,
+                                callback, send_tab_titles));
 }
 
 }  // namespace feedback_util

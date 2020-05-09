@@ -3341,7 +3341,7 @@
   {
     "name": "overscroll-history-navigation",
      "owners": [ "mohsen", "jinsukkim" ],
-     "expiry_milestone": 85
+     "expiry_milestone": 88
   },
   {
     "name": "page-info-chrome-guard",
@@ -3603,6 +3603,11 @@
   {
     "name": "remote-copy-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "report-feed-user-actions",
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 86
   },
   {

@@ -14,6 +14,14 @@ namespace ui {
 
 // Drawing code that is common for all platforms.
 
+// Takes a SecurityChipColorId and |fg| and |bg| colors so that the security
+// chip color implementation can be shared outside of NativeTheme.
+SkColor NATIVE_THEME_EXPORT
+GetSecurityChipColor(NativeTheme::SecurityChipColorId chip_color_id,
+                     SkColor fg,
+                     SkColor bg,
+                     bool high_contrast = false);
+
 // Returns the color to use on Aura for |color_id|.  For a few colors that are
 // theme-specific, |base_theme| must be non-null; consult the code to see which
 // color IDs fall into this category.

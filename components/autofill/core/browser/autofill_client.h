@@ -262,12 +262,6 @@ class AutofillClient : public RiskDataLoader {
   // If the variation service is not available, return an empty string.
   virtual std::string GetVariationConfigCountryCode() const;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // Returns the whitelists for virtual cards. Used on desktop platforms only.
-  virtual std::vector<std::string> GetMerchantWhitelistForVirtualCards() = 0;
-  virtual std::vector<std::string> GetBinRangeWhitelistForVirtualCards() = 0;
-#endif
-
 #if !defined(OS_IOS)
   // Creates the appropriate implementation of InternalAuthenticator. May be
   // null for platforms that don't support this, in which case standard CVC
@@ -286,6 +280,11 @@ class AutofillClient : public RiskDataLoader {
                                 UnmaskCardReason reason,
                                 base::WeakPtr<CardUnmaskDelegate> delegate) = 0;
   virtual void OnUnmaskVerificationResult(PaymentsRpcResult result) = 0;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Returns the whitelists for virtual cards. Used on desktop platforms only.
+  virtual std::vector<std::string> GetMerchantWhitelistForVirtualCards() = 0;
+  virtual std::vector<std::string> GetBinRangeWhitelistForVirtualCards() = 0;
 
   // Runs |show_migration_dialog_closure| if the user accepts the card migration
   // offer. This causes the card migration dialog to be shown.
@@ -314,7 +313,6 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) = 0;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // TODO(crbug.com/991037): Find a way to merge these two functions. Shouldn't
   // use WebauthnDialogState as that state is a purely UI state (should not be
   // accessible for managers?), and some of the states |KInactive| may be
@@ -351,20 +349,8 @@ class AutofillClient : public RiskDataLoader {
   virtual void OfferVirtualCardOptions(
       const std::vector<CreditCard*>& candidates,
       base::OnceCallback<void(const std::string&)> callback) = 0;
-#endif
 
-  // Runs |callback| once the user makes a decision with respect to the
-  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
-  // |options.show_prompt| is true; otherwise only shows the
-  // omnibox icon. On mobile, shows the offer-to-save infobar if
-  // |options.show_prompt| is true; otherwise does not offer to
-  // save at all.
-  virtual void ConfirmSaveCreditCardLocally(
-      const CreditCard& card,
-      AutofillClient::SaveCreditCardOptions options,
-      LocalSaveCardPromptCallback callback) = 0;
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#else  // defined(OS_ANDROID) || defined(OS_IOS)
   // Display the cardholder name fix flow prompt and run the |callback| if
   // the card should be uploaded to payments with updated name from the user.
   virtual void ConfirmAccountNameFixFlow(
@@ -377,7 +363,18 @@ class AutofillClient : public RiskDataLoader {
       const CreditCard& card,
       base::OnceCallback<void(const base::string16&, const base::string16&)>
           callback) = 0;
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif
+
+  // Runs |callback| once the user makes a decision with respect to the
+  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
+  // |options.show_prompt| is true; otherwise only shows the
+  // omnibox icon. On mobile, shows the offer-to-save infobar if
+  // |options.show_prompt| is true; otherwise does not offer to
+  // save at all.
+  virtual void ConfirmSaveCreditCardLocally(
+      const CreditCard& card,
+      AutofillClient::SaveCreditCardOptions options,
+      LocalSaveCardPromptCallback callback) = 0;
 
   // Runs |callback| once the user makes a decision with respect to the
   // offer-to-save prompt. Displays the contents of |legal_message_lines|
@@ -437,7 +434,7 @@ class AutofillClient : public RiskDataLoader {
   virtual base::span<const Suggestion> GetPopupSuggestions() const = 0;
 
   // Updates the popup contents with the newly given suggestions.
-  virtual void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
+  virtual void UpdatePopup(const std::vector<Suggestion>& suggestions,
                            PopupType popup_type) = 0;
 
   // Hide the Autofill popup if one is currently showing.
@@ -450,7 +447,7 @@ class AutofillClient : public RiskDataLoader {
   // and to the password generation manager to detect account creation forms.
   virtual void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
-      const std::vector<autofill::FormStructure*>& forms) = 0;
+      const std::vector<FormStructure*>& forms) = 0;
 
   // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(

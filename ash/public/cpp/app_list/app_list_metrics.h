@@ -86,6 +86,8 @@ enum SearchResultType {
   OS_SETTINGS,
   // A Plugin VM App Result.
   PLUGIN_VM_APP,
+  // LaCrOS binary.
+  LACROS,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

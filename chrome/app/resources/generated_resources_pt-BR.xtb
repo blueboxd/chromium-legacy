@@ -118,7 +118,6 @@
 <translation id="1147991416141538220">Para solicitar acesso, entre em contato com o administrador deste dispositivo.</translation>
 <translation id="1149401351239820326">Mês de expiração</translation>
 <translation id="1150565364351027703">Óculos de sol</translation>
-<translation id="1151841030700667295">Sua conta será desconectada de todos os sites, inclusive nas guias abertas.</translation>
 <translation id="1151917987301063366">Sempre permitir que <ph name="HOST" /> acesse os sensores</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
 <translation id="1153636665119721804">Programa Proteção Avançada do Google</translation>
@@ -294,7 +293,6 @@
 <translation id="1390548061267426325">Abrir como guia normal</translation>
 <translation id="1392232653471491344">É necessário atualizar o Linux</translation>
 <translation id="1393283411312835250">Sol e nuvens</translation>
-<translation id="1393787139683794508">Isso limpará todos os dados e cookies armazenados por <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1395730723686586365">Atualizador iniciado</translation>
 <translation id="1396139853388185343">Erro na configuração da impressora</translation>
 <translation id="1396259464226642517">Esse resultado foi inesperado? <ph name="BEGIN_LINK" />Enviar feedback<ph name="END_LINK" /></translation>
@@ -856,7 +854,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2101225219012730419">Versão:</translation>
 <translation id="211144231511833662">Limpar tipos</translation>
 <translation id="2111670510994270194">Nova guia à direita</translation>
-<translation id="2112004299911874330">Isso removerá <ph name="TOTAL_USAGE" /> de dados armazenados por sites.</translation>
 <translation id="21133533946938348">Fixar guia</translation>
 <translation id="2113479184312716848">Abrir &amp;arquivo...</translation>
 <translation id="2113921862428609753">Acesso às informações de autoridade</translation>
@@ -2162,6 +2159,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3760460896538743390">Inspecionar página de &amp;fundo</translation>
 <translation id="37613671848467444">Abrir em &amp;janela anônima</translation>
 <translation id="3761556954875533505">Permitir que o site edite arquivos?</translation>
+<translation id="3764314093345384080">Informações detalhadas da versão</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Comunicar-se com um dispositivo USB}one{Comunicar-se com # dispositivos USB}other{Comunicar-se com # dispositivos USB}}</translation>
 <translation id="3765246971671567135">Não foi possível ler a política do modo de demonstração off-line.</translation>
 <translation id="3768037234834996183">Sincronizando suas preferências...</translation>
@@ -3237,7 +3235,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5235565664420173924">Better Together</translation>
 <translation id="5235750401727657667">Substituir a página que você vê ao abrir uma nova guia</translation>
 <translation id="5238278114306905396">O aplicativo "<ph name="EXTENSION_NAME" />" foi removido automaticamente.</translation>
-<translation id="5238435043462632060">Seu pai/mãe desativou "Permissões para sites, apps e extensões" no Chrome. Não é permitido <ph name="ACTION_PARAMETER" /> essa <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
+<translation id="5238435043462632060">Seu pai/mãe desativou "Permissões para sites, apps e extensões" no Chrome. Não é permitido <ph name="ACTION_PARAMETER" /> este <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="5239730228370806996">Esses dados violam as políticas de segurança da sua organização. Quer continuar mesmo assim?</translation>
 <translation id="5241128660650683457">Ler todos os dados sobre os websites que você visita</translation>
 <translation id="5242724311594467048">Ativar "<ph name="EXTENSION_NAME" />"?</translation>
@@ -3484,7 +3482,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5546865291508181392">Buscar</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" e mais 1 guia}one{"<ph name="TAB_TITLE" />" e mais # guia}other{"<ph name="TAB_TITLE" />" e mais # guias}}</translation>
 <translation id="5548606607480005320">Confirmação de segurança</translation>
-<translation id="5549467165017213645">Isso removerá <ph name="TOTAL_USAGE" /> de dados de armazenados por sites e apps instalados.</translation>
 <translation id="5551573675707792127">Teclado e entrada de texto</translation>
 <translation id="5553089923092577885">Mapeamentos da diretiva de certificação</translation>
 <translation id="5554489410841842733">Este ícone ficará visível quando a extensão puder agir na página atual.</translation>
@@ -3629,6 +3626,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5734362860645681824">Comunicações</translation>
 <translation id="5734697361979786483">Adicionar compartilhamento de arquivos</translation>
 <translation id="5736796278325406685">Insira um nome de usuário válido</translation>
+<translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5739017626473506901">Faça login para ajudar <ph name="USER_NAME" /> a adicionar uma conta escolar</translation>
 <translation id="5739235828260127894">Aguardando verificação. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Muito grande</translation>
@@ -4144,7 +4142,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="641081527798843608">Correspondência de assunto</translation>
 <translation id="6412673304250309937">Verifica se os URLs estão em uma lista de sites não seguros armazenada no Chrome. Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chrome também poderá enviar URLs, incluindo partes do conteúdo da página, para o "Navegação segura".</translation>
 <translation id="6412931879992742813">Nova janela anônima</translation>
-<translation id="6413591858632097328">Isso limpará todos os dados e cookies armazenados por <ph name="ORIGIN_NAME" /> e os apps ali instalados.</translation>
 <translation id="641469293210305670">Instalar atualizações e apps</translation>
 <translation id="6414888972213066896">Você perguntou ao seu responsável se pode visitar este site</translation>
 <translation id="6415659939354280526">Escolher fonte do "Modo ambiente"</translation>
@@ -4193,7 +4190,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6467304607960172345">Otimizar vídeos em tela cheia</translation>
 <translation id="6468485451923838994">Fontes</translation>
 <translation id="6472207088655375767">OTP</translation>
-<translation id="6472804939621540371">Isso removerá todos os dados e cookies armazenados por <ph name="SITE_GROUP_NAME" />, os sites relacionados e o app instalado dele.</translation>
 <translation id="6472893788822429178">Mostrar botão "Página inicial"</translation>
 <translation id="6473842110411557830">Executar Powerwash na ilustração</translation>
 <translation id="6474498546677193336">Não foi possível cancelar o compartilhamento porque um aplicativo está usando a pasta. O compartilhamento da pasta será cancelado assim que o Linux for desligado.</translation>
@@ -4942,6 +4938,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7478485216301680444">Não foi possível instalar o aplicativo de quiosque.</translation>
 <translation id="7479221278376295180">Visão geral do uso do armazenamento</translation>
 <translation id="7481312909269577407">Avançar</translation>
+<translation id="7481358317100446445">Pronto</translation>
 <translation id="748138892655239008">Restrições básicas do certificado </translation>
 <translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7487141338393529395">Ativar a verificação ortográfica aprimorada</translation>
@@ -5075,7 +5072,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7664620655576155379">Dispositivo Bluetooth não suportado: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665082356120621510">Reservar tamanho</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
-<translation id="7665940458857700755">Isso removerá todos os dados e cookies armazenados por <ph name="SITE_GROUP_NAME" /> e todos os sites relacionados.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN incorreto. Você tem apenas uma tentativa restante.}one{PIN incorreto. Você tem apenas # tentativa restante.}other{PIN incorreto. Você tem apenas # tentativas restantes.}}</translation>
 <translation id="7671130400130574146">Usar barra de título e bordas do sistema</translation>
 <translation id="767127784612208024">Toque para confirmar a redefinição</translation>
@@ -5201,6 +5197,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7817361223956157679">O teclado na tela ainda não funciona com aplicativos do Linux</translation>
 <translation id="7818135753970109980">Novo tema adicionado (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">Pre-shared key (PSK): WPA ou RSN</translation>
+<translation id="7819992334107904369">Sincronização do Chrome</translation>
 <translation id="782057141565633384">C&amp;opiar endereço do vídeo</translation>
 <translation id="7824864914877854148">Ocorreu um erro e não foi possível concluir o backup</translation>
 <translation id="782590969421016895">Usar as páginas atuais</translation>
@@ -5418,7 +5415,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8063235345342641131">Avatar verde padrão</translation>
 <translation id="8063535366119089408">Ver arquivo</translation>
 <translation id="8068253693380742035">Toque para fazer login</translation>
-<translation id="8068809649322155577">Isso removerá todos os dados e cookies armazenados por <ph name="SITE_GROUP_NAME" />, os sites relacionados e os apps instalados dele.</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Os dados de apps podem ser quaisquer dados que um app tenha salvado (com base nas configurações de desenvolvedores), incluindo dados como contatos, mensagens e fotos.<ph name="END_PARAGRAPH1" />

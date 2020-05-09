@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.os.Handler;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -31,17 +32,36 @@ import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObse
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A mediator for the TabGroupUi. Responsible for managing the
- * internal state of the component.
+ * A mediator for the TabGroupUi. Responsible for managing the internal state of the component.
  */
 public class TabGroupUiMediator {
+    // TODO(yuezhanggg): move this to the feature-specific util class later.
+    /**
+     * A series of possible states of the conditional tab strip. FeatureStatus.DEFAULT is the
+     * initial state for the feature when the previous session has expired. The strip will not show
+     * in this state until being activated. FeatureStatus.ACTIVATED is the status when conditional
+     * tab strip is activated and strip will show in this state. FeatureStatus.FORBIDDEN is the
+     * state when user explicitly dismisses the strip, and the strip will never reshow in this
+     * state until returning to FeatureStatus.Default after session expiration.
+     */
+    @IntDef({FeatureStatus.FORBIDDEN, FeatureStatus.ACTIVATED, FeatureStatus.DEFAULT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FeatureStatus {
+        int FORBIDDEN = 0;
+        int ACTIVATED = 1;
+        int DEFAULT = 2;
+    }
     /**
      * An interface to control the TabGroupUi component.
      */
@@ -96,7 +116,8 @@ public class TabGroupUiMediator {
     private final ThemeColorProvider.TintObserver mTintObserver;
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-    private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
+    private TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
+    private @FeatureStatus int mConditionalTabStripFeatureStatus = FeatureStatus.DEFAULT;
     private boolean mIsTabGroupUiVisible;
     private boolean mIsShowingOverViewMode;
 
@@ -117,10 +138,34 @@ public class TabGroupUiMediator {
 
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
+            private int mAddedTabId = Tab.INVALID_TAB_ID;
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+                if (type == TabSelectionType.FROM_NEW) {
+                    mAddedTabId = tab.getId();
+                }
+                // Maybe activate conditional tab strip for selection from toolbar swipe, but skip
+                // the same tab selection that is probably due to partial toolbar swipe. Also, when
+                // a new tab is created and selected, there will be two didSelectTab calls, one as
+                // TabSelectionType.FROM_NEW and the other as TabSelectionType.FROM_USER. We skip
+                // this kind of didSelectTab signal since it may be from unintentional tab creation.
+                if (type == TabSelectionType.FROM_USER) {
+                    if (tab.getId() == mAddedTabId || tab.getId() == lastId) {
+                        mAddedTabId = Tab.INVALID_TAB_ID;
+                    } else {
+                        maybeActivateConditionalTabStrip();
+                    }
+                }
                 if (type == TabSelectionType.FROM_CLOSE) return;
-                if (getRelatedTabsForId(lastId).contains(tab)) return;
+                if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+                        && getTabsToShowForId(lastId).contains(tab)) {
+                    return;
+                }
+
+                if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
+                        && (mIsTabGroupUiVisible || mIsShowingOverViewMode)) {
+                    return;
+                }
                 // TODO(995956): Optimization we can do here if we decided always hide the strip if
                 // related tab size down to 1.
                 resetTabStripWithRelatedTabsForId(tab.getId());
@@ -129,18 +174,25 @@ public class TabGroupUiMediator {
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
                 if (!mIsTabGroupUiVisible) return;
-                List<Tab> group = mTabModelSelector.getTabModelFilterProvider()
-                                          .getCurrentTabModelFilter()
-                                          .getRelatedTabList(tab.getId());
-
-                if (group.size() == 1) resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
+                // The strip should hide when users close the second-to-last tab in strip. The
+                // tabCountToHide for group is 1 because tab group status is updated with this
+                // closure before this method is called.
+                int tabCountToHide = TabUiFeatureUtilities.isTabGroupsAndroidEnabled() ? 1 : 2;
+                List<Tab> tabList = getTabsToShowForId(tab.getId());
+                if (tabList.size() == tabCountToHide) {
+                    resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
+                }
             }
 
             @Override
             public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
+                if (type == TabLaunchType.FROM_CHROME_UI
+                        || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
+                    maybeActivateConditionalTabStrip();
+                }
                 if (type == TabLaunchType.FROM_CHROME_UI && mIsTabGroupUiVisible) {
                     mModel.set(TabGroupUiProperties.INITIAL_SCROLL_INDEX,
-                            getRelatedTabsForId(tab.getId()).size() - 1);
+                            getTabsToShowForId(tab.getId()).size() - 1);
                 }
                 if (type == TabLaunchType.FROM_CHROME_UI || type == TabLaunchType.FROM_RESTORE
                         || type == TabLaunchType.FROM_STARTUP) {
@@ -168,6 +220,7 @@ public class TabGroupUiMediator {
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
+                maybeActivateConditionalTabStrip();
                 mIsShowingOverViewMode = true;
                 resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
             }
@@ -203,23 +256,25 @@ public class TabGroupUiMediator {
             }
         };
 
-        mTabGroupModelFilterObserver = new EmptyTabGroupModelFilterObserver() {
-            @Override
-            public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {
-                if (mIsTabGroupUiVisible && movedTab == mTabModelSelector.getCurrentTab()) {
-                    resetTabStripWithRelatedTabsForId(movedTab.getId());
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+            mTabGroupModelFilterObserver = new EmptyTabGroupModelFilterObserver() {
+                @Override
+                public void didMoveTabOutOfGroup(Tab movedTab, int prevFilterIndex) {
+                    if (mIsTabGroupUiVisible && movedTab == mTabModelSelector.getCurrentTab()) {
+                        resetTabStripWithRelatedTabsForId(movedTab.getId());
+                    }
                 }
-            }
-        };
+            };
 
-        // TODO(995951): Add observer similar to TabModelSelectorTabModelObserver for
-        // TabModelFilter.
-        ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
-                 false))
-                .addTabGroupObserver(mTabGroupModelFilterObserver);
-        ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
-                 true))
-                .addTabGroupObserver(mTabGroupModelFilterObserver);
+            // TODO(995951): Add observer similar to TabModelSelectorTabModelObserver for
+            // TabModelFilter.
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     false))
+                    .addTabGroupObserver(mTabGroupModelFilterObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     true))
+                    .addTabGroupObserver(mTabGroupModelFilterObserver);
+        }
 
         mThemeColorObserver =
                 (color, shouldAnimate) -> mModel.set(TabGroupUiProperties.PRIMARY_COLOR, color);
@@ -231,7 +286,7 @@ public class TabGroupUiMediator {
         mThemeColorProvider.addThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.addTintObserver(mTintObserver);
 
-        setupToolbarClickHandlers();
+        setupToolbarButtons();
         mModel.set(TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE, true);
         Tab tab = mTabModelSelector.getCurrentTab();
         if (tab != null) {
@@ -247,35 +302,57 @@ public class TabGroupUiMediator {
         mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER, listener);
     }
 
-    private void setupToolbarClickHandlers() {
-        mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER, view -> {
+    private void setupToolbarButtons() {
+        View.OnClickListener leftButtonOnClickListener;
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+            // For tab group, the left button is to show the tab grid dialog.
+            leftButtonOnClickListener = view -> {
+                Tab currentTab = mTabModelSelector.getCurrentTab();
+                if (currentTab == null) return;
+                mResetHandler.resetGridWithListOfTabs(getTabsToShowForId(currentTab.getId()));
+                RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
+            };
+        } else {
+            // For conditional tab strip, the left button is to dismiss the strip.
+            leftButtonOnClickListener = view -> {
+                resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
+                mConditionalTabStripFeatureStatus = FeatureStatus.FORBIDDEN;
+            };
+            mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, R.drawable.btn_close);
+        }
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER, leftButtonOnClickListener);
+
+        View.OnClickListener rightButtonOnClickListener = view -> {
+            Tab parentTabToAttach = null;
             Tab currentTab = mTabModelSelector.getCurrentTab();
-            if (currentTab == null) return;
-            mResetHandler.resetGridWithListOfTabs(getRelatedTabsForId(currentTab.getId()));
-            RecordUserAction.record("TabGroup.ExpandedFromStrip.TabGridDialog");
-        });
-        mModel.set(
-                TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, view -> {
-                    Tab currentTab = mTabModelSelector.getCurrentTab();
-                    List<Tab> relatedTabs = mTabModelSelector.getTabModelFilterProvider()
-                                                    .getCurrentTabModelFilter()
-                                                    .getRelatedTabList(currentTab.getId());
+            if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+                List<Tab> relatedTabs = getTabsToShowForId(currentTab.getId());
 
-                    assert relatedTabs.size() > 0;
+                assert relatedTabs.size() > 0;
 
-                    Tab parentTabToAttach = relatedTabs.get(relatedTabs.size() - 1);
-                    mTabCreatorManager.getTabCreator(currentTab.isIncognito())
-                            .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
-                                    TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
-                    RecordUserAction.record(
-                            "MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
-                });
+                parentTabToAttach = relatedTabs.get(relatedTabs.size() - 1);
+            }
+            mTabCreatorManager.getTabCreator(currentTab.isIncognito())
+                    .createNewTab(new LoadUrlParams(UrlConstants.NTP_URL),
+                            TabLaunchType.FROM_CHROME_UI, parentTabToAttach);
+            RecordUserAction.record("MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
+        };
+        mModel.set(TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, rightButtonOnClickListener);
     }
 
+    /**
+     * Update the tab strip based on given tab ID.
+     * @param id  If the ID is set to Tab.INVALID_TAB_ID, this method will hide the tab strip. If
+     *            not, associated tabs from #getTabsToShowForID will be showing in the tab strip.
+     */
     private void resetTabStripWithRelatedTabsForId(int id) {
-        List<Tab> listOfTabs = mTabModelSelector.getTabModelFilterProvider()
-                                       .getCurrentTabModelFilter()
-                                       .getRelatedTabList(id);
+        // When conditional tab strip feature is turned on but the feature is not activated (i.e.
+        // forbidden or default), keep the tab strip hidden.
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
+                && mConditionalTabStripFeatureStatus != FeatureStatus.ACTIVATED) {
+            id = Tab.INVALID_TAB_ID;
+        }
+        List<Tab> listOfTabs = getTabsToShowForId(id);
         if (listOfTabs.size() < 2) {
             mResetHandler.resetStripWithListOfTabs(null);
             mIsTabGroupUiVisible = false;
@@ -300,7 +377,23 @@ public class TabGroupUiMediator {
         mVisibilityController.setBottomControlsVisible(mIsTabGroupUiVisible);
     }
 
-    private List<Tab> getRelatedTabsForId(int id) {
+    /**
+     * Get a list of tabs to show based on a tab ID. When tab group is enabled, it will return all
+     * tabs that are in the same group with target tab. When conditional tab strip is enabled, it
+     * will return all tabs in the same tab model as target tab.
+     * @param id  The ID of the tab that will be used to decide the list of tabs to show.
+     */
+    private List<Tab> getTabsToShowForId(int id) {
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            ArrayList<Tab> tabList = new ArrayList<>();
+            if (id == Tab.INVALID_TAB_ID) return tabList;
+            Tab tab = mTabModelSelector.getTabById(id);
+            TabModel tabModel = mTabModelSelector.getModel(tab.isIncognito());
+            for (int i = 0; i < tabModel.getCount(); i++) {
+                tabList.add(tabModel.getTabAt(i));
+            }
+            return tabList;
+        }
         return mTabModelSelector.getTabModelFilterProvider()
                 .getCurrentTabModelFilter()
                 .getRelatedTabList(id);
@@ -316,13 +409,15 @@ public class TabGroupUiMediator {
         if (mTabModelSelector != null) {
             mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelObserver);
-            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
-                     false))
-                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
-            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
-                     true))
-                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            if (mTabGroupModelFilterObserver != null) {
+                ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                                .getTabModelFilter(false))
+                        .removeTabGroupObserver(mTabGroupModelFilterObserver);
+                ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                                .getTabModelFilter(true))
+                        .removeTabGroupObserver(mTabGroupModelFilterObserver);
+            }
         }
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
@@ -330,8 +425,20 @@ public class TabGroupUiMediator {
         mTabModelSelectorTabObserver.destroy();
     }
 
+    private void maybeActivateConditionalTabStrip() {
+        if (mConditionalTabStripFeatureStatus == FeatureStatus.DEFAULT
+                && TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            mConditionalTabStripFeatureStatus = FeatureStatus.ACTIVATED;
+        }
+    }
+
     @VisibleForTesting
     boolean getIsShowingOverViewModeForTesting() {
         return mIsShowingOverViewMode;
+    }
+
+    @VisibleForTesting
+    int getConditionalTabStripFeatureStatusForTesting() {
+        return mConditionalTabStripFeatureStatus;
     }
 }

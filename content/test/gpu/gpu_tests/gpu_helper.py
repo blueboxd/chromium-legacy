@@ -95,23 +95,24 @@ def GetGpuDriverVersion(gpu_info):
 
 
 def GetANGLERenderer(gpu_info):
+  retval = 'no_angle'
   if gpu_info and gpu_info.aux_attributes:
     gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
     if gl_renderer and 'ANGLE' in gl_renderer:
       if 'Direct3D11' in gl_renderer:
-        return 'd3d11'
+        retval = 'd3d11'
       elif 'Direct3D9' in gl_renderer:
-        return 'd3d9'
+        retval = 'd3d9'
       elif 'OpenGL ES' in gl_renderer:
-        return 'opengles'
+        retval = 'opengles'
       elif 'OpenGL' in gl_renderer:
-        return 'opengl'
+        retval = 'opengl'
       # SwiftShader first because it also contains Vulkan
       elif 'SwiftShader' in gl_renderer:
-        return 'swiftshader'
+        retval = 'swiftshader'
       elif 'Vulkan' in gl_renderer:
-        return 'vulkan'
-  return 'no_angle'
+        retval = 'vulkan'
+  return retval
 
 
 def GetSwiftShaderGLRenderer(gpu_info):
@@ -198,6 +199,9 @@ def MatchDriverTag(tag):
   return DRIVER_TAG_MATCHER.match(tag.lower())
 
 
+# No good way to reduce the number of local variables, particularly since each
+# argument is also considered a local.
+# pylint: disable=too-many-locals
 def EvaluateVersionComparison(version,
                               operation,
                               ref_version,
@@ -216,18 +220,23 @@ def EvaluateVersionComparison(version,
     assert not suffix
     return num < 100
 
+  def versions_can_be_compared(ver_list1, ver_list2):
+    # If either of the two versions doesn't match the Intel driver version
+    # schema, or they belong to different generation of version schema, they
+    # should not be compared.
+    if len(ver_list1) != 4 or len(ver_list2) != 4:
+      return False
+    if is_old_intel_driver(ver_list1) != is_old_intel_driver(ver_list2):
+      return False
+    return True
+
   ver_list1 = version.split('.')
   ver_list2 = ref_version.split('.')
   # On Windows, if the driver vendor is Intel, the driver version should be
   # compared based on the Intel graphics driver version schema.
   # https://www.intel.com/content/www/us/en/support/articles/000005654/graphics-drivers.html
   if os_name == 'win' and driver_vendor == 'intel':
-    # If either of the two versions doesn't match the Intel driver version
-    # schema, or they belong to different generation of version schema, they
-    # should not be compared.
-    if len(ver_list1) != 4 or len(ver_list2) != 4:
-      return operation == 'ne'
-    if is_old_intel_driver(ver_list1) != is_old_intel_driver(ver_list2):
+    if not versions_can_be_compared(ver_list1, ver_list2):
       return operation == 'ne'
     if is_old_intel_driver(ver_list1):
       ver_list1 = ver_list1[3:]
@@ -262,6 +271,7 @@ def EvaluateVersionComparison(version,
     raise Exception('Invalid operation: ' + operation)
 
   return operation == 'eq' or operation == 'ge' or operation == 'le'
+# pylint: enable=too-many-locals
 
 
 def ExpectationsDriverTags():

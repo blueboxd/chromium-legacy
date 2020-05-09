@@ -19,6 +19,10 @@
     });
   }
 
+  async function waitForDownloadCompleted() {
+    await dp.Page.onceDownloadProgress(event => event.params.state === 'completed');
+  }
+
   await dp.Page.enable();
   testRunner.log('Downloading via a navigation: ');
   session.evaluate('location.href = "/devtools/network/resources/resource.php?download=1"');
@@ -41,7 +45,7 @@
     document.body.appendChild(blankDownloadAttr);
     blankDownloadAttr.click();
   `);
-  await waitForDownloadAndDump();
+  await waitForDownloadCompleted();
   testRunner.log(
       'Downloading by clicking a link (HTTP Content-Disposition header with filename=foo.txt, no a[download]): ');
   session.evaluate(`
@@ -50,7 +54,7 @@
     document.body.appendChild(headerButNoDownloadAttr);
     headerButNoDownloadAttr.click();
   `);
-  await waitForDownloadAndDump();
+  await waitForDownloadCompleted();
   testRunner.log(
       'Downloading by clicking a link (HTTP Content-Disposition header with filename=override.txt, a[download="foo.txt"]): ');
   session.evaluate(`
@@ -60,7 +64,7 @@
     document.body.appendChild(headerAndConflictingDownloadAttr);
     headerAndConflictingDownloadAttr.click();
   `);
-  await waitForDownloadAndDump();
+  await waitForDownloadCompleted();
   testRunner.log(
       'Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download]): ');
   session.evaluate(`
@@ -69,7 +73,7 @@
     document.body.appendChild(unnamedDownload);
     unnamedDownload.click();
   `);
-  await waitForDownloadAndDump();
+  await waitForDownloadCompleted();
   testRunner.log(
       'Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], js): ');
   session.evaluate(`
@@ -78,7 +82,7 @@
     document.body.appendChild(jsDownload);
     jsDownload.click();
   `);
-  await waitForDownloadAndDump();
+  await waitForDownloadCompleted();
   testRunner.log(
       'Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], image): ');
   session.evaluate(`
@@ -87,6 +91,6 @@
     document.body.appendChild(imageDownload);
     imageDownload.click();
   `);
-  await waitForDownloadAndDump();
+  await waitForDownloadCompleted();
   testRunner.completeTest();
 })

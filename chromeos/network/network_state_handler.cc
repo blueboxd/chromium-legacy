@@ -38,6 +38,14 @@ namespace {
 // Ignore changes to signal strength less than this value for active networks.
 const int kSignalStrengthChangeThreshold = 5;
 
+// Constants used for logging.
+constexpr char kReasonStateChange[] = "State Change";
+constexpr char kReasonChange[] = "New Network";
+constexpr char kReasonUpdate[] = "Update";
+constexpr char kReasonUpdateIPConfig[] = "UpdateIPConfig";
+constexpr char kReasonUpdateDeviceIPConfig[] = "UpdateDeviceIPConfig";
+constexpr char kReasonTether[] = "Tether Change";
+
 bool ConnectionStateChanged(const NetworkState* network,
                             const std::string& prev_connection_state,
                             bool prev_is_captive_portal) {
@@ -933,7 +941,11 @@ void NetworkStateHandler::SetTetherNetworkStateConnectionState(
     NET_LOG(EVENT) << "Changing connection state for Tether network with GUID "
                    << guid << ". Old state: " << prev_connection_state << ", "
                    << "New state: " << connection_state;
-
+    if (!tether_network_state->IsConnectingOrConnected() &&
+        tether_network_state->path() == default_network_path_) {
+      default_network_path_.clear();
+      NotifyDefaultNetworkChanged(kReasonTether);
+    }
     OnNetworkConnectionStateChanged(tether_network_state);
     NotifyNetworkPropertiesUpdated(tether_network_state);
   }
@@ -1069,7 +1081,9 @@ void NetworkStateHandler::RequestUpdateForNetwork(
     // Tether networks are not managed by Shill; do not request properties.
     if (network->type() == kTypeTether)
       return;
-
+    // Do not request properties if a condition has already triggered a request.
+    if (network->update_requested())
+      return;
     network->set_update_requested(true);
     NET_LOG(EVENT) << "RequestUpdate for: " << NetworkId(network);
   } else {
@@ -1325,8 +1339,8 @@ void NetworkStateHandler::UpdateManagedStateProperties(
   }
   managed->set_update_received();
 
-  NET_LOG(DEBUG) << GetManagedStateLogType(managed) << " Properties Received"
-                 << GetLogName(managed);
+  NET_LOG(DEBUG) << GetManagedStateLogType(managed)
+                 << " Properties Received: " << GetLogName(managed);
 
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     UpdateNetworkStateProperties(managed->AsNetworkState(), properties);
@@ -1366,7 +1380,14 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
     // Signal connection state changed after all properties have been updated.
     if (ConnectionStateChanged(network, prev_connection_state,
                                prev_is_captive_portal)) {
+      // Also notifies that the default network changed if this is the default.
       OnNetworkConnectionStateChanged(network);
+    } else if (network->path() == default_network_path_ &&
+               network->IsActive()) {
+      // Always notify that the default network changed for a complete update.
+      NET_LOG(DEBUG) << "UpdateNetworkStateProperties for default: "
+                     << NetworkId(network);
+      NotifyDefaultNetworkChanged(kReasonUpdate);
     }
     NotifyNetworkPropertiesUpdated(network);
   }
@@ -1425,8 +1446,10 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
     network_list_sorted_ = false;
   }
 
-  if (request_update)
+  if (request_update) {
     RequestUpdateForNetwork(service_path);
+    notify_default = false;  // Notify will occur when properties are received.
+  }
 
   std::string value_str;
   value.GetAsString(&value_str);
@@ -1453,8 +1476,11 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   LogPropertyUpdated(network, key, value);
   if (notify_connection_state)
     NotifyNetworkConnectionStateChanged(network);
-  if (notify_default)
-    NotifyDefaultNetworkChanged();
+  if (notify_default) {
+    std::stringstream logstream;
+    logstream << std::string(kReasonUpdate) << ":" << key << "=" << value;
+    NotifyDefaultNetworkChanged(logstream.str());
+  }
   if (notify_active)
     NotifyIfActiveNetworksChanged();
   NotifyNetworkPropertiesUpdated(network);
@@ -1514,7 +1540,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     network->IPConfigPropertiesChanged(properties);
     NotifyNetworkPropertiesUpdated(network);
     if (network->path() == default_network_path_)
-      NotifyDefaultNetworkChanged();
+      NotifyDefaultNetworkChanged(kReasonUpdateIPConfig);
     if (network->IsActive())
       NotifyIfActiveNetworksChanged();
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
@@ -1528,7 +1554,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
           GetNetworkState(default_network_path_);
       if (default_network && default_network->device_path() == path) {
         NotifyNetworkPropertiesUpdated(default_network);
-        NotifyDefaultNetworkChanged();
+        NotifyDefaultNetworkChanged(kReasonUpdateDeviceIPConfig);
       }
     }
   }
@@ -1684,49 +1710,44 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
       return;
   }
 
-  default_network_path_ = service_path;
   NET_LOG(EVENT) << "DefaultNetworkServiceChanged: "
-                 << NetworkPathId(default_network_path_);
-  const NetworkState* network = nullptr;
-  if (!default_network_path_.empty()) {
-    network = GetNetworkState(default_network_path_);
-    if (!network) {
-      // If NetworkState is not available yet, do not notify observers here,
-      // they will be notified when the state is received.
-      NET_LOG(EVENT) << "Default NetworkState not available: "
-                     << NetworkPathId(default_network_path_);
-      return;
-    }
-    if (!network->tether_guid().empty()) {
-      DCHECK(network->type() == shill::kTypeWifi);
-
-      // If the new default network from Shill's point of view is a Wi-Fi
-      // network which corresponds to a hotspot for a Tether network, set the
-      // default network to be the associated Tether network instead.
-      network = GetNetworkStateFromGuid(network->tether_guid());
-      default_network_path_ = network->path();
-    }
-  }
-  if (!network) {
+                 << NetworkPathId(service_path);
+  if (new_service_path.empty()) {
     // Notify that there is no default network.
-    NotifyDefaultNetworkChanged();
+    default_network_path_.clear();
+    NotifyDefaultNetworkChanged(kReasonChange);
     return;
   }
 
-  const std::string connection_state = network->connection_state();
-  if (NetworkState::StateIsConnected(connection_state)) {
-    NotifyDefaultNetworkChanged();
+  const NetworkState* network = GetNetworkState(service_path);
+  if (!network) {
+    // If NetworkState is not available yet, do not notify observers here,
+    // they will be notified when the state is received.
+    NET_LOG(EVENT) << "Default NetworkState not available: "
+                   << NetworkPathId(service_path);
+    default_network_path_ = service_path;
     return;
   }
 
-  if (NetworkState::StateIsConnecting(connection_state)) {
-    NET_LOG(EVENT) << "DefaultNetwork is connecting: " << NetworkId(network)
-                   << ": " << connection_state;
-  } else {
-    NET_LOG(ERROR) << "DefaultNetwork in unexpected state: "
-                   << NetworkId(network) << ": " << connection_state;
+  if (!network->tether_guid().empty()) {
+    DCHECK(network->type() == shill::kTypeWifi);
+
+    // If the new default network from Shill's point of view is a Wi-Fi
+    // network which corresponds to a hotspot for a Tether network, set the
+    // default network to be the associated Tether network instead.
+    network = GetNetworkStateFromGuid(network->tether_guid());
+    if (default_network_path_ != network->path()) {
+      default_network_path_ = network->path();
+      NET_LOG(DEBUG) << "Tether network is default: " << NetworkId(network);
+      NotifyDefaultNetworkChanged(kReasonChange);
+    }
+    return;
   }
-  // Observers will be notified when the network becomes connected.
+
+  // Request the updated default network properties which will trigger
+  // NotifyDefaultNetworkChanged().
+  default_network_path_ = service_path;
+  RequestUpdateForNetwork(service_path);
 }
 
 //------------------------------------------------------------------------------
@@ -1904,7 +1925,7 @@ void NetworkStateHandler::OnNetworkConnectionStateChanged(
     default_changed = VerifyDefaultNetworkConnectionStateChange(network);
   NotifyNetworkConnectionStateChanged(network);
   if (default_changed)
-    NotifyDefaultNetworkChanged();
+    NotifyDefaultNetworkChanged(kReasonStateChange);
 }
 
 bool NetworkStateHandler::VerifyDefaultNetworkConnectionStateChange(
@@ -1915,15 +1936,12 @@ bool NetworkStateHandler::VerifyDefaultNetworkConnectionStateChange(
   if (network->IsConnectingState()) {
     // Wait until the network is actually connected to notify that the default
     // network changed.
-    NET_LOG(EVENT) << "Default network is connecting: " << NetworkId(network)
+    NET_LOG(DEBUG) << "Default network is connecting: " << NetworkId(network)
                    << "State: " << network->connection_state();
     return false;
   }
-  NET_LOG(ERROR) << "Default network in unexpected state: "
-                 << NetworkId(network)
-                 << "State: " << network->connection_state();
-  default_network_path_.clear();
-  return true;
+  NET_LOG(DEBUG) << "Default network not connected: " << NetworkId(network);
+  return false;
 }
 
 void NetworkStateHandler::NotifyNetworkConnectionStateChanged(
@@ -1942,7 +1960,8 @@ void NetworkStateHandler::NotifyNetworkConnectionStateChanged(
   NotifyIfActiveNetworksChanged();
 }
 
-void NetworkStateHandler::NotifyDefaultNetworkChanged() {
+void NetworkStateHandler::NotifyDefaultNetworkChanged(
+    const std::string& log_reason) {
   SCOPED_NET_LOG_IF_SLOW();
   // If the default network is in an invalid state, |default_network_path_|
   // will be cleared; call DefaultNetworkChanged(nullptr).
@@ -1954,7 +1973,7 @@ void NetworkStateHandler::NotifyDefaultNetworkChanged() {
     DCHECK(default_network) << "No default network: " << default_network_path_;
   }
   NET_LOG(EVENT) << "NOTIFY: DefaultNetworkChanged: "
-                 << NetworkId(default_network);
+                 << NetworkId(default_network) << ": " << log_reason;
   notifying_network_observers_ = true;
   for (auto& observer : observers_)
     observer.DefaultNetworkChanged(default_network);

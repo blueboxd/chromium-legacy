@@ -43,6 +43,7 @@ void ExtensionInstaller::Install(
     const base::FilePath& unpack_path,
     const std::string& public_key,
     std::unique_ptr<InstallParams> /*install_params*/,
+    ProgressCallback /*progress_callback*/,
     UpdateClientCallback update_client_callback) {
   auto ui_thread =
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_tab_helper.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/common/search/instant_types.h"
+#include "chrome/common/search/ntp_logging_events.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/favicon_cache.h"
 #include "components/search_provider_logos/logo_common.h"
@@ -30,6 +31,7 @@ class GURL;
 class InstantService;
 class NtpBackgroundService;
 class Profile;
+class NTPUserDataLogger;
 
 namespace chrome_colors {
 class ChromeColorsService;
@@ -101,6 +103,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
       double time) override;
   void OnMostVisitedTileNavigation(new_tab_page::mojom::MostVisitedTilePtr tile,
                                    uint32_t index) override;
+  void OnCustomizeDialogAction(
+      new_tab_page::mojom::CustomizeDialogAction action) override;
   void QueryAutocomplete(const base::string16& input,
                          bool prevent_inline_autocomplete) override;
   void StopAutocomplete(bool clear_result) override;
@@ -159,6 +163,8 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                                const GURL& page_url,
                                const gfx::Image& favicon);
 
+  void LogEvent(NTPLoggingEventType event);
+
   ChooseLocalCustomBackgroundCallback choose_local_custom_background_callback_;
   chrome_colors::ChromeColorsService* chrome_colors_service_;
   InstantService* instant_service_;
@@ -181,6 +187,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   base::TimeTicks time_of_first_autocomplete_query_;
   content::WebContents* web_contents_;
   base::Time ntp_creation_time_;
+  NTPUserDataLogger* logger_;
   base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageHandler);

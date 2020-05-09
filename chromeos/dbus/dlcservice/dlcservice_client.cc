@@ -106,26 +106,26 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   ~DlcserviceClientImpl() override = default;
 
-  void Install(const dlcservice::DlcModuleList& dlc_module_list,
+  void Install(const std::string& dlc_id,
                InstallCallback install_callback,
                ProgressCallback progress_callback) override {
     if (!service_available_ || task_running_) {
-      EnqueueTask(base::BindOnce(
-          &DlcserviceClientImpl::Install, weak_ptr_factory_.GetWeakPtr(),
-          std::move(dlc_module_list), std::move(install_callback),
-          std::move(progress_callback)));
+      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Install,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 std::move(dlc_id), std::move(install_callback),
+                                 std::move(progress_callback)));
       return;
     }
 
     TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
-                                 dlcservice::kInstallMethod);
+                                 dlcservice::kInstallDlcMethod);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendProtoAsArrayOfBytes(dlc_module_list);
+    writer.AppendString(dlc_id);
 
     progress_callback_holder_ = std::move(progress_callback);
     install_callback_holder_ = std::move(install_callback);
-    install_field_holder_ = dlc_module_list;
+    install_field_holder_ = dlc_id;
 
     VLOG(1) << "Requesting to install DLC(s).";
     dlcservice_proxy_->CallMethodWithErrorResponse(
@@ -280,8 +280,21 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void SendCompleted(const dlcservice::InstallStatus& install_status) {
-    std::move(install_callback_holder_.value())
-        .Run(install_status.error_code(), install_status.dlc_module_list());
+    // TODO(crbug.com/1078556): We should not be getting the DLC ID from the
+    // module list returned by the signal.
+    std::string dlc_id, root_path;
+    if (install_status.dlc_module_list().dlc_module_infos_size() > 0) {
+      auto dlc_info = install_status.dlc_module_list().dlc_module_infos(0);
+      dlc_id = dlc_info.dlc_id();
+      root_path = dlc_info.dlc_root();
+    }
+
+    InstallResult install_result = {
+        .error = install_status.error_code(),
+        .dlc_id = dlc_id,
+        .root_path = root_path,
+    };
+    std::move(install_callback_holder_.value()).Run(install_result);
   }
 
   void OnInstallStatus(dbus::Signal* signal) {
@@ -450,8 +463,8 @@ class DlcserviceClientImpl : public DlcserviceClient {
   // The cached callback to call on a finished |Uninstall()|.
   base::Optional<PurgeCallback> purge_callback_holder_;
 
-  // The cached field of |DlcModuleList| for retrying call to install.
-  base::Optional<dlcservice::DlcModuleList> install_field_holder_;
+  // The cached field of string (DLC ID) for retrying call to install.
+  base::Optional<std::string> install_field_holder_;
 
   // The cached field of string (DLC ID) for retrying call to uninstall.
   base::Optional<std::string> uninstall_field_holder_;

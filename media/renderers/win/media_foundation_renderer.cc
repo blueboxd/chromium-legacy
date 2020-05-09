@@ -103,10 +103,6 @@ MediaFoundationRenderer::~MediaFoundationRenderer() {
   }
   if (virtual_video_window_)
     DestroyWindow(virtual_video_window_);
-
-  // Invoke MFShutdown() at the end.
-  if (mf_started_)
-    MFShutdown();
 }
 
 void MediaFoundationRenderer::Initialize(MediaResource* media_resource,
@@ -129,8 +125,9 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
     MediaResource* media_resource) {
   DVLOG_FUNC(1);
 
-  RETURN_IF_FAILED(MFStartup(MF_VERSION, MFSTARTUP_LITE));
-  mf_started_ = true;
+  mf_session_life_time_ = InitializeMediaFoundation();
+  if (!mf_session_life_time_)
+    return E_FAIL;
 
   // TODO(frankli): Only call the followings when there is a video stream.
   RETURN_IF_FAILED(InitializeDXGIDeviceManager());

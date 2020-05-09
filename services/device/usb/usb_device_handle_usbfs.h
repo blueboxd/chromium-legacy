@@ -46,7 +46,9 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                     int alternate_setting,
                                     ResultCallback callback) override;
   void ResetDevice(ResultCallback callback) override;
-  void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
+  void ClearHalt(mojom::UsbTransferDirection direction,
+                 uint8_t endpoint_number,
+                 ResultCallback callback) override;
   void ControlTransfer(mojom::UsbTransferDirection direction,
                        mojom::UsbControlTransferType request_type,
                        mojom::UsbControlTransferRecipient recipient,

@@ -64,6 +64,11 @@ public class PreviewTabTest {
         });
     }
 
+    private void endAnimations() {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mEphemeralTabCoordinator.endAnimationsForTesting());
+    }
+
     /**
      * Test bringing up the PT, scrolling the base page but never expanding the PT, then closing it.
      */
@@ -71,24 +76,27 @@ public class PreviewTabTest {
     @MediumTest
     @Feature({"PreviewTab"})
     public void testOpenAndClose() throws Throwable {
-        Assert.assertFalse(
-                "Test did not start without a Preview Tab", mEphemeralTabCoordinator.isOpened());
+        Assert.assertFalse("Test should have started without any Preview Tab",
+                mEphemeralTabCoordinator.isOpened());
 
         ChromeActivity activity = mActivityTestRule.getActivity();
         Tab tab = activity.getActivityTab();
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 activity, tab, PREVIEW_TAB_DOM_ID, R.id.contextmenu_open_in_ephemeral_tab);
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        endAnimations();
         Assert.assertTrue("The Preview Tab did not open", mEphemeralTabCoordinator.isOpened());
 
         // Scroll the base page.
         DOMUtils.scrollNodeIntoView(tab.getWebContents(), NEAR_BOTTOM_DOM_ID);
+        endAnimations();
         Assert.assertTrue("The Preview Tab did not stay open after a scroll action",
                 mEphemeralTabCoordinator.isOpened());
 
         // Close the PT.
         TestThreadUtils.runOnUiThreadBlocking(() -> mEphemeralTabCoordinator.close());
-        // TODO(donnd): check that it's actually closed once https://crbug.com/1068449 is fixed.
+        endAnimations();
+        Assert.assertFalse("The Preview Tab should have closed but did not indicate closed",
+                mEphemeralTabCoordinator.isOpened());
     }
 
     // TODO(donnd): add more tests.

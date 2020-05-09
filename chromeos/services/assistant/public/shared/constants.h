@@ -27,4 +27,4 @@ extern const char kServiceIdRequestPayload[];
 }  // namespace assistant
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_SHARED_CONSTANTS_H_
+#endif  // CHROMEOS_SERVICES_ASSISTANT_PUBLIC_SHARED_CONSTANTS_H_

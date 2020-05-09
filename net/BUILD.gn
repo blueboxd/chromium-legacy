@@ -2684,6 +2684,7 @@ source_set("simple_quic_tools") {
     ":net",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//net/third_party/quiche:simple_quic_tools_core",
     "//third_party/protobuf:protobuf_lite",
     "//url",
   ]

@@ -1059,6 +1059,8 @@ source_set("simple_quic_tools_core") {
     "src/quic/tools/quic_transport_simple_server_session.h",
     "src/quic/tools/quic_url.cc",
     "src/quic/tools/quic_url.h",
+    "src/quic/tools/simple_ticket_crypter.cc",
+    "src/quic/tools/simple_ticket_crypter.h",
   ]
   deps = [
     "//base",
@@ -1381,6 +1383,7 @@ source_set("quiche_tests") {
     "src/quic/test_tools/simulator/simulator_test.cc",
     "src/quic/tools/quic_memory_cache_backend_test.cc",
     "src/quic/tools/quic_tcp_like_trace_converter_test.cc",
+    "src/quic/tools/simple_ticket_crypter_test.cc",
     "src/spdy/core/array_output_buffer.cc",
     "src/spdy/core/array_output_buffer.h",
     "src/spdy/core/array_output_buffer_test.cc",

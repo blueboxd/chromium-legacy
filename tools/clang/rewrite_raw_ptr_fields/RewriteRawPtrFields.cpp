@@ -85,6 +85,7 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
       : replacements_printer_(replacements_printer) {}
 
   void run(const MatchFinder::MatchResult& result) override {
+    const clang::ASTContext& ast_context = *result.Context;
     const clang::SourceManager& source_manager = *result.SourceManager;
 
     const clang::FieldDecl* field_decl =
@@ -117,7 +118,7 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
         field_decl->getLocation().getLocWithOffset(-1));
 
     // Calculate |replacement_text|.
-    std::string replacement_text = GenerateNewText(pointer_type);
+    std::string replacement_text = GenerateNewText(ast_context, pointer_type);
     if (field_decl->isMutable())
       replacement_text.insert(0, "mutable ");
 
@@ -127,7 +128,8 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
   }
 
  private:
-  std::string GenerateNewText(const clang::QualType& pointer_type) {
+  std::string GenerateNewText(const clang::ASTContext& ast_context,
+                              const clang::QualType& pointer_type) {
     std::string result;
 
     assert(pointer_type->isPointerType() && "caller must pass a pointer type!");
@@ -142,9 +144,8 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
       result += "volatile ";
 
     // Convert pointee type to string.
-    clang::LangOptions lang_options;
-    clang::PrintingPolicy printing_policy(lang_options);
-    printing_policy.SuppressTagKeyword = 1;  // s/class Pointee/Pointee/
+    clang::PrintingPolicy printing_policy(ast_context.getLangOpts());
+    printing_policy.SuppressScope = 1;  // s/blink::Pointee/Pointee/
     std::string pointee_type_as_string =
         pointee_type.getAsString(printing_policy);
     result += llvm::formatv("CheckedPtr<{0}>", pointee_type_as_string);
@@ -171,13 +172,27 @@ int main(int argc, const char* argv[]) {
   MatchFinder match_finder;
   ReplacementsPrinter replacements_printer;
 
+  // Supported pointer types =========
+  // Given
+  //   struct MyStrict {
+  //     int* ptr;
+  //     int i;
+  //     int (*func_ptr)();
+  //     int (MyStruct::* member_func_ptr)(char);
+  //   };
+  // matches |int*|, but not the other types.
+  auto supported_pointer_types_matcher =
+      pointerType(unless(pointee(hasUnqualifiedDesugaredType(
+          anyOf(functionType(), memberPointerType())))));
+
   // Field declarations =========
   // Given
   //   struct S {
   //     int* y;
   //   };
   // matches |int* y|.
-  auto field_decl_matcher = fieldDecl(hasType(pointerType())).bind("fieldDecl");
+  auto field_decl_matcher =
+      fieldDecl(hasType(supported_pointer_types_matcher)).bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
 

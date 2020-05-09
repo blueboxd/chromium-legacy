@@ -48,8 +48,8 @@ bool StreamTextureHost::BindToCurrentThread(Listener* listener) {
 bool StreamTextureHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(StreamTextureHost, message)
-    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_FrameWithYcbcrInfoAvailable,
-                        OnFrameWithYcbcrInfoAvailable);
+    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_FrameWithInfoAvailable,
+                        OnFrameWithInfoAvailable);
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_FrameAvailable, OnFrameAvailable);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -61,10 +61,14 @@ void StreamTextureHost::OnChannelError() {
   channel_ = nullptr;
 }
 
-void StreamTextureHost::OnFrameWithYcbcrInfoAvailable(
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
+void StreamTextureHost::OnFrameWithInfoAvailable(
+    const gpu::Mailbox& mailbox,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
   if (listener_)
-    listener_->OnFrameWithYcbcrInfoAvailable(std::move(ycbcr_info));
+    listener_->OnFrameWithInfoAvailable(mailbox, coded_size, visible_rect,
+                                        ycbcr_info);
 }
 
 void StreamTextureHost::OnFrameAvailable() {
@@ -80,14 +84,11 @@ void StreamTextureHost::ForwardStreamTextureForSurfaceRequest(
   }
 }
 
-gpu::Mailbox StreamTextureHost::CreateSharedImage(const gfx::Size& size) {
-  if (!channel_)
-    return gpu::Mailbox();
-
-  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
-  channel_->EnqueueDeferredMessage(GpuStreamTextureMsg_CreateSharedImage(
-      route_id_, mailbox, size, ++release_id_));
-  return mailbox;
+void StreamTextureHost::UpdateRotatedVisibleSize(const gfx::Size& size) {
+  if (channel_) {
+    channel_->Send(
+        new GpuStreamTextureMsg_UpdateRotatedVisibleSize(route_id_, size));
+  }
 }
 
 gpu::SyncToken StreamTextureHost::GenUnverifiedSyncToken() {

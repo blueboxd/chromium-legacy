@@ -7,6 +7,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.download.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -28,17 +29,16 @@ public class RenameDialogCoordinator {
             Callback</*DialogDismissalCause*/ Integer> dismissCallback) {
         mModalDialogManager = modalDialogManager;
         mRenameDialogCustomView = (RenameDialogCustomView) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.download.R.layout.download_rename_custom_dialog, null);
+                R.layout.download_rename_custom_dialog, null);
         mRenameDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, new RenameDialogController())
-                        .with(ModalDialogProperties.TITLE,
-                                context.getString(org.chromium.chrome.download.R.string.rename))
+                        .with(ModalDialogProperties.TITLE, context.getString(R.string.rename))
                         .with(ModalDialogProperties.CUSTOM_VIEW, mRenameDialogCustomView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, context.getResources(),
-                                org.chromium.chrome.download.R.string.ok)
+                                R.string.ok)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
-                                org.chromium.chrome.download.R.string.cancel)
+                                R.string.cancel)
                         .build();
         mOnClickEventCallback = onClickCallback;
         mOnDismissEventCallback = dismissCallback;

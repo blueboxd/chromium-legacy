@@ -84,7 +84,7 @@ base::FilePath DemoModeTestHelper::GetPreinstalledDemoResourcesPath() {
 
 void DemoModeTestHelper::InitializeCrosComponentManager() {
   auto cros_component_manager =
-      std::make_unique<component_updater::FakeCrOSComponentManager>();
+      base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
   fake_cros_component_manager_ = cros_component_manager.get();
 
   // Set up the Demo Mode Resources component. Ensure we queue load requests

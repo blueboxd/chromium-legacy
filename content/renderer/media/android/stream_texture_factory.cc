@@ -23,12 +23,12 @@ void StreamTextureProxy::Release() {
   ClearReceivedFrameCB();
 
   // |this| can be deleted by the |task_runner_| on the compositor thread by
-  // posting task to that thread. So we need to clear the |set_ycbcr_info_cb_|
-  // here first so that its not called on the compositor thread before |this| is
-  // deleted. The problem is that |set_ycbcr_info_cb_| is provided by the owner
-  // of StreamTextureProxy, which is being destroyed and is releasing
-  // StreamTextureProxy.
-  ClearSetYcbcrInfoCB();
+  // posting task to that thread. So we need to clear the
+  // |create_video_frame_cb_| here first so that its not called on the
+  // compositor thread before |this| is deleted. The problem is that
+  // |create_video_frame_cb_| is provided by the owner of StreamTextureProxy,
+  // which is being destroyed and is releasing StreamTextureProxy.
+  ClearCreateVideoFrameCB();
 
   // Release is analogous to the destructor, so there should be no more external
   // calls to this object in Release. Therefore there is no need to acquire the
@@ -44,14 +44,14 @@ void StreamTextureProxy::ClearReceivedFrameCB() {
   received_frame_cb_.Reset();
 }
 
-void StreamTextureProxy::ClearSetYcbcrInfoCB() {
+void StreamTextureProxy::ClearCreateVideoFrameCB() {
   base::AutoLock lock(lock_);
-  set_ycbcr_info_cb_.Reset();
+  create_video_frame_cb_.Reset();
 }
 
 void StreamTextureProxy::BindToTaskRunner(
     const base::RepeatingClosure& received_frame_cb,
-    SetYcbcrInfoCb set_ycbcr_info_cb,
+    const CreateVideoFrameCB& create_video_frame_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(task_runner.get());
 
@@ -60,7 +60,7 @@ void StreamTextureProxy::BindToTaskRunner(
     DCHECK(!task_runner_.get() || (task_runner.get() == task_runner_.get()));
     task_runner_ = task_runner;
     received_frame_cb_ = received_frame_cb;
-    set_ycbcr_info_cb_ = std::move(set_ycbcr_info_cb);
+    create_video_frame_cb_ = create_video_frame_cb;
   }
 
   if (task_runner->BelongsToCurrentThread()) {
@@ -84,13 +84,16 @@ void StreamTextureProxy::OnFrameAvailable() {
     received_frame_cb_.Run();
 }
 
-void StreamTextureProxy::OnFrameWithYcbcrInfoAvailable(
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
+void StreamTextureProxy::OnFrameWithInfoAvailable(
+    const gpu::Mailbox& mailbox,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
   base::AutoLock lock(lock_);
   // Set the ycbcr info before running the received frame callback so that the
   // first frame has it.
-  if (!set_ycbcr_info_cb_.is_null())
-    std::move(set_ycbcr_info_cb_).Run(std::move(ycbcr_info));
+  if (!create_video_frame_cb_.is_null())
+    create_video_frame_cb_.Run(mailbox, coded_size, visible_rect, ycbcr_info);
   if (!received_frame_cb_.is_null())
     received_frame_cb_.Run();
 }
@@ -100,14 +103,8 @@ void StreamTextureProxy::ForwardStreamTextureForSurfaceRequest(
   host_->ForwardStreamTextureForSurfaceRequest(request_token);
 }
 
-void StreamTextureProxy::CreateSharedImage(
-    const gfx::Size& size,
-    gpu::Mailbox* mailbox,
-    gpu::SyncToken* unverified_sync_token) {
-  *mailbox = host_->CreateSharedImage(size);
-  if (mailbox->IsZero())
-    return;
-  *unverified_sync_token = host_->GenUnverifiedSyncToken();
+void StreamTextureProxy::UpdateRotatedVisibleSize(const gfx::Size& size) {
+  host_->UpdateRotatedVisibleSize(size);
 }
 
 // static

@@ -34,7 +34,7 @@ cr.define('devices_page', function() {
       const devices = response.results;
 
       const tableBody = $('device-list');
-      tableBody.innerHTML = '';
+      tableBody.innerHTML = trustedTypes.emptyHTML;
 
       const rowTemplate = document.querySelector('#device-row');
 

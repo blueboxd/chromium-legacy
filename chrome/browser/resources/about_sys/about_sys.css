@@ -152,6 +152,15 @@ tr > *:nth-child(2) {
   white-space: pre-wrap;
 }
 
+a.stat-name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.stat-name-link:hover {
+  text-decoration: underline;
+}
+
 html[dir='rtl'] #details .name {
   background-position-left: auto;
   background-position-right: 5em;

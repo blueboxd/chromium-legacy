@@ -2003,7 +2003,6 @@ void PaintOp::Raster(SkCanvas* canvas, const PlaybackParams& params) const {
 size_t PaintOp::Serialize(void* memory,
                           size_t size,
                           const SerializeOptions& options) const {
-  DCHECK(options.transfer_cache);
   DCHECK(options.canvas);
 
   // Need at least enough room for a skip/type header.

@@ -195,7 +195,6 @@
 <translation id="1736420071277903564">Rekenaar</translation>
 <translation id="1740951997222943430">Voer 'n geldige vervalmaand in</translation>
 <translation id="1741613555002899862">Moet gespesifseer en 'n geldige string wees wanneer DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> is.</translation>
-<translation id="1743520634839655729">Stoor jou kaart, naam en faktureringadres in jou Google-rekening en op hierdie toestel om volgende keer vinniger te betaal.</translation>
 <translation id="1743570585616704562">Nie herken nie</translation>
 <translation id="1745880797583122200">Jou blaaier word bestuur</translation>
 <translation id="1746113442205726301">Skuif prent langs Y-as</translation>
@@ -1275,7 +1274,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Moontlike heffings voor.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ander voorstel}other{# ander voorstelle}}</translation>
-<translation id="6387754724289022810">Stoor jou kaart en faktureringadres in jou Google-rekening en op hierdie toestel om volgende keer vinniger te betaal.</translation>
 <translation id="6389470377220713856">Naam op kaart</translation>
 <translation id="6390200185239044127">Halwe Z-vou</translation>
 <translation id="6390662030813198813">Engineering-E</translation>

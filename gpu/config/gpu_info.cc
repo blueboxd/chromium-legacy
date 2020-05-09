@@ -149,6 +149,8 @@ const char* OverlaySupportToString(gpu::OverlaySupport support) {
       return "DIRECT";
     case gpu::OverlaySupport::kScaling:
       return "SCALING";
+    case gpu::OverlaySupport::kSoftware:
+      return "SOFTWARE";
   }
 }
 #endif  // OS_WIN

@@ -53,7 +53,7 @@ function createRow(rowInfo) {
  * Remove all rows from the engagement table.
  */
 function clearTable() {
-  engagementTableBody.innerHTML = '';
+  engagementTableBody.innerHTML = trustedTypes.emptyHTML;
 }
 
 /**
@@ -114,7 +114,7 @@ function createConfigRow(name, value) {
  */
 
 function renderConfigTable(config) {
-  configTableBody.innerHTML = '';
+  configTableBody.innerHTML = trustedTypes.emptyHTML;
 
   configTableBody.appendChild(
       createConfigRow('Min Sessions', config.scoreMinVisits));

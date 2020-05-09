@@ -37,6 +37,10 @@ class MockTextureOwner : public TextureOwner {
   MOCK_METHOD0(ReleaseBackBuffers, void());
   MOCK_METHOD1(OnTextureDestroyed, void(gpu::gles2::AbstractTexture*));
   MOCK_METHOD1(SetFrameAvailableCallback, void(const base::RepeatingClosure&));
+  MOCK_METHOD3(GetCodedSizeAndVisibleRect,
+               void(gfx::Size rotated_visible_size,
+                    gfx::Size* coded_size,
+                    gfx::Rect* visible_rect));
 
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override {

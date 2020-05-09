@@ -195,7 +195,6 @@
 <translation id="1736420071277903564">கம்ப்யூட்டர்</translation>
 <translation id="1740951997222943430">சரியான காலாவதி மாதத்தை உள்ளிடவும்</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> ஆக இருக்கும்போது குறிப்பிடப்பட வேண்டும். அத்துடன் சரியான சரமாகவும் இருக்க வேண்டும்.</translation>
-<translation id="1743520634839655729">அடுத்த முறை விரைவாகப் பணம் செலுத்த, உங்கள் கார்டின் பெயரையும் பில்லிங் முகவரியையும் உங்கள் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
 <translation id="1743570585616704562">அடையாளங்காண முடியவில்லை</translation>
 <translation id="1745880797583122200">உங்கள் உலாவி நிர்வகிக்கப்படுகிறது</translation>
 <translation id="1746113442205726301">இமேஜ் Y ஷிஃப்ட்</translation>
@@ -218,6 +217,7 @@
 <translation id="1838374766361614909">தேடலை அழி</translation>
 <translation id="1839551713262164453">கொள்கை மதிப்புகளின் சரிபார்ப்பு பிழைகளுடன் தோல்வியில் முடிந்தது.</translation>
 <translation id="1842969606798536927">பணம் செலுத்துக</translation>
+<translation id="1852694792039666893">Google கணக்கைப் பயன்படுத்தி வலிமையான கடவுச்சொல்லைப் பரிந்துரைக்கவும்</translation>
 <translation id="1871208020102129563">நிலையான ப்ராக்ஸி சேவையகங்களைப் பயன்படுத்த ப்ராக்ஸி அமைக்கப்பட்டுள்ளது, .pac ஸ்கிரிப்ட் URL அல்ல.</translation>
 <translation id="1871284979644508959">அவசியமானவை</translation>
 <translation id="1875512691959384712">Google படிவங்கள்</translation>
@@ -402,6 +402,7 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">கச்சிதமாகப் பொருந்தும் அளவு</translation>
 <translation id="2691924980723297736">பாதுகாப்பு எச்சரிக்கை</translation>
+<translation id="2696268945573510710">உங்கள் Google கணக்கில் சேமிக்கப்பட்டுள்ள கடவுச்சொற்களைப் பயன்படுத்தவும்</translation>
 <translation id="2699302886720511147">ஏற்கப்படும் கார்டுகள்</translation>
 <translation id="2701514975700770343">கீழ் நோக்கியது</translation>
 <translation id="2702801445560668637">வாசிப்புப் பட்டியல்</translation>
@@ -447,6 +448,7 @@
 <translation id="2915068235268646559">சிதைவு அறிக்கை பெறப்பட்ட நேரம்: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">பிற நிரல்களை மூடவும்</translation>
 <translation id="2922350208395188000">சேவையகச் சான்றிதழை சோதிக்க முடியவில்லை.</translation>
+<translation id="2924027812781652774">உங்கள் Google கணக்கில் சேமிக்கப்பட்டுள்ள கடவுச்சொற்களைப் பயன்படுத்த, உள்நுழையவும்</translation>
 <translation id="2925673989565098301">டெலிவரி முறை</translation>
 <translation id="2928905813689894207">பில்லிங் முகவரி</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />, மேலும் <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -1261,7 +1263,6 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">கட்டணங்கள் விதிக்கப்படச் சாத்தியமுள்ளது.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{மேலும் 1 பரிந்துரை}other{மேலும் # பரிந்துரைகள்}}</translation>
-<translation id="6387754724289022810">அடுத்த முறை விரைவாகப் பணம் அனுப்ப, உங்கள் கார்டையும் பில்லிங் முகவரியையும் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
 <translation id="6389470377220713856">அட்டையிலுள்ள பெயர்</translation>
 <translation id="6390200185239044127">Z-ஃபோல்டு ஹாஃப்</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1397,6 +1398,7 @@
 <translation id="7050187094878475250"><ph name="DOMAIN" />ஐ அடைய முயற்சித்துள்ளீர்கள், சேவையகம் வழங்கிய சான்றிதழ் நம்புவதற்கு சாத்தியமற்ற நீண்ட செல்லுபடிக்காலத்தைக் கொண்டுள்ளது.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{இந்தக் கார்டை இப்போது சேமிக்க முடியவில்லை}other{இந்தக் கார்டுகளை இப்போது சேமிக்க முடியவில்லை}}</translation>
 <translation id="7053983685419859001">தடு</translation>
+<translation id="7058163556978339998">இந்த இணையதளத்தின் சான்றிதழை <ph name="ISSUER" /> வழங்கியதா என <ph name="BROWSER" /> சரிபார்த்தது.</translation>
 <translation id="7062635574500127092">பசும் நீலம்</translation>
 <translation id="7064851114919012435">தொடர்புத் தகவல்</translation>
 <translation id="70705239631109039">உங்கள் இணைப்பு முழுப் பாதுகாப்புடன் இல்லை</translation>

@@ -11,90 +11,6 @@ const mojom = chromeos.settings.mojom;
  * @fileoverview 'os-settings-search-box' is the container for the search input
  * and settings search results.
  */
-
-/**
- * Fake function to simulate async SettingsSearchHandler Search().
- * TODO(crbug/1056909): Remove once Settings Search is complete.
- * @param {string} query The query used to fetch results.
- * @return {Promise<!Array<mojom.SearchResult>>} A promise resolving results.
- */
-function fakeSettingsSearchHandlerSearch(query) {
-  /**
-   * @param {number} min The lower bound integer.
-   * @param {number} max The upper bound integer.
-   * @return {number} A random integer between min and max inclusive.
-   */
-  function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  /**
-   * @param {*} resultArr Result stored in arr like [text, path, icon].
-   * @return {!mojom.SearchResult} Search result entry.
-   */
-  function generateFakeResult(resultArr) {
-    return /** @type {!mojom.SearchResult} */ ({
-      resultText: {
-        data: Array.from(resultArr[0], c => c.charCodeAt()),
-      },
-      urlPathWithParameters: resultArr[1],
-      icon: resultArr[2],
-      relevanceScore: 0.5,
-      settingsPageHierarchy: [],
-    });
-  }
-
-  const Icon = mojom.SearchResultIcon;
-  const fakeRandomResults = [
-    ['Mouse', '', Icon.kMouse],
-    ['Printer', '', Icon.kPrinter],
-    ['Keyboard', '', Icon.kKeyboard],
-    ['Wallpaper', '', Icon.kWallpaper],
-    ['Messages', '', Icon.kMessages],
-    ['Display', '', Icon.kDisplay],
-    ['HardDrive', '', Icon.kHardDrive],
-    ['Sync', '', Icon.kSync],
-    ['Stylus', '', Icon.kStylus],
-    ['Chrome', '', Icon.kChrome],
-    ['Drive', '', Icon.kDrive],
-    ['GooglePlay', '', Icon.kGooglePlay],
-    ['Assistant', '', Icon.kAssistant],
-    ['Cellular', '', Icon.kCellular],
-    ['Ethernet', '', Icon.kEthernet],
-    ['Wifi', '', Icon.kWifi],
-    ['Paintbrush', '', Icon.kPaintbrush],
-    ['Avatar', '', Icon.kAvatar],
-    ['InstantTethering', '', Icon.kInstantTethering],
-    ['Bluetooth', '', Icon.kBluetooth],
-    ['Phone', '', Icon.kPhone],
-    ['Lock', '', Icon.kLock],
-    ['Fingerprint', '', Icon.kFingerprint],
-    ['Laptop', '', Icon.kLaptop],
-    ['Power', '', Icon.kPower],
-    ['MagnifyingGlass', '', Icon.kMagnifyingGlass],
-    ['AppsGrid', '', Icon.kAppsGrid],
-    ['Android', '', Icon.kAndroid],
-    ['Penguin', '', Icon.kPenguin],
-    ['PluginVm', '', Icon.kPluginVm],
-    ['Clock', '', Icon.kClock],
-    ['Shield', '', Icon.kShield],
-    ['Globe', '', Icon.kGlobe],
-    ['Folder', '', Icon.kFolder],
-    ['A11y', '', Icon.kA11y],
-    ['Reset', '', Icon.kReset],
-  ].map(result => generateFakeResult(result));
-
-  fakeRandomResults.sort(() => Math.random() - 0.5);
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(fakeRandomResults.splice(
-          0, getRandomInt(1, fakeRandomResults.length - 1)));
-    }, 0);
-  });
-}
-
 Polymer({
   is: 'os-settings-search-box',
 
@@ -177,15 +93,6 @@ Polymer({
      * @private
      */
     listBlurred_: Boolean,
-
-    /**
-     * TODO(crbug/1056909): Remove once Settings Search UI matches mocks.
-     * @private {Boolean}
-     */
-    useFakeSearch_: {
-      type: Boolean,
-      value: false,
-    },
   },
 
   listeners: {
@@ -241,14 +148,6 @@ Polymer({
     }
 
     this.spinnerActive = true;
-
-    if (this.useFakeSearch_) {
-      // TODO(crbug/1056909): Remove once Settings Search is complete.
-      fakeSettingsSearchHandlerSearch(query).then(results => {
-        this.onSearchResultsReceived_(query, results);
-      });
-      return;
-    }
 
     // The C++ layer uses base::string16, which use 16 bit characters. JS
     // strings support either 8 or 16 bit characters, and must be converted to
@@ -388,7 +287,6 @@ Polymer({
    * |selectedItem| is not changed by the time this is called. The value that
    * |selectedItem| will be assigned to is stored in
    * |this.$.searchResultList.selectedItem|.
-   * TODO(crbug/1056909): Add test for this specific case.
    * @private
    */
   onSelectedItemChanged_() {

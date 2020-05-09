@@ -81,7 +81,7 @@ CvcUnmaskViewController::~CvcUnmaskViewController() {}
 
 void CvcUnmaskViewController::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
-  autofill::LoadRiskData(0, web_contents_, std::move(callback));
+  autofill::risk_util::LoadRiskData(0, web_contents_, std::move(callback));
 }
 
 void CvcUnmaskViewController::ShowUnmaskPrompt(
@@ -258,7 +258,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
 
 std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
+      views::MdTextButton::CreateSecondaryUiProminentButton(
           this, l10n_util::GetStringUTF16(IDS_CONFIRM)));
   button->SetEnabled(false);  // Only enabled when a valid CVC is entered.
   button->SetID(static_cast<int>(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON));

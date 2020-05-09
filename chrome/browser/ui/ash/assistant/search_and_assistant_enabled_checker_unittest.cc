@@ -9,26 +9,14 @@
 #include <string>
 
 #include "base/bind.h"
-#include "build/buildflag.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/services/assistant/public/shared/constants.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/assistant/internal/internal_constants.h"
-#endif
-
 namespace {
-
-const std::string kURL =
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-    chromeos::assistant::kSampleServiceIdRequest;
-#else
-    "";
-#endif
 
 constexpr char kFalseResponse[] = R"()]}'
   {
@@ -81,14 +69,16 @@ class SearchAndAssistantEnabledCheckerTest : public ChromeAshTestBase {
 };
 
 TEST_F(SearchAndAssistantEnabledCheckerTest, TrueResponse) {
-  test_url_loader_factory_.AddResponse(kURL, kTrueResponse);
+  test_url_loader_factory_.AddResponse(
+      chromeos::assistant::kSampleServiceIdRequest, kTrueResponse);
   sender_->SyncSearchAndAssistantState();
   EXPECT_CALL(delegate_, OnSearchAndAssistantStateReceived(true));
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(SearchAndAssistantEnabledCheckerTest, FalseResponse) {
-  test_url_loader_factory_.AddResponse(kURL, kFalseResponse);
+  test_url_loader_factory_.AddResponse(
+      chromeos::assistant::kSampleServiceIdRequest, kFalseResponse);
   sender_->SyncSearchAndAssistantState();
   EXPECT_CALL(delegate_, OnSearchAndAssistantStateReceived(false));
   EXPECT_CALL(delegate_, OnError()).Times(0);
@@ -97,7 +87,8 @@ TEST_F(SearchAndAssistantEnabledCheckerTest, FalseResponse) {
 
 TEST_F(SearchAndAssistantEnabledCheckerTest, NetworkError) {
   test_url_loader_factory_.AddResponse(
-      GURL(kURL), network::mojom::URLResponseHead::New(), std::string(),
+      GURL(chromeos::assistant::kSampleServiceIdRequest),
+      network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   sender_->SyncSearchAndAssistantState();
   EXPECT_CALL(delegate_, OnError());
@@ -105,7 +96,8 @@ TEST_F(SearchAndAssistantEnabledCheckerTest, NetworkError) {
 }
 
 TEST_F(SearchAndAssistantEnabledCheckerTest, InvalidResponse) {
-  test_url_loader_factory_.AddResponse(kURL, "");
+  test_url_loader_factory_.AddResponse(
+      chromeos::assistant::kSampleServiceIdRequest, "");
   sender_->SyncSearchAndAssistantState();
   EXPECT_CALL(delegate_, OnError());
   base::RunLoop().RunUntilIdle();

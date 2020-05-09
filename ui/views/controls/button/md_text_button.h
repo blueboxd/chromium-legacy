@@ -24,7 +24,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static std::unique_ptr<LabelButton> CreateSecondaryUiButton(
       ButtonListener* listener,
       const base::string16& text);
-  static std::unique_ptr<LabelButton> CreateSecondaryUiBlueButton(
+  static std::unique_ptr<LabelButton> CreateSecondaryUiProminentButton(
       ButtonListener* listener,
       const base::string16& text);
   static std::unique_ptr<MdTextButton> Create(
@@ -69,12 +69,12 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void UpdateColors();
 
   // True if this button uses prominent styling (blue fill, etc.).
-  bool is_prominent_;
+  bool is_prominent_ = false;
 
   // When set, this provides the background color.
   base::Optional<SkColor> bg_color_override_;
 
-  float corner_radius_;
+  float corner_radius_ = 0.0f;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

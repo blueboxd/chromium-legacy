@@ -86,6 +86,24 @@ _SWAP_CHAIN_PRESENT_EVENT_NAME = 'SwapChain::Present'
 _PRESENT_TO_SWAP_CHAIN_EVENT_NAME = 'SwapChainPresenter::PresentToSwapChain'
 
 
+class _TraceTestArguments(object):
+  """Struct-like object for passing trace test arguments instead of dicts."""
+
+  def __init__(self,
+               browser_args,
+               category,
+               test_harness_script,
+               finish_js_condition,
+               success_eval_func,
+               other_args=None):
+    self.browser_args = browser_args
+    self.category = category
+    self.test_harness_script = test_harness_script
+    self.finish_js_condition = finish_js_condition
+    self.success_eval_func = success_eval_func
+    self.other_args = other_args
+
+
 class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   """Tests GPU traces are plumbed through properly.
 
@@ -102,95 +120,87 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # should perhaps be enabled in the future.
     namespace = pixel_test_pages.PixelTestPages
     for p in namespace.DefaultPages('TraceTest'):
-      yield (p.name, gpu_relative_path + p.url, {
-          'browser_args': [],
-          'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
-          'test_harness_script': webgl_test_harness_script,
-          'finish_js_condition': 'domAutomationController._finished',
-          'success_eval_func': 'CheckGLCategory'
-      })
+      yield (p.name, gpu_relative_path + p.url,
+             _TraceTestArguments(
+                 browser_args=[],
+                 category=cls._DisabledByDefaultTraceCategory('gpu.service'),
+                 test_harness_script=webgl_test_harness_script,
+                 finish_js_condition='domAutomationController._finished',
+                 success_eval_func='CheckGLCategory'))
     for p in namespace.DefaultPages('DeviceTraceTest'):
-      yield (p.name, gpu_relative_path + p.url, {
-          'browser_args': [],
-          'category': cls._DisabledByDefaultTraceCategory('gpu.device'),
-          'test_harness_script': webgl_test_harness_script,
-          'finish_js_condition': 'domAutomationController._finished',
-          'success_eval_func': 'CheckGLCategory'
-      })
+      yield (p.name, gpu_relative_path + p.url,
+             _TraceTestArguments(
+                 browser_args=[],
+                 category=cls._DisabledByDefaultTraceCategory('gpu.device'),
+                 test_harness_script=webgl_test_harness_script,
+                 finish_js_condition='domAutomationController._finished',
+                 success_eval_func='CheckGLCategory'))
     for p in namespace.DirectCompositionPages('VideoPathTraceTest'):
-      yield (p.name, gpu_relative_path + p.url, {
-          'browser_args': p.browser_args,
-          'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
-          'test_harness_script': basic_test_harness_script,
-          'finish_js_condition': 'domAutomationController._finished',
-          'success_eval_func': 'CheckVideoPath',
-          'other_args': p.other_args
-      })
+      yield (p.name, gpu_relative_path + p.url,
+             _TraceTestArguments(
+                 browser_args=p.browser_args,
+                 category=cls._DisabledByDefaultTraceCategory('gpu.service'),
+                 test_harness_script=basic_test_harness_script,
+                 finish_js_condition='domAutomationController._finished',
+                 success_eval_func='CheckVideoPath',
+                 other_args=p.other_args))
     for p in namespace.LowLatencySwapChainPages('SwapChainTraceTest'):
-      yield (p.name, gpu_relative_path + p.url, {
-          'browser_args': p.browser_args,
-          'category': 'gpu',
-          'test_harness_script': basic_test_harness_script,
-          'finish_js_condition': 'domAutomationController._finished',
-          'success_eval_func': 'CheckSwapChainPath',
-          'other_args': p.other_args
-      })
+      yield (p.name, gpu_relative_path + p.url,
+             _TraceTestArguments(
+                 browser_args=p.browser_args,
+                 category='gpu',
+                 test_harness_script=basic_test_harness_script,
+                 finish_js_condition='domAutomationController._finished',
+                 success_eval_func='CheckSwapChainPath',
+                 other_args=p.other_args))
     for p in namespace.DirectCompositionPages('OverlayModeTraceTest'):
       if p.other_args and p.other_args.get('video_is_rotated', False):
         # For all drivers we tested, when a video is rotated, frames won't
         # be promoted to hardware overlays.
         continue
-      yield (p.name, gpu_relative_path + p.url, {
-          'browser_args': p.browser_args,
-          'category': cls._DisabledByDefaultTraceCategory('gpu.service'),
-          'test_harness_script': basic_test_harness_script,
-          'finish_js_condition': 'domAutomationController._finished',
-          'success_eval_func': 'CheckOverlayMode',
-          'other_args': p.other_args
-      })
+      yield (p.name, gpu_relative_path + p.url,
+             _TraceTestArguments(
+                 browser_args=p.browser_args,
+                 category=cls._DisabledByDefaultTraceCategory('gpu.service'),
+                 test_harness_script=basic_test_harness_script,
+                 finish_js_condition='domAutomationController._finished',
+                 success_eval_func='CheckOverlayMode',
+                 other_args=p.other_args))
 
   def RunActualGpuTest(self, test_path, *args):
     test_params = args[0]
-    assert 'browser_args' in test_params
-    assert 'category' in test_params
-    assert 'test_harness_script' in test_params
-    assert 'finish_js_condition' in test_params
-    browser_args = test_params['browser_args']
-    category = test_params['category']
-    test_harness_script = test_params['test_harness_script']
-    finish_js_condition = test_params['finish_js_condition']
-    success_eval_func = test_params['success_eval_func']
-    other_args = test_params.get('other_args', None)
 
     # The version of this test in the old GPU test harness restarted
     # the browser after each test, so continue to do that to match its
     # behavior.
-    self.RestartBrowserWithArgs(self._AddDefaultArgs(browser_args))
+    self.RestartBrowserWithArgs(self._AddDefaultArgs(test_params.browser_args))
 
     # Set up tracing.
     config = tracing_config.TracingConfig()
     config.chrome_trace_config.category_filter.AddExcludedCategory('*')
-    config.chrome_trace_config.category_filter.AddFilter(category)
+    config.chrome_trace_config.category_filter.AddFilter(test_params.category)
     config.enable_chrome_trace = True
     tab = self.tab
     tab.browser.platform.tracing_controller.StartTracing(config, 60)
 
     # Perform page navigation.
     url = self.UrlOfStaticFilePath(test_path)
-    tab.Navigate(url, script_to_evaluate_on_commit=test_harness_script)
+    tab.Navigate(url,
+                 script_to_evaluate_on_commit=test_params.test_harness_script)
     tab.action_runner.WaitForJavaScriptCondition(
-        finish_js_condition, timeout=30)
+        test_params.finish_js_condition, timeout=30)
 
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
 
     # Evaluate success.
-    if success_eval_func:
+    if test_params.success_eval_func:
       timeline_model = model_module.TimelineModel(timeline_data)
       event_iter = timeline_model.IterAllEvents(
           event_type_predicate=timeline_model.IsSliceOrAsyncSlice)
-      prefixed_func_name = '_EvaluateSuccess_' + success_eval_func
-      getattr(self, prefixed_func_name)(category, event_iter, other_args)
+      prefixed_func_name = '_EvaluateSuccess_' + test_params.success_eval_func
+      getattr(self, prefixed_func_name)(test_params.category, event_iter,
+                                        test_params.other_args)
 
   @classmethod
   def SetUpProcess(cls):

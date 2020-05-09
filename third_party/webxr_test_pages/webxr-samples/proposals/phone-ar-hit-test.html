@@ -96,6 +96,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const visualizeOffsetSpace = false;
       const visualizeObjectSpace = false;
       const visualizeOrigin = false;
+      const visualizeLocalFloorSpace = false;
 
       // Suppress XR events for interactions with the DOM overlay
       document.querySelector('header').addEventListener('beforexrselect', (ev) => {
@@ -156,6 +157,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       scene.addNode(offsetSpaceNode);
 
+      // Visualize local floor space
+      let localFloorSpaceNode = new Node();
+      localFloorSpaceNode.visible = false;
+
+      if (visualizeLocalFloorSpace) {
+        let xRay = new RayNode({direction : [5, 0, 0], baseColor : [1, 0, 0, 1]});
+        let yRay = new RayNode({direction : [0, 5, 0], baseColor : [0, 1, 0, 1]});
+        let zRay = new RayNode({direction : [0, 0, 5], baseColor : [0, 0, 1, 1]});
+
+        localFloorSpaceNode.addNode(xRay);
+        localFloorSpaceNode.addNode(yRay);
+        localFloorSpaceNode.addNode(zRay);
+      }
+
+      scene.addNode(localFloorSpaceNode);
+
       // -----------------------------------------------------------------------
 
       let arObject = new Node();
@@ -212,7 +229,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           //space : xrLocalFloor, // WIP: change back to viewer
           //space : xrOffsetSpace, // WIP: change back to viewer
           offsetRay : new XRRay()
-          //offsetRay : new XRRay(new DOMPointReadOnly(0,.5,-.5), new DOMPointReadOnly(0, -0.5, -1)) // WIP: change back to default
+          //offsetRay : new XRRay({}, {y: -0.5, z: 1.0}) // WIP: change back to default
         }).then((hitTestSource) => {
           console.debug("Hit test source created.");
           xrViewerSpaceHitTestSource = hitTestSource;
@@ -413,6 +430,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let pose = frame.getViewerPose(xrRefSpace);
         let viewerSpacePose = frame.getPose(xrViewerSpace, xrRefSpace);
         let offsetSpacePose = frame.getPose(xrOffsetSpace, xrRefSpace);
+        let localFloorSpacePose = frame.getPose(xrLocalFloor, xrRefSpace);
 
         // Offset space visualization.
         if (visualizeOffsetSpace && offsetSpacePose) {
@@ -420,6 +438,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           offsetSpaceNode.visible = true;
         } else {
           offsetSpaceNode.visible = false;
+        }
+
+        if (visualizeLocalFloorSpace && localFloorSpacePose) {
+          localFloorSpaceNode.matrix = localFloorSpacePose.transform.matrix;
+          localFloorSpaceNode.visible = true;
+        } else {
+          localFloorSpaceNode.visible = false;
         }
 
         if ("trackedAnchors" in frame) {

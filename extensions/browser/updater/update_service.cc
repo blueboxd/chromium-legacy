@@ -150,6 +150,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
     case Events::COMPONENT_WAIT:
     case Events::COMPONENT_UPDATE_READY:
     case Events::COMPONENT_UPDATE_DOWNLOADING:
+    case Events::COMPONENT_UPDATE_UPDATING:
       break;
   }
 
@@ -165,6 +166,9 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
   if (complete_event) {
     // The update check for |extension_id| has completed, thus it can be
     // removed from all in-progress update checks.
+    DCHECK_GT(updating_extension_ids_.count(extension_id), 0u);
+    updating_extension_ids_.erase(extension_id);
+
     bool install_immediately = false;
     for (auto& update : in_progress_updates_) {
       install_immediately |= update.install_immediately;
@@ -184,7 +188,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
 }
 
 bool UpdateService::IsBusy() const {
-  return !in_progress_updates_.empty();
+  return !updating_extension_ids_.empty();
 }
 
 UpdateService::UpdateService(
@@ -231,6 +235,10 @@ void UpdateService::StartUpdateCheck(
     DCHECK(!extension_id.empty());
 
     update.pending_extension_ids.insert(extension_id);
+    if (updating_extension_ids_.count(extension_id) > 0)
+      continue;
+
+    updating_extension_ids_.insert(extension_id);
 
     ExtensionUpdateData data = update_info.second;
     if (data.is_corrupt_reinstall) {

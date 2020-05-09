@@ -31,6 +31,7 @@ using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
+using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::WithArg;
@@ -484,11 +485,13 @@ TEST_F(LoadingPredictorTabHelperOptimizationGuideDeciderTest,
       *mock_optimization_guide_keyed_service_,
       CanApplyOptimizationAsync(_, optimization_guide::proto::LOADING_PREDICTOR,
                                 base::test::IsNotNullCallback()))
+      .Times(3)
       .WillOnce(WithArg<2>(
           Invoke([&](optimization_guide::OptimizationGuideDecisionCallback
                          got_callback) -> void {
             callback = std::move(got_callback);
-          })));
+          })))
+      .WillRepeatedly(Return());
   navigation->Start();
   navigation->Redirect(GURL("http://test2.org"));
   navigation->Redirect(GURL("http://test3.org"));

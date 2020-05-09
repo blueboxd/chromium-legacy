@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
+import org.chromium.components.autofill.EditableOption;
 
 import java.util.ArrayList;
 import java.util.Arrays;

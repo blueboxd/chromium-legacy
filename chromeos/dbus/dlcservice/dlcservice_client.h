@@ -31,13 +31,21 @@ namespace chromeos {
 // https://chromium.git.corp.google.com/chromiumos/platform2/+/HEAD/dlcservice
 class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
  public:
-  // The callback used for |Install()|, if the error is something other than
-  // |dlcservice::kErrorNone| the call has failed. For large DLC(s) to install,
-  // there may be delay between the time of this call and the callback being
-  // invoked.
-  using InstallCallback = base::OnceCallback<void(
-      const std::string& err,
-      const dlcservice::DlcModuleList& dlc_module_list)>;
+  // This object is returned as the result of DLC install success or failure.
+  struct InstallResult {
+    // The error associated with the install. |dlcservice::kErrorNone| indicates
+    // a success. Any other error code, indicates a failure.
+    std::string error;
+    // The unique DLC ID which was requested to be installed.
+    std::string dlc_id;
+    // The path where the DLC is available for users to use.
+    std::string root_path;
+  };
+
+  // The callback used for |Install()|. For large DLC(s) to install, there may
+  // be a delay between the time of this call and the callback being invoked.
+  using InstallCallback =
+      base::OnceCallback<void(const InstallResult& install_result)>;
 
   // The callback used for |Install()|, if the caller wants to listen in on the
   // progress of their download/install. If the caller only cares for whether
@@ -71,9 +79,9 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   // progress updates.
   static const ProgressCallback IgnoreProgress;
 
-  // Installs all DLC(s) passed in while reporting progress through the progress
+  // Installs the DLC passed in while reporting progress through the progress
   // callback and only calls install callback on install success/failure.
-  virtual void Install(const dlcservice::DlcModuleList& dlc_module_list,
+  virtual void Install(const std::string& dlc_id,
                        InstallCallback callback,
                        ProgressCallback progress_callback) = 0;
 

@@ -13,7 +13,7 @@ import presubmit_util
 
 def main(argv):
   presubmit_util.DoPresubmitMain(argv, 'rappor.xml', 'rappor.old.xml',
-                                 'pretty_print.py', rappor_model.UpdateXML)
+                                 rappor_model.UpdateXML)
 
 
 if '__main__' == __name__:

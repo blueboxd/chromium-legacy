@@ -78,6 +78,17 @@ void AutofillClientImpl::ShowAutofillSettings(bool show_credit_card_settings) {
   NOTREACHED();
 }
 
+void AutofillClientImpl::ShowUnmaskPrompt(
+    const autofill::CreditCard& card,
+    UnmaskCardReason reason,
+    base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {
+  NOTREACHED();
+}
+
+void AutofillClientImpl::OnUnmaskVerificationResult(PaymentsRpcResult result) {
+  NOTREACHED();
+}
+
 #if !defined(OS_ANDROID)
 std::vector<std::string>
 AutofillClientImpl::GetMerchantWhitelistForVirtualCards() {
@@ -89,18 +100,6 @@ std::vector<std::string>
 AutofillClientImpl::GetBinRangeWhitelistForVirtualCards() {
   NOTREACHED();
   return std::vector<std::string>();
-}
-#endif
-
-void AutofillClientImpl::ShowUnmaskPrompt(
-    const autofill::CreditCard& card,
-    UnmaskCardReason reason,
-    base::WeakPtr<autofill::CardUnmaskDelegate> delegate) {
-  NOTREACHED();
-}
-
-void AutofillClientImpl::OnUnmaskVerificationResult(PaymentsRpcResult result) {
-  NOTREACHED();
 }
 
 void AutofillClientImpl::ShowLocalCardMigrationDialog(
@@ -124,7 +123,6 @@ void AutofillClientImpl::ShowLocalCardMigrationResults(
   NOTREACHED();
 }
 
-#if !defined(OS_ANDROID)
 void AutofillClientImpl::ShowWebauthnOfferDialog(
     WebauthnDialogCallback offer_dialog_callback) {
   NOTREACHED();
@@ -155,16 +153,8 @@ void AutofillClientImpl::OfferVirtualCardOptions(
     base::OnceCallback<void(const std::string&)> callback) {
   NOTREACHED();
 }
-#endif
 
-void AutofillClientImpl::ConfirmSaveCreditCardLocally(
-    const autofill::CreditCard& card,
-    SaveCreditCardOptions options,
-    LocalSaveCardPromptCallback callback) {
-  NOTREACHED();
-}
-
-#if defined(OS_ANDROID)
+#else  // defined(OS_ANDROID)
 void AutofillClientImpl::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const base::string16&)> callback) {
   NOTREACHED();
@@ -177,6 +167,13 @@ void AutofillClientImpl::ConfirmExpirationDateFixFlow(
   NOTREACHED();
 }
 #endif
+
+void AutofillClientImpl::ConfirmSaveCreditCardLocally(
+    const autofill::CreditCard& card,
+    SaveCreditCardOptions options,
+    LocalSaveCardPromptCallback callback) {
+  NOTREACHED();
+}
 
 void AutofillClientImpl::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,

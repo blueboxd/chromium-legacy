@@ -9,7 +9,7 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
+import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.PayerData;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentAddress;

@@ -616,9 +616,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       {-1, -1},     {-1, -1},     {-1, -1},     {-1, -1}, {921, 1843},
       {1843, 1843}, {1843, 1843}, {1843, 1843}, {-1, -1}};
   EXPECT_EQ(items.size(), progress_bytes.size());
-  for (size_t i{0}, j{0}; i != items.size(); ++i, ++j) {
-    EXPECT_EQ(items[i].downloaded_bytes, std::get<0>(progress_bytes[j]));
-    EXPECT_EQ(items[i].total_bytes, std::get<1>(progress_bytes[j]));
+  for (size_t i{0}; i != items.size(); ++i) {
+    EXPECT_EQ(items[i].downloaded_bytes, std::get<0>(progress_bytes[i]));
+    EXPECT_EQ(items[i].total_bytes, std::get<1>(progress_bytes[i]));
   }
 
   update_client->RemoveObserver(&observer);
@@ -1488,7 +1488,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
   update_client->RemoveObserver(&observer);
 }
 
-// Tests the differential update scenario for one CRX.
+// Tests the differential update scenario for one CRX. Tests install progress
+// for differential and full updates.
 TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   class DataCallbackMock {
    public:
@@ -1497,8 +1498,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       static int num_calls = 0;
 
       // Must use the same stateful installer object.
-      static scoped_refptr<CrxInstaller> installer =
-          base::MakeRefCounted<VersionedTestInstaller>();
+      static auto installer = base::MakeRefCounted<VersionedTestInstaller>();
+      installer->set_installer_progress_samples({-1, 50, 100});
 
       ++num_calls;
 
@@ -1752,6 +1753,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         .Times(AtLeast(1));
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_UPDATING,
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(3);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
@@ -1763,6 +1767,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
         .Times(AtLeast(1));
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
+    EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_UPDATING,
+                                  "ihfokbkgjpifnbbojhneepfflplebdkc"))
+        .Times(3);
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
                                   "ihfokbkgjpifnbbojhneepfflplebdkc")).Times(1);
   }
@@ -1785,7 +1792,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
                        runloop.QuitClosure()));
     runloop.Run();
 
-    EXPECT_EQ(7u, items.size());
+    EXPECT_EQ(10u, items.size());
     EXPECT_EQ(ComponentState::kChecking, items[0].state);
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[0].id.c_str());
     EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
@@ -1798,8 +1805,19 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
     EXPECT_EQ(ComponentState::kUpdating, items[5].state);
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
-    EXPECT_EQ(ComponentState::kUpdated, items[6].state);
+    EXPECT_EQ(ComponentState::kUpdating, items[6].state);
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[7].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdating, items[8].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[8].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdated, items[9].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[9].id.c_str());
+
+    std::vector<int> samples = {-1, -1, -1, -1, -1, -1, -1, 50, 100, 100};
+    EXPECT_EQ(items.size(), samples.size());
+    for (size_t i = 0; i != items.size(); ++i)
+      EXPECT_EQ(items[i].install_progress, samples[i]);
   }
 
   {
@@ -1818,7 +1836,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
                        runloop.QuitClosure()));
     runloop.Run();
 
-    EXPECT_EQ(7u, items.size());
+    EXPECT_EQ(10u, items.size());
     EXPECT_EQ(ComponentState::kChecking, items[0].state);
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[0].id.c_str());
     EXPECT_EQ(ComponentState::kCanUpdate, items[1].state);
@@ -1831,17 +1849,19 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[4].id.c_str());
     EXPECT_EQ(ComponentState::kUpdatingDiff, items[5].state);
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[5].id.c_str());
-    EXPECT_EQ(ComponentState::kUpdated, items[6].state);
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[6].state);
     EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[6].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[7].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[7].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdatingDiff, items[8].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[8].id.c_str());
+    EXPECT_EQ(ComponentState::kUpdated, items[9].state);
+    EXPECT_STREQ("ihfokbkgjpifnbbojhneepfflplebdkc", items[9].id.c_str());
 
-    std::vector<std::tuple<int64_t, int64_t>> progress_bytes = {
-        {-1, -1},     {-1, -1},     {-1, -1},    {1052, 2105},
-        {2105, 2105}, {2105, 2105}, {2105, 2105}};
-    EXPECT_EQ(items.size(), progress_bytes.size());
-    for (size_t i{0}, j{0}; i != items.size(); ++i, ++j) {
-      EXPECT_EQ(items[i].downloaded_bytes, std::get<0>(progress_bytes[j]));
-      EXPECT_EQ(items[i].total_bytes, std::get<1>(progress_bytes[j]));
-    }
+    std::vector<int> samples = {-1, -1, -1, -1, -1, -1, -1, 50, 100, 100};
+    EXPECT_EQ(items.size(), samples.size());
+    for (size_t i = 0; i != items.size(); ++i)
+      EXPECT_EQ(items[i].install_progress, samples[i]);
   }
 
   update_client->RemoveObserver(&observer);
@@ -1865,6 +1885,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     void Install(const base::FilePath& unpack_path,
                  const std::string& public_key,
                  std::unique_ptr<InstallParams> /*install_params*/,
+                 ProgressCallback progress_callback,
                  Callback callback) override {
       DoInstall(unpack_path, std::move(callback));
 
@@ -2104,8 +2125,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       static int num_calls = 0;
 
       // Must use the same stateful installer object.
-      static scoped_refptr<CrxInstaller> installer =
-          base::MakeRefCounted<VersionedTestInstaller>();
+      static auto installer = base::MakeRefCounted<VersionedTestInstaller>();
 
       ++num_calls;
 

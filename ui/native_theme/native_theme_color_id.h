@@ -60,6 +60,13 @@
   /* Custom frame view */                                                      \
   OP(kColorId_CustomFrameActiveColor),                                         \
   OP(kColorId_CustomFrameInactiveColor),                                       \
+  /* Custom tab bar */                                                         \
+  OP(kColorId_CustomTabBarBackgroundColor),                                    \
+  OP(kColorId_CustomTabBarForegroundColor),                                    \
+  OP(kColorId_CustomTabBarSecurityChipDangerousColor),                         \
+  OP(kColorId_CustomTabBarSecurityChipDefaultColor),                           \
+  OP(kColorId_CustomTabBarSecurityChipSecureColor),                            \
+  OP(kColorId_CustomTabBarSecurityChipWithCertColor),                          \
   /* Dropdown */                                                               \
   OP(kColorId_DropdownBackgroundColor),                                        \
   OP(kColorId_DropdownForegroundColor),                                        \

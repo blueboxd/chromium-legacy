@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Праглядзець</translation>
 <translation id="5073204694187207510">Схаваць поўнаэкранную сетку</translation>
 <translation id="5082793167783849073">Каб хутка параўнаць старонкі, можна стварыць групу. Для гэтага дакраніцеся да спасылкі і ўтрымлівайце яе.</translation>
+<translation id="5533021382642990449">Паказаць пазней</translation>
 <translation id="5580090775658607195">Укладак згрупавана: <ph name="TAB_COUNT" /></translation>
 <translation id="58326064309361797">Каб згрупаваць укладкі, перацягвайце іх</translation>
 <translation id="6040143037577758943">Закрыць</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Адхіліць прапановы.</translation>
 <translation id="814503310257431685">Праглядзець усе</translation>
 <translation id="8205266828577616993">Перамясціць укладку ўверх</translation>
+<translation id="8304833501377495048">Больш не паказваць панэль укладак?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Закрыць <ph name="TABS_COUNT_ONE" /> выбраную ўкладку}one{Закрыць <ph name="TABS_COUNT_MANY" /> выбраную ўкладку}few{Закрыць <ph name="TABS_COUNT_MANY" /> выбраныя ўкладкі}many{Закрыць <ph name="TABS_COUNT_MANY" /> выбраных укладак}other{Закрыць <ph name="TABS_COUNT_MANY" /> выбранай укладкі}}</translation>
+<translation id="8749939518995770034">Панэль укладак закрыта</translation>
 <translation id="9150694013019234766">Пераключайцеся паміж укладкамі групы ў ніжняй частцы экрана</translation>
 <translation id="9169594135889675189">Дадаць у групу новую ўкладку</translation>
 <translation id="959682366969460160">Навядзіце парадак</translation>

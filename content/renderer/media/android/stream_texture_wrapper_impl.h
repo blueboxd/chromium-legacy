@@ -63,13 +63,13 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   //     DidReceiveFrame() method.
   void Initialize(
       const base::RepeatingClosure& received_frame_cb,
-      const gfx::Size& natural_size,
+      const gfx::Size& rotated_visible_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       StreamTextureWrapperInitCB init_cb) override;
 
   // Should be called when the Video size changes.
   // Can be called from any thread, but runs on |main_task_runner_|.
-  void UpdateTextureSize(const gfx::Size& natural_size) override;
+  void UpdateTextureSize(const gfx::Size& rotated_visible_size) override;
 
   // Returns the latest frame.
   // N.B: We create a single VideoFrame at initialization time (and update it
@@ -101,15 +101,12 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   void InitializeOnMainThread(const base::RepeatingClosure& received_frame_cb,
                               StreamTextureWrapperInitCB init_cb);
 
-  void ReallocateVideoFrame();
+  void CreateVideoFrame(const gpu::Mailbox& mailbox,
+                        const gfx::Size& coded_size,
+                        const gfx::Rect& visible_rect,
+                        const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
 
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame> video_frame);
-
-  // Sets the ycbcr_info on the |current_frame_|. This is called before the
-  // first frame becomes available, at which point no frames are in use, so
-  // modification of the frame is safe. The same info is re-used for all future
-  // frames.
-  void SetYcbcrInfo(base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info);
 
   bool enable_texture_copy_;
 
@@ -117,14 +114,13 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   // frame is available. It should be bound to |compositor_task_runner_|.
   ScopedStreamTextureProxy stream_texture_proxy_;
 
-  // Size of the video frames.
-  gfx::Size natural_size_;
+  // Visible size of the video with rotation applied.
+  gfx::Size rotated_visible_size_;
 
   scoped_refptr<StreamTextureFactory> factory_;
 
   base::Lock current_frame_lock_;
   scoped_refptr<media::VideoFrame> current_frame_;
-  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;

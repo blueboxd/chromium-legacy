@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.widget.ScrollView;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.download.R;
+import org.chromium.chrome.browser.download.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -30,8 +30,7 @@ final class RenameExtensionDialogCoordinator {
             Callback</*DialogDismissalCause*/ Integer> dismissCallback) {
         mModalDialogManager = modalDialogManager;
         mRenameExtensionDialogCustomView = (ScrollView) LayoutInflater.from(context).inflate(
-                org.chromium.chrome.download.R.layout.download_rename_extension_custom_dialog,
-                null);
+                R.layout.download_rename_extension_custom_dialog, null);
         mRenameExtensionDialogModel =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER,

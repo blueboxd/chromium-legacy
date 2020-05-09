@@ -10,8 +10,8 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.download.R;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
 

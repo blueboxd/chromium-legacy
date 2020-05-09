@@ -118,7 +118,6 @@
 <translation id="1147991416141538220">Щоб отримати доступ, зверніться до адміністратора цього пристрою.</translation>
 <translation id="1149401351239820326">Місяць закінчення терміну дії</translation>
 <translation id="1150565364351027703">Сонцезахисні окуляри</translation>
-<translation id="1151841030700667295">Ви вийдете з облікового запису на всіх сайтах, зокрема у відкритих вкладках.</translation>
 <translation id="1151917987301063366">Завжди дозволяти хосту <ph name="HOST" /> доступ до датчиків</translation>
 <translation id="1153356358378277386">Підключені пристрої</translation>
 <translation id="1153636665119721804">Програма додаткового захисту Google</translation>
@@ -294,7 +293,6 @@
 <translation id="1390548061267426325">Відкрити як звичайну вкладку</translation>
 <translation id="1392232653471491344">Потрібно перезапустити Linux</translation>
 <translation id="1393283411312835250">Сонце та хмари</translation>
-<translation id="1393787139683794508">Усі дані та файли cookie сайту <ph name="ORIGIN_NAME" /> буде видалено.</translation>
 <translation id="1395730723686586365">Засіб оновлення запущено</translation>
 <translation id="1396139853388185343">Не вдалося налаштувати принтер</translation>
 <translation id="1396259464226642517">Неочікуваний результат? <ph name="BEGIN_LINK" />Надіслати відгук<ph name="END_LINK" /></translation>
@@ -856,7 +854,6 @@
 <translation id="2101225219012730419">Версія:</translation>
 <translation id="211144231511833662">Очистити типи</translation>
 <translation id="2111670510994270194">Нова вкладка праворуч</translation>
-<translation id="2112004299911874330">Буде видалено <ph name="TOTAL_USAGE" /> даних, збережених сайтами.</translation>
 <translation id="21133533946938348">Закріпити вкладку</translation>
 <translation id="2113479184312716848">Відкрити &amp;файл...</translation>
 <translation id="2113921862428609753">Доступ до відомостей про центри сертифікації</translation>
@@ -2162,6 +2159,7 @@
 <translation id="3760460896538743390">Перевірити &amp;фонову сторінку</translation>
 <translation id="37613671848467444">Відкрити в &amp;анонімному вікні</translation>
 <translation id="3761556954875533505">Дозволити сайту змінювати файли?</translation>
+<translation id="3764314093345384080">Докладна інформація про складання</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Обмінюватися даними з пристроєм USB}one{Обмінюватися даними з # пристроєм USB}few{Обмінюватися даними з # пристроями USB}many{Обмінюватися даними з # пристроями USB}other{Обмінюватися даними з # пристрою USB}}</translation>
 <translation id="3765246971671567135">Не вдалося прочитати політику демо-режиму офлайн.</translation>
 <translation id="3768037234834996183">Синхронізація налаштувань…</translation>
@@ -3484,7 +3482,6 @@
 <translation id="5546865291508181392">Знайти</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" і ще 1 вкладка}one{"<ph name="TAB_TITLE" />" і ще # вкладка}few{"<ph name="TAB_TITLE" />" і ще # вкладки}many{"<ph name="TAB_TITLE" />" і ще # вкладок}other{"<ph name="TAB_TITLE" />" і ще # вкладки}}</translation>
 <translation id="5548606607480005320">Перевірка безпеки</translation>
-<translation id="5549467165017213645">Буде видалено <ph name="TOTAL_USAGE" /> даних, збережених сайтами та встановленими додатками.</translation>
 <translation id="5551573675707792127">Клавіатура та введення тексту</translation>
 <translation id="5553089923092577885">Зіставлення політик сертифікатів</translation>
 <translation id="5554489410841842733">Ця піктограма відображатиметься, коли розширення зможе працювати на поточній сторінці.</translation>
@@ -3628,6 +3625,7 @@
 <translation id="5734362860645681824">Зв’язок</translation>
 <translation id="5734697361979786483">Додати файлообмінник</translation>
 <translation id="5736796278325406685">Введіть дійсне ім’я користувача</translation>
+<translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5739017626473506901">Увійдіть, і тоді <ph name="USER_NAME" /> зможе додати обліковий запис навчального закладу</translation>
 <translation id="5739235828260127894">Очікується підтвердження. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Дуже великий</translation>
@@ -4142,7 +4140,6 @@
 <translation id="641081527798843608">Збіг суб’єкта</translation>
 <translation id="6412673304250309937">Перевіряє URL-адреси за списком шкідливих сайтів, що зберігається в Chrome. Якщо сайт намагається викрасти ваш пароль або ви завантажуєте шкідливий файл, Chrome також може надсилати Безпечному перегляду URL-адреси, зокрема уривки вмісту сторінки.</translation>
 <translation id="6412931879992742813">Нове анонімне вікно</translation>
-<translation id="6413591858632097328">Буде видалено всі дані та файли cookie, збережені сайтом <ph name="ORIGIN_NAME" /> і встановленим ним додатком.</translation>
 <translation id="641469293210305670">Установити оновлення та додатки</translation>
 <translation id="6414888972213066896">Ви надіслали одному з батьків запит на перегляд цього сайту</translation>
 <translation id="6415659939354280526">Вибрати джерело заставки</translation>
@@ -4191,7 +4188,6 @@
 <translation id="6467304607960172345">Оптимізувати відео на весь екран</translation>
 <translation id="6468485451923838994">Шрифти</translation>
 <translation id="6472207088655375767">Одноразовий пароль</translation>
-<translation id="6472804939621540371">Буде видалено всі дані й файли cookie, збережені сайтом <ph name="SITE_GROUP_NAME" />, сайтами його групи та встановленим ним додатком.</translation>
 <translation id="6472893788822429178">Показати кнопку "Домашня сторінка"</translation>
 <translation id="6473842110411557830">Ілюстрація Powerwash</translation>
 <translation id="6474498546677193336">Не вдалося скасувати доступ, оскільки цю папку використовує додаток. Доступ до неї буде скасовано після завершення роботи Linux.</translation>
@@ -4940,6 +4936,7 @@
 <translation id="7478485216301680444">Не вдалося встановити програму для терміналів.</translation>
 <translation id="7479221278376295180">Огляд використання пам'яті</translation>
 <translation id="7481312909269577407">Переслати</translation>
+<translation id="7481358317100446445">Готова</translation>
 <translation id="748138892655239008">Базові обмеження сертифіката</translation>
 <translation id="7487067081878637334">Технології</translation>
 <translation id="7487141338393529395">Увімкнути покращену перевірку орфографії</translation>
@@ -5073,7 +5070,6 @@
 <translation id="7664620655576155379">Непідтримуваний пристрій Bluetooth: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665082356120621510">Зарезервувати розмір</translation>
 <translation id="7665369617277396874">Додати обліковий запис</translation>
-<translation id="7665940458857700755">Усі дані й файли cookie, збережені сайтом <ph name="SITE_GROUP_NAME" /> і сайтами його групи, буде видалено.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Неправильний PIN-код. У вас залишилася одна спроба.}one{Неправильний PIN-код. У вас залишилася # спроба.}few{Неправильний PIN-код. У вас залишилося # спроби.}many{Неправильний PIN-код. У вас залишилося # спроб.}other{Неправильний PIN-код. У вас залишилося # спроби.}}</translation>
 <translation id="7671130400130574146">Використовувати системні границі та рядок заголовка</translation>
 <translation id="767127784612208024">Торкніться, щоб підтвердити скидання</translation>
@@ -5199,6 +5195,7 @@
 <translation id="7817361223956157679">Додатки Linux ще не підтримують екранну клавіатуру</translation>
 <translation id="7818135753970109980">Додано нову тему (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA або RSN)</translation>
+<translation id="7819992334107904369">Синхронізація Chrome</translation>
 <translation id="782057141565633384">Копіювати адресу відео</translation>
 <translation id="7824864914877854148">Не вдалося створити резервну копію через помилку</translation>
 <translation id="782590969421016895">Використати поточні сторінки</translation>
@@ -5416,7 +5413,6 @@
 <translation id="8063235345342641131">Стандартний зелений аватар</translation>
 <translation id="8063535366119089408">Переглянути файл</translation>
 <translation id="8068253693380742035">Торкніться, щоб увійти</translation>
-<translation id="8068809649322155577">Буде видалено всі дані й файли cookie, збережені сайтом <ph name="SITE_GROUP_NAME" />, сайтами його групи та встановленими ним додатками.</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Друкувати як зображення</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />Дані додатків – це будь-яка інформація, яку вони зберігають (залежно від налаштувань розробника), зокрема контакти, повідомлення та фотографії.<ph name="END_PARAGRAPH1" />

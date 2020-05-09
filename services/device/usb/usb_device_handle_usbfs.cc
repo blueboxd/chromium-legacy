@@ -575,10 +575,22 @@ void UsbDeviceHandleUsbfs::ResetDevice(ResultCallback callback) {
           base::Unretained(helper_.get()), std::move(callback)));
 }
 
-void UsbDeviceHandleUsbfs::ClearHalt(uint8_t endpoint_address,
+void UsbDeviceHandleUsbfs::ClearHalt(mojom::UsbTransferDirection direction,
+                                     uint8_t endpoint_number,
                                      ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   if (!device_) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  uint8_t endpoint_address =
+      ConvertEndpointDirection(direction) | endpoint_number;
+  auto it = endpoints_.find(endpoint_address);
+  if (it == endpoints_.end()) {
+    USB_LOG(USER) << "Endpoint address " << static_cast<int>(endpoint_address)
+                  << " is not part of a claimed interface.";
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(callback), false));
     return;

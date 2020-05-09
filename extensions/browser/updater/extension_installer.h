@@ -50,6 +50,7 @@ class ExtensionInstaller : public update_client::CrxInstaller {
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
                std::unique_ptr<InstallParams> install_params,
+               ProgressCallback progress_callback,
                UpdateClientCallback update_client_callback) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;

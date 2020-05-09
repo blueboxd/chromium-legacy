@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.ntp.cards.promo;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -15,10 +17,33 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
- * Homepage related utils class.
+ * Homepage promo related utils class.
  */
 final class HomepagePromoUtils {
+    /**
+     * Possible user actions associated with homepage promo. Used for Histogram
+     * "NewTabPage.Promo.HomepagePromo" recorded in {@link #recordHomepagePromoEvent(int)}.
+     *
+     * These values are corresponded with enum "AndroidHomepagePromoAction" and persisted to logs,
+     * therefore should be treated as append only.
+     */
+    @IntDef({HomepagePromoAction.CREATED, HomepagePromoAction.SEEN, HomepagePromoAction.DISMISSED,
+            HomepagePromoAction.ACCEPTED, HomepagePromoAction.UNDO})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HomepagePromoAction {
+        int CREATED = 0;
+        int SEEN = 1;
+        int DISMISSED = 2;
+        int ACCEPTED = 3;
+        int UNDO = 4;
+
+        int TOTAL = 5;
+    }
+
     // Do not instantiate.
     private HomepagePromoUtils() {}
 
@@ -62,6 +87,11 @@ final class HomepagePromoUtils {
 
     private static boolean isHomepageNTP() {
         return !sBypassUrlIsNTPForTests && NewTabPage.isNTPUrl(HomepageManager.getHomepageUri());
+    }
+
+    static void recordHomepagePromoEvent(@HomepagePromoAction int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.Promo.HomepagePromo", action, HomepagePromoAction.TOTAL);
     }
 
     @VisibleForTesting

@@ -17,17 +17,21 @@ import path_utils
 
 import diff_util
 
-def DoPresubmit(argv, original_filename, backup_filename, script_name,
-                prettyFn):
+
+def DoPresubmit(argv,
+                original_filename,
+                backup_filename,
+                prettyFn,
+                script_name='git cl format'):
   """Execute presubmit/pretty printing for the target file.
 
   Args:
     argv: command line arguments
     original_filename: The filename to read from.
     backup_filename: When pretty printing, move the old file contents here.
-    script_name: The name of the script to run for pretty printing.
     prettyFn: A function which takes the original xml content and produces
         pretty printed xml.
+    script_name: The name of the script to run for pretty printing.
 
   Returns:
     An exit status.  Non-zero indicates errors.

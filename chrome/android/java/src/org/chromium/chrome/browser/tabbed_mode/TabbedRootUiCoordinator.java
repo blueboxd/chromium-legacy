@@ -190,7 +190,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         super.initializeToolbar();
         if (!mActivity.isTablet()
                 && (BottomToolbarConfiguration.isBottomToolbarEnabled()
-                        || TabUiFeatureUtilities.isTabGroupsAndroidEnabled())) {
+                        || TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+                        || TabUiFeatureUtilities.isConditionalTabStripEnabled())) {
             getToolbarManager().enableBottomToolbar();
         }
     }

@@ -197,8 +197,6 @@ std::vector<std::string> GenerateKernelCmdline(
                          start_params.arc_disable_system_default_app),
       "androidboot.chromeos_channel=" + channel,
       "androidboot.boottime_offset=" + MonotonicTimestamp(),
-      // TODO(yusukes): remove this once arcvm supports SELinux.
-      "androidboot.selinux=permissive",
   };
   // Since we don't do mini VM yet, set not only |start_params| but also
   // |upgrade_params| here for now.

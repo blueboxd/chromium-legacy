@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">overskan</translation>
 <translation id="119944043368869598">Hamısını silin</translation>
 <translation id="1199716647557067911">Dəyişdirici ilə Girişi deaktiv etmək istədiyinizə əminsiniz?</translation>
+<translation id="121097972571826261">Söz üzrə irəli keçin</translation>
+<translation id="1229194443904279055">Seçməyi dayandırın</translation>
 <translation id="1247372569136754018">Mikrofon (daxili)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> mənbəsindən qidalanır</translation>
 <translation id="1255033239764210633">Hava necədir?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Tam Ekran Böyüdücüsü aktiv edildi. Rejimi deaktiv etmək üçün Ctrl+Search+M düymələrinə basın.</translation>
 <translation id="2302092602801625023">Bu hesab Family Link tərəfindən idarə olunur</translation>
 <translation id="2303600792989757991">Pəncərə ümumi görünüşünə keçirin</translation>
+<translation id="2322173485024759474">Hərf üzrə geri qayıdın</translation>
 <translation id="2339073806695260576">Qeyd götürmək, skrinşot çəkmək assistent, lazer göstəricisi və ya lupadan istifadə etmək üçün fırça düyməsinə klikləyin.</translation>
 <translation id="2341729377289034582">Şaquli formada kilidləndi</translation>
 <translation id="2352467521400612932">Staylus ayarları</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Klaviatura ayarlarını göstərin</translation>
 <translation id="3846575436967432996">Heç bir şəbəkə məlumatı yoxdur</translation>
 <translation id="385051799172605136">Geri</translation>
+<translation id="385300504083504382">Başlanğıc</translation>
 <translation id="3891340733213178823">Hesabdan çıxmaq üçün iki dəfə Ctrl+Shift+Q basın.</translation>
 <translation id="3893630138897523026">ChromeVox (şifahi geri əlaqə)</translation>
 <translation id="3897533311200664389">Mətn sorğusuna başlayın</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Həddindən çox cəhd</translation>
 <translation id="5397578532367286026">Bu istifadəçinin istifadəsi və tarixçəsi (<ph name="MANAGER_EMAIL" />) on chrome.com domenindəki menecer tərəfindən izlənə bilər.</translation>
 <translation id="5400461572260843123">Sürətli Ayarlar: Bildiriş mərkəzinə daxil olmaq üçün axtarış + sol üzərinə basın.</translation>
+<translation id="5428899915242071344">Seçimi başladın</translation>
 <translation id="5430931332414098647">Ani Birləşmə</translation>
 <translation id="5431825016875453137">VPN / L2TP açın</translation>
 <translation id="544691375626129091">Bütün əlçatımlı istifadəçilər bu sessiyaya əlavə edilib.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Qoşulmuş USB-C cihazları qidalandırılır</translation>
 <translation id="6790428901817661496">Oxudun</translation>
 <translation id="6803622936009808957">Heç bir dəstəklənən həll tapılmadığı üçün displeyləri güzgüləyə bilmədi. Əvəzinə artırılmış desktop daxil edildi.</translation>
+<translation id="6818242057446442178">Söz üzrə geri qayıdın</translation>
 <translation id="6820676911989879663">Fasilə verin!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> xidmətini aktivləşdirin</translation>
 <translation id="6878400149835617132">Qısayol deaktiv edildi</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Öncəki menyu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Qeyd yaradın</translation>
+<translation id="8371779926711439835">Hərf üzrə irəli keçin</translation>
 <translation id="8375916635258623388">Bu <ph name="DEVICE_NAME" /> və telefon avtomatik qoşulacaq</translation>
 <translation id="8388750414311082622">Sonuncu masa silinə bilməz.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> üçün seçimlər menyusu</translation>

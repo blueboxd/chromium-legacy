@@ -29,14 +29,14 @@ TEST_DATA_DIRS = [
     os.path.join(path_util.GetChromiumSrcDir(), 'media/test/data'),
 ]
 
-goldctl_bin = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
+GOLDCTL_BIN = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
                            'skia_goldctl')
 if sys.platform == 'win32':
-  goldctl_bin = os.path.join(goldctl_bin, 'win', 'goldctl') + '.exe'
+  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'win', 'goldctl') + '.exe'
 elif sys.platform == 'darwin':
-  goldctl_bin = os.path.join(goldctl_bin, 'mac', 'goldctl')
+  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'mac', 'goldctl')
 else:
-  goldctl_bin = os.path.join(goldctl_bin, 'linux', 'goldctl')
+  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'linux', 'goldctl')
 
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
 SKIA_GOLD_CORPUS = SKIA_GOLD_INSTANCE
@@ -260,6 +260,42 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 tolerance, device_pixel_ratio,
                                 test_machine_name):
+    def _CompareScreenshotWithExpectation(expectation):
+      """Compares a portion of the screenshot to the given expectation.
+
+      Fails the test if a the screenshot does not match within the tolerance.
+
+      Args:
+        expectation: A dict defining an expected color region. It must contain
+            'location', 'size', and 'color' keys. See pixel_test_pages.py for
+            examples.
+      """
+      location = expectation["location"]
+      size = expectation["size"]
+      x0 = int(location[0] * device_pixel_ratio)
+      x1 = int((location[0] + size[0]) * device_pixel_ratio)
+      y0 = int(location[1] * device_pixel_ratio)
+      y1 = int((location[1] + size[1]) * device_pixel_ratio)
+      for x in range(x0, x1):
+        for y in range(y0, y1):
+          if (x < 0 or y < 0 or x >= image_util.Width(screenshot)
+              or y >= image_util.Height(screenshot)):
+            self.fail(('Expected pixel location [%d, %d] is out of range on ' +
+                       '[%d, %d] image') % (x, y, image_util.Width(screenshot),
+                                            image_util.Height(screenshot)))
+
+          actual_color = image_util.GetPixelColor(screenshot, x, y)
+          expected_color = rgba_color.RgbaColor(
+              expectation["color"][0], expectation["color"][1],
+              expectation["color"][2],
+              expectation["color"][3] if len(expectation["color"]) > 3 else 255)
+          if not actual_color.IsEqual(expected_color, tolerance):
+            self.fail('Expected pixel at ' + str(location) +
+                      ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
+                      ' to be ' + str(expectation["color"]) + " but got [" +
+                      str(actual_color.r) + ", " + str(actual_color.g) + ", " +
+                      str(actual_color.b) + ", " + str(actual_color.a) + "]")
+
     # First scan through the expected_colors and see if there are any scale
     # factor overrides that would preempt the device pixel ratio. This
     # is mainly a workaround for complex tests like the Maps test.
@@ -291,31 +327,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     for expectation in expected_colors:
       if "scale_factor_overrides" in expectation:
         continue
-      location = expectation["location"]
-      size = expectation["size"]
-      x0 = int(location[0] * device_pixel_ratio)
-      x1 = int((location[0] + size[0]) * device_pixel_ratio)
-      y0 = int(location[1] * device_pixel_ratio)
-      y1 = int((location[1] + size[1]) * device_pixel_ratio)
-      for x in range(x0, x1):
-        for y in range(y0, y1):
-          if (x < 0 or y < 0 or x >= image_util.Width(screenshot)
-              or y >= image_util.Height(screenshot)):
-            self.fail(('Expected pixel location [%d, %d] is out of range on ' +
-                       '[%d, %d] image') % (x, y, image_util.Width(screenshot),
-                                            image_util.Height(screenshot)))
-
-          actual_color = image_util.GetPixelColor(screenshot, x, y)
-          expected_color = rgba_color.RgbaColor(
-              expectation["color"][0], expectation["color"][1],
-              expectation["color"][2],
-              expectation["color"][3] if len(expectation["color"]) > 3 else 255)
-          if not actual_color.IsEqual(expected_color, tolerance):
-            self.fail('Expected pixel at ' + str(location) +
-                      ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
-                      ' to be ' + str(expectation["color"]) + " but got [" +
-                      str(actual_color.r) + ", " + str(actual_color.g) + ", " +
-                      str(actual_color.b) + ", " + str(actual_color.a) + "]")
+      _CompareScreenshotWithExpectation(expectation)
 
   @staticmethod
   def _UrlToImageName(url):
@@ -357,6 +369,12 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         'model_name': _ToNonEmptyStrOrNone(img_params.model_name),
     }
     return gpu_keys
+
+# TODO(crbug.com/1076144): This is due for a refactor, likely similar to how
+# the instrumentation tests handle it (see
+# //build/android/pylib/utils/gold_utils.py), which will address the
+# too-many-locals error.
+# pylint: disable=too-many-locals
 
   def _UploadTestResultToSkiaGold(self,
                                   image_name,
@@ -407,7 +425,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     # Run goldctl for a result.
     try:
       subprocess.check_output(
-          [goldctl_bin, 'auth', '--work-dir', self._skia_gold_temp_dir] +
+          [GOLDCTL_BIN, 'auth', '--work-dir', self._skia_gold_temp_dir] +
           extra_auth_args,
           stderr=subprocess.STDOUT)
       algorithm_args = page.matching_algorithm.GetCmdline()
@@ -416,7 +434,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                      page.matching_algorithm.Name(), image_name)
       # yapf: disable
       cmd = ([
-          goldctl_bin,
+          GOLDCTL_BIN,
           'imgtest', 'add',
           '--passfail',
           '--test-name', image_name,
@@ -460,7 +478,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         diff_dir = tempfile.mkdtemp()
         # yapf: disable
         cmd = [
-            goldctl_bin,
+            GOLDCTL_BIN,
             'diff',
             '--corpus', SKIA_GOLD_CORPUS,
             '--instance', SKIA_GOLD_INSTANCE,
@@ -490,6 +508,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
 
       if self._ShouldReportGoldFailure(page):
         raise Exception('goldctl command failed, see above for details')
+# pylint: enable=too-many-locals
 
   def _ShouldReportGoldFailure(self, page):
     """Determines if a Gold failure should actually be surfaced.

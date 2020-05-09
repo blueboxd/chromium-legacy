@@ -495,6 +495,12 @@ LayoutUnit ComputeBlockSizeForFragmentInternal(
     extent =
         BlockSizeFromAspectRatio(border_padding, *style.LogicalAspectRatio(),
                                  style.BoxSizing(), *inline_size);
+    // Apply the automatic minimum size for aspect ratio:
+    // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
+    if (style.LogicalMinHeight().IsAuto() &&
+        style.OverflowBlockDirection() == EOverflow::kVisible &&
+        content_size != kIndefiniteSize)
+      min = content_size;
   } else if (extent == kIndefiniteSize) {
     DCHECK_EQ(content_size, kIndefiniteSize);
     return extent;

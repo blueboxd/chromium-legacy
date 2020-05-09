@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
+#include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 
 class BrowserProcessPlatformPartTestApi;
@@ -34,10 +35,6 @@ class SystemClock;
 class TimeZoneResolverManager;
 }  // namespace system
 }  // namespace chromeos
-
-namespace component_updater {
-class CrOSComponentManager;
-}
 
 namespace policy {
 class BrowserPolicyConnectorChromeOS;
@@ -109,8 +106,9 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
     return device_disabling_manager_.get();
   }
 
-  component_updater::CrOSComponentManager* cros_component_manager() {
-    return cros_component_manager_.get();
+  scoped_refptr<component_updater::CrOSComponentManager>
+  cros_component_manager() {
+    return cros_component_manager_;
   }
 
   chromeos::system::TimeZoneResolverManager* GetTimezoneResolverManager();
@@ -165,7 +163,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   // Whether cros_component_manager_ has been initialized for test. Set by
   // BrowserProcessPlatformPartTestApi.
   bool using_testing_cros_component_manager_ = false;
-  std::unique_ptr<component_updater::CrOSComponentManager>
+  scoped_refptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 
   std::unique_ptr<chromeos::AccountManagerFactory> account_manager_factory_;

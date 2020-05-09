@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">көрінбейтін бөлік</translation>
 <translation id="119944043368869598">Барлығын өшіру</translation>
 <translation id="1199716647557067911">Switch Access функциясын шынымен өшіргіңіз келе ме?</translation>
+<translation id="121097972571826261">Бір сөзге алға жүру</translation>
+<translation id="1229194443904279055">Таңдауды тоқтату</translation>
 <translation id="1247372569136754018">Микрофон (ішкі)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> арқылы зарядтау</translation>
 <translation id="1255033239764210633">Ауа райы қандай?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">Толық экран ұлғайтқышы қосулы. Оны өшіру үшін Ctrl+Search+M пернелер тіркесімін қайта басыңыз.</translation>
 <translation id="2302092602801625023">Бұл есептік жазба Family Link арқылы басқарылады</translation>
 <translation id="2303600792989757991">Терезеде шолу режимін ауыстыру</translation>
+<translation id="2322173485024759474">Бір әріпке артқа жылжу</translation>
 <translation id="2339073806695260576">Жазба мен скриншот үшін сөредегі стилус түймесін түртіңіз. Лазерлік меңзерді немесе ұлғайтқыш әйнекті пайдаланыңыз.</translation>
 <translation id="2341729377289034582">Тік қалыпта құлыпталды</translation>
 <translation id="2352467521400612932">Стилус параметрлері</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">Пернетақта параметрлерін көрсету</translation>
 <translation id="3846575436967432996">Қолжетімді желі мәліметтері жоқ</translation>
 <translation id="385051799172605136">Артқа</translation>
+<translation id="385300504083504382">Басына өту</translation>
 <translation id="3891340733213178823">Шығу үшін Ctrl+Shift+Q тіркесімін екі рет басыңыз.</translation>
 <translation id="3893630138897523026">ChromeVox (дауыстық көмек)</translation>
 <translation id="3897533311200664389">Мәтіндік сұрауды бастау</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">Тым көп әрекет жасалды</translation>
 <translation id="5397578532367286026">Бұл пайдаланушының дерек трафигі мен тарихын chrome.com мекенжайындағы басқарушысы (<ph name="MANAGER_EMAIL" />) арқылы шолуға болады.</translation>
 <translation id="5400461572260843123">Жылдам параметрлер: хабарландыру орталығына кіру үшін "Іздеу" + сол жақ көрсеткі түймесін басыңыз.</translation>
+<translation id="5428899915242071344">Таңдай бастау</translation>
 <translation id="5430931332414098647">Жылдам тетеринг</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Барлық қолжетімді пайдаланушылар әлдеқашан осы сеансқа қосылған.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">Жалғанған USB-C құрылғыларына қуат берілуде</translation>
 <translation id="6790428901817661496">Ойнату</translation>
 <translation id="6803622936009808957">Қолдау көрсетілген ажыратымдылықтар табылмағандықтан, дисплейлерді бейнелеу мүмкін емес. Оның орнына кеңейтілген жұмыс үстелі енгізілген.</translation>
+<translation id="6818242057446442178">Бір сөзге артқа жылжу</translation>
 <translation id="6820676911989879663">Үзіліс жасаңыз!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> белсендіру</translation>
 <translation id="6878400149835617132">Таңбаша өшірілді</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">Алдыңғы мәзір</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Ескертпе жасау</translation>
+<translation id="8371779926711439835">Бір әріпке алға жылжу</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> және телефоныңыз автоматты түрде жалғанады</translation>
 <translation id="8388750414311082622">Соңғы жұмыс үстелін өшіру мүмкін емес.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> үшін опциялар мәзірі</translation>

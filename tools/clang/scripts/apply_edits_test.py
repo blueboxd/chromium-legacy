@@ -500,6 +500,36 @@ void foo();
     '''
     self.assertEqual(expected_new_contents, _InsertHeader(old_contents))
 
+  def testUtf8BomMarker(self):
+    # Test based on
+    # //chrome/browser/ui/views/payments/payment_sheet_view_controller.cc
+    # which at some point began as follows:
+    # 00000000: efbb bf2f 2f20 436f 7079 7269 6768 7420  ...// Copyright
+    #
+    # Previous versions of apply_edits.py would not skip the BOM marker when
+    # figuring out where to insert the new include header.
+    old_contents = u'''\ufeff// Copyright
+
+#include "old/header.h"
+    '''
+    expected_new_contents = u'''\ufeff// Copyright
+
+#include "new/header.h"
+#include "old/header.h"
+    '''
+    actual = bytearray()
+    actual.extend(old_contents.encode('utf-8'))
+    expected = bytearray()
+    expected.extend(expected_new_contents.encode('utf-8'))
+    # Test sanity check (i.e. not an assertion about code under test).
+    utf8_bom = [0xef, 0xbb, 0xbf]
+    self.assertEqual(list(actual[0:3]), utf8_bom)
+    self.assertEqual(list(expected[0:3]), utf8_bom)
+    # Actual test.
+    edit = apply_edits.Edit('include-user-header', -1, -1, "new/header.h")
+    apply_edits._ApplySingleEdit("foo/impl.cc", actual, edit, None)
+    self.assertEqual(expected, actual)
+
 
 def _CreateReplacement(content_string, old_substring, new_substring):
   """ Test helper for creating an Edit object with the right offset, etc. """

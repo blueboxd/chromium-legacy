@@ -2961,7 +2961,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Questa norma deve essere utilizzata assieme alla funzionalità "VPN sempre attiva", che permette all'amministratore di decidere se creare una connessione VPN all'avvio.</translation>
 <translation id="5401696449591951427">Attiva <ph name="CHROME_DEVICES_LINK" /></translation>
-<translation id="5404635530342514143">Questa funzionalità consente all'utente di visualizzare la password nella schermata di blocco/iniziale dopo aver fatto clic su un pulsante.</translation>
 <translation id="5405289061476885481">Consente di configurare i layout da tastiera consentiti nella schermata di accesso di <ph name="PRODUCT_OS_NAME" />.
 
       Se per questa norma viene impostato un elenco di identificatori di metodi di immissione, i metodi specificati saranno disponibili nella schermata di accesso. Verrà preselezionato il primo metodo di immissione specificato. Anche se il pod dell'utente è basato sulla schermata di accesso, oltre ai metodi di immissione specificati in questa norma sarà disponibile anche l'ultimo metodo usato dall'utente. Se questa norma non viene impostata, i metodi di immissione per la schermata di accesso saranno recuperati in base alla lingua in cui è visualizzata la schermata di accesso. I valori che non corrispondono a identificatori di metodi di immissione validi verranno ignorati.</translation>
@@ -4025,7 +4024,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 
           Il fattore di regolazione minimo deve essere 100%.</translation>
 <translation id="7086720321892395256">Consente di controllare i criteri relativi agli utenti e ai dispositivi per la funzionalità Schermata sulla privacy.</translation>
-<translation id="7095145887485705461">Attiva pulsante di visualizzazione della password nella schermata di blocco/iniziale.</translation>
 <translation id="710003290625031750">Descrizione estesa dello schema:</translation>
 <translation id="7106631983877564505">Consente di attivare il blocco quando lo stato dei dispositivi <ph name="PRODUCT_OS_NAME" /> diventa inattivo o sospeso.
 

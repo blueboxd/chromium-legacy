@@ -80,13 +80,13 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, DISABLED_WindowOpen) {
 bool WaitForTabsPopupsApps(Browser* browser,
                            int num_tabs,
                            int num_popups,
-                           int num_apps) {
-  SCOPED_TRACE(
-      base::StringPrintf("WaitForTabsPopupsApps tabs:%d, popups:%d, apps:%d",
-                         num_tabs, num_popups, num_apps));
+                           int num_app_popups) {
+  SCOPED_TRACE(base::StringPrintf(
+      "WaitForTabsPopupsApps tabs:%d, popups:%d, app_popups:%d", num_tabs,
+      num_popups, num_app_popups));
   // We start with one tab and one browser already open.
   ++num_tabs;
-  size_t num_browsers = static_cast<size_t>(num_popups + num_apps) + 1;
+  size_t num_browsers = static_cast<size_t>(num_popups + num_app_popups) + 1;
 
   const base::TimeDelta kWaitTime = base::TimeDelta::FromSeconds(10);
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
@@ -102,23 +102,24 @@ bool WaitForTabsPopupsApps(Browser* browser,
   EXPECT_EQ(num_tabs, browser->tab_strip_model()->count());
 
   int num_popups_seen = 0;
-  int num_apps_seen = 0;
+  int num_app_popups_seen = 0;
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser)
       continue;
 
-    EXPECT_TRUE(b->is_type_popup() || b->is_type_app());
+    EXPECT_TRUE(b->is_type_popup() || b->is_type_app_popup());
     if (b->is_type_popup())
       ++num_popups_seen;
-    else if (b->is_type_app())
-      ++num_apps_seen;
+    else if (b->is_type_app_popup())
+      ++num_app_popups_seen;
   }
   EXPECT_EQ(num_popups, num_popups_seen);
-  EXPECT_EQ(num_apps, num_apps_seen);
+  EXPECT_EQ(num_app_popups, num_app_popups_seen);
 
   return ((num_browsers == chrome::GetBrowserCount(browser->profile())) &&
           (num_tabs == browser->tab_strip_model()->count()) &&
-          (num_popups == num_popups_seen) && (num_apps == num_apps_seen));
+          (num_popups == num_popups_seen) &&
+          (num_app_popups == num_app_popups_seen));
 }
 
 IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, BrowserIsApp) {
@@ -130,9 +131,9 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, BrowserIsApp) {
 
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser())
-      ASSERT_FALSE(b->is_type_app());
+      ASSERT_FALSE(b->is_type_app_popup());
     else
-      ASSERT_TRUE(b->is_type_app());
+      ASSERT_TRUE(b->is_type_app_popup());
   }
 }
 

@@ -108,36 +108,10 @@ void RecordUnexpectedNotGoingAway(Location location) {
                             NUM_LOCATIONS);
 }
 
-void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
-                                    quic::ConnectionCloseSource source,
-                                    const std::string& hostname,
-                                    bool handshake_confirmed) {
-  bool is_google_host = HasGoogleHost(GURL("https://" + hostname));
-  std::string histogram = "Net.QuicSession.ConnectionCloseErrorCode";
-
-  uint64_t error = 0;
-  if (source == quic::ConnectionCloseSource::FROM_PEER) {
-    histogram += "Server";
-    // When receiving a CONNECTION_CLOSE frame, record error code received on
-    // the wire.
-    error = frame.wire_error_code;
-    // TODO: Always record the quic_error_code in the histogram and also
-    // record the transport or application error codes separately when received.
-    switch (frame.close_type) {
-      case quic::GOOGLE_QUIC_CONNECTION_CLOSE:
-        break;
-      case quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE:
-        histogram += "IetfTransport";
-        break;
-      case quic::IETF_QUIC_APPLICATION_CONNECTION_CLOSE:
-        histogram += "IetfApplication";
-    }
-  } else {
-    // When sending a CONNECTION_CLOSE frame, record QuicErrorCode.
-    histogram += "Client";
-    error = frame.quic_error_code;
-  }
-
+void RecordConnectionCloseErrorCodeImpl(const std::string& histogram,
+                                        uint64_t error,
+                                        bool is_google_host,
+                                        bool handshake_confirmed) {
   base::UmaHistogramSparse(histogram, error);
 
   if (handshake_confirmed) {
@@ -147,14 +121,50 @@ void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
   }
 
   if (is_google_host) {
-    histogram += "Google";
-    base::UmaHistogramSparse(histogram, error);
+    base::UmaHistogramSparse(histogram + "Google", error);
 
     if (handshake_confirmed) {
-      base::UmaHistogramSparse(histogram + ".HandshakeConfirmed", error);
+      base::UmaHistogramSparse(histogram + "Google.HandshakeConfirmed", error);
     } else {
-      base::UmaHistogramSparse(histogram + ".HandshakeNotConfirmed", error);
+      base::UmaHistogramSparse(histogram + "Google.HandshakeNotConfirmed",
+                               error);
     }
+  }
+}
+
+void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
+                                    quic::ConnectionCloseSource source,
+                                    const std::string& hostname,
+                                    bool handshake_confirmed) {
+  bool is_google_host = HasGoogleHost(GURL("https://" + hostname));
+  std::string histogram = "Net.QuicSession.ConnectionCloseErrorCode";
+
+  if (source == quic::ConnectionCloseSource::FROM_SELF) {
+    // When sending a CONNECTION_CLOSE frame, it is sufficient to record
+    // |quic_error_code|.
+    histogram += "Client";
+    RecordConnectionCloseErrorCodeImpl(histogram, frame.quic_error_code,
+                                       is_google_host, handshake_confirmed);
+    return;
+  }
+
+  histogram += "Server";
+
+  // Record |quic_error_code|.  Note that when using IETF QUIC, this is
+  // extracted from the CONNECTION_CLOSE frame reason phrase, and might be
+  // QUIC_IETF_GQUIC_ERROR_MISSING.
+  RecordConnectionCloseErrorCodeImpl(histogram, frame.quic_error_code,
+                                     is_google_host, handshake_confirmed);
+
+  // For IETF QUIC frames, also record the error code received on the wire.
+  if (frame.close_type == quic::IETF_QUIC_TRANSPORT_CONNECTION_CLOSE) {
+    histogram += "IetfTransport";
+    RecordConnectionCloseErrorCodeImpl(histogram, frame.wire_error_code,
+                                       is_google_host, handshake_confirmed);
+  } else if (frame.close_type == quic::IETF_QUIC_APPLICATION_CONNECTION_CLOSE) {
+    histogram += "IetfApplication";
+    RecordConnectionCloseErrorCodeImpl(histogram, frame.wire_error_code,
+                                       is_google_host, handshake_confirmed);
   }
 }
 

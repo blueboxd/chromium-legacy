@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Nəzərdən keçirin</translation>
 <translation id="5073204694187207510">Tam ekran cədvəlini gizlədin</translation>
 <translation id="5082793167783849073">Qruplaşdırmaqla səhifələri asanlıqla müqayisə edin. Başlamaq üçün linkə toxunub saxlayın.</translation>
+<translation id="5533021382642990449">Sonra göstərin</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> tab qruplaşdırıldı</translation>
 <translation id="58326064309361797">Tabları qruplaşdırmaq üçün sürüşdürün</translation>
 <translation id="6040143037577758943">Qapat</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Təkliflərdən imtina edin.</translation>
 <translation id="814503310257431685">Hamısına baxın</translation>
 <translation id="8205266828577616993">Tabı yuxarıya daşıyın</translation>
+<translation id="8304833501377495048">Tab zolağı bir daha göstərilməsin?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Seçilmiş <ph name="TABS_COUNT_ONE" /> tabeli bağlayın}other{Seçilmiş <ph name="TABS_COUNT_MANY" /> tabeli bağlayın}}</translation>
+<translation id="8749939518995770034">Tab zolağı bağlıdır</translation>
 <translation id="9150694013019234766">Ekranın aşağısındakı tab qrupunda tablar arasında keçid edin</translation>
 <translation id="9169594135889675189">Qrupa yeni tab əlavə edin</translation>
 <translation id="959682366969460160">Sistemləşdirin</translation>

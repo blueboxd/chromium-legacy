@@ -91,7 +91,7 @@ class FeedSurfaceMediator
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mHasHeader = mCoordinator.getSectionHeaderView() != null;
         mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED, this::updateContent);
-        mHasHeaderMenu = ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_HEADER_MENU);
+        mHasHeaderMenu = ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS);
 
         // Check that there is a navigation delegate when using the feed header menu.
         if (mPageNavigationDelegate == null && mHasHeaderMenu) {

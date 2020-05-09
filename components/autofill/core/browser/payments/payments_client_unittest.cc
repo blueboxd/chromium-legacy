@@ -18,6 +18,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
@@ -164,6 +165,7 @@ class PaymentsClientTest : public testing::Test {
     server_id_ = server_id;
   }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   void OnDidMigrateLocalCards(
       AutofillClient::PaymentsRpcResult result,
       std::unique_ptr<std::unordered_map<std::string, std::string>>
@@ -173,6 +175,7 @@ class PaymentsClientTest : public testing::Test {
     migration_save_results_ = std::move(migration_save_results);
     display_text_ = display_text;
   }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -247,6 +250,7 @@ class PaymentsClientTest : public testing::Test {
                                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   void StartMigrating(bool has_cardholder_name) {
     PaymentsClient::MigrationRequestDetails request_details;
     request_details.context_token = base::ASCIIToUTF16("context token");
@@ -267,6 +271,7 @@ class PaymentsClientTest : public testing::Test {
         base::BindOnce(&PaymentsClientTest::OnDidMigrateLocalCards,
                        weak_ptr_factory_.GetWeakPtr()));
   }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   network::TestURLLoaderFactory* factory() { return &test_url_loader_factory_; }
 
@@ -308,6 +313,8 @@ class PaymentsClientTest : public testing::Test {
   // A list of card BIN ranges supported by Google Payments, returned from a
   // GetDetails upload save preflight call.
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Credit cards to be upload saved during a local credit card migration call.
   std::vector<MigratableCreditCard> migratable_credit_cards_;
   // A mapping of results from a local credit card migration call.
@@ -315,6 +322,7 @@ class PaymentsClientTest : public testing::Test {
       migration_save_results_;
   // A tip message to be displayed during local card migration.
   std::string display_text_;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -702,23 +710,6 @@ TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
 }
 
-TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
-  StartGettingUploadDetails();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
-  EXPECT_EQ(AutofillClient::SUCCESS, result_);
-
-  result_ = AutofillClient::NONE;
-
-  StartMigrating(/*has_cardholder_name=*/true);
-  IssueOAuthToken();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{\"save_result\":[],\"value_prop_display_text\":\"display text\"}");
-  EXPECT_EQ(AutofillClient::SUCCESS, result_);
-}
-
 TEST_F(PaymentsClientTest, GetDetailsMissingContextToken) {
   StartGettingUploadDetails();
   ReturnResponse(net::HTTP_OK, "{ \"legal_message\": {} }");
@@ -797,21 +788,6 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
@@ -917,6 +893,125 @@ TEST_F(PaymentsClientTest, UploadDoesNotIncludeCvcInRequestIfNotProvided) {
   EXPECT_TRUE(GetUploadData().find("encrypted_cvc") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("__param:s7e_13_cvc") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("&s7e_13_cvc=") == std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, UnmaskMissingPan) {
+  StartUnmasking(CardUnmaskOptions());
+  ReturnResponse(net::HTTP_OK, "{}");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+}
+
+TEST_F(PaymentsClientTest, RetryFailure) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"error\": { \"code\": \"INTERNAL\" } }");
+  EXPECT_EQ(AutofillClient::TRY_AGAIN_FAILURE, result_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
+}
+
+TEST_F(PaymentsClientTest, PermanentFailure) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
+}
+
+TEST_F(PaymentsClientTest, MalformedResponse) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
+}
+
+TEST_F(PaymentsClientTest, ReauthNeeded) {
+  {
+    StartUnmasking(CardUnmaskOptions());
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
+    // No response yet.
+    EXPECT_EQ(AutofillClient::NONE, result_);
+    EXPECT_EQ(nullptr, unmask_response_details_);
+
+    // Second HTTP_UNAUTHORIZED causes permanent failure.
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
+    EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+    EXPECT_EQ("", unmask_response_details_->real_pan);
+  }
+
+  result_ = AutofillClient::NONE;
+  unmask_response_details_ = nullptr;
+
+  {
+    StartUnmasking(CardUnmaskOptions());
+    // NOTE: Don't issue an access token here: the issuing of an access token
+    // first waits for the access token request to be received, but here there
+    // should be no access token request because PaymentsClient should reuse the
+    // access token from the previous request.
+    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
+    // No response yet.
+    EXPECT_EQ(AutofillClient::NONE, result_);
+    EXPECT_EQ(nullptr, unmask_response_details_);
+
+    // HTTP_OK after first HTTP_UNAUTHORIZED results in success.
+    IssueOAuthToken();
+    ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
+    EXPECT_EQ(AutofillClient::SUCCESS, result_);
+    EXPECT_EQ("1234", unmask_response_details_->real_pan);
+  }
+}
+
+TEST_F(PaymentsClientTest, NetworkError) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_REQUEST_TIMEOUT, std::string());
+  EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
+}
+
+TEST_F(PaymentsClientTest, OtherError) {
+  StartUnmasking(CardUnmaskOptions());
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_FORBIDDEN, std::string());
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
+}
+
+// Tests for the local card migration flow. Desktop only.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
+  StartGettingUploadDetails();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+
+  result_ = AutofillClient::NONE;
+
+  StartMigrating(/*has_cardholder_name=*/true);
+  IssueOAuthToken();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{\"save_result\":[],\"value_prop_display_text\":\"display text\"}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartMigrating(/*has_cardholder_name=*/true);
+  IssueOAuthToken();
+
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_TRUE(HasVariationsHeader());
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
 TEST_F(PaymentsClientTest, MigrationRequestIncludesUniqueId) {
@@ -1028,91 +1123,7 @@ TEST_F(PaymentsClientTest, MigrationSuccessWithDisplayText) {
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
   EXPECT_EQ("display text", display_text_);
 }
-
-TEST_F(PaymentsClientTest, UnmaskMissingPan) {
-  StartUnmasking(CardUnmaskOptions());
-  ReturnResponse(net::HTTP_OK, "{}");
-  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-}
-
-TEST_F(PaymentsClientTest, RetryFailure) {
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"error\": { \"code\": \"INTERNAL\" } }");
-  EXPECT_EQ(AutofillClient::TRY_AGAIN_FAILURE, result_);
-  EXPECT_EQ("", unmask_response_details_->real_pan);
-}
-
-TEST_F(PaymentsClientTest, PermanentFailure) {
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK,
-                 "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
-  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", unmask_response_details_->real_pan);
-}
-
-TEST_F(PaymentsClientTest, MalformedResponse) {
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
-  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", unmask_response_details_->real_pan);
-}
-
-TEST_F(PaymentsClientTest, ReauthNeeded) {
-  {
-    StartUnmasking(CardUnmaskOptions());
-    IssueOAuthToken();
-    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
-    // No response yet.
-    EXPECT_EQ(AutofillClient::NONE, result_);
-    EXPECT_EQ(nullptr, unmask_response_details_);
-
-    // Second HTTP_UNAUTHORIZED causes permanent failure.
-    IssueOAuthToken();
-    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
-    EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-    EXPECT_EQ("", unmask_response_details_->real_pan);
-  }
-
-  result_ = AutofillClient::NONE;
-  unmask_response_details_ = nullptr;
-
-  {
-    StartUnmasking(CardUnmaskOptions());
-    // NOTE: Don't issue an access token here: the issuing of an access token
-    // first waits for the access token request to be received, but here there
-    // should be no access token request because PaymentsClient should reuse the
-    // access token from the previous request.
-    ReturnResponse(net::HTTP_UNAUTHORIZED, "");
-    // No response yet.
-    EXPECT_EQ(AutofillClient::NONE, result_);
-    EXPECT_EQ(nullptr, unmask_response_details_);
-
-    // HTTP_OK after first HTTP_UNAUTHORIZED results in success.
-    IssueOAuthToken();
-    ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
-    EXPECT_EQ(AutofillClient::SUCCESS, result_);
-    EXPECT_EQ("1234", unmask_response_details_->real_pan);
-  }
-}
-
-TEST_F(PaymentsClientTest, NetworkError) {
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_REQUEST_TIMEOUT, std::string());
-  EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
-  EXPECT_EQ("", unmask_response_details_->real_pan);
-}
-
-TEST_F(PaymentsClientTest, OtherError) {
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_FORBIDDEN, std::string());
-  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", unmask_response_details_->real_pan);
-}
+#endif
 
 }  // namespace payments
 }  // namespace autofill

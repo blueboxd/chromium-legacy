@@ -478,6 +478,7 @@ if (is_android) {
     sources = [
       "image_reader_gl_owner_unittest.cc",
       "surface_texture_gl_owner_unittest.cc",
+      "surface_texture_transform_unittest.cc",
     ]
 
     deps = [

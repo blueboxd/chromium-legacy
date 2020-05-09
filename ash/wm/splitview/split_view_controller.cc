@@ -1351,11 +1351,15 @@ void SplitViewController::OnTabletModeEnding() {
   if (IsClamshellSplitViewModeEnabled()) {
     split_view_type_ = SplitViewType::kClamshellType;
 
-    // If splitview is active when tablet mode is ending, simply destroy the
-    // split view divider bar as we don't have the bar in clamshell split view
-    // mode.
-    if (InSplitViewMode())
-      split_view_divider_.reset();
+    // There is no divider in clamshell split view.
+    const bool is_divider_animating = IsDividerAnimating();
+    if (is_resizing_ || is_divider_animating) {
+      is_resizing_ = false;
+      if (is_divider_animating)
+        StopAndShoveAnimatedDivider();
+      EndResizeImpl();
+    }
+    split_view_divider_.reset();
   } else if (InSplitViewMode()) {
     // If clamshell splitview mode is not enabled, fall back to the old
     // behavior: end splitview and overivew and all windows will return to its

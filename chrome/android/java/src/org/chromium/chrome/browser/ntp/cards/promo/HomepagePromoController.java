@@ -16,6 +16,9 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageManager.HomepageStateListener;
+import org.chromium.chrome.browser.metrics.ImpressionTracker;
+import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
+import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoUtils.HomepagePromoAction;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
@@ -54,6 +57,7 @@ public class HomepagePromoController implements HomepageStateListener {
     private HomepagePromoStateListener mStateListener;
     private PromoCardCoordinator mPromoCoordinator;
     private PropertyModel mModel;
+    private @Nullable ImpressionTracker mImpressionTracker;
 
     private boolean mIsPromoShowing;
 
@@ -133,6 +137,13 @@ public class HomepagePromoController implements HomepageStateListener {
         // Subscribe to homepage update only when view is created.
         HomepageManager.getInstance().addListener(this);
 
+        HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.CREATED);
+
+        // Set impression for the promo.
+        mImpressionTracker =
+                new ImpressionTracker(mPromoCoordinator.getKeyViewForImpressionTracking());
+        mImpressionTracker.setListener(new OneShotImpressionListener(this::onPromoSeen));
+
         return mPromoCoordinator;
     }
 
@@ -185,12 +196,17 @@ public class HomepagePromoController implements HomepageStateListener {
      */
     private void dismissPromo() {
         HomepagePromoUtils.setPromoDismissedInSharedPreference(true);
+        HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.DISMISSED);
         dismissPromoInternal();
     }
 
     private void dismissPromoInternal() {
         mIsPromoShowing = false;
         mTracker.dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
+        if (mImpressionTracker != null) {
+            mImpressionTracker.setListener(null);
+            mImpressionTracker = null;
+        }
         if (mStateListener != null) mStateListener.onHomepagePromoStateChange();
     }
 
@@ -201,9 +217,15 @@ public class HomepagePromoController implements HomepageStateListener {
         String originalCustomUri = manager.getPrefHomepageCustomUri();
 
         mTracker.notifyEvent(EventConstants.HOMEPAGE_PROMO_ACCEPTED);
+        HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.ACCEPTED);
 
         manager.setHomepagePreferences(true, false, originalCustomUri);
         mSnackbarController.showUndoSnackbar(wasUsingNtp, wasUsingDefaultUri, originalCustomUri);
+    }
+
+    private void onPromoSeen() {
+        mTracker.notifyEvent(EventConstants.HOMEPAGE_PROMO_SEEN);
+        HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.SEEN);
     }
 
     /**

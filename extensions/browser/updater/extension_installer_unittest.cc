@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -135,7 +136,7 @@ TEST_F(ExtensionInstallerTest, Install_InvalidUnpackedDir) {
   ASSERT_TRUE(base::DeleteFileRecursively(unpacked_dir.GetPath()));
   ASSERT_FALSE(base::PathExists(unpacked_dir.GetPath()));
   installer->Install(
-      unpacked_dir.GetPath(), kPublicKey, nullptr,
+      unpacked_dir.GetPath(), kPublicKey, nullptr, base::DoNothing(),
       base::BindOnce(&ExtensionInstallerTest::InstallCompleteCallback,
                      base::Unretained(this)));
 
@@ -167,7 +168,7 @@ TEST_F(ExtensionInstallerTest, Install_BasicInstallOperation_Error) {
   ASSERT_TRUE(base::PathExists(unpacked_dir.GetPath()));
 
   installer->Install(
-      unpacked_dir.GetPath(), kPublicKey, nullptr,
+      unpacked_dir.GetPath(), kPublicKey, nullptr, base::DoNothing(),
       base::BindOnce(&ExtensionInstallerTest::InstallCompleteCallback,
                      base::Unretained(this)));
 
@@ -198,7 +199,7 @@ TEST_F(ExtensionInstallerTest, Install_BasicInstallOperation_Success) {
   ASSERT_TRUE(base::PathExists(unpacked_dir.GetPath()));
 
   installer->Install(
-      unpacked_dir.GetPath(), kPublicKey, nullptr,
+      unpacked_dir.GetPath(), kPublicKey, nullptr, base::DoNothing(),
       base::BindOnce(&ExtensionInstallerTest::InstallCompleteCallback,
                      base::Unretained(this)));
 

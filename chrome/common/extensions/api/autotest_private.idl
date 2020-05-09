@@ -36,7 +36,8 @@ namespace autotestPrivate {
     Extension,
     Web,
     MacNative,
-    PluginVm
+    PluginVm,
+    Lacros
   };
 
   // A mapping of apps::mojom::Readiness

@@ -32,10 +32,6 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif  // defined(OS_ANDROID)
-
 namespace media_feeds {
 
 namespace {
@@ -71,18 +67,6 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
   using CookieCallback =
       base::RepeatingCallback<void(const url::Origin&,
                                    const bool /* include_subdomains */)>;
-
-  static std::unique_ptr<CookieChangeListener> Create(Profile* profile,
-                                                      CookieCallback callback) {
-#if defined(OS_ANDROID)
-    // TODO(https://crbug.com/1079440): Remove the Android L+ restriction.
-    auto* build_info = base::android::BuildInfo::GetInstance();
-    if (build_info->sdk_int() <= base::android::SDK_VERSION_MARSHMALLOW)
-      return nullptr;
-#endif  // defined(OS_ANDROID)
-
-    return std::make_unique<CookieChangeListener>(profile, callback);
-  }
 
   CookieChangeListener(Profile* profile, CookieCallback callback)
       : profile_(profile), callback_(std::move(callback)) {
@@ -162,10 +146,15 @@ const char MediaFeedsService::kSafeSearchResultHistogramName[] =
     "Media.Feeds.SafeSearch.Result";
 
 MediaFeedsService::MediaFeedsService(Profile* profile)
-    : cookie_change_listener_(CookieChangeListener::Create(
+    :
+#if defined(OS_ANDROID)
+      cookie_change_listener_(nullptr),
+#else
+      cookie_change_listener_(std::make_unique<CookieChangeListener>(
           profile,
           base::BindRepeating(&MediaFeedsService::OnResetOriginFromCookie,
                               base::Unretained(this)))),
+#endif  // defined(OS_ANDROID)
       profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 

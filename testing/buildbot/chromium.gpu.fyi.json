@@ -18345,27 +18345,6 @@
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/info_collection_tests/"
       },
       {
-        "isolate_name": "test_buildbucket_api_gpu_use_cases",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "test_buildbucket_api_gpu_use_cases",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-418.56",
-              "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://content/test:test_buildbucket_api_gpu_use_cases/"
-      },
-      {
         "args": [
           "trace_test",
           "--show-stdout",

@@ -143,7 +143,7 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   base::string16 stop_text =
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);
   auto stop_button =
-      views::MdTextButton::CreateSecondaryUiBlueButton(this, stop_text);
+      views::MdTextButton::CreateSecondaryUiProminentButton(this, stop_text);
   stop_button_ = AddChildView(std::move(stop_button));
 
   auto hide_link = std::make_unique<views::Link>(

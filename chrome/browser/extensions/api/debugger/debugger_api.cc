@@ -28,7 +28,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api_constants.h"
-#include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar.h"
+#include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -180,7 +180,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   content::NotificationRegistrar registrar_;
   int last_request_id_ = 0;
   PendingRequests pending_requests_;
-  std::unique_ptr<ExtensionDevToolsInfoBar::CallbackList::Subscription>
+  std::unique_ptr<ExtensionDevToolsInfoBarDelegate::CallbackList::Subscription>
       subscription_;
   api::debugger::DetachReason detach_reason_ =
       api::debugger::DETACH_REASON_TARGET_CLOSED;
@@ -230,7 +230,7 @@ bool ExtensionDevToolsClientHost::Attach() {
   if (Manifest::IsPolicyLocation(extension_->location()))
     return true;
 
-  subscription_ = ExtensionDevToolsInfoBar::Create(
+  subscription_ = ExtensionDevToolsInfoBarDelegate::Create(
       extension_id(), extension_->name(),
       base::BindOnce(&ExtensionDevToolsClientHost::InfoBarDestroyed,
                      base::Unretained(this)));

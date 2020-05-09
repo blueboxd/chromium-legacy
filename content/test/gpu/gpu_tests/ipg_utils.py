@@ -118,44 +118,64 @@ def ProcessResultsFromMultipleIPGRuns(logfiles,
                                       skip_in_seconds=0,
                                       outliers=0,
                                       output_json=None):
-  assert len(logfiles) > 1
-  output = {}
-  summary = {}
-  for logfile in logfiles:
-    results = AnalyzeIPGLogFile(logfile, skip_in_seconds)
-    results['log'] = logfile
-    (_, filename) = os.path.split(logfile)
-    (core, _) = os.path.splitext(filename)
-    prefix = 'PowerLog_'
-    if core.startswith(prefix):
-      core = core[len(prefix):]
-    output[core] = results
+  def _ScrapeDataFromIPGLogFiles():
+    """Scrapes data from IPG log files.
 
-    for key in results:
-      if key == 'samples' or key == 'log':
-        continue
-      if not key in summary:
-        summary[key] = [results[key]]
-      else:
-        summary[key].append(results[key])
+    Returns:
+      A tuple (per_core_results, metrics). |output| is a dictionary containing
+      per-core results extracted from the IPG log files. |metrics| is a
+      dictionary mapping metrics found in the logs to all found data points.
+    """
+    per_core_results = {}
+    metrics = {}
+    for logfile in logfiles:
+      results = AnalyzeIPGLogFile(logfile, skip_in_seconds)
+      results['log'] = logfile
+      (_, filename) = os.path.split(logfile)
+      (core, _) = os.path.splitext(filename)
+      prefix = 'PowerLog_'
+      if core.startswith(prefix):
+        core = core[len(prefix):]
+      per_core_results[core] = results
 
-  for key in summary:
-    data = summary[key]
-    assert data and len(data) > 1
-    n = len(data)
-    if outliers > 0:
-      assert outliers * 2 < n
-      data.sort()
-      data = data[outliers:(n - outliers)]
+      for key in results:
+        if key == 'samples' or key == 'log':
+          continue
+        metrics.setdefault(key, []).append(results[key])
+    return per_core_results, metrics
+
+  def _CalculateSummaryStatistics(metrics):
+    """Calculates summary statistics for the given metrics.
+
+    Args:
+      metrics: A dictionary mapping metrics to lists of data points.
+
+    Returns:
+      A dictionary mapping the same metrics in |metrics| to dicts containing
+      the 'mean' and 'stdev' for the metric.
+    """
+    summary = {}
+    for key, data in metrics.iteritems():
+      assert data and len(data) > 1
       n = len(data)
-    logging.debug('%s: valid samples = %d', key, n)
-    mean = sum(data) / float(n)
-    ss = sum((x - mean)**2 for x in data)
-    stdev = (ss / float(n))**0.5
-    summary[key] = {
-        'mean': mean,
-        'stdev': stdev,
-    }
+      if outliers > 0:
+        assert outliers * 2 < n
+        data.sort()
+        data = data[outliers:(n - outliers)]
+        n = len(data)
+      logging.debug('%s: valid samples = %d', key, n)
+      mean = sum(data) / float(n)
+      ss = sum((x - mean)**2 for x in data)
+      stdev = (ss / float(n))**0.5
+      summary[key] = {
+          'mean': mean,
+          'stdev': stdev,
+      }
+    return summary
+
+  assert len(logfiles) > 1
+  output, metrics = _ScrapeDataFromIPGLogFiles()
+  summary = _CalculateSummaryStatistics(metrics)
   output['summary'] = summary
 
   if output_json:

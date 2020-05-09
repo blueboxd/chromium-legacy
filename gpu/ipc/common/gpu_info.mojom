@@ -113,6 +113,7 @@ enum OverlaySupport {
   NONE,
   DIRECT,
   SCALING,
+  SOFTWARE,
 };
 
 // gpu::Dx12VulkanVersionInfo

@@ -17,29 +17,11 @@
     --ntp-theme-text-shadow: 0 0 16px rgba(0, 0, 0, .3);
   }
 
-  #background,
-  #backgroundImage,
-  #backgroundGradient {
-    height: 100%;
-    position: fixed;
-    top: 0;
-    width: 100%;
-  }
-
   #oneGoogleBar {
     height: 100%;
     position: absolute;
     top: 0;
     width: 100%;
-  }
-
-  #backgroundImage {
-    border: none;
-    pointer-events: none;
-  }
-
-  #backgroundGradient {
-    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .3));
   }
 
   #content {
@@ -213,12 +195,6 @@
     animation: 100ms ease-in-out fadein;
   }
 </style>
-<div id="background"
-    style="background-color: [[rgbaOrInherit_(theme_.backgroundColor)]];">
-</div>
-<ntp-untrusted-iframe id="backgroundImage" hidden="[[!showBackgroundImage_]]">
-</ntp-untrusted-iframe>
-<div id="backgroundGradient" hidden="[[!showBackgroundImage_]]"></div>
 <div id="content"
     style="--ntp-theme-text-color: [[rgbaOrInherit_(theme_.shortcutTextColor)]];
         --ntp-theme-shortcut-background-color:

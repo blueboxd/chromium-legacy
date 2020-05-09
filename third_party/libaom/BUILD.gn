@@ -80,7 +80,6 @@ if (enable_libaom) {
         sources += aom_av1_encoder_asm_ssse3_x86_64
         sources += aom_dsp_encoder_asm_sse2_x86_64
         sources += aom_dsp_encoder_asm_ssse3_x86_64
-        sources += aom_dsp_encoder_avx_asm_x86_64
       }
       defines = [ "CHROMIUM" ]
       include_dirs = libaom_include_dirs
@@ -159,6 +158,7 @@ if (enable_libaom) {
       } else {
         cflags = [ "-mavx" ]
       }
+      sources = aom_dsp_encoder_intrin_avx
     }
 
     source_set("libaom_intrinsics_avx2") {

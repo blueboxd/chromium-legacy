@@ -1734,9 +1734,23 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   GURL destination_url =
       embedded_test_server()->GetURL("otherhost.com", "/cachetime");
   GURL redirecting_url = embedded_test_server()->GetURL(
-      "hints.com", "/cached-redirect?" + destination_url.spec());
+      "sometimesredirects.com", "/cached-redirect?" + destination_url.spec());
+  SetUpOptimizationHint(
+      destination_url,
+      {"http://subresource.com/1", "http://subresource.com/2",
+       "http://otherresource.com/2", "skipsoverinvalidurl/////"});
 
-  url::Origin origin = url::Origin::Create(redirecting_url);
+  // Navigate the first time to something on redirecting origin to fill the
+  // predictor's database and the HTTP cache.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "sometimesredirects.com",
+          GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                     embedded_test_server()->port())));
+  ResetNetworkState();
+
+  url::Origin origin = url::Origin::Create(destination_url);
   net::NetworkIsolationKey network_isolation_key(origin, origin);
   // Navigate to URL with hints but is redirected, hints should not be
   // applied.
@@ -1744,14 +1758,38 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorBrowserTestWithOptimizationGuide,
   EXPECT_TRUE(observer->WaitForResponse());
   SetUpOptimizationHint(
       redirecting_url,
-      {"http://subresource.com/1", "http://subresource.com/2",
-       "http://otherresource.com/2", "skipsoverinvalidurl/////"});
+      {"http://subresourceredirect.com/1", "http://subresourceredirect.com/2",
+       "http://otherresourceredirect.com/2", "skipsoverinvalidurl/////"});
   observer->ResumeNavigation();
 
-  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
-      "subresource.com", network_isolation_key));
-  EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
-      "otheresource.com", network_isolation_key));
+  std::vector<std::string> expected_opt_guide_subresource_hosts = {
+      "subresource.com", "otherresource.com"};
+  if (!IsLocalPredictionEnabled() &&
+      ShouldPreconnectUsingOptimizationGuidePredictions()) {
+    // Should use subresources from optimization hint.
+    for (const auto& host : expected_opt_guide_subresource_hosts) {
+      preconnect_manager_observer()->WaitUntilHostLookedUp(
+          host, network_isolation_key);
+      EXPECT_TRUE(preconnect_manager_observer()->HostFound(
+          host, network_isolation_key));
+
+      GURL expected_origin;
+      if (IsLocalPredictionEnabled()) {
+        // The locally learned origins are expected to have a port.
+        expected_origin = embedded_test_server()->GetURL(host, "/");
+      } else {
+        // The optimization hints learned origins do not have a port.
+        expected_origin = GURL(base::StringPrintf("http://%s", host.c_str()));
+      }
+      EXPECT_TRUE(preconnect_manager_observer()->HasOriginAttemptedToPreconnect(
+          expected_origin));
+    }
+  } else {
+    for (const auto& host : expected_opt_guide_subresource_hosts) {
+      EXPECT_FALSE(preconnect_manager_observer()->HasHostBeenLookedUp(
+          host, network_isolation_key));
+    }
+  }
 }
 
 class LoadingPredictorBrowserTestWithNoLocalPredictions

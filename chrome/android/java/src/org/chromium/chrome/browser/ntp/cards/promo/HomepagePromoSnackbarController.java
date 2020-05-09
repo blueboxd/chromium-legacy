@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.cards.promo;
 import android.content.Context;
 
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoUtils.HomepagePromoAction;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
@@ -47,6 +48,7 @@ class HomepagePromoSnackbarController implements SnackbarController {
     private void undo(HomepageState originState) {
         HomepageManager.getInstance().setHomepagePreferences(originState.wasUsingNTP,
                 originState.wasUsingDefaultUri, originState.originalCustomUri);
+        HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.UNDO);
     }
 
     /**

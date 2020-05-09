@@ -1617,18 +1617,36 @@ bool XRSession::CanReportPoses() const {
   return visibility_state_ == XRVisibilityState::VISIBLE;
 }
 
-base::Optional<TransformationMatrix> XRSession::MojoFromViewer() const {
+base::Optional<TransformationMatrix> XRSession::GetMojoFrom(
+    XRReferenceSpace::Type space_type) {
   if (!CanReportPoses())
     return base::nullopt;
 
-  if (!mojo_from_viewer_) {
-    if (sensorless_session_)
+  switch (space_type) {
+    case XRReferenceSpace::Type::kTypeViewer:
+      if (!mojo_from_viewer_) {
+        if (sensorless_session_) {
+          return TransformationMatrix();
+        }
+
+        return base::nullopt;
+      }
+
+      return *mojo_from_viewer_;
+    case XRReferenceSpace::Type::kTypeLocal:
+      // TODO(https://crbug.com/1070380): This assumes that local space is
+      // equivalent to mojo space! Remove the assumption once the bug is fixed.
       return TransformationMatrix();
-
-    return base::nullopt;
+    case XRReferenceSpace::Type::kTypeUnbounded:
+      // TODO(https://crbug.com/1070380): This assumes that unbounded space is
+      // equivalent to mojo space! Remove the assumption once the bug is fixed.
+      return TransformationMatrix();
+    case XRReferenceSpace::Type::kTypeLocalFloor:
+    case XRReferenceSpace::Type::kTypeBoundedFloor:
+      // Information about -floor spaces is currently stored elsewhere (in stage
+      // parameters of display_info_). It probably should eventually move here.
+      return base::nullopt;
   }
-
-  return *mojo_from_viewer_.get();
 }
 
 XRFrame* XRSession::CreatePresentationFrame() {

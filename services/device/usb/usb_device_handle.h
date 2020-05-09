@@ -58,7 +58,9 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                             int alternate_setting,
                                             ResultCallback callback) = 0;
   virtual void ResetDevice(ResultCallback callback) = 0;
-  virtual void ClearHalt(uint8_t endpoint, ResultCallback callback) = 0;
+  virtual void ClearHalt(mojom::UsbTransferDirection direction,
+                         uint8_t endpoint_number,
+                         ResultCallback callback) = 0;
 
   virtual void ControlTransfer(mojom::UsbTransferDirection direction,
                                mojom::UsbControlTransferType request_type,

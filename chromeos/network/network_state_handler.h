@@ -378,10 +378,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   const NetworkState* GetEAPForEthernet(const std::string& service_path,
                                         bool connected_only);
 
-  const std::string& default_network_path() const {
-    return default_network_path_;
-  }
-
   // Sets the |error_| property of the matching NetworkState for tests.
   void SetErrorForTest(const std::string& service_path,
                        const std::string& error);
@@ -562,7 +558,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   void NotifyNetworkConnectionStateChanged(NetworkState* network);
 
   // Notifies observers when the default network or its properties change.
-  void NotifyDefaultNetworkChanged();
+  void NotifyDefaultNetworkChanged(const std::string& log_reason);
 
   // Notifies observers when the active state of any current or previously
   // active network changes, or the active networks order changes.

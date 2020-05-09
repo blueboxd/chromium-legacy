@@ -437,7 +437,7 @@ class CrostiniCreditsHandler
       ResponseOnUIThread();
       return;
     }
-    auto* component_manager =
+    auto component_manager =
         g_browser_process->platform_part()->cros_component_manager();
     if (!component_manager) {
       LoadCredits(base::FilePath(chrome::kLinuxCreditsPath));

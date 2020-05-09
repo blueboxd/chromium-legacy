@@ -290,25 +290,15 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bw_sampler_app_limited_starting_value,
           false)
 
-// If true, QUIC connection will ignore one packet write error after MTU probe.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_ignore_one_write_error_after_mtu_probe,
-    true)
-
 // If true, use blackhole detector in QuicConnection to detect path degrading
 // and network blackhole.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, true)
 
 // If true, use idle network detector to detect handshake timeout and idle
 // network timeout.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_idle_network_detector, true)
-
-// If true, when QUIC switches from BbrSender to Bbr2Sender, Bbr2Sender will
-// copy the bandwidth sampler states from BbrSender.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr_copy_sampler_state_from_v1_to_v2,
-          true)
+          FLAGS_quic_reloadable_flag_quic_use_idle_network_detector,
+          false)
 
 // If true, QUIC will enable connection options LRTT+BBQ2 by default.
 QUIC_FLAG(bool,
@@ -323,7 +313,7 @@ QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_remove_android_conformance_test_workaround,
-    false)
+    true)
 
 // If true, lower the CWND gain in BBRv2 STARTUP to 2 when BBQ2 is in connection
 // options.
@@ -350,7 +340,7 @@ QUIC_FLAG(bool,
 // If true, remove draining_streams_ from QuicSession.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_draining_streams,
-          false)
+          true)
 
 // If true, break session/stream close loop.
 QUIC_FLAG(bool,
@@ -366,7 +356,7 @@ QUIC_FLAG(bool,
 // If true, move Goolge QUIC stream accounting to LegacyQuicStreamIdManager.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stream_id_manager_handles_accounting,
-          false)
+          true)
 
 // If true, enables support for TLS resumption in QUIC.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption, false)
@@ -393,3 +383,17 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, false)
 
 // If true, reject IETF QUIC connections with invalid SNI.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tls_enforce_valid_sni, false)
+
+// If true, update ack timeout upon receiving an retransmittable frame.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_advance_ack_timeout_update,
+          false)
+
+// If true, only extend idle time on decryptable packets.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_extend_idle_time_on_decryptable_packets,
+    false)
+
+// If true, support for IETF QUIC 0-rtt is enabled.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, false)

@@ -15343,7 +15343,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.BackClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>The back arrow was clicked the richer picker.</description>
 </action>
 
@@ -15358,7 +15359,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.BackgroundReset">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     The NTP background image was reset to default from the richer picker.
   </description>
@@ -15374,7 +15376,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.BackgroundSet">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     A background image was set as the NTP background from the richer picker.
   </description>
@@ -15382,7 +15385,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.CollectionClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     A collection tile was selected in the richer picker.
   </description>
@@ -15390,7 +15394,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.DailyRefreshEnabled">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     Daily refresh was enabled by clicking 'Done' in the richer picker
   </description>
@@ -15407,13 +15412,15 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.DefaultSelected">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>'No background' was selected in the richer picker.</description>
 </action>
 
 <action name="NTPRicherPicker.Backgrounds.RefreshToggleClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     'Refresh daily' toggle was clicked in the richer picker.
   </description>
@@ -15421,7 +15428,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.UploadCanceled">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     'Cancel' was clicked on the file select dialog originating from the richer
     picker.
@@ -15430,7 +15438,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.UploadClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     'Upload from device' was clicked in the richer picker.
   </description>
@@ -15438,7 +15447,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Backgrounds.UploadConfirmed">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     'Open' was clicked on the file select dialog originating from the richer
     picker.
@@ -15447,25 +15457,29 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.CancelClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>'Cancel' was clicked in the richer picker.</description>
 </action>
 
 <action name="NTPRicherPicker.DoneClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>'Done' was clicked in the richer picker.</description>
 </action>
 
 <action name="NTPRicherPicker.Opened">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>The richer picker was opened.</description>
 </action>
 
 <action name="NTPRicherPicker.Shortcuts.CustomLinksClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     The 'My shortcuts' (i.e. custom links) option was clicked in the richer
     picker shortcuts submenu.
@@ -15474,7 +15488,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Shortcuts.MostVisitedClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     The 'Most visited sites' option was clicked in the richer picker shortcuts
     submenu.
@@ -15483,7 +15498,8 @@ should be able to be added at any place in this file.
 
 <action name="NTPRicherPicker.Shortcuts.VisibilityToggleClicked">
   <owner>yyushkina@chromium.org</owner>
-  <owner>dbeam@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     The 'Hide shortcuts' toggle was clicked in the richer picker shortcuts
     submenu.

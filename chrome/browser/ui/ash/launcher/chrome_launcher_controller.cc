@@ -24,8 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/branding_buildflags.h"
-#include "build/buildflag.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -56,7 +54,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_window_shelf_controller.h"
-#include "chrome/browser/ui/ash/launcher/lacros_browser_shelf_item_delegate.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
@@ -97,7 +94,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -109,7 +105,6 @@
 
 using extension_misc::kChromeAppId;
 using extension_misc::kGmailAppId;
-using extension_misc::kLacrosAppId;
 
 namespace {
 
@@ -339,8 +334,6 @@ ChromeLauncherController::~ChromeLauncherController() {
 
 void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
-  if (chromeos::features::IsLacrosSupportEnabled())
-    CreateLacrosBrowserShortcut();
   UpdateAppLaunchersFromSync();
 }
 
@@ -1226,29 +1219,6 @@ void ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
   // Add the item towards the start of the shelf, it will be ordered by weight.
   model_->AddAt(0, browser_shortcut);
   item_controller->UpdateBrowserItemState();
-}
-
-void ChromeLauncherController::CreateLacrosBrowserShortcut() {
-  // See CreateBrowserShortcutLauncherItem().
-  ScopedPinSyncDisabler scoped_pin_sync_disabler = GetScopedPinSyncDisabler();
-
-  ash::ShelfItem shortcut;
-  shortcut.type = ash::TYPE_LACROS_BROWSER;
-  shortcut.id = ash::ShelfID(kLacrosAppId);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Canary icon only exists in branded builds.
-  shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_256_CANARY);
-#else
-  shortcut.image = *rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_256);
-#endif
-  // TODO(jamescook): Real name.
-  shortcut.title = base::ASCIIToUTF16("LaCrOS");
-  // Set the delegate first to avoid constructing another one in ShelfItemAdded.
-  model_->SetShelfItemDelegate(
-      shortcut.id, std::make_unique<LacrosBrowserShelfItemDelegate>());
-  // Add the item towards the start of the shelf, it will be ordered by weight.
-  model_->AddAt(1, shortcut);
 }
 
 int ChromeLauncherController::FindInsertionPoint() {

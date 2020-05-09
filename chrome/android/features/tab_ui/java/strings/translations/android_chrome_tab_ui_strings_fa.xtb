@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">مرور</translation>
 <translation id="5073204694187207510">پنهان کردن شبکه تمام‌صفحه</translation>
 <translation id="5082793167783849073">با ایجاد گروه، صفحه‌ها را سریع مقایسه کنید. برای شروع، پیوندی را لمس کنید و نگه دارید.</translation>
+<translation id="5533021382642990449">نمایش در فرصتی دیگر</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> برگه گروه‌بندی شد</translation>
 <translation id="58326064309361797">برای گروه‌بندی برگه‌ها، آن‌ها را بکشید</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">پیشنهادها رد شود.</translation>
 <translation id="814503310257431685">نمایش همه</translation>
 <translation id="8205266828577616993">انتقال برگه به بالا</translation>
+<translation id="8304833501377495048">نوار برگه دیگر نشان داده نشود؟</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{بستن <ph name="TABS_COUNT_ONE" /> برگه انتخابی}one{بستن <ph name="TABS_COUNT_MANY" /> برگه انتخابی}other{بستن <ph name="TABS_COUNT_MANY" /> برگه انتخابی}}</translation>
+<translation id="8749939518995770034">نوار برگه بسته شد</translation>
 <translation id="9150694013019234766">جابه‌جایی بین برگه‌ها در گروه برگه شما واقع در نزدیک پایین صفحه‌نمایش</translation>
 <translation id="9169594135889675189">افزودن برگه جدید به گروه</translation>
 <translation id="959682366969460160">سازمان‌دهی شوید</translation>

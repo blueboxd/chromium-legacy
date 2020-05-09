@@ -3065,25 +3065,6 @@
       ]
     },
     {
-      "id": 294,
-      "cr_bugs": [932879, 1025427],
-      "description": "Hardware overlays are only supported on certain Intel/AMD gpus",
-      "os": {
-        "type": "win"
-      },
-      "exceptions": [
-        {
-          "vendor_id": "0x8086"
-        },
-        {
-          "vendor_id": "0x1002"
-        }
-      ],
-      "features": [
-        "disable_direct_composition_video_overlays"
-      ]
-    },
-    {
       "id": 295,
       "description": "Avoid waiting on a egl fence before swapping buffers and rely on implicit sync on Intel GPUs",
       "cr_bugs": [938286],
@@ -3237,13 +3218,16 @@
     {
       "id": 309,
       "cr_bugs": [993233],
-      "description": "Don't use video processor scaling on non-Intel GPUs.",
+      "description": "Don't use video processor scaling on non-Intel, non-NVIDIA GPUs.",
       "os": {
         "type" : "win"
       },
       "exceptions": [
         {
           "vendor_id": "0x8086"
+        },
+        {
+          "vendor_id": "0x10de"
         }
       ],
       "features": [

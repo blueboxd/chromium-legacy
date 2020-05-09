@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_array.h"
+#include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -288,9 +289,14 @@ class XRSession final
 
   bool CanReportPoses() const;
 
-  // Returns current transform from mojo space to viewer space. May return
-  // nullopt if poses cannot be reported or if the transform is unknown.
-  base::Optional<TransformationMatrix> MojoFromViewer() const;
+  // Returns current transform from mojo space to the space of the passed in
+  // type. May return nullopt if poses cannot be reported or if the transform is
+  // unknown.
+  // Note: currently, the information about the mojo_from_-floor-type spaces is
+  // stored elsewhere, this method will not work for those reference space
+  // types.
+  base::Optional<TransformationMatrix> GetMojoFrom(
+      XRReferenceSpace::Type space_type);
 
   // Creates presentation frame based on current state of the session.
   // State currently used in XRFrame creation is mojo_from_viewer_ and

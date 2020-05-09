@@ -1037,6 +1037,13 @@ void AwContentBrowserClient::LogWebFeatureForCurrentPage(
       render_frame_host, new_features);
 }
 
+bool AwContentBrowserClient::IsOriginTrialRequiredForAppCache(
+    content::BrowserContext* browser_text) {
+  // WebView has no way of specifying an origin trial, and so never
+  // consider it a requirement.
+  return false;
+}
+
 content::SpeechRecognitionManagerDelegate*
 AwContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new AwSpeechRecognitionManagerDelegate();

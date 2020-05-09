@@ -130,7 +130,7 @@ bool EditorViewController::ValidateInputFields() {
 
 std::unique_ptr<views::Button> EditorViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
+      views::MdTextButton::CreateSecondaryUiProminentButton(
           this, l10n_util::GetStringUTF16(IDS_DONE)));
   button->set_tag(static_cast<int>(EditorViewControllerTags::SAVE_BUTTON));
   button->SetID(static_cast<int>(DialogViewID::EDITOR_SAVE_BUTTON));

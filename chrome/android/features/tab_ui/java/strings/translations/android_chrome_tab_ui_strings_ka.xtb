@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">გადახედვა</translation>
 <translation id="5073204694187207510">სრულეკრანიანი ბადის დამალვა</translation>
 <translation id="5082793167783849073">სწრაფად შეადარეთ გვერდები დაჯგუფების მეშვეობით. დასაწყებად ხანგრძლივად შეეხეთ ბმულს.</translation>
+<translation id="5533021382642990449">მოგვიანებით ჩვენება</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> ჩანართი დაჯგუფდა</translation>
 <translation id="58326064309361797">ჩანართების დასაჯგუფებლად ჩავლებით გადაიტანეთ ისინი</translation>
 <translation id="6040143037577758943">დახურვა</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">შემოთავაზებების დახურვა.</translation>
 <translation id="814503310257431685">ყველას ნახვა</translation>
 <translation id="8205266828577616993">ჩანართის ზემოთ გადატანა</translation>
+<translation id="8304833501377495048">აღარ გამოჩნდეს ჩანართების ზოლი?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> არჩეული ჩანართის დახურვა}other{<ph name="TABS_COUNT_MANY" /> არჩეული ჩანართის დახურვა}}</translation>
+<translation id="8749939518995770034">ჩანართების ზოლი დახურულია</translation>
 <translation id="9150694013019234766">გადაერთეთ ჩანართებს შორის თქვენს ჩანართების ჯგუფში, ეკრანის ქვედა ნაწილში</translation>
 <translation id="9169594135889675189">ჯგუფში ახალი ჩანართის დამატება</translation>
 <translation id="959682366969460160">იყავით ორგანიზებული</translation>

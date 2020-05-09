@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import json
 import os
 import subprocess
@@ -54,7 +55,7 @@ class MergeProfilesTest(unittest.TestCase):
         self.assertEqual(
             mock_merge.call_args,
             mock.call(task_output_dir, profdata_file, '.profraw',
-                      'llvm-profdata'), None)
+                      'llvm-profdata', sparse=True), None)
 
   def test_merge_steps_parameters(self):
     """Test the build-level merge front-end."""
@@ -78,7 +79,7 @@ class MergeProfilesTest(unittest.TestCase):
         self.assertEqual(
             mock_merge.call_args,
             mock.call(input_dir, output_file, '.profdata', 'llvm-profdata',
-                '.*'))
+                '.*', sparse=True))
 
   @mock.patch.object(merger, '_validate_and_convert_profraws')
   def test_merge_profraw(self, mock_validate_and_convert_profraws):
@@ -313,6 +314,74 @@ class MergeProfilesTest(unittest.TestCase):
         merger.merge_java_exec_files(
             '/b/some/path', 'output/path', 'path/to/jacococli.jar')
         self.assertFalse(mock_exec_cmd.called)
+
+  def test_argparse_sparse(self):
+    """Ensure that sparse flag defaults to true, and is set to correct value"""
+    # Basic required args
+    build_properties = json.dumps({
+        'some': {
+            'complicated': ['nested', {
+                'json': None,
+                'object': 'thing',
+            }]
+        }
+    })
+    task_output_dir = 'some/task/output/dir'
+    profdata_dir = '/some/different/path/to/profdata/default.profdata'
+    profdata_file = os.path.join(profdata_dir, 'base_unittests.profdata')
+    args = [
+        'script_name', '--output-json', 'output.json', '--build-properties',
+        build_properties, '--summary-json', 'summary.json', '--task-output-dir',
+        task_output_dir, '--profdata-dir', profdata_dir, '--llvm-profdata',
+        'llvm-profdata', 'a.json', 'b.json', 'c.json', '--test-target-name',
+        'base_unittests'
+    ]
+
+    test_scenarios = [
+      {
+        # Base set of args should set --sparse to true by default
+        'args': None,
+        'expected_outcome': True,
+      },
+      {
+        # Sparse should parse to False when --no-sparse is specified
+        'args': ['--no-sparse'],
+        'expected_outcome': False,
+      },
+      {
+        # Sparse should parse True when only --sparse is specified
+        'args': ['--sparse'],
+        'expected_outcome': True,
+      },
+      {
+        # Sparse should take the last arg specified, so with --no-sparse at the
+        # end this should resolve false.
+        'args': ['--sparse', '--no-sparse'],
+        'expected_outcome': False,
+      },
+      {
+        # --sparse specified at end should resolve true.
+        'args': ['--no-sparse', '--sparse'],
+        'expected_outcome': True,
+      }
+    ]
+
+    for scenario in test_scenarios:
+      args = copy.deepcopy(args)
+      additional_args = scenario['args']
+      if additional_args:
+        args.extend(additional_args)
+      expected_outcome = scenario['expected_outcome']
+
+      with mock.patch.object(merger, 'merge_profiles') as mock_merge:
+        mock_merge.return_value = None, None
+        with mock.patch.object(sys, 'argv', args):
+          merge_results.main()
+          self.assertEqual(
+              mock_merge.call_args,
+              mock.call(task_output_dir, profdata_file, '.profraw',
+                        'llvm-profdata', sparse=expected_outcome), None)
+
 
 if __name__ == '__main__':
   unittest.main()

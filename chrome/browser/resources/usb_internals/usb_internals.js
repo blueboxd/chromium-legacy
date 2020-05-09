@@ -43,7 +43,7 @@ cr.define('usb_internals', function() {
       const response = await this.usbManagerTest_.getTestDevices();
 
       const tableBody = $('test-device-list');
-      tableBody.innerHTML = '';
+      tableBody.innerHTML = trustedTypes.emptyHTML;
 
       const rowTemplate = document.querySelector('#test-device-row');
       const td = rowTemplate.content.querySelectorAll('td');

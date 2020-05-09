@@ -533,13 +533,13 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
     return;
   }
 
-  const char kFormatString[] = "Manifest fetch failed (%d) %s";
+  static const char kFormatString[] = "Manifest fetch failed (%d) %s";
   std::string message = FormatUrlErrorMessage(
       kFormatString, manifest_url_, manifest_fetcher->result(), response_code);
   HandleCacheFailure(
       blink::mojom::AppCacheErrorDetails(
           message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-          manifest_url_, response_code, false /*is_cross_origin*/),
+          manifest_url_, response_code, /*is_cross_origin=*/false),
       manifest_fetcher->result(), GURL());
 }
 
@@ -551,7 +551,7 @@ void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
       "The cache has been made obsolete, "
       "the manifest file returned 404 or 410",
       blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR, GURL(),
-      response_code, false /*is_cross_origin*/));
+      response_code, /*is_cross_origin=*/false));
   if (success) {
     DCHECK(group->is_obsolete());
     NotifyAllAssociatedHosts(
@@ -564,7 +564,7 @@ void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
         blink::mojom::AppCacheErrorDetails(
             "Failed to mark the cache as obsolete",
             blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
-            0, false /*is_cross_origin*/),
+            0, /*is_cross_origin=*/false),
         DB_ERROR, GURL());
   }
 }
@@ -604,14 +604,14 @@ void AppCacheUpdateJob::HandleFetchedManifestChanged() {
                          ? PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES
                          : PARSE_MANIFEST_PER_STANDARD,
                      manifest)) {
-    const char kFormatString[] = "Failed to parse manifest %s";
+    static const char kFormatString[] = "Failed to parse manifest %s";
     const std::string message = base::StringPrintf(kFormatString,
         manifest_url_.spec().c_str());
     HandleCacheFailure(
         blink::mojom::AppCacheErrorDetails(
             message,
             blink::mojom::AppCacheErrorReason::APPCACHE_SIGNATURE_ERROR, GURL(),
-            0, false /*is_cross_origin*/),
+            0, /*is_cross_origin=*/false),
         MANIFEST_ERROR, GURL());
     VLOG(1) << message;
     return;
@@ -619,14 +619,14 @@ void AppCacheUpdateJob::HandleFetchedManifestChanged() {
 
   if (is_origin_trial_required_ &&
       manifest.token_expires <= base::Time::Now()) {
-    const char kFormatString[] =
+    static const char kFormatString[] =
         "Invalid or missing manifest origin trial token: %s";
     const std::string message =
         base::StringPrintf(kFormatString, manifest_url_.spec().c_str());
     HandleCacheFailure(
         blink::mojom::AppCacheErrorDetails(
             message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-            manifest_url_, 0, false /*is_cross_origin*/),
+            manifest_url_, 0, /*is_cross_origin=*/false),
         MANIFEST_ERROR, GURL());
     VLOG(1) << message;
     return;
@@ -764,7 +764,7 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
   } else if (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept()) {
     VLOG(1) << "Request error: " << net_error
             << " response code: " << response_code;
-    const char kFormatString[] = "Resource fetch failed (%d) %s";
+    static const char kFormatString[] = "Resource fetch failed (%d) %s";
     std::string message = FormatUrlErrorMessage(
         kFormatString, url, entry_fetcher->result(), response_code);
     ResultType result = entry_fetcher->result();
@@ -933,13 +933,13 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
 
     failed_master_entries_.insert(url);
 
-    const char kFormatString[] = "Manifest fetch failed (%d) %s";
+    static const char kFormatString[] = "Manifest fetch failed (%d) %s";
     std::string message =
         FormatUrlErrorMessage(kFormatString, request->GetURL(),
                               entry_fetcher->result(), response_code);
     host_notifier.SendErrorNotifications(blink::mojom::AppCacheErrorDetails(
         message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-        request->GetURL(), response_code, false /*is_cross_origin*/));
+        request->GetURL(), response_code, /*is_cross_origin=*/false));
 
     // In downloading case, update result is different if all master entries
     // failed vs. only some failing.
@@ -954,7 +954,7 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
             blink::mojom::AppCacheErrorDetails(
                 message,
                 blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-                request->GetURL(), response_code, false /*is_cross_origin*/),
+                request->GetURL(), response_code, /*is_cross_origin=*/false),
             entry_fetcher->result(), GURL());
         return;
       }
@@ -1012,10 +1012,10 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
           blink::mojom::AppCacheErrorDetails(
               "Manifest changed during update",
               blink::mojom::AppCacheErrorReason::APPCACHE_CHANGED_ERROR, GURL(),
-              0, false /*is_cross_origin*/),
+              0, /*is_cross_origin=*/false),
           MANIFEST_ERROR, GURL());
     } else {
-      const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
+      static const char kFormatString[] = "Manifest re-fetch failed (%d) %s";
       std::string message =
           FormatUrlErrorMessage(kFormatString, manifest_url_,
                                 manifest_fetcher->result(), response_code);
@@ -1029,7 +1029,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* url_fetcher,
           blink::mojom::AppCacheErrorDetails(
               message,
               blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-              GURL(), response_code, false /*is_cross_origin*/),
+              GURL(), response_code, /*is_cross_origin=*/false),
           result, GURL());
     }
   }
@@ -1048,7 +1048,7 @@ void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
         blink::mojom::AppCacheErrorDetails(
             "Failed to write the manifest headers to storage",
             blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
-            0, false /*is_cross_origin*/),
+            0, /*is_cross_origin=*/false),
         DISKCACHE_ERROR, GURL());
   }
 }
@@ -1070,7 +1070,7 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
         blink::mojom::AppCacheErrorDetails(
             "Failed to write the manifest data to storage",
             blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
-            0, false /*is_cross_origin*/),
+            0, /*is_cross_origin=*/false),
         DISKCACHE_ERROR, GURL());
   }
 }
@@ -1142,7 +1142,7 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
     reason = blink::mojom::AppCacheErrorReason::APPCACHE_QUOTA_ERROR;
   }
   HandleCacheFailure(blink::mojom::AppCacheErrorDetails(
-                         message, reason, GURL(), 0, false /*is_cross_origin*/),
+                         message, reason, GURL(), 0, /*is_cross_origin=*/false),
                      result, GURL());
 }
 
@@ -1238,7 +1238,7 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
           blink::mojom::AppCacheErrorDetails(
               "Manifest entry not found in existing cache",
               blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
-              0, false /*is_cross_origin*/),
+              0, /*is_cross_origin=*/false),
           DB_ERROR, GURL());
       service->DeleteAppCacheGroup(manifest_url_,
                                    net::CompletionOnceCallback());
@@ -1308,7 +1308,7 @@ void AppCacheUpdateJob::ReadManifestFromCacheAndContinue() {
           blink::mojom::AppCacheErrorDetails(
               "Manifest entry not found in existing cache",
               blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR, GURL(),
-              0, false /*is_cross_origin*/),
+              0, /*is_cross_origin=*/false),
           DB_ERROR, GURL());
       service->DeleteAppCacheGroup(manifest_url_,
                                    net::CompletionOnceCallback());

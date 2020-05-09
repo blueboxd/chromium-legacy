@@ -8,21 +8,31 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api_unittest_base_chromeos.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
+#include "extensions/browser/api/feedback_private/mock_feedback_service.h"
+#include "extensions/common/value_builder.h"
 
 namespace extensions {
 
 namespace {
 
-using api::feedback_private::ReadLogSourceResult;
+using api::feedback_private::FeedbackInfo;
 using api::feedback_private::ReadLogSourceParams;
+using api::feedback_private::ReadLogSourceResult;
+using api::feedback_private::SendFeedback::Params;
 using base::TimeDelta;
+using feedback::FeedbackData;
+using testing::_;
+using testing::DoAll;
+using testing::SaveArg;
 
 // Converts |params| to a string containing a JSON dictionary within an argument
 // list.
-std::string ParamsToJSON(const ReadLogSourceParams& params) {
+template <typename T>
+std::string ParamsToJSON(const T& params) {
   base::ListValue params_value;
   params_value.Append(params.ToValue());
   std::string params_json_string;
@@ -44,6 +54,11 @@ class FeedbackPrivateApiUnittest : public FeedbackPrivateApiUnittestBase {
         ->Get(browser_context())
         ->GetLogSourceAccessManager()
         ->SetTickClockForTesting(nullptr);
+
+    FeedbackPrivateAPI::GetFactoryInstance()
+        ->Get(browser_context())
+        ->SetFeedbackServiceForTesting(
+            std::make_unique<FeedbackService>(browser_context()));
 
     FeedbackPrivateApiUnittestBase::TearDown();
   }
@@ -98,6 +113,42 @@ class FeedbackPrivateApiUnittest : public FeedbackPrivateApiUnittestBase {
         base::MakeRefCounted<FeedbackPrivateReadLogSourceFunction>();
 
     return RunFunctionAndReturnError(function.get(), ParamsToJSON(params));
+  }
+
+  // Runs the feedbackPrivate.sendFeedback() function. See API function
+  // definition for argument descriptions.
+  //
+  // The API function is expected to complete successfully.
+  testing::AssertionResult RunSendFeedbackFunction(
+      const Params& params,
+      FeedbackCommon::SystemLogsMap* logs) {
+    auto mock = std::make_unique<MockFeedbackService>(browser_context());
+
+    scoped_refptr<FeedbackData> actual_feedback_data;
+    EXPECT_CALL(*mock, SendFeedback(_, _))
+        .WillOnce(
+            DoAll(testing::SaveArg<0>(&actual_feedback_data),
+                  [](scoped_refptr<FeedbackData> feedback_data,
+                     const FeedbackService::SendFeedbackCallback& callback) {
+                    callback.Run(true);
+                  }));
+
+    FeedbackPrivateAPI::GetFactoryInstance()
+        ->Get(browser_context())
+        ->SetFeedbackServiceForTesting(
+            static_cast<std::unique_ptr<FeedbackService>>(std::move(mock)));
+
+    auto function = base::MakeRefCounted<FeedbackPrivateSendFeedbackFunction>();
+
+    std::unique_ptr<base::Value> result_value = RunFunctionAndReturnValue(
+        function.get(), ParamsToJSON(params.feedback));
+    if (!result_value) {
+      return testing::AssertionFailure() << "No result";
+    }
+
+    *logs = *actual_feedback_data->sys_info();
+
+    return testing::AssertionSuccess();
   }
 
  private:
@@ -337,6 +388,48 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceWithAccessTimeouts) {
   test_clock.Advance(TimeDelta::FromMilliseconds(1));
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
+}
+
+TEST_F(FeedbackPrivateApiUnittest, SendFeedbackWithTabTitles) {
+  base::Value values = base::test::ParseJson(R"([
+    {
+      "description": "words",
+      "sendTabTitles": true,
+      "systemInformation": [
+        {"key": "mem_usage_with_title", "value": "some sensitive info"}
+      ]
+    }
+  ])");
+  ASSERT_TRUE(values.is_list());
+
+  std::unique_ptr<Params> params =
+      Params::Create(base::Value::AsListValue(values));
+  ASSERT_TRUE(params);
+
+  FeedbackCommon::SystemLogsMap logs;
+  EXPECT_TRUE(RunSendFeedbackFunction(*params, &logs));
+  EXPECT_TRUE(base::Contains(logs, "mem_usage_with_title"));
+}
+
+TEST_F(FeedbackPrivateApiUnittest, SendFeedbackWithoutTabTitles) {
+  base::Value values = base::test::ParseJson(R"([
+    {
+      "description": "words",
+      "sendTabTitles": false,
+      "systemInformation": [
+        {"key": "mem_usage_with_title", "value": "some sensitive info"}
+      ]
+    }
+  ])");
+  ASSERT_TRUE(values.is_list());
+
+  std::unique_ptr<Params> params =
+      Params::Create(base::Value::AsListValue(values));
+  ASSERT_TRUE(params);
+
+  FeedbackCommon::SystemLogsMap logs;
+  EXPECT_TRUE(RunSendFeedbackFunction(*params, &logs));
+  EXPECT_FALSE(base::Contains(logs, "mem_usage_with_title"));
 }
 
 }  // namespace extensions

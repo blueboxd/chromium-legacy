@@ -791,8 +791,13 @@ def UpdateXml(original_xml):
 
 
 def main(argv):
-  presubmit_util.DoPresubmitMain(argv, 'actions.xml', 'actions.old.xml',
-                                 'extract_actions.py', UpdateXml)
+  presubmit_util.DoPresubmitMain(
+      argv,
+      'actions.xml',
+      'actions.old.xml',
+      UpdateXml,
+      script_name='extract_actions.py')
+
 
 if '__main__' == __name__:
   sys.exit(main(sys.argv))

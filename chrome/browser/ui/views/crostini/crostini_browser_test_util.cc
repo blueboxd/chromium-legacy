@@ -39,12 +39,12 @@ class CrostiniBrowserTestChromeBrowserMainExtraParts
   // ChromeBrowserMainExtraParts:
   void PostEarlyInitialization() override {
     auto cros_component_manager =
-        std::make_unique<component_updater::FakeCrOSComponentManager>();
+        base::MakeRefCounted<component_updater::FakeCrOSComponentManager>();
     cros_component_manager->set_supported_components(
         {imageloader::kTerminaComponentName});
 
     if (register_termina_) {
-      cros_component_manager->set_registered_components(
+      cros_component_manager->SetRegisteredComponents(
           {imageloader::kTerminaComponentName});
       cros_component_manager->ResetComponentState(
           imageloader::kTerminaComponentName,

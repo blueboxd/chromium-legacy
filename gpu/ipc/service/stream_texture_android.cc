@@ -90,7 +90,6 @@ StreamTexture::StreamTexture(GpuChannel* channel,
     : texture_owner_(
           TextureOwner::Create(TextureOwner::CreateTexture(context_state),
                                GetTextureOwnerMode())),
-      size_(0, 0),
       has_pending_frame_(false),
       channel_(channel),
       route_id_(route_id),
@@ -105,7 +104,6 @@ StreamTexture::StreamTexture(GpuChannel* channel,
                                                  route_id),
               sequence_)) {
   context_state_->AddContextLostObserver(this);
-  memset(current_matrix_, 0, sizeof(current_matrix_));
   channel->AddRoute(route_id, sequence_, this);
 
   texture_owner_->SetFrameAvailableCallback(base::BindRepeating(
@@ -132,16 +130,13 @@ void StreamTexture::ReleaseChannel() {
 
 // gpu::gles2::GLStreamTextureMatrix implementation
 void StreamTexture::GetTextureMatrix(float xform[16]) {
-  if (texture_owner_) {
-    // We need to ensure here that the tex image is bound to the texture. This
-    // is because when UpdateTexImage via GetTextureMatrix() is called, it sets
-    // the |has_pending_frame_| to false. Hence any futurre call of CopyTexImage
-    // will do nothing by calling UpdateTexImage().
-    UpdateTexImage(BindingsMode::kEnsureTexImageBound);
-    texture_owner_->GetTransformMatrix(current_matrix_);
-  }
-  memcpy(xform, current_matrix_, sizeof(current_matrix_));
-  YInvertMatrix(xform);
+  static constexpr float kIdentity[16]{
+      1, 0, 0, 0,  //
+      0, 1, 0, 0,  //
+      0, 0, 1, 0,  //
+      0, 0, 0, 1   //
+  };
+  memcpy(xform, kIdentity, sizeof(kIdentity));
 }
 
 bool StreamTexture::IsUsingGpuMemory() const {
@@ -228,26 +223,33 @@ bool StreamTexture::CopyTexImage(unsigned target) {
 
 void StreamTexture::OnFrameAvailable() {
   has_pending_frame_ = true;
-  if (has_listener_ && channel_) {
-    // Send ycbcr_info if it has not been sent yet. This will always be sent
-    // before the first frame. This info needs to be sent only once to the
-    // renderer. Renderer will then cache it.
-    if (!ycbcr_info_sent_) {
-      ycbcr_info_sent_ = true;
 
-      // Since the frame is available, get the ycbcr info from the latest image.
-      base::Optional<VulkanYCbCrInfo> ycbcr_info =
-          SharedImageVideo::GetYcbcrInfo(this, context_state_);
-      channel_->Send(new GpuStreamTextureMsg_FrameWithYcbcrInfoAvailable(
-          route_id_, ycbcr_info));
-    } else {
-      channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id_));
-    }
+  if (!has_listener_ || !channel_)
+    return;
+
+  UpdateTexImage(BindingsMode::kEnsureTexImageBound);
+
+  gfx::Rect visible_rect;
+  gfx::Size coded_size;
+  texture_owner_->GetCodedSizeAndVisibleRect(rotated_visible_size_, &coded_size,
+                                             &visible_rect);
+
+  if (coded_size != coded_size_ || visible_rect != visible_rect_) {
+    coded_size_ = coded_size;
+    visible_rect_ = visible_rect;
+
+    auto mailbox = CreateSharedImage(coded_size);
+    auto ycbcr_info = SharedImageVideo::GetYcbcrInfo(this, context_state_);
+
+    channel_->Send(new GpuStreamTextureMsg_FrameWithInfoAvailable(
+        route_id_, mailbox, coded_size, visible_rect, ycbcr_info));
+  } else {
+    channel_->Send(new GpuStreamTextureMsg_FrameAvailable(route_id_));
   }
 }
 
 gfx::Size StreamTexture::GetSize() {
-  return size_;
+  return coded_size_;
 }
 
 unsigned StreamTexture::GetInternalFormat() {
@@ -264,8 +266,8 @@ bool StreamTexture::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_StartListening, OnStartListening)
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_ForwardForSurfaceRequest,
                         OnForwardForSurfaceRequest)
-    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_CreateSharedImage,
-                        OnCreateSharedImage)
+    IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_UpdateRotatedVisibleSize,
+                        OnUpdateRotatedVisibleSize)
     IPC_MESSAGE_HANDLER(GpuStreamTextureMsg_Destroy, OnDestroy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -289,44 +291,39 @@ void StreamTexture::OnForwardForSurfaceRequest(
                                              texture_owner_.get());
 }
 
-void StreamTexture::OnCreateSharedImage(const gpu::Mailbox& mailbox,
-                                        const gfx::Size& size,
-                                        uint32_t release_id) {
-  DCHECK(channel_);
-  size_ = size;
-
-  if (!texture_owner_)
-    return;
-
+gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
   // We do not update |texture_owner_texture_|'s internal gles2::Texture's
   // size. This is because the gles2::Texture is never used directly, the
-  // associated |texture_owner_texture_id_| being the only part of that object
-  // we interact with.
-  // If we ever use |texture_owner_texture_|, we need to ensure that it gets
-  // updated here.
+  // associated |texture_owner_texture_id_| being the only part of that
+  // object we interact with. If we ever use |texture_owner_texture_|, we
+  // need to ensure that it gets updated here.
 
   auto scoped_make_current = MakeCurrent(context_state_.get());
   auto legacy_mailbox_texture =
       std::make_unique<gles2::AbstractTextureImplOnSharedContext>(
-          GL_TEXTURE_EXTERNAL_OES, GL_RGBA, size.width(), size.height(), 1, 0,
-          GL_RGBA, GL_UNSIGNED_BYTE, context_state_.get());
+          GL_TEXTURE_EXTERNAL_OES, GL_RGBA, coded_size.width(),
+          coded_size.height(), 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+          context_state_.get());
   legacy_mailbox_texture->BindStreamTextureImage(
       this, texture_owner_->GetTextureId());
+
+  auto mailbox = gpu::Mailbox::GenerateForSharedImage();
 
   // TODO(vikassoni): Hardcoding colorspace to SRGB. Figure how if we have a
   // colorspace and wire it here.
   auto shared_image = std::make_unique<SharedImageVideo>(
-      mailbox, size_, gfx::ColorSpace::CreateSRGB(), this,
+      mailbox, coded_size, gfx::ColorSpace::CreateSRGB(), this,
       std::move(legacy_mailbox_texture), context_state_, false);
   channel_->shared_image_stub()->factory()->RegisterBacking(
       std::move(shared_image), true /* allow_legacy_mailbox */);
 
-  SyncToken sync_token(sync_point_client_state_->namespace_id(),
-                       sync_point_client_state_->command_buffer_id(),
-                       release_id);
-  auto* mailbox_manager = channel_->gpu_channel_manager()->mailbox_manager();
-  mailbox_manager->PushTextureUpdates(sync_token);
-  sync_point_client_state_->ReleaseFenceSync(release_id);
+  return mailbox;
+}
+
+void StreamTexture::OnUpdateRotatedVisibleSize(
+    const gfx::Size& rotated_visible_size) {
+  DCHECK(channel_);
+  rotated_visible_size_ = rotated_visible_size;
 }
 
 void StreamTexture::OnDestroy() {

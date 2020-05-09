@@ -36,7 +36,7 @@ namespace gl {
 namespace {
 // Whether the overlay caps are valid or not. GUARDED_BY GetOverlayLock().
 bool g_overlay_caps_valid = false;
-// Indicates support for either NV12 or YUY2 hardware overlays. GUARDED_BY
+// Indicates support for either NV12 or YUY2 overlays. GUARDED_BY
 // GetOverlayLock().
 bool g_supports_overlays = false;
 
@@ -67,7 +67,7 @@ void SetOverlayCapsValid(bool valid) {
 // Used for workaround limiting overlay size to monitor size.
 gfx::Size g_overlay_monitor_size;
 
-// Preferred overlay format set when detecting hardware overlay support during
+// Preferred overlay format set when detecting overlay support during
 // initialization.  Set to NV12 by default so that it's used when enabling
 // overlays using command line flags.
 DXGI_FORMAT g_overlay_format_used = DXGI_FORMAT_NV12;
@@ -82,11 +82,11 @@ bool FlagsSupportsOverlays(UINT flags) {
                    DXGI_OVERLAY_SUPPORT_FLAG_SCALING));
 }
 
-void GetGpuDriverHardwareOverlayInfo(bool* supports_overlays,
-                                     DXGI_FORMAT* overlay_format_used,
-                                     UINT* nv12_overlay_support_flags,
-                                     UINT* yuy2_overlay_support_flags,
-                                     gfx::Size* overlay_monitor_size) {
+void GetGpuDriverOverlayInfo(bool* supports_overlays,
+                             DXGI_FORMAT* overlay_format_used,
+                             UINT* nv12_overlay_support_flags,
+                             UINT* yuy2_overlay_support_flags,
+                             gfx::Size* overlay_monitor_size) {
   // Initialization
   *supports_overlays = false;
   *overlay_format_used = DXGI_FORMAT_NV12;
@@ -182,6 +182,7 @@ void GetGpuDriverHardwareOverlayInfo(bool* supports_overlays,
             gfx::Rect(monitor_desc.DesktopCoordinates).size();
       }
     }
+
     // Early out after the first output that reports overlay support. All
     // outputs are expected to report the same overlay support according to
     // Microsoft's WDDM documentation:
@@ -191,9 +192,27 @@ void GetGpuDriverHardwareOverlayInfo(bool* supports_overlays,
     if (*supports_overlays)
       break;
   }
+
+  if (*supports_overlays || !base::FeatureList::IsEnabled(
+                                features::kDirectCompositionSoftwareOverlays)) {
+    return;
+  }
+
+  // If no devices with hardware overlay support were found use software ones.
+  *supports_overlays = true;
+  *nv12_overlay_support_flags = 0;
+  *yuy2_overlay_support_flags = 0;
+
+  // Software overlays always use NV12 because it's slightly more efficient and
+  // YUY2 was only used because Skylake doesn't support NV12 hardware overlays.
+  *overlay_format_used = DXGI_FORMAT_NV12;
+
+  // This is only needed for https://crbug.com/720059 which is Intel only -- it
+  // doesn't affect software overlays.
+  *overlay_monitor_size = gfx::Size();
 }
 
-void UpdateHardwareOverlaySupport() {
+void UpdateOverlaySupport() {
   if (OverlayCapsValid())
     return;
   SetOverlayCapsValid(true);
@@ -204,9 +223,9 @@ void UpdateHardwareOverlaySupport() {
   UINT yuy2_overlay_support_flags = 0;
   gfx::Size overlay_monitor_size = gfx::Size();
 
-  GetGpuDriverHardwareOverlayInfo(
-      &supports_overlays, &overlay_format_used, &nv12_overlay_support_flags,
-      &yuy2_overlay_support_flags, &overlay_monitor_size);
+  GetGpuDriverOverlayInfo(&supports_overlays, &overlay_format_used,
+                          &nv12_overlay_support_flags,
+                          &yuy2_overlay_support_flags, &overlay_monitor_size);
 
   if (supports_overlays != SupportsOverlays() ||
       overlay_format_used != g_overlay_format_used) {
@@ -338,7 +357,7 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   // Always initialize and record overlay support information irrespective of
   // command line flags.
-  UpdateHardwareOverlaySupport();
+  UpdateOverlaySupport();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Enable flag should be checked before the disable flag, so we could
@@ -355,7 +374,7 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported() {
   if (base::FeatureList::IsEnabled(
           features::kDirectCompositionUseNV12DecodeSwapChain)) {
-    UpdateHardwareOverlaySupport();
+    UpdateOverlaySupport();
     return GetOverlayFormatUsed() == DXGI_FORMAT_NV12;
   }
   return false;
@@ -373,16 +392,20 @@ void DirectCompositionSurfaceWin::InvalidateOverlayCaps() {
 
 // static
 bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
-  UpdateHardwareOverlaySupport();
-  if (g_overlay_format_used == DXGI_FORMAT_NV12)
-    return !!(g_nv12_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
+  UpdateOverlaySupport();
+  if (g_overlay_format_used == DXGI_FORMAT_NV12) {
+    return (g_nv12_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING) ||
+           (SupportsOverlays() &&
+            base::FeatureList::IsEnabled(
+                features::kDirectCompositionSoftwareOverlays));
+  }
   DCHECK_EQ(DXGI_FORMAT_YUY2, g_overlay_format_used);
   return !!(g_yuy2_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
 }
 
 // static
 UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format) {
-  UpdateHardwareOverlaySupport();
+  UpdateOverlaySupport();
   if (format == DXGI_FORMAT_NV12)
     return g_nv12_overlay_support_flags;
   DCHECK_EQ(DXGI_FORMAT_YUY2, format);
@@ -402,7 +425,7 @@ DXGI_FORMAT DirectCompositionSurfaceWin::GetOverlayFormatUsed() {
 // static
 void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     bool supported) {
-  UpdateHardwareOverlaySupport();
+  UpdateOverlaySupport();
   if (supported) {
     g_nv12_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
     g_yuy2_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
@@ -417,7 +440,7 @@ void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
 void DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(
     DXGI_FORMAT format) {
   DCHECK(format == DXGI_FORMAT_NV12 || format == DXGI_FORMAT_YUY2);
-  UpdateHardwareOverlaySupport();
+  UpdateOverlaySupport();
   g_overlay_format_used = format;
   DCHECK_EQ(format, GetOverlayFormatUsed());
 }
@@ -821,12 +844,12 @@ void DirectCompositionSurfaceWin::OnGpuSwitched(
 
 void DirectCompositionSurfaceWin::OnDisplayAdded() {
   InvalidateOverlayCaps();
-  UpdateHardwareOverlaySupport();
+  UpdateOverlaySupport();
 }
 
 void DirectCompositionSurfaceWin::OnDisplayRemoved() {
   InvalidateOverlayCaps();
-  UpdateHardwareOverlaySupport();
+  UpdateOverlaySupport();
 }
 
 scoped_refptr<base::TaskRunner>

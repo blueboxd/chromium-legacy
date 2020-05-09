@@ -163,34 +163,6 @@ void WebViewAutofillClientIOS::OnUnmaskVerificationResult(
   [bridge_ didReceiveUnmaskVerificationResult:result];
 }
 
-void WebViewAutofillClientIOS::ShowLocalCardMigrationDialog(
-    base::OnceClosure show_migration_dialog_closure) {
-  NOTIMPLEMENTED();
-}
-
-void WebViewAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    const LegalMessageLines& legal_message_lines,
-    const std::string& user_email,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    LocalCardMigrationCallback start_migrating_cards_callback) {
-  NOTIMPLEMENTED();
-}
-
-void WebViewAutofillClientIOS::ShowLocalCardMigrationResults(
-    const bool has_server_error,
-    const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    MigrationDeleteCardCallback delete_local_card_callback) {
-  NOTIMPLEMENTED();
-}
-
-void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
-    const CreditCard& card,
-    SaveCreditCardOptions options,
-    LocalSaveCardPromptCallback callback) {
-  // No op. ios/web_view does not support local saves of autofill data.
-}
-
 void WebViewAutofillClientIOS::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const base::string16&)> callback) {
   base::Optional<AccountInfo> primary_account_info =
@@ -209,6 +181,13 @@ void WebViewAutofillClientIOS::ConfirmExpirationDateFixFlow(
         callback) {
   [bridge_ confirmCreditCardExpirationWithCard:card
                                       callback:std::move(callback)];
+}
+
+void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
+    const CreditCard& card,
+    SaveCreditCardOptions options,
+    LocalSaveCardPromptCallback callback) {
+  // No op. ios/web_view does not support local saves of autofill data.
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
@@ -255,10 +234,10 @@ void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
-base::span<const autofill::Suggestion>
-WebViewAutofillClientIOS::GetPopupSuggestions() const {
+base::span<const Suggestion> WebViewAutofillClientIOS::GetPopupSuggestions()
+    const {
   NOTIMPLEMENTED();
-  return base::span<const autofill::Suggestion>();
+  return base::span<const Suggestion>();
 }
 
 void WebViewAutofillClientIOS::PinPopupView() {
@@ -266,8 +245,8 @@ void WebViewAutofillClientIOS::PinPopupView() {
 }
 
 void WebViewAutofillClientIOS::UpdatePopup(
-    const std::vector<autofill::Suggestion>& suggestions,
-    autofill::PopupType popup_type) {
+    const std::vector<Suggestion>& suggestions,
+    PopupType popup_type) {
   NOTIMPLEMENTED();
 }
 

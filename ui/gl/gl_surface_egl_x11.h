@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -42,7 +43,7 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL,
   // XEventDispatcher:
   bool DispatchXEvent(XEvent* xev) override;
 
-  std::vector<uint32_t> children_;
+  std::vector<x11::Window> children_;
 
   // Indicates if the dispatcher has been set.
   bool dispatcher_set_ = false;

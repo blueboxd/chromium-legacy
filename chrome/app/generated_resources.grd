@@ -4599,6 +4599,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Extensions running in developer mode can harm your computer. If you're not a developer, you should disable these extensions running in developer mode to stay safe.
       </message>
 
+      <!-- Begin Extension Settings Overridden Dialog strings. -->
+      <message name="IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_CHANGE_IT_BACK" desc="The text of the button to revert to old settings; displayed in the dialog describing settings overridden by an extension.">
+        Change it back
+      </message>
+      <message name="IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_IGNORE" desc="The text of the button to ignore the settings changes, allowing the extension changes to remain in effect. Displayed in the dialog describing settings overridden by an extension.">
+        Ignore
+      </message>
+      <!-- End Extension Settings Overridden Dialog strings. -->
+
       <!-- Extensions Menu bubble -->
       <message name="IDS_EXTENSIONS_MENU_TITLE" desc="Title of the Extensions Menu">
         Extensions
@@ -4802,6 +4811,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_COMPONENTS_EVT_STATUS_DOWNLOADING" desc="Service Status">
         Component downloading
+      </message>
+      <message name="IDS_COMPONENTS_EVT_STATUS_UPDATING" desc="Service Status">
+        Component updating
       </message>
 
       <if expr="enable_plugins">
@@ -6014,7 +6026,7 @@ the Bookmarks menu.">
           Report anonymously
         </message>
         <message name="IDS_FEEDBACK_SCREENSHOT_LABEL" desc="Label for the screenshot field if current screenshots are being shown">
-          Include this screenshot
+          Include this screenshot and titles of open tabs
         </message>
         <message name="IDS_FEEDBACK_SCREENSHOT_A11Y_TEXT" desc="Accessibility label text for screenshot of system, which shows contents of screen apart from feedback dialog">
           Screenshot of programs that are currently on the screen

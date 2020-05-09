@@ -97,25 +97,12 @@ extern "C" {
 #undef DeviceAdded    // Defined by X11/extensions/XI.h to 0
 #undef DeviceMode     // Defined by X11/extensions/XI.h to 1
 #undef DeviceRemoved  // Defined by X11/extensions/XI.h to 1
-
-// The constants below are made available in the x11 namespace with
-// their original values so we double check that the value is what we
-// expect using static_assert.
-static_assert(FocusIn == 9 && FocusOut == 10, "Unexpected focus constants");
 #undef FocusIn   // Defined by X.h to 9
 #undef FocusOut  // Defined by X.h to 10
-
-static_assert(None == 0, "Unexpected value for X11 constant 'None'");
 #undef None  // Defined by X11/X.h to 0L
-
-static_assert(True == 1 && False == 0, "Unexpected X11 truth values");
 #undef True   // Defined by X11/Xlib.h to 1
 #undef False  // Defined by X11/Xlib.h to 0
-
-static_assert(CurrentTime == 0, "Unexpected value for X11 'CurrentTime'");
 #undef CurrentTime  // Defined by X11/X.h to 0L
-
-static_assert(Success == 0, "Unexpected value for X11 'Success'");
 #undef Success  // Defined by X11/X.h to 0
 }
 

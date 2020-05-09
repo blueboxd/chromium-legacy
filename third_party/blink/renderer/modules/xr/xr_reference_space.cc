@@ -75,49 +75,78 @@ void XRReferenceSpace::SetFloorFromMojo() {
     floor_from_mojo_ = std::make_unique<TransformationMatrix>(
         display_info->stage_parameters->standing_transform.matrix());
   } else {
-    // Otherwise, create a transform based on the default emulated height.
-    floor_from_mojo_ = std::make_unique<TransformationMatrix>();
-    floor_from_mojo_->Translate3d(0, kDefaultEmulationHeightMeters, 0);
+    floor_from_mojo_.reset();
   }
 
   display_info_id_ = session()->DisplayInfoPtrId();
 }
 
 base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
-  auto mojo_from_viewer = session()->MojoFromViewer();
   switch (type_) {
-    case Type::kTypeLocal:
-      // Currently 'local' space is equivalent to mojo space.
-      return TransformationMatrix();
-    case Type::kTypeLocalFloor:
-      // Currently all base poses are 'local' space, so use of 'local-floor'
-      // reference spaces requires adjustment. Ideally the service will
-      // eventually provide poses in the requested space directly, avoiding the
-      // need to do additional transformation here.
+    case Type::kTypeLocal: {
+      // The session is the source of truth for latest state of the transform
+      // between local space and mojo space.
+      auto mojo_from_local = session()->GetMojoFrom(Type::kTypeLocal);
+      if (!mojo_from_local) {
+        return base::nullopt;
+      }
 
+      DCHECK(mojo_from_local->IsInvertible());
+      return mojo_from_local->Inverse();
+    }
+    case Type::kTypeLocalFloor: {
       // Check first to see if the xrDisplayInfo has updated since the last
       // call. If so, update the floor-level transform.
       if (display_info_id_ != session()->DisplayInfoPtrId())
         SetFloorFromMojo();
-      return *floor_from_mojo_;
-    case Type::kTypeViewer:
+
+      if (floor_from_mojo_) {
+        return *floor_from_mojo_;
+      }
+
+      // If the floor-level transform is unavailable, try to use the default
+      // transform based off of local space:
+      auto mojo_from_local = session()->GetMojoFrom(Type::kTypeLocal);
+      if (!mojo_from_local) {
+        return base::nullopt;
+      }
+
+      DCHECK(mojo_from_local->IsInvertible());
+      auto local_from_mojo = mojo_from_local->Inverse();
+
+      // local-floor_from_local transform corresponding to the default height.
+      auto floor_from_local = TransformationMatrix().Translate3d(
+          0, kDefaultEmulationHeightMeters, 0);
+
+      return floor_from_local * local_from_mojo;
+    }
+    case Type::kTypeViewer: {
+      auto mojo_from_viewer = session()->GetMojoFrom(Type::kTypeViewer);
       // If we don't have mojo_from_viewer, then it's the default pose,
       // which is the identity pose.
       if (!mojo_from_viewer)
         return TransformationMatrix();
-      DCHECK(mojo_from_viewer->IsInvertible());
-      // Otherwise we need to return viewer_from_mojo which is the inverse.
-      return mojo_from_viewer->Inverse();
-    case Type::kTypeUnbounded:
-      // For now we assume that poses returned by systems that support unbounded
-      // reference spaces are already in the correct space. Return an identity.
-      return TransformationMatrix();
-    case Type::kTypeBoundedFloor:
-      NOTREACHED() << "kTypeBoundedFloor should be handled by subclass";
-      break;
-  }
 
-  return base::nullopt;
+      // Otherwise we need to return viewer_from_mojo which is the inverse.
+      DCHECK(mojo_from_viewer->IsInvertible());
+      return mojo_from_viewer->Inverse();
+    }
+    case Type::kTypeUnbounded: {
+      // The session is the source of truth for latest state of the transform
+      // between unbounded space and mojo space.
+      auto mojo_from_unbounded = session()->GetMojoFrom(Type::kTypeUnbounded);
+      if (!mojo_from_unbounded) {
+        return base::nullopt;
+      }
+
+      DCHECK(mojo_from_unbounded->IsInvertible());
+      return mojo_from_unbounded->Inverse();
+    }
+    case Type::kTypeBoundedFloor: {
+      NOTREACHED() << "kTypeBoundedFloor should be handled by subclass";
+      return base::nullopt;
+    }
+  }
 }
 
 base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromViewer(

@@ -471,6 +471,7 @@
 <translation id="4913169188695071480">បញ្ឃប់ការផ្ទុក​ឡើងវិញ</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />ទទួលជំនួយ<ph name="END_LINK" /> ខណៈពេលស្កេនរកឧបករណ៍…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ទំព័រ}other{# ទំព័រ}}</translation>
+<translation id="49268022542405662">ពាក្យ​សម្ងាត់​របស់អ្នក​នឹងត្រូវបាននាំចេញ និងទាញយកជាឯកសារជាអក្សរ។ បុគ្គល និងកម្មវិធីទាំងឡាយដែលមានសិទ្ធិចូលប្រើថតគោលដៅ​នឹងអាចមើលឃើញ​ពាក្យសម្ងាត់ទាំងនេះ។</translation>
 <translation id="4932247056774066048">ទិន្នន័យ Chrome របស់អ្នក​នឹងលុប​ចេញពីឧបករណ៍នេះ ដោយសារ​អ្នកចេញពី​គណនីដែល​គ្រប់គ្រង​ដោយ <ph name="DOMAIN_NAME" /> ។ ទិន្នន័យនេះ​នឹងនៅតែ​មាននៅក្នុងគណនី Google របស់អ្នកដដែល។</translation>
 <translation id="4943703118917034429">VR</translation>
 <translation id="4943872375798546930">គ្មានលទ្ធផលទេ</translation>
@@ -753,6 +754,7 @@
 <translation id="7302081693174882195">ព័ត៌មាន​លម្អិត៖ ​តម្រៀប​តាមទំហំ​ទិន្នន័យ​ដែលបានរក្សាទុក</translation>
 <translation id="7328017930301109123">នៅក្នុង​មុខងារស្រាល Chrome ផ្ទុកទំព័រ​រហ័សជាងមុន និងប្រើទិន្នន័យ​តិចជាងមុន​រហូតដល់ 60 ភាគរយ។</translation>
 <translation id="7333031090786104871">កំពុង​បញ្ចូល​ទំព័រ​ពីមុន​នៅឡើយ</translation>
+<translation id="7340958967809483333">ជម្រើសសម្រាប់ Discover</translation>
 <translation id="7352939065658542140">វីដេអូ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{ចែករំលែកធាតុដែលបានជ្រើសរើស 1}other{ចែករំលែកធាតុដែលបានជ្រើសរើស #}}</translation>
 <translation id="7359002509206457351">ចូលប្រើ​វិធី​បង់ប្រាក់</translation>
@@ -817,6 +819,7 @@
 <translation id="780301667611848630">ទេ អរគុណ</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
+<translation id="7835852323729233924">ការចាក់មេឌៀ</translation>
 <translation id="783819812427904514">បើក​សំឡេង​វីដេអូ</translation>
 <translation id="784934925303690534">ចន្លោះពេល</translation>
 <translation id="7851858861565204677">ឧបករណ៍ផ្សេងទៀត</translation>

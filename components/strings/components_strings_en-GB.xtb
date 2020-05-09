@@ -195,7 +195,6 @@
 <translation id="1736420071277903564">Computer</translation>
 <translation id="1740951997222943430">Enter a valid expiry month</translation>
 <translation id="1741613555002899862">Must be specified and a valid string when DnsOverHttpsMode is <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
-<translation id="1743520634839655729">To pay faster next time, save your card, name and billing address to your Google Account and to this device.</translation>
 <translation id="1743570585616704562">Not recognised</translation>
 <translation id="1745880797583122200">Your browser is managed</translation>
 <translation id="1746113442205726301">Image Y shift</translation>
@@ -1269,7 +1268,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Potential charges ahead.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
-<translation id="6387754724289022810">To pay faster next time, save your card and billing address to your Google Account and to this device.</translation>
 <translation id="6389470377220713856">Name on Card</translation>
 <translation id="6390200185239044127">Z-fold half</translation>
 <translation id="6390662030813198813">Engineering-E</translation>

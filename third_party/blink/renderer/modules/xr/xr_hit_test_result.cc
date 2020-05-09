@@ -58,20 +58,49 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
   }
 
   if (plane_id_) {
+    DVLOG(2) << __func__
+             << ": hit test result's entity is a plane, creating "
+                "plane-attached anchor";
     return session_->CreatePlaneAnchorHelper(
         script_state, this_from_anchor->TransformMatrix(), *plane_id_,
         exception_state);
   } else {
-    // Let's create free-floating anchor since plane is unavailable.
-    // TODO(crbug.com/1070380): This assumes that local space is equivalent to
-    // mojo space! Remove the assumption once the bug is fixed.
+    DVLOG(2) << __func__
+             << ": hit test result's entity is unavailable, creating "
+                "free-floating anchor ";
 
-    auto mojo_from_anchor =
-        *mojo_from_this_ * this_from_anchor->TransformMatrix();
-    auto maybe_native_origin = XRNativeOriginInformation::Create(
-        device::mojom::XRReferenceSpaceCategory::LOCAL);
+    // Let's create free-floating anchor since plane is unavailable. In our
+    // case, we should first attempt to use the local space as it is supposed to
+    // be more stable, but if that is unavailable, we can try using unbounded
+    // space. Otherwise, there's not much we can do so we fail the call.
+    auto reference_space_category =
+        device::mojom::XRReferenceSpaceCategory::LOCAL;
+    auto mojo_from_space =
+        session_->GetMojoFrom(XRReferenceSpace::Type::kTypeLocal);
+    if (!mojo_from_space) {
+      // Local space is not available, try unbounded.
+      reference_space_category =
+          device::mojom::XRReferenceSpaceCategory::UNBOUNDED;
+      mojo_from_space =
+          session_->GetMojoFrom(XRReferenceSpace::Type::kTypeUnbounded);
+    }
 
-    return session_->CreateAnchorHelper(script_state, mojo_from_anchor,
+    if (!mojo_from_space) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        XRSession::kUnableToRetrieveMatrix);
+      return {};
+    }
+
+    DCHECK(mojo_from_space->IsInvertible());
+
+    auto space_from_mojo = mojo_from_space->Inverse();
+    auto space_from_anchor = space_from_mojo * (*mojo_from_this_) *
+                             this_from_anchor->TransformMatrix();
+
+    auto maybe_native_origin =
+        XRNativeOriginInformation::Create(reference_space_category);
+
+    return session_->CreateAnchorHelper(script_state, space_from_anchor,
                                         *maybe_native_origin, exception_state);
   }
 }
@@ -80,4 +109,5 @@ void XRHitTestResult::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);
 }
+
 }  // namespace blink

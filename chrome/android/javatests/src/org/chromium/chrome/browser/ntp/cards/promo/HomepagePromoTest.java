@@ -11,10 +11,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.mockito.Mockito.times;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.os.Build.VERSION_CODES;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
@@ -44,9 +47,12 @@ import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
+import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoUtils.HomepagePromoAction;
 import org.chromium.chrome.browser.partnercustomizations.BasePartnerBrowserCustomizationIntegrationTestRule;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.toolbar.HomeButton;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -55,9 +61,11 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.TouchCommon;
 
 /**
  * Unit test for {@link HomepagePromoController}
@@ -69,6 +77,7 @@ public class HomepagePromoTest {
     public static final String PARTNER_HOMEPAGE_URL = "http://127.0.0.1:8000/foo.html";
     public static final String CUSTOM_TEST_URL = "http://127.0.0.1:8000/bar.html";
 
+    private static final String METRICS_HOMEPAGE_PROMO = "NewTabPage.Promo.HomepagePromo";
     private static final int NTP_HEADER_POSITION = 0;
 
     private boolean mHasHomepagePromoDismissed; // Test value before the test.
@@ -142,6 +151,10 @@ public class HomepagePromoTest {
         Assert.assertEquals(
                 "Homepage promo should be visible.", View.VISIBLE, homepagePromo.getVisibility());
 
+        Assert.assertEquals("Promo created should be recorded once. ", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
+
         // Change the homepage from homepage manager, so that state listeners get the update.
         // The promo should be gone from the screen.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -149,6 +162,12 @@ public class HomepagePromoTest {
         });
         homepagePromo = mActivityTestRule.getActivity().findViewById(R.id.homepage_promo);
         Assert.assertNotNull("Promo should be gone after homepage changes.", homepagePromo);
+        Mockito.verify(mTracker, times(1)).dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
+
+        // Different than Tracker system, promo dismissed should not be recorded in histogram.
+        Assert.assertEquals("Promo dismissed should not be called.", 0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.DISMISSED));
     }
 
     @Test
@@ -163,6 +182,10 @@ public class HomepagePromoTest {
         Assert.assertNotNull("SignInPromo should be displayed on the screen.",
                 mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
 
+        Assert.assertEquals("Promo created should not be recorded yet.", 0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
+
         // Dismiss the signInPromo, and refresh NTP, the homepage promo should show up.
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, true);
@@ -174,6 +197,10 @@ public class HomepagePromoTest {
         View homepagePromo = mActivityTestRule.getActivity().findViewById(R.id.homepage_promo);
         Assert.assertNotNull(
                 "Homepage promo should be added to NTP when SignInPromo dismissed.", homepagePromo);
+
+        Assert.assertEquals("Promo created should be recorded once.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
     }
 
     /**
@@ -191,8 +218,13 @@ public class HomepagePromoTest {
         scrollToHomepagePromo();
 
         onView(withId(R.id.promo_secondary_button)).perform(click());
-        Assert.assertNull("Homepage promo should not be removed.",
+        Assert.assertNull("Homepage promo should be removed after dismissed.",
                 mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Assert.assertEquals("Promo dismissed should be recorded once. ", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.DISMISSED));
+
+        Mockito.verify(mTracker, times(1)).dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
 
         // Load to NTP one more time. The promo should not show.
         mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
@@ -202,7 +234,7 @@ public class HomepagePromoTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O, message = "crbug.com/1077316s")
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O, message = "crbug.com/1077316")
     public void testChangeHomepageAndUndo() {
         SignInPromo.setDisablePromoForTests(true);
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
@@ -211,8 +243,15 @@ public class HomepagePromoTest {
 
         // Click on the promo card to set the homepage to NTP.
         onView(withId(R.id.promo_primary_button)).perform(click());
-        Assert.assertNull("Homepage promo should not be removed.",
+        Assert.assertEquals("Promo accepted should be recorded once. ", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.ACCEPTED));
+        Mockito.verify(mTracker, times(1)).notifyEvent(EventConstants.HOMEPAGE_PROMO_ACCEPTED);
+
+        // The promo should be dismissed for feature engagement after homepage changed.
+        Assert.assertNull("Homepage promo should be removed.",
                 mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+        Mockito.verify(mTracker, times(1)).dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
 
         Assert.assertTrue("Homepage should be set to NTP after clicking on promo primary button.",
                 NewTabPage.isNTPUrl(HomepageManager.getHomepageUri()));
@@ -225,8 +264,30 @@ public class HomepagePromoTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { snackbar.getController().onAction(snackbar.getActionDataForTesting()); });
+        Assert.assertEquals("Promo undo should be recorded once. ", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.UNDO));
         Assert.assertEquals("Homepage should change back to partner homepage after undo.",
                 HomepageManager.getHomepageUri(), PARTNER_HOMEPAGE_URL);
+    }
+
+    @Test
+    @SmallTest
+    public void testExperimentTrackerSignals() {
+        mHomepageTestRule.useChromeNTPForTest();
+        ToolbarManager toolbarManager = mActivityTestRule.getActivity().getToolbarManager();
+
+        if (toolbarManager != null) {
+            HomeButton homeButton = toolbarManager.getHomeButtonForTesting();
+            if (homeButton != null) {
+                TouchCommon.singleClickView(homeButton);
+
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
+                Mockito.verify(mTracker).notifyEvent(EventConstants.NTP_SHOWN);
+                Mockito.verify(mTracker).notifyEvent(EventConstants.NTP_HOME_BUTTON_CLICKED);
+            }
+        }
     }
 
     private void scrollToHomepagePromo() {
@@ -234,6 +295,12 @@ public class HomepagePromoTest {
                 .perform(RecyclerViewActions.scrollToPosition(NTP_HEADER_POSITION + 1));
         waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(R.id.homepage_promo),
                 allOf(withId(R.id.promo_primary_button), isDisplayed()));
+
+        // Verify impress tracking metrics is working.
+        Assert.assertEquals("Promo created should be seen.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.SEEN));
+        Mockito.verify(mTracker).notifyEvent(EventConstants.HOMEPAGE_PROMO_SEEN);
     }
 
     private void setVariationForTests(@LayoutStyle int variation) {

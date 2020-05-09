@@ -224,9 +224,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mSplashController = component.resolveSplashController();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
 
-        mToolbarColorController.setUseTabThemeColor(true /* useTabThemeColor */);
-        mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
-
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
 
         return component;

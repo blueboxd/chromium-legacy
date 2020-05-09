@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">مراجعة</translation>
 <translation id="5073204694187207510">إخفاء شبكة ملء الشاشة</translation>
 <translation id="5082793167783849073">يُرجى مقارنة الصفحات بسرعة من خلال إنشاء مجموعة. للبدء، المس رابطًا مع الاستمرار.</translation>
+<translation id="5533021382642990449">العرض لاحقًا</translation>
 <translation id="5580090775658607195">تم دمج <ph name="TAB_COUNT" /> علامة تبويب.</translation>
 <translation id="58326064309361797">سحب علامات التبويب لتجميعها</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">رفض الاقتراحات</translation>
 <translation id="814503310257431685">عرض الكل</translation>
 <translation id="8205266828577616993">نقل علامة التبويب إلى الأعلى</translation>
+<translation id="8304833501377495048">هل تريد عدم عرض شريط علامات التبويب مرة أخرى؟</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{إغلاق علامة تبويب واحدة محدّدة (<ph name="TABS_COUNT_ONE" />)}zero{إغلاق <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة}two{إغلاق علامتَي تبويب محدّدتَين (<ph name="TABS_COUNT_MANY" />)}few{إغلاق <ph name="TABS_COUNT_MANY" /> علامات تبويب محدّدة}many{إغلاق <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة}other{إغلاق <ph name="TABS_COUNT_MANY" /> علامة تبويب محدّدة}}</translation>
+<translation id="8749939518995770034">شريط علامات التبويب مُغلق.</translation>
 <translation id="9150694013019234766">يمكنك التبديل بين علامات التبويب ضمن المجموعة بالقرب من أسفل الشاشة.</translation>
 <translation id="9169594135889675189">إضافة علامة تبويب جديدة للمجموعة</translation>
 <translation id="959682366969460160">بدء التنظيم</translation>

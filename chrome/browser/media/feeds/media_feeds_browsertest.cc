@@ -14,6 +14,8 @@
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/schema_org/schema_org_entity_names.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -40,8 +43,10 @@ const char kMediaFeedsTestURL[] = "/test";
 
 const char kMediaFeedsAltTestURL[] = "/alt";
 
-constexpr base::FilePath::CharType kMediaFeedsTestFileName[] =
-    FILE_PATH_LITERAL("chrome/test/data/media/feeds/media-feed.json");
+const char kMediaFeedsMinTestURL[] = "/min";
+
+constexpr base::FilePath::CharType kMediaFeedsTestDir[] =
+    FILE_PATH_LITERAL("chrome/test/data/media/feeds");
 
 const char kMediaFeedsTestHTML[] =
     "  <!DOCTYPE html>"
@@ -50,6 +55,10 @@ const char kMediaFeedsTestHTML[] =
 const char kMediaFeedsTestHeadHTML[] =
     "<link rel=feed type=\"application/ld+json\" "
     "href=\"/media-feed.json\"/>";
+
+const char kMediaFeedsMinTestHeadHTML[] =
+    "<link rel=feed type=\"application/ld+json\" "
+    "href=\"/media-feed-min.json\"/>";
 
 struct TestData {
   std::string head_html;
@@ -125,14 +134,14 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     return out;
   }
 
-  void DiscoverFeed() {
+  void DiscoverFeed(const std::string& url) {
     EXPECT_TRUE(GetDiscoveredFeedURLs().empty());
 
     MediaFeedsContentsObserver* contents_observer =
         static_cast<MediaFeedsContentsObserver*>(
             MediaFeedsContentsObserver::FromWebContents(GetWebContents()));
 
-    GURL test_url(GetServer()->GetURL(kMediaFeedsTestURL));
+    GURL test_url(GetServer()->GetURL(url));
 
     // The contents observer will call this closure when it has checked for a
     // media feed.
@@ -166,6 +175,24 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     return out;
   }
 
+  std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeedsSync(
+      const media_history::MediaHistoryKeyedService::GetMediaFeedsRequest&
+          request =
+              media_history::MediaHistoryKeyedService::GetMediaFeedsRequest()) {
+    base::RunLoop run_loop;
+    std::vector<media_feeds::mojom::MediaFeedPtr> out;
+
+    GetMediaHistoryService()->GetMediaFeeds(
+        request, base::BindLambdaForTesting(
+                     [&](std::vector<media_feeds::mojom::MediaFeedPtr> rows) {
+                       out = std::move(rows);
+                       run_loop.Quit();
+                     }));
+
+    run_loop.Run();
+    return out;
+  }
+
   content::WebContents* GetWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -189,23 +216,28 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
       response->set_content(
           base::StringPrintf(kMediaFeedsTestHTML, kMediaFeedsTestHeadHTML));
       return response;
-    } else if (base::EndsWith(request.relative_url, "json",
-                              base::CompareCase::SENSITIVE)) {
-      if (full_test_data_.empty())
-        LoadFullTestData();
+    } else if (request.relative_url == kMediaFeedsMinTestURL) {
       auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_content(full_test_data_);
+      response->set_content(
+          base::StringPrintf(kMediaFeedsTestHTML, kMediaFeedsMinTestHeadHTML));
       return response;
     } else if (request.relative_url == kMediaFeedsAltTestURL) {
       return std::make_unique<net::test_server::BasicHttpResponse>();
+    } else if (base::EndsWith(request.relative_url, "json",
+                              base::CompareCase::SENSITIVE)) {
+      if (full_test_data_.empty())
+        LoadFullTestData(request.relative_url.substr(1));
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_content(full_test_data_);
+      return response;
     }
     return nullptr;
   }
 
-  void LoadFullTestData() {
+  void LoadFullTestData(const std::string& file_name) {
     base::FilePath file;
     ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
-    file = file.Append(kMediaFeedsTestFileName);
+    file = file.Append(kMediaFeedsTestDir).AppendASCII(file_name.c_str());
 
     base::ReadFileToString(file, &full_test_data_);
     ASSERT_TRUE(full_test_data_.size());
@@ -219,7 +251,7 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
-  DiscoverFeed();
+  DiscoverFeed(kMediaFeedsTestURL);
 
   // Check we discovered the feed.
   std::set<GURL> expected_urls = {GetServer()->GetURL("/media-feed.json")};
@@ -249,8 +281,157 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
                          "Ask Chrome", "Big Buck Bunny"));
 }
 
+// Media feeds should successfully fetch and convert a minimal example feed
+// with all fields correctly populated.
+IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
+  DiscoverFeed(kMediaFeedsMinTestURL);
+
+  // Check we discovered the feed.
+  std::set<GURL> expected_urls = {GetServer()->GetURL("/media-feed-min.json")};
+  EXPECT_EQ(expected_urls, GetDiscoveredFeedURLs());
+
+  std::vector<media_feeds::mojom::MediaFeedPtr> discovered_feeds =
+      GetDiscoveredFeeds();
+  EXPECT_EQ(1u, discovered_feeds.size());
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+  WaitForDB();
+
+  auto feeds = GetMediaFeedsSync();
+
+  auto logo1 = mojom::MediaImage::New();
+  logo1->size = ::gfx::Size(1113, 245);
+  logo1->src = GURL(
+      "https://beccahughes.github.io/media/media-feeds/"
+      "chromium_logo_white.png");
+  logo1->content_attributes = {
+      mojom::ContentAttribute::kForDarkBackground,
+      mojom::ContentAttribute::kHasTitle,
+      mojom::ContentAttribute::kHasTransparentBackground};
+  auto logo2 = mojom::MediaImage::New();
+  logo2->size = ::gfx::Size(600, 315);
+  logo2->src =
+      GURL("https://beccahughes.github.io/media/media-feeds/chromium_card.png");
+  logo2->content_attributes = {mojom::ContentAttribute::kForLightBackground,
+                               mojom::ContentAttribute::kHasTitle,
+                               mojom::ContentAttribute::kCentered};
+
+  // First, check the feed metadata.
+  ASSERT_EQ(1u, feeds.size());
+  EXPECT_EQ("Chromium Developers", feeds[0]->display_name);
+  ASSERT_EQ(2u, feeds[0]->logos.size());
+  EXPECT_EQ(logo1, feeds[0]->logos[0]);
+  EXPECT_EQ(logo2, feeds[0]->logos[1]);
+
+  auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
+
+  EXPECT_EQ(3u, items.size());
+
+  // Check that we fetched, validated, and converted all the items, and that all
+  // the correct fields are set. Don't assume or require any specific ordering.
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name =
+        base::ASCIIToUTF16("Anatomy of a Web Media Experience");
+    expected_item->type = mojom::MediaFeedItemType::kVideo;
+    expected_item->author = mojom::Author::New();
+    expected_item->author->name = "Google Chrome Developers";
+    expected_item->author->url =
+        GURL("https://www.youtube.com/user/ChromeDevelopers");
+    ASSERT_TRUE(
+        base::Time::FromString("2019-05-09", &expected_item->date_published));
+    expected_item->duration =
+        base::TimeDelta::FromMinutes(34) + base::TimeDelta::FromSeconds(41);
+    expected_item->is_family_friendly = true;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=lXm6jOQLe1Y");
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/video1.webp");
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [](auto& item) {
+      return base::UTF16ToASCII(item->name) ==
+             "Anatomy of a Web Media Experience";
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("Chrome Releases");
+    expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+    ASSERT_TRUE(
+        base::Time::FromString("2019-11-10", &expected_item->date_published));
+    expected_item->is_family_friendly = true;
+
+    expected_item->tv_episode = mojom::TVEpisode::New();
+    expected_item->tv_episode->duration =
+        base::TimeDelta::FromMinutes(4) + base::TimeDelta::FromSeconds(16);
+    expected_item->tv_episode->episode_number = 79;
+    expected_item->tv_episode->season_number = 1;
+    expected_item->tv_episode->name = "New in Chrome 79";
+    auto episode_image = mojom::MediaImage::New();
+    episode_image->size = ::gfx::Size(1874, 970);
+    episode_image->src = GURL(
+        "https://beccahughes.github.io/media/media-feeds/chrome79_current.png");
+    expected_item->tv_episode->images.push_back(std::move(episode_image));
+
+    expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=L0OB0_bO5I0?t=254");
+    expected_item->action->start_time =
+        base::TimeDelta::FromMinutes(4) + base::TimeDelta::FromSeconds(14);
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chromerel.webp");
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [](auto& item) {
+      return base::UTF16ToASCII(item->name) == "Chrome Releases";
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("Big Buck Bunny");
+    expected_item->type = mojom::MediaFeedItemType::kMovie;
+    ASSERT_TRUE(
+        base::Time::FromString("2008-01-01", &expected_item->date_published));
+    expected_item->is_family_friendly = false;
+    expected_item->duration = base::TimeDelta::FromMinutes(12);
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url = GURL(
+        "https://mounirlamouri.github.io/sandbox/media/dynamic-controls.html");
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(1392, 749);
+    image->src = GURL(
+        "https://beccahughes.github.io/media/media-feeds/big_buck_bunny.jpg");
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [](auto& item) {
+      return base::UTF16ToASCII(item->name) == "Big Buck Bunny";
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, ResetMediaFeed_OnNavigation) {
-  DiscoverFeed();
+  DiscoverFeed(kMediaFeedsTestURL);
 
   {
     auto feeds = GetDiscoveredFeeds();
@@ -290,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, ResetMediaFeed_OnNavigation) {
 
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
                        ResetMediaFeed_OnNavigation_NeverFetched) {
-  DiscoverFeed();
+  DiscoverFeed(kMediaFeedsTestURL);
 
   ui_test_utils::NavigateToURL(
       browser(), GetServer()->GetURL("www.example.com", kMediaFeedsAltTestURL));
@@ -305,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
                        ResetMediaFeed_OnNavigation_WrongOrigin) {
-  DiscoverFeed();
+  DiscoverFeed(kMediaFeedsTestURL);
 
   ui_test_utils::NavigateToURL(
       browser(), GetServer()->GetURL("www.example.com", kMediaFeedsAltTestURL));
@@ -340,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
                        ResetMediaFeed_WebContentsDestroyed) {
-  DiscoverFeed();
+  DiscoverFeed(kMediaFeedsTestURL);
 
   {
     auto feeds = GetDiscoveredFeeds();
@@ -417,7 +598,7 @@ INSTANTIATE_TEST_SUITE_P(
 IN_PROC_BROWSER_TEST_P(MediaFeedsDiscoveryBrowserTest, Discover) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
-  DiscoverFeed();
+  DiscoverFeed(kMediaFeedsTestURL);
 
   // Check we discovered the feed.
   std::set<GURL> expected_urls;

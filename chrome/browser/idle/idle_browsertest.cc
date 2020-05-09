@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(IdleBrowserTest, Start) {
   // Test that statuses are updated after idleDetector.start().
   std::string script = R"(
     (async () => {
-        let idleDetector = new IdleDetector({threshold: 60000});
+        let idleDetector = new IdleDetector();
         let promise = new Promise(function(resolve) {
           let states = [];
           idleDetector.addEventListener('change', e => {

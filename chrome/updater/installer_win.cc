@@ -4,6 +4,7 @@
 
 #include "chrome/updater/installer.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -14,8 +15,11 @@
 
 namespace updater {
 
+// TODO(crbug.com/1014630): pick up installer progress, if possible, and
+// invoke the |progress_callback|.
 int Installer::RunApplicationInstaller(const base::FilePath& app_installer,
-                                       const std::string& arguments) {
+                                       const std::string& arguments,
+                                       ProgressCallback /*progress_callback*/) {
   base::LaunchOptions options;
   options.start_hidden = true;
   const auto cmdline =

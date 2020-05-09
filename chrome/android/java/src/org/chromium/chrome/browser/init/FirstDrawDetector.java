@@ -17,6 +17,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 public class FirstDrawDetector {
     View mView;
     Runnable mCallback;
+    private boolean mHasRunBefore;
 
     private FirstDrawDetector(View view, Runnable callback) {
         mView = view;
@@ -56,6 +57,8 @@ public class FirstDrawDetector {
         ViewTreeObserver.OnDrawListener firstDrawListener = new ViewTreeObserver.OnDrawListener() {
             @Override
             public void onDraw() {
+                if (mHasRunBefore) return;
+                mHasRunBefore = true;
                 // This callback will be run in the normal case (e.g., screen is on).
                 onFirstDraw();
                 // The draw listener can't be removed from within the callback, so remove it

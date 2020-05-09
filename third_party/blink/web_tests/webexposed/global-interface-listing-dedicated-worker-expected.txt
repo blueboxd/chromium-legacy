@@ -706,7 +706,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter state
 [Worker]     method constructor
 [Worker]     method start
-[Worker]     method stop
 [Worker]     setter onchange
 [Worker] interface IdleState
 [Worker]     attribute @@toStringTag

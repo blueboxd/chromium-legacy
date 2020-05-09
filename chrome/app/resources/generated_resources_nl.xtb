@@ -118,7 +118,6 @@
 <translation id="1147991416141538220">Neem contact op met de beheerder van dit apparaat om toegang te vragen.</translation>
 <translation id="1149401351239820326">Vervalmaand</translation>
 <translation id="1150565364351027703">Zonnebril</translation>
-<translation id="1151841030700667295">Je wordt uitgelogd bij alle sites, ook in geopende tabbladen.</translation>
 <translation id="1151917987301063366"><ph name="HOST" /> altijd toegang tot sensoren geven</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
 <translation id="1153636665119721804">Het Google-programma 'Geavanceerde beveiliging'</translation>
@@ -294,7 +293,6 @@
 <translation id="1390548061267426325">Openen als normaal tabblad</translation>
 <translation id="1392232653471491344">Linux moet opnieuw worden opgestart</translation>
 <translation id="1393283411312835250">Zon en wolken</translation>
-<translation id="1393787139683794508">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1395730723686586365">Updater gestart</translation>
 <translation id="1396139853388185343">Fout bij instellen van printer</translation>
 <translation id="1396259464226642517">Was dit resultaat onverwacht? <ph name="BEGIN_LINK" />Feedback sturen<ph name="END_LINK" /></translation>
@@ -856,7 +854,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2101225219012730419">Versie:</translation>
 <translation id="211144231511833662">Typen wissen</translation>
 <translation id="2111670510994270194">Nieuw tabblad aan de rechterkant</translation>
-<translation id="2112004299911874330">Hiermee wis je <ph name="TOTAL_USAGE" /> van de gegevens die zijn opgeslagen door sites.</translation>
 <translation id="21133533946938348">Tabblad vastzetten</translation>
 <translation id="2113479184312716848">Bestand &amp;openen...</translation>
 <translation id="2113921862428609753">Toegang tot CA-gegevens</translation>
@@ -2162,6 +2159,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3760460896538743390">&amp;Achtergrondpagina controleren</translation>
 <translation id="37613671848467444">Openen in &amp;incognitovenster</translation>
 <translation id="3761556954875533505">Toestaan dat site bestanden bewerkt?</translation>
+<translation id="3764314093345384080">Gedetailleerde build-gegevens</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communiceren met een USB-apparaat}other{Communiceren met # USB-apparaten}}</translation>
 <translation id="3765246971671567135">Kan beleid voor offline demomodus niet lezen.</translation>
 <translation id="3768037234834996183">Je voorkeuren worden gesynchroniseerd…</translation>
@@ -3484,7 +3482,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5546865291508181392">Zoek</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{<ph name="TAB_TITLE" />}=1{<ph name="TAB_TITLE" /> en 1 ander tabblad}other{<ph name="TAB_TITLE" /> en # andere tabbladen}}</translation>
 <translation id="5548606607480005320">Veiligheidscheck</translation>
-<translation id="5549467165017213645">Hiermee wis je <ph name="TOTAL_USAGE" /> van de gegevens die zijn opgeslagen door sites en geïnstalleerde apps.</translation>
 <translation id="5551573675707792127">Toetsenbord en tekstinvoer</translation>
 <translation id="5553089923092577885">Beleidstoewijzing voor certificaat</translation>
 <translation id="5554489410841842733">Dit pictogram wordt weergegeven wanneer de extensie een actie kan uitvoeren op de huidige pagina.</translation>
@@ -3628,6 +3625,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5734362860645681824">Communicatie</translation>
 <translation id="5734697361979786483">Fileshare toevoegen</translation>
 <translation id="5736796278325406685">Geef een geldige gebruikersnaam op</translation>
+<translation id="573759479754913123">Over Chrome OS</translation>
 <translation id="5739017626473506901">Log in om <ph name="USER_NAME" /> te helpen een schoolaccount toe te voegen</translation>
 <translation id="5739235828260127894">Wachten op verificatie. <ph name="LINK_BEGIN" />Meer informatie.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Zeer groot</translation>
@@ -4142,7 +4140,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="641081527798843608">Overeenkomst van onderwerp</translation>
 <translation id="6412673304250309937">Controleert URL's aan de hand van een lijst met onveilige sites die is opgeslagen in Chrome. Als een site je wachtwoord probeert te stelen of als je een schadelijk bestand downloadt, kan Chrome ook URL's, inclusief delen van de paginacontent, naar Safe Browsing sturen.</translation>
 <translation id="6412931879992742813">Nieuw incognitovenster</translation>
-<translation id="6413591858632097328">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="ORIGIN_NAME" /> en de bijbehorende geïnstalleerde apps.</translation>
 <translation id="641469293210305670">Updates en apps installeren</translation>
 <translation id="6414888972213066896">Je hebt je ouder of voogd gevraagd of je deze site mag bezoeken</translation>
 <translation id="6415659939354280526">Bron voor Ambient-modus kiezen</translation>
@@ -4191,7 +4188,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6467304607960172345">Video's op volledig scherm optimaliseren</translation>
 <translation id="6468485451923838994">Lettertypen</translation>
 <translation id="6472207088655375767">Eenmalig wachtwoord (OTP)</translation>
-<translation id="6472804939621540371">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="SITE_GROUP_NAME" />, eventuele onderliggende sites en de bijbehorende geïnstalleerde app.</translation>
 <translation id="6472893788822429178">Knop 'Homepage' weergeven</translation>
 <translation id="6473842110411557830">Powerwash-illustratie</translation>
 <translation id="6474498546677193336">Kan het delen niet opheffen omdat een app deze map gebruikt. Het delen van de map wordt opgeheven als Linux weer wordt uitgeschakeld.</translation>
@@ -4940,6 +4936,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7478485216301680444">Kiosk-app kan niet worden geïnstalleerd.</translation>
 <translation id="7479221278376295180">Gebruikersoverzicht van opslagruimte</translation>
 <translation id="7481312909269577407">Vooruit</translation>
+<translation id="7481358317100446445">Gereed</translation>
 <translation id="748138892655239008">Basisvereisten voor certificaten</translation>
 <translation id="7487067081878637334">Technologie</translation>
 <translation id="7487141338393529395">Verbeterde spellingcontrole inschakelen</translation>
@@ -5073,7 +5070,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7664620655576155379">Niet-ondersteund Bluetooth-apparaat: '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="7665082356120621510">Grootte reserveren</translation>
 <translation id="7665369617277396874">Account toevoegen</translation>
-<translation id="7665940458857700755">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="SITE_GROUP_NAME" /> en eventuele onderliggende sites.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Onjuiste pincode. Je hebt nog één poging over.}other{Onjuiste pincode. Je hebt nog # pogingen over.}}</translation>
 <translation id="7671130400130574146">Titelbalk en kaders van systeem gebruiken</translation>
 <translation id="767127784612208024">Tik hierop om het resetten te bevestigen</translation>
@@ -5198,6 +5194,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7817361223956157679">Het schermtoetsenbord werkt nog niet in Linux-apps</translation>
 <translation id="7818135753970109980">Nieuw thema toegevoegd (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA of RSN)</translation>
+<translation id="7819992334107904369">Chrome-synchronisatie</translation>
 <translation id="782057141565633384">Adres van video k&amp;opiëren</translation>
 <translation id="7824864914877854148">Back-up kan niet worden voltooid vanwege een fout</translation>
 <translation id="782590969421016895">Huidige pagina's gebruiken</translation>
@@ -5415,7 +5412,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8063235345342641131">Standaard groene avatar</translation>
 <translation id="8063535366119089408">Bestand bekijken</translation>
 <translation id="8068253693380742035">Tik om in te loggen</translation>
-<translation id="8068809649322155577">Hiermee wis je alle gegevens en cookies die zijn opgeslagen door <ph name="SITE_GROUP_NAME" />, eventuele onderliggende sites en de bijbehorende geïnstalleerde apps.</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>
 <translation id="8071432093239591881">Afdrukken als afbeelding</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />App-gegevens kunnen alle gegevens omvatten die een app heeft opgeslagen (op basis van de instellingen van de ontwikkelaar), waaronder gegevens zoals contacten, berichten en foto's.<ph name="END_PARAGRAPH1" />

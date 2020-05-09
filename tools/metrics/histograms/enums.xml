@@ -1668,6 +1668,23 @@ Unknown properties are collapsed to zero. -->
   <int value="257" label="GATT_FAILURE"/>
 </enum>
 
+<enum name="AndroidHomepagePromoAction">
+  <int value="0" label="Promo created">
+    The Android Homepage promo was created on the new tab page.
+  </int>
+  <int value="1" label="Promo shown">The Android homepage promo was shown.</int>
+  <int value="2" label="Promo dismissed">
+    User dismissed the homepage promo.
+  </int>
+  <int value="3" label="Promo accepted">
+    User changed their homepage by accepting the promo.
+  </int>
+  <int value="4" label="Promo change undo">
+    User changed their homepage by accepting the promo, but then undid the
+    change through snackbar.
+  </int>
+</enum>
+
 <enum name="AndroidIntentNonSafelistedHeaderNameHashes">
   <int value="4229679564" label="user-agent"/>
 </enum>
@@ -2674,6 +2691,7 @@ Unknown properties are collapsed to zero. -->
   <int value="31" label="Assistant"/>
   <int value="32" label="OS Settings"/>
   <int value="33" label="Plugin VM App"/>
+  <int value="34" label="LaCrOS"/>
 </enum>
 
 <enum name="AppListSearchResultDisplayType">
@@ -27241,6 +27259,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3282" label="RubyElementWithDisplayBlock"/>
   <int value="3283" label="LocationFragmentDirectiveAccessed"/>
   <int value="3284" label="CanvasRenderingContext"/>
+  <int value="3285" label="SchemefulSameSiteContextDowngrade"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38251,6 +38270,7 @@ from previous Chrome versions.
   <int value="-1907342706" label="ReadItLaterInMenu:disabled"/>
   <int value="-1903365454" label="SyncPseudoUSSPreferences:disabled"/>
   <int value="-1899715534" label="GamepadPollingInterval:enabled"/>
+  <int value="-1899652563" label="ReportFeedUserActions:enabled"/>
   <int value="-1899409297"
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
@@ -41046,6 +41066,7 @@ from previous Chrome versions.
   <int value="1308537004" label="force-pnacl-subzero"/>
   <int value="1311860720" label="ChromeHomeNtpRedesign:disabled"/>
   <int value="1312025202" label="NTPOfflinePageSuggestions:disabled"/>
+  <int value="1313476409" label="ReportFeedUserActions:disabled"/>
   <int value="1313570156"
       label="HappinessTrackingSurveysForDesktopMigration:enabled"/>
   <int value="1313850691" label="Metal:disabled"/>
@@ -58681,6 +58702,37 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="Laxly same-site secure site-for-cookies to insecure request"/>
   <int value="67"
       label="Strictly same-site secure site-for-cookies to insecure request"/>
+</enum>
+
+<enum name="SameSiteCookieContextBreakingDowngradeWithSecureness">
+  <summary>
+    Used to track the type of same-site context downgrade as well as the
+    secureness of the origin that caused it.
+
+    &quot;No breaking downgrade&quot; is a catch-all bucket for any cases which
+    don't fit into the other buckets.
+  </summary>
+  <int value="0" label="No breaking downgrade; insecure origin"/>
+  <int value="1" label="No breaking downgrade; secure origin"/>
+  <int value="2"
+      label="Strict to Lax context with Strict cookie; insecure origin."/>
+  <int value="3"
+      label="Strict to Cross context with Strict cookie; insecure origin."/>
+  <int value="4"
+      label="Strict to Cross context with Lax cookie; insecure origin."/>
+  <int value="5"
+      label="Lax to Cross context with Strict cookie; insecure origin."/>
+  <int value="6"
+      label="Lax to Cross context with Lax cookie; insecure origin."/>
+  <int value="7"
+      label="Strict to Lax context with Strict cookie; secure origin."/>
+  <int value="8"
+      label="Strict to Cross context with Strict cookie; secure origin."/>
+  <int value="9"
+      label="Strict to Cross context with Lax cookie; secure origin."/>
+  <int value="10"
+      label="Lax to Cross context with Strict cookie; secure origin."/>
+  <int value="11" label="Lax to Cross context with Lax cookie; secure origin."/>
 </enum>
 
 <enum name="SamlChallengeKeyHandlerResult">

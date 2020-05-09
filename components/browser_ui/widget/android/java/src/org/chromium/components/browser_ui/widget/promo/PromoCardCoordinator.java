@@ -80,6 +80,15 @@ public class PromoCardCoordinator {
     }
 
     /**
+     * @return The key view that will be tracking with impression tracker. Currently this returns
+     *         the primary button in the promo view.
+     * TODO(wenyufu): Remove me when ImpressionTracker is moved to //component!
+     */
+    public View getKeyViewForImpressionTracking() {
+        return mPromoCardView.mPrimaryButton;
+    }
+
+    /**
      * @return Name of the feature this promo is representing.
      */
     public String getFeatureName() {

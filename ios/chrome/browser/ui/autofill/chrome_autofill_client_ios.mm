@@ -56,11 +56,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace autofill {
+
 namespace {
 
 // Creates and returns an infobar for saving credit cards.
 std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
-    std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate) {
+    std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate) {
   if (IsSaveCardInfobarMessagesUIEnabled()) {
     InfobarSaveCardCoordinator* coordinator =
         [[InfobarSaveCardCoordinator alloc]
@@ -73,16 +75,14 @@ std::unique_ptr<infobars::InfoBar> CreateSaveCardInfoBarMobile(
   }
 }
 
-autofill::CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
-    autofill::CardUnmaskPromptControllerImpl* unmask_controller,
+CardUnmaskPromptView* CreateCardUnmaskPromptViewBridge(
+    CardUnmaskPromptControllerImpl* unmask_controller,
     UIViewController* base_view_controller) {
-  return new autofill::CardUnmaskPromptViewBridge(unmask_controller,
-                                                  base_view_controller);
+  return new CardUnmaskPromptViewBridge(unmask_controller,
+                                        base_view_controller);
 }
 
 }  // namespace
-
-namespace autofill {
 
 ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     ChromeBrowserState* browser_state,
@@ -121,7 +121,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       // renderer that indicates if log messages should be sent from the
       // renderer.
       log_manager_(LogManager::Create(
-          autofill::AutofillLogRouterFactory::GetForBrowserState(browser_state),
+          AutofillLogRouterFactory::GetForBrowserState(browser_state),
           base::Closure())) {}
 
 ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
@@ -233,27 +233,6 @@ void ChromeAutofillClientIOS::OnUnmaskVerificationResult(
   unmask_controller_.OnVerificationResult(result);
 }
 
-void ChromeAutofillClientIOS::ShowLocalCardMigrationDialog(
-    base::OnceClosure show_migration_dialog_closure) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ConfirmMigrateLocalCardToCloud(
-    const LegalMessageLines& legal_message_lines,
-    const std::string& user_email,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    LocalCardMigrationCallback start_migrating_cards_callback) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeAutofillClientIOS::ShowLocalCardMigrationResults(
-    const bool has_server_error,
-    const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    MigrationDeleteCardCallback delete_local_card_callback) {
-  NOTIMPLEMENTED();
-}
-
 void ChromeAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     SaveCreditCardOptions options,
@@ -276,10 +255,10 @@ void ChromeAutofillClientIOS::ConfirmAccountNameFixFlow(
                            : base::string16();
 
   card_name_fix_flow_controller_.Show(
-      // autofill::CardNameFixFlowViewBridge manages its own lifetime, so
+      // CardNameFixFlowViewBridge manages its own lifetime, so
       // do not use std::unique_ptr<> here.
-      new autofill::CardNameFixFlowViewBridge(&card_name_fix_flow_controller_,
-                                              base_view_controller_),
+      new CardNameFixFlowViewBridge(&card_name_fix_flow_controller_,
+                                    base_view_controller_),
       account_name, std::move(callback));
 }
 
@@ -288,9 +267,9 @@ void ChromeAutofillClientIOS::ConfirmExpirationDateFixFlow(
     base::OnceCallback<void(const base::string16&, const base::string16&)>
         callback) {
   card_expiration_date_fix_flow_controller_.Show(
-      // autofill::CardExpirationDateFixFlowViewBridge manages its own lifetime,
+      // CardExpirationDateFixFlowViewBridge manages its own lifetime,
       // so do not use std::unique_ptr<> here.
-      new autofill::CardExpirationDateFixFlowViewBridge(
+      new CardExpirationDateFixFlowViewBridge(
           &card_expiration_date_fix_flow_controller_, base_view_controller_),
       card, std::move(callback));
 }
@@ -354,10 +333,10 @@ void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
   NOTREACHED();
 }
 
-base::span<const autofill::Suggestion>
-ChromeAutofillClientIOS::GetPopupSuggestions() const {
+base::span<const Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions()
+    const {
   NOTIMPLEMENTED();
-  return base::span<const autofill::Suggestion>();
+  return base::span<const Suggestion>();
 }
 
 void ChromeAutofillClientIOS::PinPopupView() {
@@ -365,8 +344,8 @@ void ChromeAutofillClientIOS::PinPopupView() {
 }
 
 void ChromeAutofillClientIOS::UpdatePopup(
-    const std::vector<autofill::Suggestion>& suggestions,
-    autofill::PopupType popup_type) {
+    const std::vector<Suggestion>& suggestions,
+    PopupType popup_type) {
   NOTIMPLEMENTED();
 }
 

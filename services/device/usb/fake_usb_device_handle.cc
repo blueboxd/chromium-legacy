@@ -57,7 +57,9 @@ void FakeUsbDeviceHandle::ResetDevice(ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 
-void FakeUsbDeviceHandle::ClearHalt(uint8_t endpoint, ResultCallback callback) {
+void FakeUsbDeviceHandle::ClearHalt(mojom::UsbTransferDirection direction,
+                                    uint8_t endpoint_number,
+                                    ResultCallback callback) {
   NOTIMPLEMENTED();
 }
 

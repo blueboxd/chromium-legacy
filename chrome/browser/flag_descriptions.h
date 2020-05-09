@@ -1540,6 +1540,9 @@ extern const char kRecoverFromNeverSaveAndroidDescription[];
 extern const char kRelatedSearchesName[];
 extern const char kRelatedSearchesDescription[];
 
+extern const char kReportFeedUserActionsName[];
+extern const char kReportFeedUserActionsDescription[];
+
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
 

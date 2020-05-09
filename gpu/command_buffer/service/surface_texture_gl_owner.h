@@ -24,7 +24,7 @@ namespace gpu {
 // frames. Media frames can update the attached surface handle with image data.
 // This class helps to update the attached texture using that image data
 // present in the surface.
-class GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
+class GPU_GLES2_EXPORT SurfaceTextureGLOwner : public TextureOwner {
  public:
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
@@ -38,15 +38,24 @@ class GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
   gfx::Rect GetCropRect() override;
+  void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+                                  gfx::Size* coded_size,
+                                  gfx::Rect* visible_rect) override;
 
  protected:
   void OnTextureDestroyed(gles2::AbstractTexture*) override;
 
  private:
   friend class TextureOwner;
+  friend class SurfaceTextureTransformTest;
 
   SurfaceTextureGLOwner(std::unique_ptr<gles2::AbstractTexture> texture);
   ~SurfaceTextureGLOwner() override;
+
+  static void DecomposeTransform(float matrix[16],
+                                 gfx::Size rotated_visible_size,
+                                 gfx::Size* coded_size,
+                                 gfx::Rect* visible_rect);
 
   scoped_refptr<gl::SurfaceTexture> surface_texture_;
 

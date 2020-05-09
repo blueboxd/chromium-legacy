@@ -84,8 +84,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         TabModelSelector tabModelSelector = activity.getTabModelSelector();
         TabContentManager tabContentManager = activity.getTabContentManager();
 
+        boolean actionOnAllRelatedTabs = TabUiFeatureUtilities.isConditionalTabStripEnabled();
         mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
-                mContext, tabModelSelector, null, null, false, null, null,
+                mContext, tabModelSelector, null, null, actionOnAllRelatedTabs, null, null,
                 TabProperties.UiType.STRIP, null, mTabListContainerView, true, COMPONENT_NAME);
         mTabStripCoordinator.initWithNative(
                 mActivity.getCompositorViewHolder().getDynamicResourceLoader());
@@ -97,20 +98,28 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
 
         // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
         //  and the dialog here.
-        mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
-                tabContentManager, activity, activity.getCompositorViewHolder(), null, null, null,
-                mActivity.getShareDelegateSupplier());
-        mTabGridDialogCoordinator.initWithNative(mContext, tabModelSelector, tabContentManager,
-                mTabStripCoordinator.getTabGroupTitleEditor());
+        TabGridDialogMediator.DialogController dialogController = null;
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+            mTabGridDialogCoordinator = new TabGridDialogCoordinator(mContext, tabModelSelector,
+                    tabContentManager, activity, activity.getCompositorViewHolder(), null, null,
+                    null, mActivity.getShareDelegateSupplier());
+            mTabGridDialogCoordinator.initWithNative(mContext, tabModelSelector, tabContentManager,
+                    mTabStripCoordinator.getTabGroupTitleEditor());
+            dialogController = mTabGridDialogCoordinator.getDialogController();
+        }
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mModel, tabModelSelector,
                 activity, ((ChromeTabbedActivity) activity).getOverviewModeBehavior(),
-                mThemeColorProvider, mTabGridDialogCoordinator.getDialogController());
+                mThemeColorProvider, dialogController);
+
+        TabGroupUtils.startObservingForCreationIPH();
+
+        // TODO(yuezhanggg@): Add UMA for conditional tab strip.
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) return;
 
         mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();
         mActivityLifecycleDispatcher.register(this);
 
-        TabGroupUtils.startObservingForCreationIPH();
 
         // Record the group count after all tabs are being restored. This only happen once per life
         // cycle, therefore remove the observer after recording. We only focus on normal tab model
@@ -171,7 +180,9 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         }
         mModelChangeProcessor.destroy();
         mMediator.destroy();
-        mActivityLifecycleDispatcher.unregister(this);
+        if (mActivityLifecycleDispatcher != null) {
+            mActivityLifecycleDispatcher.unregister(this);
+        }
     }
 
     // PauseResumeWithNativeObserver implementation.

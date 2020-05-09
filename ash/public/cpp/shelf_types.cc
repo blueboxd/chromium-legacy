@@ -18,15 +18,13 @@ constexpr char kDelimiter[] = "|";
 
 bool IsValidShelfItemType(int64_t type) {
   return type == TYPE_PINNED_APP || type == TYPE_BROWSER_SHORTCUT ||
-         type == TYPE_LACROS_BROWSER || type == TYPE_APP ||
-         type == TYPE_DIALOG || type == TYPE_UNDEFINED;
+         type == TYPE_APP || type == TYPE_DIALOG || type == TYPE_UNDEFINED;
 }
 
 bool IsPinnedShelfItemType(ShelfItemType type) {
   switch (type) {
     case TYPE_PINNED_APP:
     case TYPE_BROWSER_SHORTCUT:
-    case TYPE_LACROS_BROWSER:
       return true;
     case TYPE_APP:
     case TYPE_DIALOG:

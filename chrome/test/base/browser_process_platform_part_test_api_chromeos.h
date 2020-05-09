@@ -8,12 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/component_updater/cros_component_manager.h"
 
 class BrowserProcessPlatformPart;
-
-namespace component_updater {
-class CrOSComponentManager;
-}
 
 // Used to override parts of BrowserProcessPlatformParts in tests.
 class BrowserProcessPlatformPartTestApi {
@@ -25,7 +22,7 @@ class BrowserProcessPlatformPartTestApi {
   // Initializes cros component manager for tests. Expects that cros component
   // manager has not previously been initialized.
   void InitializeCrosComponentManager(
-      std::unique_ptr<component_updater::CrOSComponentManager>
+      scoped_refptr<component_updater::CrOSComponentManager>
           cros_component_manager);
 
   // Shuts down the cros component manager set by

@@ -184,10 +184,6 @@ jumbo_static_library("browser") {
     "payments/full_card_request.h",
     "payments/legal_message_line.cc",
     "payments/legal_message_line.h",
-    "payments/local_card_migration_manager.cc",
-    "payments/local_card_migration_manager.h",
-    "payments/local_card_migration_strike_database.cc",
-    "payments/local_card_migration_strike_database.h",
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_customer_data.h",
@@ -313,13 +309,6 @@ jumbo_static_library("browser") {
     ]
   }
 
-  if (!is_android) {
-    sources += [
-      "ui/payments/local_card_migration_bubble_controller.h",
-      "ui/payments/local_card_migration_dialog_controller.h",
-    ]
-  }
-
   if (!is_ios) {
     sources += [
       "autofill_policy_handler.cc",
@@ -395,8 +384,14 @@ jumbo_static_library("browser") {
 
   if (!is_android && !is_ios) {
     sources += [
+      "payments/local_card_migration_manager.cc",
+      "payments/local_card_migration_manager.h",
+      "payments/local_card_migration_strike_database.cc",
+      "payments/local_card_migration_strike_database.h",
       "payments/upi_vpa_save_manager.cc",
       "payments/upi_vpa_save_manager.h",
+      "ui/payments/local_card_migration_bubble_controller.h",
+      "ui/payments/local_card_migration_dialog_controller.h",
     ]
     deps += [
       "//ui/native_theme",
@@ -427,8 +422,6 @@ jumbo_static_library("test_support") {
     "payments/test_credit_card_save_strike_database.cc",
     "payments/test_credit_card_save_strike_database.h",
     "payments/test_legal_message_line.h",
-    "payments/test_local_card_migration_manager.cc",
-    "payments/test_local_card_migration_manager.h",
     "payments/test_payments_client.cc",
     "payments/test_payments_client.h",
     "payments/test_strike_database.cc",
@@ -512,6 +505,13 @@ jumbo_static_library("test_support") {
 
     deps += [ "//third_party/blink/public/common" ]
   }
+
+  if (!is_ios && !is_android) {
+    sources += [
+      "payments/test_local_card_migration_manager.cc",
+      "payments/test_local_card_migration_manager.h",
+    ]
+  }
 }
 
 bundle_data("unit_tests_bundle_data") {
@@ -590,7 +590,6 @@ source_set("unit_tests") {
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
     "payments/legal_message_line_unittest.cc",
-    "payments/local_card_migration_manager_unittest.cc",
     "payments/payments_client_unittest.cc",
     "payments/payments_service_url_unittest.cc",
     "payments/payments_util_unittest.cc",
@@ -634,6 +633,7 @@ source_set("unit_tests") {
 
   if (!is_ios && !is_android) {
     sources += [
+      "payments/local_card_migration_manager_unittest.cc",
       "ui/address_contact_form_label_formatter_unittest.cc",
       "ui/address_email_form_label_formatter_unittest.cc",
       "ui/address_form_label_formatter_unittest.cc",

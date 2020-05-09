@@ -78,8 +78,8 @@ class PluginVmManagerImpl
   // abstraction around starting the services in the future but this is
   // sufficient for now.
   void InstallPluginVmDlc();
-  void OnInstallPluginVmDlc(const std::string& err,
-                            const dlcservice::DlcModuleList& dlc_module_list);
+  void OnInstallPluginVmDlc(
+      const chromeos::DlcserviceClient::InstallResult& install_result);
   void OnListVmsForLaunch(bool default_vm_exists);
   void StartVm();
   void OnStartVm(

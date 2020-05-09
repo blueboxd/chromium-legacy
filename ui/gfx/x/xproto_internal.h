@@ -30,6 +30,19 @@ class Future;
 
 using WriteBuffer = std::vector<uint8_t>;
 
+template <typename T, typename Enable = void>
+struct EnumBase {
+  using type = T;
+};
+
+template <typename T>
+struct EnumBase<T, typename std::enable_if_t<std::is_enum<T>::value>> {
+  using type = typename std::underlying_type<T>::type;
+};
+
+template <typename T>
+using EnumBaseType = typename EnumBase<T>::type;
+
 struct ReadBuffer {
   const uint8_t* data = nullptr;
   size_t offset = 0;
@@ -111,7 +124,7 @@ Future<Reply> SendRequest(XDisplay* display, WriteBuffer* buf) {
 // number of 1 bits present.
 template <typename T>
 size_t PopCount(T t) {
-  return std::bitset<sizeof(T) * 8>(t).count();
+  return std::bitset<sizeof(T) * 8>(static_cast<EnumBaseType<T>>(t)).count();
 }
 
 // Helper function for xcbproto sumof.  Given a function |f| and a container
@@ -130,11 +143,17 @@ bool CaseEq(T t, S s) {
   return t == static_cast<decltype(t)>(s);
 }
 
-// Helper function for xcbproto bitcase.  Checks if the bitmasks |t| and |s|
-// have any intersection.
+// Helper function for xcbproto bitcase and & expressions.  Checks if the
+// bitmasks |t| and |s| have any intersection.
 template <typename T, typename S>
-bool CaseAnd(T t, S s) {
-  return t & static_cast<decltype(t)>(s);
+bool BitAnd(T t, S s) {
+  return static_cast<EnumBaseType<T>>(t) & static_cast<EnumBaseType<T>>(s);
+}
+
+// Helper function for ~ expressions.
+template <typename T>
+bool BitNot(T t) {
+  return ~static_cast<EnumBaseType<T>>(t);
 }
 
 }  // namespace x11

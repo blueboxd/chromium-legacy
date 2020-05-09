@@ -134,6 +134,18 @@ cr.define('cr.translateInternals', function() {
   }
 
   /**
+   * @return {TrustedHTML|string} Empty TrustedHTML or empty string based on
+   * Trusted Types support.
+   */
+  function emptyHTML() {
+    if (window.trustedTypes) {
+      return trustedTypes.emptyHTML;
+    } else {
+      return '';
+    }
+  }
+
+  /**
    * Handles the message of 'prefsUpdated' from the browser.
    *
    * @param {Object} detail the object which represents pref values.
@@ -142,7 +154,7 @@ cr.define('cr.translateInternals', function() {
     let ul;
 
     ul = document.querySelector('#prefs-blocked-languages ul');
-    ul.innerHTML = '';
+    ul.innerHTML = emptyHTML();
 
     if ('translate_blocked_languages' in detail) {
       const langs = detail['translate_blocked_languages'];
@@ -158,7 +170,7 @@ cr.define('cr.translateInternals', function() {
     }
 
     ul = document.querySelector('#prefs-language-blacklist ul');
-    ul.innerHTML = '';
+    ul.innerHTML = emptyHTML();
 
     if ('translate_language_blacklist' in detail) {
       const langs = detail['translate_language_blacklist'];
@@ -174,7 +186,7 @@ cr.define('cr.translateInternals', function() {
     }
 
     ul = document.querySelector('#prefs-site-blacklist ul');
-    ul.innerHTML = '';
+    ul.innerHTML = emptyHTML();
 
     if ('translate_site_blacklist' in detail) {
       const sites = detail['translate_site_blacklist'];
@@ -188,7 +200,7 @@ cr.define('cr.translateInternals', function() {
     }
 
     ul = document.querySelector('#prefs-whitelists ul');
-    ul.innerHTML = '';
+    ul.innerHTML = emptyHTML();
 
     if ('translate_whitelists' in detail) {
       const pairs = detail['translate_whitelists'];
@@ -217,7 +229,7 @@ cr.define('cr.translateInternals', function() {
 
       p = $('recent-override');
 
-      p.innerHTML = '';
+      p.innerHTML = emptyHTML();
 
       appendTextFieldWithButton(p, recentTarget, function(value) {
         chrome.send('setRecentTargetLanguage', [value]);
@@ -241,7 +253,7 @@ cr.define('cr.translateInternals', function() {
     span.textContent = formatDate(new Date(details['last_updated']));
 
     const ul = $('prefs-supported-languages-languages');
-    ul.innerHTML = '';
+    ul.innerHTML = emptyHTML();
     const languages = details['languages'];
     for (let i = 0; i < languages.length; i++) {
       const language = languages[i];
@@ -263,7 +275,7 @@ cr.define('cr.translateInternals', function() {
   function onCountryUpdated(details) {
     const p = $('country-override');
 
-    p.innerHTML = '';
+    p.innerHTML = emptyHTML();
 
     if ('country' in details) {
       const country = details['country'];

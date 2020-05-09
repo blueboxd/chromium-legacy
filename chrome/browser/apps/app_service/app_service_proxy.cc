@@ -24,9 +24,11 @@
 #include "url/url_constants.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/apps/app_service/lacros_apps.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -143,6 +145,9 @@ void AppServiceProxy::Initialize() {
         app_service_, profile_, apps::mojom::AppType::kExtension,
         &instance_registry_);
     plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
+    if (chromeos::features::IsLacrosSupportEnabled()) {
+      lacros_apps_ = std::make_unique<LacrosApps>(app_service_);
+    }
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
       web_apps_ = std::make_unique<WebAppsChromeOs>(app_service_, profile_,
                                                     &instance_registry_);
@@ -391,6 +396,9 @@ void AppServiceProxy::FlushMojoCallsForTesting() {
   crostini_apps_->FlushMojoCallsForTesting();
   extension_apps_->FlushMojoCallsForTesting();
   plugin_vm_apps_->FlushMojoCallsForTesting();
+  if (lacros_apps_) {
+    lacros_apps_->FlushMojoCallsForTesting();
+  }
   if (web_apps_) {
     web_apps_->FlushMojoCallsForTesting();
   } else {

@@ -20,6 +20,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
@@ -42,7 +43,7 @@ public class FeedStreamSurfaceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(null, () -> null);
+        mFeedStreamSurface = new FeedStreamSurface(null, () -> new MockTab(0, false));
     }
 
     @Test

@@ -1643,8 +1643,6 @@ jumbo_static_library("ui") {
       "ash/launcher/extension_shelf_context_menu.h",
       "ash/launcher/extension_uninstaller.cc",
       "ash/launcher/extension_uninstaller.h",
-      "ash/launcher/lacros_browser_shelf_item_delegate.cc",
-      "ash/launcher/lacros_browser_shelf_item_delegate.h",
       "ash/launcher/launcher_app_updater.cc",
       "ash/launcher/launcher_app_updater.h",
       "ash/launcher/launcher_controller_helper.cc",
@@ -2178,6 +2176,7 @@ jumbo_static_library("ui") {
       "//chromeos/services/assistant/public/cpp",
       "//chromeos/services/assistant/public/mojom",
       "//chromeos/services/assistant/public/proto",
+      "//chromeos/services/assistant/public/shared",
       "//chromeos/services/cellular_setup",
       "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/machine_learning/public/cpp",
@@ -2222,10 +2221,6 @@ jumbo_static_library("ui") {
 
     if (use_cras) {
       defines += [ "USE_CRAS" ]
-    }
-
-    if (enable_cros_libassistant) {
-      deps += [ "//chromeos/assistant/internal" ]
     }
   }
 
@@ -3529,6 +3524,8 @@ jumbo_static_library("ui") {
       "views/webauthn/ring_progress_bar.h",
       "views/webauthn/sheet_view_factory.cc",
       "views/webauthn/sheet_view_factory.h",
+      "views/webauthn/webauthn_hover_button.cc",
+      "views/webauthn/webauthn_hover_button.h",
       "webauthn/account_hover_list_model.cc",
       "webauthn/account_hover_list_model.h",
       "webauthn/authenticator_request_sheet_model.cc",
@@ -4147,6 +4144,7 @@ jumbo_static_library("ui") {
       "extensions/installation_error_infobar_delegate.h",
       "extensions/settings_api_bubble_helpers.cc",
       "extensions/settings_api_bubble_helpers.h",
+      "extensions/settings_overridden_dialog_controller.h",
       "views/extensions/browser_action_drag_data.cc",
       "views/extensions/browser_action_drag_data.h",
       "views/extensions/extension_action_platform_delegate_views.cc",
@@ -4163,6 +4161,8 @@ jumbo_static_library("ui") {
       "views/extensions/media_galleries_dialog_views.h",
       "views/extensions/media_gallery_checkbox_view.cc",
       "views/extensions/media_gallery_checkbox_view.h",
+      "views/extensions/settings_overridden_dialog_view.cc",
+      "views/extensions/settings_overridden_dialog_view.h",
       "web_applications/app_browser_controller.cc",
       "web_applications/app_browser_controller.h",
       "web_applications/system_web_app_ui_utils.cc",
@@ -4244,6 +4244,8 @@ jumbo_static_library("ui") {
       "webui/print_preview/policy_settings.h",
       "webui/print_preview/print_preview_handler.cc",
       "webui/print_preview/print_preview_handler.h",
+      "webui/print_preview/print_preview_metrics.cc",
+      "webui/print_preview/print_preview_metrics.h",
       "webui/print_preview/print_preview_ui.cc",
       "webui/print_preview/print_preview_ui.h",
       "webui/print_preview/print_preview_utils.cc",

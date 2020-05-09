@@ -96,6 +96,17 @@ class GPU_GLES2_EXPORT TextureOwner
   // crop rectangle specifies the region of valid pixels in the image.
   virtual gfx::Rect GetCropRect() = 0;
 
+  // Retrieves backing size and visible rect associated with the most recent
+  // image. |rotated_visible_size| is the size of the visible region
+  // post-transform in pixels and is used for SurfaceTexture case. Transform
+  // here means transform that we get from SurfaceTexture. For MediaPlayer we
+  // expect to have rotation and MediaPlayer reports rotated size. For
+  // MediaCodec we don't expect rotation in ST so visible_size (i.e crop rect
+  // from codec) can be used.
+  virtual void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+                                          gfx::Size* coded_size,
+                                          gfx::Rect* visible_rect) = 0;
+
   // Set the callback function to run when a new frame is available.
   // |frame_available_cb| is thread safe and can be called on any thread. This
   // method should be called only once, i.e., once a callback is provided, it

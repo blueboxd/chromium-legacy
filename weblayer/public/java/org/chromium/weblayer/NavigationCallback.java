@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
  * 2) 0 or more navigationRedirected()
  * 3) 0 or 1 readyToCommitNavigation()
  * 4) navigationCompleted() or navigationFailed()
- * 5) onFirstContentfulPaint
+ * 5) onFirstContentfulPaint().
  */
 public abstract class NavigationCallback {
     /**
@@ -109,7 +109,7 @@ public abstract class NavigationCallback {
 
     /**
      * This is fired after each navigation has completed to indicate that the first paint after a
-     * non-empty layout has finished.
+     * non-empty layout has finished. This is *not* called for same-document navigations.
      */
     public void onFirstContentfulPaint() {}
 }

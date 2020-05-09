@@ -38,6 +38,8 @@ class PasswordSaveUpdateWithAccountStoreView
   }
 
  private:
+  class BubbleExpansionObserver;
+
   ~PasswordSaveUpdateWithAccountStoreView() override;
 
   // PasswordBubbleViewBase
@@ -69,8 +71,14 @@ class PasswordSaveUpdateWithAccountStoreView
 
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
-  void UpdateDialogButtons();
+  void UpdateDialogButtonsAndAccountPickerVisiblity();
   std::unique_ptr<views::View> CreateFooterView();
+
+  // Starts animating the bubble to expand or contract it.
+  void StartResizing();
+  // Called when the expansion animation is finished. When the bubble it fully
+  // expanded, the account picker is shown.
+  void OnBubbleExpansionFinished();
 
   SaveUpdateWithAccountStoreBubbleController controller_;
 
@@ -85,6 +93,13 @@ class PasswordSaveUpdateWithAccountStoreView
 
   // The view for the password value.
   views::EditableCombobox* password_dropdown_;
+
+  // The height of widget layer when the account picker is visible.
+  int expanded_bubble_height_ = -1;
+
+  // Observers the animation of the bubbling during expansion and makes sure the
+  // OnBubbleExpansionFinished() is called when the bubble is fully expanded.
+  std::unique_ptr<BubbleExpansionObserver> expansion_observer_;
 
   bool are_passwords_revealed_;
 };

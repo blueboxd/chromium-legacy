@@ -23,6 +23,7 @@
 
 namespace blink {
 
+class AbortSignal;
 class ExceptionState;
 
 class IdleDetector final : public EventTargetWithInlineData,
@@ -33,12 +34,9 @@ class IdleDetector final : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static IdleDetector* Create(ScriptState*,
-                              const IdleOptions*,
-                              ExceptionState&);
-  static IdleDetector* Create(ScriptState*, ExceptionState&);
+  static IdleDetector* Create(ScriptState*);
 
-  IdleDetector(ExecutionContext*, base::TimeDelta threshold);
+  explicit IdleDetector(ExecutionContext*);
   ~IdleDetector() override;
 
   IdleDetector(const IdleDetector&) = delete;
@@ -52,8 +50,7 @@ class IdleDetector final : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // IdleDetector IDL interface.
-  ScriptPromise start(ScriptState*, ExceptionState&);
-  void stop();
+  ScriptPromise start(ScriptState*, const IdleOptions*, ExceptionState&);
   blink::IdleState* state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
@@ -64,15 +61,17 @@ class IdleDetector final : public EventTargetWithInlineData,
   // causes an event to be dispatched.
   void Update(mojom::blink::IdleStatePtr state) override;
 
-  void StartMonitoring(ScriptPromiseResolver* resolver);
-
+  void Abort(AbortSignal*);
+  void OnServiceDisconnected();
   void OnAddMonitor(ScriptPromiseResolver*,
                     mojom::blink::IdleManagerError,
                     mojom::blink::IdleStatePtr);
 
   Member<blink::IdleState> state_;
 
-  const base::TimeDelta threshold_;
+  base::TimeDelta threshold_ = base::TimeDelta::FromSeconds(60);
+  Member<AbortSignal> signal_;
+  Member<ScriptPromiseResolver> resolver_;
 
   // Holds a pipe which the service uses to notify this object
   // when the idle state has changed.

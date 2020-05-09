@@ -55,15 +55,15 @@ DialogDelegate* WidgetDelegate::AsDialogDelegate() {
 }
 
 bool WidgetDelegate::CanResize() const {
-  return false;
+  return params_.can_resize;
 }
 
 bool WidgetDelegate::CanMaximize() const {
-  return false;
+  return params_.can_maximize;
 }
 
 bool WidgetDelegate::CanMinimize() const {
-  return false;
+  return params_.can_minimize;
 }
 
 bool WidgetDelegate::CanActivate() const {
@@ -204,6 +204,18 @@ bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
   return true;
+}
+
+void WidgetDelegate::SetCanMaximize(bool can_maximize) {
+  params_.can_maximize = can_maximize;
+}
+
+void WidgetDelegate::SetCanMinimize(bool can_minimize) {
+  params_.can_minimize = can_minimize;
+}
+
+void WidgetDelegate::SetCanResize(bool can_resize) {
+  params_.can_resize = can_resize;
 }
 
 void WidgetDelegate::SetFocusTraversesOut(bool focus_traverses_out) {

@@ -30,6 +30,8 @@
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -266,6 +268,22 @@ std::string GetSignedInEmail(Profile* profile) {
 
 }  // namespace
 
+// // The class notifies the bubble when it is expanded completely.
+class PasswordSaveUpdateWithAccountStoreView::BubbleExpansionObserver
+    : public ui::ImplicitAnimationObserver {
+ public:
+  explicit BubbleExpansionObserver(
+      PasswordSaveUpdateWithAccountStoreView* bubble)
+      : bubble_(bubble) {}
+
+  void OnImplicitAnimationsCompleted() override {
+    bubble_->OnBubbleExpansionFinished();
+  }
+
+ private:
+  PasswordSaveUpdateWithAccountStoreView* bubble_;
+};
+
 PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     content::WebContents* web_contents,
     views::View* anchor_view,
@@ -324,6 +342,7 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     views::FlexLayout* layout =
         SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical)
+        .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
         .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
         .SetIgnoreDefaultMainAxisMargins(true)
         .SetCollapseMargins(true)
@@ -343,6 +362,10 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
         /*parent_view=*/this, std::move(destination_dropdown),
         std::move(username_dropdown), std::move(password_dropdown),
         std::move(password_view_button));
+
+    // The account picker is only visible in Save bubbble, not Update bubble.
+    if (destination_dropdown_)
+      destination_dropdown_->SetVisible(!controller_.IsCurrentStateUpdate());
   }
 
   {
@@ -363,7 +386,7 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
   }
 
   DialogDelegate::SetFootnoteView(CreateFooterView());
-  UpdateDialogButtons();
+  UpdateDialogButtonsAndAccountPickerVisiblity();
 }
 
 PasswordSaveUpdateWithAccountStoreView::
@@ -403,7 +426,7 @@ void PasswordSaveUpdateWithAccountStoreView::OnContentChanged(
   if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
       is_ok_button_enabled_before !=
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
-    UpdateDialogButtons();
+    UpdateDialogButtonsAndAccountPickerVisiblity();
     DialogModelChanged();
   }
 }
@@ -486,7 +509,8 @@ void PasswordSaveUpdateWithAccountStoreView::
                                  std::move(new_password));
 }
 
-void PasswordSaveUpdateWithAccountStoreView::UpdateDialogButtons() {
+void PasswordSaveUpdateWithAccountStoreView::
+    UpdateDialogButtonsAndAccountPickerVisiblity() {
   DialogDelegate::SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -498,6 +522,29 @@ void PasswordSaveUpdateWithAccountStoreView::UpdateDialogButtons() {
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON
                             : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
+  // Nothing to do if the bubble isn't visible yet.
+  if (!GetWidget())
+    return;
+
+  // Nothing else to do if the account picker hasn't been created.
+  if (!destination_dropdown_)
+    return;
+
+  // If the expanded bubble layer height isn't yet computed, do it.
+  if (expanded_bubble_height_ == -1) {
+    // We need to compute the layer height before any animation takes place.
+    ui::Layer* layer = GetWidget()->GetLayer();
+    expanded_bubble_height_ = layer->bounds().height();
+    // If the account picker is current invisible, account for the extra space
+    // added when it will become visible.
+    if (!destination_dropdown_->GetVisible()) {
+      expanded_bubble_height_ +=
+          destination_dropdown_->GetPreferredSize().height() +
+          ChromeLayoutProvider::Get()->GetDistanceMetric(
+              DISTANCE_CONTROL_LIST_VERTICAL);
+    }
+  }
+  StartResizing();
 }
 
 std::unique_ptr<views::View>
@@ -511,4 +558,31 @@ PasswordSaveUpdateWithAccountStoreView::CreateFooterView() {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
+}
+
+void PasswordSaveUpdateWithAccountStoreView::StartResizing() {
+  DCHECK(GetWidget());
+  DCHECK(destination_dropdown_);
+  expansion_observer_.reset();
+  ui::Layer* layer = GetWidget()->GetLayer();
+  ui::ScopedLayerAnimationSettings animator(layer->GetAnimator());
+  if (controller_.IsCurrentStateUpdate()) {
+    // We need to hide the account picker, do it immediately.
+    destination_dropdown_->SetVisible(false);
+    SizeToContents();
+  } else {
+    // We need to show the account picker: Expand the bubble first and then show
+    // the account picker.
+    expansion_observer_ = std::make_unique<BubbleExpansionObserver>(this);
+    animator.AddObserver(expansion_observer_.get());
+    gfx::Rect bounds = layer->bounds();
+    bounds.set_height(expanded_bubble_height_);
+    layer->SetBounds(bounds);
+  }
+}
+
+void PasswordSaveUpdateWithAccountStoreView::OnBubbleExpansionFinished() {
+  DCHECK(destination_dropdown_);
+  DCHECK(!controller_.IsCurrentStateUpdate());
+  destination_dropdown_->SetVisible(true);
 }

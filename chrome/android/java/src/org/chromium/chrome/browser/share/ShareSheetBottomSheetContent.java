@@ -13,11 +13,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
@@ -98,12 +96,6 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
             view.setText(model.get(ShareSheetItemViewProperties.LABEL));
         } else if (ShareSheetItemViewProperties.CLICK_LISTENER.equals(propertyKey)) {
             parent.setOnClickListener(model.get(ShareSheetItemViewProperties.CLICK_LISTENER));
-        } else if (ShareSheetItemViewProperties.IS_FIRST_PARTY.equals(propertyKey)) {
-            if (!model.get(ShareSheetItemViewProperties.IS_FIRST_PARTY)) return;
-            ImageView view = (ImageView) parent.findViewById(R.id.icon);
-            ApiCompatibilityUtils.setImageTintList(view,
-                    AppCompatResources.getColorStateList(
-                            parent.getContext(), R.color.default_icon_color_tint_list));
         }
     }
 

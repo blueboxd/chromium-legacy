@@ -106,7 +106,8 @@ void Installer::DeleteOlderInstallPaths() {
 
 Installer::Result Installer::InstallHelper(
     const base::FilePath& unpack_path,
-    std::unique_ptr<InstallParams> install_params) {
+    std::unique_ptr<InstallParams> install_params,
+    ProgressCallback progress_callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
 
@@ -166,9 +167,10 @@ Installer::Result Installer::InstallHelper(
   if (!base::PathExists(application_installer))
     return Result(kErrorMissingRunableFile);
 
-  // TODO(sorin): the installer API needs to be handled here. crbug.com/1014630.
+  // TODO(crbug.com/1014630): handle the installer API.
   const int exit_code =
-      RunApplicationInstaller(application_installer, install_params->arguments);
+      RunApplicationInstaller(application_installer, install_params->arguments,
+                              std::move(progress_callback));
 
   // Upon success, when the control flow returns back to the |update_client|,
   // the prefs are updated asynchronously with the new |pv| and |fingerprint|.
@@ -182,11 +184,13 @@ void Installer::InstallWithSyncPrimitives(
     const base::FilePath& unpack_path,
     const std::string& public_key,
     std::unique_ptr<InstallParams> install_params,
+    ProgressCallback progress_callback,
     Callback callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   DeleteOlderInstallPaths();
-  const auto result = InstallHelper(unpack_path, std::move(install_params));
+  const auto result = InstallHelper(unpack_path, std::move(install_params),
+                                    std::move(progress_callback));
   base::DeleteFileRecursively(unpack_path);
   std::move(callback).Run(result);
 }
@@ -198,12 +202,13 @@ void Installer::OnUpdateError(int error) {
 void Installer::Install(const base::FilePath& unpack_path,
                         const std::string& public_key,
                         std::unique_ptr<InstallParams> install_params,
+                        ProgressCallback progress_callback,
                         Callback callback) {
   base::ThreadPool::PostTask(
       FROM_HERE, kTaskTraitsBlockWithSyncPrimitives,
       base::BindOnce(&Installer::InstallWithSyncPrimitives, this, unpack_path,
                      public_key, std::move(install_params),
-                     std::move(callback)));
+                     std::move(progress_callback), std::move(callback)));
 }
 
 bool Installer::GetInstalledFile(const std::string& file,

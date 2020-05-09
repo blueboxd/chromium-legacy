@@ -119,6 +119,8 @@ class CustomizeDialogElement extends PolymerElement {
       this.$.menu,
       this.$.pages,
     ].map(createScrollBorders);
+    this.pageHandler_.onCustomizeDialogAction(
+        newTabPage.mojom.CustomizeDialogAction.OPEN_CLICKED);
   }
 
   /** @private */
@@ -129,6 +131,8 @@ class CustomizeDialogElement extends PolymerElement {
 
   /** @private */
   onCancelClick_() {
+    this.pageHandler_.onCustomizeDialogAction(
+        newTabPage.mojom.CustomizeDialogAction.CANCEL_CLICKED);
     this.$.dialog.cancel();
   }
 
@@ -159,6 +163,8 @@ class CustomizeDialogElement extends PolymerElement {
         this.pageHandler_.setDailyRefreshCollectionId(
             assert(this.backgroundSelection.dailyRefreshCollectionId));
     }
+    this.pageHandler_.onCustomizeDialogAction(
+        newTabPage.mojom.CustomizeDialogAction.DONE_CLICKED);
     this.$.dialog.close();
   }
 
@@ -210,6 +216,8 @@ class CustomizeDialogElement extends PolymerElement {
   /** @private */
   onBackClick_() {
     this.selectedCollection_ = null;
+    this.pageHandler_.onCustomizeDialogAction(
+        newTabPage.mojom.CustomizeDialogAction.BACKGROUNDS_BACK_CLICKED);
   }
 
   /** @private */
@@ -222,6 +230,9 @@ class CustomizeDialogElement extends PolymerElement {
     } else {
       this.backgroundSelection = {type: BackgroundSelectionType.NO_BACKGROUND};
     }
+    this.pageHandler_.onCustomizeDialogAction(
+        newTabPage.mojom.CustomizeDialogAction
+            .BACKGROUNDS_REFRESH_TOGGLE_CLICKED);
   }
 }
 

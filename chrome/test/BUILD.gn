@@ -1948,6 +1948,7 @@ if (!is_android) {
         "../browser/ui/views/extensions/extensions_toolbar_browsertest.h",
         "../browser/ui/views/extensions/extensions_toolbar_container_browsertest.cc",
         "../browser/ui/views/extensions/media_galleries_dialog_views_browsertest.cc",
+        "../browser/ui/views/extensions/settings_overridden_dialog_view_browsertest.cc",
         "../browser/ui/views/external_protocol_dialog_browsertest.cc",
         "../browser/ui/views/feature_promos/feature_promo_dialog_browsertest.cc",
         "../browser/ui/views/feature_promos/global_media_controls_promo_controller_dialog_browsertest.cc",
@@ -4529,10 +4530,6 @@ test("unit_tests") {
     ]
   }
 
-  if (enable_cros_libassistant) {
-    deps += [ "//chromeos/assistant/internal" ]
-  }
-
   if (enable_spellcheck) {
     sources += [
       "../browser/spellchecker/spell_check_host_chrome_impl_mac_unittest.cc",
@@ -5382,6 +5379,7 @@ test("unit_tests") {
       "../browser/ui/views/extensions/extensions_menu_item_unittest.cc",
       "../browser/ui/views/extensions/extensions_menu_view_unittest.cc",
       "../browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc",
+      "../browser/ui/views/extensions/settings_overridden_dialog_view_unittest.cc",
       "../browser/ui/views/frame/browser_non_client_frame_view_unittest.cc",
       "../browser/ui/views/frame/browser_view_layout_unittest.cc",
       "../browser/ui/views/frame/browser_view_unittest.cc",

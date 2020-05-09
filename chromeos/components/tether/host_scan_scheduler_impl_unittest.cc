@@ -95,6 +95,8 @@ class HostScanSchedulerImplTest : public testing::Test {
             kEthernetServiceGuid, shill::kTypeEthernet, state));
     helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
+    base::RunLoop().RunUntilIdle();
+    test_task_runner_->RunUntilIdle();
   }
 
   // Disconnects the Ethernet network and manually sets the default network to
@@ -105,30 +107,29 @@ class HostScanSchedulerImplTest : public testing::Test {
     helper_->SetServiceProperty(ethernet_service_path_,
                                 std::string(shill::kStateProperty),
                                 base::Value(shill::kStateIdle));
-    test_task_runner_->RunUntilIdle();
-    if (new_default_service_path.empty())
-      return;
-
     helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(new_default_service_path));
+    base::RunLoop().RunUntilIdle();
+    test_task_runner_->RunUntilIdle();
   }
 
   void SetEthernetNetworkConnecting() {
     helper_->SetServiceProperty(ethernet_service_path_,
                                 std::string(shill::kStateProperty),
                                 base::Value(shill::kStateAssociation));
+    // Ethernet does not become the default network until it connects.
+    base::RunLoop().RunUntilIdle();
     test_task_runner_->RunUntilIdle();
-    helper_->manager_test()->SetManagerProperty(
-        shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
   }
 
   void SetEthernetNetworkConnected() {
     helper_->SetServiceProperty(ethernet_service_path_,
                                 std::string(shill::kStateProperty),
                                 base::Value(shill::kStateReady));
-    test_task_runner_->RunUntilIdle();
     helper_->manager_test()->SetManagerProperty(
         shill::kDefaultServiceProperty, base::Value(ethernet_service_path_));
+    base::RunLoop().RunUntilIdle();
+    test_task_runner_->RunUntilIdle();
   }
 
   // Adds a Tether network state, adds a Wifi network to be used as the Wifi

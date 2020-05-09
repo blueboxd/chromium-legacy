@@ -171,13 +171,11 @@ def PrettyPrintEnums(raw_xml):
   return top_level_content + formatted_xml
 
 def main():
-  status1 = presubmit_util.DoPresubmit(sys.argv, 'enums.xml',
-                                       'enums.before.pretty-print.xml',
-                                       'pretty_print.py', PrettyPrintEnums)
+  status1 = presubmit_util.DoPresubmit(
+      sys.argv, 'enums.xml', 'enums.before.pretty-print.xml', PrettyPrintEnums)
   status2 = presubmit_util.DoPresubmit(sys.argv, 'histograms.xml',
-                                        'histograms.before.pretty-print.xml',
-                                        'pretty_print.py',
-                                        PrettyPrintHistograms)
+                                       'histograms.before.pretty-print.xml',
+                                       PrettyPrintHistograms)
   sys.exit(status1 or status2)
 
 if __name__ == '__main__':

@@ -11,18 +11,13 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
-#include "build/buildflag.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/shared/constants.h"
 #include "net/base/url_util.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
-#include "chromeos/assistant/internal/internal_constants.h"
-#endif
 
 namespace {
 
@@ -48,14 +43,10 @@ SearchAndAssistantEnabledChecker::~SearchAndAssistantEnabledChecker() {}
 void SearchAndAssistantEnabledChecker::SyncSearchAndAssistantState() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url =
-#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
       net::AppendOrReplaceQueryParameter(
           GURL(chromeos::assistant::kServiceIdEndpoint),
           chromeos::assistant::kPayloadParamName,
           chromeos::assistant::kServiceIdRequestPayload);
-#else
-      GURL();
-#endif
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  NO_TRAFFIC_ANNOTATION_YET);
   url_loader_->DownloadToString(

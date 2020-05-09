@@ -18,6 +18,7 @@ class UnguessableToken;
 }
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -43,8 +44,11 @@ class CONTENT_EXPORT StreamTextureHost : public IPC::Listener {
   class Listener {
    public:
     virtual void OnFrameAvailable() = 0;
-    virtual void OnFrameWithYcbcrInfoAvailable(
-        base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) = 0;
+    virtual void OnFrameWithInfoAvailable(
+        const gpu::Mailbox& mailbox,
+        const gfx::Size& coded_size,
+        const gfx::Rect& visible_rect,
+        const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) = 0;
     virtual ~Listener() {}
   };
 
@@ -56,14 +60,17 @@ class CONTENT_EXPORT StreamTextureHost : public IPC::Listener {
 
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token);
-  gpu::Mailbox CreateSharedImage(const gfx::Size& size);
+  void UpdateRotatedVisibleSize(const gfx::Size& size);
   gpu::SyncToken GenUnverifiedSyncToken();
 
  private:
   // Message handlers:
   void OnFrameAvailable();
-  void OnFrameWithYcbcrInfoAvailable(
-      base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info);
+  void OnFrameWithInfoAvailable(
+      const gpu::Mailbox& mailbox,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
 
   int32_t route_id_;
   Listener* listener_;

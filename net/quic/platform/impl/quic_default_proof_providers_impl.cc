@@ -16,8 +16,10 @@
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/proof_source_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
+#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quiche/src/quic/tools/simple_ticket_crypter.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
@@ -82,6 +84,8 @@ std::unique_ptr<ProofVerifier> CreateDefaultProofVerifierImpl(
 
 std::unique_ptr<ProofSource> CreateDefaultProofSourceImpl() {
   auto proof_source = std::make_unique<net::ProofSourceChromium>();
+  proof_source->SetTicketCrypter(
+      std::make_unique<SimpleTicketCrypter>(QuicChromiumClock::GetInstance()));
   CHECK(proof_source->Initialize(
 #if defined(OS_WIN)
       base::FilePath(base::UTF8ToUTF16(GetQuicFlag(FLAGS_certificate_file))),

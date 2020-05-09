@@ -27,12 +27,12 @@ promise_test(async t => {
       });
     });
 
+  const controller = new AbortController();
+  const detector = new IdleDetector();
+  const watcher = new EventWatcher(t, detector, ["change"]);
+  const initial_state = watcher.wait_for("change");
 
-  let detector = new IdleDetector({threshold: 60000});
-  let watcher = new EventWatcher(t, detector, ["change"]);
-  let initial_state = watcher.wait_for("change");
-
-  await detector.start();
+  await detector.start({threshold: 60000, signal: controller.signal});
   await initial_state;
 
   assert_equals(detector.state.user, "active");
@@ -58,8 +58,7 @@ promise_test(async t => {
   await watcher.wait_for("change");
   assert_equals(detector.state.user, "active");
 
-  detector.stop();
-
+  controller.abort();
 }, 'Page visibility.');
 
 </script>

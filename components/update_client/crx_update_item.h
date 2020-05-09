@@ -50,6 +50,9 @@ struct CrxUpdateItem {
   int64_t downloaded_bytes = -1;
   int64_t total_bytes = -1;
 
+  // A value of -1 means that the progress is unknown.
+  int install_progress = -1;
+
   ErrorCategory error_category = ErrorCategory::kNone;
   int error_code = 0;
   int extra_code1 = 0;

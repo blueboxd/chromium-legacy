@@ -33,6 +33,8 @@ std::string AppTypeToString(apps::mojom::AppType app_type) {
       return "Mac native";
     case apps::mojom::AppType::kPluginVm:
       return "Plugin VM";
+    case apps::mojom::AppType::kLacros:
+      return "LaCrOS";
   }
   NOTREACHED();
 }

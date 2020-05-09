@@ -10,9 +10,8 @@
   ActiveScriptWrappable,
   RuntimeEnabled=IdleDetection
 ] interface IdleDetector : EventTarget {
-  [CallWith=ScriptState, RaisesException] constructor(optional IdleOptions options = {});
+  [CallWith=ScriptState] constructor();
   readonly attribute IdleState state;
   attribute EventHandler onchange;
-  [CallWith=ScriptState, RaisesException, MeasureAs=IdleDetectionStart] Promise<void> start();
-  void stop();
+  [CallWith=ScriptState, RaisesException, MeasureAs=IdleDetectionStart] Promise<void> start(optional IdleOptions options = {});
 };

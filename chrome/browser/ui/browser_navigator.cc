@@ -238,7 +238,7 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         browser_params.initial_bounds = params.window_bounds;
         return {new Browser(browser_params), -1};
       }
-      return {new Browser(Browser::CreateParams::CreateForApp(
+      return {new Browser(Browser::CreateParams::CreateForAppPopup(
                   app_name, params.trusted_source, params.window_bounds,
                   profile, params.user_gesture)),
               -1};

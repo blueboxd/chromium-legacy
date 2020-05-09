@@ -39,6 +39,7 @@ android_library("java") {
     "//chrome/browser/tab:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
+    "//components/autofill/android:autofill_java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/widget/android:java",
     "//components/policy/android:policy_java",

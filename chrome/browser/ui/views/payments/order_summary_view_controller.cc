@@ -143,7 +143,7 @@ void OrderSummaryViewController::OnSelectedInformationChanged() {
 std::unique_ptr<views::Button>
 OrderSummaryViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
+      views::MdTextButton::CreateSecondaryUiProminentButton(
           this, state()->selected_app() && state()->selected_app()->type() !=
                                                PaymentApp::Type::AUTOFILL
                     ? l10n_util::GetStringUTF16(IDS_PAYMENTS_CONTINUE_BUTTON)

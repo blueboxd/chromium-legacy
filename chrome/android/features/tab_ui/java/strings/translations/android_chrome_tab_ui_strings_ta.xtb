@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">சரிபார்</translation>
 <translation id="5073204694187207510">முழுத்திரை கட்டத்தை மூடு</translation>
 <translation id="5082793167783849073">ஒரு குழுவை உருவாக்கிப் பக்கங்களை விரைவாக ஒப்பிடலாம். தொடங்க, ஓர் இணைப்பைத் தொட்டுப் பிடிக்கவும்.</translation>
+<translation id="5533021382642990449">பின்னர் காட்டு</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> தாவல்கள் குழுவாக்கப்பட்டுள்ளன</translation>
 <translation id="58326064309361797">தாவல்களை இழுப்பதன் மூலம் அவற்றைக் குழுவாக்கலாம்</translation>
 <translation id="6040143037577758943">மூடு</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">பரிந்துரைகளை நிராகரிக்கும்.</translation>
 <translation id="814503310257431685">அனைத்தும் காட்டு</translation>
 <translation id="8205266828577616993">தாவலை மேலே நகர்த்து</translation>
+<translation id="8304833501377495048">தாவல் பட்டையை மீண்டும் காட்டவா?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{தேர்ந்தெடுத்த <ph name="TABS_COUNT_ONE" /> தாவலை மூடும்}other{தேர்ந்தெடுத்த <ph name="TABS_COUNT_MANY" /> தாவல்களை மூடும்}}</translation>
+<translation id="8749939518995770034">மூடப்பட்டுள்ள தாவல் பட்டை</translation>
 <translation id="9150694013019234766">திரையின் கீழ்ப்பகுதிக்கு அருகில் உங்கள் தாவல் குழுவிலுள்ள தாவல்களுக்கு இடையே மாறலாம்</translation>
 <translation id="9169594135889675189">குழுவில் புதிய தாவலைச் சேர்</translation>
 <translation id="959682366969460160">ஒருங்கமைப்புடன் இருக்கலாம்</translation>

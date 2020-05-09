@@ -10,6 +10,7 @@
 #include "base/check.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/webauthn/webauthn_hover_button.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -34,7 +35,7 @@ enum class ItemType {
   kThrobber,
 };
 
-std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
+std::unique_ptr<WebAuthnHoverButton> CreateHoverButtonForListItem(
     int item_tag,
     const gfx::VectorIcon* vector_icon,
     base::string16 item_title,
@@ -82,29 +83,10 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
     }
   }
 
-  auto hover_button = std::make_unique<HoverButton>(
-      listener, std::move(item_image), std::move(item_title),
-      std::move(item_description), std::move(secondary_view));
+  auto hover_button = std::make_unique<WebAuthnHoverButton>(
+      listener, std::move(item_image), item_title, item_description,
+      std::move(secondary_view), is_two_line_item);
   hover_button->set_tag(item_tag);
-
-  // The HoverButton extends to the size of its contained views and applies some
-  // amount of spacing already. Fudge things into place with an additional
-  // invisible border where necessary.
-  // TODO(crbug.com/1071648): This is probably broken and should be rewritten.
-
-  // Pad to a total height of 56px for two-line items, and 46px for single-line.
-  int vertical_inset = is_two_line_item ? 2 : 6;
-  if (is_two_line_item && item_description.empty()) {
-    vertical_inset = 11;
-  }
-
-  constexpr int kHorizontalInset = 8;
-  // If there is no vector icon, left-align the text with where the icon would
-  // be by setting no left border.
-  const int left_inset = vector_icon ? kHorizontalInset : 0;
-
-  hover_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      vertical_inset, left_inset, vertical_inset, kHorizontalInset)));
 
   switch (item_type) {
     case ItemType::kPlaceholder: {

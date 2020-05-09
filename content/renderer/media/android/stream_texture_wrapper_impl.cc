@@ -51,17 +51,16 @@ scoped_refptr<media::VideoFrame> StreamTextureWrapperImpl::GetCurrentFrame() {
   return current_frame_;
 }
 
-void StreamTextureWrapperImpl::ReallocateVideoFrame() {
-  DVLOG(2) << __func__;
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  gpu::Mailbox mailbox;
-  gpu::SyncToken texture_mailbox_sync_token;
-  stream_texture_proxy_->CreateSharedImage(natural_size_, &mailbox,
-                                           &texture_mailbox_sync_token);
+void StreamTextureWrapperImpl::CreateVideoFrame(
+    const gpu::Mailbox& mailbox,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
+  // This message comes from GPU process when the SharedImage is already
+  // created, so we don't need to wait on any synctoken, mailbox is ready to
+  // use.
   gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
-      gpu::MailboxHolder(mailbox, texture_mailbox_sync_token,
-                         GL_TEXTURE_EXTERNAL_OES)};
+      gpu::MailboxHolder(mailbox, gpu::SyncToken(), GL_TEXTURE_EXTERNAL_OES)};
 
   // The pixel format doesn't matter here as long as it's valid for texture
   // frames. But SkiaRenderer wants to ensure that the format of the resource
@@ -73,11 +72,11 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame() {
   scoped_refptr<media::VideoFrame> new_frame =
       media::VideoFrame::WrapNativeTextures(
           media::PIXEL_FORMAT_ABGR, holders,
-          media::BindToCurrentLoop(
+          media::BindToLoop(
+              main_task_runner_,
               base::BindOnce(&OnReleaseVideoFrame, factory_, mailbox)),
-          natural_size_, gfx::Rect(natural_size_), natural_size_,
-          base::TimeDelta());
-  new_frame->set_ycbcr_info(ycbcr_info_);
+          coded_size, visible_rect, visible_rect.size(), base::TimeDelta());
+  new_frame->set_ycbcr_info(ycbcr_info);
 
   if (enable_texture_copy_) {
     new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
@@ -104,14 +103,6 @@ void StreamTextureWrapperImpl::SetCurrentFrameInternal(
   current_frame_ = std::move(video_frame);
 }
 
-void StreamTextureWrapperImpl::SetYcbcrInfo(
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
-  DCHECK(!ycbcr_info_);
-
-  current_frame_->set_ycbcr_info(ycbcr_info);
-  ycbcr_info_ = std::move(ycbcr_info);
-}
-
 void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
   DVLOG(2) << __func__;
 
@@ -126,22 +117,22 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
   if (!stream_texture_proxy_)
     return;
 
-  if (natural_size_ == new_size)
+  if (rotated_visible_size_ == new_size)
     return;
 
-  natural_size_ = new_size;
-  ReallocateVideoFrame();
+  rotated_visible_size_ = new_size;
+  stream_texture_proxy_->UpdateRotatedVisibleSize(rotated_visible_size_);
 }
 
 void StreamTextureWrapperImpl::Initialize(
     const base::RepeatingClosure& received_frame_cb,
-    const gfx::Size& natural_size,
+    const gfx::Size& rotated_visible_size,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     StreamTextureWrapperInitCB init_cb) {
   DVLOG(2) << __func__;
 
   compositor_task_runner_ = compositor_task_runner;
-  natural_size_ = natural_size;
+  rotated_visible_size_ = rotated_visible_size;
 
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -169,15 +160,15 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
     return;
   }
 
-  ReallocateVideoFrame();
+  stream_texture_proxy_->UpdateRotatedVisibleSize(rotated_visible_size_);
 
   // Unretained is safe here since |stream_texture_proxy_| is a scoped member of
   // the this StreamTextureWrapperImpl class which clears/resets this callback
   // before |this| is destroyed.
   stream_texture_proxy_->BindToTaskRunner(
       received_frame_cb,
-      base::BindOnce(&StreamTextureWrapperImpl::SetYcbcrInfo,
-                     base::Unretained(this)),
+      base::BindRepeating(&StreamTextureWrapperImpl::CreateVideoFrame,
+                          base::Unretained(this)),
       compositor_task_runner_);
 
   std::move(init_cb).Run(true);

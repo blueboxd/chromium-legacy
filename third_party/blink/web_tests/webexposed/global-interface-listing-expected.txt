@@ -4501,7 +4501,6 @@ interface IdleDetector : EventTarget
     getter state
     method constructor
     method start
-    method stop
     setter onchange
 interface IdleState
     attribute @@toStringTag

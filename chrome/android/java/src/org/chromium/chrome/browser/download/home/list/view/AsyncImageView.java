@@ -12,7 +12,7 @@ import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.download.R;
+import org.chromium.chrome.browser.download.R;
 
 /**
  * Helper class to handle asynchronously loading an image and displaying it when ready.  This class

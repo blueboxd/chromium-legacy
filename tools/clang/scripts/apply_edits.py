@@ -121,22 +121,25 @@ def _FindPrimaryHeaderBasename(filepath):
 
 
 _INCLUDE_INSERTION_POINT_REGEX_TEMPLATE = r'''
-   ^(?!         # Match the start of the first line that is
-                # not one of the following:
+   ^(?!               # Match the start of the first line that is
+                      # not one of the following:
 
-      \s+       # 1. Line starting with whitespace
-                #    (this includes blank lines and continuations of
-                #     C comments that start with whitespace/indentation)
+      \s+             # 1. Line starting with whitespace
+                      #    (this includes blank lines and continuations of
+                      #     C comments that start with whitespace/indentation)
 
-    | //        # 2a. A C++ comment
-    | /\*       # 2b. A C comment
-    | \*        # 2c. A continuation of a C comment (see also rule 1. above)
+    | //              # 2a. A C++ comment
+    | /\*             # 2b. A C comment
+    | \*              # 2c. A continuation of a C comment
+                      #     (see also rule 1. above)
 
-      # 3. Include guards (Chromium-style)
+    | \xef \xbb \xbf  # 3. "Lines" starting with BOM character
+
+      # 4. Include guards (Chromium-style)
     | \#ifndef \s+ [A-Z0-9_]+_H ( | _ | __ ) \b \s* $
     | \#define \s+ [A-Z0-9_]+_H ( | _ | __ ) \b \s* $
 
-      # 3b. Include guards (anything that repeats):
+      # 4b. Include guards (anything that repeats):
       #     - the same <guard> has to repeat in both the #ifndef and the #define
       #     - #define has to be "simple" - either:
       #         - either: #define GUARD
@@ -145,10 +148,10 @@ _INCLUDE_INSERTION_POINT_REGEX_TEMPLATE = r'''
       \#define \s+ (?P=guard) \s* ( | 1 \s* ) $
     | \#define \s+ (?P=guard) \s* ( | 1 \s* ) $  # Skipping previous line.
 
-      # 4. A C/C++ system include
+      # 5. A C/C++ system include
     | \#include \s* < .* >
 
-      # 5. A primary header include
+      # 6. A primary header include
       #    (%%s should be the basename returned by _FindPrimaryHeaderBasename).
       #
       # TODO(lukasza): Do not allow any directory below - require the top-level

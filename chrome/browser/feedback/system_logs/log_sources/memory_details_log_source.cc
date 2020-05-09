@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/memory_details.h"
+#include "components/feedback/feedback_report.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace system_logs {
@@ -23,7 +24,7 @@ class SystemLogsMemoryHandler : public MemoryDetails {
 
     auto response = std::make_unique<SystemLogsResponse>();
     (*response)["mem_usage"] = ToLogString(/*include_tab_title=*/false);
-    (*response)["mem_usage_with_title"] =
+    (*response)[feedback::FeedbackReport::kMemUsageWithTabTitlesKey] =
         ToLogString(/*include_tab_title=*/true);
     DCHECK(!callback_.is_null());
     std::move(callback_).Run(std::move(response));

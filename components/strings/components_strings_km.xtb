@@ -196,7 +196,6 @@
 <translation id="1736420071277903564">កុំព្យូទ័រ</translation>
 <translation id="1740951997222943430">បញ្ចូលខែផុតកំណត់ឲ្យបានត្រឹមត្រូវ</translation>
 <translation id="1741613555002899862">ត្រូវតែ​បានបញ្ជាក់ និងជា​ជួរអក្សរ​ដែលត្រឹមត្រូវ​នៅពេល DnsOverHttpsMode គឺ <ph name="SECURE_DNS_MODE_SECURE" />។</translation>
-<translation id="1743520634839655729">ដើម្បី​បង់ប្រាក់​លឿន​ជាងនេះ​នៅពេល​ក្រោយ សូម​រក្សា​ទុកកាត ឈ្មោះ និង​អាសយដ្ឋាន​ចេញ​វិក្កយបត្រ​ទៅក្នុង​គណនី Google ​របស់អ្នក និង​ឧបករណ៍​នេះ។</translation>
 <translation id="1743570585616704562">មិន​ស្គាល់ទេ</translation>
 <translation id="1745880797583122200">កម្មវិធីរុករកតាមអ៊ីនធឺណិត​របស់អ្នកត្រូវ​បានគ្រប់គ្រង</translation>
 <translation id="1746113442205726301">ការប្ដូរ​រូបភាព Y</translation>
@@ -220,6 +219,7 @@
 <translation id="1838374766361614909">ជម្រះការស្វែងរក</translation>
 <translation id="1839551713262164453">មិន​អាច​បញ្ជាក់​តម្លៃត្រឹមត្រូវ​សម្រាប់​គោលការណ៍​បានទេ​ដោយសារ​មានបញ្ហា</translation>
 <translation id="1842969606798536927">ចំណាយ</translation>
+<translation id="1852694792039666893">ប្រើគណនី Google របស់អ្នក ដើម្បីណែនាំពាក្យសម្ងាត់ខ្លាំង</translation>
 <translation id="1871208020102129563">ប្រូកស៊ីត្រូវបានកំណត់ដើម្បីប្រើម៉ាស៊ីនមេប្រូកស៊ីថេរ មិនមែន URL ស្គ្រីបផេកទេ។</translation>
 <translation id="1871284979644508959">ប្រអប់ដែលតម្រូវឲ្យបំពេញ</translation>
 <translation id="1875512691959384712">Google ទម្រង់បែបបទ</translation>
@@ -408,6 +408,7 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ស័ក្តិសម​បំផុត</translation>
 <translation id="2691924980723297736">ការព្រមាន​អំពីសុវត្ថិភាព</translation>
+<translation id="2696268945573510710">ប្រើពាក្យសម្ងាត់ដែលរក្សាទុកនៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="2699302886720511147">បណ្ណដែលទទួលយក</translation>
 <translation id="2701514975700770343">ផ្កាប់ចុះ</translation>
 <translation id="2702801445560668637">បញ្ជីអាន</translation>
@@ -455,6 +456,7 @@
 <translation id="2915068235268646559">ការគាំងពី <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">បិទកម្មវិធីផ្សេងទៀត</translation>
 <translation id="2922350208395188000">វិញ្ញាបនប័ត្រម៉ាស៊ីនមេមិនអាចត្រូវបានពិនិត្យទេ។</translation>
+<translation id="2924027812781652774">ចូលគណនី ដើម្បីប្រើ​ពាក្យសម្ងាត់​ដែលរក្សាទុក​នៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="2925673989565098301">មធ្យោបាយ​ចែកចាយ​</translation>
 <translation id="2928905813689894207">អាសយដ្ឋានទូទាត់​វិក្កយបត្រ</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}}</translation>
@@ -1276,7 +1278,6 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">គេហទំព័រ​ខាងមុខអាច​មាន​ការគិតថ្លៃ​។</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{ការផ្តល់យោបល់ 1 ផ្សេងទៀត}other{ការផ្តល់យោបល់ # ផ្សេងទៀត}}</translation>
-<translation id="6387754724289022810">ដើម្បី​បង់ប្រាក់​លឿន​ជាងនេះ​នៅពេល​ក្រោយ សូម​រក្សា​ទុកបណ្ណ និង​អាសយដ្ឋាន​ចេញ​វិក្កយបត្រ​របស់អ្នក​ទៅក្នុង​គណនី Google របស់​អ្នក និង​ឧបករណ៍​នេះ។</translation>
 <translation id="6389470377220713856">ឈ្មោះនៅលើកាត</translation>
 <translation id="6390200185239044127">បត់​ជាអក្សរ Z ពាក់កណ្ដាល</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1412,6 +1413,7 @@
 <translation id="7050187094878475250">អ្នកបានព្យាយាមចូលទៅ <ph name="DOMAIN" />, ប៉ុន្តែវិញ្ញាបនបត្រនៃម៉ាស៊ីនមេនេះមានសុពលភាពយូរពេកដែលមិនគួរឲ្យទុកចិត្ត។</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{មិនអាចរក្សាទុកបណ្ណនេះបានទេនៅពេលនេះ}other{មិនអាចរក្សាទុកបណ្ណទាំងនេះបានទេនៅពេលនេះ}}</translation>
 <translation id="7053983685419859001">ទប់ស្កាត់</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> បានបញ្ជាក់ថា <ph name="ISSUER" /> បានចេញវិញ្ញាបនបត្ររបស់គេហទំព័រនេះ។</translation>
 <translation id="7062635574500127092">បៃតងចាស់</translation>
 <translation id="7064851114919012435">ព័ត៌មានទំនាក់ទំនង</translation>
 <translation id="70705239631109039">ការតភ្ជាប់របស់អ្នក​មិនមានសុវត្ថិភាពពេញលេញទេ</translation>

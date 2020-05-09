@@ -178,7 +178,12 @@ using ImageDecodeAcceleratorSupportedProfiles =
     std::vector<ImageDecodeAcceleratorSupportedProfile>;
 
 #if defined(OS_WIN)
-enum class OverlaySupport { kNone = 0, kDirect = 1, kScaling = 2 };
+enum class OverlaySupport {
+  kNone = 0,
+  kDirect = 1,
+  kScaling = 2,
+  kSoftware = 3
+};
 
 GPU_EXPORT const char* OverlaySupportToString(OverlaySupport support);
 

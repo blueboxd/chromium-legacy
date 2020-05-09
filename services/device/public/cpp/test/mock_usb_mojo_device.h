@@ -65,10 +65,13 @@ class MockUsbMojoDevice : public mojom::UsbDevice {
   void Reset(ResetCallback callback) override { ResetInternal(&callback); }
   MOCK_METHOD1(ResetInternal, void(ResetCallback*));
 
-  void ClearHalt(uint8_t endpoint, ClearHaltCallback callback) override {
-    ClearHaltInternal(endpoint, &callback);
+  void ClearHalt(mojom::UsbTransferDirection direction,
+                 uint8_t endpoint_number,
+                 ClearHaltCallback callback) override {
+    ClearHaltInternal(direction, endpoint_number, &callback);
   }
-  MOCK_METHOD2(ClearHaltInternal, void(uint8_t, ClearHaltCallback*));
+  MOCK_METHOD3(ClearHaltInternal,
+               void(mojom::UsbTransferDirection, uint8_t, ClearHaltCallback*));
 
   void ControlTransferIn(mojom::UsbControlTransferParamsPtr params,
                          uint32_t length,

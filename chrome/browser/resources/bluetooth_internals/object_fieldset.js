@@ -69,7 +69,7 @@ cr.define('object_fieldset', function() {
      * Deletes and recreates the table structure with current object data.
      */
     redraw() {
-      this.innerHTML = '';
+      this.innerHTML = trustedTypes.emptyHTML;
 
       Object.keys(assert(this.value)).forEach(function(propName) {
         const value = this.value[propName];

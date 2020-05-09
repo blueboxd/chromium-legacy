@@ -8167,6 +8167,9 @@
     ]
   },
   "ToTAndroidCFI": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "args": [
@@ -11246,6 +11249,9 @@
     ]
   },
   "ToTLinux": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "merge": {
@@ -14609,6 +14615,11 @@
       }
     ]
   },
+  "ToTLinuxASanLibfuzzer": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "ToTLinuxMSan": {
     "additional_compile_targets": [
       "all"
@@ -16152,6 +16163,9 @@
     ]
   },
   "ToTLinuxOfficial": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "merge": {
@@ -19234,6 +19248,9 @@
     ]
   },
   "ToTLinuxThinLTO": {
+    "additional_compile_targets": [
+      "all"
+    ],
     "gtest_tests": [
       {
         "merge": {

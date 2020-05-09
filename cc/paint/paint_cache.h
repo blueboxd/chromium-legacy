@@ -49,6 +49,11 @@ constexpr size_t PaintCacheDataTypeCount =
 
 class CC_PAINT_EXPORT ClientPaintCache {
  public:
+  // If ClientPaintCache is constructed with a max_budget_bytes of
+  // kNoCachingBudget, its Put() method becomes a no-op, rendering the instance
+  // a no-op instance.
+  static constexpr size_t kNoCachingBudget = 0u;
+
   explicit ClientPaintCache(size_t max_budget_bytes);
   ClientPaintCache(const ClientPaintCache&) = delete;
   ~ClientPaintCache();

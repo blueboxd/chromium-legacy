@@ -12,10 +12,27 @@
       #oneGoogleBar {
         height: 56px;
       }
+
+      #backgroundImage {
+        border: none;
+        height: 100%;
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        visibility: hidden;
+        width: 100%;
+      }
+
+      [show-background-image] #backgroundImage {
+        visibility: visible;
+      }
     </style>
   </head>
   <body>
     <div id="oneGoogleBar"></div>
+    <iframe id="backgroundImage"
+        src="chrome-untrusted://new-tab-page/background_image?$i18nRaw{backgroundImageUrl}">
+    </iframe>
     <ntp-app></ntp-app>
     <script type="module" src="new_tab_page.js"></script>
     <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">

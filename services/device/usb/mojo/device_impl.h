@@ -68,7 +68,9 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
       uint8_t alternate_setting,
       SetInterfaceAlternateSettingCallback callback) override;
   void Reset(ResetCallback callback) override;
-  void ClearHalt(uint8_t endpoint, ClearHaltCallback callback) override;
+  void ClearHalt(mojom::UsbTransferDirection direction,
+                 uint8_t endpoint_number,
+                 ClearHaltCallback callback) override;
   void ControlTransferIn(mojom::UsbControlTransferParamsPtr params,
                          uint32_t length,
                          uint32_t timeout,

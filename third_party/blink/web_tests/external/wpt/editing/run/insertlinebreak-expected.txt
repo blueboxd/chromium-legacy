@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1550 tests; 1526 PASS, 24 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1559 tests; 1534 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["insertlinebreak",""]] "foo[bar]baz": execCommand("insertlinebreak", false, "") return value
 PASS [["insertlinebreak",""]] "foo[bar]baz" checks for modifications to non-editable content
 PASS [["insertlinebreak",""]] "foo[bar]baz" compare innerHTML
@@ -860,6 +860,15 @@ PASS [["insertlinebreak",""]] "<b>foo[]</b><i>bar</i>" queryCommandValue("insert
 PASS [["insertlinebreak",""]] "<b>foo[]</b><i>bar</i>" queryCommandIndeterm("insertlinebreak") after
 PASS [["insertlinebreak",""]] "<b>foo[]</b><i>bar</i>" queryCommandState("insertlinebreak") after
 PASS [["insertlinebreak",""]] "<b>foo[]</b><i>bar</i>" queryCommandValue("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>": execCommand("insertlinebreak", false, "") return value
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" checks for modifications to non-editable content
+FAIL [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<b>foo</b><br><i>bar</i>" but got "<b>foo<br></b><i>bar</i>"
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" queryCommandIndeterm("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" queryCommandState("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" queryCommandValue("insertlinebreak") before
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" queryCommandIndeterm("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" queryCommandState("insertlinebreak") after
+PASS [["insertlinebreak",""]] "<b>foo</b>{}<i>bar</i>" queryCommandValue("insertlinebreak") after
 PASS [["insertlinebreak",""]] "<b id=x class=y>foo[]bar</b>": execCommand("insertlinebreak", false, "") return value
 PASS [["insertlinebreak",""]] "<b id=x class=y>foo[]bar</b>" checks for modifications to non-editable content
 PASS [["insertlinebreak",""]] "<b id=x class=y>foo[]bar</b>" compare innerHTML

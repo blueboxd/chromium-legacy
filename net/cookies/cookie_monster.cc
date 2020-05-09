@@ -1202,6 +1202,15 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
            "insecure scheme";
   }
 
+  // Now that IsSetPermittedInContext() and
+  // MaybeDeleteEquivalentCookieAndUpdateStatus() have had a chance to set
+  // cookie warnings/exclusions, record the downgrade metric.
+  if (status.ShouldRecordDowngradeMetrics()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "SameSiteContextDowngradeResponse",
+        status.GetBreakingDowngradeMetricsEnumValue(source_url));
+  }
+
   if (status.IsInclude()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() key: " << key << " cc: " << cc->DebugString();

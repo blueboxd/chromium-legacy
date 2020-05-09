@@ -820,7 +820,8 @@ class CrostiniManager : public KeyedService,
 
   // Helper for CrostiniManager::MaybeUpdateCrostini. Makes blocking calls to
   // check for file paths and registered components.
-  static void CheckPathsAndComponents();
+  static void CheckPathsAndComponents(
+      scoped_refptr<component_updater::CrOSComponentManager> component_manager);
 
   // Helper for CrostiniManager::MaybeUpdateCrostini. Separated because the
   // checking component registration code may block.

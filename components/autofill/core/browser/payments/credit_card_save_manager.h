@@ -155,8 +155,10 @@ class CreditCardSaveManager {
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Returns the GetLocalCardMigrationStrikeDatabase for |client_|.
   LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Returns the legal message retrieved from Payments. On failure or not
   // meeting Payments's conditions for upload, |legal_message| will contain
@@ -347,8 +349,10 @@ class CreditCardSaveManager {
   std::unique_ptr<CreditCardSaveStrikeDatabase>
       credit_card_save_strike_database_;
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // May be null.
   ObserverForTest* observer_for_testing_ = nullptr;

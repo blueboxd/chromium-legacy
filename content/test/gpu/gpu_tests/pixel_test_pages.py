@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This is more akin to a .pyl/JSON file, so it's expected to be long.
+# pylint: disable=too-many-lines
+
 import datetime
 
 from gpu_tests import skia_gold_matching_algorithms as algo

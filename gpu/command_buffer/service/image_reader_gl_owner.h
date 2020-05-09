@@ -42,6 +42,9 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
   gfx::Rect GetCropRect() override;
+  void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
+                                  gfx::Size* coded_size,
+                                  gfx::Rect* visible_rect) override;
 
   const AImageReader* image_reader_for_testing() const { return image_reader_; }
   int32_t max_images_for_testing() const { return max_images_; }

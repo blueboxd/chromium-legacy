@@ -196,6 +196,11 @@ const base::Feature kDirectCompositionPreferNV12Overlays{
 const base::Feature kDirectCompositionPresentationFeedback{
     "DirectCompositionPresentationFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Allow overlay swapchain to present on all GPUs even if they only support
+// software overlays.
+const base::Feature kDirectCompositionSoftwareOverlays{
+    "DirectCompositionSoftwareOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use decode swap chain created from compatible video decoder buffers.
 const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
     "DirectCompositionUseNV12DecodeSwapChain",

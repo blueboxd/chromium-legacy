@@ -477,7 +477,10 @@ public class TabsTest {
         Assert.assertTrue("innerHeight was not set by page load time", innerHeight > 0);
     }
 
-    static class SimulateClickOnMainThread implements Runnable {
+    /**
+     * A Runnable to simulate a click on given coordinates.
+     */
+    public static class SimulateClickOnMainThread implements Runnable {
         private final LayoutManagerChrome mLayoutManager;
         private final float mX;
         private final float mY;
@@ -494,7 +497,10 @@ public class TabsTest {
         }
     }
 
-    static class SimulateTabSwipeOnMainThread implements Runnable {
+    /**
+     * A Runnable to simulate a swipe with specific coordinates and distance.
+     */
+    public static class SimulateTabSwipeOnMainThread implements Runnable {
         private final LayoutManagerChrome mLayoutManager;
         private final float mX;
         private final float mY;

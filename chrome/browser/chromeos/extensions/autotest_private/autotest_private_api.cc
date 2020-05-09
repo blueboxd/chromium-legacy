@@ -269,7 +269,6 @@ api::autotest_private::ShelfItemType GetShelfItemType(ash::ShelfItemType type) {
           SHELF_ITEM_TYPE_BROWSERSHORTCUT;
     case ash::TYPE_DIALOG:
       return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_DIALOG;
-    case ash::TYPE_LACROS_BROWSER:  // TODO(jamescook): Add autotest support.
     case ash::TYPE_UNDEFINED:
       return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_NONE;
   }
@@ -310,6 +309,8 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_NONE;
     case apps::mojom::AppType::kMacNative:
       return api::autotest_private::AppType::APP_TYPE_MACNATIVE;
+    case apps::mojom::AppType::kLacros:
+      return api::autotest_private::AppType::APP_TYPE_LACROS;
   }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;

@@ -68,10 +68,13 @@ class XRReferenceSpace : public XRSpace {
   virtual XRReferenceSpace* cloneWithOriginOffset(
       XRRigidTransform* origin_offset);
 
+  // Updates the floor_from_mojo_ transform to match the one present in the
+  // latest display parameters of a session.
   void SetFloorFromMojo();
 
   unsigned int display_info_id_ = 0;
 
+  // Floor from mojo (aka local-floor_from_mojo) transform.
   std::unique_ptr<TransformationMatrix> floor_from_mojo_;
   Member<XRRigidTransform> origin_offset_;
   Type type_;

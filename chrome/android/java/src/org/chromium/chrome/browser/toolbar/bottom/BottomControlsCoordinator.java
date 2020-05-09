@@ -103,10 +103,10 @@ public class BottomControlsCoordinator {
         mMediator = new BottomControlsMediator(model, fullscreenManager,
                 root.getResources().getDimensionPixelOffset(bottomToolbarHeightId));
 
-        if (TabManagementModuleProvider.getDelegate() != null
-                && TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
-                && !(TabUiFeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
-                        && BottomToolbarConfiguration.isBottomToolbarEnabled())) {
+        if ((TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+                    && !(TabUiFeatureUtilities.isDuetTabStripIntegrationAndroidEnabled()
+                            && BottomToolbarConfiguration.isBottomToolbarEnabled()))
+                || TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
                     root.findViewById(R.id.bottom_container_slot), themeColorProvider);
         } else {

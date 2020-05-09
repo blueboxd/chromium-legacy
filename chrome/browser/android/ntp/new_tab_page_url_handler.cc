@@ -35,11 +35,6 @@ bool HandleAndroidNativePageURL(GURL* url,
       *url = GURL(kChromeUINativeHistoryURL);
       return true;
     }
-
-    if (url->host() == kChromeUIPhysicalWebDiagnosticsHost) {
-      *url = GURL(kChromeUINativePhysicalWebDiagnosticsURL);
-      return true;
-    }
   }
 
   if (url->SchemeIs(chrome::kChromeNativeScheme) &&

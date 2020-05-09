@@ -136,7 +136,7 @@ FeedService::FeedService(
     : delegate_(std::move(delegate)),
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
   stream_delegate_ =
-      std::make_unique<StreamDelegateImpl>(local_state, delegate.get());
+      std::make_unique<StreamDelegateImpl>(local_state, delegate_.get());
   network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
   metrics_reporter_ =
       std::make_unique<MetricsReporter>(base::DefaultTickClock::GetInstance());

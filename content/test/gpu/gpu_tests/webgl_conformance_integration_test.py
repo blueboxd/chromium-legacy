@@ -395,8 +395,35 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _ParseTests(cls, path, version, webgl2_only, folder_min_version):
+    def _ParseTestNameAndVersions(line):
+      """Parses any min/max versions and the test name on the given line.
+
+      Args:
+        line: A string containing the line to be parsed.
+
+      Returns:
+        A tuple (test_name, min_version, max_version) containing the test name
+        and parsed minimum/maximum versions found as strings. Min/max values can
+        be None if no version was found.
+      """
+      line_tokens = line.split(' ')
+      test_name = line_tokens[-1]
+
+      i = 0
+      min_version = None
+      max_version = None
+      while i < len(line_tokens):
+        token = line_tokens[i]
+        if token == '--min-version':
+          i += 1
+          min_version = line_tokens[i]
+        elif token == '--max-version':
+          i += 1
+          max_version = line_tokens[i]
+        i += 1
+      return test_name, min_version, max_version
+
     test_paths = []
-    current_dir = os.path.dirname(path)
     full_path = os.path.normpath(
         os.path.join(webgl_test_util.conformance_path, path))
 
@@ -410,48 +437,29 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
         if not line:
           continue
-
         if line.startswith('//') or line.startswith('#'):
           continue
 
-        line_tokens = line.split(' ')
-        test_name = line_tokens[-1]
-
-        i = 0
-        min_version = None
-        max_version = None
-        while i < len(line_tokens):
-          token = line_tokens[i]
-          if token == '--min-version':
-            i += 1
-            min_version = line_tokens[i]
-          elif token == '--max-version':
-            i += 1
-            max_version = line_tokens[i]
-          i += 1
-
+        test_name, min_version, max_version = _ParseTestNameAndVersions(line)
         min_version_to_compare = min_version or folder_min_version
 
         if (min_version_to_compare
             and _CompareVersion(version, min_version_to_compare) < 0):
           continue
-
         if max_version and _CompareVersion(version, max_version) > 0:
           continue
-
         if (webgl2_only and not '.txt' in test_name
             and (not min_version_to_compare
                  or not min_version_to_compare.startswith('2'))):
           continue
 
+        include_path = os.path.join(os.path.dirname(path), test_name)
         if '.txt' in test_name:
-          include_path = os.path.join(current_dir, test_name)
           # We only check min-version >= 2.0.0 for the top level list.
           test_paths += cls._ParseTests(include_path, version, webgl2_only,
                                         min_version_to_compare)
         else:
-          test = os.path.join(current_dir, test_name)
-          test_paths.append(test)
+          test_paths.append(include_path)
 
     return test_paths
 

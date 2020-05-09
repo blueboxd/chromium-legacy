@@ -38,7 +38,7 @@ std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiButton(
 }
 
 // static
-std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiBlueButton(
+std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiProminentButton(
     ButtonListener* listener,
     const base::string16& text) {
   auto md_button =
@@ -54,7 +54,6 @@ std::unique_ptr<MdTextButton> MdTextButton::Create(ButtonListener* listener,
   auto button = base::WrapUnique<MdTextButton>(
       new MdTextButton(listener, button_context));
   button->SetText(text);
-  button->SetFocusForPlatform();
 
   return button;
 }
@@ -172,8 +171,7 @@ PropertyEffects MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 }
 
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
-    : LabelButton(listener, base::string16(), button_context),
-      is_prominent_(false) {
+    : LabelButton(listener, base::string16(), button_context) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   set_show_ink_drop_when_hot_tracked(true);

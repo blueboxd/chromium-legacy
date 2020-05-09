@@ -948,7 +948,7 @@ bool CrostiniManager::IsDevKvmPresent() {
 }
 
 void CrostiniManager::MaybeUpdateCrostini() {
-  auto* component_manager =
+  scoped_refptr<component_updater::CrOSComponentManager> component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   if (!component_manager) {
     // |component_manager| may be nullptr in unit tests.
@@ -958,7 +958,9 @@ void CrostiniManager::MaybeUpdateCrostini() {
   container_upgrade_prompt_shown_.clear();
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(CrostiniManager::CheckPathsAndComponents),
+      base::BindOnce(
+          CrostiniManager::CheckPathsAndComponents,
+          g_browser_process->platform_part()->cros_component_manager()),
       base::BindOnce(&CrostiniManager::MaybeUpdateCrostiniAfterChecks,
                      weak_ptr_factory_.GetWeakPtr()));
   // Probe Concierge - if it's still running after an unclean shutdown, a
@@ -989,13 +991,12 @@ void CrostiniManager::MaybeUpdateCrostini() {
 }
 
 // static
-void CrostiniManager::CheckPathsAndComponents() {
-  is_dev_kvm_present_ = base::PathExists(base::FilePath("/dev/kvm"));
-  auto* component_manager =
-      g_browser_process->platform_part()->cros_component_manager();
+void CrostiniManager::CheckPathsAndComponents(
+    scoped_refptr<component_updater::CrOSComponentManager> component_manager) {
   DCHECK(component_manager);
-  is_cros_termina_registered_ =
-      component_manager->IsRegistered(imageloader::kTerminaComponentName);
+  is_dev_kvm_present_ = base::PathExists(base::FilePath("/dev/kvm"));
+  is_cros_termina_registered_ = component_manager->IsRegisteredMayBlock(
+      imageloader::kTerminaComponentName);
 }
 
 void CrostiniManager::MaybeUpdateCrostiniAfterChecks() {
@@ -1020,9 +1021,9 @@ void CrostiniManager::MaybeUpdateCrostiniAfterChecks() {
 using UpdatePolicy = component_updater::CrOSComponentManager::UpdatePolicy;
 
 void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
-  auto* cros_component_manager =
+  scoped_refptr<component_updater::CrOSComponentManager> component_manager =
       g_browser_process->platform_part()->cros_component_manager();
-  if (!cros_component_manager) {
+  if (!component_manager) {
     // Running in a unit test. We still PostTask to prevent races.
     base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
@@ -1033,12 +1034,11 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
     return;
   }
 
-  DCHECK(cros_component_manager);
+  DCHECK(component_manager);
 
   bool major_update_required =
       is_cros_termina_registered_ &&
-      cros_component_manager
-          ->GetCompatiblePath(imageloader::kTerminaComponentName)
+      component_manager->GetCompatiblePath(imageloader::kTerminaComponentName)
           .empty();
   bool is_offline = content::GetNetworkConnectionTracker()->IsOffline();
 
@@ -1063,7 +1063,7 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
     update_policy = UpdatePolicy::kDontForce;
   }
 
-  cros_component_manager->Load(
+  component_manager->Load(
       imageloader::kTerminaComponentName,
       component_updater::CrOSComponentManager::MountPolicy::kMount,
       update_policy,
@@ -1087,9 +1087,9 @@ void CrostiniManager::OnInstallTerminaComponent(
         << "Failed to install the cros-termina component with error code: "
         << static_cast<int>(error);
     if (is_cros_termina_registered_ && is_update_checked) {
-      auto* cros_component_manager =
+      scoped_refptr<component_updater::CrOSComponentManager> component_manager =
           g_browser_process->platform_part()->cros_component_manager();
-      if (cros_component_manager) {
+      if (component_manager) {
         // Try again, this time with no update checking. The reason we do this
         // is that we may still be offline even when is_offline above was
         // false. It's notoriously difficult to know when you're really
@@ -1100,7 +1100,7 @@ void CrostiniManager::OnInstallTerminaComponent(
 
         LOG(ERROR) << "Retrying cros-termina component load, no update check";
         // Load the existing component on disk.
-        cros_component_manager->Load(
+        component_manager->Load(
             imageloader::kTerminaComponentName,
             component_updater::CrOSComponentManager::MountPolicy::kMount,
             update_policy,
@@ -1139,11 +1139,10 @@ void CrostiniManager::OnInstallTerminaComponent(
 
 bool CrostiniManager::UninstallTerminaComponent() {
   bool success = true;
-  auto* cros_component_manager =
+  scoped_refptr<component_updater::CrOSComponentManager> component_manager =
       g_browser_process->platform_part()->cros_component_manager();
-  if (cros_component_manager) {
-    success =
-        cros_component_manager->Unload(imageloader::kTerminaComponentName);
+  if (component_manager) {
+    success = component_manager->Unload(imageloader::kTerminaComponentName);
   }
   if (success) {
     is_cros_termina_registered_ = false;
@@ -1379,12 +1378,12 @@ void CrostiniManager::CreateLxdContainer(std::string vm_name,
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
   std::string image_server_url;
-  auto* cros_component_manager =
+  scoped_refptr<component_updater::CrOSComponentManager> component_manager =
       g_browser_process->platform_part()->cros_component_manager();
-  if (cros_component_manager) {
-    image_server_url = cros_component_manager
-                           ->GetCompatiblePath("cros-crostini-image-server-url")
-                           .value();
+  if (component_manager) {
+    image_server_url =
+        component_manager->GetCompatiblePath("cros-crostini-image-server-url")
+            .value();
   }
   request.set_image_server(image_server_url.empty()
                                ? kCrostiniDefaultImageServerUrl

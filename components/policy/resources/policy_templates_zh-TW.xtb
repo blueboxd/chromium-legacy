@@ -296,6 +296,7 @@
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">回報背光資訊</translation>
+<translation id="1488406778491620405">「<ph name="PRODUCT_NAME" />」無障礙功能可讓螢幕閱讀器的視障使用者在網路上取得未標示圖片的說明。啟用這項功能的使用者將可使用去識別化的 Google 服務，針對在網路上遇到的未標示圖片取得自動說明。啟用這項功能後，系統會將圖片內容傳送給 Google 伺服器以產生說明內容。系統不會傳送 Cookie 或其他使用者資料，且 Google 不會儲存或記錄任何圖片內容。如果將這項政策設為 True，系統會啟用「<ph name="PRODUCT_NAME" />」功能，不過這項設定只會影響使用螢幕閱讀器或其他類似輔助技術的使用者。如果將這項政策設為 False，使用者將無法啟用這項功能。設好這項政策後，使用者即無法變更或覆寫設定。</translation>
 <translation id="1497640071678474358">你可以設定網址模式清單，指定不可開啟彈出式視窗的網站。
 
           如果不設定這項政策，系統會根據「DefaultPopupsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
@@ -1585,6 +1586,7 @@
 
       這項政策僅能設為建議政策。你可以使用這項政策將一些建議語言代碼移到頂端，但使用者隨時能為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
       </translation>
+<translation id="3373381043600809954">啟用「<ph name="PRODUCT_NAME" />」。</translation>
 <translation id="3378482432905539452">這項政策已遭到淘汰。請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控管是否要提供 Flash 外掛程式，並使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 指定是否要使用整合式 PDF 檢視器開啟 PDF 檔案。
 
       指定使用者能否在 <ph name="PRODUCT_NAME" /> 中啟用或停用的外掛程式清單。
@@ -2961,7 +2963,6 @@
 
       這項政策應與「永久連線的 VPN」功能一併使用，以便管理員決定是否在啟動時建立 VPN 連線。</translation>
 <translation id="5401696449591951427">啟用 <ph name="CHROME_DEVICES_LINK" /></translation>
-<translation id="5404635530342514143">當使用者按下按鈕後，這項功能可將密碼顯示在鎖定/開始畫面上。</translation>
 <translation id="5405289061476885481">設定 <ph name="PRODUCT_OS_NAME" /> 登入畫面可使用的鍵盤配置。
 
       如果將這項政策設為輸入法識別碼清單，登入畫面即可顯示指定的輸入法。系統會預先選取第一個指定的輸入法。在特定使用者視窗的登入畫面中，除了這項政策指定的輸入法之外，還會提供使用者最後一次使用的輸入法。如果未設定這項政策，系統會根據登入畫面顯示的語言代碼提供登入畫面的輸入法。如果值不是有效的輸入法識別碼，則會遭到忽略。</translation>
@@ -2973,6 +2974,10 @@
       AudioCaptureAllowedUrls 中設為允許的網址才能執行音訊擷取。
 
       這項政策會影響所有類型的音訊輸入裝置，而不僅限於內建麥克風。</translation>
+<translation id="5417906792459853336">回報裝置的應用程式項目和使用狀況資訊。
+
+      如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
+      如果設為 True，系統會回報裝置的應用程式和使用情況。</translation>
 <translation id="5422643441807528365"><ph name="PLUGIN_VM_NAME" /> 授權金鑰</translation>
 <translation id="5423001109873148185">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入搜尋引擎，並影響匯入對話方塊。如果停用這項政策，則不會匯入搜尋引擎。如果未設定這項政策，系統會自動匯入搜尋引擎，或詢問使用者是否要匯入搜尋引擎。</translation>
 <translation id="5423197884968724595">Android WebView 限制名稱：</translation>
@@ -3020,6 +3025,7 @@
 <translation id="5457065417344056871">在瀏覽器中啟用訪客模式</translation>
 <translation id="5457924070961220141">允許你在安裝「<ph name="PRODUCT_FRAME_NAME" />」之後，設定預設的 HTML 算繪器。如果未設定這項政策，系統就會使用預設設定，允許主機瀏覽器進行算繪，但是你可以覆寫這項預設，改由「<ph name="PRODUCT_FRAME_NAME" />」算繪 HTML 網頁。</translation>
 <translation id="5464816904705580310">為管理化環境下的使用者調整設定。</translation>
+<translation id="5466596281866046569">回報應用程式資訊</translation>
 <translation id="546726650689747237">在 AC 供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="5469143988693423708">已允許使用者執行 Crostini</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
@@ -4001,7 +4007,6 @@
 
           比例因數必須為 100% 以上的值。</translation>
 <translation id="7086720321892395256">控管隱私保護畫面功能的使用者和裝置政策。</translation>
-<translation id="7095145887485705461">啟用在鎖定/開始畫面上的顯示密碼按鈕。</translation>
 <translation id="710003290625031750">展開的架構說明：</translation>
 <translation id="7106631983877564505">在 <ph name="PRODUCT_OS_NAME" /> 裝置進入閒置或暫停狀態時啟用鎖定功能。
 

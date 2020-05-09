@@ -42,6 +42,7 @@ std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
   switch (app_type) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
+    case apps::mojom::AppType::kLacros:
       return std::make_unique<app_list::AppContextMenu>(delegate, profile,
                                                         app_id, controller);
 

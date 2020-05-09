@@ -575,6 +575,8 @@ jumbo_source_set("test_support") {
     sources += [
       "api/crash_report_private/mock_crash_endpoint.cc",
       "api/crash_report_private/mock_crash_endpoint.h",
+      "api/feedback_private/mock_feedback_service.cc",
+      "api/feedback_private/mock_feedback_service.h",
     ]
     deps += [
       "//components/crash/core/app:app",

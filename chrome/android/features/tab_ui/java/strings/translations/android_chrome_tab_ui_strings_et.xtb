@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Vaata üle</translation>
 <translation id="5073204694187207510">Peida täisekraani ruudustik</translation>
 <translation id="5082793167783849073">Looge rühm, et lehti kiiresti võrrelda. Alustamiseks puudutage pikalt linki.</translation>
+<translation id="5533021382642990449">Kuva hiljem</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> vahekaarti grupeeriti</translation>
 <translation id="58326064309361797">Lohistage vahelehti, et neid rühmitata</translation>
 <translation id="6040143037577758943">Sulge</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Loobuge soovitustest.</translation>
 <translation id="814503310257431685">Vaata kõiki</translation>
 <translation id="8205266828577616993">Teisalda vaheleht üles</translation>
+<translation id="8304833501377495048">Kas te ei soovi enam vahelehtede riba kuvada?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Sule <ph name="TABS_COUNT_ONE" /> valitud vaheleht}other{Sule <ph name="TABS_COUNT_MANY" /> valitud vahelehte}}</translation>
+<translation id="8749939518995770034">Vahelehtede riba suleti</translation>
 <translation id="9150694013019234766">Ekraanikuva allosas olevas vahelehtede grupis vahelehtede vahel vahetamine</translation>
 <translation id="9169594135889675189">Lisa gruppi uus vaheleht</translation>
 <translation id="959682366969460160">Lööge kord majja</translation>

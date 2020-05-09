@@ -11,6 +11,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
@@ -125,17 +126,21 @@ public class ToolbarTabControllerImpl implements ToolbarTabController {
         RecordHistogram.recordBooleanHistogram(
                 "Navigation.Home.IsChromeInternal", is_chrome_internal);
 
-        recordToolbarUseForIPH(EventConstants.HOMEPAGE_BUTTON_CLICKED);
+        recordHomeButtonUseForIPH(homePageUrl);
         currentTab.loadUrl(new LoadUrlParams(homePageUrl, PageTransition.HOME_PAGE));
     }
 
     /** Record that homepage button was used for IPH reasons */
-    private void recordToolbarUseForIPH(String toolbarIPHEvent) {
+    private void recordHomeButtonUseForIPH(String homepageUrl) {
         Tab tab = mTabSupplier.get();
         Profile profile = mProfileSupplier.get();
         if (tab == null || profile == null) return;
 
         Tracker tracker = TrackerFactory.getTrackerForProfile(mProfileSupplier.get());
-        tracker.notifyEvent(toolbarIPHEvent);
+        tracker.notifyEvent(EventConstants.HOMEPAGE_BUTTON_CLICKED);
+
+        if (NewTabPage.isNTPUrl(homepageUrl)) {
+            tracker.notifyEvent(EventConstants.NTP_HOME_BUTTON_CLICKED);
+        }
     }
 }

@@ -4,6 +4,7 @@
 
 #include "ui/native_theme/common_theme.h"
 
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -20,6 +21,23 @@
 namespace ui {
 
 namespace {
+
+NativeTheme::SecurityChipColorId GetSecurityChipColorId(
+    NativeTheme::ColorId color_id) {
+  static const base::NoDestructor<
+      base::flat_map<NativeTheme::ColorId, NativeTheme::SecurityChipColorId>>
+      color_id_map({
+          {NativeTheme::kColorId_CustomTabBarSecurityChipDefaultColor,
+           NativeTheme::SecurityChipColorId::DEFAULT},
+          {NativeTheme::kColorId_CustomTabBarSecurityChipSecureColor,
+           NativeTheme::SecurityChipColorId::SECURE},
+          {NativeTheme::kColorId_CustomTabBarSecurityChipWithCertColor,
+           NativeTheme::SecurityChipColorId::SECURE_WITH_CERT},
+          {NativeTheme::kColorId_CustomTabBarSecurityChipDangerousColor,
+           NativeTheme::SecurityChipColorId::DANGEROUS},
+      });
+  return color_id_map->at(color_id);
+}
 
 base::Optional<SkColor> GetHighContrastColor(
     NativeTheme::ColorId color_id,
@@ -112,6 +130,10 @@ base::Optional<SkColor> GetDarkSchemeColor(NativeTheme::ColorId color_id) {
       return gfx::kGoogleGrey900;
     case NativeTheme::kColorId_CustomFrameInactiveColor:
       return gfx::kGoogleGrey800;
+
+    // Custom tab bar
+    case NativeTheme::kColorId_CustomTabBarBackgroundColor:
+      return gfx::kGoogleGrey900;
 
     // Dropdown
     case NativeTheme::kColorId_DropdownBackgroundColor:
@@ -331,6 +353,23 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
       return SkColorSetRGB(0xDE, 0xE1, 0xE6);
     case NativeTheme::kColorId_CustomFrameInactiveColor:
       return SkColorSetRGB(0xE7, 0xEA, 0xED);
+
+    // Custom tab bar
+    case NativeTheme::kColorId_CustomTabBarBackgroundColor:
+      return SK_ColorWHITE;
+    case NativeTheme::kColorId_CustomTabBarForegroundColor:
+      return color_utils::GetColorWithMaxContrast(base_theme->GetSystemColor(
+          NativeTheme::kColorId_CustomTabBarBackgroundColor, color_scheme));
+    case NativeTheme::kColorId_CustomTabBarSecurityChipWithCertColor:
+    case NativeTheme::kColorId_CustomTabBarSecurityChipSecureColor:
+    case NativeTheme::kColorId_CustomTabBarSecurityChipDefaultColor:
+    case NativeTheme::kColorId_CustomTabBarSecurityChipDangerousColor: {
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_CustomTabBarForegroundColor, color_scheme);
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_CustomTabBarBackgroundColor, color_scheme);
+      return GetSecurityChipColor(GetSecurityChipColorId(color_id), fg, bg);
+    }
 
     // Dropdown
     case NativeTheme::kColorId_DropdownBackgroundColor:
@@ -561,6 +600,39 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
 }
 
 }  // namespace
+
+SkColor GetSecurityChipColor(NativeTheme::SecurityChipColorId chip_color_id,
+                             SkColor fg,
+                             SkColor bg,
+                             bool high_contrast) {
+  const bool dark = color_utils::IsDark(bg);
+  const auto blend_for_min_contrast = [&](SkColor fg, SkColor bg,
+                                          base::Optional<SkColor> hc_fg =
+                                              base::nullopt) {
+    const float ratio =
+        high_contrast ? 6.0f : color_utils::kMinimumReadableContrastRatio;
+    return color_utils::BlendForMinContrast(fg, bg, hc_fg, ratio).color;
+  };
+  const auto security_chip_color = [&](SkColor color) {
+    return blend_for_min_contrast(color, bg);
+  };
+
+  switch (chip_color_id) {
+    case NativeTheme::SecurityChipColorId::DEFAULT:
+    case NativeTheme::SecurityChipColorId::SECURE:
+      return dark
+                 ? color_utils::BlendTowardMaxContrast(fg, 0x18)
+                 : security_chip_color(color_utils::DeriveDefaultIconColor(fg));
+    case NativeTheme::SecurityChipColorId::DANGEROUS:
+      return dark ? color_utils::BlendTowardMaxContrast(fg, 0x18)
+                  : security_chip_color(gfx::kGoogleRed600);
+    case NativeTheme::SecurityChipColorId::SECURE_WITH_CERT:
+      return blend_for_min_contrast(fg, fg, blend_for_min_contrast(bg, bg));
+    default:
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
+  }
+}
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
                      const NativeTheme* base_theme,

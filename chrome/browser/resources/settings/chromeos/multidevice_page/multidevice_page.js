@@ -368,7 +368,10 @@ Polymer({
         settings.routes.MULTIDEVICE.contains(
             settings.Router.getInstance().getCurrentRoute()) &&
         !this.isHostSet()) {
-      settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
+      // Render MULTIDEVICE page before the MULTIDEVICE_FEATURES has a chance.
+      Polymer.RenderStatus.beforeNextRender(this, () => {
+        settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
+      });
     }
   },
 

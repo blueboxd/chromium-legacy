@@ -85,6 +85,9 @@ namespace feedbackPrivate {
     // Whether or not to send bluetooth logs with this report.
     boolean? sendBluetoothLogs;
 
+    // Whether or not to send tab titles with this report.
+    boolean? sendTabTitles;
+
     // Whether or not to send Assistant feedback to Assistant server.
     boolean? assistantDebugInfoAllowed;
 

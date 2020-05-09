@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
@@ -19,9 +18,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
-
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -68,18 +64,12 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * A class containing some utility static methods.
  */
 public class DownloadUtils {
     private static final String TAG = "download";
-
-    private static final String DEFAULT_MIME_TYPE = "*/*";
-    private static final String MIME_TYPE_DELIMITER = "/";
-    private static final String MIME_TYPE_SHARING_URL = "text/plain";
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
@@ -459,14 +449,6 @@ public class DownloadUtils {
         }
     }
 
-    private static void recordShareHistograms(int count, int filterType) {
-        RecordHistogram.recordEnumeratedHistogram("Android.DownloadManager.Share.FileTypes",
-                filterType, DownloadFilter.Type.NUM_ENTRIES);
-
-        RecordHistogram.recordLinearCountHistogram("Android.DownloadManager.Share.Count",
-                count, 1, 20, 20);
-    }
-
     /**
      * Fires an Intent to open a downloaded item.
      * @param context Context to use.
@@ -543,66 +525,6 @@ public class DownloadUtils {
                 helper.getDownloadSharedPreferenceEntry(item.getContentId());
         return entry != null && item.getDownloadInfo().state() == DownloadState.INTERRUPTED
                 && entry.isAutoResumable;
-    }
-
-    /**
-     * Return a background color for the file type icon.
-     * @param context Context from which to extract the resources.
-     * @return Background color.
-     */
-    public static int getIconBackgroundColor(Context context) {
-        return ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.default_control_color_active);
-    }
-
-    /**
-     * Return a foreground color list for the file type icon.
-     * @param context Context from which to extract the resources.
-     * @return a foreground color list.
-     */
-    public static ColorStateList getIconForegroundColorList(Context context) {
-        return AppCompatResources.getColorStateList(context, R.color.white_mode_tint);
-    }
-
-    /**
-     * Return if a download item is already viewed by the user. Will return false if the last
-     * access time is not available.
-     * @param item The download item.
-     * @return true if the item is viewed by the user.
-     */
-    public static boolean isDownloadViewed(DownloadItem item) {
-        if (item == null || item.getDownloadInfo() == null) return false;
-        return item.getDownloadInfo().getLastAccessTime() != 0;
-    }
-
-    /**
-     * Returns |true| if the offline item is not null and has already been viewed by the user.
-     * @param offlineItem The offline item to check.
-     * @return true if the item is valid has been viewed by the user.
-     */
-    public static boolean isOfflineItemViewed(OfflineItem offlineItem) {
-        return offlineItem != null && offlineItem.lastAccessedTimeMs > offlineItem.completionTimeMs;
-    }
-
-    /**
-     * Given two timestamps, calculates if both occur on the same date.
-     * @return True if they belong in the same day. False otherwise.
-     */
-    public static boolean isSameDay(long timestamp1, long timestamp2) {
-        return getDateAtMidnight(timestamp1).equals(getDateAtMidnight(timestamp2));
-    }
-
-    /**
-     * Calculates the {@link Date} for midnight of the date represented by the |timestamp|.
-     */
-    public static Date getDateAtMidnight(long timestamp) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(timestamp);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
     }
 
     @NativeMethods

@@ -42,7 +42,14 @@ public class TabGroupUtils {
     private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
 
     public static void maybeShowIPH(@FeatureConstants String featureName, View view) {
-        if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) return;
+        // For tab group, all three IPHs are valid. For conditional tab strip, the only valid IPH
+        // below is TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE.
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+                && !(TabUiFeatureUtilities.isConditionalTabStripEnabled()
+                        && featureName.equals(
+                                FeatureConstants.TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_FEATURE))) {
+            return;
+        }
 
         @StringRes
         int textId;

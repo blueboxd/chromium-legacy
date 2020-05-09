@@ -239,7 +239,7 @@ cr.define('settings', function() {
       }
 
       if (loadTimeData.getBoolean('newOsSettingsSearch')) {
-        // TODO(crbug/1056909): Remove when new os settings search complete.
+        // TODO(crbug/1080777): Remove when new os settings search complete.
         // This block prevents the old settings search code from being executed.
         return;
       }
@@ -259,7 +259,7 @@ cr.define('settings', function() {
               toolbar.getSearchField());
 
       if (!searchField) {
-        // TODO(crbug/1056909): Remove this and surrounding code when new os
+        // TODO(crbug/1080777): Remove this and surrounding code when new os
         // settings search complete. If the search field has not been rendered
         // yet, do not continue. crbug/1056909 changes the toolbar search field
         // to an optional value, so the element is not attached to the DOM the
@@ -312,7 +312,7 @@ cr.define('settings', function() {
 
     /**
      * Handles the 'search-changed' event fired from the toolbar.
-     * TODO(crbug/1056909): Remove when new settings search complete.
+     * TODO(crbug/1080777): Remove when new settings search complete.
      * @param {!Event} e
      * @private
      */

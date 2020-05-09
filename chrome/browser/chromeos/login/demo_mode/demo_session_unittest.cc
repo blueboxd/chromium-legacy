@@ -108,7 +108,7 @@ class DemoSessionTest : public testing::Test {
 
   void InitializeCrosComponentManager() {
     auto fake_cros_component_manager =
-        std::make_unique<FakeCrOSComponentManager>();
+        base::MakeRefCounted<FakeCrOSComponentManager>();
     fake_cros_component_manager->set_queue_load_requests(true);
     fake_cros_component_manager->set_supported_components(
         {kOfflineResourcesComponent});

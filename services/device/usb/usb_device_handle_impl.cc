@@ -644,7 +644,9 @@ void UsbDeviceHandleImpl::ResetDevice(ResultCallback callback) {
                                 std::move(callback)));
 }
 
-void UsbDeviceHandleImpl::ClearHalt(uint8_t endpoint, ResultCallback callback) {
+void UsbDeviceHandleImpl::ClearHalt(UsbTransferDirection direction,
+                                    uint8_t endpoint_number,
+                                    ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!device_) {
@@ -652,8 +654,11 @@ void UsbDeviceHandleImpl::ClearHalt(uint8_t endpoint, ResultCallback callback) {
     return;
   }
 
+  uint8_t endpoint_address =
+      ConvertTransferDirection(direction) | endpoint_number;
+
   InterfaceClaimer* interface_claimer =
-      GetClaimedInterfaceForEndpoint(endpoint).get();
+      GetClaimedInterfaceForEndpoint(endpoint_address).get();
   for (Transfer* transfer : transfers_) {
     if (transfer->claimed_interface() == interface_claimer) {
       transfer->Cancel();
@@ -662,7 +667,7 @@ void UsbDeviceHandleImpl::ClearHalt(uint8_t endpoint, ResultCallback callback) {
 
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ClearHaltBlocking, this,
-                                endpoint, std::move(callback)));
+                                endpoint_address, std::move(callback)));
 }
 
 void UsbDeviceHandleImpl::ControlTransfer(
@@ -983,11 +988,11 @@ void UsbDeviceHandleImpl::ResetDeviceBlocking(ResultCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), rv == LIBUSB_SUCCESS));
 }
 
-void UsbDeviceHandleImpl::ClearHaltBlocking(uint8_t endpoint,
+void UsbDeviceHandleImpl::ClearHaltBlocking(uint8_t endpoint_address,
                                             ResultCallback callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  int rv = libusb_clear_halt(handle(), endpoint);
+  int rv = libusb_clear_halt(handle(), endpoint_address);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to clear halt: "
                    << ConvertPlatformUsbErrorToString(rv);
@@ -1019,8 +1024,8 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
 }
 
 scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer>
-UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8_t endpoint) {
-  const auto endpoint_it = endpoint_map_.find(endpoint);
+UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8_t endpoint_address) {
+  const auto endpoint_it = endpoint_map_.find(endpoint_address);
   if (endpoint_it != endpoint_map_.end())
     return claimed_interfaces_[endpoint_it->second.interface->interface_number];
   return nullptr;

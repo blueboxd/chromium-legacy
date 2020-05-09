@@ -17,6 +17,7 @@
 #include "ui/views/examples/flex_layout_example.h"
 #include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
+#include "ui/views/examples/login_bubble_dialog.h"
 #include "ui/views/examples/menu_example.h"
 #include "ui/views/examples/message_box_example.h"
 #include "ui/views/examples/multiline_example.h"
@@ -52,6 +53,7 @@ ExampleVector CreateExamples(ExampleVector extra_examples) {
   examples.push_back(std::make_unique<FlexLayoutExample>());
   examples.push_back(std::make_unique<LabelExample>());
   examples.push_back(std::make_unique<LinkExample>());
+  examples.push_back(std::make_unique<LoginBubbleDialogExample>());
   examples.push_back(std::make_unique<MenuExample>());
   examples.push_back(std::make_unique<MessageBoxExample>());
   examples.push_back(std::make_unique<MultilineExample>());

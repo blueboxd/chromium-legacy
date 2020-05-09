@@ -85,6 +85,24 @@ bool IsUrlInAppScope(web_app::AppBrowserController* app_controller, GURL url) {
   return app_controller ? app_controller->IsUrlInAppScope(url) : false;
 }
 
+// TODO(tluk): The color id selection logic for security levels should be shared
+// with that in GetOmniboxSecurityChipColor() once transition to Color Pipeline
+// is complete.
+ui::NativeTheme::ColorId GetSecurityChipColorId(
+    security_state::SecurityLevel security_level) {
+  switch (security_level) {
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+      return ui::NativeTheme::kColorId_CustomTabBarSecurityChipWithCertColor;
+    case security_state::EV_SECURE:
+    case security_state::SECURE:
+      return ui::NativeTheme::kColorId_CustomTabBarSecurityChipSecureColor;
+    case security_state::DANGEROUS:
+      return ui::NativeTheme::kColorId_CustomTabBarSecurityChipDangerousColor;
+    default:
+      return ui::NativeTheme::kColorId_CustomTabBarSecurityChipDefaultColor;
+  }
+}
+
 }  // namespace
 
 // Container view for laying out and rendering the title/origin of the current
@@ -292,16 +310,15 @@ void CustomTabBarView::OnThemeChanged() {
 
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
 
-  background_color_ = GetBackgroundColor();
-
-  SetBackground(views::CreateSolidBackground(background_color_));
-
-  const SkColor foreground_color =
-      color_utils::GetColorWithMaxContrast(background_color_);
-
+  const SkColor foreground_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_CustomTabBarForegroundColor);
   SetImageFromVectorIconWithColor(
       close_button_, vector_icons::kCloseRoundedIcon,
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE), foreground_color);
+
+  background_color_ = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_CustomTabBarBackgroundColor);
+  SetBackground(views::CreateSolidBackground(background_color_));
 
   title_origin_view_->SetColors(background_color_);
 }
@@ -363,7 +380,8 @@ SkColor CustomTabBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
 }
 
 SkColor CustomTabBarView::GetIconLabelBubbleBackgroundColor() const {
-  return GetBackgroundColor();
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_CustomTabBarBackgroundColor);
 }
 
 content::WebContents* CustomTabBarView::GetWebContents() {
@@ -380,7 +398,8 @@ void CustomTabBarView::OnLocationIconDragged(const ui::MouseEvent& event) {}
 
 SkColor CustomTabBarView::GetSecurityChipColor(
     security_state::SecurityLevel security_level) const {
-  return GetOmniboxSecurityChipColor(GetThemeProvider(), security_level);
+  return GetNativeTheme()->GetSystemColor(
+      GetSecurityChipColorId(security_level));
 }
 
 bool CustomTabBarView::ShowPageInfoDialog() {
@@ -417,11 +436,9 @@ bool CustomTabBarView::IsShowingOriginForTesting() const {
          title_origin_view_->IsShowingOriginForTesting();
 }
 
-SkColor CustomTabBarView::GetBackgroundColor() const {
-  return GetNativeTheme()->ShouldUseDarkColors() ? GetDefaultFrameColor()
-                                                 : SK_ColorWHITE;
-}
-
+// TODO(tluk): Remove the use of GetDefaultFrameColor() completely here. When
+// drawing the separator the current frame color should be queried directly and
+// not assume knowledge of what the color might be.
 SkColor CustomTabBarView::GetDefaultFrameColor() const {
 #if defined(OS_CHROMEOS)
   // Ash system frames differ from ChromeOS browser frames.

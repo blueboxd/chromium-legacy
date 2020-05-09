@@ -407,8 +407,7 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     }
     auto network = TranslateONCConfiguration(
         state, chromeos::network_util::TranslateNetworkStateToONC(state).get());
-    network->is_default_network =
-        (network_path == GetStateHandler()->default_network_path());
+    network->is_default_network = state == GetStateHandler()->DefaultNetwork();
     network->service_name = network_path;
     networks.push_back(std::move(network));
   }

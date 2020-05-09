@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
-#include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar.h"
+#include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -228,8 +228,8 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE:
-      extensions::ExtensionDevToolsInfoBar::Create("id", "Extension",
-                                                   base::DoNothing());
+      extensions::ExtensionDevToolsInfoBarDelegate::Create("id", "Extension",
+                                                           base::DoNothing());
       break;
 
     case IBD::INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE: {

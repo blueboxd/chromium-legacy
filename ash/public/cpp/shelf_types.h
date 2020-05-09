@@ -146,10 +146,6 @@ enum ShelfItemType {
   // The browser shortcut button, the browser may be running or not.
   TYPE_BROWSER_SHORTCUT,
 
-  // Represents the lacros "linux-chrome" browser. The browser may or may not
-  // be running.
-  TYPE_LACROS_BROWSER,
-
   // Represents an unpinned running app window. Supports these app types:
   // - Extension "V1" (legacy packaged and hosted) apps,
   // - Extension "V2" (platform) apps,

@@ -3,9 +3,9 @@ Downloading via a navigation:
 {
     method : Page.downloadWillBegin
     params : {
-        filename : hello.txt
         frameId : <string>
         guid : <string>
+        suggestedFilename : hello.txt
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?download=1
     }
     sessionId : <string>
@@ -34,9 +34,9 @@ Downloading by clicking a link:
 {
     method : Page.downloadWillBegin
     params : {
-        filename : hello.text
         frameId : <string>
         guid : <string>
+        suggestedFilename : hello.text
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php
     }
     sessionId : <string>
@@ -65,30 +65,10 @@ Downloading by clicking a link (no HTTP Content-Disposition header, a[download="
 {
     method : Page.downloadWillBegin
     params : {
-        filename : download.zzz
         frameId : <string>
         guid : <string>
+        suggestedFilename : download.zzz
         url : http://127.0.0.1:8000/devtools/network/resources/download.zzz
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : inProgress
-        totalBytes : 40
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : completed
-        totalBytes : 40
     }
     sessionId : <string>
 }
@@ -96,30 +76,10 @@ Downloading by clicking a link (HTTP Content-Disposition header with filename=fo
 {
     method : Page.downloadWillBegin
     params : {
-        filename : foo.txt
         frameId : <string>
         guid : <string>
+        suggestedFilename : foo.txt
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download=foo.txt
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : inProgress
-        totalBytes : 11
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : completed
-        totalBytes : 11
     }
     sessionId : <string>
 }
@@ -127,30 +87,10 @@ Downloading by clicking a link (HTTP Content-Disposition header with filename=ov
 {
     method : Page.downloadWillBegin
     params : {
-        filename : override.txt
         frameId : <string>
         guid : <string>
+        suggestedFilename : override.txt
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download=override.txt
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : inProgress
-        totalBytes : 11
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : completed
-        totalBytes : 11
     }
     sessionId : <string>
 }
@@ -158,30 +98,10 @@ Downloading by clicking a link (HTTP Content-Disposition header without filename
 {
     method : Page.downloadWillBegin
     params : {
-        filename : resource.txt
         frameId : <string>
         guid : <string>
+        suggestedFilename : resource.txt
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : inProgress
-        totalBytes : 11
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : completed
-        totalBytes : 11
     }
     sessionId : <string>
 }
@@ -189,30 +109,10 @@ Downloading by clicking a link (HTTP Content-Disposition header without filename
 {
     method : Page.downloadWillBegin
     params : {
-        filename : resource.js
         frameId : <string>
         guid : <string>
+        suggestedFilename : resource.js
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download&type=js
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : inProgress
-        totalBytes : 17
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : completed
-        totalBytes : 17
     }
     sessionId : <string>
 }
@@ -220,30 +120,10 @@ Downloading by clicking a link (HTTP Content-Disposition header without filename
 {
     method : Page.downloadWillBegin
     params : {
-        filename : resource.png
         frameId : <string>
         guid : <string>
+        suggestedFilename : resource.png
         url : http://127.0.0.1:8000/devtools/network/resources/resource.php?named_download&type=image
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : inProgress
-        totalBytes : 179
-    }
-    sessionId : <string>
-}
-{
-    method : Page.downloadProgress
-    params : {
-        guid : <string>
-        receivedBytes : <number>
-        state : completed
-        totalBytes : 179
     }
     sessionId : <string>
 }

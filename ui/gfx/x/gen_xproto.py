@@ -169,12 +169,70 @@ from __future__ import print_function
 import argparse
 import collections
 import os
+import re
 import sys
 import types
 
 # __main__.output must be defined before importing xcbgen,
 # so this global is unavoidable.
 output = collections.defaultdict(int)
+
+UPPER_CASE_PATTERN = re.compile(r'^[A-Z0-9_]+$')
+
+
+def adjust_type_case(name):
+    if UPPER_CASE_PATTERN.match(name):
+        SPECIAL = {
+            'ANIMCURSORELT': 'AnimationCursorElement',
+            'CA': 'ChangeAlarmAttribute',
+            'CHAR2B': 'Char16',
+            'CHARINFO': 'CharInfo',
+            'COLORITEM': 'ColorItem',
+            'COLORMAP': 'ColorMap',
+            'CP': 'CreatePictureAttribute',
+            'CW': 'CreateWindowAttribute',
+            'DAMAGE': 'DamageId',
+            'DIRECTFORMAT': 'DirectFormat',
+            'DOTCLOCK': 'DotClock',
+            'FBCONFIG': 'FbConfig',
+            'FLOAT32': 'float',
+            'FLOAT64': 'double',
+            'FONTPROP': 'FontProperty',
+            'GC': 'GraphicsContextAttribute',
+            'GCONTEXT': 'GraphicsContext',
+            'GLYPHINFO': 'GlyphInfo',
+            'GLYPHSET': 'GlyphSet',
+            'INDEXVALUE': 'IndexValue',
+            'KB': 'Keyboard',
+            'KEYCODE': 'KeyCode',
+            'KEYCODE32': 'KeyCode32',
+            'KEYSYM': 'KeySym',
+            'LINEFIX': 'LineFix',
+            'OP': 'Operation',
+            'PBUFFER': 'PBuffer',
+            'PCONTEXT': 'PContext',
+            'PICTDEPTH': 'PictDepth',
+            'PICTFORMAT': 'PictFormat',
+            'PICTFORMINFO': 'PictFormInfo',
+            'PICTSCREEN': 'PictScreen',
+            'PICTVISUAL': 'PictVisual',
+            'POINTFIX': 'PointFix',
+            'SEGMENT': 'SEGMENT',
+            'SPANFIX': 'SpanFix',
+            'SUBPICTURE': 'SubPicture',
+            'SYSTEMCOUNTER': 'SystemCounter',
+            'TIMECOORD': 'TimeCoord',
+            'TIMESTAMP': 'TimeStamp',
+            'VISUALID': 'VisualId',
+            'VISUALTYPE': 'VisualType',
+            'WAITCONDITION': 'WaitCondition',
+        }
+        if name in SPECIAL:
+            return SPECIAL[name]
+        return ''.join([
+            token[0].upper() + token[1:].lower() for token in name.split('_')
+        ])
+    return name
 
 
 # Left-pad with 2 spaces while this class is alive.
@@ -246,14 +304,40 @@ def safe_name(name):
 
 class GenXproto:
     def __init__(self, args, xcbgen):
+        # Command line arguments
         self.args = args
+
+        # Top-level xcbgen python module
         self.xcbgen = xcbgen
+
+        # The last used UID for making unique names
         self.prev_id = -1
+
+        # Current indentation level
         self.indent = 0
+
+        # Current file to write to
         self.file = None
+
+        # Flag to indicate if we're generating code to serialize or
+        # deserialize data.
         self.is_read = False
+
+        # List of the fields in scope
         self.scope = []
+
+        # Current place in C++ namespace hierarchy (including classes)
         self.namespace = []
+
+        # Map from type names to a set of types.  Certain types
+        # like enums and simple types can alias each other.
+        self.types = collections.defaultdict(set)
+
+        # Set of names of simple types to be replaced with enums
+        self.replace_with_enum = set()
+
+        # Map of enums to their underlying types
+        self.enum_types = collections.defaultdict(set)
 
     # Write a line to the current file.
     def write(self, line=''):
@@ -276,12 +360,21 @@ class GenXproto:
             return 'Event'
         return ''
 
+    def rename_type(self, t, name):
+        name = list(name)
+        for i in range(1, len(name)):
+            name[i] = adjust_type_case(name[i])
+        name[-1] += self.type_suffix(t)
+        return name
+
     # Given an xcbgen.xtypes.Type, returns a C++-namespace-qualified
     # string that looks like Input::InputClass::Key.
-    def qualtype(self, t):
+    def qualtype(self, t, name):
         # Work around a bug in xcbgen: ('int') should have been ('int',)
-        name = list(('int', ) if t.name == 'int' else t.name)
-        name[-1] += self.type_suffix(t)
+        if name == 'int':
+            name = ('int', )
+
+        name = self.rename_type(t, name)
 
         if name[0] == 'xcb':
             # Use namespace x11 instead of xcb.
@@ -298,6 +391,9 @@ class GenXproto:
                 break
             chop += 1
         return '::'.join(name[chop:])
+
+    def fieldtype(self, field):
+        return self.qualtype(field.type, field.field_type)
 
     def add_field_to_scope(self, field, obj):
         if not field.visible or not field.wire:
@@ -334,18 +430,21 @@ class GenXproto:
 
     # Work around conflicts caused by Xlib's liberal use of macros.
     def undef(self, name):
-        self.write('#ifdef %s' % name)
-        self.write('#undef %s' % name)
-        self.write('#endif')
+        print('#ifdef %s' % name, file=self.args.undeffile)
+        print('#undef %s' % name, file=self.args.undeffile)
+        print('#endif', file=self.args.undeffile)
 
     def expr(self, expr):
         if expr.op == 'popcount':
             return 'PopCount(%s)' % self.expr(expr.rhs)
         if expr.op == '~':
-            return '~(%s)' % self.expr(expr.rhs)
-        if expr.op in ('+', '-', '*', '/', '&', '|'):
-            return ('(%s) %s (%s)' % (self.expr(expr.lhs), expr.op,
-                                      self.expr(expr.rhs)))
+            return 'BitNot(%s)' % self.expr(expr.rhs)
+        if expr.op == '&':
+            return 'BitAnd(%s, %s)' % (self.expr(expr.lhs), self.expr(
+                expr.rhs))
+        if expr.op in ('+', '-', '*', '/', '|'):
+            return ('(%s) %s (%s)' %
+                    (self.expr(expr.lhs), expr.op, self.expr(expr.rhs)))
         if expr.op == 'calculate_len':
             return expr.lenfield_name
         if expr.op == 'sumof':
@@ -356,16 +455,17 @@ class GenXproto:
             header = 'auto sum%d_ = SumOf([](%sauto& listelem_ref) {' % (
                 tmp_id, '' if self.is_read else 'const ')
             footer = '}, %s);' % expr.lenfield_name
-            with Indent(self, header, footer), ScopedFields(
-                    self, 'listelem_ref', fields):
+            with Indent(self, header,
+                        footer), ScopedFields(self, 'listelem_ref', fields):
                 body = self.expr(expr.rhs) if expr.rhs else 'listelem_ref'
                 self.write('return %s;' % body)
             return 'sum%d_' % tmp_id
         if expr.op == 'listelement-ref':
             return 'listelem_ref'
         if expr.op == 'enumref':
-            return '%s::%s' % (self.qualtype(expr.lenfield_type),
-                               safe_name(expr.lenfield_name))
+            return '%s::%s' % (self.qualtype(
+                expr.lenfield_type,
+                expr.lenfield_type.name), safe_name(expr.lenfield_name))
 
         assert expr.op == None
         if expr.nmemb:
@@ -374,12 +474,23 @@ class GenXproto:
         assert expr.lenfield_name
         return expr.lenfield_name
 
+    def declare_simple(self, item, name):
+        # The underlying type of an enum must be integral, so avoid defining
+        # FLOAT32 or FLOAT64.  Usages are renamed to float and double instead.
+        renamed = tuple(self.rename_type(item, name))
+        if name[-1] not in ('FLOAT32', 'FLOAT64'
+                            ) and renamed not in self.replace_with_enum:
+            self.write(
+                'enum class %s : %s {};' %
+                (adjust_type_case(name[-1]), self.qualtype(item, item.name)))
+            self.write()
+
     def copy_primitive(self, name):
-        self.write(
-            '%s(&%s, &buf);' % ('Read' if self.is_read else 'Write', name))
+        self.write('%s(&%s, &buf);' %
+                   ('Read' if self.is_read else 'Write', name))
 
     def copy_special_field(self, field):
-        type_name = self.qualtype(field.type)
+        type_name = self.fieldtype(field)
         name = safe_name(field.field_name)
 
         if name in ('major_opcode', 'minor_opcode'):
@@ -390,8 +501,8 @@ class GenXproto:
                 self.write('// Caller fills in extension major opcode.')
                 self.write('Pad(&buf, sizeof(%s));' % type_name)
             else:
-                self.write(
-                    '%s %s = %s;' % (type_name, name, field.parent.opcode))
+                self.write('%s %s = %s;' %
+                           (type_name, name, field.parent.opcode))
                 self.copy_primitive(name)
         elif name in ('response_type', 'sequence', 'extension'):
             assert self.is_read
@@ -406,11 +517,12 @@ class GenXproto:
                 self.copy_primitive(name)
         else:
             assert field.type.is_expr
-            self.write(
-                '%s %s = %s;' % (type_name, name, self.expr(field.type.expr)))
+            assert (not isinstance(field.type, self.xcbgen.xtypes.Enum))
+            self.write('%s %s = %s;' %
+                       (type_name, name, self.expr(field.type.expr)))
             self.copy_primitive(name)
 
-    def declare_case(self, case, switch_var):
+    def declare_case(self, case):
         assert case.type.is_case != case.type.is_bitcase
 
         with (Indent(self, 'struct {', '} %s;' % safe_name(case.field_name))
@@ -419,7 +531,7 @@ class GenXproto:
                 self.declare_field(case_field)
 
     def copy_case(self, case, switch_var):
-        op = 'CaseEq' if case.type.is_case else 'CaseAnd'
+        op = 'CaseEq' if case.type.is_case else 'BitAnd'
         condition = ' || '.join([
             '%s(%s, %s)' % (op, switch_var, self.expr(expr))
             for expr in case.type.expr
@@ -437,9 +549,8 @@ class GenXproto:
         name = safe_name(field.field_name)
 
         with Indent(self, 'struct {', '} %s;' % name):
-            switch_var = name + '_expr'
             for case in t.bitcases:
-                self.declare_case(case, switch_var)
+                self.declare_case(case)
 
     def copy_switch(self, field):
         t = field.type
@@ -459,7 +570,7 @@ class GenXproto:
 
     def declare_list(self, field):
         t = field.type
-        type_name = self.qualtype(field.type)
+        type_name = self.fieldtype(field)
         name = safe_name(field.field_name)
 
         assert (t.nmemb not in (0, 1))
@@ -492,6 +603,7 @@ class GenXproto:
             elem_name = name + '_elem'
             elem_type = t.member
             if elem_type.is_simple or elem_type.is_union:
+                assert (not isinstance(elem_type, self.xcbgen.xtypes.Enum))
                 self.copy_primitive(elem_name)
             else:
                 assert elem_type.is_container
@@ -509,7 +621,10 @@ class GenXproto:
         elif t.is_list:
             self.declare_list(field)
         else:
-            self.write('%s %s{};' % (self.qualtype(field.type), name))
+            self.write(
+                '%s %s{};' %
+                (self.qualtype(field.type, field.enum
+                               if field.enum else field.field_type), name))
 
     def copy_field(self, field):
         t = field.type
@@ -536,7 +651,10 @@ class GenXproto:
                 self.copy_container(t, name)
         else:
             assert t.is_simple
-            self.copy_primitive(name)
+            if field.enum:
+                self.copy_enum(field)
+            else:
+                self.copy_primitive(name)
 
     def declare_enum(self, enum):
         def declare_enum_entry(name, value):
@@ -545,7 +663,10 @@ class GenXproto:
             self.write('%s = %s,' % (name, value))
 
         self.undef(enum.name[-1])
-        with Indent(self, 'enum class %s {' % enum.name[-1], '};'):
+        with Indent(
+                self, 'enum class %s : %s {' %
+            (adjust_type_case(enum.name[-1]), self.enum_types[enum.name][0]
+             if enum.name in self.enum_types else 'int'), '};'):
             bitnames = set([name for name, _ in enum.bits])
             for name, value in enum.values:
                 if name not in bitnames:
@@ -554,12 +675,28 @@ class GenXproto:
                 declare_enum_entry(name, '1 << ' + value)
         self.write()
 
+    def copy_enum(self, field):
+        # The size of enum types may be different depending on the
+        # context, so they should always be casted to the contextual
+        # underlying type before calling Read() or Write().
+        underlying_type = self.fieldtype(field)
+        tmp_name = 'tmp%d' % self.new_uid()
+        real_name = safe_name(field.field_name)
+        self.write('%s %s;' % (underlying_type, tmp_name))
+        if not self.is_read:
+            self.write('%s = static_cast<%s>(%s);' %
+                       (tmp_name, underlying_type, real_name))
+        self.copy_primitive(tmp_name)
+        if self.is_read:
+            enum_type = self.qualtype(field.type, field.enum)
+            self.write('%s = static_cast<%s>(%s);' %
+                       (real_name, enum_type, tmp_name))
+
     def declare_container(self, struct):
         name = struct.name[-1] + self.type_suffix(struct)
         self.undef(name)
-        with Indent(self, 'struct %s {' % name, '};'):
+        with Indent(self, 'struct %s {' % adjust_type_case(name), '};'):
             for field in struct.fields:
-                field.parent = struct
                 self.declare_field(field)
         self.write()
 
@@ -577,7 +714,7 @@ class GenXproto:
             self.write('%s() { memset(this, 0, sizeof(*this)); }' % name)
             self.write()
             for field in union.fields:
-                type_name = self.qualtype(field.type)
+                type_name = self.fieldtype(field)
                 self.write('%s %s;' % (type_name, safe_name(field.field_name)))
         self.write(
             'static_assert(std::is_trivially_copyable<%s>::value, "");' % name)
@@ -594,8 +731,8 @@ class GenXproto:
         else:
             reply_name = 'void'
 
-        self.write(
-            'using %sResponse = Response<%s>;' % (method_name, reply_name))
+        self.write('using %sResponse = Response<%s>;' %
+                   (method_name, reply_name))
         self.write()
 
         self.write('Future<%s> %s(' % (reply_name, method_name))
@@ -619,27 +756,31 @@ class GenXproto:
             self.write()
             self.is_read = False
             self.copy_container(request, 'request')
-            self.write(
-                'return x11::SendRequest<%s>(display_, &buf);' % reply_name)
+            self.write('Align(&buf, 4);')
+            self.write()
+            self.write('return x11::SendRequest<%s>(display_, &buf);' %
+                       reply_name)
         self.write()
 
-        if reply:
-            self.write('template<> COMPONENT_EXPORT(X11)')
-            self.write('std::unique_ptr<%s>' % reply_name)
-            sig = 'detail::ReadReply<%s>(const uint8_t* buffer) {' % reply_name
-            with Indent(self, sig, '}'):
-                self.namespace = ['x11']
-                self.write('ReadBuffer buf{buffer, 0UL};')
-                self.write('auto reply = std::make_unique<%s>();' % reply_name)
-                self.write()
-                self.is_read = True
-                self.copy_container(reply, '(*reply)')
-                self.write('Align(&buf, 4);')
-                offset = 'buf.offset < 32 ? 0 : buf.offset - 32'
-                self.write('DCHECK_EQ(%s, 4 * length);' % offset)
-                self.write()
-                self.write('return reply;')
+        if not reply:
+            return
+
+        self.write('template<> COMPONENT_EXPORT(X11)')
+        self.write('std::unique_ptr<%s>' % reply_name)
+        sig = 'detail::ReadReply<%s>(const uint8_t* buffer) {' % reply_name
+        with Indent(self, sig, '}'):
+            self.namespace = ['x11']
+            self.write('ReadBuffer buf{buffer, 0UL};')
+            self.write('auto reply = std::make_unique<%s>();' % reply_name)
             self.write()
+            self.is_read = True
+            self.copy_container(reply, '(*reply)')
+            self.write('Align(&buf, 4);')
+            offset = 'buf.offset < 32 ? 0 : buf.offset - 32'
+            self.write('DCHECK_EQ(%s, 4 * length);' % offset)
+            self.write()
+            self.write('return reply;')
+        self.write()
 
     def declare_type(self, item, name):
         if item.is_union:
@@ -653,8 +794,120 @@ class GenXproto:
             self.declare_enum(item)
         else:
             assert item.is_simple
-            self.write('using %s = %s;' % (name[-1], self.qualtype(item)))
-            self.write()
+            self.declare_simple(item, name)
+
+    # Additional type information identifying the enum/mask is present in the
+    # XML data, but xcbgen doesn't make use of it: it only uses the underlying
+    # type, as it appears on the wire.  We want additional type safety, so
+    # extract this information the from XML directly.
+    def resolve_element(self, xml_element, fields):
+        for child in xml_element:
+            if 'name' not in child.attrib:
+                if child.tag == 'case' or child.tag == 'bitcase':
+                    self.resolve_element(child, fields)
+                continue
+            name = child.attrib['name']
+            field = fields[name]
+            field.elt = child
+            enums = [
+                child.attrib[attr] for attr in ['enum', 'mask']
+                if attr in child.attrib
+            ]
+            if enums:
+                assert len(enums) == 1
+                enum = enums[0]
+                field.enum = self.module.get_type(enum).name if enums else None
+                self.enum_types[enum].add(field.type.name)
+
+    def resolve_type(self, t, name):
+        renamed = tuple(self.rename_type(t, name))
+        if t in self.types[renamed]:
+            return
+        self.types[renamed].add(t)
+
+        if not t.is_container:
+            return
+
+        if t.is_switch:
+            fields = {}
+            for case in t.bitcases:
+                if case.field_name:
+                    fields[case.field_name] = case
+                else:
+                    for field in case.type.fields:
+                        fields[field.field_name] = field
+        else:
+            fields = {field.field_name: field for field in t.fields}
+
+        self.resolve_element(t.elt, fields)
+
+        for field in fields.values():
+            field.parent = t
+            if field.type.is_switch or field.type.is_case_or_bitcase:
+                self.resolve_type(field.type, field.field_type)
+            elif field.type.is_list:
+                self.resolve_type(field.type.member, field.type.member.name)
+
+        if isinstance(t, self.xcbgen.xtypes.Request) and t.reply:
+            self.resolve_type(t.reply, t.reply.name)
+
+    # Perform preprocessing like renaming, reordering, and adding additional
+    # data fields.
+    def resolve(self):
+        for name, t in self.module.all:
+            self.resolve_type(t, name)
+
+        to_delete = []
+        for enum in self.enum_types:
+            types = self.enum_types[enum]
+            if len(types) == 1:
+                self.enum_types[enum] = list(types)[0]
+            else:
+                to_delete.append(enum)
+        for x in to_delete:
+            del self.enum_types[x]
+
+        for t in self.types:
+            l = list(self.types[t])
+            # For some reason, FDs always have distint types so they appear
+            # duplicated in the set.  If the set contains only FDs, then bail.
+            if all(x.is_fd for x in l):
+                continue
+            if len(l) == 1:
+                continue
+
+            # Allow simple types and enums to alias each other after renaming.
+            # This is done because we want strong typing even for simple types.
+            # If the types were not merged together, then a cast would be
+            # necessary to convert from eg. AtomEnum to AtomSimple.
+            assert len(l) == 2
+            if isinstance(l[0], self.xcbgen.xtypes.Enum):
+                enum = l[0]
+                simple = l[1]
+            elif isinstance(l[1], self.xcbgen.xtypes.Enum):
+                enum = l[1]
+                simple = l[0]
+            assert simple.is_simple
+            assert enum and simple
+            self.replace_with_enum.add(t)
+            self.enum_types[enum.name] = simple.name
+
+        # The order of types in xcbproto's xml files are inconsistent, so sort
+        # them in the order {type aliases, enums, structs, requests/replies}.
+        def type_order_priority(item):
+            if item.is_simple:
+                return 0
+            if isinstance(item, self.xcbgen.xtypes.Enum):
+                return 1
+            if isinstance(item, self.xcbgen.xtypes.Request):
+                return 3
+            return 2
+
+        def cmp((_1, item1), (_2, item2)):
+            return type_order_priority(item1) - type_order_priority(item2)
+
+        # sort() is guaranteed to be stable.
+        self.module.all.sort(cmp=cmp)
 
     def gen_header(self):
         self.file = self.args.headerfile
@@ -673,6 +926,7 @@ class GenXproto:
         self.write('#include "ui/gfx/x/xproto_types.h"')
         for direct_import in self.module.direct_imports:
             self.write('#include "%s.h"' % direct_import[-1])
+        self.write('#include "%s_undef.h"' % self.module.namespace.header)
         self.write()
         self.write('typedef struct _XDisplay XDisplay;')
         self.write()
@@ -711,8 +965,8 @@ class GenXproto:
         self.write('namespace x11 {')
         self.write()
         name = self.class_name
-        self.write(
-            '%s::%s(XDisplay* display) : display_(display) {}' % (name, name))
+        self.write('%s::%s(XDisplay* display) : display_(display) {}' %
+                   (name, name))
         self.write()
         for (name, item) in self.module.all:
             if isinstance(item, self.xcbgen.xtypes.Request):
@@ -723,8 +977,8 @@ class GenXproto:
         self.module = self.xcbgen.state.Module(self.args.xmlfile.name, None)
         self.module.register()
         self.module.resolve()
-
-        self.class_name = (self.module.namespace.ext_name
+        self.resolve()
+        self.class_name = (adjust_type_case(self.module.namespace.ext_name)
                            if self.module.namespace.is_ext else 'XProto')
 
         self.gen_header()
@@ -734,6 +988,7 @@ class GenXproto:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('xmlfile', type=argparse.FileType('r'))
+    parser.add_argument('undeffile', type=argparse.FileType('w'))
     parser.add_argument('headerfile', type=argparse.FileType('w'))
     parser.add_argument('sourcefile', type=argparse.FileType('w'))
     parser.add_argument('--sysroot')

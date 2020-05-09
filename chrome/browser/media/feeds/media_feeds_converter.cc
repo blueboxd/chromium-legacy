@@ -785,6 +785,13 @@ bool GetEpisode(const EpisodeCandidate& candidate, mojom::MediaFeedItem* item) {
     return false;
   }
 
+  if (!ConvertProperty<mojom::TVEpisode>(
+          candidate.entity, item->tv_episode.get(),
+          schema_org::property::kDuration, true,
+          base::BindOnce(&GetDuration<mojom::TVEpisode>))) {
+    return false;
+  }
+
   return true;
 }
 
@@ -1106,6 +1113,12 @@ bool GetMediaFeedItem(const EntityPtr& item,
     }
     if (!convert_property.Run(
             schema_org::property::kDuration, !converted_item->live,
+            base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
+      return false;
+    }
+  } else if (converted_item->type == mojom::MediaFeedItemType::kMovie) {
+    if (!convert_property.Run(
+            schema_org::property::kDuration, /*is_required=*/true,
             base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
       return false;
     }

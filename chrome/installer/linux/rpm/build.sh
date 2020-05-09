@@ -107,6 +107,7 @@ do_package() {
     --define "_topdir $RPMBUILD_DIR" \
     --define "${COMPRESSION_OPT}" \
     --define "__os_install_post  %{nil}" \
+    --define "_build_id_links none" \
     "${SPEC}"
   PKGNAME="${PACKAGE}-${CHANNEL}-${VERSION}-${PACKAGE_RELEASE}"
   mv "$RPMBUILD_DIR/RPMS/$ARCHITECTURE/${PKGNAME}.${ARCHITECTURE}.rpm" \

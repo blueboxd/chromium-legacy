@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/webauthn/hover_list_model.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
@@ -24,7 +23,7 @@ namespace views {
 class Separator;
 }  // namespace views
 
-class HoverButton;
+class WebAuthnHoverButton;
 
 // View that shows a list of items. Each item is rendered as a HoverButton with
 // an icon, name, optional description, and chevron, like so:
@@ -49,7 +48,7 @@ class HoverListView : public views::View,
 
  private:
   struct ListItemViews {
-    HoverButton* item_view;
+    WebAuthnHoverButton* item_view;
     views::Separator* separator_view;
   };
 
@@ -78,7 +77,7 @@ class HoverListView : public views::View,
 
   std::unique_ptr<HoverListModel> model_;
   std::map<int, ListItemViews> tags_to_list_item_views_;
-  std::vector<HoverButton*> throbber_views_;
+  std::vector<WebAuthnHoverButton*> throbber_views_;
   base::Optional<ListItemViews> placeholder_list_item_view_;
   views::ScrollView* scroll_view_;
   views::View* item_container_;

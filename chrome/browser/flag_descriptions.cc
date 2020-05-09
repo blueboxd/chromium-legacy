@@ -2649,6 +2649,12 @@ const char kRelatedSearchesDescription[] =
     "you have no privacy worries about sending page content and URLs to "
     "Google!";
 
+const char kReportFeedUserActionsName[] =
+    "Enable the report of click actions on cards in Chrome's Feed on Android.";
+const char kReportFeedUserActionsDescription[] =
+    "Enable the report of click actions on cards in Chrome's Feed on Android."
+    " Also enable the feed header menu to manage the feed.";
+
 const char kSafeBrowsingUseLocalBlacklistsV2Name[] =
     "Use local Safe Browsing blacklists";
 const char kSafeBrowsingUseLocalBlacklistsV2Description[] =

@@ -195,7 +195,6 @@
 <translation id="1736420071277903564">Ordenador</translation>
 <translation id="1740951997222943430">Introduce un mes de caducidade válido</translation>
 <translation id="1741613555002899862">Debe especificarse e ser unha cadea válida cando DnsOverHttpsMode é <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
-<translation id="1743520634839655729">Para pagar máis rápido a próxima vez, garda a túa tarxeta, o nome e o enderezo de facturación na túa Conta de Google e neste dispositivo.</translation>
 <translation id="1743570585616704562">Non se recoñece</translation>
 <translation id="1745880797583122200">O teu navegador está xestionado</translation>
 <translation id="1746113442205726301">Desprazamento da imaxe no eixe Y</translation>
@@ -218,6 +217,7 @@
 <translation id="1838374766361614909">Borrar busca</translation>
 <translation id="1839551713262164453">Producíronse erros na validación dos valores da política</translation>
 <translation id="1842969606798536927">Pagar</translation>
+<translation id="1852694792039666893">Utilizar a túa Conta de Google para suxerir un contrasinal seguro</translation>
 <translation id="1871208020102129563">O proxy está configurado para utilizar servidores proxy fixos, non un URL de script .pac.</translation>
 <translation id="1871284979644508959">O campo é obrigatorio</translation>
 <translation id="1875512691959384712">Formularios de Google</translation>
@@ -405,6 +405,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Tamaño predeterminado</translation>
 <translation id="2691924980723297736">Advertencia de seguranza</translation>
+<translation id="2696268945573510710">Utilizar contrasinais almacenados na túa Conta de Google</translation>
 <translation id="2699302886720511147">Acéptanse tarxetas</translation>
 <translation id="2701514975700770343">Cara abaixo</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
@@ -450,6 +451,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2915068235268646559">Fallo (<ph name="CRASH_TIME" />)</translation>
 <translation id="2916038427272391327">Pecha outros programas</translation>
 <translation id="2922350208395188000">Non se pode comprobar o certificado do servidor.</translation>
+<translation id="2924027812781652774">Iniciar sesión para utilizar contrasinais almacenados na túa Conta de Google</translation>
 <translation id="2925673989565098301">Método de entrega</translation>
 <translation id="2928905813689894207">Enderezo de facturación</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> máis}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> máis}}</translation>
@@ -1266,7 +1268,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Posibles cargos de agora en adiante.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 suxestión máis}other{# suxestións máis}}</translation>
-<translation id="6387754724289022810">Para pagar máis rápido a próxima vez, garda a túa tarxeta e o enderezo de facturación na túa conta de Google e neste dispositivo.</translation>
 <translation id="6389470377220713856">Nome na tarxeta</translation>
 <translation id="6390200185239044127">Dobrez en Z á metade</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1402,6 +1403,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="7050187094878475250">Tentaches acceder a <ph name="DOMAIN" />, pero o servidor presentou un certificado cun período de validez demasiado longo para ser fiable.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Esta tarxeta non se pode gardar neste momento}other{Estas tarxetas non se poden gardar neste momento}}</translation>
 <translation id="7053983685419859001">Bloquear</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> verificou que <ph name="ISSUER" /> emitiu o certificado deste sitio web.</translation>
 <translation id="7062635574500127092">Verde azulado</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
 <translation id="70705239631109039">A túa conexión non é completamente segura</translation>

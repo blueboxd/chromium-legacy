@@ -323,8 +323,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
 
             String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
+            long developerModeStart = SystemClock.elapsedRealtime();
             boolean isDeveloperModeEnabled =
                     DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName);
+            long developerModeEnd = SystemClock.elapsedRealtime();
+            RecordHistogram.recordTimesHistogram("Android.WebView.DevUi.DeveloperModeBlockingTime",
+                    developerModeEnd - developerModeStart);
             RecordHistogram.recordBooleanHistogram(
                     "Android.WebView.DevUi.DeveloperModeEnabled", isDeveloperModeEnabled);
             if (isDeveloperModeEnabled) {

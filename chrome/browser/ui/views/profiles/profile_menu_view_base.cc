@@ -493,7 +493,8 @@ void ProfileMenuViewBase::SetSyncInfo(
 
   // Add blue button at the bottom.
   views::Button* button = sync_info_container_->AddChildView(
-      views::MdTextButton::CreateSecondaryUiBlueButton(this, clickable_text));
+      views::MdTextButton::CreateSecondaryUiProminentButton(this,
+                                                            clickable_text));
   RegisterClickAction(button, std::move(action));
 }
 

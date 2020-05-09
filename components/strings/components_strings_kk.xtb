@@ -195,7 +195,6 @@
 <translation id="1736420071277903564">Компьютер</translation>
 <translation id="1740951997222943430">Дұрыс жарамдылық мерзімі аяқталатын айды енгізіңіз</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode саясаты <ph name="SECURE_DNS_MODE_SECURE" /> мәніне орнатылғанда, сәйкес мән және жарамды жол көрсетілуі керек.</translation>
-<translation id="1743520634839655729">Келесіде жылдамырақ төлеу үшін картаңызды, аты-жөніңізді және төлем мекенжайын Google есептік жазбаңызға және осы құрылғыға сақтаңыз.</translation>
 <translation id="1743570585616704562">Анықталмады</translation>
 <translation id="1745880797583122200">Браузеріңіз басқарылады.</translation>
 <translation id="1746113442205726301">Кескіннің Y осі бойынша ығысуы</translation>
@@ -218,6 +217,7 @@
 <translation id="1838374766361614909">Іздеуді тазарту</translation>
 <translation id="1839551713262164453">Қателерге байланысты саясат мәндері тексерілмеді</translation>
 <translation id="1842969606798536927">Төлем</translation>
+<translation id="1852694792039666893">Күрделі құпия сөз жасау үшін Google есептік жазбаңызды пайдаланыңыз.</translation>
 <translation id="1871208020102129563">Прокси .pac сценарий URL мекенжайын емес, бекітілген прокси серверлерін пайдалануға орнатылған.</translation>
 <translation id="1871284979644508959">Міндетті өріс</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -405,6 +405,7 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Ең оңтайлы</translation>
 <translation id="2691924980723297736">Қауіпсіздік туралы ескерту</translation>
+<translation id="2696268945573510710">Google есептік жазбаңызда сақталған құпия сөздерді пайдаланыңыз.</translation>
 <translation id="2699302886720511147">Қабылданатын карталар</translation>
 <translation id="2701514975700770343">Төмен қарату</translation>
 <translation id="2702801445560668637">Оқу тізімі</translation>
@@ -452,6 +453,7 @@
 <translation id="2915068235268646559">Бұзылу уақыты: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Басқа бағдарламаларды жабу</translation>
 <translation id="2922350208395188000">Сервердің сертификатын тексеру мүмкін емес.</translation>
+<translation id="2924027812781652774">Google есептік жазбаңызда сақталған құпия сөздерді пайдалану үшін кіріңіз.</translation>
 <translation id="2925673989565098301">Жеткізу әдісі</translation>
 <translation id="2928905813689894207">Төлем мекенжайы</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> және тағы <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> және тағы <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -1271,7 +1273,6 @@
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Сізден ақы алынуы мүмкін.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 басқа ұсыныс}other{# басқа ұсыныс}}</translation>
-<translation id="6387754724289022810">Келесіде жылдамырақ төлеу үшін картаны және төлем мекенжайын Google есептік жазбасына және осы құрылғыға сақтаңыз.</translation>
 <translation id="6389470377220713856">Картадағы атау</translation>
 <translation id="6390200185239044127">Z тәрізді жартылай бүктеу</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1407,6 +1408,7 @@
 <translation id="7050187094878475250"><ph name="DOMAIN" /> доменіне қол жеткізуге әрекет еттіңіз, бірақ сервер сенімді болуы үшін жарамдылық мерзімі тым ұзақ болған сертификатты ұсынды.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Бұл карта қазір сақталмайды}other{Бұл карталар қазір сақталмайды}}</translation>
 <translation id="7053983685419859001">Бөгеу</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> браузері <ph name="ISSUER" /> осы веб-сайттың сертификатын шығарғанын растады.</translation>
 <translation id="7062635574500127092">Көкшіл жасыл</translation>
 <translation id="7064851114919012435">Байланыс ақпараты</translation>
 <translation id="70705239631109039">Байланысыңыз толықтай қауіпсіз емес</translation>

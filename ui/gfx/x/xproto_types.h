@@ -99,11 +99,15 @@ class Future {
   Future(const Future&) = delete;
   Future& operator=(const Future&) = delete;
 
-  Future(Future&& future) : sequence_(future.sequence_) {
+  Future(Future&& future)
+      : display_(future.display_), sequence_(future.sequence_) {
+    future.display_ = nullptr;
     future.sequence_ = base::nullopt;
   }
   Future& operator=(Future&& future) {
+    display_ = future.display_;
     sequence_ = future.sequence_;
+    future.display_ = nullptr;
     future.sequence_ = base::nullopt;
   }
 

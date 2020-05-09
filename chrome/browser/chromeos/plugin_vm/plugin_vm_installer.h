@@ -129,8 +129,8 @@ class PluginVmInstaller : public KeyedService,
 
   // Called by DlcserviceClient, are not supposed to be used by other classes.
   void OnDlcDownloadProgressUpdated(double progress);
-  void OnDlcDownloadCompleted(const std::string& err,
-                              const dlcservice::DlcModuleList& dlc_module_list);
+  void OnDlcDownloadCompleted(
+      const chromeos::DlcserviceClient::InstallResult& install_result);
 
   // Called by PluginVmImageDownloadClient, are not supposed to be used by other
   // classes.

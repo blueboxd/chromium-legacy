@@ -252,7 +252,8 @@ EntityPtr MediaFeedsConverterTest::ValidMediaFeedItem() {
           "name": "media feed",
           "datePublished": "1970-01-01",
           "image": "https://www.example.com/image.jpg",
-          "isFamilyFriendly": "https://schema.org/True"
+          "isFamilyFriendly": "https://schema.org/True",
+          "duration": "PT30M15S"
         }
       )END");
 
@@ -328,6 +329,10 @@ mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
   expected_item->action = mojom::Action::New();
   expected_item->action->url = GURL("https://www.example.org");
   expected_item->action->start_time = base::TimeDelta::FromHours(1);
+
+  expected_item->duration =
+      base::TimeDelta::FromMinutes(30) + base::TimeDelta::FromSeconds(15);
+
   return expected_item;
 }
 
@@ -559,9 +564,9 @@ TEST_F(MediaFeedsConverterTest, FailsInvalidPotentialAction) {
   EXPECT_TRUE(result.value().empty());
 }
 
-// Succeeds with a valid author and duration on a video object. For other types
-// of media, these fields are ignored, but they must be valid on video type.
-TEST_F(MediaFeedsConverterTest, SucceedsItemWithAuthorAndDuration) {
+// Succeeds with a valid author on a video object. For other types of media,
+// this field is ignored, but it must be valid on video type.
+TEST_F(MediaFeedsConverterTest, SucceedsItemWithAuthor) {
   EntityPtr item = ValidMediaFeedItem();
   item->type = schema_org::entity::kVideoObject;
   EntityPtr author = Entity::New();
@@ -572,8 +577,6 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithAuthorAndDuration) {
       schema_org::property::kUrl, GURL("https://www.google.com")));
   item->properties.push_back(
       CreateEntityProperty(schema_org::property::kAuthor, std::move(author)));
-  item->properties.push_back(
-      CreateTimeProperty(schema_org::property::kDuration, 1));
 
   EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
 
@@ -582,7 +585,6 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithAuthorAndDuration) {
   expected_item->author = mojom::Author::New();
   expected_item->author->name = "Becca Hughes";
   expected_item->author->url = GURL("https://www.google.com");
-  expected_item->duration = base::TimeDelta::FromHours(1);
 
   auto result = GetResults(std::move(entity));
 
@@ -893,6 +895,8 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisode) {
   expected_item->tv_episode = mojom::TVEpisode::New();
   expected_item->tv_episode->episode_number = 1;
   expected_item->tv_episode->name = "Pilot";
+  expected_item->tv_episode->duration = base::TimeDelta::FromHours(1);
+  expected_item->duration = base::nullopt;
   mojom::IdentifierPtr identifier = mojom::Identifier::New();
   identifier->type = mojom::Identifier::Type::kTMSRootId;
   identifier->value = "1";
@@ -974,6 +978,7 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVSeason) {
 
   mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
   expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+  expected_item->duration = base::nullopt;
 
   auto result = GetResults(std::move(entity));
 
@@ -1052,6 +1057,8 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextTwoSeasons) {
     expected_item->tv_episode->episode_number = 20;
     expected_item->tv_episode->season_number = 1;
     expected_item->tv_episode->name = "Pilot";
+    expected_item->tv_episode->duration = base::TimeDelta::FromHours(1);
+    expected_item->duration = base::nullopt;
     mojom::IdentifierPtr identifier = mojom::Identifier::New();
     identifier->type = mojom::Identifier::Type::kTMSRootId;
     identifier->value = "1";
@@ -1113,6 +1120,8 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextSameSeason) {
     expected_item->tv_episode->episode_number = 15;
     expected_item->tv_episode->season_number = 1;
     expected_item->tv_episode->name = "Pilot";
+    expected_item->tv_episode->duration = base::TimeDelta::FromHours(1);
+    expected_item->duration = base::nullopt;
     mojom::IdentifierPtr identifier = mojom::Identifier::New();
     identifier->type = mojom::Identifier::Type::kTMSRootId;
     identifier->value = "1";
@@ -1167,6 +1176,8 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithPlayNextNoSeason) {
     expected_item->tv_episode->episode_number = 15;
     expected_item->tv_episode->season_number = 0;
     expected_item->tv_episode->name = "Pilot";
+    expected_item->tv_episode->duration = base::TimeDelta::FromHours(1);
+    expected_item->duration = base::nullopt;
     mojom::IdentifierPtr identifier = mojom::Identifier::New();
     identifier->type = mojom::Identifier::Type::kTMSRootId;
     identifier->value = "1";

@@ -35,8 +35,8 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
   virtual ~FeedbackService();
 
   // Sends a feedback report.
-  void SendFeedback(scoped_refptr<feedback::FeedbackData> feedback_data,
-                    const SendFeedbackCallback& callback);
+  virtual void SendFeedback(scoped_refptr<feedback::FeedbackData> feedback_data,
+                            const SendFeedbackCallback& callback);
 
  private:
   // Callbacks to receive blob data.

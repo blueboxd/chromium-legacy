@@ -11,6 +11,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/status.h"
 #include "media/base/video_util.h"
 #include "media/filters/frame_buffer_pool.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
@@ -147,7 +148,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   InitCB bound_init_cb = BindToCurrentLoop(std::move(init_cb));
   if (config.is_encrypted() || config.codec() != kCodecAV1) {
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -172,7 +173,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
                          0 /* flags */) != AOM_CODEC_OK) {
     MEDIA_LOG(ERROR, media_log_) << "aom_codec_dec_init() failed: "
                                  << aom_codec_error(aom_decoder_.get());
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -184,7 +185,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
           memory_pool_.get()) != AOM_CODEC_OK) {
     DLOG(ERROR) << "Failed to configure external buffers. "
                 << aom_codec_error(context.get());
-    std::move(bound_init_cb).Run(false);
+    std::move(bound_init_cb).Run(StatusCode::kDecoderFailedInitialization);
     return;
   }
 
@@ -192,7 +193,7 @@ void AomVideoDecoder::Initialize(const VideoDecoderConfig& config,
   state_ = DecoderState::kNormal;
   output_cb_ = BindToCurrentLoop(output_cb);
   aom_decoder_ = std::move(context);
-  std::move(bound_init_cb).Run(true);
+  std::move(bound_init_cb).Run(OkStatus());
 }
 
 void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,

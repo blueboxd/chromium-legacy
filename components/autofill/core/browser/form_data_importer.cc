@@ -192,15 +192,14 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
                                                   app_locale,
                                                   personal_data_manager)),
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-      upi_vpa_save_manager_(
-          std::make_unique<UpiVpaSaveManager>(client, personal_data_manager)),
-#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
       local_card_migration_manager_(
           std::make_unique<LocalCardMigrationManager>(client,
                                                       payments_client,
                                                       app_locale,
                                                       personal_data_manager)),
-
+      upi_vpa_save_manager_(
+          std::make_unique<UpiVpaSaveManager>(client, personal_data_manager)),
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
       personal_data_manager_(personal_data_manager),
       app_locale_(app_locale) {
 }
@@ -241,6 +240,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
       is_credit_card_upstream_enabled) {
     return;
   }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   // A credit card was successfully imported, but it's possible it is already a
   // local or server card. First, check to see if we should offer local card
   // migration in this case, as local cards could go either way.
@@ -251,6 +252,7 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
         /*is_from_settings_page=*/false);
     return;
   }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Local card migration will not be offered. If we do not have a new card to
   // save (or a local card to upload save), return.

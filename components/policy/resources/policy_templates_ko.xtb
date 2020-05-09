@@ -306,6 +306,25 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1474273443907024088">TLS False Start 사용 안함</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">백라이트 정보 보고</translation>
+<translation id="1488406778491620405"><ph name="PRODUCT_NAME" />
+           접근성 기능은 시각장애인 스크린 리더 사용자가
+          라벨이 지정되지 않은 웹 이미지에 관한 설명을 들을 수 있도록 지원합니다. 이 기능을 사용하는 사용자에게는
+          익명의 Google 서비스를 통해 라벨이 지정되지 않은 웹 이미지에 관해
+          자동으로 생성된 설명을 듣는 옵션이 제공됩니다.
+
+          이 기능을 사용하면 이미지의 콘텐츠가 Google 서버로 전송되어
+          설명이 생성됩니다. 쿠키 또는 기타 사용자 데이터는
+          전송되지 않으며 Google에서 이미지 콘텐츠를 저장하거나 기록하지 않습니다.
+
+          이 정책이 True로 설정되면
+          <ph name="PRODUCT_NAME" />
+          기능이 사용됩니다. 단, 스크린 리더 또는 다른 유사한 보조 기술을 사용하는
+          사용자에게만 영향을 미칩니다.
+
+          이 정책이 False로 설정되면 사용자에게 이 기능을 사용하는 옵션이
+          제공되지 않습니다.
+
+          정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="1497640071678474358">팝업 열기가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않으면 'DefaultPopupsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
@@ -1626,6 +1645,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책은 추천으로만 설정할 수 있습니다. 이 정책을 사용하여 추천 언어 모음을 상단으로 이동할 수 있지만, 사용자는 언제든지 <ph name="PRODUCT_OS_NAME" />이(가) 지원하는 언어 중에 자신의 세션에서 사용할 언어를 선택할 수 있습니다.
       </translation>
+<translation id="3373381043600809954"><ph name="PRODUCT_NAME" /> 사용</translation>
 <translation id="3378482432905539452">지원 중단된 정책입니다. <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />을(를) 사용하여 Flash 플러그인의 사용 가능 여부를 제어하고 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />을(를) 사용하여 PDF 파일을 열 때 통합 PDF 뷰어를 사용할지 여부를 제어하시기 바랍니다.
 
       사용자가 <ph name="PRODUCT_NAME" />에서 사용 또는 사용 중지할 수 있는 플러그인 목록을 지정합니다.
@@ -3052,7 +3072,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책은 관리자가 부팅 시 VPN 연결을 구축할 것인지 여부를 결정할 수 있게 해주는 '연결 유지 VPN' 기능과 함께 사용해야 합니다.</translation>
 <translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> 사용 설정</translation>
-<translation id="5404635530342514143">이 기능을 사용하면 사용자가 잠금/시작 화면에서 버튼을 클릭하여 비밀번호를 표시할 수 있습니다.</translation>
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> 로그인 화면에서 허용되는 키보드 레이아웃을 구성합니다.
 
       이 정책이 입력 방법 식별자 목록으로 설정되는 경우 주어진 입력 방법을 로그인 화면에서 사용할 수 있습니다. 첫 번째로 주어진 입력 수단이 사전 선택됩니다. 로그인 화면에서는 사용자 포드가 활성화되는데 이때 이 정책에서 주어진 입력 수단과 더불어 사용자가 마지막으로 사용한 입력 수단을 사용할 수 있습니다. 이 정책이 설정되지 않은 경우 로그인 화면의 입력 수단은 로그인 화면이 표시되는 언어에서 가져옵니다. 유효한 입력 수단 식별자가 아닌 값은 무시됩니다.</translation>
@@ -3064,6 +3083,10 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       AudioCaptureAllowedUrls에서 설정된 URL에 대해서만 오디오 캡처를 사용할 수 있습니다.
 
       이 정책은 내장된 마이크뿐만 아니라 모든 오디오 입력 유형에 영향을 줍니다.</translation>
+<translation id="5417906792459853336">기기의 애플리케이션 인벤토리 및 사용 정보를 보고합니다.
+
+      정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
+      True로 설정되면 기기의 애플리케이션 및 사용 정보가 보고됩니다.</translation>
 <translation id="5422643441807528365"><ph name="PLUGIN_VM_NAME" /> 라이선스 키</translation>
 <translation id="5423001109873148185">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 검색엔진을 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
 
@@ -3116,6 +3139,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치되면 기본 HTML 렌더러를 설정할 수 있습니다.
           이 정책을 설정하지 않으면 기본 설정에 따라 호스트 브라우저가 렌더링을 수행하지만, 이 설정을 무시하고 기본적으로 <ph name="PRODUCT_FRAME_NAME" />에서 HTML 페이지를 렌더링하도록 할 수 있습니다.</translation>
 <translation id="5464816904705580310">관리 사용자에 대한 설정 구성</translation>
+<translation id="5466596281866046569">애플리케이션 정보 보고</translation>
 <translation id="546726650689747237">AC 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
 <translation id="5469143988693423708">사용자가 Crostini를 실행할 수 있음</translation>
 <translation id="5469825884154817306">이 사이트의 이미지 차단</translation>
@@ -4140,7 +4164,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           배율은 100% 이상이어야 합니다.</translation>
 <translation id="7086720321892395256">개인정보 보호 화면 기능과 관련해 사용자 및 기기 정책을 제어합니다.</translation>
-<translation id="7095145887485705461">잠금/시작 화면에서 비밀번호 표시 버튼 사용</translation>
 <translation id="710003290625031750">확장된 스키마 설명:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> 기기가 유휴 상태이거나 일시 중지되었을 때 잠금을 사용하도록 설정합니다.
 

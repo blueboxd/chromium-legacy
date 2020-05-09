@@ -16,7 +16,8 @@ XRTargetRaySpace::XRTargetRaySpace(XRSession* session, XRInputSource* source)
     : XRSpace(session), input_source_(source) {}
 
 base::Optional<TransformationMatrix> XRTargetRaySpace::MojoFromNative() {
-  auto mojo_from_viewer = session()->MojoFromViewer();
+  auto mojo_from_viewer =
+      session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer);
   switch (input_source_->TargetRayMode()) {
     case device::mojom::XRTargetRayMode::TAPPING: {
       // If the pointer origin is the screen, we need mojo_from_viewer, as the

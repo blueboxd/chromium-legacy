@@ -218,7 +218,7 @@ void PluginVmInstaller::StartDlcDownload() {
   }
 
   chromeos::DlcserviceClient::Get()->Install(
-      GetPluginVmDlcModuleList(),
+      "pita",
       base::BindOnce(&PluginVmInstaller::OnDlcDownloadCompleted,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&PluginVmInstaller::OnDlcDownloadProgressUpdated,
@@ -273,8 +273,7 @@ void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
 }
 
 void PluginVmInstaller::OnDlcDownloadCompleted(
-    const std::string& err,
-    const dlcservice::DlcModuleList& dlc_module_list) {
+    const chromeos::DlcserviceClient::InstallResult& install_result) {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
   if (state_ == State::kCancelling) {
     CancelFinished();
@@ -282,7 +281,7 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   }
 
   // If success, continue to the next state.
-  if (err == dlcservice::kErrorNone) {
+  if (install_result.error == dlcservice::kErrorNone) {
     RecordPluginVmDlcUseResultHistogram(PluginVmDlcUseResult::kDlcSuccess);
     if (observer_)
       observer_->OnDlcDownloadCompleted();
@@ -299,26 +298,26 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   PluginVmDlcUseResult result = PluginVmDlcUseResult::kInternalDlcError;
   FailureReason reason = FailureReason::DLC_INTERNAL;
 
-  if (err == dlcservice::kErrorInvalidDlc) {
+  if (install_result.error == dlcservice::kErrorInvalidDlc) {
     LOG(ERROR) << "PluginVM DLC is not supported, need to enable PluginVM DLC.";
     result = PluginVmDlcUseResult::kInvalidDlcError;
     reason = FailureReason::DLC_UNSUPPORTED;
-  } else if (err == dlcservice::kErrorBusy) {
+  } else if (install_result.error == dlcservice::kErrorBusy) {
     LOG(ERROR)
         << "PluginVM DLC is not able to be downloaded as dlcservice is busy.";
     result = PluginVmDlcUseResult::kBusyDlcError;
     reason = FailureReason::DLC_BUSY;
-  } else if (err == dlcservice::kErrorNeedReboot) {
+  } else if (install_result.error == dlcservice::kErrorNeedReboot) {
     LOG(ERROR)
         << "Device has pending update and needs a reboot to use PluginVM DLC.";
     result = PluginVmDlcUseResult::kNeedRebootDlcError;
     reason = FailureReason::DLC_NEED_REBOOT;
-  } else if (err == dlcservice::kErrorAllocation) {
+  } else if (install_result.error == dlcservice::kErrorAllocation) {
     LOG(ERROR) << "Device needs to free space to use PluginVM DLC.";
     result = PluginVmDlcUseResult::kNeedSpaceDlcError;
     reason = FailureReason::DLC_NEED_SPACE;
   } else {
-    LOG(ERROR) << "Failed to download PluginVM DLC: " << err;
+    LOG(ERROR) << "Failed to download PluginVM DLC: " << install_result.error;
   }
 
   RecordPluginVmDlcUseResultHistogram(result);

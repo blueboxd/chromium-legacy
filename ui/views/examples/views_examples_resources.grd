@@ -25,6 +25,26 @@
         Link clicked
       </message>
 
+      <!-- Login example -->
+      <message translateable="false" name="IDS_LOGIN_SELECT_LABEL">
+        Login Bubble Dialog
+      </message>
+      <message translateable="false" name="IDS_LOGIN_SHOW_BUTTON_LABEL">
+        Show
+      </message>
+      <message translateable="false" name="IDS_LOGIN_TITLE_LABEL">
+        Login Dialog
+      </message>
+      <message translateable="false" name="IDS_LOGIN_USERNAME_LABEL">
+        Username
+      </message>
+      <message translateable="false" name="IDS_LOGIN_PASSWORD_LABEL">
+        Password
+      </message>
+      <message translateable="false" name="IDS_LOGIN_OK_BUTTON_LABEL">
+        LOGIN
+      </message>
+
       <!-- menu example -->
       <message translateable="false" name="IDS_MENU_DO_SOMETHING_LABEL">
         Do Something

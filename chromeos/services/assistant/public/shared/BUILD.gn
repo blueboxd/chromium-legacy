@@ -13,7 +13,9 @@ component("shared") {
 
   sources = [ "constants.h" ]
 
-  if (!enable_cros_libassistant) {
+  if (enable_cros_libassistant) {
+    sources += [ "//chromeos/assistant/internal/constants.cc" ]
+  } else {
     sources += [ "constants.cc" ]
   }
 

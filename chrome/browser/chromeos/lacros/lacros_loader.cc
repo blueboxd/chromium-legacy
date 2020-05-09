@@ -6,14 +6,43 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/process/launch.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
+#include "components/user_manager/user_type.h"
 
 using component_updater::CrOSComponentManager;
 
 namespace {
+
 LacrosLoader* g_instance = nullptr;
+
+// Some account types require features that aren't yet supported by lacros.
+// See https://crbug.com/1080693
+bool IsLacrosAllowed() {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  if (!user)
+    return false;
+  switch (user->GetType()) {
+    case user_manager::USER_TYPE_REGULAR:
+      return true;
+    case user_manager::USER_TYPE_GUEST:
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+    case user_manager::USER_TYPE_SUPERVISED:
+    case user_manager::USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_CHILD:
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+    case user_manager::NUM_USER_TYPES:
+      return false;
+  }
+}
+
 }  // namespace
 
 // static
@@ -21,7 +50,7 @@ LacrosLoader* LacrosLoader::Get() {
   return g_instance;
 }
 
-LacrosLoader::LacrosLoader(CrOSComponentManager* manager)
+LacrosLoader::LacrosLoader(scoped_refptr<CrOSComponentManager> manager)
     : cros_component_manager_(manager) {
   DCHECK(cros_component_manager_);
 
@@ -30,38 +59,68 @@ LacrosLoader::LacrosLoader(CrOSComponentManager* manager)
 }
 
 LacrosLoader::~LacrosLoader() {
+  // Try to kill the lacros-chrome binary.
+  if (lacros_process_.IsValid())
+    lacros_process_.Terminate(/*ignored=*/0, /*wait=*/false);
+
   DCHECK_EQ(g_instance, this);
   g_instance = nullptr;
 }
 
 void LacrosLoader::Init() {
+  if (!IsLacrosAllowed())
+    return;
+
   const char kLacrosComponentName[] = "lacros-fishfood";
   if (chromeos::features::IsLacrosComponentUpdaterEnabled()) {
+    // TODO(crbug.com/1078607): Remove non-error logging from this class.
+    LOG(WARNING) << "Starting lacros component load.";
     cros_component_manager_->Load(kLacrosComponentName,
                                   CrOSComponentManager::MountPolicy::kMount,
                                   CrOSComponentManager::UpdatePolicy::kForce,
                                   base::BindOnce(&LacrosLoader::OnLoadComplete,
                                                  weak_factory_.GetWeakPtr()));
   } else {
+    // Clean-up code is currently blocked on fixing the implementation of
+    // IsRegistered. https://crbug.com/(1077348)
+    // if (cros_component_manager_->IsRegistered(kLacrosComponentName)) {
     // Clean up any old disk images, since the user turned off the flag.
-    cros_component_manager_->Unload(kLacrosComponentName);
+    // cros_component_manager_->Unload(kLacrosComponentName);
+    // }
   }
 }
 
 void LacrosLoader::Start() {
-  std::vector<std::string> upstart_env;
+  if (!IsLacrosAllowed())
+    return;
+
+  std::string chrome_path;
   if (chromeos::features::IsLacrosComponentUpdaterEnabled()) {
     if (lacros_path_.empty()) {
       LOG(WARNING) << "lacros component image not yet available";
       return;
     }
-    // Construct an environment-variable-like string with the binary path.
-    std::string path_env = "LACROS_PATH=";
-    path_env += lacros_path_.MaybeAsASCII();
-    path_env += "/chrome";
-    upstart_env.push_back(path_env);
+    chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
+  } else {
+    // This is the default path on eve-lacros images.
+    chrome_path = "/usr/local/lacros/chrome";
   }
-  chromeos::UpstartClient::Get()->StartLacrosChrome(upstart_env);
+  LOG(WARNING) << "Launching lacros-chrome at " << chrome_path;
+
+  base::LaunchOptions options;
+  options.environment["EGL_PLATFORM"] = "surfaceless";
+  options.environment["XDG_RUNTIME_DIR"] = "/run/chrome";
+  options.kill_on_parent_death = true;
+
+  std::vector<std::string> argv = {chrome_path,
+                                   "--ozone-platform=wayland",
+                                   "--user-data-dir=/home/chronos/user/lacros",
+                                   "--enable-gpu-rasterization",
+                                   "--enable-oop-rasterization",
+                                   "--lang=en-US",
+                                   "--breakpad-dump-location=/tmp"};
+  lacros_process_ = base::LaunchProcess(argv, options);
+  LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
 }
 
 void LacrosLoader::OnLoadComplete(
@@ -73,4 +132,5 @@ void LacrosLoader::OnLoadComplete(
     return;
   }
   lacros_path_ = path;
+  LOG(WARNING) << "Loaded lacros image at " << lacros_path_.MaybeAsASCII();
 }

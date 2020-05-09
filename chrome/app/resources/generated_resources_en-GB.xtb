@@ -118,7 +118,6 @@
 <translation id="1147991416141538220">To ask for access, contact the administrator of this device.</translation>
 <translation id="1149401351239820326">Expiry month</translation>
 <translation id="1150565364351027703">Sunglasses</translation>
-<translation id="1151841030700667295">You'll be signed out of all sites, including in open tabs.</translation>
 <translation id="1151917987301063366">Always allow <ph name="HOST" /> to access sensors</translation>
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1153636665119721804">Google Advanced Protection programme</translation>
@@ -294,7 +293,6 @@
 <translation id="1390548061267426325">Open as a Standard Tab</translation>
 <translation id="1392232653471491344">Linux restart required</translation>
 <translation id="1393283411312835250">Sun and clouds</translation>
-<translation id="1393787139683794508">This will clear all data and cookies stored by <ph name="ORIGIN_NAME" />.</translation>
 <translation id="1395730723686586365">Updater started</translation>
 <translation id="1396139853388185343">Error setting up printer</translation>
 <translation id="1396259464226642517">Was this result unexpected? <ph name="BEGIN_LINK" />Send feedback<ph name="END_LINK" /></translation>
@@ -856,7 +854,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2101225219012730419">Version:</translation>
 <translation id="211144231511833662">Clear types</translation>
 <translation id="2111670510994270194">New tab to the right</translation>
-<translation id="2112004299911874330">This will clear <ph name="TOTAL_USAGE" /> of data stored by sites.</translation>
 <translation id="21133533946938348">Pin Tab</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
 <translation id="2113921862428609753">Authority Information Access</translation>
@@ -2162,6 +2159,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3760460896538743390">Inspect &amp;Background Page</translation>
 <translation id="37613671848467444">Open in &amp;Incognito Window</translation>
 <translation id="3761556954875533505">Let site edit files?</translation>
+<translation id="3764314093345384080">Detailed build information</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communicate with a USB device}other{Communicate with # USB devices}}</translation>
 <translation id="3765246971671567135">Could not read offline demo mode policy.</translation>
 <translation id="3768037234834996183">Syncing your preferences...</translation>
@@ -3484,7 +3482,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5546865291508181392">Find</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" and 1 other tab}other{"<ph name="TAB_TITLE" />" and # other tabs}}</translation>
 <translation id="5548606607480005320">Safety check</translation>
-<translation id="5549467165017213645">This will clear <ph name="TOTAL_USAGE" /> of data stored by sites and installed apps.</translation>
 <translation id="5551573675707792127">Keyboard and text input</translation>
 <translation id="5553089923092577885">Certificate Policy Mappings</translation>
 <translation id="5554489410841842733">This icon will be visible when the extension can act on the current page.</translation>
@@ -3628,6 +3625,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5734362860645681824">Communications</translation>
 <translation id="5734697361979786483">Add file share</translation>
 <translation id="5736796278325406685">Please enter a valid username</translation>
+<translation id="573759479754913123">About Chrome OS</translation>
 <translation id="5739017626473506901">Sign in to help <ph name="USER_NAME" /> add a school account</translation>
 <translation id="5739235828260127894">Waiting for verification. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Very large</translation>
@@ -4142,7 +4140,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="641081527798843608">Subject match</translation>
 <translation id="6412673304250309937">Checks URLs with a list of unsafe sites stored in Chrome. If a site tries to steal your password, or when you download a harmful file, Chrome may also send URLs, including bits of page content, to Safe Browsing.</translation>
 <translation id="6412931879992742813">New incognito window</translation>
-<translation id="6413591858632097328">This will clear all data and cookies stored by <ph name="ORIGIN_NAME" /> and its installed apps.</translation>
 <translation id="641469293210305670">Install updates and apps</translation>
 <translation id="6414888972213066896">You asked your parent if it's OK to visit this site</translation>
 <translation id="6415659939354280526">Choose Ambient Mode source</translation>
@@ -4191,7 +4188,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6467304607960172345">Optimise full-screen videos</translation>
 <translation id="6468485451923838994">Fonts</translation>
 <translation id="6472207088655375767">OTP</translation>
-<translation id="6472804939621540371">This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME" />, any sites under it, and its installed app.</translation>
 <translation id="6472893788822429178">Show Home button</translation>
 <translation id="6473842110411557830">Powerwash illustration</translation>
 <translation id="6474498546677193336">Couldn't unshare because an application is using this folder. The folder will be unshared when Linux is next shut down.</translation>
@@ -4940,6 +4936,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7478485216301680444">Kiosk application could not be installed.</translation>
 <translation id="7479221278376295180">Storage Usage Overview</translation>
 <translation id="7481312909269577407">Forward</translation>
+<translation id="7481358317100446445">Ready</translation>
 <translation id="748138892655239008">Certificate Basic Constraints</translation>
 <translation id="7487067081878637334">Technology</translation>
 <translation id="7487141338393529395">Turn on Enhanced Spell Check</translation>
@@ -5073,7 +5070,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7664620655576155379">Unsupported Bluetooth device: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665082356120621510">Reserve size</translation>
 <translation id="7665369617277396874">Add account</translation>
-<translation id="7665940458857700755">This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME" /> and any sites under it.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Incorrect PIN. You have one attempt remaining.}other{Incorrect PIN. You have # attempts remaining.}}</translation>
 <translation id="7671130400130574146">Use system title bar and borders</translation>
 <translation id="767127784612208024">Touch to confirm reset</translation>
@@ -5199,6 +5195,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7817361223956157679">The on-screen keyboard doesn’t work in Linux apps yet</translation>
 <translation id="7818135753970109980">New theme added (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
+<translation id="7819992334107904369">Chrome sync</translation>
 <translation id="782057141565633384">C&amp;opy video address</translation>
 <translation id="7824864914877854148">Backup couldn't be completed due to an error</translation>
 <translation id="782590969421016895">Use current pages</translation>
@@ -5416,7 +5413,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8063235345342641131">Default green avatar</translation>
 <translation id="8063535366119089408">View file</translation>
 <translation id="8068253693380742035">Touch to sign in</translation>
-<translation id="8068809649322155577">This will clear all data and cookies stored by <ph name="SITE_GROUP_NAME" />, any sites under it, and its installed apps.</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
 <translation id="8071432093239591881">Print as image</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages and photos.<ph name="END_PARAGRAPH1" />

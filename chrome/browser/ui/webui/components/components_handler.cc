@@ -4,7 +4,11 @@
 
 #include "chrome/browser/ui/webui/components/components_handler.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/update_client/crx_update_item.h"
@@ -97,13 +101,14 @@ base::string16 ComponentsHandler::ComponentEventToString(Events event) {
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_UPDATE_ERROR);
     case Events::COMPONENT_UPDATE_DOWNLOADING:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_DOWNLOADING);
+    case Events::COMPONENT_UPDATE_UPDATING:
+      return l10n_util::GetStringUTF16(IDS_COMPONENTS_EVT_STATUS_UPDATING);
   }
   return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
 }
 
 base::string16 ComponentsHandler::ServiceStatusToString(
     update_client::ComponentState state) {
-  // TODO(sorin): handle kDownloaded. For now, just handle it as kUpdating.
   switch (state) {
     case update_client::ComponentState::kNew:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NEW);

@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.CrashReporterCallback;
 import org.chromium.weblayer.CrashReporterController;
@@ -75,7 +74,6 @@ public class CrashReporterTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "Flaky on crbug.com/1073464")
     public void testCrashReporterLoading() throws Exception {
         BundleCallbackHelper callbackHelper = new BundleCallbackHelper();
         CallbackHelper deleteHelper = new CallbackHelper();
@@ -110,7 +108,7 @@ public class CrashReporterTest {
             crashReporterController.checkForPendingCrashReports();
         });
         // Expect that a Bundle containing { "foo": "bar" } is returned.
-        callbackHelper.waitForCallback(callbackHelper.getCallCount());
+        callbackHelper.waitForFirst();
         Bundle crashKeys = callbackHelper.getResult();
         Assert.assertArrayEquals(crashKeys.keySet().toArray(new String[0]), new String[] {"foo"});
         Assert.assertEquals(crashKeys.getString("foo"), "bar");

@@ -321,16 +321,15 @@ void PluginVmManagerImpl::OnListVms(
 
 void PluginVmManagerImpl::InstallPluginVmDlc() {
   chromeos::DlcserviceClient::Get()->Install(
-      GetPluginVmDlcModuleList(),
+      "pita",
       base::BindOnce(&PluginVmManagerImpl::OnInstallPluginVmDlc,
                      weak_ptr_factory_.GetWeakPtr()),
       chromeos::DlcserviceClient::IgnoreProgress);
 }
 
 void PluginVmManagerImpl::OnInstallPluginVmDlc(
-    const std::string& err,
-    const dlcservice::DlcModuleList& dlc_module_list) {
-  if (err == dlcservice::kErrorNone) {
+    const chromeos::DlcserviceClient::InstallResult& install_result) {
+  if (install_result.error == dlcservice::kErrorNone) {
     UpdateVmState(base::BindOnce(&PluginVmManagerImpl::OnListVmsForLaunch,
                                  weak_ptr_factory_.GetWeakPtr()),
                   base::BindOnce(&PluginVmManagerImpl::LaunchFailed,
@@ -339,7 +338,8 @@ void PluginVmManagerImpl::OnInstallPluginVmDlc(
   } else {
     // TODO(kimjae): Unify the dlcservice error handler with
     // PluginVmInstaller.
-    LOG(ERROR) << "Couldn't intall PluginVM DLC after import: " << err;
+    LOG(ERROR) << "Couldn't intall PluginVM DLC after import: "
+               << install_result.error;
     LaunchFailed();
   }
 }

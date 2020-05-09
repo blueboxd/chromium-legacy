@@ -351,8 +351,8 @@ class PaymentSheetRowBuilder {
       const base::string16& button_string,
       bool button_enabled) {
     std::unique_ptr<views::Button> button(
-        views::MdTextButton::CreateSecondaryUiBlueButton(listener_,
-                                                         button_string));
+        views::MdTextButton::CreateSecondaryUiProminentButton(listener_,
+                                                              button_string));
     button->set_tag(tag_);
     button->SetID(id_);
     button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
@@ -408,7 +408,7 @@ void PaymentSheetViewController::OnSelectedInformationChanged() {
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePrimaryButton() {
   std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiBlueButton(
+      views::MdTextButton::CreateSecondaryUiProminentButton(
           this, CalculatePrimaryButtonLabel(state())));
   button->set_tag(static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG));
   button->SetID(static_cast<int>(DialogViewID::PAY_BUTTON));

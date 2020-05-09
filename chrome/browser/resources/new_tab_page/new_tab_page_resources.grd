@@ -63,6 +63,8 @@
           file="browser_proxy.js" type="BINDATA" compress="false" />
       <include name="IDR_NEW_TAB_PAGE_UTILS_JS"
           file="utils.js" type="BINDATA" compress="false" />
+      <include name="IDR_NEW_TAB_PAGE_BACKGROUND_MANAGER_JS"
+          file="background_manager.js" type="BINDATA" compress="false" />
       <part file="new_tab_page_resources_common.grdp" />
     </includes>
   </release>

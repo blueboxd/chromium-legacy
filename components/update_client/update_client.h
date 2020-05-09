@@ -183,6 +183,7 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
     std::string arguments;
   };
 
+  using ProgressCallback = base::RepeatingCallback<void(int progress)>;
   using Callback = base::OnceCallback<void(const Result& result)>;
 
   // Called on the main thread when there was a problem unpacking or
@@ -191,18 +192,23 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   virtual void OnUpdateError(int error) = 0;
 
   // Called by the update service when a CRX has been unpacked
-  // and it is ready to be installed. |unpack_path| contains the
-  // temporary directory with all the unpacked CRX files. |pubkey| contains the
-  // public key of the CRX in the PEM format, without the header and the footer.
-  // |install_params| is an optional parameter which provides the name and
-  // the arguments for a binary program which is invoked as part of the
-  // install or update flows. To avoid forcing the callers to depend on
-  // base::Optional, an std::unique_ptr type is used.
-  // The caller must invoke the |callback| when the install flow has completed.
-  // This method may be called from a thread other than the main thread.
+  // and it is ready to be installed. This method may be called from a
+  // sequence other than the main sequence.
+  // |unpack_path| contains the temporary directory with all the unpacked CRX
+  // files.
+  // |pubkey| contains the public key of the CRX in the PEM format, without the
+  // header and the footer.
+  // |install_params| is an optional parameter which provides the name and the
+  // arguments for a binary program which is invoked as part of the install or
+  // update flows.
+  // |progress_callback| reports installer progress. This callback must be run
+  // directly instead of posting it.
+  // |callback| must be the last callback invoked and it indicates that the
+  // install flow has completed.
   virtual void Install(const base::FilePath& unpack_path,
                        const std::string& public_key,
                        std::unique_ptr<InstallParams> install_params,
+                       ProgressCallback progress_callback,
                        Callback callback) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is
@@ -364,6 +370,9 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
 
       // Sent when CRX bytes are being downloaded.
       COMPONENT_UPDATE_DOWNLOADING,
+
+      // Sent when install progress is received from the CRX installer.
+      COMPONENT_UPDATE_UPDATING,
     };
 
     virtual ~Observer() = default;

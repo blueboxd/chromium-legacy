@@ -128,7 +128,10 @@ ash::SearchResultType AppServiceAppResult::GetSearchResultType() const {
     case apps::mojom::AppType::kExtension:
     case apps::mojom::AppType::kWeb:
       return ash::EXTENSION_APP;
-    default:
+    case apps::mojom::AppType::kLacros:
+      return ash::LACROS;
+    case apps::mojom::AppType::kMacNative:
+    case apps::mojom::AppType::kUnknown:
       NOTREACHED();
       return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }

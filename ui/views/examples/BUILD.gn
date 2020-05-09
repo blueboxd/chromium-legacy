@@ -42,6 +42,8 @@ jumbo_component("views_examples_lib") {
     "layout_example_base.h",
     "link_example.cc",
     "link_example.h",
+    "login_bubble_dialog.cc",
+    "login_bubble_dialog.h",
     "menu_example.cc",
     "menu_example.h",
     "message_box_example.cc",
@@ -101,6 +103,7 @@ jumbo_component("views_examples_lib") {
     "//ui/native_theme",
     "//ui/resources",
     "//ui/resources:ui_test_pak",
+    "//ui/strings:ui_strings",
     "//ui/views",
   ]
 

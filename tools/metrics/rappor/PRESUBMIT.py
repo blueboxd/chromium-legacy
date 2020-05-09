@@ -20,9 +20,11 @@ def CheckChange(input_api, output_api):
           [input_api.python_executable, 'pretty_print.py', '--presubmit'],
           cwd=cwd)
       if exit_code != 0:
-        return [output_api.PresubmitError(
-            'rappor.xml is not formatted correctly; run %s/pretty_print.py '
-            'to fix' % input_api.PresubmitLocalPath())]
+        return [
+            output_api.PresubmitError(
+                'rappor.xml is not formatted correctly; run git cl format '
+                'to fix.')
+        ]
   return []
 
 

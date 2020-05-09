@@ -143,7 +143,7 @@ function initialize() {
    * Remove all rows from the engagement table.
    */
   function clearTable() {
-    engagementTableBody.innerHTML = '';
+    engagementTableBody.innerHTML = trustedTypes.emptyHTML;
   }
 
   /**

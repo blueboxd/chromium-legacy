@@ -19,6 +19,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
 import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
@@ -90,8 +91,8 @@ class AppElement extends PolymerElement {
 
       /** @private {!newTabPage.mojom.Theme} */
       theme_: {
+        observer: 'onThemeChange_',
         type: Object,
-        observer: 'updateBackgroundImagePath_',
       },
 
       /** @private */
@@ -103,6 +104,7 @@ class AppElement extends PolymerElement {
       /** @private */
       showBackgroundImage_: {
         computed: 'computeShowBackgroundImage_(theme_, backgroundSelection_)',
+        observer: 'onShowBackgroundImageChange_',
         reflectToAttribute: true,
         type: Boolean,
       },
@@ -173,17 +175,22 @@ class AppElement extends PolymerElement {
     super();
     /** @private {!newTabPage.mojom.PageCallbackRouter} */
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
+    /** @private {!BackgroundManager} */
+    this.backgroundManager_ = BackgroundManager.getInstance();
     /** @private {?number} */
     this.setThemeListenerId_ = null;
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
     this.loadOneGoogleBar_();
-
     /** @private {boolean} */
     this.shouldPrintPerformance_ =
         new URLSearchParams(location.search).has('print_perf');
-    /** @private {number} */
-    this.backgroundImageLoadStartEpoch_ = 0;
+    /**
+     * Initialized with the start of the performance timeline in case the
+     * background image load is not triggered by JS.
+     * @private {number}
+     */
+    this.backgroundImageLoadStartEpoch_ = performance.timeOrigin;
     /** @private {number} */
     this.backgroundImageLoadStart_ = 0;
   }
@@ -207,11 +214,27 @@ class AppElement extends PolymerElement {
           this.handlePromoMessage_(data);
         } else if (data.frameType === 'one-google-bar') {
           this.handleOneGoogleBarMessage_(data);
-        } else if (data.frameType === 'background-image') {
-          this.handleBackgroundImageMessage_(data);
         }
       }
     });
+    if (this.shouldPrintPerformance_) {
+      // It is possible that the background image has already loaded by now.
+      // If it has, we request it to re-send the load time so that we can
+      // actually catch the load time.
+      this.backgroundManager_.getBackgroundImageLoadTime().then(
+          time => {
+            const duration = time - this.backgroundImageLoadStartEpoch_;
+            this.printPerformanceDatum_(
+                'background-image-load', this.backgroundImageLoadStart_,
+                duration);
+            this.printPerformanceDatum_(
+                'background-image-loaded',
+                this.backgroundImageLoadStart_ + duration);
+          },
+          () => {
+            console.error('Failed to capture background image load time');
+          });
+    }
     FocusOutlineManager.forDocument(document);
   }
 
@@ -229,9 +252,7 @@ class AppElement extends PolymerElement {
     BrowserProxy.getInstance().waitForLazyRender().then(() => {
       this.lazyRender_ = true;
     });
-    if (!this.shouldPrintPerformance_) {
-      this.printPerformance_();
-    }
+    this.printPerformance_();
     performance.measure('app-creation', 'app-creation-start');
   }
 
@@ -432,6 +453,19 @@ class AppElement extends PolymerElement {
     }
   }
 
+  /** @private */
+  onShowBackgroundImageChange_() {
+    this.backgroundManager_.setShowBackgroundImage(this.showBackgroundImage_);
+  }
+
+  /** @private */
+  onThemeChange_() {
+    if (this.theme_) {
+      this.backgroundManager_.setBackgroundColor(this.theme_.backgroundColor);
+    }
+    this.updateBackgroundImagePath_();
+  }
+
   /**
    * Set the #backgroundImage |path| only when different and non-empty. Reset
    * the customize dialog background selection if the dialog is closed.
@@ -471,25 +505,18 @@ class AppElement extends PolymerElement {
         };
       }
     }
-    let path;
+    let url = '';
     switch (this.backgroundSelection_.type) {
       case BackgroundSelectionType.NO_SELECTION:
-        path = this.theme_ && this.theme_.backgroundImageUrl &&
-            `background_image?${this.theme_.backgroundImageUrl.url}`;
+        url = this.theme_ && this.theme_.backgroundImageUrl &&
+            this.theme_.backgroundImageUrl.url;
         break;
       case BackgroundSelectionType.IMAGE:
-        path =
-            `background_image?${this.backgroundSelection_.image.imageUrl.url}`;
+        url = this.backgroundSelection_.image.imageUrl.url;
         break;
-      case BackgroundSelectionType.NO_BACKGROUND:
-      case BackgroundSelectionType.DAILY_REFRESH:
-      default:
-        path = '';
     }
-    if (path && this.$.backgroundImage.path !== path) {
-      this.backgroundImageLoadStartEpoch_ = BrowserProxy.getInstance().now();
-      this.backgroundImageLoadStart_ = performance.now();
-      this.$.backgroundImage.path = path;
+    if (url) {
+      this.backgroundManager_.setBackgroundImageUrl(url);
     }
   }
 
@@ -552,22 +579,6 @@ class AppElement extends PolymerElement {
       $$(this, '#oneGoogleBar').style.zIndex = '1000';
     } else if (data.messageType === 'deactivate') {
       $$(this, '#oneGoogleBar').style.zIndex = '0';
-    }
-  }
-
-  /**
-   * @param {!Object} data
-   * @private
-   */
-  handleBackgroundImageMessage_(data) {
-    if (data.src === this.theme_.backgroundImageUrl.url &&
-        data.messageType === 'loaded') {
-      const duration = data.time - this.backgroundImageLoadStartEpoch_;
-      this.printPerformanceDatum_(
-          'background-image-load', this.backgroundImageLoadStart_, duration);
-      this.printPerformanceDatum_(
-          'background-image-loaded', this.backgroundImageLoadStart_ + duration,
-          0);
     }
   }
 
@@ -643,7 +654,7 @@ class AppElement extends PolymerElement {
   }
 
   /** @private */
-  printPerformanceDatum_(name, time, auxTime) {
+  printPerformanceDatum_(name, time, auxTime = 0) {
     if (!this.shouldPrintPerformance_) {
       return;
     }
@@ -660,6 +671,9 @@ class AppElement extends PolymerElement {
    * @private
    */
   printPerformance_() {
+    if (!this.shouldPrintPerformance_) {
+      return;
+    }
     const entryTypes = ['paint', 'measure'];
     const log = (entry) => {
       this.printPerformanceDatum_(
@@ -667,15 +681,17 @@ class AppElement extends PolymerElement {
           entry.duration && entry.startTime ? entry.startTime : 0);
     };
     const observer = new PerformanceObserver(list => {
-      list.getEntries().forEach(log);
+      list.getEntries().forEach((entry) => {
+        log(entry);
+      });
     });
     observer.observe({entryTypes: entryTypes});
-    for (const entry of performance.getEntries()) {
+    performance.getEntries().forEach((entry) => {
       if (!entryTypes.includes(entry.entryType)) {
         return;
       }
       log(entry);
-    }
+    });
   }
 }
 

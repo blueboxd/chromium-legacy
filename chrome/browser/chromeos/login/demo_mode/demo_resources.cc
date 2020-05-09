@@ -91,7 +91,7 @@ void DemoResources::EnsureLoaded(base::OnceClosure load_callback) {
     return;
   }
 
-  component_updater::CrOSComponentManager* cros_component_manager =
+  auto cros_component_manager =
       g_browser_process->platform_part()->cros_component_manager();
   // In unit tests, DemoModeTestHelper should set up a fake
   // CrOSComponentManager.

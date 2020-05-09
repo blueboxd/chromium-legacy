@@ -452,10 +452,6 @@
     "label": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
-  "chrome_modern_public_bundle__base_libs_and_assets_expectations": {
-    "label": "//chrome/android:chrome_modern_public_bundle__base_libs_and_assets_expectations",
-    "type": "additional_compile_target",
-  },
   "chrome_official_builder": {
     "label": "//:chrome_official_builder",
     "type": "additional_compile_target",
@@ -1229,10 +1225,6 @@
     "label": "//chrome/android:monochrome_public_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
   },
-  "monochrome_public_bundle__base_libs_and_assets_expectations": {
-    "label": "//chrome/android:monochrome_public_bundle__base_libs_and_assets_expectations",
-    "type": "additional_compile_target",
-  },
   "mojo_core_unittests": {
     "label": "//mojo/core:mojo_core_unittests",
     "type": "console_test_launcher",
@@ -1646,11 +1638,12 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
-  "test_buildbucket_api_gpu_use_cases": {
-    "label": "//content/test:test_buildbucket_api_gpu_use_cases",
-    "script": "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
-    "type": "script",
-  },
+  # TODO(crbug.com/1080749): Re-add this once the test is fixed and re-enabled.
+  # "test_buildbucket_api_gpu_use_cases": {
+  #   "label": "//content/test:test_buildbucket_api_gpu_use_cases",
+  #   "script": "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
+  #   "type": "script",
+  # },
   "touch_to_fill_junit_tests": {
     "label": "//chrome/browser/touch_to_fill/android:touch_to_fill_junit_tests",
     "type": "junit_test",
@@ -1683,14 +1676,6 @@
   "trichrome_chrome_bundle_fake_modules_smoke_test": {
     "label": "//chrome/android:trichrome_chrome_bundle_fake_modules_smoke_test",
     "type": "console_test_launcher",
-  },
-  "trichrome_chrome_bundle__base_libs_and_assets_expectations": {
-    "label": "//chrome/android:trichrome_chrome_bundle__base_libs_and_assets_expectations",
-    "type": "additional_compile_target",
-  },
-  "trichrome_library_apk_libs_and_assets_expectations": {
-    "label": "//chrome/android:trichrome_library_apk_libs_and_assets_expectations",
-    "type": "additional_compile_target",
   },
   "ui_android_unittests": {
     "label": "//ui/android:ui_android_unittests",

@@ -30,6 +30,17 @@ def _merge_steps_argument_parser(*args, **kwargs):
       action='store_false',
       dest='sparse',
       help='run llvm-profdata without the sparse flag.')
+  # TODO(crbug.com/1077304) - The intended behaviour is to default sparse to
+  # false. --no-sparse above was added as a workaround, and will be removed.
+  # This is being introduced now in support of the migration to intended
+  # behavior. Ordering of args matters here, as the default is set by the former
+  # (sparse defaults to False because of ordering. See merge_results unit tests
+  # for details)
+  parser.add_argument(
+      '--sparse',
+      action='store_true',
+      dest='sparse',
+      help='run llvm-profdata with the sparse flag.')
   return parser
 
 

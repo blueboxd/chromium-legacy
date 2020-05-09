@@ -1007,6 +1007,12 @@
       },
     },
   },
+  'disk_usage_tast_test': {
+    # TODO(crbug.com/1077659): Add the test back after it's fixed.
+    'remove_from': [
+      'chromeos-kevin-rel',
+    ],
+  },
   'display_unittests': {
     'remove_from': [
       'Fuchsia ARM64',  # https://crbug.com/1077462
@@ -2219,6 +2225,12 @@
 
       'Win10 Tests x64',
       'Win10 Tests x64 Code Coverage',
+    ],
+  },
+  'test_buildbucket_api_gpu_use_cases': {
+    'remove_from': [
+      # crbug.com/1080749
+      'Optional Linux Release (NVIDIA)',
     ],
   },
   'unit_tests': {

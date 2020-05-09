@@ -48,6 +48,10 @@ class FeedbackReport : public base::RefCountedThreadSafe<FeedbackReport> {
   // stored by the feedback server. Only used for @google.com emails.
   static const char kAllCrashReportIdsKey[];
 
+  // The ID of the product specific data for the system logs entry containing
+  // mem_usage entries with tab names.
+  static const char kMemUsageWithTabTitlesKey[];
+
   // Loads the reports still on disk and queues then using the given callback.
   // This call blocks on the file reads.
   static void LoadReportsAndQueue(const base::FilePath& user_dir,

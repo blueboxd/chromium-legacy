@@ -309,7 +309,6 @@ cr.define('settings', function() {
     /**
      * Only relevant when the focus-row-control is focus()ed. This keypress
      * handler specifies that pressing 'Enter' should cause a route change.
-     * TODO(crbug/1056909): Add test for this specific case.
      * @param {!KeyboardEvent} e
      * @private
      */

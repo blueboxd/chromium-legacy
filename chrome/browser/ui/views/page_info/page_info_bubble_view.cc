@@ -324,8 +324,10 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
 
   std::unique_ptr<views::MdTextButton::LabelButton> change_password_button;
   if (change_password_template) {
-    change_password_button = views::MdTextButton::CreateSecondaryUiBlueButton(
-        button_listener_, l10n_util::GetStringUTF16(change_password_template));
+    change_password_button =
+        views::MdTextButton::CreateSecondaryUiProminentButton(
+            button_listener_,
+            l10n_util::GetStringUTF16(change_password_template));
     change_password_button->SetID(
         PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   }

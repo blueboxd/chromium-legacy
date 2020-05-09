@@ -13,7 +13,7 @@ import presubmit_util
 
 def main(argv):
   presubmit_util.DoPresubmitMain(argv, 'structured.xml', 'structured.old.xml',
-                                 'pretty_print.py', model.PrettifyXML)
+                                 model.PrettifyXML)
 
 
 if '__main__' == __name__:

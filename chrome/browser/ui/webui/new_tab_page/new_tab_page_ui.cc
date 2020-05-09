@@ -227,8 +227,8 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
 
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
-  UpdateBackgroundColor(*instant_service_->GetInitializedNtpTheme());
   instant_service_->AddObserver(this);
+  instant_service_->UpdateNtpTheme();
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(NewTabPageUI)
@@ -278,6 +278,7 @@ void NewTabPageUI::UpdateBackgroundColor(const NtpTheme& theme) {
       base::StringPrintf("#%02X%02X%02X", SkColorGetR(background_color),
                          SkColorGetG(background_color),
                          SkColorGetB(background_color)));
+  update->SetString("backgroundImageUrl", theme.custom_background_url.spec());
   content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
                                    std::move(update));
 }

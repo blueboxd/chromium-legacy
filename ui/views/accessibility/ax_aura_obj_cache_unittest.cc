@@ -17,7 +17,9 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/test/widget_test.h"
 
@@ -51,6 +53,12 @@ class AXAuraObjCacheTest : public WidgetTest {
  public:
   AXAuraObjCacheTest() = default;
   ~AXAuraObjCacheTest() override = default;
+
+  ui::AXNodeData GetData(AXAuraObjWrapper* wrapper) {
+    ui::AXNodeData data;
+    wrapper->Serialize(&data);
+    return data;
+  }
 };
 
 TEST_F(AXAuraObjCacheTest, TestViewRemoval) {
@@ -131,6 +139,68 @@ TEST_F(AXAuraObjCacheTest, ValidTree) {
   EXPECT_TRUE(HasNodeWithName(ax_tree, "ParentWindow"));
   EXPECT_TRUE(HasNodeWithName(ax_tree, "ChildWindow"));
   EXPECT_TRUE(HasNodeWithName(ax_tree, "ChildButton"));
+}
+
+TEST_F(AXAuraObjCacheTest, GetFocusIsUnignoredAncestor) {
+  AXAuraObjCache cache;
+  auto widget = std::make_unique<Widget>();
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.bounds = gfx::Rect(0, 0, 200, 200);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+  widget->Init(std::move(params));
+  widget->Show();
+
+  // Note that AXAuraObjCache::GetFocusedView has some logic to force focus on
+  // the first child of the client view when one cannot be found from the
+  // FocusManager.
+  auto* client = widget->non_client_view()->client_view();
+  ASSERT_NE(nullptr, client);
+  auto* client_child = client->children().front();
+  ASSERT_NE(nullptr, client_child);
+  client_child->GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
+
+  View* parent = new View();
+  widget->GetRootView()->AddChildView(parent);
+  parent->GetViewAccessibility().OverrideRole(ax::mojom::Role::kTextField);
+  parent->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  View* child = new View();
+  parent->AddChildView(child);
+  child->GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
+  child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  auto* ax_widget = cache.GetOrCreate(widget.get());
+  ASSERT_NE(nullptr, ax_widget);
+  auto* ax_client_child = cache.GetOrCreate(client_child);
+  ASSERT_NE(nullptr, ax_client_child);
+  auto* ax_parent = cache.GetOrCreate(parent);
+  ASSERT_NE(nullptr, ax_parent);
+  auto* ax_child = cache.GetOrCreate(child);
+  ASSERT_NE(nullptr, ax_child);
+
+  ASSERT_EQ(nullptr, cache.GetFocus());
+  cache.OnRootWindowObjCreated(widget->GetNativeWindow());
+  ASSERT_EQ(ax::mojom::Role::kDialog, GetData(cache.GetFocus()).role);
+  ASSERT_EQ(ax_client_child, cache.GetFocus());
+
+  parent->RequestFocus();
+  ASSERT_EQ(ax::mojom::Role::kTextField, GetData(cache.GetFocus()).role);
+  ASSERT_EQ(ax_parent, cache.GetFocus());
+
+  child->RequestFocus();
+  ASSERT_EQ(ax::mojom::Role::kGroup, GetData(cache.GetFocus()).role);
+  ASSERT_EQ(ax_child, cache.GetFocus());
+
+  child->GetViewAccessibility().OverrideIsIgnored(true);
+  ASSERT_EQ(ax::mojom::Role::kTextField, GetData(cache.GetFocus()).role);
+  ASSERT_EQ(ax_parent, cache.GetFocus());
+
+  parent->GetViewAccessibility().OverrideIsIgnored(true);
+  ASSERT_EQ(ax::mojom::Role::kWindow, GetData(cache.GetFocus()).role);
+  ASSERT_EQ(cache.GetOrCreate(widget->GetRootView()), cache.GetFocus());
+
+  cache.OnRootWindowObjDestroyed(widget->GetNativeWindow());
 }
 
 }  // namespace

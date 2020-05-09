@@ -20,12 +20,6 @@ import java.util.List;
 public interface TabPersistencePolicy {
 
     /**
-     * The prefix of the name of the file where the state is saved.  {@link #getStateFileName()}
-     * and {@link #getStateToBeMergedFileName()} must begin with this prefix.
-     */
-    String SAVED_STATE_FILE_PREFIX = "tab_state";
-
-    /**
      * @return File representing the directory that is used to store Tab state
      *         information.
      */

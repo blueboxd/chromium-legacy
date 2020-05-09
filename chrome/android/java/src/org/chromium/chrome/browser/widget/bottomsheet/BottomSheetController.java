@@ -611,6 +611,11 @@ public class BottomSheetController implements Destroyable {
         return mBottomSheet.forceScrollingStateForTesting(sheetHeight, yVelocity);
     }
 
+    @VisibleForTesting
+    public void endAnimationsForTesting() {
+        mBottomSheet.endAnimations();
+    }
+
     /**
      * Request that some content be shown in the bottom sheet.
      * @param content The content to be shown in the bottom sheet.

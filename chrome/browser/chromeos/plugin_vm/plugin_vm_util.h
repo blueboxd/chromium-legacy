@@ -18,10 +18,6 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace dlcservice {
-class DlcModuleList;
-}  // namespace dlcservice
-
 class Profile;
 class GURL;
 
@@ -101,9 +97,6 @@ bool FakeUserIdIsSet();
 void RemoveDriveDownloadDirectoryIfExists();
 bool IsDriveUrl(const GURL& url);
 std::string GetIdFromDriveUrl(const GURL& url);
-
-// Used during communication with |DlcserviceClient|.
-dlcservice::DlcModuleList GetPluginVmDlcModuleList();
 
 // A subscription for changes to PluginVm policy that may affect
 // IsPluginVmAllowedForProfile.

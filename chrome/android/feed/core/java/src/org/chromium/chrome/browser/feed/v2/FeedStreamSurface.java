@@ -123,7 +123,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (mSurfaceScope != null) {
             mHybridListRenderer = mSurfaceScope.provideListRenderer();
         } else {
-            mHybridListRenderer = null;
+            mHybridListRenderer = new NativeViewListRenderer(mTabProvider.get().getContext());
         }
 
         if (mHybridListRenderer != null) {

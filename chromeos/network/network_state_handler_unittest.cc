@@ -109,7 +109,7 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   }
 
   void DefaultNetworkChanged(const NetworkState* network) override {
-    EXPECT_TRUE(!network || network->IsConnectedState());
+    EXPECT_TRUE(!network || network->IsActive());
     ++default_network_change_count_;
     default_network_ = network ? network->path() : "";
     default_network_connection_state_ =

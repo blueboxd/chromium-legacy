@@ -72,11 +72,14 @@ inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
   }
 }
 
-OverlaySupport FlagsToOverlaySupport(UINT flags) {
+OverlaySupport FlagsToOverlaySupport(bool overlays_supported, UINT flags) {
   if (flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING)
     return OverlaySupport::kScaling;
   if (flags & DXGI_OVERLAY_SUPPORT_FLAG_DIRECT)
     return OverlaySupport::kDirect;
+  if (overlays_supported)
+    return OverlaySupport::kSoftware;
+
   return OverlaySupport::kNone;
 }
 
@@ -108,9 +111,11 @@ void CollectHardwareOverlayInfo(OverlayInfo* overlay_info) {
     overlay_info->supports_overlays =
         gl::DirectCompositionSurfaceWin::AreOverlaysSupported();
     overlay_info->nv12_overlay_support = FlagsToOverlaySupport(
+        overlay_info->supports_overlays,
         gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
             DXGI_FORMAT_NV12));
     overlay_info->yuy2_overlay_support = FlagsToOverlaySupport(
+        overlay_info->supports_overlays,
         gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(
             DXGI_FORMAT_YUY2));
   }

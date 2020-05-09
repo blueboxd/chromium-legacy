@@ -45,21 +45,20 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
       const DirectCompositionSurfaceWin::Settings& settings);
 
   // Returns true if direct composition is supported.  We prefer to use direct
-  // composition event without hardware overlays, because it allows us to bypass
+  // composition even without hardware overlays, because it allows us to bypass
   // blitting by DWM to the window redirection surface by using a flip mode swap
   // chain.  Overridden with --disable-direct-composition.
   static bool IsDirectCompositionSupported();
 
-  // Returns true if hardware video overlays are supported and should be used.
-  // Overridden with --enable-direct-composition-video-overlays and
-  // --disable-direct-composition-video-overlays.
-  // This function is thread safe.
+  // Returns true if video overlays are supported and should be used. Overridden
+  // with --enable-direct-composition-video-overlays and
+  // --disable-direct-composition-video-overlays. This function is thread safe.
   static bool AreOverlaysSupported();
 
   // Returns true if zero copy decode swap chain is supported.
   static bool IsDecodeSwapChainSupported();
 
-  // After this is called, hardware overlay support is disabled during the
+  // After this is called, overlay support is disabled during the
   // current GPU process' lifetime.
   static void DisableOverlays();
 
@@ -69,8 +68,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // Returns true if scaled hardware overlays are supported.
   static bool AreScaledOverlaysSupported();
 
-  // Returns preferred overlay format set when detecting hardware overlay
-  // support.
+  // Returns preferred overlay format set when detecting overlay support.
   static DXGI_FORMAT GetOverlayFormatUsed();
 
   // Returns monitor size.

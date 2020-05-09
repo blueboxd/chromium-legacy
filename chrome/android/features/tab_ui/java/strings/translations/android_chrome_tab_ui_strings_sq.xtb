@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Rishiko</translation>
 <translation id="5073204694187207510">Fshih rrjetën me ekran të plotë</translation>
 <translation id="5082793167783849073">Krahaso me shpejtësi faqet duke krijuar një grup. Për të filluar, prek dhe mbaj të shtypur një lidhje.</translation>
+<translation id="5533021382642990449">Shfaq më vonë</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> skeda të grupuara</translation>
 <translation id="58326064309361797">Zvarriti skedat për t'i grupuar</translation>
 <translation id="6040143037577758943">Mbyll</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Largo sugjerimet.</translation>
 <translation id="814503310257431685">Shiko të gjitha</translation>
 <translation id="8205266828577616993">Lëviz skedën lart</translation>
+<translation id="8304833501377495048">Nuk do ta shfaqësh shiritin e skedave përsëri?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Mbyll <ph name="TABS_COUNT_ONE" /> skedë të zgjedhur}other{Mbyll <ph name="TABS_COUNT_MANY" /> skeda të zgjedhura}}</translation>
+<translation id="8749939518995770034">Shiriti i skedave i mbyllur</translation>
 <translation id="9150694013019234766">Kalo mes skedave në grupin e skedave pranë fundit të ekranit</translation>
 <translation id="9169594135889675189">Shto skedë të re te grupi</translation>
 <translation id="959682366969460160">Organizohu</translation>

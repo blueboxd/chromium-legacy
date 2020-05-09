@@ -33,9 +33,5 @@ const base::Feature kReportFeedUserActions{"ReportFeedUserActions",
 const base::Feature kInterestFeedV2{"InterestFeedV2",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use a contextual menu in the feed header positioned on the right to manage
-// the feed that replaces the status text.
-const base::Feature kFeedHeaderMenu{"FeedHeaderMenu",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace feed

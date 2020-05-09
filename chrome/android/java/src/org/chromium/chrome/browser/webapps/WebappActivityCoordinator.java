@@ -14,8 +14,10 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
+import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -33,6 +35,8 @@ public class WebappActivityCoordinator implements InflationObserver {
     private final WebappInfo mWebappInfo;
     private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
+    private final CustomTabToolbarColorController mToolbarColorController;
+    private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final WebappDeferredStartupWithStorageHandler mDeferredStartupWithStorageHandler;
 
     // Whether the current page is within the webapp's scope.
@@ -48,7 +52,9 @@ public class WebappActivityCoordinator implements InflationObserver {
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappActionsNotificationManager actionsNotificationManager,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager) {
+            TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
+            CustomTabToolbarColorController toolbarColorController,
+            CustomTabStatusBarColorProvider statusBarColorProvider) {
         // We don't need to do anything with |actionsNotificationManager|. We just need to resolve
         // it so that it starts working.
 
@@ -57,6 +63,8 @@ public class WebappActivityCoordinator implements InflationObserver {
         mCurrentPageVerifier = currentPageVerifier;
         mDeferredStartupWithStorageHandler = deferredStartupWithStorageHandler;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
+        mToolbarColorController = toolbarColorController;
+        mStatusBarColorProvider = statusBarColorProvider;
 
         // WebappActiveTabUmaTracker sets itself as an observer of |activityTabProvider|.
         new WebappActiveTabUmaTracker(
@@ -114,6 +122,8 @@ public class WebappActivityCoordinator implements InflationObserver {
 
     private void updateUi(boolean inScope) {
         mBrowserControlsVisibilityManager.updateIsInTwaMode(inScope);
+        mToolbarColorController.setUseTabThemeColor(inScope);
+        mStatusBarColorProvider.setUseTabThemeColor(inScope);
     }
 
     private void updateStorage(@NonNull WebappDataStorage storage) {

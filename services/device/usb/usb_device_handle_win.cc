@@ -278,7 +278,9 @@ void UsbDeviceHandleWin::ResetDevice(ResultCallback callback) {
   task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
 }
 
-void UsbDeviceHandleWin::ClearHalt(uint8_t endpoint, ResultCallback callback) {
+void UsbDeviceHandleWin::ClearHalt(mojom::UsbTransferDirection direction,
+                                   uint8_t endpoint_number,
+                                   ResultCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!device_) {

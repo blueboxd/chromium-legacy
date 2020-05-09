@@ -184,3 +184,15 @@ var NewTabPageDoodleShareDialogTest = class extends NewTabPageBrowserTest {
 TEST_F('NewTabPageDoodleShareDialogTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageBackgroundManagerTest = class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/background_manager_test.js';
+  }
+};
+
+TEST_F('NewTabPageBackgroundManagerTest', 'All', function() {
+  mocha.run();
+});

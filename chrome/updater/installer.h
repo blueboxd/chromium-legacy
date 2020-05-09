@@ -60,19 +60,22 @@ class Installer final : public update_client::CrxInstaller {
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
                std::unique_ptr<InstallParams> install_params,
+               ProgressCallback progress_callback,
                Callback callback) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
   bool Uninstall() override;
 
   Result InstallHelper(const base::FilePath& unpack_path,
-                       std::unique_ptr<InstallParams> install_params);
+                       std::unique_ptr<InstallParams> install_params,
+                       ProgressCallback progress_callback);
 
   // Runs the installer code with sync primitives to allow the code to
   // create processes and wait for them to exit.
   void InstallWithSyncPrimitives(const base::FilePath& unpack_path,
                                  const std::string& public_key,
                                  std::unique_ptr<InstallParams> install_params,
+                                 ProgressCallback progress_callback,
                                  Callback callback);
 
   // Handles the application installer specified by the |app_installer| and
@@ -80,9 +83,11 @@ class Installer final : public update_client::CrxInstaller {
   // the manifest object in an update response. Handling of the application
   // installer is typically OS-specific, such as building a command line,
   // creating processes, mounting images, running scripts, and collecting
-  // exit codes.
+  // exit codes. The install progress, if it can be collected, is reported by
+  // invoking the |progress_callback|.
   int RunApplicationInstaller(const base::FilePath& app_installer,
-                              const std::string& arguments);
+                              const std::string& arguments,
+                              ProgressCallback progress_callback);
 
   // Deletes recursively the install paths not matching the |pv_| version.
   void DeleteOlderInstallPaths();

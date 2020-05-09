@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Ansehen</translation>
 <translation id="5073204694187207510">Vollbildraster ausblenden</translation>
 <translation id="5082793167783849073">Sie können Seiten schnell miteinander vergleichen, indem Sie eine Gruppe erstellen. Berühren und halten Sie einen Link, um den Vorgang zu starten.</translation>
+<translation id="5533021382642990449">Später anzeigen</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> Tabs gruppiert</translation>
 <translation id="58326064309361797">Tabs zum Gruppieren ziehen</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Vorschläge ablehnen.</translation>
 <translation id="814503310257431685">Alle anzeigen</translation>
 <translation id="8205266828577616993">Tab nach oben verschieben</translation>
+<translation id="8304833501377495048">Tableiste nicht mehr anzeigen?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> ausgewählten Tab schließen}other{<ph name="TABS_COUNT_MANY" /> ausgewählte Tabs schließen}}</translation>
+<translation id="8749939518995770034">Tableiste geschlossen</translation>
 <translation id="9150694013019234766">Am unteren Bildschirmrand können Sie zwischen den Tabs in Ihrer Tabgruppe wechseln</translation>
 <translation id="9169594135889675189">Der Gruppe einen neuen Tab hinzufügen</translation>
 <translation id="959682366969460160">Besser organisiert</translation>

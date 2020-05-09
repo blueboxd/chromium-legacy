@@ -165,6 +165,7 @@ void ComponentInstaller::Install(
     const base::FilePath& unpack_path,
     const std::string& /*public_key*/,
     std::unique_ptr<InstallParams> /*install_params*/,
+    ProgressCallback /*progress_callback*/,
     Callback callback) {
   std::unique_ptr<base::DictionaryValue> manifest;
   base::Version version;

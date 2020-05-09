@@ -96,11 +96,15 @@ class TestResult(object):
             'single_test_runner.py incorrectly reported results %s for test %s'
             % (', '.join(results), test_name))
         if len(results) == 2:
-            assert ResultType.Timeout in results and ResultType.Failure in results, (
-                'The only combination of 2 results allowable is TIMEOUT and FAIL. '
+            assert ((ResultType.Timeout in results and ResultType.Failure in results) or
+                    (ResultType.Crash in results and ResultType.Failure in results)), (
+                'Allowed combination of 2 results are 1. TIMEOUT and FAIL 2. CRASH and FAIL'
                 'Test %s reported the following results %s' %
                 (test_name, ', '.join(results)))
-            self.type = ResultType.Timeout
+            if ResultType.Timeout in results:
+                self.type = ResultType.Timeout
+            else:
+                self.type = ResultType.Crash
         else:
             # FIXME: Setting this in the constructor makes this class hard to mutate.
             self.type = results.pop()

@@ -427,6 +427,14 @@ void EditableCombobox::RequestFocus() {
   textfield_->RequestFocus();
 }
 
+bool EditableCombobox::GetNeedsNotificationWhenVisibleBoundsChange() const {
+  return true;
+}
+
+void EditableCombobox::OnVisibleBoundsChanged() {
+  CloseMenu();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, TextfieldController overrides:
 

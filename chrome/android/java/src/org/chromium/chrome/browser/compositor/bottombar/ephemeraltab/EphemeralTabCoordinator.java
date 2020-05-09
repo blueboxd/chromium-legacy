@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.VisibleForTesting;
 import android.view.View;
 
 import org.chromium.base.Callback;
@@ -147,21 +148,29 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                         case SheetState.FULL:
                             mMetrics.recordMetricsForOpened();
                             break;
+                        case SheetState.HIDDEN:
+                            // TODO(donnd): move the close reason to onSheetStateChanged so it's
+                            // more accurate.  See http://crbug.com/986310.
+                            if (mOpened) mMetrics.recordMetricsForClosed(mCloseReason);
+                            mOpened = false;
+                            break;
                     }
                 }
 
                 @Override
                 public void onSheetClosed(int reason) {
                     // "Closed" actually means "Peek" for bottom sheet. Save the reason to
-                    // log when the sheet goes to hidden state.
+                    // log when the sheet goes to hidden state. See http://crbug.com/986310.
                     mCloseReason = reason;
-                    mOpened = false;
                 }
 
                 @Override
                 public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
                     if (mSheetContent == null) return;
-                    if (heightFraction == 0.0f) mMetrics.recordMetricsForClosed(mCloseReason);
+                    if (heightFraction == 0.0f && mOpened) {
+                        mMetrics.recordMetricsForClosed(mCloseReason);
+                        mOpened = false;
+                    }
                     if (mCanPromoteToNewTab.get()) {
                         mSheetContent.showOpenInNewTabButton(heightFraction);
                     }
@@ -233,6 +242,11 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
      */
     public void close() {
         mBottomSheetController.get().hideContent(mSheetContent, /* animate= */ true);
+    }
+
+    @VisibleForTesting
+    public void endAnimationsForTesting() {
+        mBottomSheetController.get().endAnimationsForTesting();
     }
 
     @Override

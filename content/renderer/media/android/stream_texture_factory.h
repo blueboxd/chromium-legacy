@@ -17,13 +17,13 @@
 #include "content/common/content_export.h"
 #include "content/renderer/stream_texture_host_android.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
 class ClientSharedImageInterface;
 class GpuChannelHost;
 class SharedImageInterface;
-struct SyncToken;
 struct VulkanYCbCrInfo;
 }  // namespace gpu
 
@@ -35,8 +35,11 @@ class StreamTextureFactory;
 // when a new video frame is available.
 class CONTENT_EXPORT StreamTextureProxy : public StreamTextureHost::Listener {
  public:
-  using SetYcbcrInfoCb =
-      base::OnceCallback<void(base::Optional<gpu::VulkanYCbCrInfo>)>;
+  using CreateVideoFrameCB = base::RepeatingCallback<void(
+      const gpu::Mailbox& mailbox,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const base::Optional<gpu::VulkanYCbCrInfo>&)>;
 
   ~StreamTextureProxy() override;
 
@@ -45,13 +48,16 @@ class CONTENT_EXPORT StreamTextureProxy : public StreamTextureHost::Listener {
   // must be called with the same |task_runner| every time.
   void BindToTaskRunner(
       const base::RepeatingClosure& received_frame_cb,
-      SetYcbcrInfoCb set_ycbcr_info_cb,
+      const CreateVideoFrameCB& create_video_frame_cb,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // StreamTextureHost::Listener implementation:
   void OnFrameAvailable() override;
-  void OnFrameWithYcbcrInfoAvailable(
-      base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) override;
+  void OnFrameWithInfoAvailable(
+      const gpu::Mailbox& mailbox,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) override;
 
   // Sends an IPC to the GPU process.
   // Asks the StreamTexture to forward its SurfaceTexture to the
@@ -59,14 +65,9 @@ class CONTENT_EXPORT StreamTextureProxy : public StreamTextureHost::Listener {
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token);
 
-  // Creates a SharedImage for the provided texture size. Returns the
-  // |mailbox| for the SharedImage, as well as an |unverified_sync_token|
-  // representing SharedImage creation.
-  // If creation fails, returns an empty |mailbox| and does not modify
-  // |unverified_sync_token|.
-  void CreateSharedImage(const gfx::Size& size,
-                         gpu::Mailbox* mailbox,
-                         gpu::SyncToken* unverified_sync_token);
+  // Notifies StreamTexture that video size has been changed and so it can
+  // recreate shared image.
+  void UpdateRotatedVisibleSize(const gfx::Size& size);
 
   // Clears |received_frame_cb_| in a thread safe way.
   void ClearReceivedFrameCB();
@@ -82,15 +83,15 @@ class CONTENT_EXPORT StreamTextureProxy : public StreamTextureHost::Listener {
   void BindOnThread();
   void Release();
 
-  // Clears |set_ycbcr_info_cb_| in a thread safe way.
-  void ClearSetYcbcrInfoCB();
+  // Clears |create_video_frame_cb_| in a thread safe way.
+  void ClearCreateVideoFrameCB();
 
   const std::unique_ptr<StreamTextureHost> host_;
 
   // Protects access to |received_frame_cb_| and |task_runner_|.
   base::Lock lock_;
   base::RepeatingClosure received_frame_cb_;
-  SetYcbcrInfoCb set_ycbcr_info_cb_;
+  CreateVideoFrameCB create_video_frame_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxy);
@@ -101,7 +102,7 @@ typedef std::unique_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
 
 // Factory class for managing stream textures.
 class CONTENT_EXPORT StreamTextureFactory
-    : public base::RefCounted<StreamTextureFactory> {
+    : public base::RefCountedThreadSafe<StreamTextureFactory> {
  public:
   static scoped_refptr<StreamTextureFactory> Create(
       scoped_refptr<gpu::GpuChannelHost> channel);
@@ -118,7 +119,7 @@ class CONTENT_EXPORT StreamTextureFactory
   gpu::SharedImageInterface* SharedImageInterface();
 
  private:
-  friend class base::RefCounted<StreamTextureFactory>;
+  friend class base::RefCountedThreadSafe<StreamTextureFactory>;
   StreamTextureFactory(scoped_refptr<gpu::GpuChannelHost> channel);
   ~StreamTextureFactory();
   // Creates a gpu::StreamTexture and returns its id.

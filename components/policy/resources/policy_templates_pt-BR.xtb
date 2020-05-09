@@ -2974,7 +2974,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Esta política precisa ser usada em conjunto com o recurso "VPN sempre ativa", que permite ao administrador optar por estabelecer uma conexão VPN na inicialização.</translation>
 <translation id="5401696449591951427">Ativar <ph name="CHROME_DEVICES_LINK" /></translation>
-<translation id="5404635530342514143">Esse recurso permite que a senha na tela de bloqueio/início seja exibida pelo usuário após clicar em um botão.</translation>
 <translation id="5405289061476885481">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
@@ -4032,7 +4031,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
           O fator de cálculo precisa ser de 100% ou mais.</translation>
 <translation id="7086720321892395256">Controla as políticas do usuário e do dispositivo para o recurso de tela de privacidade.</translation>
-<translation id="7095145887485705461">Ativar botão de exibição da senha na tela de bloqueio/início.</translation>
 <translation id="710003290625031750">Descrição estendida do esquema:</translation>
 <translation id="7106631983877564505">Ativa o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> entram no modo inativo ou suspenso.
 

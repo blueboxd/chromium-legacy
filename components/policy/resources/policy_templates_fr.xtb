@@ -307,6 +307,25 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 <translation id="1474273443907024088">Désactiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Transmettre les informations concernant le rétroéclairage</translation>
+<translation id="1488406778491620405">La fonctionnalité d'accessibilité <ph name="PRODUCT_NAME" />
+          permet aux personnes malvoyantes qui utilisent un lecteur d'écran
+          d'obtenir une description des images ne comportant pas de libellé sur le Web. Les utilisateurs ayant activé
+          cette fonctionnalité peuvent accéder à des descriptions fournies automatiquement par un
+          service Google anonyme lorsqu'ils rencontrent une image sans libellé sur le Web.
+
+          Si cette fonctionnalité est activée, elle transmet le contenu des images aux serveurs de Google
+          afin qu'une description puisse être générée. Elle n'envoie aucun cookie ni aucune information sur l'utilisateur.
+          Google n'enregistre pas le contenu des images et n'en conserve aucune trace.
+
+          Si cette règle est définie sur "True", la fonctionnalité
+          <ph name="PRODUCT_NAME" />
+          est activée. Toutefois, elle ne s'applique qu'aux utilisateurs d'un
+          lecteur d'écran ou d'une autre technologie d'assistance similaire.
+
+          Si cette règle est définie sur "False", aucun utilisateur ne peut activer
+          la fonctionnalité.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.</translation>
 <translation id="1497640071678474358">Permet de définir une liste de formats d'URL indiquant les sites non autorisés à ouvrir des fenêtres pop-up.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultPopupsSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -1639,6 +1658,7 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
       Cette règle permet uniquement de définir des langues recommandées. Vous pouvez l'utiliser pour placer un ensemble de langues recommandées en haut de la liste, mais les utilisateurs auront toujours la possibilité de choisir n'importe quelle langue compatible avec <ph name="PRODUCT_OS_NAME" /> pour leur session.
       </translation>
+<translation id="3373381043600809954">Activer <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3378482432905539452">Cette règle est obsolète. Veuillez utiliser la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> pour contrôler la disponibilité du plug-in Flash, et la règle <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> pour définir si la visionneuse de documents PDF intégrée doit être utilisée pour ouvrir les fichiers PDF.
 
       Répertorie les plug-ins qu'un utilisateur peut activer ou désactiver dans <ph name="PRODUCT_NAME" />.
@@ -3058,7 +3078,6 @@ Si cette règle n'est pas configurée, le paramètre "AskNotifications" est util
 
       Cette règle doit être utilisée avec la fonctionnalité "VPN permanent", qui permet à l'administrateur d'établir une connexion VPN au démarrage.</translation>
 <translation id="5401696449591951427">Activer <ph name="CHROME_DEVICES_LINK" /></translation>
-<translation id="5404635530342514143">Cette fonctionnalité permet à l'utilisateur de cliquer sur un bouton pour afficher le mot de passe sur l'écran de verrouillage/d'accueil.</translation>
 <translation id="5405289061476885481">Détermine les dispositions de clavier autorisées sur l'écran de connexion <ph name="PRODUCT_OS_NAME" />.
 
       Si cette règle est définie sur une liste d'identifiants de modes de saisie, les modes de saisie indiqués sont disponibles sur l'écran de connexion. Le premier mode de saisie proposé est présélectionné. Lorsqu'un profil utilisateur est actif sur l'écran de connexion, le dernier mode de saisie utilisé par l'utilisateur est disponible en plus des modes de saisie fournis par cette règle. Si cette règle n'est pas définie, les modes de saisie sur l'écran de connexion sont dérivés des paramètres régionaux dans lesquels cet écran est affiché. Les valeurs qui ne constituent pas des identifiants de modes de saisie valides sont ignorées.</translation>
@@ -3067,6 +3086,10 @@ Si cette règle n'est pas configurée, le paramètre "AskNotifications" est util
       Lorsque cette règle est désactivée, l'utilisateur ne reçoit pas de message d'invitation, et la capture audio n'est disponible que pour les URL configurées dans AudioCaptureAllowedUrls.
 
       Cette règle a une incidence sur tous les types d'entrée audio, et pas uniquement sur le micro intégré.</translation>
+<translation id="5417906792459853336">Transmet des informations concernant l'inventaire et l'utilisation des applications d'un appareil.
+
+      Si la règle est définie sur "False" ou n'est pas configurée, ces informations ne sont pas transmises.
+      Si elle est définie sur "True", les informations concernant les applications et l'utilisation de l'appareil sont transmises.</translation>
 <translation id="5422643441807528365">Clé de licence <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="5423001109873148185">Lorsqu'elle est activée, cette règle force l'importation des moteurs de recherche à partir du navigateur par défaut actuel. Si cette règle est activée, elle affecte également la boîte de dialogue d'importation. 
 
@@ -3120,6 +3143,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
 Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé consiste à permettre au navigateur d'accueil d'effectuer le rendu. Mais vous avez la possibilité de remplacer ce paramètre et de demander que les pages HTML soient affichées par <ph name="PRODUCT_FRAME_NAME" /> par défaut.</translation>
 <translation id="5464816904705580310">Configurer les paramètres des utilisateurs gérés</translation>
+<translation id="5466596281866046569">Transmettre des informations sur les applications</translation>
 <translation id="546726650689747237">Délai d'assombrissement de l'écran (secteur)</translation>
 <translation id="5469143988693423708">L'utilisateur est autorisé à exécuter Crostini</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
@@ -4132,7 +4156,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Le facteur d'adaptation doit être de 100 % ou plus.</translation>
 <translation id="7086720321892395256">Contrôle les règles relatives aux utilisateurs et aux appareils pour la fonctionnalité d'écran de confidentialité.</translation>
-<translation id="7095145887485705461">Activer le bouton d'affichage du mot de passe sur l'écran de verrouillage/d'accueil.</translation>
 <translation id="710003290625031750">Description détaillée du schéma :</translation>
 <translation id="7106631983877564505">Activer le verrouillage lorsque les appareils exécutant <ph name="PRODUCT_OS_NAME" /> sont inactifs ou en veille.
 

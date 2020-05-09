@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/feedback/system_logs/system_logs_source.h"
+#include "extensions/browser/api/feedback_private/feedback_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/feedback_private.h"
@@ -20,7 +21,6 @@ class FeedbackData;
 
 namespace extensions {
 
-class FeedbackService;
 #if defined(OS_CHROMEOS)
 class LogSourceAccessManager;
 #endif  // defined(OS_CHROMEOS)
@@ -48,6 +48,11 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>*
   GetFactoryInstance();
+
+  // Use a custom FeedbackService implementation for tests.
+  void SetFeedbackServiceForTesting(std::unique_ptr<FeedbackService> service) {
+    service_ = std::move(service);
+  }
 
  private:
   friend class BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>;
@@ -141,6 +146,7 @@ class FeedbackPrivateSendFeedbackFunction : public ExtensionFunction {
  private:
   void OnAllLogsFetched(bool send_histograms,
                         bool send_bluetooth_logs,
+                        bool send_tab_titles,
                         scoped_refptr<feedback::FeedbackData> feedback_data);
   void OnCompleted(api::feedback_private::LandingPageType type, bool success);
 };

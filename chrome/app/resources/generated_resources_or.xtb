@@ -116,7 +116,6 @@
 <translation id="1147991416141538220">ଆକ୍ସେସ୍ କରିବାକୁ ଅନୁମତି ପାଇଁ, ଏହି ଡିଭାଇସ୍‍ର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।</translation>
 <translation id="1149401351239820326">ମିଆଦ ଶେଷ ହେଉଥିବା ମାସ</translation>
 <translation id="1150565364351027703">ଖରା ପାଇଁ ଚଷମା</translation>
-<translation id="1151841030700667295">ଖୋଲାଥିବା ଟାବ୍ ସମେତ, ଆପଣ ସମସ୍ତ ସାଇଟରୁ ସାଇନ୍ ଆଉଟ୍ ହୋଇଯିବେ।</translation>
 <translation id="1151917987301063366"><ph name="HOST" />ଙ୍କୁ ସର୍ବଦା ସେନ୍ସର୍‍ଗୁଡ଼ିକ ଆକ୍ସେସ୍ କରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="1153356358378277386">ପେୟାର୍ ହୋଇଥିବା ଡିଭାଇସ୍</translation>
 <translation id="1153636665119721804">Google ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ୍ ପ୍ରୋଗ୍ରାମ୍</translation>
@@ -290,7 +289,6 @@
 <translation id="1390548061267426325">ନିୟମିତ ଟାବ୍ ଭାବରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="1392232653471491344">Linux ରିଷ୍ଟାର୍ଟ କରିବା ଦରକାର</translation>
 <translation id="1393283411312835250">ସୂର୍ଯ୍ୟ ଏବଂ ବାଦଲ</translation>
-<translation id="1393787139683794508">ଏହା <ph name="ORIGIN_NAME" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଏବଂ କୁକୀକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="1395730723686586365">ଅପ୍‌ଡେଟର୍‍ ଆରମ୍ଭ ହୋଇଛି</translation>
 <translation id="1396139853388185343">ପ୍ରିଣ୍ଟର୍ ସେଟିଂରେ ତ୍ରୁଟି</translation>
 <translation id="1396259464226642517">ଏହି ଫଳାଫଳ ଅପ୍ରତ୍ୟାଶିତ ଥିଲା କି? <ph name="BEGIN_LINK" />ମତାମତ ପଠାନ୍ତୁ<ph name="END_LINK" /></translation>
@@ -840,7 +838,6 @@
 <translation id="2101225219012730419">ସଂସ୍କରଣ:</translation>
 <translation id="211144231511833662">ପ୍ରକାରଗୁଡ଼ିକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="2111670510994270194">ଡାହାଣ ପଟରେ ନୂଆ ଟାବ୍</translation>
-<translation id="2112004299911874330">ଏହା ସାଇଟଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="TOTAL_USAGE" /> ଡାଟାକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="21133533946938348">ଟାବ୍ ପିନ୍ କରନ୍ତୁ</translation>
 <translation id="2113479184312716848">&amp;ଫାଇଲ୍ ଖୋଲନ୍ତୁ...</translation>
 <translation id="2113921862428609753">କର୍ତ୍ତୃପକ୍ଷ ସୂଚନା ଆକ୍ସେସ୍</translation>
@@ -2128,6 +2125,7 @@
 <translation id="3760460896538743390">&amp;ପୃଷ୍ଠଭୂମି ପୃଷ୍ଠା ନିରୀକ୍ଷଣ କରନ୍ତୁ</translation>
 <translation id="37613671848467444">&amp;ଇନ୍‌କଗ୍ନିଟୋ ୱିଣ୍ଡୋରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="3761556954875533505">ସାଇଟକୁ ଫାଇଲଗୁଡ଼ିକ ଏଡିଟ୍ କରିବାକୁ ଦେବେ?</translation>
+<translation id="3764314093345384080">ବିବରଣୀ ସହ ତିଆରି କରାଯାଇଥିବା ସୂଚନା</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{ଏକ USB ଡିଭାଇସ୍ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ}other{#ଟି USB ଡିଭାଇସ୍ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ}}</translation>
 <translation id="3765246971671567135">ଅଫ୍‌ଲାଇନ୍‌ ଡେମୋ ମୋଡ୍‌ ନୀତି ପଢାଯାଇପାରିଲା ନାହିଁ।</translation>
 <translation id="3768037234834996183">ଆପଣଙ୍କ ଅଗ୍ରାଧିକାରଗୁଡ଼ିକ ସିଙ୍କ୍ ହେଉଛି...</translation>
@@ -2843,7 +2841,7 @@
 <translation id="4739639199548674512">ଟିକେଟ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" /> ଏହା ଜାଣନ୍ତୁ ଯେ କିପରି ଆପ୍ଲିକେସନ୍‌ଗୁଡ଼ିକୁ ଅପ୍‌ଡେଟ୍ କରିବେ<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{ସାଇଟ୍ ଅନ୍‌ମ୍ୟୁଟ୍ କରନ୍ତୁ}other{ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଅନ୍‌ମ୍ୟୁଟ୍ କରନ୍ତୁ}}</translation>
-<translation id="4746351372139058112">ମେସେଜ୍‌ଗୁଡ଼ିକ</translation>
+<translation id="4746351372139058112">Messages</translation>
 <translation id="4750394297954878236">ପରାମର୍ଶ</translation>
 <translation id="475088594373173692">ପ୍ରଥମ ଉପଯୋଗକର୍ତ୍ତା</translation>
 <translation id="4751476147751820511">ମୋସନ୍ କିମ୍ବା ଲାଇଟ୍ ସେନ୍ସର୍</translation>
@@ -3429,7 +3427,6 @@
 <translation id="5546865291508181392">ଖୋଜନ୍ତୁ</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" ଏବଂ ଅନ୍ୟ 1ଟି ଟାବ୍}other{"<ph name="TAB_TITLE" />" ଏବଂ ଅନ୍ୟ #ଟି ଟାବ୍}}</translation>
 <translation id="5548606607480005320">ସୁରକ୍ଷା ଯାଞ୍ଚ</translation>
-<translation id="5549467165017213645">ଏହା ସାଇଟ୍ ଏବଂ ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପଗୁଡ଼ିକ ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା <ph name="TOTAL_USAGE" /> ଡାଟାକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="5551573675707792127">କୀବୋର୍ଡ ଏବଂ ଟେକ୍ସଟ୍ ଇନ୍‌ପୁଟ୍</translation>
 <translation id="5553089923092577885">ସାର୍ଟିଫିକେଟ୍ ନୀତି ମ୍ୟାପିଂ</translation>
 <translation id="5554489410841842733">ଏହି ଆଇକନ୍ ସେତେବେଳେ ଦେଖାଦେବ, ଯେତେବେଳେ ସାମ୍ପ୍ରତିକ ପୃଷ୍ଠାରେ ଏକ୍ସଟେନ୍‌ସନ୍‌ କାମ କରିପାରିବ।</translation>
@@ -3569,6 +3566,7 @@
 <translation id="5734362860645681824">ଯୋଗାଯୋଗ</translation>
 <translation id="5734697361979786483">ଫାଇଲ୍ ସେୟାର୍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="5736796278325406685">ଦୟାକରି ଏକ ବୈଧ ଉପଯୋଗକର୍ତ୍ତାନାମ ଲେଖନ୍ତୁ</translation>
+<translation id="573759479754913123">Chrome OS ବିଷୟରେ</translation>
 <translation id="5739017626473506901">ଏକ ସ୍କୁଲ୍ ଆକାଉଣ୍ଟ ଯୋଗ କରିବାରେ <ph name="USER_NAME" />କୁ ସାହାଯ୍ୟ କରିବାକୁ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
 <translation id="5739235828260127894">ଯାଞ୍ଚକରଣ ପାଇଁ ଅପେକ୍ଷାରତ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ବହୁତ ବଡ଼</translation>
@@ -4077,7 +4075,6 @@
 <translation id="641081527798843608">ବିଷୟ ମେଳ</translation>
 <translation id="6412673304250309937">Chromeରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ଅସୁରକ୍ଷିତ ସାଇଟଗୁଡ଼ିକର ଏକ ତାଲିକା ସହିତ URLଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରେ। ଯଦି କୌଣସି ସାଇଟ୍ ଆପଣଙ୍କ ପାସୱାର୍ଡ ଚୋରି କରିବାକୁ ଚେଷ୍ଟା କରେ କିମ୍ବା ଆପଣ ଏକ କ୍ଷତିକାରକ ଫାଇଲ୍ ଡାଉନଲୋଡ୍ କଲେ, ପୃଷ୍ଠାର କିଛି ବିଷୟବସ୍ତୁ ସହିତ URLଗୁଡ଼ିକୁ ମଧ୍ୟ Chrome ସେଫ୍ ବ୍ରାଉଜିଂକୁ ପଠାଇପାରେ।</translation>
 <translation id="6412931879992742813">ନୂଆ ଇନ୍‌କଗ୍‌ନିଟୋ ୱିଣ୍ଡୋ</translation>
-<translation id="6413591858632097328">ଏହା <ph name="ORIGIN_NAME" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଓ କୁକୀକୁ ଏବଂ ଏହାର ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="641469293210305670">ଅପଡେଟ୍ ଏବଂ ଆପଗୁଡ଼ିକ ଇନଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="6414888972213066896">ଆପଣ ନିଜର ମାତାପିତାଙ୍କୁ ଏହି ସାଇଟ୍‌କୁ ଯିବା ଠିକ୍ କି ବୋଲି ପଚାରିଛନ୍ତି</translation>
 <translation id="6415900369006735853">ଆପଣଙ୍କର ଫୋନ୍ ମାଧ୍ୟମରେ ଇଣ୍ଟର୍ନେଟ୍ ସଂଯୋଗ କରନ୍ତୁ</translation>
@@ -4125,7 +4122,6 @@
 <translation id="6467304607960172345">ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ୍ ଭିଡିଓଗୁଡ଼ିକୁ ଅପ୍ଟିମାଇଜ୍ କରନ୍ତୁ</translation>
 <translation id="6468485451923838994">ଫଣ୍ଟଗୁଡ଼ିକ</translation>
 <translation id="6472207088655375767">OTP</translation>
-<translation id="6472804939621540371">ଏହା <ph name="SITE_GROUP_NAME" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଓ କୁକୀ, ଏହାର ଅଧୀନରେ ଥିବା ଯେ କୌଣସି ସାଇଟ୍ ଏବଂ ଏହା ଦ୍ୱାରା ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="6472893788822429178">ମୂଳ ବଟନ୍ ଦେଖାନ୍ତୁ</translation>
 <translation id="6473842110411557830">ପାୱାର୍‍ୱାସ୍ ଉଦାହରଣ</translation>
 <translation id="6474498546677193336">ଏକ ଆପ୍ଲିକେସନ୍ ଏହି ଫୋଲ୍ଡରକୁ ବ୍ୟବହାର କରୁଥିବା ଯୋଗୁଁ ଅନସେୟାର୍ କରାଯାଇପାରିଲା ନାହିଁ। ପରବର୍ତ୍ତୀ ସମୟରେ Linux ବନ୍ଦ ହେଲେ ଫୋଲ୍ଡରକୁ ଅନସେୟାର୍ କରାଯିବ।</translation>
@@ -5001,7 +4997,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7664620655576155379">ଅସମର୍ଥିତ ବ୍ଲୁଟୁଥ୍ ଡିଭାଇସ୍‌: "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7665082356120621510">ଆକାର ରିଜର୍ଭ କରନ୍ତୁ</translation>
 <translation id="7665369617277396874">ଆକାଉଣ୍ଟ ଯୋଗ କରନ୍ତୁ</translation>
-<translation id="7665940458857700755">ଏହା <ph name="SITE_GROUP_NAME" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଏବଂ କୁକୀକୁ ଏବଂ ଏହା ଅଧୀନରେ ଥିବା ଯେ କୌଣସି ସାଇଟକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{ଭୁଲ ପିନ୍। ଆପଣଙ୍କର ଗୋଟିଏ ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି।}other{ଭୁଲ ପିନ୍। ଆପଣଙ୍କର #ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି।}}</translation>
 <translation id="7671130400130574146">ସିଷ୍ଟମ୍ ଶୀର୍ଷାଙ୍କ ଦଣ୍ଡିକା ଏବଂ ପ୍ରାନ୍ତ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="767127784612208024">ରିସେଟ୍ ନିଶ୍ଚିତ କରିବା ପାଇଁ ସ୍ପର୍ଶ କରନ୍ତୁ</translation>
@@ -5126,6 +5121,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="7817361223956157679">ଏପର୍ଯ୍ୟନ୍ତ ସୁଦ୍ଧା Linuxରେ ଅନ୍-ସ୍କ୍ରିନ୍ କୀବୋର୍ଡ କାର୍ଯ୍ୟ କରୁ ନାହିଁ</translation>
 <translation id="7818135753970109980">ନୂତନ ଥିମ୍ ଯୋଗ କରାଗଲା (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA or RSN)</translation>
+<translation id="7819992334107904369">Chrome ସିଙ୍କ୍</translation>
 <translation id="782057141565633384">ଭିଡିଓ ଠିକଣା କ&amp;ପି କରନ୍ତୁ</translation>
 <translation id="7824864914877854148">ତ୍ରୁଟି ହେତୁ ବ୍ୟାକ୍‍ଅପ୍ ସମ୍ପୂର୍ଣ୍ଣ କରାଯାଇପାରିଲା ନାହିଁ</translation>
 <translation id="782590969421016895">ସାମ୍ପ୍ରତିକ ପୃଷ୍ଠାଗୁଡ଼ିକ ବ୍ୟବହାର କରନ୍ତୁ</translation>
@@ -5337,7 +5333,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8063235345342641131">ଡିଫଲ୍ଟ ସବୁଜ ଅବତାର</translation>
 <translation id="8063535366119089408">ଫାଇଲ୍ ଦେଖନ୍ତୁ</translation>
 <translation id="8068253693380742035">ସାଇନ୍‌ ଇନ୍ କରିବାକୁ ସ୍ପର୍ଶ କରନ୍ତୁ</translation>
-<translation id="8068809649322155577">ଏହା <ph name="SITE_GROUP_NAME" /> ଦ୍ୱାରା ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଓ କୁକୀ, ଏହାର ଅଧୀନରେ ଥିବା ଯେ କୌଣସି ସାଇଟ୍ ଏବଂ ଏହା ଦ୍ୱାରା ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପଗୁଡ଼ିକୁ ଖାଲି କରିଦେବ।</translation>
 <translation id="8069615408251337349">Google Cloud ପ୍ରିଣ୍ଟ</translation>
 <translation id="8071432093239591881">ଛବି ଭାବରେ ପ୍ରିଣ୍ଟ କରନ୍ତୁ</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />ଆପ୍ ଡାଟା, ଏପରି କୌଣସି ଡାଟା ହୋ‍ଇପାରେ ଯାହା କୌଣସି ଆପ୍ ଦ୍ଵାରା ସେଭ୍ ହୋ‍ଇଛି (ଡେଭଲପର୍‍ ସେଟିଂସ୍‍କୁ ଆଧାର କରି), ଏଥିରେ ଯୋଗାଯୋଗ, ମେସେଜ୍ ଓ ଫଟୋ ଅନ୍ତର୍ଭୁକ୍ତ ଅଛି।<ph name="END_PARAGRAPH1" />

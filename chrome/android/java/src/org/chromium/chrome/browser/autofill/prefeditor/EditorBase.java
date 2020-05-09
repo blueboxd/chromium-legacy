@@ -9,6 +9,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.components.autofill.EditableOption;
 
 /**
  * The base class for an editor controller.

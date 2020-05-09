@@ -50,7 +50,7 @@ public class TabModelSelectorImplTest {
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
         MockitoAnnotations.initMocks(this);
 
-        doReturn(TabPersistencePolicy.SAVED_STATE_FILE_PREFIX)
+        doReturn(TabPersistentStore.SAVED_STATE_FILE_PREFIX)
                 .when(mMockTabPersistencePolicy)
                 .getStateFileName();
 

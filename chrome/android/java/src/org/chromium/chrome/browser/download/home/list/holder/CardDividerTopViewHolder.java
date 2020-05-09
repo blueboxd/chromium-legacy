@@ -8,8 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
-import org.chromium.chrome.download.R;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**

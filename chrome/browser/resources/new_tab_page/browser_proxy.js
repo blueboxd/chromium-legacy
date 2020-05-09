@@ -88,6 +88,16 @@ export class BrowserProxy {
       setTimeout(resolve, 50);
     });
   }
+
+  /**
+   * Posts |message| on the content window of |iframe| at |targetOrigin|.
+   * @param {!HTMLIFrameElement} iframe
+   * @param {*} message
+   * @param {string} targetOrigin
+   */
+  postMessage(iframe, message, targetOrigin) {
+    iframe.contentWindow.postMessage(message, targetOrigin);
+  }
 }
 
 addSingletonGetter(BrowserProxy);

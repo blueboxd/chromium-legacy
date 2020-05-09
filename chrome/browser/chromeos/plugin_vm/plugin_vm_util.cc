@@ -217,13 +217,6 @@ std::string GetIdFromDriveUrl(const GURL& url) {
     return spec.substr(id_start, first_ampersand - id_start);
 }
 
-dlcservice::DlcModuleList GetPluginVmDlcModuleList() {
-  dlcservice::DlcModuleList dlc_module_list;
-  auto* dlc_module_info = dlc_module_list.add_dlc_module_infos();
-  dlc_module_info->set_dlc_id("pita");
-  return dlc_module_list;
-}
-
 PluginVmPolicySubscription::PluginVmPolicySubscription(
     Profile* profile,
     base::RepeatingCallback<void(bool)> callback)

@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Examiner</translation>
 <translation id="5073204694187207510">Masquer la grille plein écran</translation>
 <translation id="5082793167783849073">Comparez rapidement des pages en créant un groupe. Pour commencer, maintenez le doigt sur un lien.</translation>
+<translation id="5533021382642990449">Afficher plus tard</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> onglets groupés</translation>
 <translation id="58326064309361797">Faites glisser les onglets pour les grouper</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Ignorer les suggestions.</translation>
 <translation id="814503310257431685">Tout afficher</translation>
 <translation id="8205266828577616993">Déplacer l'onglet vers le haut</translation>
+<translation id="8304833501377495048">Ne plus afficher la bande d'onglets?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Fermer <ph name="TABS_COUNT_ONE" /> onglet sélectionné}one{Fermer <ph name="TABS_COUNT_MANY" /> onglet sélectionné}other{Fermer <ph name="TABS_COUNT_MANY" /> onglets sélectionnés}}</translation>
+<translation id="8749939518995770034">Bande d'onglets fermée</translation>
 <translation id="9150694013019234766">Basculez entre les onglets dans votre groupe d'onglets, près du bas de l'écran</translation>
 <translation id="9169594135889675189">Ajouter un onglet au groupe</translation>
 <translation id="959682366969460160">Place à l'organisation</translation>

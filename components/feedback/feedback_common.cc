@@ -112,6 +112,10 @@ void FeedbackCommon::AddLogs(SystemLogsMap logs) {
     logs.insert(logs.begin(), logs.end());
 }
 
+bool FeedbackCommon::RemoveLog(std::string name) {
+  return logs_.erase(name) == 1;
+}
+
 void FeedbackCommon::PrepareReport(
     userfeedback::ExtensionSubmit* feedback_data) const {
   // Unused field, needs to be 0 though.

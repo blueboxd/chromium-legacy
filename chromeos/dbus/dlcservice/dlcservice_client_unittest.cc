@@ -310,11 +310,11 @@ TEST_F(DlcserviceClientTest, InstallSuccessTest) {
       .WillOnce(
           Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
 
-  DlcserviceClient::InstallCallback install_callback = base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {
-        EXPECT_EQ(dlcservice::kErrorNone, err);
+  DlcserviceClient::InstallCallback install_callback =
+      base::BindOnce([](const DlcserviceClient::InstallResult& install_result) {
+        EXPECT_EQ(dlcservice::kErrorNone, install_result.error);
       });
-  client_->Install(dlcservice::DlcModuleList(), std::move(install_callback),
+  client_->Install("foo-dlc", std::move(install_callback),
                    DlcserviceClient::IgnoreProgress);
   base::RunLoop().RunUntilIdle();
 }
@@ -330,11 +330,11 @@ TEST_F(DlcserviceClientTest, InstallFailureTest) {
       .WillOnce(
           Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
 
-  DlcserviceClient::InstallCallback install_callback = base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {
-        EXPECT_EQ(dlcservice::kErrorInternal, err);
+  DlcserviceClient::InstallCallback install_callback =
+      base::BindOnce([](const DlcserviceClient::InstallResult& install_result) {
+        EXPECT_EQ(dlcservice::kErrorInternal, install_result.error);
       });
-  client_->Install(dlcservice::DlcModuleList(), std::move(install_callback),
+  client_->Install("foo-dlc", std::move(install_callback),
                    DlcserviceClient::IgnoreProgress);
   base::RunLoop().RunUntilIdle();
 }
@@ -344,7 +344,7 @@ TEST_F(DlcserviceClientTest, InstallProgressTest) {
       .WillOnce(Return());
   std::atomic<size_t> counter{0};
   DlcserviceClient::InstallCallback install_callback = base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {});
+      [](const DlcserviceClient::InstallResult& install_result) {});
   DlcserviceClient::ProgressCallback progress_callback = base::BindRepeating(
       [](decltype(counter)* counter, double) { ++*counter; }, &counter);
 
@@ -378,11 +378,11 @@ TEST_F(DlcserviceClientTest, InstallBusyStatusTest) {
       .WillRepeatedly(
           Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
 
-  DlcserviceClient::InstallCallback install_callback = base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {
-        EXPECT_EQ(dlcservice::kErrorNone, err);
+  DlcserviceClient::InstallCallback install_callback =
+      base::BindOnce([](const DlcserviceClient::InstallResult& install_result) {
+        EXPECT_EQ(dlcservice::kErrorNone, install_result.error);
       });
-  client_->Install(dlcservice::DlcModuleList(), std::move(install_callback),
+  client_->Install("foo-dlc", std::move(install_callback),
                    DlcserviceClient::IgnoreProgress);
   base::RunLoop().RunUntilIdle();
 }
@@ -396,10 +396,12 @@ TEST_F(DlcserviceClientTest, PendingTaskTest) {
 
   // All |Install()| request after the first should be queued.
   for (size_t i = 0; i < kLoopCount; ++i) {
-    DlcserviceClient::InstallCallback install_callback =
-        base::BindOnce([](decltype(counter)* counter, const std::string& err,
-                          const dlcservice::DlcModuleList&) { ++*counter; },
-                       &counter);
+    DlcserviceClient::InstallCallback install_callback = base::BindOnce(
+        [](decltype(counter)* counter,
+           const DlcserviceClient::InstallResult& install_result) {
+          ++*counter;
+        },
+        &counter);
     client_->Install({}, std::move(install_callback),
                      DlcserviceClient::IgnoreProgress);
   }

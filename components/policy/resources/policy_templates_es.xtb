@@ -3081,7 +3081,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Esta política puede usarse con la función "VPN siempre activada", que permite al administrador establecer una conexión VPN al iniciar.</translation>
 <translation id="5401696449591951427">Habilitar <ph name="CHROME_DEVICES_LINK" /></translation>
-<translation id="5404635530342514143">Esta función permite al usuario ver la contraseña en las pantallas de bloqueo e inicio tras hacer clic en un botón.</translation>
 <translation id="5405289061476885481">Establece los diseños de teclado que se permiten en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
 
       Si se asigna una lista de identificadores de métodos de introducción a esta política, esos métodos estarán disponibles en la pantalla de inicio de sesión. El primer método de introducción estará preseleccionado. El grupo de un usuario aparece centrado en la pantalla de inicio de sesión, pero también se mostrará el último método de introducción por el usuario junto a los métodos de introducción proporcionados por esta política. Si esta política no se configura, los métodos de introducción de la pantalla de inicio de sesión procederán de la configuración regional en la que se muestre esa pantalla. Los valores que no sean identificadores de métodos de introducción válidos se ignorarán.</translation>
@@ -4167,7 +4166,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           El factor de escala debe ser igual o superior a 100 %.</translation>
 <translation id="7086720321892395256">Controla las políticas de usuarios y dispositivos para la función de pantalla de privacidad.</translation>
-<translation id="7095145887485705461">Habilitar el botón que muestra la contraseña en las pantallas de bloqueo e inicio.</translation>
 <translation id="710003290625031750">Descripción del esquema ampliado:</translation>
 <translation id="7106631983877564505">Permite habilitar el bloqueo cuando los dispositivos <ph name="PRODUCT_OS_NAME" /> están inactivos o suspendidos.
 

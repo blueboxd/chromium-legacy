@@ -52,7 +52,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                     int alternate_setting,
                                     ResultCallback callback) override;
   void ResetDevice(ResultCallback callback) override;
-  void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
+  void ClearHalt(mojom::UsbTransferDirection direction,
+                 uint8_t endpoint_number,
+                 ResultCallback callback) override;
 
   void ControlTransfer(mojom::UsbTransferDirection direction,
                        mojom::UsbControlTransferType request_type,
@@ -114,16 +116,16 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                             bool success,
                                             ResultCallback callback);
   void ResetDeviceBlocking(ResultCallback callback);
-  void ClearHaltBlocking(uint8_t endpoint, ResultCallback callback);
+  void ClearHaltBlocking(uint8_t endpoint_address, ResultCallback callback);
 
   // Refresh endpoint_map_ after ClaimInterface, ReleaseInterface and
   // SetInterfaceAlternateSetting.
   void RefreshEndpointMap();
 
-  // Look up the claimed interface by endpoint. Return NULL if the interface
-  // of the endpoint is not found.
+  // Look up the claimed interface by endpoint address. Returns nullptr if an
+  // interface containing the endpoint is not found.
   scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
-      uint8_t endpoint);
+      uint8_t endpoint_address);
 
   void ReportIsochronousTransferError(
       UsbDeviceHandle::IsochronousTransferCallback callback,

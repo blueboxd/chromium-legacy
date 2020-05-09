@@ -240,8 +240,11 @@ function sendReport() {
 
   feedbackInfo.sendHistograms = useHistograms;
 
-  // If the user doesn't want to send the screenshot.
-  if (!$('screenshot-checkbox').checked) {
+  if ($('screenshot-checkbox').checked) {
+    // The user is okay with sending the screenshot and tab titles.
+    feedbackInfo.sendTabTitles = true;
+  } else {
+    // The user doesn't want to send the screenshot, so clear it.
     feedbackInfo.screenshot = null;
   }
 

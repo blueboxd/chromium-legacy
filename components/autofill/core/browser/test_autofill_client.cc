@@ -75,6 +75,15 @@ std::string TestAutofillClient::GetPageLanguage() const {
   return page_language_;
 }
 
+void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
+
+void TestAutofillClient::ShowUnmaskPrompt(
+    const CreditCard& card,
+    UnmaskCardReason reason,
+    base::WeakPtr<CardUnmaskDelegate> delegate) {}
+
+void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 std::vector<std::string>
 TestAutofillClient::GetMerchantWhitelistForVirtualCards() {
@@ -85,16 +94,6 @@ std::vector<std::string>
 TestAutofillClient::GetBinRangeWhitelistForVirtualCards() {
   return bin_range_whitelist_;
 }
-#endif
-
-void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
-
-void TestAutofillClient::ShowUnmaskPrompt(
-    const CreditCard& card,
-    UnmaskCardReason reason,
-    base::WeakPtr<CardUnmaskDelegate> delegate) {}
-
-void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
 
 void TestAutofillClient::ShowLocalCardMigrationDialog(
     base::OnceClosure show_migration_dialog_closure) {
@@ -120,8 +119,6 @@ void TestAutofillClient::ShowLocalCardMigrationResults(
     const base::string16& tip_message,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     MigrationDeleteCardCallback delete_local_card_callback) {}
-
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
 void TestAutofillClient::ShowWebauthnOfferDialog(
     WebauthnDialogCallback offer_dialog_callback) {}
 
@@ -141,19 +138,8 @@ void TestAutofillClient::ConfirmSaveUpiIdLocally(
 void TestAutofillClient::OfferVirtualCardOptions(
     const std::vector<CreditCard*>& candidates,
     base::OnceCallback<void(const std::string&)> callback) {}
-#endif
 
-void TestAutofillClient::ConfirmSaveCreditCardLocally(
-    const CreditCard& card,
-    SaveCreditCardOptions options,
-    LocalSaveCardPromptCallback callback) {
-  confirm_save_credit_card_locally_called_ = true;
-  offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
-  save_credit_card_options_ = options;
-  std::move(callback).Run(AutofillClient::ACCEPTED);
-}
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#else  // defined(OS_ANDROID) || defined(OS_IOS)
 void TestAutofillClient::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const base::string16&)> callback) {
   credit_card_name_fix_flow_bubble_was_shown_ = true;
@@ -169,7 +155,17 @@ void TestAutofillClient::ConfirmExpirationDateFixFlow(
       base::string16(base::ASCIIToUTF16("03")),
       base::string16(base::ASCIIToUTF16(test::NextYear().c_str())));
 }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif
+
+void TestAutofillClient::ConfirmSaveCreditCardLocally(
+    const CreditCard& card,
+    SaveCreditCardOptions options,
+    LocalSaveCardPromptCallback callback) {
+  confirm_save_credit_card_locally_called_ = true;
+  offer_to_save_credit_card_bubble_was_shown_ = options.show_prompt;
+  save_credit_card_options_ = options;
+  std::move(callback).Run(AutofillClient::ACCEPTED);
+}
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
@@ -214,7 +210,7 @@ base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
 void TestAutofillClient::PinPopupView() {}
 
 void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
-                                     autofill::PopupType popup_type) {}
+                                     PopupType popup_type) {}
 
 void TestAutofillClient::HideAutofillPopup(PopupHidingReason reason) {}
 

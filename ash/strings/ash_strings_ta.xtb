@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
 <translation id="119944043368869598">அனைத்தையும் அழி</translation>
 <translation id="1199716647557067911">’சுவிட்ச் அணுகல்’ அம்சத்தை முடக்க வேண்டுமா?</translation>
+<translation id="121097972571826261">சொல் வாரியாக முன்செல்</translation>
+<translation id="1229194443904279055">தேர்ந்தெடுப்பதை நிறுத்து</translation>
 <translation id="1247372569136754018">மைக்ரோஃபோன் (அகம்)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> இலிருந்து சார்ஜ் செய்யப்படுகிறது</translation>
 <translation id="1255033239764210633">வானிலை எப்படி இருக்கிறது?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">முழுத்திரைப் பெரிதாக்கி இயக்கப்பட்டுள்ளது. அதை முடக்க Ctrl+Search+Mமை மீண்டும் அழுத்தவும்.</translation>
 <translation id="2302092602801625023">இந்தக் கணக்கு Family Linkகால் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="2303600792989757991">சாளர மேலோட்டத்தை நிலைமாற்று</translation>
+<translation id="2322173485024759474">எழுத்து வாரியாகப் பின்செல்</translation>
 <translation id="2339073806695260576">குறிப்பெடுக்க, ஸ்கிரீன்ஷாட்டை எடுக்க, லேசர் பாயிண்டர் அல்லது உருப்பெருக்கி ஆகியவற்றைப் பயன்படுத்த, ஷெல்ஃபில் உள்ள ஸ்டைலஸ் பட்டனைத் தட்டவும்.</translation>
 <translation id="2341729377289034582">செங்குத்து நிலையில் பூட்டப்பட்டது</translation>
 <translation id="2352467521400612932">ஸ்டைலஸ் அமைப்புகள்</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">கீபோர்ட் அமைப்புகளைக் காண்பிக்கும்</translation>
 <translation id="3846575436967432996">நெட்வொர்க் தகவல் எதுவும் இல்லை</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
+<translation id="385300504083504382">தொடக்கம்</translation>
 <translation id="3891340733213178823">வெளியேற Ctrl+Shift+Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="3893630138897523026">ChromeVox (பேச்சுவடிவ கருத்து)</translation>
 <translation id="3897533311200664389">உரை வினவலைத் தொடங்கு</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">அதிகபட்சம் முயன்றுவிட்டீர்கள்</translation>
 <translation id="5397578532367286026">இந்தப் பயனரின் பயன்பாடு மற்றும் வரலாறு chrome.com இன் நிர்வாகியால் (<ph name="MANAGER_EMAIL" />) மதிப்பாய்வு செய்யப்படும்.</translation>
 <translation id="5400461572260843123">விரைவு அமைப்புகள், அறிவிப்பு மையத்தை அணுக, தேடல் + இடது அம்புக்குறியை அழுத்தவும்.</translation>
+<translation id="5428899915242071344">தேர்ந்தெடுப்பதைத் தொடங்கு</translation>
 <translation id="5430931332414098647">உடனடி இணைப்பு முறை</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">எல்லா பயனர்களும் ஏற்கனவே இந்த அமர்வில் சேர்க்கப்பட்டுள்ளனர்.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">இணைக்கப்பட்ட USB-C சாதனங்களுக்கு சார்ஜ் ஏற்றப்படுகிறது</translation>
 <translation id="6790428901817661496">இயக்கு</translation>
 <translation id="6803622936009808957">ஆதரிக்கும் தெளிவுகள் கிடைக்காததால் காட்சிகளைப் பிரதிபலிக்க முடியவில்லை. பதிலாக நீட்டிக்கப்பட்ட டெஸ்க்டாப்பிற்குச் சென்றது.</translation>
+<translation id="6818242057446442178">சொல் வாரியாகப் பின்செல்</translation>
 <translation id="6820676911989879663">சிறிது நேரம் இடைவேளை எடுத்துக்கொள்ளவும்!</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> ஐ செயல்படுத்து</translation>
 <translation id="6878400149835617132">ஷார்ட்கட் முடக்கப்பட்டுள்ளது</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">குறிப்பை உருவாக்கு</translation>
+<translation id="8371779926711439835">எழுத்து வாரியாக முன்செல்</translation>
 <translation id="8375916635258623388">இந்த <ph name="DEVICE_NAME" /> உம் உங்கள் ஃபோனும் தானாக இணைக்கப்படும்</translation>
 <translation id="8388750414311082622">இறுதி டெஸ்க்கை அகற்ற இயலாது.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> க்கான விருப்பத்தேர்வுகள் மெனு</translation>

@@ -190,11 +190,13 @@ NewTabPageHandler::NewTabPageHandler(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS)),
       web_contents_(web_contents),
-      ntp_creation_time_(ntp_creation_time) {
+      ntp_creation_time_(ntp_creation_time),
+      logger_(NTPUserDataLogger::GetOrCreateFromWebContents(web_contents)) {
   CHECK(instant_service_);
   CHECK(ntp_background_service_);
   CHECK(logo_service_);
   CHECK(web_contents_);
+  CHECK(logger_);
   instant_service_->AddObserver(this);
   ntp_background_service_->AddObserver(this);
   instant_service_->UpdateNtpTheme();
@@ -328,6 +330,7 @@ void NewTabPageHandler::SetBackgroundImage(const std::string& attribution_1,
   instant_service_->SetCustomBackgroundInfo(image_url, attribution_1,
                                             attribution_2, attribution_url,
                                             /* collection_id= */ "");
+  LogEvent(NTP_BACKGROUND_IMAGE_SET);
 }
 
 void NewTabPageHandler::SetDailyRefreshCollectionId(
@@ -337,12 +340,14 @@ void NewTabPageHandler::SetDailyRefreshCollectionId(
   instant_service_->SetCustomBackgroundInfo(
       /* image_url */ GURL(), /* attribution_1= */ "", /* attribution_2= */ "",
       /* attribution_url= */ GURL(), collection_id);
+  LogEvent(NTP_BACKGROUND_DAILY_REFRESH_ENABLED);
 }
 
 void NewTabPageHandler::SetNoBackgroundImage() {
   instant_service_->SetCustomBackgroundInfo(
       /* image_url */ GURL(), /* attribution_1= */ "", /* attribution_2= */ "",
       /* attribution_url= */ GURL(), /* collection_id= */ "");
+  LogEvent(NTP_BACKGROUND_IMAGE_RESET);
 }
 
 void NewTabPageHandler::UpdateMostVisitedInfo() {
@@ -454,21 +459,72 @@ void NewTabPageHandler::GetOneGoogleBarParts(
 void NewTabPageHandler::OnMostVisitedTilesRendered(
     std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
     double time) {
-  auto* logger = NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_);
   for (size_t i = 0; i < tiles.size(); i++) {
-    logger->LogMostVisitedImpression(MakeNTPTileImpression(*tiles[i], i));
+    logger_->LogMostVisitedImpression(MakeNTPTileImpression(*tiles[i], i));
   }
   // This call flushes all most visited impression logs to UMA histograms.
   // Therefore, it must come last.
-  logger->LogEvent(NTP_ALL_TILES_LOADED,
-                   base::Time::FromJsTime(time) - ntp_creation_time_);
+  logger_->LogEvent(NTP_ALL_TILES_LOADED,
+                    base::Time::FromJsTime(time) - ntp_creation_time_);
 }
 
 void NewTabPageHandler::OnMostVisitedTileNavigation(
     new_tab_page::mojom::MostVisitedTilePtr tile,
     uint32_t index) {
-  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
-      ->LogMostVisitedNavigation(MakeNTPTileImpression(*tile, index));
+  logger_->LogMostVisitedNavigation(MakeNTPTileImpression(*tile, index));
+}
+
+void NewTabPageHandler::OnCustomizeDialogAction(
+    new_tab_page::mojom::CustomizeDialogAction action) {
+  NTPLoggingEventType event;
+  switch (action) {
+    case new_tab_page::mojom::CustomizeDialogAction::CANCEL_CLICKED:
+      event = NTP_CUSTOMIZATION_MENU_CANCEL;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::DONE_CLICKED:
+      event = NTP_CUSTOMIZATION_MENU_DONE;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::OPEN_CLICKED:
+      event = NTP_CUSTOMIZATION_MENU_OPENED;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::BACKGROUNDS_BACK_CLICKED:
+      event = NTP_BACKGROUND_BACK_CLICK;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        BACKGROUNDS_NO_BACKGROUND_SELECTED:
+      event = NTP_BACKGROUND_DEFAULT_SELECTED;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        BACKGROUNDS_COLLECTION_OPENED:
+      event = NTP_BACKGROUND_OPEN_COLLECTION;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        BACKGROUNDS_REFRESH_TOGGLE_CLICKED:
+      event = NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::BACKGROUNDS_IMAGE_SELECTED:
+      event = NTP_BACKGROUND_SELECT_IMAGE;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        BACKGROUNDS_UPLOAD_FROM_DEVICE_CLICKED:
+      event = NTP_BACKGROUND_UPLOAD_FROM_DEVICE;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        SHORTCUTS_CUSTOM_LINKS_CLICKED:
+      event = NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        SHORTCUTS_MOST_VISITED_CLICKED:
+      event = NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED;
+      break;
+    case new_tab_page::mojom::CustomizeDialogAction::
+        SHORTCUTS_VISIBILITY_TOGGLE_CLICKED:
+      event = NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED;
+      break;
+    default:
+      NOTREACHED();
+  }
+  LogEvent(event);
 }
 
 void NewTabPageHandler::QueryAutocomplete(const base::string16& input,
@@ -777,11 +833,8 @@ void NewTabPageHandler::FileSelected(const base::FilePath& path,
   select_file_dialog_ = nullptr;
   // File selection can happen at any time after NTP load, and is not logged
   // with the event.
-  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
-      ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE,
-                 base::TimeDelta::FromSeconds(0));
-  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
-      ->LogEvent(NTP_BACKGROUND_UPLOAD_DONE, base::TimeDelta::FromSeconds(0));
+  LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE);
+  LogEvent(NTP_BACKGROUND_UPLOAD_DONE);
 
   std::move(choose_local_custom_background_callback_).Run(true);
 }
@@ -790,11 +843,8 @@ void NewTabPageHandler::FileSelectionCanceled(void* params) {
   select_file_dialog_ = nullptr;
   // File selection can happen at any time after NTP load, and is not logged
   // with the event.
-  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
-      ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL,
-                 base::TimeDelta::FromSeconds(0));
-  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_)
-      ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
+  LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL);
+  LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL);
   std::move(choose_local_custom_background_callback_).Run(false);
 }
 
@@ -917,4 +967,8 @@ void NewTabPageHandler::OnRealboxFaviconFetched(int match_index,
       webui::GetPngDataUrl(data->front_as<unsigned char>(), data->size());
 
   page_->AutocompleteMatchImageAvailable(match_index, page_url, data_url);
+}
+
+void NewTabPageHandler::LogEvent(NTPLoggingEventType event) {
+  logger_->LogEvent(event, base::TimeDelta() /* unused */);
 }

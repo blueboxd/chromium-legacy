@@ -60,10 +60,12 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -6170,6 +6172,67 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
                                            1);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
+class TestWindowStateDelegate : public WindowStateDelegate {
+ public:
+  TestWindowStateDelegate() = default;
+  TestWindowStateDelegate(const TestWindowStateDelegate&) = delete;
+  TestWindowStateDelegate& operator=(const TestWindowStateDelegate&) = delete;
+  ~TestWindowStateDelegate() override = default;
+
+  // WindowStateDelegate:
+  void OnDragStarted(int component) override { drag_in_progress_ = true; }
+  void OnDragFinished(bool cancel, const gfx::PointF& location) override {
+    drag_in_progress_ = false;
+  }
+
+  bool drag_in_progress() { return drag_in_progress_; }
+
+ private:
+  bool drag_in_progress_ = false;
+};
+
+// Tests that when a split view window carries over to clamshell split view
+// while the divider is being dragged, the window resize is properly completed.
+TEST_P(SplitViewOverviewSessionInClamshellTest,
+       CarryOverToClamshellSplitViewWhileResizing) {
+  std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
+  WindowState* snapped_window_state = WindowState::Get(snapped_window.get());
+  TestWindowStateDelegate* snapped_window_state_delegate =
+      new TestWindowStateDelegate();
+  snapped_window_state->SetDelegate(
+      base::WrapUnique(snapped_window_state_delegate));
+
+  // Enter clamshell split view and then switch to tablet mode.
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+  EnterTabletMode();
+  ASSERT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  ASSERT_EQ(snapped_window.get(), split_view_controller()->left_window());
+
+  // Start dragging the divider.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      split_view_controller()
+          ->split_view_divider()
+          ->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint());
+  generator->PressTouch();
+  generator->MoveTouchBy(5, 0);
+  EXPECT_TRUE(snapped_window_state_delegate->drag_in_progress());
+  EXPECT_NE(nullptr, snapped_window_state->drag_details());
+
+  // End tablet mode.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  ASSERT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  ASSERT_EQ(snapped_window.get(), split_view_controller()->left_window());
+  EXPECT_FALSE(snapped_window_state_delegate->drag_in_progress());
+  EXPECT_EQ(nullptr, snapped_window_state->drag_details());
 }
 
 // Test that overview and clamshell split view end if you double click the edge

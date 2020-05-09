@@ -18,9 +18,10 @@ namespace {
 x11::Future<x11::XProto::GetPropertyReply> GetWorkspace() {
   auto* connection = x11::Connection::Get();
   return connection->GetProperty({
-      .window = XDefaultRootWindow(connection->display()),
-      .property = gfx::GetAtom("_NET_CURRENT_DESKTOP"),
-      .type = gfx::GetAtom("CARDINAL"),
+      .window =
+          static_cast<x11::Window>(XDefaultRootWindow(connection->display())),
+      .property = static_cast<x11::Atom>(gfx::GetAtom("_NET_CURRENT_DESKTOP")),
+      .type = static_cast<x11::Atom>(gfx::GetAtom("CARDINAL")),
       .long_length = 1,
   });
 }
@@ -75,7 +76,7 @@ void X11WorkspaceHandler::OnWorkspaceResponse(
   if (!response || response->format != 32 || response->value.size() < 4)
     return;
   DCHECK_EQ(response->bytes_after, 0U);
-  DCHECK_EQ(response->type, gfx::GetAtom("CARDINAL"));
+  DCHECK_EQ(response->type, static_cast<x11::Atom>(gfx::GetAtom("CARDINAL")));
 
   uint32_t workspace;
   memcpy(&workspace, response->value.data(), 4);

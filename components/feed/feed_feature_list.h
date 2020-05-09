@@ -25,12 +25,10 @@ extern const base::Feature kInterestFeedNotifications;
 extern const base::Feature kInterestFeedFeedback;
 
 // Indicates if user card clicks and views in Chrome's feed should be reported
-// for personalization.
+// for personalization. Also enables the feed header menu to manage the feed.
 extern const base::Feature kReportFeedUserActions;
 
 extern const base::Feature kInterestFeedV2;
-
-extern const base::Feature kFeedHeaderMenu;
 
 }  // namespace feed
 

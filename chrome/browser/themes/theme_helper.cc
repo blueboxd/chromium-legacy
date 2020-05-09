@@ -74,6 +74,23 @@ const std::array<SkColor, 2> GetTabGroupColors(int color_id) {
   }
 }
 
+// Translate the relevant ThemeProperty color ids to SecurityChipColorIds so
+// that the security chip color implementation can be shared between NativeTheme
+// and ThemeProvider.
+ui::NativeTheme::SecurityChipColorId GetSecurityChipColorId(int color_id) {
+  static const base::NoDestructor<
+      base::flat_map<int, ui::NativeTheme::SecurityChipColorId>>
+      color_id_map({
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
+           ui::NativeTheme::SecurityChipColorId::DEFAULT},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
+           ui::NativeTheme::SecurityChipColorId::SECURE},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+           ui::NativeTheme::SecurityChipColorId::DANGEROUS},
+      });
+  return color_id_map->at(color_id);
+}
+
 SkColor IncreaseLightness(SkColor color, double percent) {
   color_utils::HSL result;
   color_utils::SkColorToHSL(color, &result);
@@ -595,9 +612,6 @@ base::Optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
   const auto bg_hovered_color = [&]() {
     return blend_toward_max_contrast(bg, 0x0A);
   };
-  const auto security_chip_color = [&](OmniboxColor color) {
-    return blend_for_min_contrast(color, bg_hovered_color());
-  };
   const auto results_bg_hovered_color = [&]() {
     return blend_toward_max_contrast(results_bg_color(), 0x1A);
   };
@@ -651,11 +665,12 @@ base::Optional<ThemeHelper::OmniboxColor> ThemeHelper::GetOmniboxColorImpl(
       return url_color(results_bg_selected_color());
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:
     case TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE:
-      return dark ? blend_toward_max_contrast(fg, 0x18)
-                  : security_chip_color(derive_default_icon_color(fg));
-    case TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS:
-      return dark ? blend_toward_max_contrast(fg, 0x18)
-                  : security_chip_color({gfx::kGoogleRed600, false});
+    case TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS: {
+      return {
+          {ui::GetSecurityChipColor(GetSecurityChipColorId(id), fg.value,
+                                    bg_hovered_color().value, high_contrast),
+           fg.custom || (!dark && bg.custom)}};
+    }
     default:
       return base::nullopt;
   }

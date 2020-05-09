@@ -208,7 +208,7 @@ suite('OSSettingsSearchBox', () => {
     assertEquals(resultList.selectedItem, resultList.items[0]);
   });
 
-  test('Keydown Enter causes route change on selected row', async () => {
+  test('Keydown Enter on search box can cause route change', async () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
     await simulateSearch('query');
@@ -217,9 +217,30 @@ suite('OSSettingsSearchBox', () => {
     const enterEvent = new KeyboardEvent(
         'keydown', {cancelable: true, key: 'Enter', keyCode: 13});
 
-    // Clicking on the row correctly changes the route and dropdown to close.
+    // Keydown with Enter key on the searchBox causes navigation to selected
+    // row's route.
     searchBox.dispatchEvent(enterEvent);
     Polymer.dom.flush();
+    assertFalse(dropDown.opened);
+    const router = settings.Router.getInstance();
+    assertEquals(router.getCurrentRoute().path, '/networks');
+    assertEquals(router.getQueryParameters().get('type'), 'WiFi');
+  });
+
+  test('Keypress Enter on row causes route change', async () => {
+    settingsSearchHandler.setFakeResults(
+        [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
+    await simulateSearch('query');
+    await waitForListUpdate();
+
+    const selectedOsRow = searchBox.getSelectedOsSearchResultRow_();
+    assertTrue(!!selectedOsRow);
+
+    // Keypress with Enter key on any row specifically causes navigation to
+    // selected row's route. This can't happen unless the row is focused.
+    const enterEvent = new KeyboardEvent(
+        'keypress', {cancelable: true, key: 'Enter', keyCode: 13});
+    selectedOsRow.$.searchResultContainer.dispatchEvent(enterEvent);
     assertFalse(dropDown.opened);
     const router = settings.Router.getInstance();
     assertEquals(router.getCurrentRoute().path, '/networks');
@@ -242,6 +263,27 @@ suite('OSSettingsSearchBox', () => {
     const router = settings.Router.getInstance();
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
+  });
+
+  test('Selecting result a second time does not deselect it.', async () => {
+    settingsSearchHandler.setFakeResults(
+        [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
+    await simulateSearch('query');
+    await waitForListUpdate();
+
+    // Clicking a selected item does not deselect it.
+    const searchResultRow = searchBox.getSelectedOsSearchResultRow_();
+    searchResultRow.$.searchResultContainer.click();
+    assertEquals(resultList.selectedItem, resultList.items[0]);
+    assertFalse(dropDown.opened);
+
+    // Open search drop down again.
+    field.$.searchInput.focus();
+    assertTrue(dropDown.opened);
+
+    // Clicking again does not deslect the row.
+    searchResultRow.$.searchResultContainer.click();
+    assertEquals(resultList.selectedItem, resultList.items[0]);
   });
 
   test('Tokenize and match result text to query text', async () => {

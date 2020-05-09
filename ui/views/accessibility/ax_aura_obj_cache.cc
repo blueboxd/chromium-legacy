@@ -105,15 +105,19 @@ void AXAuraObjCache::GetTopLevelWindows(
 
 AXAuraObjWrapper* AXAuraObjCache::GetFocus() {
   View* focused_view = GetFocusedView();
-  if (focused_view) {
-    const ViewAccessibility& view_accessibility =
-        focused_view->GetViewAccessibility();
-    if (view_accessibility.FocusedVirtualChild())
-      return view_accessibility.FocusedVirtualChild()->GetOrCreateWrapper(this);
+  while (focused_view && focused_view->GetViewAccessibility().IsIgnored())
+    focused_view = focused_view->parent();
 
-    return GetOrCreate(focused_view);
+  if (!focused_view)
+    return nullptr;
+
+  if (focused_view->GetViewAccessibility().FocusedVirtualChild()) {
+    return focused_view->GetViewAccessibility()
+        .FocusedVirtualChild()
+        ->GetOrCreateWrapper(this);
   }
-  return nullptr;
+
+  return GetOrCreate(focused_view);
 }
 
 void AXAuraObjCache::OnFocusedViewChanged() {

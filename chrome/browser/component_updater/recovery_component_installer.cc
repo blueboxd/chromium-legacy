@@ -271,6 +271,7 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
                std::unique_ptr<InstallParams> install_params,
+               ProgressCallback progress_callback,
                Callback callback) override;
 
   bool GetInstalledFile(const std::string& file,
@@ -410,6 +411,7 @@ void RecoveryComponentInstaller::Install(
     const base::FilePath& unpack_path,
     const std::string& /*public_key*/,
     std::unique_ptr<InstallParams> /*install_params*/,
+    ProgressCallback /*progress_callback*/,
     update_client::CrxInstaller::Callback callback) {
   auto result = update_client::InstallFunctionWrapper(
       base::BindOnce(&RecoveryComponentInstaller::DoInstall,

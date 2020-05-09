@@ -69,8 +69,8 @@ DiceSigninButtonView::DiceSigninButtonView(
   // Add a stretching column for the sign in button.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::TRAILING, 1.0,
                      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  signin_button_ =
-      grid_layout->AddView(views::MdTextButton::CreateSecondaryUiBlueButton(
+  signin_button_ = grid_layout->AddView(
+      views::MdTextButton::CreateSecondaryUiProminentButton(
           button_listener,
           l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON)));
 }

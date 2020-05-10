@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.components.payments.PaymentApp;
 
 /** The interface for creating payment apps from Autofill cards. */
 public interface AutofillPaymentAppCreator {

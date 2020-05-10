@@ -41,6 +41,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
@@ -330,6 +331,12 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   enterprise_managed = base::IsMachineExternallyManaged();
 #endif
   source->AddBoolean("isEnterpriseManaged", enterprise_managed);
+
+#if defined(OS_CHROMEOS)
+  source->AddBoolean(
+      "showPrinterStatus",
+      base::FeatureList::IsEnabled(chromeos::features::kPrinterStatus));
+#endif
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {

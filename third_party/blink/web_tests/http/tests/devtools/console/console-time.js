@@ -26,7 +26,7 @@
 
   async function dumpMessagesAndCompleTest() {
     var messages = await ConsoleTestRunner.dumpConsoleMessagesIntoArray();
-    messages = messages.map(message => message.replace(/\d+\.\d+ms/, '<time>'));
+    messages = messages.map(message => message.replace(/\d+\.\d+ ?ms/, '<time>'));
     TestRunner.addResults(messages);
     TestRunner.completeTest();
   }

@@ -15,6 +15,7 @@ import './throbber_css.js';
 import '../strings.m.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
@@ -60,6 +61,22 @@ Polymer({
     statusText_: {
       type: String,
       computed: 'computeStatusText_(destination)',
+    },
+
+    /** @private {string} */
+    backgroundImages_: {
+      type: String,
+      computed:
+          'computeBackgroundImages_(selectedValue, destination, noDestinations, dark)',
+    },
+
+    /** @private */
+    printerStatusFlagEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showPrinterStatus');
+      },
+      readOnly: true,
     },
   },
 
@@ -122,7 +139,7 @@ Polymer({
    *     destination and the image for the dropdown arrow.
    * @private
    */
-  getBackgroundImages_() {
+  computeBackgroundImages_() {
     const icon = this.getDestinationIcon_();
     if (!icon) {
       return '';

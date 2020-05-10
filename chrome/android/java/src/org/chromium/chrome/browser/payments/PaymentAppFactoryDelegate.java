@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.components.payments.PaymentApp;
+
 /**
  * Interface for providing information to a payment app factory and receiving the list of payment
  * apps.

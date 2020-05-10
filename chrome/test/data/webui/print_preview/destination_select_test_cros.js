@@ -5,6 +5,7 @@
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {getGoogleDriveDestination, selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {waitBeforeNextRender} from 'chrome://test/test_util.m.js';
 
 window.destination_select_test_cros = {};
 destination_select_test_cros.suiteName = 'DestinationSelectTestCros';
@@ -60,35 +61,42 @@ suite(destination_select_test_cros.suiteName, function() {
   }
 
   test(assert(destination_select_test_cros.TestNames.UpdateStatus), function() {
-    assertFalse(destinationSelect.$$('.throbber-container').hidden);
-    assertTrue(destinationSelect.$$('.md-select').hidden);
+    return waitBeforeNextRender(destinationSelect).then(() => {
+      assertFalse(destinationSelect.$$('.throbber-container').hidden);
+      assertTrue(destinationSelect.$$('.md-select').hidden);
 
-    destinationSelect.loaded = true;
-    assertTrue(destinationSelect.$$('.throbber-container').hidden);
-    assertFalse(destinationSelect.$$('.md-select').hidden);
+      destinationSelect.loaded = true;
+      assertTrue(destinationSelect.$$('.throbber-container').hidden);
+      assertFalse(destinationSelect.$$('.md-select').hidden);
 
-    destinationSelect.destination = recentDestinationList[0];
-    destinationSelect.updateDestination();
-    assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+      destinationSelect.destination = recentDestinationList[0];
+      destinationSelect.updateDestination();
+      assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
 
-    destinationSelect.destination = recentDestinationList[1];
-    destinationSelect.updateDestination();
-    assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
+      destinationSelect.destination = recentDestinationList[1];
+      destinationSelect.updateDestination();
+      assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
+    });
   });
 
   test(assert(destination_select_test_cros.TestNames.ChangeIcon), function() {
-    const destination = recentDestinationList[0];
-    destinationSelect.destination = destination;
-    destinationSelect.updateDestination();
-    destinationSelect.loaded = true;
-    const selectEl = destinationSelect.$$('.md-select');
-    compareIcon(selectEl, 'print');
     const cookieOrigin = DestinationOrigin.COOKIES;
-    const driveKey =
-        `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
-    destinationSelect.driveDestinationKey = driveKey;
+    let selectEl;
 
-    return selectOption(destinationSelect, driveKey)
+    return waitBeforeNextRender(destinationSelect)
+        .then(() => {
+          const destination = recentDestinationList[0];
+          destinationSelect.destination = destination;
+          destinationSelect.updateDestination();
+          destinationSelect.loaded = true;
+          selectEl = destinationSelect.$$('.md-select');
+          compareIcon(selectEl, 'print');
+          const driveKey =
+              `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
+          destinationSelect.driveDestinationKey = driveKey;
+
+          return selectOption(destinationSelect, driveKey);
+        })
         .then(() => {
           // Icon updates early based on the ID.
           compareIcon(selectEl, 'save-to-drive');

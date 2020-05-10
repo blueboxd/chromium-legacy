@@ -8,10 +8,10 @@ import android.content.Context;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.payments.PaymentApp;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.payments.CurrencyFormatter;
+import org.chromium.components.payments.PaymentApp;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 

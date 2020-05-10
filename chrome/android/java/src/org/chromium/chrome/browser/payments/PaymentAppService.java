@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import org.chromium.components.payments.PaymentApp;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

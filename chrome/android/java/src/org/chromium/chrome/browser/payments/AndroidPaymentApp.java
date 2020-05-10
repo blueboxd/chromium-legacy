@@ -20,6 +20,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.PayerData;
+import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentApp.InstrumentDetailsCallback;
 import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType;

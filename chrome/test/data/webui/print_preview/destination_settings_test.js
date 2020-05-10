@@ -864,11 +864,15 @@ suite(destination_settings_test.suiteName, function() {
         pdfPrinterDisabled = true;
         initialize();
 
-        return nativeLayer.whenCalled('getPrinterCapabilities').then(() => {
-          // Because the 'Save as PDF' fallback is unavailable, the first
-          // destination is selected.
-          assertDropdownItems([makeLocalDestinationKey('ID1')]);
-        });
+        return nativeLayer.whenCalled('getPrinterCapabilities')
+            .then(() => {
+              return waitBeforeNextRender(destinationSettings);
+            })
+            .then(() => {
+              // Because the 'Save as PDF' fallback is unavailable, the first
+              // destination is selected.
+              assertDropdownItems([makeLocalDestinationKey('ID1')]);
+            });
       });
 
   // Tests that disabling the 'Save as PDF' destination and exposing no

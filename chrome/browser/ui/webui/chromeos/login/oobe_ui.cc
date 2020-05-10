@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/debug/debug_overlay_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
@@ -565,6 +566,18 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 
   AddScreenHandler(
       std::make_unique<DiscoverScreenHandler>(js_calls_container_.get()));
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool enable_debugger =
+      command_line->HasSwitch(::chromeos::switches::kShowOobeDevOverlay);
+  // TODO(crbug.com/1073095): Also enable for ChromeOS test images.
+  // Enable for ChromeOS-on-linux for developers.
+  bool test_mode = !base::SysInfo::IsRunningOnChromeOS();
+
+  if (enable_debugger && test_mode) {
+    AddWebUIHandler(
+        std::make_unique<DebugOverlayHandler>(js_calls_container_.get()));
+  }
 
   base::DictionaryValue localized_strings;
   GetLocalizedStrings(&localized_strings);

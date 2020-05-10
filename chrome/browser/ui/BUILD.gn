@@ -1852,6 +1852,8 @@ jumbo_static_library("ui") {
       "webui/chromeos/login/base_webui_handler.h",
       "webui/chromeos/login/core_oobe_handler.cc",
       "webui/chromeos/login/core_oobe_handler.h",
+      "webui/chromeos/login/debug/debug_overlay_handler.cc",
+      "webui/chromeos/login/debug/debug_overlay_handler.h",
       "webui/chromeos/login/demo_preferences_screen_handler.cc",
       "webui/chromeos/login/demo_preferences_screen_handler.h",
       "webui/chromeos/login/demo_setup_screen_handler.cc",

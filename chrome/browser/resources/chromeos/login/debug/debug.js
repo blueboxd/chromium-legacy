@@ -260,14 +260,75 @@ cr.define('cr.ui.login.debug', function() {
       // GAIA password changed.
       id: 'password-changed',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          // No error
+          id: 'no-error',
+          trigger: (screen) => {
+            screen.show(
+                false,  // showError
+                'someone@example.com');
+          }
+        },
+        {
+          // Has error
+          id: 'has-error',
+          trigger: (screen) => {
+            screen.show(
+                true,  // showError
+                'someone@example.com');
+          }
+        },
+      ],
     },
     {
       id: 'ad-password-change',
       kind: ScreenKind.OTHER,
       data: {
         username: 'username',
-        error: 1,
-      }
+      },
+      states: [
+        {
+          // No error
+          id: 'no-error',
+          trigger: (screen) => {
+            screen.onBeforeShow({
+              username: 'username',
+            });
+          }
+        },
+        {
+          // First error
+          id: 'error-0',
+          trigger: (screen) => {
+            screen.onBeforeShow({
+              username: 'username',
+              error: 0,
+            });
+          }
+        },
+        {
+          // Second error
+          id: 'error-1',
+          trigger: (screen) => {
+            screen.onBeforeShow({
+              username: 'username',
+              error: 1,
+            });
+          }
+        },
+        {
+          // Error bubble
+          id: 'error-bubble',
+          trigger: (screen) => {
+            let errorElement = document.createElement('div');
+            errorElement.textContent = 'Some error text';
+            screen.showErrorBubble(
+                1,  // Login attempts
+                errorElement);
+          }
+        },
+      ],
     },
     {
       id: 'encryption-migration',
@@ -277,6 +338,30 @@ cr.define('cr.ui.login.debug', function() {
       id: 'confirm-password',
       kind: ScreenKind.OTHER,
       suffix: 'SAML',
+      states: [
+        {
+          // Password was scraped
+          id: 'scraped',
+          trigger: (screen) => {
+            screen.show(
+                'someone@example.com',
+                false,  // manualPasswordInput
+                0,      // attempt count
+                () => {});
+          }
+        },
+        {
+          // No password was scraped
+          id: 'manual',
+          trigger: (screen) => {
+            screen.show(
+                'someone@example.com',
+                true,  // manualPasswordInput
+                1,     // attempt count
+                () => {});
+          }
+        },
+      ],
     },
     {
       id: 'supervision-transition',
@@ -415,6 +500,28 @@ cr.define('cr.ui.login.debug', function() {
       }
     }
 
+    getCurrentUIStateId() {
+      var result = 'unknown';
+      if (this.lastScreenId_)
+        result = this.lastScreenId_;
+      if (this.lastScreenState_)
+        result = result + '_' + this.lastScreenState_;
+      return result;
+    }
+
+    makeScreenshot() {
+      var name = this.getCurrentUIStateId();
+      this.hideDebugUI();
+      this.debuggerButton_.setAttribute('hidden', true);
+      let delay = 100;
+      setTimeout(() => {
+        chrome.send('debug.captureScreenshot', [name]);
+      }, delay);
+      setTimeout(() => {
+        this.debuggerButton_.removeAttribute('hidden');
+      }, 2 * delay);
+    }
+
     createLanguagePanel(parent) {
       let langPanel = new ToolPanel(this.debuggerOverlay_, 'Language');
       const LANGUAGES = [
@@ -431,6 +538,12 @@ cr.define('cr.ui.login.debug', function() {
           chrome.send('WelcomeScreen.setLocaleId', [locale]);
         }.bind(null, pair[1]));
       });
+    }
+
+    createToolsPanel(parent) {
+      let panel = new ToolPanel(this.debuggerOverlay_, 'Tools');
+      new DebugButton(
+          panel.content, 'Screenshot', this.makeScreenshot.bind(this));
     }
 
     createScreensPanel(parent) {
@@ -453,11 +566,11 @@ cr.define('cr.ui.login.debug', function() {
       }
       /** @suppress {visibility} */
       cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
-      this.lastScreenState = undefined;
+      this.lastScreenState_ = undefined;
     }
 
     triggerScreenState(stateId, toggleFn) {
-      this.lastScreenState = stateId;
+      this.lastScreenState_ = stateId;
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
       toggleFn(displayManager.currentScreen);
@@ -508,20 +621,23 @@ cr.define('cr.ui.login.debug', function() {
       }
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
-      if (this.lastScreenId) {
-        this.screenButtons[this.lastScreenId].element.classList.remove(
+      if (this.lastScreenId_) {
+        this.screenButtons[this.lastScreenId_].element.classList.remove(
             'debug-button-selected');
       }
       if (displayManager.currentScreen) {
-        this.lastScreenId = displayManager.currentScreen.id;
-        this.screenButtons[this.lastScreenId].element.classList.add(
+        if (this.lastScreenId_ !== displayManager.currentScreen.id) {
+          this.lastScreenState_ = undefined;
+        }
+        this.lastScreenId_ = displayManager.currentScreen.id;
+        this.screenButtons[this.lastScreenId_].element.classList.add(
             'debug-button-selected');
       }
 
       var states = [];
 
-      if (this.screenMap[this.lastScreenId].states) {
-        states = states.concat(this.screenMap[this.lastScreenId].states);
+      if (this.screenMap[this.lastScreenId_].states) {
+        states = states.concat(this.screenMap[this.lastScreenId_].states);
       }
 
       this.statesPanel.clearContent();
@@ -580,6 +696,7 @@ cr.define('cr.ui.login.debug', function() {
       this.createLanguagePanel(this.debuggerOverlay_);
       this.createScreensPanel(this.debuggerOverlay_);
       this.createStatesPanel(this.debuggerOverlay_);
+      this.createToolsPanel(this.debuggerOverlay_);
 
       element.appendChild(this.debuggerButton_);
       element.appendChild(this.debuggerOverlay_);

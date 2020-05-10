@@ -16,7 +16,6 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -87,8 +86,6 @@ public class NewTabButton
         final boolean shouldUseLightMode =
                 DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                 || ((DeviceClassManager.enableAccessibilityLayout()
-                            || ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
                             || TabUiFeatureUtilities.isGridTabSwitcherEnabled())
                         && mIsIncognito);
         ApiCompatibilityUtils.setImageTintList(

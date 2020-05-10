@@ -176,9 +176,9 @@ void ScenicSurfaceFactory::Shutdown() {
 std::vector<gl::GLImplementation>
 ScenicSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementation>{
+      gl::kGLImplementationEGLANGLE,
       gl::kGLImplementationSwiftShaderGL,
       gl::kGLImplementationEGLGLES2,
-      gl::kGLImplementationEGLANGLE,
       gl::kGLImplementationStubGL,
   };
 }

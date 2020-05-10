@@ -628,4 +628,9 @@ public class TopToolbarCoordinator implements Toolbar {
     public ToolbarLayout getToolbarLayoutForTesting() {
         return mToolbarLayout;
     }
+
+    @VisibleForTesting
+    public StartSurfaceToolbarCoordinator getStartSurfaceToolbarForTesting() {
+        return mStartSurfaceToolbarCoordinator;
+    }
 }

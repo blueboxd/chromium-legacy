@@ -9,6 +9,9 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewStub;
 
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -30,7 +33,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * StartSurfaceToolbar has with the outside world. Lazily creates the tab toolbar the first time
  * it's needed.
  */
-class StartSurfaceToolbarCoordinator {
+public class StartSurfaceToolbarCoordinator {
     private final StartSurfaceToolbarMediator mToolbarMediator;
     private final ViewStub mStub;
     private final PropertyModel mPropertyModel;
@@ -210,6 +213,11 @@ class StartSurfaceToolbarCoordinator {
     }
 
     void onNativeLibraryReady() {
+        // It is possible that the {@link mIncognitoSwitchCoordinator} isn't created because
+        // inflate() is called when the native library isn't ready. So create it now.
+        if (isInflated()) {
+            maybeCreateIncognitoSwitchCoordinator();
+        }
         mToolbarMediator.onNativeLibraryReady();
     }
 
@@ -218,10 +226,8 @@ class StartSurfaceToolbarCoordinator {
         mView = (StartSurfaceToolbarView) mStub.inflate();
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 mPropertyModel, mView, StartSurfaceToolbarViewBinder::bind);
-
-        if (IncognitoUtils.isIncognitoModeEnabled()
-                && !StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue()) {
-            mIncognitoSwitchCoordinator = new IncognitoSwitchCoordinator(mView, mTabModelSelector);
+        if (LibraryLoader.getInstance().isInitialized()) {
+            maybeCreateIncognitoSwitchCoordinator();
         }
 
         if (StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue()) {
@@ -248,7 +254,21 @@ class StartSurfaceToolbarCoordinator {
         }
     }
 
+    private void maybeCreateIncognitoSwitchCoordinator() {
+        if (mIncognitoSwitchCoordinator != null) return;
+
+        if (IncognitoUtils.isIncognitoModeEnabled()
+                && !StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue()) {
+            mIncognitoSwitchCoordinator = new IncognitoSwitchCoordinator(mView, mTabModelSelector);
+        }
+    }
+
     private boolean isInflated() {
         return mView != null;
+    }
+
+    @VisibleForTesting
+    public IncognitoSwitchCoordinator getIncognitoSwitchCoordinatorForTesting() {
+        return mIncognitoSwitchCoordinator;
     }
 }

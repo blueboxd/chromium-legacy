@@ -4,9 +4,15 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.hamcrest.CoreMatchers.allOf;
+
 import static org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.M26_GOOGLE_COM;
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -50,6 +56,8 @@ import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarCoordinator;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -340,10 +348,62 @@ public class InstantStartTest {
         Assert.assertTrue(startSurfaceCoordinator.isInitializedWithNativeForTesting());
     }
 
+    /**
+     * Tests that the IncognitoSwitchCoordinator isn't create in inflate() if the native library
+     * isn't ready. It will be lazily created after native initialization.
+     */
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    public void startSurfaceIncognitoSwitchCoordinatorInflatedWithNativeTest() {
+        // clang-format on
+        startMainActivityFromLauncher();
+        Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
+        Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
+        Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
+        Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
+
+        CriteriaHelper.pollUiThread(()
+                                            -> Assert.assertTrue(mActivityTestRule.getActivity()
+                                                                         .getLayoutManager()
+                                                                         .overviewVisible()));
+
+        Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
+        TopToolbarCoordinator topToolbarCoordinator =
+                (TopToolbarCoordinator) mActivityTestRule.getActivity()
+                        .getToolbarManager()
+                        .getToolbar();
+
+        // TODO(https://crbug.com/1077022): Removes the call of
+        // {@link TopToolbarCoordinator#setTabSwithcherMode()} once ToolbarManager shows
+        // the StartSurfaceToolbar in instant start.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { topToolbarCoordinator.setTabSwitcherMode(true, true, false); });
+        onViewWaiting(allOf(withId(R.id.tab_switcher_toolbar), isDisplayed()));
+
+        StartSurfaceToolbarCoordinator startSurfaceToolbarCoordinator =
+                topToolbarCoordinator.getStartSurfaceToolbarForTesting();
+        // Verifies that the IncognitoSwitchCoordinator hasn't been created when the
+        // {@link StartSurfaceToolbarCoordinator#inflate()} is called.
+        Assert.assertNull(startSurfaceToolbarCoordinator.getIncognitoSwitchCoordinatorForTesting());
+
+        // Initializes native.
+        startAndWaitNativeInitialization();
+        Assert.assertNotNull(
+                startSurfaceToolbarCoordinator.getIncognitoSwitchCoordinatorForTesting());
+    }
+
     @Test
     @SmallTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_TABLET})
     public void willInitNativeOnTabletTest() {
+        startMainActivityFromLauncher();
         Assert.assertTrue(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
 

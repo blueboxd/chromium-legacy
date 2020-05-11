@@ -10,7 +10,8 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/infobars/core/infobar.h"

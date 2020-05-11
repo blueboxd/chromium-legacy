@@ -418,6 +418,21 @@ def _CallAddr2LineForSet(lib, unique_addrs, cpu_arch):
   return result
 
 
+def _StripPC(addr, cpu_arch):
+  """Strips the Thumb bit a program counter address when appropriate.
+
+  Args:
+    addr: the program counter address
+    cpu_arch: Target CPU architecture.
+
+  Returns:
+    The stripped program counter address.
+  """
+  if cpu_arch == "arm":
+    return addr & ~1
+  return addr
+
+
 @_MemoizedForSet
 def _CallObjdumpForSet(lib, unique_addrs, cpu_arch):
   """Use objdump to find out the names of the containing functions.
@@ -455,8 +470,8 @@ def _CallObjdumpForSet(lib, unique_addrs, cpu_arch):
   asm_regexp = re.compile("(^[ a-f0-9]*):[ a-f0-0]*.*$")
 
   for target_addr in unique_addrs:
-    start_addr_dec = str(StripPC(int(target_addr, 16)))
-    stop_addr_dec = str(StripPC(int(target_addr, 16)) + 8)
+    start_addr_dec = str(_StripPC(int(target_addr, 16), cpu_arch))
+    stop_addr_dec = str(_StripPC(int(target_addr, 16), cpu_arch) + 8)
     cmd = [host_paths.ToolPath("objdump", cpu_arch),
            "--section=.text",
            "--demangle",
@@ -493,7 +508,7 @@ def _CallObjdumpForSet(lib, unique_addrs, cpu_arch):
       if components:
         addr = components.group(1)
         i_addr = int(addr, 16)
-        i_target = StripPC(int(target_addr, 16))
+        i_target = _StripPC(int(target_addr, 16), cpu_arch)
         if i_addr == i_target:
           result[target_addr] = (current_symbol, i_target - current_symbol_addr)
     stream.close()

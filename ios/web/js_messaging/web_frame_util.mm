@@ -4,7 +4,6 @@
 
 #include "ios/web/public/js_messaging/web_frame_util.h"
 
-#include "base/logging.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"

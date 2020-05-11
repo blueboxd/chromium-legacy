@@ -54,7 +54,8 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnHidden() override;
   void OnShown() override;
   void AnimateYPosition(AppListViewState target_view_state,
-                        const TransformAnimator& animator) override;
+                        const TransformAnimator& animator,
+                        float default_offset) override;
   void UpdatePageOpacityForState(AppListState state,
                                  float search_box_opacity,
                                  bool restore_opacity) override;

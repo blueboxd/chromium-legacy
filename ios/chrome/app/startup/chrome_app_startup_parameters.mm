@@ -4,7 +4,6 @@
 
 #import "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"

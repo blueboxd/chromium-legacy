@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"

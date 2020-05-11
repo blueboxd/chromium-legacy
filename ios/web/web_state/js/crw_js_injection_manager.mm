@@ -6,8 +6,9 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/bundle_locations.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/js_messaging/page_script_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/password_controller.h"

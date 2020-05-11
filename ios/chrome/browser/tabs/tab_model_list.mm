@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/supports_user_data.h"

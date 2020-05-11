@@ -145,6 +145,11 @@ mojom::FanResultPtr MakeFanResult() {
   return mojom::FanResult::NewFanInfo(std::move(fan_vector));
 }
 
+mojom::StatefulPartitionResultPtr MakeStatefulPartitionResult() {
+  return mojom::StatefulPartitionResult::NewPartitionInfo(
+      mojom::StatefulPartitionInfo::New(9238571212ul, 23420982409ul));
+}
+
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryResult() /* battery_result */,
@@ -153,7 +158,8 @@ mojom::TelemetryInfoPtr MakeTelemetryInfo() {
       MakeTimezoneResult() /* timezone_result */,
       MakeMemoryResult() /* memory_result */,
       MakeBacklightResult() /* backlight_result */,
-      MakeFanResult() /* fan_result */
+      MakeFanResult() /* fan_result */,
+      MakeStatefulPartitionResult() /* partition_result */
   );
 }
 

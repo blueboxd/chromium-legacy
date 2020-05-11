@@ -19,7 +19,7 @@
 <translation id="1195412055398077112">Дэлгэцийн дүрс таарахгүй байх</translation>
 <translation id="119944043368869598">Бүгдийг арилгах</translation>
 <translation id="1199716647557067911">Та Сэлгүүрийг унтраахдаа итгэлтэй байна уу?</translation>
-<translation id="121097972571826261">Нэг үгээр шилжүүлэх</translation>
+<translation id="121097972571826261">Нэг үгээр урагшлуулах</translation>
 <translation id="1229194443904279055">Сонголтыг зогсоох</translation>
 <translation id="1247372569136754018">Микрофон (дотоод)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />-с цэнэглэж байна</translation>
@@ -587,7 +587,7 @@
 <translation id="8308637677604853869">Өмнөх цэс</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Тэмдэглэл үүсгэх</translation>
-<translation id="8371779926711439835">Нэг үсгээр шилжүүлэх</translation>
+<translation id="8371779926711439835">Нэг үсгээр урагшлуулах</translation>
 <translation id="8375916635258623388">Энэ <ph name="DEVICE_NAME" /> болон таны утас автоматаар холбогдоно</translation>
 <translation id="8388750414311082622">Сүүлийн дэлгэцийг устгах боломжгүй байна.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" />-ын сонголтын цэс</translation>

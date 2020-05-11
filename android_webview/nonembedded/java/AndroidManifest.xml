@@ -99,6 +99,10 @@
                 <service android:name="org.chromium.android_webview.services.DeveloperUiService"
                          android:exported="false"
                          android:process=":webview_service" />  {# Explicit process required for monochrome compatibility. #}
+                <service android:name="org.chromium.android_webview.services.MetricsBridgeService"
+                         android:exported="true"
+                         android:visibleToInstantApps="true"
+                         android:process=":webview_service" />  {# Explicit process required for monochrome compatibility. #}
             {% endif %}
         {% endmacro %}
         {{ common(manifest_package|default('com.android.webview'), library|default('libwebviewchromium.so')) }}

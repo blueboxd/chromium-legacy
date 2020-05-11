@@ -24,8 +24,7 @@ MachineLearningDecisionServiceProvider::
 void MachineLearningDecisionServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
-      machine_learning::kMlDecisionServiceInterface,
-      machine_learning::kShouldDeferScreenDimMethod,
+      kMlDecisionServiceInterface, kMlDecisionServiceShouldDeferScreenDimMethod,
       base::BindRepeating(
           &MachineLearningDecisionServiceProvider::ShouldDeferScreenDim,
           weak_ptr_factory_.GetWeakPtr()),

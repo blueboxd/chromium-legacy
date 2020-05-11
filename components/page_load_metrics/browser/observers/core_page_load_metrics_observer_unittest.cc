@@ -505,6 +505,25 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
       internal::kHistogramLoadTypeTotalBytesReload, 0);
 }
 
+TEST_F(CorePageLoadMetricsObserverTest, NavigationTiming) {
+  GURL url(kDefaultTestUrl);
+  tester()->NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_LINK);
+
+  // Verify if the elapsed times from the navigation start are recorded.
+  std::vector<const char*> metrics_from_navigation_start = {
+      internal::kHistogramNavigationTimingNavigationStartToFirstRequestStart,
+      internal::kHistogramNavigationTimingNavigationStartToFirstResponseStart};
+  for (const char* metric : metrics_from_navigation_start)
+    tester()->histogram_tester().ExpectTotalCount(metric, 1);
+
+  // Verify if the intervals between adjacent milestones are recorded.
+  std::vector<const char*> metrics_between_milestones = {
+      internal::
+          kHistogramNavigationTimingFirstRequestStartToFirstResponseStart};
+  for (const char* metric : metrics_between_milestones)
+    tester()->histogram_tester().ExpectTotalCount(metric, 1);
+}
+
 TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);

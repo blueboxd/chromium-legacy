@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"

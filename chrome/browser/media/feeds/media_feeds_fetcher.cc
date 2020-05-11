@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "components/schema_org/common/metadata.mojom.h"
 #include "components/schema_org/extractor.h"
 #include "components/schema_org/schema_org_entity_names.h"
@@ -16,6 +17,9 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace media_feeds {
+
+const char MediaFeedsFetcher::kFetchSizeKbHistogramName[] =
+    "Media.Feeds.Fetch.Size";
 
 MediaFeedsFetcher::MediaFeedsFetcher(
     scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory)
@@ -129,6 +133,12 @@ void MediaFeedsFetcher::OnURLFetchComplete(
   if (!feed_data || feed_data->empty()) {
     std::move(callback).Run(nullptr, Status::kNotFound, was_fetched_via_cache);
     return;
+  }
+
+  // Record the fetch size in KB.
+  if (!feed_data->empty()) {
+    base::UmaHistogramMemoryKB(MediaFeedsFetcher::kFetchSizeKbHistogramName,
+                               feed_data->size() / 1000);
   }
 
   // Parse the received data.

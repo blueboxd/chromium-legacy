@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"

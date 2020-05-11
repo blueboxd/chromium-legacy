@@ -15,7 +15,7 @@ namespace blink {
 
 struct WebGPUImageUploadSizeInfo {
   uint64_t size_in_bytes;
-  uint32_t wgpu_row_pitch;
+  uint32_t wgpu_bytes_per_row;
 };
 
 class CanvasColorParams;

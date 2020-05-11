@@ -129,11 +129,11 @@ void WaylandKeyboard::Key(void* data,
   int device_id = keyboard->device_id();
 
   keyboard->auto_repeat_handler_.UpdateKeyRepeat(
-      key, down, false /*suppress_auto_repeat*/, device_id);
+      key, 0 /*scan_code*/, down, false /*suppress_auto_repeat*/, device_id);
 
   // TODO(tonikitoo,msisov): Handler 'repeat' parameter below.
-  keyboard->DispatchKey(key, down, false /*repeat*/, EventTimeForNow(),
-                        device_id, EF_NONE);
+  keyboard->DispatchKey(key, 0 /*scan_code*/, down, false /*repeat*/,
+                        EventTimeForNow(), device_id, EF_NONE);
 }
 
 void WaylandKeyboard::Modifiers(void* data,
@@ -180,6 +180,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
 }
 
 void WaylandKeyboard::DispatchKey(uint32_t key,
+                                  uint32_t scan_code,
                                   bool down,
                                   bool repeat,
                                   base::TimeTicks timestamp,

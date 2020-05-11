@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -26,7 +27,7 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
                           CacheStorageOwner owner);
 
   // QuotaClient.
-  ID id() const override;
+  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
@@ -43,7 +44,8 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
                              base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
 
-  static ID GetIDFromOwner(CacheStorageOwner owner);
+  static storage::QuotaClientType GetClientTypeFromOwner(
+      CacheStorageOwner owner);
 
  private:
   ~CacheStorageQuotaClient() override;

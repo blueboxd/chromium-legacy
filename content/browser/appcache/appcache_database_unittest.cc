@@ -97,7 +97,7 @@ TEST_F(AppCacheDatabaseTest, ReCreate) {
   const base::FilePath kNestedDir = temp_dir.GetPath().AppendASCII("nested");
   const base::FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
   EXPECT_TRUE(base::CreateDirectory(kNestedDir));
-  EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_TRUE(base::WriteFile(kOtherFile, "foo"));
 
   AppCacheDatabase db(kDbFile);
   EXPECT_FALSE(db.LazyOpen(false));
@@ -130,7 +130,7 @@ TEST_F(AppCacheDatabaseTest, QuickIntegrityCheck) {
 
   const base::FilePath kDbFile = mock_dir.AppendASCII("appcache.db");
   const base::FilePath kOtherFile = mock_dir.AppendASCII("other_file");
-  EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_TRUE(base::WriteFile(kOtherFile, "foo"));
 
   // First create a valid db file.
   {
@@ -193,7 +193,7 @@ TEST_F(AppCacheDatabaseTest, ExperimentalFlags) {
   const base::FilePath kDbFile = temp_dir.GetPath().AppendASCII("appcache.db");
   const base::FilePath kOtherFile =
       temp_dir.GetPath().AppendASCII("other_file");
-  EXPECT_EQ(3, base::WriteFile(kOtherFile, "foo", 3));
+  EXPECT_TRUE(base::WriteFile(kOtherFile, "foo"));
   EXPECT_TRUE(base::PathExists(kOtherFile));
 
   // Inject a non empty flags value, and verify it got there.

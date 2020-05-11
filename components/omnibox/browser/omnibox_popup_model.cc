@@ -39,13 +39,15 @@ bool OmniboxPopupModel::Selection::operator!=(const Selection& b) const {
   return !operator==(b);
 }
 
-bool OmniboxPopupModel::Selection::IsChangeToKeyword(Selection from) const {
-  return state == KEYWORD && from.state != KEYWORD;
+bool OmniboxPopupModel::Selection::operator<(const Selection& b) const {
+  if (line == b.line)
+    return state < b.state;
+
+  return line < b.line;
 }
 
-OmniboxPopupModel::Selection OmniboxPopupModel::Selection::With(
-    LineState new_state) const {
-  return Selection(line, new_state);
+bool OmniboxPopupModel::Selection::IsChangeToKeyword(Selection from) const {
+  return state == KEYWORD && from.state != KEYWORD;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,64 +126,6 @@ void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
       *contents_max_width = std::min(contents_width, available_width);
     }
   }
-}
-
-// static
-// Defines forward and backward ordering for possible line states.
-OmniboxPopupModel::LineState OmniboxPopupModel::GetNextLineState(
-    LineState state,
-    Direction direction) {
-  const bool button_row = OmniboxFieldTrial::IsSuggestionButtonRowEnabled();
-  switch (direction) {
-    case kForward:
-      switch (state) {
-        case NO_STATE:
-          return HEADER_BUTTON_FOCUSED;
-        case HEADER_BUTTON_FOCUSED:
-          return NORMAL;
-        case NORMAL:
-          return button_row ? FOCUSED_BUTTON_KEYWORD : KEYWORD;
-        case KEYWORD:
-          return button_row ? FOCUSED_BUTTON_TAB_SWITCH : BUTTON_FOCUSED;
-        case BUTTON_FOCUSED:
-          return NO_STATE;
-        case FOCUSED_BUTTON_KEYWORD:
-          return FOCUSED_BUTTON_TAB_SWITCH;
-        case FOCUSED_BUTTON_TAB_SWITCH:
-          return FOCUSED_BUTTON_PEDAL;
-        case FOCUSED_BUTTON_PEDAL:
-          return NO_STATE;
-        default:
-          break;
-      }
-      break;
-    case kBackward:
-      switch (state) {
-        case NO_STATE:
-          return button_row ? FOCUSED_BUTTON_PEDAL : BUTTON_FOCUSED;
-        case HEADER_BUTTON_FOCUSED:
-          return NO_STATE;
-        case NORMAL:
-          return HEADER_BUTTON_FOCUSED;
-        case KEYWORD:
-          return NORMAL;
-        case BUTTON_FOCUSED:
-          return KEYWORD;
-        case FOCUSED_BUTTON_KEYWORD:
-          return NORMAL;
-        case FOCUSED_BUTTON_TAB_SWITCH:
-          return FOCUSED_BUTTON_KEYWORD;
-        case FOCUSED_BUTTON_PEDAL:
-          return FOCUSED_BUTTON_TAB_SWITCH;
-        default:
-          break;
-      }
-      break;
-    default:
-      break;
-  }
-  NOTREACHED();
-  return OmniboxPopupModel::NO_STATE;
 }
 
 bool OmniboxPopupModel::IsOpen() const {
@@ -389,56 +333,136 @@ bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
          result().match_at(selected_line()).IsTabSwitchSuggestion();
 }
 
+std::vector<OmniboxPopupModel::Selection>
+OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
+                                                   Step step) const {
+  // First enumerate all the accessible states based on |direction| and |step|,
+  // as well as enabled feature flags. This doesn't mean each match will have
+  // all of these states - just that it's possible to get there, if available.
+  std::vector<LineState> all_states;
+  if (step == kWholeLine || step == kAllLines) {
+    // In the case of whole-line stepping, only the NORMAL state is accessible.
+    all_states.push_back(NORMAL);
+  } else {
+    // Arrow keys should never reach the header controls.
+    if (step == kStateOrLine)
+      all_states.push_back(HEADER_BUTTON_FOCUSED);
+
+    all_states.push_back(NORMAL);
+
+    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+      // The button row experiment makes things simple. We no longer access
+      // keyword mode by arrow or tab button in this case.
+      all_states.push_back(FOCUSED_BUTTON_KEYWORD);
+      all_states.push_back(FOCUSED_BUTTON_TAB_SWITCH);
+      all_states.push_back(FOCUSED_BUTTON_PEDAL);
+    } else {
+      // Keyword mode is only accessible by Tabbing forward. If experimental
+      // keyword mode is enabled, Right arrow also works.
+      if (direction == kForward) {
+        if (step == kStateOrLine ||
+            (step == kStateOrNothing &&
+             OmniboxFieldTrial::IsExperimentalKeywordModeEnabled())) {
+          all_states.push_back(KEYWORD);
+        }
+      }
+
+      all_states.push_back(BUTTON_FOCUSED);
+    }
+  }
+  DCHECK(std::is_sorted(all_states.begin(), all_states.end()))
+      << "This algorithm depends on a sorted list of line states.";
+
+  // Now, for each accessible line, add all the available line states to a list.
+  std::vector<Selection> available_selections;
+  {
+    auto add_available_line_states_for_line = [&](size_t line) {
+      for (LineState state : all_states) {
+        Selection selection(line, state);
+        if (IsSelectionAvailable(selection))
+          available_selections.push_back(selection);
+      }
+    };
+
+    if (step == kStateOrNothing) {
+      // Confine kStateOrNothing (right / left arrow) to the current line.
+      add_available_line_states_for_line(selection_.line);
+    } else {
+      // Allow other steps to go to any line.
+      for (size_t line = 0; line < result().size(); ++line) {
+        add_available_line_states_for_line(line);
+      }
+    }
+  }
+  DCHECK(
+      std::is_sorted(available_selections.begin(), available_selections.end()))
+      << "This algorithm depends on a sorted list of available selections.";
+  return available_selections;
+}
+
 OmniboxPopupModel::Selection OmniboxPopupModel::GetNextSelection(
     Direction direction,
     Step step) const {
   if (result().empty()) {
     return selection_;
   }
-  Selection next = selection_;
-  const bool skip_keyword =
-      !OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
-      step == kStateOrNothing;
 
-  // This block handles state transitions within the current line.
-  if (step == kStateOrLine || step == kStateOrNothing) {
-    LineState next_state =
-        GetNextAvailableLineState(next, direction, skip_keyword);
-    if (next_state != NO_STATE) {
-      next.state = next_state;
-      return next;
-    }
-    if (step == kStateOrNothing) {
-      return next;
-    }
+  // Implementing this was like a Google Interview Problem. It was always a
+  // tough problem to handle all the cases, but has gotten much harder since
+  // we can now hide whole rows from view by collapsing sections.
+  //
+  // The only sane thing to do is to first enumerate all available selections.
+  // Other approaches I've tried all end up being a jungle of branching code.
+  // It's not necessarily optimal to generate this list for each keypress, but
+  // in practice it's only something like ~10 elements long, and makes the code
+  // easy to reason about.
+  std::vector<Selection> all_available_selections =
+      GetAllAvailableSelectionsSorted(direction, step);
+
+  if (all_available_selections.empty())
+    return selection_;
+
+  // Handle the simple case of just getting the first or last element.
+  if (step == kAllLines) {
+    return direction == kForward ? all_available_selections.back()
+                                 : all_available_selections.front();
   }
 
-  // The rest handles stepping to other lines.
-  const int size = result().size();
-  const int line =
-      step == kAllLines
-          ? (direction == kForward ? (size - 1) : 0)
-          : ((next.line + (direction == kForward ? 1 : (size - 1))) % size);
-  next.line = line;
+  // We don't allow wrapping for kStateOrNothing, it's just a UI choice.
+  bool wrap_allowed = step != kStateOrNothing;
+  if (direction == kForward) {
+    // To go forward, we want to change to the first selection that's larger
+    // than the current |selection_|, and std::upper_bound() does just that.
+    const auto next =
+        std::upper_bound(all_available_selections.begin(),
+                         all_available_selections.end(), selection_);
 
-  // The new line state is always NORMAL for whole line transitions, except for
-  // a kStateOrLine that transitions between different lines.
-  LineState next_state = NORMAL;
-  DCHECK_NE(kStateOrNothing, step);  // Already handled in previous block.
-  if (step == kStateOrLine) {
-    next_state = GetNextAvailableLineState(Selection(line, NO_STATE), direction,
-                                           skip_keyword);
+    // If we can't find any selections larger than the current |selection_|,
+    // wrap if allowed, otherwise return the current selection.
+    if (next == all_available_selections.end())
+      return wrap_allowed ? all_available_selections.front() : selection_;
+
+    // Normal case where we found the next selection.
+    return *next;
+  } else if (direction == kBackward) {
+    // To go backwards, decrement one from std::lower_bound(), which finds the
+    // current selection. I didn't use std::find() here, because
+    // std::lower_bound() can gracefully handle the case where |selection_| is
+    // no longer within the list of available selections.
+    const auto current =
+        std::lower_bound(all_available_selections.begin(),
+                         all_available_selections.end(), selection_);
+
+    // If the current selection is the first one, wrap if allowed.
+    if (current == all_available_selections.begin())
+      return wrap_allowed ? all_available_selections.back() : selection_;
+
+    // Decrement one from the current selection.
+    return *(current - 1);
   }
 
-  if (!OmniboxFieldTrial::IsSuggestionButtonRowEnabled() &&
-      (step == kStateOrLine) && direction != kForward &&
-      next_state == KEYWORD) {
-    // When semi-stepping backward with no button row, skip over keyword.
-    next_state =
-        GetNextAvailableLineState(next.With(KEYWORD), direction, skip_keyword);
-  }
-  next.state = next_state;
-  return next;
+  NOTREACHED();
+  return selection_;
 }
 
 OmniboxPopupModel::Selection OmniboxPopupModel::StepSelection(
@@ -483,8 +507,6 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
   }
 
   switch (selection.state) {
-    case NO_STATE:
-      return false;
     case HEADER_BUTTON_FOCUSED: {
       // For the first match, if it a suggestion_group_id, then it has a header.
       if (selection.line == 0)
@@ -506,6 +528,10 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
       //  should be driven by the model, so this is really the place to decide.
       //  In other words, this duplicates logic within OmniboxResultView.
       //  This is the proper place. OmniboxResultView should refer to here.
+
+      // Buttons are suppressed for matches with an associated keyword.
+      if (match.associated_keyword != nullptr)
+        return false;
       if (match.ShouldShowTabMatchButton())
         return true;
       if (base::FeatureList::IsEnabled(
@@ -534,21 +560,6 @@ void OmniboxPopupModel::SetSelection(Selection selection) {
   if (selection.state != selection_.state) {
     SetSelectedLineState(selection.state);
   }
-}
-
-OmniboxPopupModel::LineState OmniboxPopupModel::GetNextAvailableLineState(
-    Selection from,
-    Direction direction,
-    bool skip_keyword) const {
-  Selection to = from;
-  do {
-    to.state = GetNextLineState(to.state, direction);
-    if (skip_keyword && to.state == KEYWORD) {
-      to.state = GetNextLineState(to.state, direction);
-    }
-  } while (to.state != OmniboxPopupModel::NO_STATE &&
-           !IsSelectionAvailable(to));
-  return to.state;
 }
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,

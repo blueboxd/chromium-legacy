@@ -452,9 +452,8 @@ TEST_P(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 }
 
-// Test that opacity applied to the scroller or an ancestor (pre-CAP only) will
-// cause the scrolling contents layer to not be promoted.
-TEST_P(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
+TEST_P(PaintLayerScrollableAreaTest,
+       PromoteLayerRegardlessOfSelfAndAncestorOpacity) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -475,12 +474,7 @@ TEST_P(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   // Change the parent to be partially translucent.
   parent->setAttribute(html_names::kStyleAttr, "opacity: 0.5;");
   UpdateAllLifecyclePhasesForTest();
-  // TODO(crbug.com/1025927): In CompositeAfterPaint mode, ancestor opacity
-  // is not checked.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
-  else
-    EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
+  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 
   // Change the parent to be opaque again.
   parent->setAttribute(html_names::kStyleAttr, "opacity: 1;");
@@ -492,7 +486,7 @@ TEST_P(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   // Make the scroller translucent.
   scroller->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
+  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 }
 
 // Test that will-change: transform applied to the scroller will cause the

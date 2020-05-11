@@ -5,8 +5,8 @@
 #import "ios/web_view/internal/web_view_web_main_parts.h"
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/common/autofill_features.h"

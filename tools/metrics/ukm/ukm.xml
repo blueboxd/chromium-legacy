@@ -7085,15 +7085,29 @@ be describing additional metrics about the same event.
     See //components/optimization_guide/.
   </summary>
   <metric name="HintGenerationTimestamp">
+    <obsolete>
+      Obsolete as of 04/2020.
+    </obsolete>
     <summary>
       The timestamp, in seconds from epoch, that the server generated the hint
       for the optimization applied on the page load.
     </summary>
   </metric>
   <metric name="HintSource">
+    <obsolete>
+      Obsolete as of 04/2020.
+    </obsolete>
     <summary>
       The |optimization_guide::proto::HintSource| for the optimization that was
       applied on the page load.
+    </summary>
+  </metric>
+  <metric name="NavigationHintsFetchAttemptStatus"
+      enum="OptimizationGuideRaceNavigationFetchAttemptStatus">
+    <summary>
+      An enum value representing the status of a fetch attempt for the page load
+      and what it contains (i.e. hosts or URLs). Captured at the start of the
+      navigation.
     </summary>
   </metric>
   <metric name="NavigationHintsFetchRequestLatency">
@@ -7106,6 +7120,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="NavigationHostCovered"
       enum="OptimizationGuideNavigationHostCoveredStatus">
+    <obsolete>
+      Obsolete as of 04/2020.
+    </obsolete>
     <summary>
       An enum value representing whether Chrome had a hint cached for the
       navigation or had attempted to fetch a hint from the remote Optimization
@@ -7167,6 +7184,20 @@ be describing additional metrics about the same event.
     <summary>
       The site engagement score of the host of the current navigation at the
       time a prediction was requested. Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="RegisteredOptimizationTargets">
+    <summary>
+      A bitmask of the optimization targets that were registered at the start of
+      the page load where each flipped bit corresponds to its int value in
+      |optimization_guide::proto::OptimizationTarget|.
+    </summary>
+  </metric>
+  <metric name="RegisteredOptimizationTypes">
+    <summary>
+      A bitmask of the optimization types that were registered at the start of
+      the page load where each flipped bit corresponds to its int value in
+      |optimization_guide::proto::OptimizationTarget|.
     </summary>
   </metric>
 </event>
@@ -8980,11 +9011,53 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="prefetch_usage">
+    <obsolete>
+      Replaced by PrefetchProxy.AfterSRPClick.SRPClickPrefetchStatus in M84.
+    </obsolete>
     <summary>
       This enum records if a cached prefetch page was used, and its probe
       status, when the user navigates off the Google Search Result Page. Not set
       if there was no prefetch. Values: Prefetch used, no probe = 0. Prefetch
       used, successful probe = 1. Prefetch not used, failed probe = 2.
+    </summary>
+  </metric>
+</event>
+
+<event name="PrefetchProxy.AfterSRPClick" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <owner>ryansturm@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Metrics related to the privacy-preserving prefetch proxy on the page load
+    after the SRP. Recorded only for eligible users on the first mainframe
+    user-initiated page load immediately after a Google Search Result Page (SRP)
+    which Chrome parsed and may have prefetched links.
+  </summary>
+  <metric name="ClickedLinkSRPPosition">
+    <summary>
+      When a user clicks on a Google SRP link, this int records which position
+      the clicked link was in. Recorded only when the user navigates to a Google
+      SRP link.
+    </summary>
+  </metric>
+  <metric name="PrefetchEligibleCount">
+    <summary>
+      The number of links from the SRP page (the previous page load) that were
+      eligible for prefetch. Always set when this event is recorded.
+    </summary>
+  </metric>
+  <metric name="ProbeLatencyMs">
+    <summary>
+      How long the network probe blocked commit in milliseconds. Recorded only
+      when a probe was required.
+    </summary>
+  </metric>
+  <metric name="SRPClickPrefetchStatus" enum="IsolatedPrerenderPrefetchStatus">
+    <summary>
+      The outcome of the prefetch eligibility check and possible attempt to
+      prefetch the resource. The prefetched url is always the committed URL of
+      the page. See |IsolatedPrerenderTabHelper.PrefetchStatus| for a mapping of
+      enum values and their meanings.
     </summary>
   </metric>
 </event>

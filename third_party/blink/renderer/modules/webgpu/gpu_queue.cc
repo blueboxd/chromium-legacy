@@ -262,8 +262,8 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
   dawn_intermediate.nextInChain = nullptr;
   dawn_intermediate.buffer = result.buffer;
   dawn_intermediate.offset = 0;
-  dawn_intermediate.rowPitch = info.wgpu_row_pitch;
-  dawn_intermediate.imageHeight = image->height();
+  dawn_intermediate.bytesPerRow = info.wgpu_bytes_per_row;
+  dawn_intermediate.rowsPerImage = image->height();
 
   WGPUCommandEncoder encoder =
       GetProcs().deviceCreateCommandEncoder(device_->GetHandle(), nullptr);

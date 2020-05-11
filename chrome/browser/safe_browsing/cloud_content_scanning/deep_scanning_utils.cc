@@ -259,27 +259,14 @@ std::array<const base::FilePath::CharType*, 24> SupportedDlpFileTypes() {
   return kSupportedDLPFileTypes;
 }
 
-bool FileTypeSupported(bool for_malware_scan,
-                       bool for_dlp_scan,
-                       const base::FilePath& path) {
-  // At least one of the booleans needs to be true.
-  DCHECK(for_malware_scan || for_dlp_scan);
-
-  // Accept any file type for malware scans.
-  if (for_malware_scan)
-    return true;
-
+bool FileTypeSupportedForDlp(const base::FilePath& path) {
   // Accept any file type in the supported list for DLP scans.
-  if (for_dlp_scan) {
-    base::FilePath::StringType extension(path.FinalExtension());
-    std::transform(extension.begin(), extension.end(), extension.begin(),
-                   tolower);
+  base::FilePath::StringType extension(path.FinalExtension());
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+                 tolower);
 
-    auto dlp_types = SupportedDlpFileTypes();
-    return std::binary_search(dlp_types.begin(), dlp_types.end(), extension);
-  }
-
-  return false;
+  auto dlp_types = SupportedDlpFileTypes();
+  return std::binary_search(dlp_types.begin(), dlp_types.end(), extension);
 }
 
 DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(

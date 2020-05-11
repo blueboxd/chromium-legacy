@@ -38,7 +38,7 @@
 #pragma mark - ChromeActivityItemSource
 
 - (NSSet*)excludedActivityTypes {
-  return [NSSet setWithArray:@[]];
+  return [NSSet setWithArray:@[ UIActivityTypeAssignToContact ]];
 }
 
 #pragma mark - UIActivityItemSource

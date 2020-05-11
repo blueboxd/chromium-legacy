@@ -72,27 +72,6 @@ enum class OptimizationTargetDecision {
   kMaxValue = kDeciderNotInitialized,
 };
 
-// The statuses for why the main frame of a navigation was covered by a hint or
-// fetch from the remote Optimization Guide Service.
-//
-// Keep in sync with OptimizationGuideNavigationHostCoveredStatus in enums.xml.
-enum class NavigationHostCoveredStatus {
-  kUnknown,
-  // The main frame host of the navigation was covered by a hint or was
-  // attempted to be fetched from the remote Optimization Guide Service in the
-  // last 7 days.
-  kCovered,
-  // A fetch for information from the remote Optimization Guide Service about
-  // the main frame host of the navigation was not attempted.
-  kFetchNotAttempted,
-  // A fetch for information from the remote Optimization Guide Service about
-  // the main frame host of the navigation was attempted but not successful.
-  kFetchNotSuccessful,
-
-  // Add new values above this line.
-  kMaxValue = kFetchNotSuccessful,
-};
-
 // The statuses for racing a hints fetch with the current navigation based
 // on the availability of hints for both the current host and URL.
 //

@@ -126,10 +126,13 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // optional, and should be used with layers associated with views - the
   // animator will send out a11y position change notification for the view when
   // the animation finishes).
-  using TransformAnimator =
-      base::RepeatingCallback<void(ui::Layer* layer, views::View* view)>;
+  // |default_offset| - the default transform offset that can be passed to
+  //     |animator| to follow the search box position animation.
+  using TransformAnimator = base::RepeatingCallback<
+      void(float offset, ui::Layer* layer, views::View* view)>;
   virtual void AnimateYPosition(AppListViewState target_view_state,
-                                const TransformAnimator& animator);
+                                const TransformAnimator& animator,
+                                float default_offset);
 
   // Returns the area above the contents view, given the desired size of this
   // page, in the contents view's coordinate space.

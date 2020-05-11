@@ -45,6 +45,13 @@ class ServiceWorkerRegistrationCookiesImpl final
           registration_->GetExecutionContext();
       DCHECK(execution_context);
 
+      // TODO(crbug.com/839117): Remove once Expose on partial interface is
+      // supported or Origin Trial as ended.
+      if (!execution_context->IsDocument() &&
+          !execution_context->IsServiceWorkerGlobalScope()) {
+        return nullptr;
+      }
+
       mojo::Remote<mojom::blink::CookieStore> backend;
       // TODO(pwnall): Replace TaskType::kInternalDefault with the task queue in
       //               the Cookie Store spec, once that spec is finalized.

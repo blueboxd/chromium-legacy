@@ -22,6 +22,7 @@ class AssistantStateBase;
 namespace assistant_client {
 struct SpeakerIdEnrollmentStatus;
 struct SpeakerIdEnrollmentUpdate;
+struct VoicelessResponse;
 }  // namespace assistant_client
 
 namespace chromeos {
@@ -61,6 +62,8 @@ class AssistantSettingsImpl : public AssistantSettings {
       const assistant_client::SpeakerIdEnrollmentStatus& status);
   void HandleDeviceAppsStatusSync(base::OnceCallback<void(bool)> callback,
                                   const std::string& settings);
+
+  bool ShouldIgnoreResponse(const assistant_client::VoicelessResponse&) const;
 
   ash::AssistantStateBase* assistant_state();
   ash::AssistantController* assistant_controller();

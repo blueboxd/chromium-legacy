@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">סריקת יתר</translation>
 <translation id="119944043368869598">ניקוי הכל</translation>
 <translation id="1199716647557067911">לכבות גישה באמצעות מתג?</translation>
+<translation id="121097972571826261">מילה אחת קדימה</translation>
+<translation id="1229194443904279055">סיום הבחירה</translation>
 <translation id="1247372569136754018">מיקרופון (פנימי)</translation>
 <translation id="1252999807265626933">טעינה מ-<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">מה מזג האוויר?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">‏הגדלה של כל המסך הופעלה. כדי להשבית אותה יש להקיש שוב על Ctrl+Search+M.</translation>
 <translation id="2302092602801625023">‏החשבון הזה מנוהל באמצעות Family Link</translation>
 <translation id="2303600792989757991">החלף סקירת חלון</translation>
+<translation id="2322173485024759474">אות אחת אחורה</translation>
 <translation id="2339073806695260576">הקשה על לחצן הסטיילוס במדף מאפשרת לכתוב הערות, לצלם את המסך ולהשתמש בסמן הלייזר או בזכוכית המגדלת.</translation>
 <translation id="2341729377289034582">נעול במצב אנכי</translation>
 <translation id="2352467521400612932">הגדרות סטיילוס</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">צפייה בהגדרות המקלדת</translation>
 <translation id="3846575436967432996">אין מידע רשת זמין</translation>
 <translation id="385051799172605136">חזרה</translation>
+<translation id="385300504083504382">התחלה</translation>
 <translation id="3891340733213178823">‏הקש פעמיים על Ctrl+Shift+Q כדי לצאת.</translation>
 <translation id="3893630138897523026">‏ChromeVox (משוב קולי)</translation>
 <translation id="3897533311200664389">הפעלה של שאילתה בהקלדה</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">יותר מדי ניסיונות</translation>
 <translation id="5397578532367286026">‏המנהל (<ph name="MANAGER_EMAIL" />) יכול לבדוק את השימוש וההיסטוריה של משתמש זה ב-chrome.com.</translation>
 <translation id="5400461572260843123">הגדרות מהירות, יש להקיש על מקש החיפוש ביחד עם מקש חץ שמאלה כדי לגשת אל מרכז ההתראות.</translation>
+<translation id="5428899915242071344">אני רוצה להתחיל לבחור</translation>
 <translation id="5430931332414098647">שיתוף אינטרנט מיידי בין ניידים</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">‏מספק חשמל למכשירים המחוברים ב-USB-C</translation>
 <translation id="6790428901817661496">הפעל</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
+<translation id="6818242057446442178">מילה אחת אחורה</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">קיצור הדרך מושבת</translation>
@@ -582,6 +588,7 @@
 <translation id="8308637677604853869">התפריט הקודם</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">יצירת הערה</translation>
+<translation id="8371779926711439835">אות אחת קדימה</translation>
 <translation id="8375916635258623388">מכשיר <ph name="DEVICE_NAME" /> זה והטלפון יחוברו באופן אוטומטי</translation>
 <translation id="8388750414311082622">לא ניתן להסיר את שולחן העבודה האחרון.</translation>
 <translation id="8392451568018454956">תפריט אפשרויות עבור <ph name="USER_EMAIL_ADDRESS" /></translation>

@@ -58,7 +58,7 @@ TEST(HasTrustTokensAnswerer, HandlesNonHttpNonHttpsIssuerOrigin) {
 }
 
 TEST(HasTrustTokensAnswerer, HandlesFailureToAssociateIssuer) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   const SuitableTrustTokenOrigin kToplevel =
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com"));
@@ -94,7 +94,7 @@ TEST(HasTrustTokensAnswerer, HandlesFailureToAssociateIssuer) {
 }
 
 TEST(HasTrustTokensAnswerer, SuccessWithNoTokens) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   TrustTokenStore* raw_store = store.get();
 
   const SuitableTrustTokenOrigin kIssuer =
@@ -127,7 +127,7 @@ TEST(HasTrustTokensAnswerer, SuccessWithNoTokens) {
 }
 
 TEST(HasTrustTokensAnswerer, SuccessWithTokens) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   TrustTokenStore* raw_store = store.get();
 
   const SuitableTrustTokenOrigin kIssuer =

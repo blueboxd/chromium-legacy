@@ -378,8 +378,8 @@ class DBusServices {
     // TODO(alanlxl): update Ml here to MachineLearning after powerd is
     // uprevved.
     machine_learning_decision_service_ = CrosDBusService::Create(
-        system_bus, machine_learning::kMlDecisionServiceName,
-        dbus::ObjectPath(machine_learning::kMlDecisionServicePath),
+        system_bus, kMlDecisionServiceName,
+        dbus::ObjectPath(kMlDecisionServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<MachineLearningDecisionServiceProvider>()));
   }

@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 
+#include "base/check.h"
 #import "base/ios/ios_util.h"
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"

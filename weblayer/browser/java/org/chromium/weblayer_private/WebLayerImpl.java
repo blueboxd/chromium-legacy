@@ -465,18 +465,20 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private static int getPackageId(Context appContext, String implPackageName) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
+                Constructor<WebViewDelegate> constructor =
+                        WebViewDelegate.class.getDeclaredConstructor();
                 constructor.setAccessible(true);
-                WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
+                WebViewDelegate delegate = constructor.newInstance();
                 return delegate.getPackageId(appContext.getResources(), implPackageName);
             } else {
                 // In L WebViewDelegate did not yet exist, so we have to look inside AssetManager.
                 Method getAssignedPackageIdentifiers =
                         AssetManager.class.getMethod("getAssignedPackageIdentifiers");
-                SparseArray packageIdentifiers = (SparseArray) getAssignedPackageIdentifiers.invoke(
-                        appContext.getResources().getAssets());
+                SparseArray<String> packageIdentifiers =
+                        (SparseArray) getAssignedPackageIdentifiers.invoke(
+                                appContext.getResources().getAssets());
                 for (int i = 0; i < packageIdentifiers.size(); i++) {
-                    final String name = (String) packageIdentifiers.valueAt(i);
+                    final String name = packageIdentifiers.valueAt(i);
 
                     if (implPackageName.equals(name)) {
                         return packageIdentifiers.keyAt(i);
@@ -494,11 +496,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         try {
             Method getAssignedPackageIdentifiers =
                     AssetManager.class.getMethod("getAssignedPackageIdentifiers");
-            SparseArray packageIdentifiers = (SparseArray) getAssignedPackageIdentifiers.invoke(
-                    appContext.getResources().getAssets());
+            SparseArray<String> packageIdentifiers =
+                    (SparseArray) getAssignedPackageIdentifiers.invoke(
+                            appContext.getResources().getAssets());
             List<String> packageNames = new ArrayList<>();
             for (int i = 0; i < packageIdentifiers.size(); i++) {
-                String name = (String) packageIdentifiers.valueAt(i);
+                String name = packageIdentifiers.valueAt(i);
                 int key = packageIdentifiers.keyAt(i);
                 // This is the android package.
                 if (key == 1) {

@@ -4,7 +4,6 @@
 
 #include "content/browser/storage_partition_impl.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <functional>
@@ -17,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -104,6 +104,7 @@
 #include "storage/browser/blob/blob_registry_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/blink/public/common/features.h"
@@ -270,10 +271,10 @@ void OnQuotaManagedOriginDeleted(const url::Origin& origin,
 void PerformQuotaManagerStorageCleanup(
     const scoped_refptr<storage::QuotaManager>& quota_manager,
     blink::mojom::StorageType quota_storage_type,
-    int quota_client_mask,
+    storage::QuotaClientTypes quota_client_types,
     base::OnceClosure callback) {
-  quota_manager->PerformStorageCleanup(quota_storage_type, quota_client_mask,
-                                       std::move(callback));
+  quota_manager->PerformStorageCleanup(
+      quota_storage_type, std::move(quota_client_types), std::move(callback));
 }
 
 void ClearedShaderCache(base::OnceClosure callback) {
@@ -1091,25 +1092,26 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
 };
 
 // Static.
-int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
-  int quota_client_mask = 0;
+storage::QuotaClientTypes StoragePartitionImpl::GenerateQuotaClientTypes(
+    uint32_t remove_mask) {
+  storage::QuotaClientTypes quota_client_types;
 
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
-    quota_client_mask |= storage::QuotaClient::kFileSystem;
+    quota_client_types.insert(storage::QuotaClientType::kFileSystem);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_WEBSQL)
-    quota_client_mask |= storage::QuotaClient::kDatabase;
+    quota_client_types.insert(storage::QuotaClientType::kDatabase);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_APPCACHE)
-    quota_client_mask |= storage::QuotaClient::kAppcache;
+    quota_client_types.insert(storage::QuotaClientType::kAppcache);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
-    quota_client_mask |= storage::QuotaClient::kIndexedDatabase;
+    quota_client_types.insert(storage::QuotaClientType::kIndexedDatabase);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
-    quota_client_mask |= storage::QuotaClient::kServiceWorker;
+    quota_client_types.insert(storage::QuotaClientType::kServiceWorker);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE)
-    quota_client_mask |= storage::QuotaClient::kServiceWorkerCache;
+    quota_client_types.insert(storage::QuotaClientType::kServiceWorkerCache);
   if (remove_mask & StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH)
-    quota_client_mask |= storage::QuotaClient::kBackgroundFetch;
+    quota_client_types.insert(storage::QuotaClientType::kBackgroundFetch);
 
-  return quota_client_mask;
+  return quota_client_types;
 }
 
 // static
@@ -2239,8 +2241,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
     return;
   }
 
-  int quota_client_mask =
-      StoragePartitionImpl::GenerateQuotaClientMask(remove_mask_);
+  storage::QuotaClientTypes quota_client_types =
+      StoragePartitionImpl::GenerateQuotaClientTypes(remove_mask_);
 
   // The logic below (via CheckQuotaManagedDataDeletionStatus) only
   // invokes the callback when all processing is complete.
@@ -2248,7 +2250,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
       perform_storage_cleanup
           ? base::BindOnce(&PerformQuotaManagerStorageCleanup,
                            base::WrapRefCounted(quota_manager),
-                           quota_storage_type, quota_client_mask,
+                           quota_storage_type, quota_client_types,
                            std::move(callback))
           : std::move(callback));
 
@@ -2266,7 +2268,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
 
     (*deletion_task_count)++;
     quota_manager->DeleteOriginData(
-        origin, quota_storage_type, quota_client_mask,
+        origin, quota_storage_type, quota_client_types,
         base::BindOnce(&OnQuotaManagedOriginDeleted, origin, quota_storage_type,
                        deletion_task_count, done_callback));
   }

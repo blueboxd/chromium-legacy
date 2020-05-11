@@ -45,6 +45,13 @@ void HistogramTester::ExpectUniqueSample(
   }
 }
 
+void HistogramTester::ExpectUniqueTimeSample(
+    StringPiece name,
+    TimeDelta sample,
+    HistogramBase::Count expected_count) const {
+  ExpectUniqueSample(name, sample.InMilliseconds(), expected_count);
+}
+
 void HistogramTester::ExpectBucketCount(
     StringPiece name,
     HistogramBase::Sample sample,

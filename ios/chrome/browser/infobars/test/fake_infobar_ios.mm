@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/infobars/test/fake_infobar_ios.h"
 
-#include "base/logging.h"
 #include "ios/chrome/browser/infobars/test/fake_infobar_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

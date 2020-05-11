@@ -192,8 +192,7 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
         base::StringPrintf("test_file_%d.html", s_test_file_number++));
     {
       base::ScopedAllowBlockingForTesting allow_temp_file_writing;
-      ASSERT_EQ(static_cast<int>(data.length()),
-                base::WriteFile(file_path, data.c_str(), data.length()));
+      ASSERT_TRUE(base::WriteFile(file_path, data));
     }
     GURL url = embedded_test_server()->GetURL(
         "/" + file_path.BaseName().AsUTF8Unsafe());

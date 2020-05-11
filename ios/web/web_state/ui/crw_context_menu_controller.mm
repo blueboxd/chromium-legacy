@@ -7,8 +7,8 @@
 #import <objc/runtime.h>
 #include <stddef.h>
 
+#include "base/check.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"

@@ -2908,10 +2908,6 @@ bool PaintLayer::CompositesWithTransform() const {
   return TransformAncestor() || Transform();
 }
 
-bool PaintLayer::CompositesWithOpacity() const {
-  return OpacityAncestor() || GetLayoutObject().StyleRef().HasOpacity();
-}
-
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
     const PhysicalRect& local_rect,
     bool should_check_children) const {

@@ -126,10 +126,10 @@ Polymer({
     assert(loadTimeData.getBoolean('splitSettingsSyncEnabled'));
     assert(event.path);
     const enableOsSync = !!this.$.osSyncToggle.checked;
-    const reviewBrowserSync = !!this.$.reviewBrowserSyncOptionsBox.checked;
+    const enableBrowserSync = !!this.$.browserSyncToggle.checked;
     chrome.send('login.SyncConsentScreen.acceptAndContinue', [
       this.getConsentDescription_(), this.getConsentConfirmation_(event.path),
-      enableOsSync, reviewBrowserSync
+      enableOsSync, enableBrowserSync
     ]);
   },
 

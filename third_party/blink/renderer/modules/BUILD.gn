@@ -143,6 +143,7 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/modules/storage",
     "//third_party/blink/renderer/modules/vibration",
     "//third_party/blink/renderer/modules/video_rvfc",
+    "//third_party/blink/renderer/modules/virtualkeyboard",
     "//third_party/blink/renderer/modules/wake_lock",
     "//third_party/blink/renderer/modules/webaudio",
     "//third_party/blink/renderer/modules/webcodecs",

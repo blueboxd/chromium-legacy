@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/privacy_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "base/mac/foundation_util.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/handoff/pref_names_ios.h"

@@ -292,7 +292,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
     assertDeepEquals(
         [
           'Safe Search Enabled (value)',
-          'Disabled',
+          'Enabled',
           'Safe Search Enabled (pref)',
           'Disabled (Toggle)',
         ],
@@ -308,7 +308,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
       assertDeepEquals(
           [
             'Safe Search Enabled (value)',
-            'Disabled',
+            'Enabled',
             'Safe Search Enabled (pref)',
             'Enabled (Toggle)',
           ],

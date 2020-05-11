@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"

@@ -6,7 +6,7 @@
 
 #include <dispatch/dispatch.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"

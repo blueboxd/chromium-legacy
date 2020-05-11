@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">עיון</translation>
 <translation id="5073204694187207510">הסתרת רשת מסך מלא</translation>
 <translation id="5082793167783849073">כדי להשוות במהירות בין דפים, אפשר ליצור קבוצה. כדי להתחיל, צריך ללחוץ לחיצה ארוכה על קישור.</translation>
+<translation id="5533021382642990449">אני רוצה לראות את זה מאוחר יותר</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> כרטיסיות מקובצות</translation>
 <translation id="58326064309361797">ניתן לגרור כרטיסיות כדי לקבץ אותן</translation>
 <translation id="6040143037577758943">סגור</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">סגירת ההצעות.</translation>
 <translation id="814503310257431685">הצג הכל</translation>
 <translation id="8205266828577616993">העברת הכרטיסיה למעלה</translation>
+<translation id="8304833501377495048">לא להציג שוב את שורת הכרטיסיות בעתיד?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{סגירה של כרטיסייה אחת (<ph name="TABS_COUNT_ONE" />) שנבחרה}two{סגירה של <ph name="TABS_COUNT_MANY" /> כרטיסיות שנבחרו}many{סגירה של <ph name="TABS_COUNT_MANY" /> כרטיסיות שנבחרו}other{סגירה של <ph name="TABS_COUNT_MANY" /> כרטיסיות שנבחרו}}</translation>
+<translation id="8749939518995770034">שורת הכרטיסיות נסגרה</translation>
 <translation id="9150694013019234766">מעבר בין כרטיסיות בקבוצת הכרטיסיות שבחלק התחתון של המסך</translation>
 <translation id="9169594135889675189">הוספת כרטיסיה חדשה לקבוצה</translation>
 <translation id="959682366969460160">ארגון הפריטים</translation>

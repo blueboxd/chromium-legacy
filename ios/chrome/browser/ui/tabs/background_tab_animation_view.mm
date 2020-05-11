@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/browser/ui/util/animation_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"

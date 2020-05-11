@@ -98,6 +98,7 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::IMAGES,
 #endif
     ContentSettingsType::POPUPS,
+    ContentSettingsType::WINDOW_PLACEMENT,
     ContentSettingsType::ADS,
     ContentSettingsType::BACKGROUND_SYNC,
     ContentSettingsType::SOUND,
@@ -119,7 +120,6 @@ ContentSettingsType kPermissionType[] = {
     ContentSettingsType::BLUETOOTH_SCANNING,
     ContentSettingsType::VR,
     ContentSettingsType::AR,
-    ContentSettingsType::WINDOW_PLACEMENT,
 };
 
 // Checks whether this permission is currently the factory default, as set by

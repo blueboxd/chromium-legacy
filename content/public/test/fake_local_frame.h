@@ -73,6 +73,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void GetCharacterIndexAtPoint(const gfx::Point& point) override;
   void GetFirstRectForRange(const gfx::Range& range) override;
 #endif
+  void BindReportingObserver(
+      mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"

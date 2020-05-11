@@ -7,11 +7,10 @@ package org.chromium.weblayer_private;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.StrictMode;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.IntentUtils;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
+import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
@@ -69,36 +68,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public void didStartActivity(Intent intent) {}
 
     @Override
-    public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
+    public @StartActivityIfNeededResult int maybeHandleStartActivityIfNeeded(
+            Intent intent, boolean proxy) {
         assert !proxy
             : "|proxy| should be true only for instant apps, which WebLayer doesn't handle";
-
-        boolean activityWasLaunched;
-        // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            ExternalNavigationHandler.forcePdfViewerAsIntentHandlerIfNeeded(intent);
-            Context context = getAvailableContext();
-            if (context instanceof Activity) {
-                activityWasLaunched = ((Activity) context).startActivityIfNeeded(intent, -1);
-            } else {
-                activityWasLaunched = false;
-            }
-            if (activityWasLaunched) {
-                ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
-            }
-            return activityWasLaunched;
-        } catch (SecurityException e) {
-            // https://crbug.com/808494: Handle the URL in WebLayer if dispatching to another
-            // application fails with a SecurityException. This happens due to malformed manifests
-            // in another app.
-            return false;
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-            return false;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        return StartActivityIfNeededResult.DID_NOT_HANDLE;
     }
 
     @Override

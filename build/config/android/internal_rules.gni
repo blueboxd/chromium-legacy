@@ -872,7 +872,9 @@ if (enable_java_templates) {
                              ])
       if (defined(invoker.lint_suppressions_file)) {
         lint_suppressions_file = invoker.lint_suppressions_file
-      } else {
+      } else if (!defined(lint_suppressions_file)) {
+        # WebRTC defines its own lint_suppressions_file:
+        # //tools_webrtc/android/suppressions.xml
         lint_suppressions_file = "//build/android/lint/suppressions.xml"
       }
 

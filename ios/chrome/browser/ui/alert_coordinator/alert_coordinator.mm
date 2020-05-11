@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 
-#include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"

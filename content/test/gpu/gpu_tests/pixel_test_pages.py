@@ -184,12 +184,9 @@ class PixelTestPages(object):
         PixelTestPage('pixel_background_image.html',
                       base_name + '_BackgroundImage',
                       test_rect=[20, 20, 370, 370]),
-        PixelTestPage(
-            'pixel_reflected_div.html',
-            base_name + '_ReflectedDiv',
-            test_rect=[0, 0, 100, 300],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
+        PixelTestPage('pixel_reflected_div.html',
+                      base_name + '_ReflectedDiv',
+                      test_rect=[0, 0, 100, 300]),
         PixelTestPage('pixel_canvas2d.html',
                       base_name + '_Canvas2DRedBox',
                       test_rect=[0, 0, 300, 300]),
@@ -223,12 +220,9 @@ class PixelTestPages(object):
                       base_name + '_WebGLSadCanvas',
                       test_rect=[0, 0, 300, 300],
                       optional_action='CrashGpuProcess'),
-        PixelTestPage(
-            'pixel_scissor.html',
-            base_name + '_ScissorTestWithPreserveDrawingBuffer',
-            test_rect=[0, 0, 300, 300],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
+        PixelTestPage('pixel_scissor.html',
+                      base_name + '_ScissorTestWithPreserveDrawingBuffer',
+                      test_rect=[0, 0, 300, 300]),
         PixelTestPage('pixel_canvas2d_webgl.html',
                       base_name + '_2DCanvasWebGL',
                       test_rect=[0, 0, 300, 300]),
@@ -454,58 +448,34 @@ class PixelTestPages(object):
                       base_name + '_Video_BackdropFilter',
                       test_rect=[0, 0, 240, 135],
                       tolerance=tolerance),
-        PixelTestPage(
-            'pixel_webgl_premultiplied_alpha_false.html',
-            base_name + '_WebGL_PremultipliedAlpha_False',
-            test_rect=[0, 0, 150, 150],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_webgl2_blitframebuffer_result_displayed.html',
-            base_name + '_WebGL2_BlitFramebuffer_Result_Displayed',
-            test_rect=[0, 0, 200, 200],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_webgl2_clearbufferfv_result_displayed.html',
-            base_name + '_WebGL2_ClearBufferfv_Result_Displayed',
-            test_rect=[0, 0, 200, 200],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_repeated_webgl_to_2d.html',
-            base_name + '_RepeatedWebGLTo2D',
-            test_rect=[0, 0, 256, 256],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_repeated_webgl_to_2d.html',
-            base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
-            test_rect=[0, 0, 256, 256],
-            browser_args=sw_compositing_args,
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_canvas2d_tab_switch.html',
-            base_name + '_Canvas2DTabSwitch',
-            test_rect=[0, 0, 100, 100],
-            optional_action='SwitchTabs',
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_canvas2d_tab_switch.html',
-            base_name + '_Canvas2DTabSwitch_SoftwareCompositing',
-            test_rect=[0, 0, 100, 100],
-            browser_args=sw_compositing_args,
-            optional_action='SwitchTabs',
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
-        PixelTestPage(
-            'pixel_webgl_copy_image.html',
-            base_name + '_WebGLCopyImage',
-            test_rect=[0, 0, 200, 100],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 13)),
+        PixelTestPage('pixel_webgl_premultiplied_alpha_false.html',
+                      base_name + '_WebGL_PremultipliedAlpha_False',
+                      test_rect=[0, 0, 150, 150]),
+        PixelTestPage('pixel_webgl2_blitframebuffer_result_displayed.html',
+                      base_name + '_WebGL2_BlitFramebuffer_Result_Displayed',
+                      test_rect=[0, 0, 200, 200]),
+        PixelTestPage('pixel_webgl2_clearbufferfv_result_displayed.html',
+                      base_name + '_WebGL2_ClearBufferfv_Result_Displayed',
+                      test_rect=[0, 0, 200, 200]),
+        PixelTestPage('pixel_repeated_webgl_to_2d.html',
+                      base_name + '_RepeatedWebGLTo2D',
+                      test_rect=[0, 0, 256, 256]),
+        PixelTestPage('pixel_repeated_webgl_to_2d.html',
+                      base_name + '_RepeatedWebGLTo2D_SoftwareCompositing',
+                      test_rect=[0, 0, 256, 256],
+                      browser_args=sw_compositing_args),
+        PixelTestPage('pixel_canvas2d_tab_switch.html',
+                      base_name + '_Canvas2DTabSwitch',
+                      test_rect=[0, 0, 100, 100],
+                      optional_action='SwitchTabs'),
+        PixelTestPage('pixel_canvas2d_tab_switch.html',
+                      base_name + '_Canvas2DTabSwitch_SoftwareCompositing',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=sw_compositing_args,
+                      optional_action='SwitchTabs'),
+        PixelTestPage('pixel_webgl_copy_image.html',
+                      base_name + '_WebGLCopyImage',
+                      test_rect=[0, 0, 200, 100]),
         PixelTestPage('pixel_webgl_read_pixels_tab_switch.html',
                       base_name + '_WebGLReadPixelsTabSwitch',
                       test_rect=[0, 0, 100, 100],
@@ -1194,534 +1164,161 @@ class PixelTestPages(object):
     ]
     browser_args_DXVA = browser_args + ['--disable-features=D3D11VideoDecoder']
 
-    tolerance_dc = 5
-    tolerance_dc_vp9 = 15
-
     return [
         PixelTestPage(
             'pixel_video_mp4.html',
             base_name + '_DirectComposition_Video_MP4',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
-            tolerance=tolerance_dc,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4.html',
             base_name + '_DirectComposition_Video_MP4_DXVA',
             browser_args=browser_args_DXVA,
             test_rect=[0, 0, 240, 135],
-            tolerance=tolerance_dc,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4_fullsize.html',
             base_name + '_DirectComposition_Video_MP4_Fullsize',
             browser_args=browser_args,
             test_rect=[0, 0, 960, 540],
             other_args={'zero_copy': True},
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'top left video, yellow',
-                    'location': [10, 10],
-                    'size': [460, 250],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'top right video, red',
-                    'location': [490, 10],
-                    'size': [460, 250],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'bottom left video, blue',
-                    'location': [10, 280],
-                    'size': [460, 250],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'bottom right video, green',
-                    'location': [490, 280],
-                    'size': [460, 250],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4.html',
             base_name + '_DirectComposition_Video_MP4_YUY2',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args_YUY2,
             other_args={'expect_yuy2': True},
-            tolerance=tolerance_dc,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4_four_colors_aspect_4x3.html',
             base_name + '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'outside video content, left side, white',
-                    'location': [1, 1],
-                    'size': [28, 133],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside video content, right side, white',
-                    'location': [211, 1],
-                    'size': [28, 133],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'top left video, yellow',
-                    'location': [35, 5],
-                    'size': [80, 57],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'top right video, red',
-                    'location': [125, 5],
-                    'size': [80, 57],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'bottom left video, blue',
-                    'location': [35, 73],
-                    'size': [80, 57],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'bottom right video, green',
-                    'location': [125, 73],
-                    'size': [80, 57],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4_four_colors_rot_90.html',
             base_name + '_DirectComposition_Video_MP4_FourColors_Rot_90',
             test_rect=[0, 0, 270, 240],
             browser_args=browser_args,
             other_args={'video_is_rotated': True},
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'outside video content, left side, white',
-                    'location': [1, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside video content, right side, white',
-                    'location': [210, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'top left video, red',
-                    'location': [73, 5],
-                    'size': [55, 110],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'top right video, green',
-                    'location': [141, 5],
-                    'size': [55, 110],
-                    'color': [44, 255, 16],
-                },
-                {
-                    'comment': 'bottom left video, yellow',
-                    'location': [73, 125],
-                    'size': [55, 110],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'bottom right video, blue',
-                    'location': [141, 125],
-                    'size': [55, 110],
-                    'color': [12, 12, 255],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4_four_colors_rot_180.html',
             base_name + '_DirectComposition_Video_MP4_FourColors_Rot_180',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
             other_args={'video_is_rotated': True},
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'top left video, green',
-                    'location': [5, 5],
-                    'size': [110, 57],
-                    'color': [44, 255, 16],
-                },
-                {
-                    'comment': 'top right video, blue',
-                    'location': [125, 5],
-                    'size': [110, 57],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'bottom left video, red',
-                    'location': [5, 72],
-                    'size': [110, 57],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'bottom right video, yellow',
-                    'location': [125, 72],
-                    'size': [110, 57],
-                    'color': [255, 255, 15],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_mp4_four_colors_rot_270.html',
             base_name + '_DirectComposition_Video_MP4_FourColors_Rot_270',
             test_rect=[0, 0, 270, 240],
             browser_args=browser_args,
             other_args={'video_is_rotated': True},
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'outside video content, left side, white',
-                    'location': [1, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside video content, right side, white',
-                    'location': [210, 1],
-                    'size': [60, 238],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'top left video, blue',
-                    'location': [73, 5],
-                    'size': [55, 110],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'top right video, yellow',
-                    'location': [141, 5],
-                    'size': [55, 110],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'bottom left video, green',
-                    'location': [73, 125],
-                    'size': [55, 110],
-                    'color': [44, 255, 16],
-                },
-                {
-                    'comment': 'bottom right video, red',
-                    'location': [141, 125],
-                    'size': [55, 110],
-                    'color': [255, 17, 24],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_vp9.html',
             base_name + '_DirectComposition_Video_VP9',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
-            tolerance=tolerance_dc_vp9,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_vp9.html',
             base_name + '_DirectComposition_Video_VP9_DXVA',
             browser_args=browser_args_DXVA,
             test_rect=[0, 0, 240, 135],
-            tolerance=tolerance_dc_vp9,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_vp9_fullsize.html',
             base_name + '_DirectComposition_Video_VP9_Fullsize',
             test_rect=[0, 0, 960, 540],
             browser_args=browser_args,
             other_args={'zero_copy': True},
-            tolerance=tolerance_dc_vp9,
-            expected_colors=[
-                {
-                    'comment': 'top left video, yellow',
-                    'location': [10, 10],
-                    'size': [460, 250],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'top right video, red',
-                    'location': [490, 10],
-                    'size': [460, 250],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'bottom left video, blue',
-                    'location': [10, 280],
-                    'size': [460, 250],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'bottom right video, green',
-                    'location': [490, 280],
-                    'size': [460, 250],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_vp9.html',
             base_name + '_DirectComposition_Video_VP9_YUY2',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args_YUY2,
             other_args={'expect_yuy2': True},
-            tolerance=tolerance_dc_vp9,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_vp9_i420a.html',
             base_name + '_DirectComposition_Video_VP9_I420A',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
             other_args={'no_overlay': True},
-            tolerance=tolerance_dc_vp9,
-            expected_colors=[
-                {
-                    'comment': 'top left video, yellow',
-                    'location': [5, 5],
-                    'size': [110, 57],
-                    'color': [255, 255, 143],
-                },
-                {
-                    'comment': 'top right video, red',
-                    'location': [125, 5],
-                    'size': [110, 57],
-                    'color': [251, 130, 143],
-                },
-                {
-                    'comment': 'bottom left video, blue',
-                    'location': [5, 72],
-                    'size': [110, 57],
-                    'color': [135, 130, 254],
-                },
-                {
-                    'comment': 'bottom right video, green',
-                    'location': [125, 72],
-                    'size': [110, 57],
-                    'color': [160, 255, 142],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_underlay.html',
             base_name + '_DirectComposition_Underlay',
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args,
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'black top left',
-                    'location': [4, 4],
-                    'size': [20, 20],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'yellow top left quadrant',
-                    'location': [4, 34],
-                    'size': [110, 30],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'red top right quadrant',
-                    'location': [124, 4],
-                    'size': [110, 60],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'blue bottom left quadrant',
-                    'location': [4, 72],
-                    'size': [110, 60],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'green bottom right quadrant',
-                    'location': [124, 72],
-                    'size': [110, 60],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_underlay.html',
             base_name + '_DirectComposition_Underlay_DXVA',
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args_DXVA,
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'black top left',
-                    'location': [4, 4],
-                    'size': [20, 20],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'yellow top left quadrant',
-                    'location': [4, 34],
-                    'size': [110, 30],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'red top right quadrant',
-                    'location': [124, 4],
-                    'size': [110, 60],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'blue bottom left quadrant',
-                    'location': [4, 72],
-                    'size': [110, 60],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'green bottom right quadrant',
-                    'location': [124, 72],
-                    'size': [110, 60],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_underlay_fullsize.html',
             base_name + '_DirectComposition_Underlay_Fullsize',
             test_rect=[0, 0, 960, 540],
             browser_args=browser_args,
             other_args={'zero_copy': True},
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'black top left',
-                    'location': [4, 4],
-                    'size': [20, 20],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'yellow top left quadrant',
-                    'location': [10, 35],
-                    'size': [460, 225],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'red top right quadrant',
-                    'location': [490, 10],
-                    'size': [460, 250],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'blue bottom left quadrant',
-                    'location': [10, 280],
-                    'size': [460, 250],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'green bottom right quadrant',
-                    'location': [490, 290],
-                    'size': [460, 250],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_nonroot.html',
             base_name + '_DirectComposition_Nonroot',
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args_Nonroot,
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'black top left',
-                    'location': [4, 4],
-                    'size': [20, 20],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'yellow top left quadrant',
-                    'location': [4, 34],
-                    'size': [110, 30],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'red top right quadrant',
-                    'location': [124, 4],
-                    'size': [50, 60],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'blue bottom left quadrant',
-                    'location': [4, 72],
-                    'size': [110, 60],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'green bottom right quadrant',
-                    'location': [124, 72],
-                    'size': [50, 60],
-                    'color': [44, 255, 16],
-                },
-            ]),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
         PixelTestPage(
             'pixel_video_complex_overlays.html',
             base_name + '_DirectComposition_ComplexOverlays',
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args_Complex,
             other_args={'video_is_rotated': True},
-            tolerance=tolerance_dc,
-            expected_colors=[
-                {
-                    'comment': 'black top left',
-                    'location': [4, 4],
-                    'size': [20, 20],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'yellow top left quadrant',
-                    'location': [60, 10],
-                    'size': [65, 30],
-                    'color': [255, 255, 15],
-                },
-                {
-                    'comment': 'red top right quadrant',
-                    'location': [150, 45],
-                    'size': [65, 30],
-                    'color': [255, 17, 24],
-                },
-                {
-                    'comment': 'blue bottom left quadrant',
-                    'location': [30, 70],
-                    'size': [65, 30],
-                    'color': [12, 12, 255],
-                },
-                {
-                    'comment': 'green bottom right quadrant',
-                    'location': [130, 100],
-                    'size': [65, 30],
-                    'color': [44, 255, 16],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_video_mp4_rounded_corner.html',
-            base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            other_args={'no_overlay': True},
-            tolerance=tolerance_dc),
-        PixelTestPage(
-            'pixel_video_backdrop_filter.html',
-            base_name + '_DirectComposition_Video_BackdropFilter',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            other_args={'no_overlay': True},
-            tolerance=tolerance_dc),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
+        PixelTestPage('pixel_video_mp4_rounded_corner.html',
+                      base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      other_args={'no_overlay': True}),
+        PixelTestPage('pixel_video_backdrop_filter.html',
+                      base_name + '_DirectComposition_Video_BackdropFilter',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      other_args={'no_overlay': True}),
         PixelTestPage(
             'pixel_video_mp4.html',
             base_name + '_DirectComposition_Video_Disable_Overlays',
             test_rect=[0, 0, 240, 135],
             browser_args=['--disable-direct-composition-video-overlays'],
             other_args={'no_overlay': True},
-            tolerance=tolerance_dc,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+            # Part of the expected color migration, crbug.com/1078914.
+            grace_period_end=datetime.date(2020, 5, 15)),
     ]
 
   @staticmethod

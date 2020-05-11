@@ -246,21 +246,9 @@ HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
   // the given keyframe.
   //
   // https://w3c.github.io/web-animations/#dom-keyframeeffectreadonly-getkeyframes
-  const KeyframeVector& keyframes = model_->GetFrames();
-
-  // Lazy resolution of values for missing properties.
-  // TODO(crbug.com/1070627): Consider using a specialized model for CSS
-  // animations, and moving this handling to an overloaded version of
-  // getKeyframes.
-  PropertyHandleSet all_properties = model_->Properties();
-  MissingPropertyValueMap missing_property_value_map;
-  for (wtf_size_t i = 0; i < keyframes.size(); i++) {
-    if (keyframes[i]->HasMissingProperties()) {
-      ResolveUnderlyingPropertyValues(all_properties,
-                                      missing_property_value_map);
-      break;
-    }
-  }
+  KeyframeVector keyframes = ignore_css_keyframes_
+                                 ? model_->GetFrames()
+                                 : model_->GetComputedKeyframes(EffectTarget());
 
   Vector<double> computed_offsets =
       KeyframeEffectModelBase::GetComputedOffsets(keyframes);
@@ -270,10 +258,6 @@ HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
     V8ObjectBuilder object_builder(script_state);
     keyframes[i]->AddKeyframePropertiesToV8Object(object_builder, target());
     object_builder.Add("computedOffset", computed_offsets[i]);
-    if (keyframes[i]->HasMissingProperties()) {
-      AddMissingProperties(missing_property_value_map, all_properties,
-                           keyframes[i]->Properties(), object_builder);
-    }
     computed_keyframes.push_back(object_builder.GetScriptValue());
   }
 
@@ -694,40 +678,6 @@ ActiveInterpolationsMap KeyframeEffect::InterpolationsForCommitStyles() {
     ClearEffects();
 
   return results;
-}
-
-void KeyframeEffect::ResolveUnderlyingPropertyValues(
-    const PropertyHandleSet& properties,
-    KeyframeEffect::MissingPropertyValueMap& map) {
-  // TODO(crbug.com/1069235): Should sample the underlying animation.
-  ActiveInterpolationsMap empty_interpolations_map;
-  AnimationUtils::ForEachInterpolatedPropertyValue(
-      effect_target_, properties, empty_interpolations_map,
-      WTF::BindRepeating(
-          [](KeyframeEffect::MissingPropertyValueMap* map,
-             PropertyHandle property, const CSSValue* value) {
-            String property_name =
-                AnimationInputHelpers::PropertyHandleToKeyframeAttribute(
-                    property);
-            map->Set(property_name, value->CssText());
-          },
-          WTF::Unretained(&map)));
-}
-
-void KeyframeEffect::AddMissingProperties(
-    const KeyframeEffect::MissingPropertyValueMap& property_map,
-    const PropertyHandleSet& all_properties,
-    const PropertyHandleSet& keyframe_properties,
-    V8ObjectBuilder& object_builder) {
-  for (const auto& property : all_properties) {
-    if (keyframe_properties.Contains(property))
-      continue;
-
-    String property_name =
-        AnimationInputHelpers::PropertyHandleToKeyframeAttribute(property);
-    if (property_map.Contains(property_name))
-      object_builder.Add(property_name, property_map.at(property_name));
-  }
 }
 
 }  // namespace blink

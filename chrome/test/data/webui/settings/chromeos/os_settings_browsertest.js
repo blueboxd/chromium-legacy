@@ -20,6 +20,7 @@ GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
+GEN('#include "ui/display/display_features.h"');
 
 // Generic test fixture for CrOS Polymer Settings elements to be overridden by
 // individual element tests.
@@ -532,7 +533,12 @@ var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['ash::features::kDisplayIdentification']};
+    return {
+      enabled: [
+        'ash::features::kDisplayIdentification',
+        'display::features::kListAllDisplayModes'
+      ]
+    };
   }
 
   /** @override */

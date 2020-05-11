@@ -345,7 +345,7 @@ QUIC_FLAG(bool,
 // If true, break session/stream close loop.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_break_session_stream_close_loop,
-          false)
+          true)
 
 // Replace the usage of ConnectionData::encryption_level in
 // quic_time_wait_list_manager with a new TimeWaitAction.

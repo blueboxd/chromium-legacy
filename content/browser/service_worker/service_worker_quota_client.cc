@@ -53,8 +53,8 @@ ServiceWorkerQuotaClient::ServiceWorkerQuotaClient(
 ServiceWorkerQuotaClient::~ServiceWorkerQuotaClient() {
 }
 
-QuotaClient::ID ServiceWorkerQuotaClient::id() const {
-  return QuotaClient::kServiceWorker;
+storage::QuotaClientType ServiceWorkerQuotaClient::type() const {
+  return storage::QuotaClientType::kServiceWorker;
 }
 
 void ServiceWorkerQuotaClient::GetOriginUsage(const url::Origin& origin,

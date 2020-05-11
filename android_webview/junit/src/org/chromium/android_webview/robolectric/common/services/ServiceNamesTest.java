@@ -16,6 +16,7 @@ import org.chromium.android_webview.services.AwMinidumpUploadJobService;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.services.DeveloperModeContentProvider;
 import org.chromium.android_webview.services.DeveloperUiService;
+import org.chromium.android_webview.services.MetricsBridgeService;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -36,6 +37,8 @@ public class ServiceNamesTest {
                 ServiceNames.DEVELOPER_MODE_CONTENT_PROVIDER);
         Assert.assertEquals("Incorrect class name constant", DeveloperUiService.class.getName(),
                 ServiceNames.DEVELOPER_UI_SERVICE);
+        Assert.assertEquals("Incorrect class name constant", MetricsBridgeService.class.getName(),
+                ServiceNames.METRICS_BRIDGE_SERVICE);
         Assert.assertEquals("Incorrect class name constant", VariationsSeedServer.class.getName(),
                 ServiceNames.VARIATIONS_SEED_SERVER);
     }

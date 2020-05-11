@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 

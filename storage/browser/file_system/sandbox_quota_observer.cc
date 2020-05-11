@@ -41,7 +41,7 @@ void SandboxQuotaObserver::OnUpdate(const FileSystemURL& url, int64_t delta) {
 
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->NotifyStorageModified(
-        QuotaClient::kFileSystem, url.origin(),
+        QuotaClientType::kFileSystem, url.origin(),
         FileSystemTypeToQuotaStorageType(url.type()), delta);
   }
 
@@ -87,7 +87,7 @@ void SandboxQuotaObserver::SetUsageCacheEnabled(const url::Origin& origin,
                                                 bool enabled) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->SetUsageCacheEnabled(
-        QuotaClient::kFileSystem, origin,
+        QuotaClientType::kFileSystem, origin,
         FileSystemTypeToQuotaStorageType(type), enabled);
   }
 }

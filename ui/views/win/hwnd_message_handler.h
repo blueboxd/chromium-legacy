@@ -794,6 +794,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   static base::LazyInstance<FullscreenWindowMonitorMap>::DestructorAtExit
       fullscreen_monitor_map_;
 
+  // How many pixels the window is expected to grow from OnWindowPosChanging().
+  // Used to fill the newly exposed pixels black in OnPaint() before the
+  // browser compositor is able to redraw at the new window size.
+  gfx::Size exposed_pixels_;
+
   // Populated if the cursor position is being mocked for testing purposes.
   base::Optional<gfx::Point> mock_cursor_position_;
 

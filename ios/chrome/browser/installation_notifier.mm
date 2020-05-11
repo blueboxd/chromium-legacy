@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "net/base/backoff_entry.h"

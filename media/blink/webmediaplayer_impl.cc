@@ -2825,12 +2825,6 @@ void WebMediaPlayerImpl::StartPipeline() {
     }
   }
 
-  // TODO(sandersd): FileSystem objects may also be non-static, but due to our
-  // caching layer such situations are broken already. http://crbug.com/593159
-  bool is_static = !chunk_demuxer_;
-  bool is_streaming = IsStreaming();
-  UMA_HISTOGRAM_BOOLEAN("Media.IsStreaming", is_streaming);
-
   // If possible attempt to avoid decoder spool up until playback starts.
   Pipeline::StartType start_type = Pipeline::StartType::kNormal;
   if (!chunk_demuxer_ && preload_ == MultibufferDataSource::METADATA &&
@@ -2842,10 +2836,14 @@ void WebMediaPlayerImpl::StartPipeline() {
     attempting_suspended_start_ = true;
   }
 
+  // TODO(sandersd): FileSystem objects may also be non-static, but due to our
+  // caching layer such situations are broken already. http://crbug.com/593159
+  const bool is_static = !chunk_demuxer_;
+
   // ... and we're ready to go!
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
   seeking_ = true;
-  pipeline_controller_->Start(start_type, demuxer_.get(), this, is_streaming,
+  pipeline_controller_->Start(start_type, demuxer_.get(), this, IsStreaming(),
                               is_static);
 }
 

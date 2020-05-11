@@ -67,10 +67,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
 
   void RegisterClient(const MockOriginData* data, std::size_t data_len) {
     MockStorageClient* client =
-        new MockStorageClient(quota_manager_->proxy(),
-                              data,
-                              storage::QuotaClient::kFileSystem,
-                              data_len);
+        new MockStorageClient(quota_manager_->proxy(), data,
+                              storage::QuotaClientType::kFileSystem, data_len);
     quota_manager_->proxy()->RegisterClient(client);
     client->TouchAllOriginsAndNotify();
   }

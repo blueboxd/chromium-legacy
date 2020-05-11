@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
-import android.webkit.ValueCallback;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -35,7 +34,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.ContextMenuParams;
-import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.ErrorPageCallback;
 import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.FullscreenCallback;
@@ -387,19 +385,6 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void onLoadProgressChanged(double progress) {
                 mLoadProgressBar.setProgress((int) Math.round(100 * progress));
-            }
-        });
-        mProfile.setDownloadCallback(new DownloadCallback() {
-            @Override
-            public boolean onInterceptDownload(Uri uri, String userAgent, String contentDisposition,
-                    String mimetype, long contentLength) {
-                return false;
-            }
-
-            @Override
-            public void allowDownload(Uri uri, String requestMethod, Uri requestInitiator,
-                    ValueCallback<Boolean> callback) {
-                callback.onReceiveValue(true);
             }
         });
         tab.setErrorPageCallback(new ErrorPageCallback() {

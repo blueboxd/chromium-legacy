@@ -697,7 +697,6 @@
 <translation id="9034924485347205037">Linux 文件</translation>
 <translation id="9035012421917565900">这些内容一旦移出“<ph name="DESTINATION_NAME" />”便无法移回，因此您将无法撤消这项操作。</translation>
 <translation id="9038620279323455325">已有名为“<ph name="FILE_NAME" />”的文件。请另选一个名称。</translation>
-<translation id="9062992083244091966">若要使用 <ph name="APP_NAME" /> 应用打开文件，请先将文件移到“<ph name="APP_NAME" /> 共享文件”文件夹。</translation>
 <translation id="9064939804718829769">正在处理…</translation>
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9099674669267916096">页数</translation>

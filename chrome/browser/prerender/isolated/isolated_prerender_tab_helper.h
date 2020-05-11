@@ -60,7 +60,9 @@ class IsolatedPrerenderTabHelper
   };
 
   // The various states that a prefetch can go through or terminate with. Used
-  // in UKM logging so don't remove or reorder values.
+  // in UKM logging so don't remove or reorder values. Update
+  // |IsolatedPrerenderPrefetchStatus| in //tools/metrics/histograms/enums.xml
+  // whenever this is changed.
   enum class PrefetchStatus {
     // The interceptor used a prefetch.
     kPrefetchUsedNoProbe = 0,

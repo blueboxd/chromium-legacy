@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 [
-  Exposed=(ServiceWorker,Window),
+  // TODO(crbug.com/839117): Enable the following [Exposed] on the partial
+  // interface declaration one it's supported.
+  //
+  // Exposed=(ServiceWorker,Window),
   RuntimeEnabled=CookieStoreWorker,
   ImplementedAs=ServiceWorkerRegistrationCookies
 ] partial interface ServiceWorkerRegistration {
-  // TODO(crbug.com/839117): Remove the following [Exposed] on a member
-  // declaration once the [Exposed] on a partial interface gets supported.
-  [Exposed=(ServiceWorker,Window)] readonly attribute CookieStoreManager cookies;
+  readonly attribute CookieStoreManager cookies;
 };

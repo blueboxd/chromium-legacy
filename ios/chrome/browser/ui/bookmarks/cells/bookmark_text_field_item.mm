@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"

@@ -1998,15 +1998,19 @@ bool BrowserView::GetAcceleratorForCommandId(
 // BrowserView, views::WidgetDelegate implementation:
 
 bool BrowserView::CanResize() const {
-  return true;
+  // Windows in forced app mode take the whole screen, should not be resized.
+  return !chrome::IsRunningInForcedAppMode();
 }
 
 bool BrowserView::CanMaximize() const {
-  return true;
+  // Windows in forced app mode take the whole screen, should not be resized.
+  return !chrome::IsRunningInForcedAppMode();
 }
 
 bool BrowserView::CanMinimize() const {
-  return true;
+  // There is no shelf in forced app mode, therefore we should not be able to
+  // minimize windows.
+  return !chrome::IsRunningInForcedAppMode();
 }
 
 bool BrowserView::CanActivate() const {

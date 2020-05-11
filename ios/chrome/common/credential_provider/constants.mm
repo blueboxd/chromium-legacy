@@ -4,7 +4,9 @@
 
 #import "ios/chrome/common/credential_provider/constants.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
 

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"

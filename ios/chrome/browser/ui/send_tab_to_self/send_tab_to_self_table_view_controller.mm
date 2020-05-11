@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"

@@ -53,7 +53,7 @@ void MockQuotaManagerProxy::NotifyStorageAccessed(
 }
 
 void MockQuotaManagerProxy::NotifyStorageModified(
-    QuotaClient::ID client_id,
+    storage::QuotaClientType client_id,
     const url::Origin& origin,
     blink::mojom::StorageType type,
     int64_t delta) {

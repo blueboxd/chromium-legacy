@@ -61,8 +61,7 @@ void TraceToFile::BeginTracing(const FilePath& path,
 }
 
 void TraceToFile::WriteFileHeader() {
-  const char str[] = "{\"traceEvents\": [";
-  WriteFile(path_, str, static_cast<int>(strlen(str)));
+  WriteFile(path_, "{\"traceEvents\": [");
 }
 
 void TraceToFile::AppendFileFooter() {

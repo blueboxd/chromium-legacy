@@ -48,6 +48,8 @@ class MockNavigationHandle : public NavigationHandle {
   WebContents* GetWebContents() override { return web_contents_; }
   MOCK_METHOD0(NavigationStart, base::TimeTicks());
   MOCK_METHOD0(NavigationInputStart, base::TimeTicks());
+  MOCK_METHOD0(FirstRequestStart, base::TimeTicks());
+  MOCK_METHOD0(FirstResponseStart, base::TimeTicks());
   MOCK_METHOD0(WasStartedFromContextMenu, bool());
   MOCK_METHOD0(GetSearchableFormURL, const GURL&());
   MOCK_METHOD0(GetSearchableFormEncoding, const std::string&());

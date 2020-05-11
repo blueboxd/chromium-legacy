@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"

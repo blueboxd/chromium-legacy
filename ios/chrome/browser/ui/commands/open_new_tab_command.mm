@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 
-#include "base/logging.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "url/gurl.h"
 

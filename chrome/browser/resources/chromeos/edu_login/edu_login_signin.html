@@ -21,8 +21,13 @@
 
   paper-spinner-lite {
     --spinner-size: 25px;
+    display: none;
     height: var(--spinner-size);
     width: var(--spinner-size);
+  }
+
+  paper-spinner-lite[active] {
+    display: inline-block;
   }
 </style>
 <edu-login-template>

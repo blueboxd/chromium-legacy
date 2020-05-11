@@ -184,30 +184,62 @@
       </div>
 
       <!-- Drop down select menu for resolution -->
-      <div class="settings-box indented two-line"
-          hidden$="[[!showDropDownResolutionSetting_(selectedDisplay)]]">
-        <div class="start text-area layout vertical" aria-hidden="true">
-          <div>$i18n{displayResolutionTitle}</div>
-          <div class="secondary self-start" id="displayResolutionSublabel">
-            $i18n{displayResolutionSublabel}
+      <template is="dom-if"
+          if="[[showDropDownResolutionSetting_(selectedDisplay)]]" restamp>
+        <div class="settings-box indented two-line">
+          <div class="start text-area layout vertical" aria-hidden="true">
+            <div>$i18n{displayResolutionTitle}</div>
+            <div class="secondary self-start" id="displayResolutionSublabel">
+              $i18n{displayResolutionSublabel}
+            </div>
           </div>
+          <template is="dom-if" if="[[isDisplayResolutionManagedByPolicy_(
+              prefs.cros.device_display_resolution)]]">
+            <cr-policy-pref-indicator
+                pref="[[prefs.cros.device_display_resolution]]"
+                icon-aria-label="$i18n{displayResolutionTitle}">
+            </cr-policy-pref-indicator>
+          </template>
+          <settings-dropdown-menu id="displayModeSelector"
+              pref="{{selectedParentModePref_}}"
+              disabled="[[isDisplayResolutionMandatory_(
+                  prefs.cros.device_display_resolution)]]"
+              label="$i18n{displayResolutionTitle}"
+              aria-describedby="displayResolutionSublabel"
+              menu-options="[[displayModeList_]]">
+          </settings-dropdown-menu>
         </div>
-        <template is="dom-if" if="[[isDisplayResolutionManagedByPolicy_(
-            prefs.cros.device_display_resolution)]]">
-          <cr-policy-pref-indicator
-              pref="[[prefs.cros.device_display_resolution]]"
-              icon-aria-label="$i18n{displayResolutionTitle}">
-          </cr-policy-pref-indicator>
-        </template>
-        <settings-dropdown-menu id="displayModeSelector"
-            pref="{{selectedModePref_}}"
-            disabled="[[isDisplayResolutionMandatory_(
-                prefs.cros.device_display_resolution)]]"
-            label="$i18n{displayResolutionTitle}"
-            aria-describedby="displayResolutionSublabel"
-            menu-options="[[displayModeList_]]">
-        </settings-dropdown-menu>
-      </div>
+      </template>
+
+      <!-- Drop down select menu for refresh rate -->
+      <template is="dom-if" if="[[showRefreshRateSetting_(selectedDisplay)]]"
+          restamp>
+        <div class="settings-box indented two-line">
+          <div class="start text-area layout vertical" aria-hidden="true">
+            <div>$i18n{displayRefreshRateTitle}</div>
+            <div class="secondary self-start" id="displayRefreshRateSublabel">
+              $i18n{displayRefreshRateSublabel}
+            </div>
+          </div>
+          <template is="dom-if" if="[[isDisplayResolutionManagedByPolicy_(
+              prefs.cros.devicte_display_resolution)]]">
+            <cr-policy-pref-indicator
+                pref="[[prefs.cros.device_display_resolution]]"
+                icon-aria-label="$i18n{displayResolutionText}">
+            </cr-policy-pref-indicator>
+          </template>
+          <settings-dropdown-menu id="refreshRateSelector"
+              pref="{{selectedModePref_}}"
+              disabled="[[isDisplayResolutionMandatory_(
+                  prefs.cros.device_display_resolution)]]"
+              label="Refresh Rate Menu"
+              aria-describedby="displayRefreshRateSublabel"
+              menu-options="[[refreshRateList_]]">
+          </settings-dropdown-menu>
+        </div>
+      </template>
+
+
       <template is="dom-if" if="[[!unifiedDesktopMode_]]" restamp>
         <div class="settings-box indented">
           <div id="displayOrientation" class="start text-area"

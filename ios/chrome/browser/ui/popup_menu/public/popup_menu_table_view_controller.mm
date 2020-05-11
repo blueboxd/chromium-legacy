@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 
+#include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -12,6 +13,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,9 +26,20 @@ const CGFloat kPopupMenuVerticalInsets = 7;
 const CGFloat kScrollIndicatorVerticalInsets = 11;
 }  // namespace
 
+#if defined(__IPHONE_13_4)
+@interface PopupMenuTableViewController (Pointer) <UIPointerInteractionDelegate>
+@end
+#endif  // defined(__IPHONE_13_4)
+
 @interface PopupMenuTableViewController ()
 // Whether the -viewDidAppear: callback has been called.
 @property(nonatomic, assign) BOOL viewDidAppear;
+#if defined(__IPHONE_13_4)
+// Tracks reusable cells in memory, which has an upper limit. This is used to
+// ensure that pointer interaction is added only once to a cell.
+@property(nonatomic, strong)
+    NSHashTable<UITableViewCell*>* cellsInMemory API_AVAILABLE(ios(13.4));
+#endif  // defined(__IPHONE_13_4)
 @end
 
 @implementation PopupMenuTableViewController
@@ -38,7 +51,18 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 @synthesize viewDidAppear = _viewDidAppear;
 
 - (instancetype)init {
-  return [super initWithStyle:UITableViewStyleGrouped];
+  self = [super initWithStyle:UITableViewStyleGrouped];
+  if (self) {
+#if defined(__IPHONE_13_4)
+    if (@available(iOS 13.4, *)) {
+      if (base::FeatureList::IsEnabled(kPointerSupport)) {
+        self.cellsInMemory =
+            [NSHashTable<UITableViewCell*> weakObjectsHashTable];
+      }
+    }
+#endif  // defined(__IPHONE_13_4)
+  }
+  return self;
 }
 
 - (void)selectRowAtPoint:(CGPoint)point {
@@ -192,6 +216,49 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       [self.tableViewModel itemAtIndexPath:indexPath];
   return [item cellSizeForWidth:self.view.bounds.size.width].height;
 }
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      if (![self.cellsInMemory containsObject:cell]) {
+        [cell addInteraction:[[UIPointerInteraction alloc]
+                                 initWithDelegate:self]];
+        [self.cellsInMemory addObject:cell];
+      }
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
+  return cell;
+}
+
+#if defined(__IPHONE_13_4)
+
+#pragma mark UIPointerInteractionDelegate
+
+- (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
+                      regionForRequest:(UIPointerRegionRequest*)request
+                         defaultRegion:(UIPointerRegion*)defaultRegion
+    API_AVAILABLE(ios(13.4)) {
+  return defaultRegion;
+}
+
+- (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
+                       styleForRegion:(UIPointerRegion*)region
+    API_AVAILABLE(ios(13.4)) {
+  UIPointerHoverEffect* effect = [UIPointerHoverEffect
+      effectWithPreview:[[UITargetedPreview alloc]
+                            initWithView:interaction.view]];
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+#endif  // defined(__IPHONE_13_4)
 
 #pragma mark - Private
 

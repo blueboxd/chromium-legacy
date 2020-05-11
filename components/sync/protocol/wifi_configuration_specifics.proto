@@ -16,8 +16,6 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-import "components/sync/protocol/encryption.proto";
-
 message WifiConfigurationSpecifics {
   // SSID encoded to hex, letters should be upper case and 0x prefix should be
   // omitted. For example, ssid "network" would be provided as "6E6574776F726B".

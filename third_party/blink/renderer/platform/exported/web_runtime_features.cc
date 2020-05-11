@@ -373,6 +373,10 @@ void WebRuntimeFeatures::EnableTouchEventFeatureDetection(bool enable) {
   RuntimeEnabledFeatures::SetTouchEventFeatureDetectionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableScrollUnification(bool enable) {
+  RuntimeEnabledFeatures::SetScrollUnificationEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebGL2ComputeContext(bool enable) {
   RuntimeEnabledFeatures::SetWebGL2ComputeContextEnabled(enable);
 }

@@ -232,29 +232,25 @@ protocol::String BuildCookieWarningReason(
       return protocol::Audits::SameSiteCookieWarningReasonEnum::
           WarnSameSiteUnspecifiedLaxAllowUnsafe;
     case blink::mojom::blink::SameSiteCookieWarningReason::
-        WarnSameSiteCrossSchemeSecureUrlMethodUnsafe:
+        WarnSameSiteStrictLaxDowngradeStrict:
       return protocol::Audits::SameSiteCookieWarningReasonEnum::
-          WarnSameSiteCrossSchemeSecureUrlMethodUnsafe;
+          WarnSameSiteStrictLaxDowngradeStrict;
     case blink::mojom::blink::SameSiteCookieWarningReason::
-        WarnSameSiteCrossSchemeSecureUrlLax:
+        WarnSameSiteStrictCrossDowngradeStrict:
       return protocol::Audits::SameSiteCookieWarningReasonEnum::
-          WarnSameSiteCrossSchemeSecureUrlLax;
+          WarnSameSiteStrictCrossDowngradeStrict;
     case blink::mojom::blink::SameSiteCookieWarningReason::
-        WarnSameSiteCrossSchemeSecureUrlStrict:
+        WarnSameSiteStrictCrossDowngradeLax:
       return protocol::Audits::SameSiteCookieWarningReasonEnum::
-          WarnSameSiteCrossSchemeSecureUrlStrict;
+          WarnSameSiteStrictCrossDowngradeLax;
     case blink::mojom::blink::SameSiteCookieWarningReason::
-        WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe:
+        WarnSameSiteLaxCrossDowngradeStrict:
       return protocol::Audits::SameSiteCookieWarningReasonEnum::
-          WarnSameSiteCrossSchemeInsecureUrlMethodUnsafe;
+          WarnSameSiteLaxCrossDowngradeStrict;
     case blink::mojom::blink::SameSiteCookieWarningReason::
-        WarnSameSiteCrossSchemeInsecureUrlLax:
+        WarnSameSiteLaxCrossDowngradeLax:
       return protocol::Audits::SameSiteCookieWarningReasonEnum::
-          WarnSameSiteCrossSchemeInsecureUrlLax;
-    case blink::mojom::blink::SameSiteCookieWarningReason::
-        WarnSameSiteCrossSchemeInsecureUrlStrict:
-      return protocol::Audits::SameSiteCookieWarningReasonEnum::
-          WarnSameSiteCrossSchemeInsecureUrlStrict;
+          WarnSameSiteLaxCrossDowngradeLax;
   }
 }
 

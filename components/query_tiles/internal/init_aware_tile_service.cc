@@ -5,6 +5,8 @@
 #include "components/query_tiles/internal/init_aware_tile_service.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 namespace upboarding {
 
@@ -20,13 +22,6 @@ void InitAwareTileService::OnTileServiceInitialized(bool success) {
   DCHECK(!init_success_.has_value());
   init_success_ = success;
 
-  // Drops all api calls when initialization failed.
-  // TODO(xingliu): Provides a backup empty callback for GetQueryTiles().
-  if (!success) {
-    cached_api_calls_.clear();
-    return;
-  }
-
   // Flush all cached calls in FIFO sequence.
   while (!cached_api_calls_.empty()) {
     auto api_call = std::move(cached_api_calls_.front());
@@ -38,6 +33,12 @@ void InitAwareTileService::OnTileServiceInitialized(bool success) {
 void InitAwareTileService::GetQueryTiles(GetTilesCallback callback) {
   if (IsReady()) {
     tile_service_->GetQueryTiles(std::move(callback));
+    return;
+  }
+
+  if (IsFailed()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), TileList()));
     return;
   }
 
@@ -53,6 +54,12 @@ void InitAwareTileService::GetTile(const std::string& tile_id,
     return;
   }
 
+  if (IsFailed()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+    return;
+  }
+
   MaybeCacheApiCall(base::BindOnce(&InitAwareTileService::GetTile,
                                    weak_ptr_factory_.GetWeakPtr(), tile_id,
                                    std::move(callback)));
@@ -65,23 +72,30 @@ void InitAwareTileService::StartFetchForTiles(
     return;
   }
 
+  if (IsFailed()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), false /*need_reschedule*/));
+    return;
+  }
+
   MaybeCacheApiCall(base::BindOnce(&InitAwareTileService::StartFetchForTiles,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    std::move(callback)));
 }
 
 void InitAwareTileService::MaybeCacheApiCall(base::OnceClosure api_call) {
-  // If initialization failed, discard the |closure|.
-  if (init_success_.has_value() && !init_success_.value())
-    return;
-
-  // Cache |api_call| if not initialized.
-  if (!init_success_.has_value())
-    cached_api_calls_.emplace_back(std::move(api_call));
+  DCHECK(!init_success_.has_value())
+      << "Only cache API calls before initialization.";
+  cached_api_calls_.emplace_back(std::move(api_call));
 }
 
 bool InitAwareTileService::IsReady() const {
   return init_success_.has_value() && init_success_.value();
+}
+
+bool InitAwareTileService::IsFailed() const {
+  return init_success_.has_value() && !init_success_.value();
 }
 
 InitAwareTileService::~InitAwareTileService() = default;

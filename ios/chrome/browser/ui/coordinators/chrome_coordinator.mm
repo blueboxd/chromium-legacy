@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-#include "base/logging.h"
 #include "ios/chrome/browser/main/browser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

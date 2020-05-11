@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/overlays/overlay_presenter_impl.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"

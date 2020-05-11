@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/policy/policy_conversions_client_ios.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/values.h"
 #include "components/policy/core/browser/policy_conversions_client.h"
 #include "ios/chrome/browser/application_context.h"

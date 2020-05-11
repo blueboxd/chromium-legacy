@@ -16,8 +16,9 @@
 namespace upboarding {
 
 // TileService that can cache API calls before the underlying |tile_service_| is
-// initialized. After a successful initialization, all cached API calls will be
-// flushed in sequence.
+// initialized. After a successful initialization of |tile_service_|, all cached
+// API calls will be invoked in sequence. If failed to initialize, cached API
+// calls will be invoked with empty data.
 class InitAwareTileService : public TileService {
  public:
   explicit InitAwareTileService(
@@ -35,6 +36,9 @@ class InitAwareTileService : public TileService {
 
   // Returns whether |tile_service_| is successfully initialized.
   bool IsReady() const;
+
+  // Returns whether |tile_service_| is failed to initialize.
+  bool IsFailed() const;
 
   std::unique_ptr<InitializableTileService> tile_service_;
   std::deque<base::OnceClosure> cached_api_calls_;

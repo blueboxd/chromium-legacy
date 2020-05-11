@@ -6,7 +6,7 @@
 
 #import <objc/runtime.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "ios/chrome/browser/ui/util/label_observer.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -16,19 +16,13 @@
         height: 0px;
         overflow: hidden;
     }
-    .border0 > div { border-width: 0px; }
-    .border1 > div { border-width: 1px; }
-    .border2 > div { border-width: 2px; }
-    .border3 > div { border-width: 3px; }
-    .border4 > div { border-width: 4px; }
 </style>
 <body>
     <header id=info>CSS Variables: <button id=button></button></header>
     <script>
         const NUM_ELEMENTS = 20000;
         const PROP_COUNT = 1000;
-        const MAX_WIDTH = 4;
-        let curWidth = -1;
+        let curBorder = -1;
         let root = document.createElement('div');
         root.classList.add(`container`);
 
@@ -55,13 +49,22 @@
             for (let n = 0; n < NUM_ELEMENTS; n++) {
                 let div = document.createElement('div');
                 let i = n % PROP_COUNT;
-                if (ref)
-                    div.style.cssText = 'background-color:' + hexcolor(i);
-                else
-                    div.style.cssText = 'background-color: var(--prop-' + i + ')';
+                div.classList.add(`bg-color${i}`);
                 root.appendChild(div);
             }
             document.body.appendChild(root);
+        }
+
+        function createDivRules() {
+            let lines = [];
+            for (let i = 0; i < PROP_COUNT; i++) {
+                lines.push(`.border${i} > div { border-color: ${hexcolor(i)}; }`);
+                if (ref)
+                    lines.push(`.bg-color${i} { background-color: ${hexcolor(i)}; }`);
+                else
+                    lines.push(`.bg-color${i} { background-color: var(--prop-${i}); }`);
+            }
+            return lines.join('\n');
         }
 
         // Create a rule which defines 'propCount' custom properties at :root.
@@ -76,16 +79,18 @@
             return lines.join('\n');
         }
 
+        applyCSSRule(createDivRules());
         applyCSSRule(createRootRule());
         createDOMTree();
         PerfTestRunner.measureTime({
             description: "Measures the performance of the CSS variable reference recalc.",
             setup: () => {
-                root.classList.remove(`border${curWidth}`);
-                curWidth = (curWidth + 1) % MAX_WIDTH;
+                root.classList.remove(`border${curBorder}`);
+                // Using PROP_COUNT to ensure different border values, avoiding the style cache
+                curBorder = (curBorder + 1) % PROP_COUNT;
             },
             run: function() {
-                root.classList.add(`border${curWidth}`);
+                root.classList.add(`border${curBorder}`);
                 forceStyleRecalc(document.body);
             },
         });

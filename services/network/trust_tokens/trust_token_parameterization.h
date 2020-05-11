@@ -69,6 +69,12 @@ constexpr int kMaximumTrustTokenIssuanceBatchSize = 100;
 // soonest-to-expire-but-unexpired keys from the available key commitments.
 constexpr int kMaximumConcurrentlyValidTrustTokenVerificationKeys = 3;
 
+// When to expire a signed redemption record, assuming that the issuer declined
+// to specify the optional expiry timestamp. This value was chosen in absence of
+// a specific reason to pick anything shorter; it could be revisited.
+constexpr base::Time kTrustTokenDefaultRedemptionRecordExpiry =
+    base::Time::Max();
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PARAMETERIZATION_H_

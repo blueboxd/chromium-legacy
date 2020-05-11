@@ -86,7 +86,8 @@
 #define OS_POSIX 1
 #endif
 
-// Compiler detection.
+// Compiler detection. Note: clang masquerades as GCC on POSIX and as MSVC on
+// Windows.
 #if defined(__GNUC__)
 #define COMPILER_GCC 1
 #elif defined(_MSC_VER)

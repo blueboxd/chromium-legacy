@@ -193,7 +193,6 @@
 <translation id="3328801116991980348">সাইট তথ্য</translation>
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
-<translation id="3343651535143698944">সাইট এক্সেপশন যোগ করুন</translation>
 <translation id="3371831930909698441">অনুবাদ পাওয়া যাচ্ছে। স্ক্রিনের একটু নিচের দিকে বিকল্পগুলি দেওয়া আছে।</translation>
 <translation id="3393920035788932672">মঞ্জুরিপ্রাপ্ত পপ-আপ</translation>
 <translation id="3443810440409579745">ট্যাব পাওয়া গেছে।</translation>
@@ -442,6 +441,7 @@
 <translation id="6638511529934826365">টেক্সট জুম করা…</translation>
 <translation id="6642362222295953972">আগে থেকে থাকা ট্যাবে পাল্টান</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
+<translation id="6645899968535965230">QR কোড: <ph name="PAGE_TITLE" /></translation>
 <translation id="6656103420185847513">ফোল্ডার সম্পাদনা করুন</translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6668619169535738264">বুকমার্ক এডিট করুন</translation>
@@ -564,7 +564,6 @@
 <translation id="8319076807703933069">নতুন ট্যাবে সার্চ করুন</translation>
 <translation id="8323906514956095947">আরও ট্যাবের বিকল্প দেখতে টাচ করে ধরে থাকুন</translation>
 <translation id="8328777765163860529">সমস্ত বন্ধ করুন</translation>
-<translation id="8332159733957009464">সাইট এক্সেপশন</translation>
 <translation id="8386068868580335421">রিসেট করুন</translation>
 <translation id="8407669440184693619">এই সাইটের জন্য কোনও পাসওয়ার্ড পাওয়া যায়নি</translation>
 <translation id="842017693807136194">এটি দিয়ে সাইন-ইন করেছেন</translation>

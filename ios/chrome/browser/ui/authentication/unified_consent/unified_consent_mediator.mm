@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"

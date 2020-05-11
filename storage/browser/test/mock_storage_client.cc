@@ -22,7 +22,7 @@ namespace storage {
 MockStorageClient::MockStorageClient(
     scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
     const MockOriginData* mock_data,
-    QuotaClient::ID id,
+    storage::QuotaClientType id,
     size_t mock_data_size)
     : quota_manager_proxy_(std::move(quota_manager_proxy)),
       id_(id),
@@ -42,33 +42,36 @@ void MockStorageClient::Populate(
 
 MockStorageClient::~MockStorageClient() = default;
 
-void MockStorageClient::AddOriginAndNotify(const url::Origin& origin,
-                                           blink::mojom::StorageType type,
-                                           int64_t size) {
-  DCHECK(origin_data_.count(std::make_pair(origin, type)) == 0);
+void MockStorageClient::AddOriginAndNotify(
+    const url::Origin& origin,
+    blink::mojom::StorageType storage_type,
+    int64_t size) {
+  DCHECK(origin_data_.find(std::make_pair(origin, storage_type)) ==
+         origin_data_.end());
   DCHECK_GE(size, 0);
-  origin_data_[std::make_pair(origin, type)] = size;
+  origin_data_[std::make_pair(origin, storage_type)] = size;
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin, type, size, IncrementMockTime());
+      type(), origin, storage_type, size, IncrementMockTime());
 }
 
-void MockStorageClient::ModifyOriginAndNotify(const url::Origin& origin,
-                                              blink::mojom::StorageType type,
-                                              int64_t delta) {
-  auto it = origin_data_.find(std::make_pair(origin, type));
+void MockStorageClient::ModifyOriginAndNotify(
+    const url::Origin& origin,
+    blink::mojom::StorageType storage_type,
+    int64_t delta) {
+  auto it = origin_data_.find(std::make_pair(origin, storage_type));
   DCHECK(it != origin_data_.end());
   it->second += delta;
   DCHECK_GE(it->second, 0);
 
   // TODO(tzik): Check quota to prevent usage exceed
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-      id(), origin, type, delta, IncrementMockTime());
+      type(), origin, storage_type, delta, IncrementMockTime());
 }
 
 void MockStorageClient::TouchAllOriginsAndNotify() {
   for (const auto& origin_type : origin_data_) {
     quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
-        id(), origin_type.first.first, origin_type.first.second, 0,
+        type(), origin_type.first.first, origin_type.first.second, 0,
         IncrementMockTime());
   }
 }
@@ -83,7 +86,7 @@ base::Time MockStorageClient::IncrementMockTime() {
   return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
 }
 
-QuotaClient::ID MockStorageClient::id() const {
+storage::QuotaClientType MockStorageClient::type() const {
   return id_;
 }
 
@@ -167,20 +170,22 @@ void MockStorageClient::RunGetOriginsForHost(blink::mojom::StorageType type,
   std::move(callback).Run(origins);
 }
 
-void MockStorageClient::RunDeleteOriginData(const url::Origin& origin,
-                                            blink::mojom::StorageType type,
-                                            DeletionCallback callback) {
-  auto error_it = error_origins_.find(std::make_pair(origin, type));
+void MockStorageClient::RunDeleteOriginData(
+    const url::Origin& origin,
+    blink::mojom::StorageType storage_type,
+    DeletionCallback callback) {
+  auto error_it = error_origins_.find(std::make_pair(origin, storage_type));
   if (error_it != error_origins_.end()) {
     std::move(callback).Run(
         blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     return;
   }
 
-  auto it = origin_data_.find(std::make_pair(origin, type));
+  auto it = origin_data_.find(std::make_pair(origin, storage_type));
   if (it != origin_data_.end()) {
     int64_t delta = it->second;
-    quota_manager_proxy_->NotifyStorageModified(id(), origin, type, -delta);
+    quota_manager_proxy_->NotifyStorageModified(type(), origin, storage_type,
+                                                -delta);
     origin_data_.erase(it);
   }
 

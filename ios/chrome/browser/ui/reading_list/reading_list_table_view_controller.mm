@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
 
+#include "base/check_op.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"

@@ -98,8 +98,8 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
 
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
-  uint16_t width = style.OutlineWidth();
-  int outset = style.OutlineOffset() + style.OutlineWidth();
+  uint16_t width = style.OutlineWidthInt();
+  int outset = style.OutlineOffset() + style.OutlineWidthInt();
   for (auto& r : rects) {
     IntRect rect = r;
     rect.Inflate(outset);
@@ -194,8 +194,8 @@ void PaintSingleRectangleOutline(const PaintInfo& paint_info,
   PhysicalRect inner(rect);
   inner.Inflate(LayoutUnit(style.OutlineOffset()));
   PhysicalRect outer(inner);
-  outer.Inflate(LayoutUnit(style.OutlineWidth()));
-  const BorderEdge common_edge_info(style.OutlineWidth(), color,
+  outer.Inflate(LayoutUnit(style.OutlineWidthInt()));
+  const BorderEdge common_edge_info(style.OutlineWidthInt(), color,
                                     style.OutlineStyle());
   BoxBorderPainter(style, outer, inner, common_edge_info)
       .PaintBorder(paint_info, outer);

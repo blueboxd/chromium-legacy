@@ -4,7 +4,7 @@
 
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/app/spotlight/actions_spotlight_manager.h"
 #include "ios/chrome/app/spotlight/bookmarks_spotlight_manager.h"
 #include "ios/chrome/app/spotlight/topsites_spotlight_manager.h"

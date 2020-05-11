@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Archivos de Linux</translation>
 <translation id="9035012421917565900">Estos elementos no se pueden volver a mover a "<ph name="DESTINATION_NAME" />", por lo que no podrás deshacer esta acción.</translation>
 <translation id="9038620279323455325">Ya existe el archivo "<ph name="FILE_NAME" />". Elige otro nombre.</translation>
-<translation id="9062992083244091966">Para abrir archivos con la aplicación <ph name="APP_NAME" />, primero debes moverlos a la carpeta de archivos compartidos de <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Transfiriendo...</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Número de páginas</translation>

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_view.h"
 
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_strip_view.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_language_tab_view_delegate.h"

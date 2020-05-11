@@ -870,9 +870,9 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
 
     page->AnimateOpacity(progress, target_view_state,
                          base::BindRepeating(animate_opacity, duration));
-    page->AnimateYPosition(
-        target_view_state,
-        base::BindRepeating(animate_transform, duration, y_offset));
+    page->AnimateYPosition(target_view_state,
+                           base::BindRepeating(animate_transform, duration),
+                           y_offset);
   }
 
   // Assistant page and search results page may host native views (e.g. for

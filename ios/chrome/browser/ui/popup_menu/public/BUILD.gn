@@ -30,6 +30,7 @@ source_set("popup_menu_ui") {
     ":ui_constants",
     "//base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/popup_menu/public/",
     "//ios/chrome/browser/ui/popup_menu/public/cells",

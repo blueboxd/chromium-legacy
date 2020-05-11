@@ -63,9 +63,10 @@ void StylusButtonEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
 void StylusButtonEventConverterEvdev::ProcessEvent(const input_event& input) {
   if (input.type == EV_KEY && input.code == KEY_F19) {
     bool down = input.value != kKeyReleaseValue;
-    dispatcher_->DispatchKeyEvent(KeyEventParams(
-        input_device_.id, ui::EF_IS_STYLUS_BUTTON, input.code, down,
-        true /* suppress_auto_repeat */, TimeTicksFromInputEvent(input)));
+    dispatcher_->DispatchKeyEvent(
+        KeyEventParams(input_device_.id, ui::EF_IS_STYLUS_BUTTON, input.code,
+                       0 /* scan_code */, down, true /* suppress_auto_repeat */,
+                       TimeTicksFromInputEvent(input)));
   }
 }
 

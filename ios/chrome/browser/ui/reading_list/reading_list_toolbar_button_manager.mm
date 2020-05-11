@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_manager.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_constants.h"

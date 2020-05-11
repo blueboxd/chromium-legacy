@@ -165,8 +165,8 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
     wgpu::BufferCopyView copy_dst;
     copy_dst.buffer = readback_buffer;
     copy_dst.offset = 0;
-    copy_dst.rowPitch = 256;
-    copy_dst.imageHeight = 0;
+    copy_dst.bytesPerRow = 256;
+    copy_dst.rowsPerImage = 0;
 
     wgpu::Extent3D copy_size = {1, 1, 1};
 
@@ -174,7 +174,7 @@ TEST_F(SharedImageGLBackingProduceDawnTest, Basic) {
     encoder.CopyTextureToBuffer(&copy_src, &copy_dst, &copy_size);
     wgpu::CommandBuffer commands = encoder.Finish();
 
-    wgpu::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.GetDefaultQueue();
     queue.Submit(1, &commands);
 
     webgpu()->DissociateMailbox(device_client_id, reservation.id,

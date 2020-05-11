@@ -555,6 +555,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_navigation_throttle.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -3961,6 +3962,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   MaybeAddThrottle(&throttles,
                    browser_switcher::BrowserSwitcherNavigationThrottle::
                        MaybeCreateThrottleFor(handle));
+#endif
+
+#if defined(OS_CHROMEOS)
+  MaybeAddThrottle(
+      &throttles,
+      chromeos::KioskSettingsNavigationThrottle::MaybeCreateThrottleFor(
+          handle));
 #endif
 
   return throttles;

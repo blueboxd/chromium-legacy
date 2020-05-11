@@ -1005,7 +1005,8 @@ void ServiceWorkerVersion::InitializeGlobalScope(
           ->CreateServiceWorkerRegistrationObjectInfo(std::move(registration)),
       provider_host_->container_host()->CreateServiceWorkerObjectInfoToSend(
           this),
-      fetch_handler_existence_, std::move(subresource_loader_factories));
+      fetch_handler_existence_, std::move(subresource_loader_factories),
+      std::move(reporting_observer_receiver_));
 }
 
 void ServiceWorkerVersion::SetValidOriginTrialTokens(

@@ -4,7 +4,6 @@
 
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
 
-#include "base/logging.h"
 #include "ios/web/public/download/download_controller.h"
 #include "ios/web/public/download/download_task.h"
 

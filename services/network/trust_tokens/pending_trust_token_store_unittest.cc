@@ -13,7 +13,7 @@ namespace network {
 TEST(PendingTrustTokenStore, UsesTheStoreThatItWasGiven) {
   PendingTrustTokenStore pending_store;
   bool success = false;
-  auto store = TrustTokenStore::CreateInMemory();
+  auto store = TrustTokenStore::CreateForTesting();
   TrustTokenStore* raw_store = store.get();
   pending_store.ExecuteOrEnqueue(
       base::BindLambdaForTesting([&](TrustTokenStore* received_store) {
@@ -31,14 +31,14 @@ TEST(PendingTrustTokenStore, ExecutesEnqueuedOperationsInFifoOrder) {
       [&](TrustTokenStore* received_store) { flag += 4; }));
   pending_store.ExecuteOrEnqueue(base::BindLambdaForTesting(
       [&](TrustTokenStore* received_store) { flag /= 3; }));
-  pending_store.OnStoreReady(TrustTokenStore::CreateInMemory());
+  pending_store.OnStoreReady(TrustTokenStore::CreateForTesting());
 
   EXPECT_EQ(flag, 1);
 }
 
 TEST(PendingTrustTokenStore, ExecutesOperationEnqueuedAfterStoreIsReady) {
   PendingTrustTokenStore pending_store;
-  pending_store.OnStoreReady(TrustTokenStore::CreateInMemory());
+  pending_store.OnStoreReady(TrustTokenStore::CreateForTesting());
 
   int flag = 0;
   pending_store.ExecuteOrEnqueue(base::BindLambdaForTesting(
@@ -48,7 +48,7 @@ TEST(PendingTrustTokenStore, ExecutesOperationEnqueuedAfterStoreIsReady) {
 
 TEST(PendingTrustTokenStore, ExecutesOperationEnqueuedWhileExecutingOperation) {
   PendingTrustTokenStore pending_store;
-  pending_store.OnStoreReady(TrustTokenStore::CreateInMemory());
+  pending_store.OnStoreReady(TrustTokenStore::CreateForTesting());
 
   bool inner_op_success = false;
   bool outer_op_success = false;
@@ -77,7 +77,7 @@ TEST(PendingTrustTokenStore, ExecutesOperationEnqueuedDuringOnStoreReady) {
   // The inner ExecuteOrEnqueue call will take place while the
   // pre-OnStoreReady operation is being executed, distinguishing this case from
   // the prior test.
-  pending_store.OnStoreReady(TrustTokenStore::CreateInMemory());
+  pending_store.OnStoreReady(TrustTokenStore::CreateForTesting());
   EXPECT_TRUE(inner_op_success);
   EXPECT_TRUE(outer_op_success);
 }

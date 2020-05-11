@@ -31,7 +31,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // We don't mock them.
   void NotifyOriginInUse(const url::Origin& origin) override {}
   void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
-  void SetUsageCacheEnabled(QuotaClient::ID client_id,
+  void SetUsageCacheEnabled(storage::QuotaClientType client_id,
                             const url::Origin& origin,
                             blink::mojom::StorageType type,
                             bool enabled) override {}
@@ -51,7 +51,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // last_notified_type_ and last_notified_delta_ respecitvely.
   // If non-null MockQuotaManager is given to the constructor this also
   // updates the manager's internal usage information.
-  void NotifyStorageModified(QuotaClient::ID client_id,
+  void NotifyStorageModified(storage::QuotaClientType client_id,
                              const url::Origin& origin,
                              blink::mojom::StorageType type,
                              int64_t delta) override;

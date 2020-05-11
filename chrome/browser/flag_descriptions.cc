@@ -543,6 +543,16 @@ const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
     "Google's data reduction proxy.";
 
+const char kEnableNavigationPredictorName[] = "Enables navigation predictor";
+const char kEnableNavigationPredictorDescription[] =
+    "Enables navigation predictor feature that predicts the next likely "
+    "navigation using a set of heuristics.";
+
+const char kEnablePreconnectToSearchName[] =
+    "Enables preconnections to default search engine";
+const char kEnablePreconnectToSearchDescription[] =
+    "Enables the feature that preconnects to the user's default search engine.";
+
 const char kEnableNoScriptPreviewsName[] = "NoScript previews";
 
 const char kEnableNoScriptPreviewsDescription[] =
@@ -1715,6 +1725,11 @@ const char kScrollableTabStripName[] = "Scrollable TabStrip";
 const char kScrollableTabStripDescription[] =
     "Allows users to access tabs by scrolling when they no longer fit in the "
     "tabstrip.";
+
+const char kScrollUnificationName[] = "Scroll Unification";
+const char kScrollUnificationDescription[] =
+    "Refactoring project that eliminates scroll handling code from Blink. "
+    "Does not affect behavior or performance.";
 
 const char kSendTabToSelfOmniboxSendingAnimationName[] =
     "Send tab to self omnibox sending animation";
@@ -3900,6 +3915,11 @@ const char kClickToCallUIDescription[] =
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+
+const char kEnableMediaFeedsName[] = "Enables Media Feeds";
+const char kEnableMediaFeedsDescription[] =
+    "Enables the Media Feeds feature which allows us to fetch feeds of media "
+    "items from websites that support the feature. ";
 
 const char kRemoteCopyReceiverName[] =
     "Enables the remote copy feature to receive messages";

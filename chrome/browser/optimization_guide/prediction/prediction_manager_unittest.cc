@@ -549,7 +549,7 @@ TEST_F(PredictionManagerTest,
   CreatePredictionManager(
       {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
 
-  EXPECT_TRUE(prediction_manager()->HasRegisteredOptimizationTargets());
+  EXPECT_FALSE(prediction_manager()->registered_optimization_targets().empty());
 }
 
 TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {

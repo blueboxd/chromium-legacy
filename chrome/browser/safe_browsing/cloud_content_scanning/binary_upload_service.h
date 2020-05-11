@@ -138,6 +138,7 @@ class BinaryUploadService : public KeyedService {
     void set_request_token(const std::string& token);
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
+    void clear_dlp_scan_request();
 
     // Finish the request, with the given |result| and |response| from the
     // server.

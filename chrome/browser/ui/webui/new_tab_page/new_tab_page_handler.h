@@ -58,7 +58,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
                     Profile* profile,
                     content::WebContents* web_contents,
-                    const base::Time& ntp_creation_time);
+                    const base::Time& ntp_navigation_start_time);
   ~NewTabPageHandler() override;
 
   // new_tab_page::mojom::PageHandler:
@@ -186,7 +186,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   FaviconCache favicon_cache_;
   base::TimeTicks time_of_first_autocomplete_query_;
   content::WebContents* web_contents_;
-  base::Time ntp_creation_time_;
+  base::Time ntp_navigation_start_time_;
   NTPUserDataLogger* logger_;
   base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 

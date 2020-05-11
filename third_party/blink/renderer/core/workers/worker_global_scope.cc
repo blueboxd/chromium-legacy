@@ -298,7 +298,9 @@ void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls,
         source_code.length(), handler ? handler->GetCodeCacheSize() : 0);
     ScriptController()->Evaluate(
         ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
-                         handler, response_url),
+                         handler,
+                         ScriptSourceCode::UsePostRedirectURL() ? response_url
+                                                                : complete_url),
         sanitize_script_errors, &error_event, GetV8CacheOptions());
     if (error_event) {
       ScriptController()->RethrowExceptionFromImportedScript(error_event,

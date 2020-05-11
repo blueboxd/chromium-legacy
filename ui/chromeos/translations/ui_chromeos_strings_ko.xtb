@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Linux 파일</translation>
 <translation id="9035012421917565900">항목을 다시 '<ph name="DESTINATION_NAME" />'(으)로 이동할 수 없으므로 이 작업을 실행취소할 수 없습니다.</translation>
 <translation id="9038620279323455325">'<ph name="FILE_NAME" />' 파일이 이미 존재합니다. 다른 이름을 선택하세요.</translation>
-<translation id="9062992083244091966"><ph name="APP_NAME" /> 앱으로 파일을 열려면 파일을 <ph name="APP_NAME" /> 공유 파일 폴더로 이동하세요.</translation>
 <translation id="9064939804718829769">이전 중...</translation>
 <translation id="9065203028668620118">수정</translation>
 <translation id="9099674669267916096">페이지 수</translation>

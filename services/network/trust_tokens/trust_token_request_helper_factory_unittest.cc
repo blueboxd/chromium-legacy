@@ -85,7 +85,7 @@ class TrustTokenRequestHelperFactoryTest : public ::testing::Test {
     TrustTokenStatusOrRequestHelper obtained_result;
     PendingTrustTokenStore store;
 
-    store.OnStoreReady(TrustTokenStore::CreateInMemory());
+    store.OnStoreReady(TrustTokenStore::CreateForTesting());
     NoopTrustTokenKeyCommitmentGetter getter;
 
     TrustTokenRequestHelperFactory(&store, &getter,
@@ -195,7 +195,7 @@ TEST_F(TrustTokenRequestHelperFactoryTest, RespectsAuthorizer) {
   TrustTokenStatusOrRequestHelper obtained_result;
   PendingTrustTokenStore store;
 
-  store.OnStoreReady(TrustTokenStore::CreateInMemory());
+  store.OnStoreReady(TrustTokenStore::CreateForTesting());
   NoopTrustTokenKeyCommitmentGetter getter;
 
   TrustTokenRequestHelperFactory(&store, &getter,

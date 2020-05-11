@@ -1424,7 +1424,7 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
 
   // Truncate the SimpleCache index to force an error when next opened.
   ASSERT_FALSE(index_path.empty());
-  ASSERT_EQ(5, base::WriteFile(index_path, "hello", 5));
+  ASSERT_TRUE(base::WriteFile(index_path, "hello"));
 
   // The cache_storage index and simple disk_cache index files are written from
   // background threads.  They may be written in unexpected orders due to timing
@@ -1481,12 +1481,8 @@ TEST_F(CacheStorageManagerTest, DISABLED_PutResponseWithExistingFileTest) {
 
   // Create a fake, empty file where the entry previously existed.
   const std::string kFakeData("foobar");
-  EXPECT_EQ(
-      base::WriteFile(entry_file_name, kFakeData.data(), kFakeData.size()),
-      static_cast<int>(kFakeData.size()));
-  EXPECT_EQ(
-      base::WriteFile(stream_2_file_name, kFakeData.data(), kFakeData.size()),
-      static_cast<int>(kFakeData.size()));
+  EXPECT_TRUE(base::WriteFile(entry_file_name, kFakeData));
+  EXPECT_TRUE(base::WriteFile(stream_2_file_name, kFakeData));
 
   // Re-open the cache.
   CreateStorageManager();
@@ -2530,7 +2526,8 @@ class CacheStorageQuotaClientTestP : public CacheStorageQuotaClientTest,
 };
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaID) {
-  EXPECT_EQ(storage::QuotaClient::kServiceWorkerCache, quota_client_->id());
+  EXPECT_EQ(storage::QuotaClientType::kServiceWorkerCache,
+            quota_client_->type());
 }
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginUsage) {

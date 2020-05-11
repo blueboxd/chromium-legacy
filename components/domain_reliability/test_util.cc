@@ -99,6 +99,8 @@ void MockUploader::UploadReport(const std::string& report_json,
                            std::move(callback));
 }
 
+void MockUploader::Shutdown() {}
+
 void MockUploader::SetDiscardUploads(bool discard_uploads) {
   discard_uploads_ = discard_uploads;
 }

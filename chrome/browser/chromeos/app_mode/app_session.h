@@ -45,6 +45,9 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   // Replaces chrome::AttemptUserExit() by |closure|.
   void SetAttemptUserExitForTesting(base::OnceClosure closure);
 
+  Browser* GetSettingsBrowserForTesting() { return settings_browser_; }
+  void SetOnHandleBrowserCallbackForTesting(base::OnceClosure closure);
+
  private:
   // AppWindowHandler watches for app window and exits the session when the
   // last window of a given app is closed.
@@ -69,7 +72,14 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   std::unique_ptr<BrowserWindowHandler> browser_window_handler_;
   std::unique_ptr<KioskSessionPluginHandler> plugin_handler_;
 
+  // Browser in which settings are shown, restricted by
+  // KioskSettingsNavigationThrottle.
+  Browser* settings_browser_ = nullptr;
+
   base::OnceClosure attempt_user_exit_;
+  // Is called whenever a new browser creation was handled by the
+  // BrowserWindowHandler.
+  base::OnceClosure on_handle_browser_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSession);
 };

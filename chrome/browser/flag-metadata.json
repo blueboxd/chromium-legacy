@@ -1105,7 +1105,7 @@
   {
     "name": "enable-assistant-app-support",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-dsp",
@@ -1694,6 +1694,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-media-feeds",
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-media-foundation-video-capture",
     "owners": [ "armax", "guidou" ],
     "expiry_milestone": 90
@@ -1732,6 +1737,11 @@
     "name": "enable-native-notifications",
     "owners": [ "peter", "finnur" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "enable-navigation-predictor",
+    "owners": [ "tbansal", "ryansturm", "instant-nav" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-navigation-tracing",
@@ -1856,6 +1866,11 @@
   {
     "name": "enable-portals-cross-origin",
     "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
+    "name": "enable-preconnect-to-search",
+    "owners": [ "tbansal", "ryansturm", "instant-nav" ],
     "expiry_milestone": 90
   },
   {
@@ -3563,7 +3578,7 @@
   {
     "name": "reduced-referrer-granularity",
     "owners": [ "davidvc", "mkwst", "jochen" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "related-searches",
@@ -3655,6 +3670,11 @@
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "scroll-unification",
+    "owners": ["bokan@chromium.org", "input-dev@chromium.org"],
+    "expiry_milestone": 90
   },
   {
     "name": "scrollable-tabstrip",

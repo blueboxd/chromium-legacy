@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 

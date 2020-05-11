@@ -193,7 +193,6 @@
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3329904751041170572">सर्भरमा जडान हुन सकेन।</translation>
 <translation id="3335947283844343239">बन्द गरिएको ट्याब पुन: खोल्नुहोस्</translation>
-<translation id="3343651535143698944">साइटको स्तरमा अपवाद थप्नुहोस्</translation>
 <translation id="3371831930909698441">अनुवाद उपलब्ध छ। विकल्पहरू स्क्रिनका पुछारतिर उपलब्ध छन्।</translation>
 <translation id="3393920035788932672">पप-अपहरूलाई अनुमति दिइयो</translation>
 <translation id="3443810440409579745">ट्याब प्राप्त गरियो।</translation>
@@ -441,6 +440,7 @@
 <translation id="6638511529934826365">पाठ जुम गर्नुहोस्…</translation>
 <translation id="6642362222295953972">विद्यमान ट्याबमा जानुहोस्</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
+<translation id="6645899968535965230">QR कोड: <ph name="PAGE_TITLE" /></translation>
 <translation id="6656103420185847513">फोल्डर सम्पादन गर्नुहोस्</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6668619169535738264">पुस्तक चिन्ह सम्पादन गर्नुहोस्</translation>
@@ -563,7 +563,6 @@
 <translation id="8319076807703933069">नयाँ खोज</translation>
 <translation id="8323906514956095947">ट्याबसम्बन्धी थप विकल्पहरू हेर्न छोइराख्नुहोस्</translation>
 <translation id="8328777765163860529">सबै बन्द गर्नुहोस्</translation>
-<translation id="8332159733957009464">साइट स्तरमा तय गरिएका अपवादहरू</translation>
 <translation id="8386068868580335421">रिसेट गर्नुहोस्</translation>
 <translation id="8407669440184693619">यो साइटका लागि कुनै पनि पासवर्ड फेला परेन</translation>
 <translation id="842017693807136194">निम्न प्रमाणमार्फत साइन इन ...</translation>

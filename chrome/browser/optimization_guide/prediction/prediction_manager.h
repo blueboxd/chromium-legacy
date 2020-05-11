@@ -117,9 +117,10 @@ class PredictionManager
     return model_and_features_store_.get();
   }
 
-  // Return whether there have been any optimization targets registered.
-  bool HasRegisteredOptimizationTargets() const {
-    return !registered_optimization_targets_.empty();
+  // Return the optimization targets that are registered.
+  base::flat_set<optimization_guide::proto::OptimizationTarget>
+  registered_optimization_targets() const {
+    return registered_optimization_targets_;
   }
 
   // Override |clock_| for testing.

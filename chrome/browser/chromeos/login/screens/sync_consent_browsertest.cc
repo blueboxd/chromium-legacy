@@ -24,6 +24,8 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -33,7 +35,11 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
@@ -115,7 +121,6 @@ class SyncConsentTest : public OobeBaseTest {
           IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION,
-          IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
@@ -311,7 +316,6 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTest, SyncConsentRecorder) {
         "Chrome browser sync",
         "Your bookmarks, history, passwords, and other settings will be synced "
         "to your Google Account so you can use them on all your devices.",
-        "Review browser sync options following setup",
         "Personalize Google services",
         "Google may use your browsing history to personalize Search, ads, and "
         "other Google services. You can change this anytime at "
@@ -423,7 +427,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   LoginToSyncConsentScreen();
 
   // OS sync is disabled by default.
-  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  PrefService* prefs = profile->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
 
   // Wait for content to load.
@@ -461,7 +466,6 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
       IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION,
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
@@ -472,6 +476,13 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   // Toggle button is on-by-default, so OS sync should be on.
   EXPECT_TRUE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
 
+  // Browser sync is on-by-default.
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  EXPECT_TRUE(identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync));
+  auto* service = ProfileSyncServiceFactory::GetForProfile(profile);
+  EXPECT_TRUE(service->GetUserSettings()->IsSyncRequested());
+  EXPECT_TRUE(service->GetUserSettings()->IsFirstSetupComplete());
+
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), SyncConsentScreen::Result::NEXT);
   histogram_tester_.ExpectTotalCount(
@@ -481,11 +492,11 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
 
 // Flaky failures on sanitizer builds. https://crbug.com/1054377
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_UserCanDisable DISABLED_UserCanDisable
+#define MAYBE_DisableOsSync DISABLED_DisableOsSync
 #else
-#define MAYBE_UserCanDisable UserCanDisable
+#define MAYBE_DisableOsSync DisableOsSync
 #endif
-IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_UserCanDisable) {
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DisableOsSync) {
   auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(true);
   LoginToSyncConsentScreen();
 
@@ -510,12 +521,47 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_UserCanDisable) {
   // OS sync is off.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
+}
 
-  WaitForScreenExit();
-  EXPECT_EQ(screen_result_.value(), SyncConsentScreen::Result::NEXT);
-  histogram_tester_.ExpectTotalCount(
-      "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 1);
-  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Sync-consent", 1);
+// Flaky failures on sanitizer builds. https://crbug.com/1054377
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_DisableBrowserSync DISABLED_DisableBrowserSync
+#else
+#define MAYBE_DisableBrowserSync DisableBrowserSync
+#endif
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
+                       MAYBE_DisableBrowserSync) {
+  auto autoreset = SyncConsentScreen::ForceBrandedBuildForTesting(true);
+  LoginToSyncConsentScreen();
+
+  // Wait for content to load.
+  SyncConsentScreen* screen = GetSyncConsentScreen();
+  ConsentRecordedWaiter consent_recorded_waiter;
+  screen->SetDelegateForTesting(&consent_recorded_waiter);
+  screen->SetProfileSyncDisabledByPolicyForTesting(false);
+  screen->SetProfileSyncEngineInitializedForTesting(true);
+  screen->OnStateChanged(nullptr);
+  test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent-impl"})->Wait();
+
+  // Turn off the toggle.
+  test::OobeJS().ClickOnPath({"sync-consent-impl", "browserSyncToggle"});
+
+  // Click the continue button and wait for the JS to C++ callback.
+  test::OobeJS().ClickOnPath(
+      {"sync-consent-impl", "settingsAcceptAndContinueButton"});
+  consent_recorded_waiter.Wait();
+  screen->SetDelegateForTesting(nullptr);
+
+  // For historical reasons, browser sync is still on. However, all data types
+  // are disabled.
+  syncer::SyncUserSettings* settings =
+      ProfileSyncServiceFactory::GetForProfile(
+          ProfileManager::GetPrimaryUserProfile())
+          ->GetUserSettings();
+  EXPECT_TRUE(settings->IsSyncRequested());
+  EXPECT_TRUE(settings->IsFirstSetupComplete());
+  EXPECT_FALSE(settings->IsSyncEverythingEnabled());
+  EXPECT_TRUE(settings->GetSelectedTypes().Empty());
 }
 
 // Tests that the SyncConsent screen performs a timezone request so that

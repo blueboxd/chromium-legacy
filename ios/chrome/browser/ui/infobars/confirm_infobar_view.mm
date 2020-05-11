@@ -7,11 +7,12 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace {
@@ -583,6 +584,8 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
 LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
     const ComputedStyle& style,
     LogicalSize percent_resolution_sizes) {
+  if (!RuntimeEnabledFeatures::FlexGapsEnabled())
+    return LayoutUnit();
   DCHECK_GE(percent_resolution_sizes.inline_size, 0);
   if (IsColumnFlow(style)) {
     if (LIKELY(style.RowGap().IsNormal()))
@@ -601,6 +604,8 @@ LayoutUnit FlexLayoutAlgorithm::GapBetweenItems(
 LayoutUnit FlexLayoutAlgorithm::GapBetweenLines(
     const ComputedStyle& style,
     LogicalSize percent_resolution_sizes) {
+  if (!RuntimeEnabledFeatures::FlexGapsEnabled())
+    return LayoutUnit();
   DCHECK_GE(percent_resolution_sizes.inline_size, 0);
   if (!IsColumnFlow(style)) {
     if (LIKELY(style.RowGap().IsNormal()))

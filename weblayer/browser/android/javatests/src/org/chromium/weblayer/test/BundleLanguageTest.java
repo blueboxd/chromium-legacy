@@ -5,9 +5,11 @@
 package org.chromium.weblayer.test;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.support.test.filters.SmallTest;
+import android.util.SparseArray;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +20,8 @@ import org.junit.runner.RunWith;
 import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Locale;
 
@@ -67,11 +71,60 @@ public class BundleLanguageTest {
         Assert.assertEquals(4, translations.size());
     }
 
+    /**
+     * Tests that all locale resources have been moved into splits, so the only package ID left in
+     * the base APK has a dynamic ID.
+     */
+    @Test
+    @SmallTest
+    public void testBasePackageIdCorrect() throws Exception {
+        AssetManager assetManager = createEmptyAssetManager();
+        addAssetPath(assetManager, mRemoteContext.getApplicationInfo().sourceDir);
+        SparseArray<String> packageIds = getPackageIds(assetManager);
+        Assert.assertEquals(2, packageIds.size());
+        Assert.assertEquals(packageIds.get(1), "android");
+        Assert.assertEquals(packageIds.get(2), mRemoteContext.getPackageName());
+    }
+
+    /** Tests that locale splits only have resources from the hardcoded locale package ID. */
+    @Test
+    @SmallTest
+    public void testLocalePackageIdCorrect() throws Exception {
+        AssetManager assetManager = createEmptyAssetManager();
+        for (String path : mRemoteContext.getApplicationInfo().splitSourceDirs) {
+            addAssetPath(assetManager, path);
+        }
+        SparseArray<String> packageIds = getPackageIds(assetManager);
+        Assert.assertEquals(2, packageIds.size());
+        Assert.assertEquals(packageIds.get(1), "android");
+        Assert.assertEquals(packageIds.get(ResourceUtil.REQUIRED_PACKAGE_IDENTIFIER),
+                mRemoteContext.getPackageName() + "_translations");
+    }
+
     private String getStringForLocale(String name, String locale) {
         Resources resources = mRemoteContext.getResources();
         Configuration config = resources.getConfiguration();
         config.setLocale(new Locale(locale));
         resources.updateConfiguration(config, resources.getDisplayMetrics());
         return resources.getString(ResourceUtil.getIdentifier(mRemoteContext, name));
+    }
+
+    private static AssetManager createEmptyAssetManager() throws ReflectiveOperationException {
+        Constructor<AssetManager> constructor = AssetManager.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        return constructor.newInstance();
+    }
+
+    private static void addAssetPath(AssetManager assetManager, String path)
+            throws ReflectiveOperationException {
+        Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+        addAssetPath.invoke(assetManager, path);
+    }
+
+    private static SparseArray<String> getPackageIds(AssetManager assetManager)
+            throws ReflectiveOperationException {
+        Method getAssignedPackageIdentifiers =
+                AssetManager.class.getMethod("getAssignedPackageIdentifiers");
+        return (SparseArray) getAssignedPackageIdentifiers.invoke(assetManager);
     }
 }

@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">ไฟล์ Linux</translation>
 <translation id="9035012421917565900">ไม่สามารถย้ายรายการกลับไปที่ "<ph name="DESTINATION_NAME" />" คุณจึงไม่สามารถเลิกทำการดำเนินการนี้</translation>
 <translation id="9038620279323455325">มีไฟล์ชื่อ "<ph name="FILE_NAME" />" อยู่แล้ว โปรดเลือกชื่ออื่น</translation>
-<translation id="9062992083244091966">หากต้องการเปิดไฟล์ด้วยแอป <ph name="APP_NAME" /> ก่อนอื่น ให้ย้ายไฟล์ไปยังโฟลเดอร์ไฟล์ที่แชร์ของ <ph name="APP_NAME" /></translation>
 <translation id="9064939804718829769">กำลังโอน...</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9099674669267916096">จำนวนหน้า</translation>

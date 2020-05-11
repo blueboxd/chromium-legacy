@@ -523,7 +523,9 @@ class Generator(generator.Generator):
   def GenerateFiles(self, args):
     self.module.Stylize(generator.Stylizer())
 
-    if self.generate_non_variant_code:
+    if self.extra_cpp_template_paths and self.generate_extra_cpp_only:
+      suffix = "-%s" % self.variant if self.variant else ""
+    elif self.generate_non_variant_code:
       if self.generate_message_ids:
         self.WriteWithComment(self._GenerateModuleSharedMessageIdsHeader(),
                               "%s-shared-message-ids.h" % self.module.path)

@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"

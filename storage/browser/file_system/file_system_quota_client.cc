@@ -96,8 +96,8 @@ FileSystemQuotaClient::FileSystemQuotaClient(
 
 FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
-QuotaClient::ID FileSystemQuotaClient::id() const {
-  return QuotaClient::kFileSystem;
+QuotaClientType FileSystemQuotaClient::type() const {
+  return QuotaClientType::kFileSystem;
 }
 
 void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,

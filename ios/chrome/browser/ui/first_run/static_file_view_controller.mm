@@ -6,7 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"

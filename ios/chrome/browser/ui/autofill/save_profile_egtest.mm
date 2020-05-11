@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"

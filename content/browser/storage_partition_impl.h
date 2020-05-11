@@ -9,8 +9,10 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -85,9 +87,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   // (e.g. resource context).
   ~StoragePartitionImpl() override;
 
-  // Quota managed data uses a different bitmask for types than
-  // StoragePartition uses. This method generates that mask.
-  static int GenerateQuotaClientMask(uint32_t remove_mask);
+  // Quota managed data uses a different representation for storage types than
+  // StoragePartition uses. This method generates that representation.
+  static storage::QuotaClientTypes GenerateQuotaClientTypes(
+      uint32_t remove_mask);
 
   // Allows overriding the URLLoaderFactory creation for
   // GetURLLoaderFactoryForBrowserProcess.

@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"

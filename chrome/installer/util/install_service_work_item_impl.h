@@ -53,6 +53,7 @@ class InstallServiceWorkItemImpl {
   InstallServiceWorkItemImpl(const base::string16& service_name,
                              const base::string16& display_name,
                              const base::CommandLine& service_cmd_line,
+                             const base::string16& registry_path,
                              const GUID& clsid,
                              const GUID& iid);
 
@@ -163,6 +164,10 @@ class InstallServiceWorkItemImpl {
 
   // The desired service command line.
   const base::CommandLine service_cmd_line_;
+
+  // The path under HKEY_LOCAL_MACHINE where the service persists information,
+  // such as a versioned service name.
+  const base::string16 registry_path_;
 
   // If COM CLSID/AppId registration is required, |clsid| would contain a valid
   // CLSID.

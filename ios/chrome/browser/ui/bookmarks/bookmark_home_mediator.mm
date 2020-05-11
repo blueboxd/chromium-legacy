@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_mediator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"

@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -36,7 +37,7 @@ class MockStorageClient : public QuotaClient {
  public:
   MockStorageClient(scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
                     const MockOriginData* mock_data,
-                    QuotaClient::ID id,
+                    storage::QuotaClientType id,
                     size_t mock_data_size);
 
   // To add or modify mock data in this client.
@@ -54,7 +55,7 @@ class MockStorageClient : public QuotaClient {
   base::Time IncrementMockTime();
 
   // QuotaClient.
-  QuotaClient::ID id() const override;
+  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
@@ -89,7 +90,7 @@ class MockStorageClient : public QuotaClient {
   void Populate(const MockOriginData* mock_data, size_t mock_data_size);
 
   const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
-  const ID id_;
+  const storage::QuotaClientType id_;
 
   std::map<std::pair<url::Origin, blink::mojom::StorageType>, int64_t>
       origin_data_;

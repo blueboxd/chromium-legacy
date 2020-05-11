@@ -5,11 +5,11 @@
 #ifndef ASH_HUD_DISPLAY_HUD_DISPLAY_H_
 #define ASH_HUD_DISPLAY_HUD_DISPLAY_H_
 
-#include "ash/fast_ink/fast_ink_view.h"
 #include "ash/hud_display/data_source.h"
 #include "ash/hud_display/graph.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 namespace hud_display {
@@ -17,7 +17,7 @@ namespace hud_display {
 class DataSource;
 
 // HUDDisplayView class can be used to display a system monitoring overview.
-class HUDDisplayView : public fast_ink::FastInkView {
+class HUDDisplayView : public views::WidgetDelegateView {
  public:
   // Default HUDDisplayView height.
   static constexpr size_t kDefaultHUDHeight = 300;
@@ -25,11 +25,18 @@ class HUDDisplayView : public fast_ink::FastInkView {
   // Border width inside the HUDDisplayView rectangle around contents.
   static constexpr size_t kHUDInset = 5;
 
-  explicit HUDDisplayView(aura::Window* container);
+  HUDDisplayView();
   ~HUDDisplayView() override;
 
   HUDDisplayView(const HUDDisplayView&) = delete;
   HUDDisplayView& operator=(const HUDDisplayView&) = delete;
+
+  // view::
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  // WidgetDelegate:
+  views::ClientView* CreateClientView(views::Widget* widget) override;
+  void OnWidgetInitialized() override;
 
   // Destroys global instance.
   static void Destroy();
@@ -37,15 +44,7 @@ class HUDDisplayView : public fast_ink::FastInkView {
   // Creates/Destroys global singleton.
   static void Toggle();
 
-  // Updates the data and paints the HUD.
-  void UpdateAndPaint();
-
  private:
-  gfx::Transform buffer_to_screen_transform_;
-
-  gfx::Rect canvas_rect_;
-  gfx::Rect memory_stats_rect_;
-
   // HUD is updatd with new data every tick.
   base::RepeatingTimer refresh_timer_;
 

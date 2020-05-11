@@ -14037,6 +14037,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuClipboard">
+  <owner>gambard@chromium.org</owner>
+  <owner>seblalancette@chromium.org</owner>
+  <description>User copied content to the device's clipboard.</description>
+</action>
+
 <action name="MobileShareMenuFindInPage">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -14051,6 +14057,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuPrint">
+  <owner>gambard@chromium.org</owner>
+  <owner>seblalancette@chromium.org</owner>
+  <description>
+    User triggered the Print activity from the share menu.
+  </description>
+</action>
+
 <action name="MobileShareMenuReadLater">
   <owner>gambard@chromium.org</owner>
   <description>User shared to the device's Reading List.</description>
@@ -14062,6 +14076,12 @@ should be able to be added at any place in this file.
     User requested the desktop or mobile version of a site web from the share
     menu.
   </description>
+</action>
+
+<action name="MobileShareMenuSaveImage">
+  <owner>gambard@chromium.org</owner>
+  <owner>seblalancette@chromium.org</owner>
+  <description>User saved an image the device's camera roll.</description>
 </action>
 
 <action name="MobileShareMenuSendTabToSelf">

@@ -10,7 +10,7 @@
 #error "This file requires ARC support."
 #endif
 
-#include "base/logging.h"
+#include "base/check.h"
 
 @interface GridTransitionLayout ()
 @property(nonatomic, readwrite) NSArray<GridTransitionItem*>* inactiveItems;

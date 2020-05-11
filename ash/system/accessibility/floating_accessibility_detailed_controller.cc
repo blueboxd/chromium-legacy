@@ -5,12 +5,18 @@
 #include "ash/system/accessibility/floating_accessibility_detailed_controller.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/accessibility/tray_accessibility.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -82,7 +88,7 @@ void FloatingAccessibilityDetailedController::Show(
       std::make_unique<tray::AccessibilityDetailedView>(this));
   bubble_view_->SetPreferredSize(
       gfx::Size(kTrayMenuWidth, kDetailedViewHeightDip));
-  detailed_view_->SetFocusBehavior(ActionableView::FocusBehavior::ALWAYS);
+  bubble_view_->SetFocusBehavior(ActionableView::FocusBehavior::ALWAYS);
   detailed_view_->SetPaintToLayer();
   detailed_view_->layer()->SetFillsBoundsOpaquely(false);
 
@@ -92,7 +98,7 @@ void FloatingAccessibilityDetailedController::Show(
   bubble_view_->InitializeAndShowBubble();
 
   // Focus on the bubble whenever it is shown.
-  detailed_view_->RequestFocus();
+  bubble_view_->RequestFocus();
 }
 
 void FloatingAccessibilityDetailedController::UpdateAnchorRect(
@@ -120,20 +126,31 @@ void FloatingAccessibilityDetailedController::TransitionToMainView(
   CloseBubble();
 }
 
-views::Button* FloatingAccessibilityDetailedController::CreateHelpButton(
+base::string16
+FloatingAccessibilityDetailedController::GetAccessibleNameForBubble() {
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_FLOATING_ACCESSIBILITY_DETAILED_MENU);
+}
+
+views::Button* FloatingAccessibilityDetailedController::CreateBackButton(
     views::ButtonListener* listener) {
-  auto* button = DetailedViewDelegate::CreateHelpButton(listener);
-  button->SetEnabled(false);
+  views::ImageButton* button = static_cast<views::ImageButton*>(
+      DetailedViewDelegate::CreateBackButton(listener));
+  gfx::ImageSkia image = gfx::CreateVectorIcon(
+      kAutoclickCloseIcon, AshColorProvider::Get()->GetContentLayerColor(
+                               AshColorProvider::ContentLayerType::kIconPrimary,
+                               AshColorProvider::AshColorMode::kDark));
+  button->SetImage(views::Button::STATE_NORMAL, image);
+  button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_FLOATING_ACCESSIBILITY_DETAILED_MENU_CLOSE));
+
   return button;
 }
 
-views::Button* FloatingAccessibilityDetailedController::CreateSettingsButton(
-    views::ButtonListener* listener,
-    int setting_accessible_name_id) {
-  auto* button = DetailedViewDelegate::CreateSettingsButton(
-      listener, setting_accessible_name_id);
-  // TODO(crbug.com/1061068): Enable when the settings UI is ready.
-  button->SetEnabled(false);
+views::Button* FloatingAccessibilityDetailedController::CreateHelpButton(
+    views::ButtonListener* listener) {
+  auto* button = DetailedViewDelegate::CreateHelpButton(listener);
+  button->SetVisible(false);
   return button;
 }
 

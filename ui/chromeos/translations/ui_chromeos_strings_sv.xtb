@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9035012421917565900">Eftersom det inte går att flytta tillbaka objekten till <ph name="DESTINATION_NAME" /> går det inte att ångra åtgärden.</translation>
 <translation id="9038620279323455325">Det finns redan en fil med namnet <ph name="FILE_NAME" />. Välj ett annat namn.</translation>
-<translation id="9062992083244091966">Om du vill öppna filer med <ph name="APP_NAME" /> ska du först flytta dem till mappen med delade <ph name="APP_NAME" />-filer.</translation>
 <translation id="9064939804718829769">Överför ...</translation>
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9099674669267916096">Sidantal</translation>

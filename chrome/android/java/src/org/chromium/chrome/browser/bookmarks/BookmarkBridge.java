@@ -44,27 +44,6 @@ public class BookmarkBridge {
             new ObserverList<BookmarkModelObserver>();
 
     /**
-     * @param tab Tab whose current URL is checked against.
-     * @return {@code true} if the current Tab URL has a bookmark associated with it.
-     */
-    public static boolean hasBookmarkIdForTab(Tab tab) {
-        ThreadUtils.assertOnUiThread();
-        if (tab.isFrozen()) return false;
-        return BookmarkBridgeJni.get().getBookmarkIdForWebContents(tab.getWebContents(), false)
-                != BookmarkId.INVALID_ID;
-    }
-
-    /**
-     * @param tab Tab whose current URL is checked against.
-     * @return ser-editable bookmark ID.
-     */
-    public static long getUserBookmarkIdForTab(Tab tab) {
-        ThreadUtils.assertOnUiThread();
-        if (tab.isFrozen()) return BookmarkId.INVALID_ID;
-        return BookmarkBridgeJni.get().getBookmarkIdForWebContents(tab.getWebContents(), true);
-    }
-
-    /**
      * Interface for callback object for fetching bookmarks and folder hierarchy.
      */
     public interface BookmarksCallback {
@@ -294,6 +273,29 @@ public class BookmarkBridge {
             mDelayedBookmarkCallbacks.clear();
         }
         mObservers.clear();
+    }
+
+    /**
+     * @param tab Tab whose current URL is checked against.
+     * @return {@code true} if the current Tab URL has a bookmark associated with it.
+     */
+    public boolean hasBookmarkIdForTab(Tab tab) {
+        ThreadUtils.assertOnUiThread();
+        if (tab.isFrozen()) return false;
+        return BookmarkBridgeJni.get().getBookmarkIdForWebContents(
+                       mNativeBookmarkBridge, this, tab.getWebContents(), false)
+                != BookmarkId.INVALID_ID;
+    }
+
+    /**
+     * @param tab Tab whose current URL is checked against.
+     * @return User-editable bookmark ID.
+     */
+    public long getUserBookmarkIdForTab(Tab tab) {
+        ThreadUtils.assertOnUiThread();
+        if (tab.isFrozen()) return BookmarkId.INVALID_ID;
+        return BookmarkBridgeJni.get().getBookmarkIdForWebContents(
+                mNativeBookmarkBridge, this, tab.getWebContents(), true);
     }
 
     /**
@@ -988,7 +990,8 @@ public class BookmarkBridge {
 
     @NativeMethods
     interface Natives {
-        long getBookmarkIdForWebContents(WebContents webContents, boolean onlyEditable);
+        long getBookmarkIdForWebContents(long nativeBookmarkBridge, BookmarkBridge caller,
+                WebContents webContents, boolean onlyEditable);
         BookmarkItem getBookmarkByID(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
         void getTopLevelFolderParentIDs(

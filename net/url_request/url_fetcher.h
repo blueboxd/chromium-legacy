@@ -46,10 +46,6 @@ namespace device {
 class UsbTestGadgetImpl;
 }
 
-namespace domain_reliability {
-class DomainReliabilityUploaderImpl;
-}
-
 namespace remoting {
 class GstaticJsonFetcher;
 }
@@ -354,7 +350,6 @@ class NET_EXPORT URLFetcher {
   friend class cloud_print::CloudPrintURLFetcher;
   friend class cr_fuchsia::DevToolsListFetcher;
   friend class device::UsbTestGadgetImpl;
-  friend class domain_reliability::DomainReliabilityUploaderImpl;
   friend class remoting::GstaticJsonFetcher;
 
   // The unannotated Create() methods are not available on desktop Linux +

@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 
+#include "base/check.h"
 #include "base/ios/block_types.h"
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"

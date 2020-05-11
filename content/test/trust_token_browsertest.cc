@@ -88,11 +88,12 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
-  EXPECT_TRUE(
+  EXPECT_EQ(
       EvalJs(
           shell(),
           JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()))
-          .error.empty());
+          .error,
+      "");
 
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
@@ -150,11 +151,12 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, XhrEndToEnd) {
 
   // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
   // resolve.
-  EXPECT_TRUE(
+  EXPECT_EQ(
       EvalJs(
           shell(),
           JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()))
-          .error.empty());
+          .error,
+      "");
 
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }

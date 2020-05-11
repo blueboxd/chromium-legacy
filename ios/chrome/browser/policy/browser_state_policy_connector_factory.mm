@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/policy/browser_state_policy_connector_factory.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/browser/policy/browser_state_policy_connector.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 

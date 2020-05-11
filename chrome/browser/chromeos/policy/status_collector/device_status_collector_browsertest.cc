@@ -173,6 +173,9 @@ constexpr uint32_t kFakeMaxBrightness = 769;
 constexpr uint32_t kFakeBrightness = 124;
 // Fan test values:
 constexpr uint32_t kFakeSpeedRpm = 1225;
+// Stateful partition test values:
+constexpr uint64_t kFakeAvailableSpace = 9238571212ul;
+constexpr uint64_t kFakeTotalSpace = 23420982409ul;
 
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
@@ -500,6 +503,12 @@ cros_healthd::FanResultPtr CreateFanResult() {
   return cros_healthd::FanResult::NewFanInfo(std::move(fan_vector));
 }
 
+cros_healthd::StatefulPartitionResultPtr CreateStatefulPartitionResult() {
+  return cros_healthd::StatefulPartitionResult::NewPartitionInfo(
+      cros_healthd::StatefulPartitionInfo::New(kFakeAvailableSpace,
+                                               kFakeTotalSpace));
+}
+
 base::circular_deque<std::unique_ptr<policy::SampledData>>
 CreateFakeSampleData() {
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -539,7 +548,8 @@ void FetchFakeFullCrosHealthdData(
       cros_healthd::TelemetryInfo fake_info(
           CreateBatteryResult(), CreateBlockDeviceResult(), CreateVpdResult(),
           CreateCpuResult(), CreateTimezoneResult(), CreateMemoryResult(),
-          CreateBacklightResult(), CreateFanResult());
+          CreateBacklightResult(), CreateFanResult(),
+          CreateStatefulPartitionResult());
 
       std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
       return;

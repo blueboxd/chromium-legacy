@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Linux files</translation>
 <translation id="9035012421917565900">The items cannot be moved back into '<ph name="DESTINATION_NAME" />', so you won't be able to undo this action.</translation>
 <translation id="9038620279323455325">The file named '<ph name="FILE_NAME" />' already exists. Please choose a different name.</translation>
-<translation id="9062992083244091966">To open files with <ph name="APP_NAME" /> apps, first move them to <ph name="APP_NAME" /> shared files folder.</translation>
 <translation id="9064939804718829769">Transferring...</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9099674669267916096">Page count</translation>

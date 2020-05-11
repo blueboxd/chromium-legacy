@@ -147,7 +147,8 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
     return;
   }
 
-  if (!key_pair_generator_->Generate(&signing_key_, &verification_key_)) {
+  if (!key_pair_generator_->Generate(&bound_signing_key_,
+                                     &bound_verification_key_)) {
     LogOutcome(net_log_, kBegin,
                "Internal error generating SRR-bound key pair");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
@@ -155,8 +156,8 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
   }
 
   base::Optional<std::string> maybe_redemption_header =
-      cryptographer_->BeginRedemption(*maybe_token_to_redeem, verification_key_,
-                                      top_level_origin_);
+      cryptographer_->BeginRedemption(
+          *maybe_token_to_redeem, bound_verification_key_, top_level_origin_);
 
   if (!maybe_redemption_header) {
     LogOutcome(net_log_, kBegin, "Internal error beginning redemption");
@@ -175,6 +176,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
   // settings.
   request->SetLoadFlags(request->load_flags() | net::LOAD_BYPASS_CACHE);
 
+  token_verification_key_ = *maybe_token_to_redeem->mutable_signing_key();
   token_store_->DeleteToken(*issuer_, *maybe_token_to_redeem);
 
   LogOutcome(net_log_, kBegin, "Success");
@@ -230,8 +232,10 @@ void TrustTokenRequestRedemptionHelper::Finalize(
 
   SignedTrustTokenRedemptionRecord record_to_store;
   record_to_store.set_body(std::move(*maybe_signed_redemption_record));
-  record_to_store.set_signing_key(std::move(signing_key_));
-  record_to_store.set_public_key(std::move(verification_key_));
+  record_to_store.set_signing_key(std::move(bound_signing_key_));
+  record_to_store.set_public_key(std::move(bound_verification_key_));
+  record_to_store.set_token_verification_key(
+      std::move(token_verification_key_));
   token_store_->SetRedemptionRecord(*issuer_, top_level_origin_,
                                     std::move(record_to_store));
 

@@ -6,8 +6,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/check_op.h"
 #import "base/ios/ns_error_util.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/error_page/common/error.h"

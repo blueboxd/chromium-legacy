@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"

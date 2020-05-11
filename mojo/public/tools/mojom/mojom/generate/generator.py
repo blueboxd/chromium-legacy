@@ -253,7 +253,8 @@ class Generator(object):
                generate_message_ids=False,
                generate_fuzzing=False,
                enable_kythe_annotations=False,
-               extra_cpp_template_paths=None):
+               extra_cpp_template_paths=None,
+               generate_extra_cpp_only=False):
     self.module = module
     self.output_dir = output_dir
     self.typemap = typemap or {}
@@ -272,6 +273,7 @@ class Generator(object):
     self.generate_fuzzing = generate_fuzzing
     self.enable_kythe_annotations = enable_kythe_annotations
     self.extra_cpp_template_paths = extra_cpp_template_paths
+    self.generate_extra_cpp_only = generate_extra_cpp_only
 
   def Write(self, contents, filename):
     if self.output_dir is None:

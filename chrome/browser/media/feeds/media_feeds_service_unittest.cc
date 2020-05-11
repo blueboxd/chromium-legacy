@@ -331,6 +331,8 @@ TEST_F(MediaFeedsServiceTest, GetForProfile) {
 }
 
 TEST_F(MediaFeedsServiceTest, FetchFeed_Success) {
+  base::HistogramTester histogram_tester;
+
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
@@ -350,6 +352,9 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_Success) {
   EXPECT_TRUE(feeds[0]->last_fetch_time_not_cache_hit);
   EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
             feeds[0]->last_fetch_result);
+
+  histogram_tester.ExpectUniqueSample(
+      MediaFeedsFetcher::kFetchSizeKbHistogramName, 15, 1);
 }
 
 TEST_F(MediaFeedsServiceTest, FetchFeed_SuccessFromCache) {

@@ -59,7 +59,8 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // data keys are used when constructing a CBOR dictionary; they are the keys
   // to the values of request URL, POST body, and signing public key
   // (if any).
-  static constexpr char kCanonicalizedRequestDataUrlKey[] = "url";
+  static constexpr char kCanonicalizedRequestDataDestinationKey[] =
+      "destination";
   static constexpr char kCanonicalizedRequestDataPublicKeyKey[] = "public-key";
 
   // |kRequestSigningDomainSeparator| is a static (fixed major per protocol

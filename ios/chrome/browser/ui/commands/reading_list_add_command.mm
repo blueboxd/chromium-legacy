@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 
-#include "base/logging.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -26,6 +26,7 @@ import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/media_player_action.mojom";
+import "third_party/blink/public/mojom/frame/reporting_observer.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
 import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
@@ -502,6 +503,10 @@ interface LocalFrame {
   // TextInputHost.
   [EnableIf=is_mac]
   GetFirstRectForRange(gfx.mojom.Range range);
+
+  // Binds |receiver| to the document of this frame.
+  BindReportingObserver(
+      pending_receiver<blink.mojom.ReportingObserver> receiver);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that

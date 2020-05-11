@@ -982,7 +982,8 @@ CanvasResourceProvider::CreateSharedImageProvider(
     const CanvasColorParams& color_params,
     bool is_origin_top_left,
     RasterMode raster_mode,
-    uint32_t shared_image_usage_flags) {
+    uint32_t shared_image_usage_flags,
+    unsigned msaa_sample_count) {
   if (!context_provider_wrapper)
     return nullptr;
 
@@ -1007,8 +1008,8 @@ CanvasResourceProvider::CreateSharedImageProvider(
     shared_image_usage_flags &= ~gpu::SHARED_IMAGE_USAGE_SCANOUT;
 
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
-      size, 0 /* msaa_sample_count */, filter_quality, color_params,
-      context_provider_wrapper, nullptr /*resource_dispatcher*/,
+      size, msaa_sample_count, filter_quality, color_params,
+      context_provider_wrapper, nullptr /* resource_dispatcher */,
       is_origin_top_left, raster_mode == RasterMode::kGPU, false,
       shared_image_usage_flags);
   if (provider->IsValid())

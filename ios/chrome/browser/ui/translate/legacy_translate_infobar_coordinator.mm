@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/translate/legacy_translate_infobar_coordinator.h"
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/translate/language_selection_context.h"

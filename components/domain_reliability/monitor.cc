@@ -11,9 +11,6 @@
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/domain_reliability/baked_in_configs.h"
 #include "components/domain_reliability/google_configs.h"
 #include "components/domain_reliability/quic_error_mapping.h"
@@ -22,7 +19,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace domain_reliability {
 
@@ -56,14 +52,17 @@ std::unique_ptr<DomainReliabilityBeacon> CreateBeaconFromAttempt(
 }  // namespace
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
+    net::URLRequestContext* url_request_context,
     const std::string& upload_reporter_string,
     const DomainReliabilityContext::UploadAllowedCallback&
         upload_allowed_callback)
-    : DomainReliabilityMonitor(upload_reporter_string,
+    : DomainReliabilityMonitor(url_request_context,
+                               upload_reporter_string,
                                upload_allowed_callback,
                                std::make_unique<ActualTime>()) {}
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
+    net::URLRequestContext* url_request_context,
     const std::string& upload_reporter_string,
     const DomainReliabilityContext::UploadAllowedCallback&
         upload_allowed_callback,
@@ -75,29 +74,15 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
                        upload_allowed_callback,
                        &dispatcher_),
       discard_uploads_set_(false) {
+  DCHECK(url_request_context);
+  uploader_ =
+      DomainReliabilityUploader::Create(time_.get(), url_request_context);
+  context_manager_.SetUploader(uploader_.get());
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-}
-
-void DomainReliabilityMonitor::InitURLRequestContext(
-    net::URLRequestContext* url_request_context) {
-  DCHECK(url_request_context);
-
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      new net::TrivialURLRequestContextGetter(
-          url_request_context, base::ThreadTaskRunnerHandle::Get());
-  InitURLRequestContext(url_request_context_getter);
-}
-
-void DomainReliabilityMonitor::InitURLRequestContext(
-    const scoped_refptr<net::URLRequestContextGetter>&
-        url_request_context_getter) {
-  uploader_ = DomainReliabilityUploader::Create(time_.get(),
-                                                url_request_context_getter);
-  context_manager_.SetUploader(uploader_.get());
 }
 
 void DomainReliabilityMonitor::Shutdown() {
@@ -221,7 +206,10 @@ DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 // static
 bool DomainReliabilityMonitor::RequestInfo::ShouldReportRequest(
     const DomainReliabilityMonitor::RequestInfo& request) {
-  // Always report upload requests, even though they have DO_NOT_SEND_COOKIES.
+  // Always report DR upload requests, even though they have
+  // DO_NOT_SEND_COOKIES.
+  // Note: They are reported (i.e. generate a beacon) but do not necessarily
+  // trigger an upload by themselves.
   if (request.upload_depth > 0)
     return true;
 

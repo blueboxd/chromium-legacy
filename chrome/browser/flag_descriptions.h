@@ -332,6 +332,12 @@ extern const char kEnableEduCoexistenceConsentLogDescription[];
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 
+extern const char kEnableNavigationPredictorName[];
+extern const char kEnableNavigationPredictorDescription[];
+
+extern const char kEnablePreconnectToSearchName[];
+extern const char kEnablePreconnectToSearchDescription[];
+
 extern const char kEnableNoScriptPreviewsName[];
 extern const char kEnableNoScriptPreviewsDescription[];
 
@@ -1006,6 +1012,9 @@ extern const char kSameSiteByDefaultCookiesDescription[];
 
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
+
+extern const char kScrollUnificationName[];
+extern const char kScrollUnificationDescription[];
 
 extern const char kSendTabToSelfOmniboxSendingAnimationName[];
 extern const char kSendTabToSelfOmniboxSendingAnimationDescription[];
@@ -2296,6 +2305,9 @@ extern const char kClickToCallUIDescription[];
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+
+extern const char kEnableMediaFeedsName[];
+extern const char kEnableMediaFeedsDescription[];
 
 extern const char kRemoteCopyReceiverName[];
 extern const char kRemoteCopyReceiverDescription[];

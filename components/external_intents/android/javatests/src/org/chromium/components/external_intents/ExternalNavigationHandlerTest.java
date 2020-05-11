@@ -35,6 +35,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -1976,12 +1977,13 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
+        public @StartActivityIfNeededResult int maybeHandleStartActivityIfNeeded(
+                Intent intent, boolean proxy) {
             // For simplicity, don't distinguish between startActivityIfNeeded and startActivity
             // until a test requires this distinction.
             startActivityIntent = intent;
             mCalledWithProxy = proxy;
-            return true;
+            return StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START;
         }
 
         @Override

@@ -108,6 +108,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -1627,6 +1628,12 @@ void NavigationRequest::OnRequestRedirected(
   if (redirect_info.new_method != "POST")
     common_params_->post_data.reset();
 
+  // Record the first request start time and response start time.
+  if (first_request_start_.is_null())
+    first_request_start_ = response_head_->load_timing.send_start;
+  if (first_response_start_.is_null())
+    first_response_start_ = response_head_->load_timing.receive_headers_start;
+
   // Mark time for the Navigation Timing API.
   if (commit_params_->navigation_timing->redirect_start.is_null()) {
     commit_params_->navigation_timing->redirect_start =
@@ -1726,7 +1733,7 @@ void NavigationRequest::OnRequestRedirected(
 }
 
 void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
-  if (!IsOptInIsolationRequested())
+  if (!IsOptInIsolationRequested(url))
     return;
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -1766,9 +1773,18 @@ bool NavigationRequest::HasCommittingOrigin(const url::Origin& origin) {
   return origin == url::Origin::Create(GetURL());
 }
 
-bool NavigationRequest::IsOptInIsolationRequested() {
+bool NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
   if (!response())
     return false;
+
+  // The header can be enabled via either a command-line flag or an origin
+  // trial.
+  blink::TrialTokenValidator validator;
+  const bool header_is_enabled =
+      base::FeatureList::IsEnabled(features::kOriginIsolationHeader) ||
+      (response()->headers && validator.RequestEnablesFeature(
+                                  url, response()->headers.get(),
+                                  "OriginIsolationHeader", base::Time::Now()));
 
   // For now we only check for the presence of hints; we do not yet act on the
   // specific hints.
@@ -1782,8 +1798,8 @@ bool NavigationRequest::IsOptInIsolationRequested() {
   // header; we do not parse/validate it. When we do, that will have to be
   // outside the browser process.
   const bool requests_via_header =
-      base::FeatureList::IsEnabled(features::kOriginIsolationHeader) &&
-      response()->headers && response()->headers->HasHeader("origin-isolation");
+      header_is_enabled && response()->headers &&
+      response()->headers->HasHeader("origin-isolation");
 
   return requests_via_header || requests_via_origin_policy;
 }
@@ -1828,14 +1844,14 @@ void NavigationRequest::OnResponseStarted(
       ChildProcessSecurityPolicyImpl::ScopedOriginIsolationOptInRequest;
   std::unique_ptr<ScopedOriginIsolationOptInRequest>
       scoped_origin_isolation_opt_in_request;
-  if (IsOptInIsolationRequested()) {
+  if (IsOptInIsolationRequested(GetURL())) {
     // This origin conversion won't be correct for about:blank, but origin
     // isolation shouldn't need to care about that case because a previous
     // instance of the origin would already have determined its isolation status
     // in that BrowsingInstance.
     // TODO(https://crbug.com/888079): Use the computed origin here just to be
     // safe.
-    url::Origin origin_to_isolate(url::Origin::Create(common_params().url));
+    url::Origin origin_to_isolate(url::Origin::Create(GetURL()));
     scoped_origin_isolation_opt_in_request =
         ScopedOriginIsolationOptInRequest::GetScopedOriginIsolationOptInRequest(
             origin_to_isolate);
@@ -1844,7 +1860,7 @@ void NavigationRequest::OnResponseStarted(
   // The navigation may have encountered an origin policy or Origin-Isolation
   // header that requests isolation for the url's origin. Before we pick the
   // renderer, make sure we update the origin-isolation opt-ins appropriately.
-  CheckForIsolationOptIn(common_params().url);
+  CheckForIsolationOptIn(GetURL());
 
   // Check if the response should be sent to a renderer.
   response_should_be_rendered_ =
@@ -1862,6 +1878,13 @@ void NavigationRequest::OnResponseStarted(
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt;
+
+  // Record the first request start time and first response start time. Skip if
+  // the timings are already recorded for redirection etc.
+  if (first_request_start_.is_null())
+    first_request_start_ = response_head_->load_timing.send_start;
+  if (first_response_start_.is_null())
+    first_response_start_ = response_head_->load_timing.receive_headers_start;
 
   // Update fetch start timing. While NavigationRequest updates fetch start
   // timing for redirects, it's not aware of service worker interception so
@@ -3976,6 +3999,14 @@ base::TimeTicks NavigationRequest::NavigationStart() {
 
 base::TimeTicks NavigationRequest::NavigationInputStart() {
   return common_params().input_start;
+}
+
+base::TimeTicks NavigationRequest::FirstRequestStart() {
+  return first_request_start_;
+}
+
+base::TimeTicks NavigationRequest::FirstResponseStart() {
+  return first_response_start_;
 }
 
 bool NavigationRequest::IsPost() {

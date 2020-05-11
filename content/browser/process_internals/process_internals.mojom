@@ -26,6 +26,8 @@ struct FrameInfo {
   url.mojom.Url? last_committed_url;
 
   array<FrameInfo> subframes;
+
+  bool is_bfcached;
 };
 
 // Basic information describing a WebContents object and all frames that are
@@ -33,6 +35,7 @@ struct FrameInfo {
 struct WebContentsInfo {
   string title;
   FrameInfo root_frame;
+  array<FrameInfo> bfcached_root_frames;
 };
 
 // Information about a currently active isolated origin, including the origin

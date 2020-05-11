@@ -6,7 +6,6 @@
 
 #include <cstddef>
 
-#include "base/logging.h"
 #include "components/metrics/metrics_provider.h"
 #import "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 

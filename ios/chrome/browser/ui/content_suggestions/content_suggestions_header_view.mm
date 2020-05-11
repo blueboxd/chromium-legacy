@@ -6,8 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"

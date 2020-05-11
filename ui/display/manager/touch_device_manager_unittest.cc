@@ -466,8 +466,7 @@ TEST_F(TouchAssociationFromPrefTest, UpdateMappingBeforeAssociation) {
   // Reassociate display with id 4 to touch device with id 3. This will
   // bring the display to the top of the priority list.
   touch_device_manager()->AddTouchCalibrationData(
-      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
-      TouchCalibrationData());
+      devices_[2], displays_[3].id(), TouchCalibrationData());
 
   touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
 
@@ -494,8 +493,7 @@ TEST_F(TouchAssociationFromPrefTest, UpdateMappingAfterAssociation) {
   // bring the display to the top of the priority list. This should work even
   // though the association of devices and displays is complete.
   touch_device_manager()->AddTouchCalibrationData(
-      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
-      TouchCalibrationData());
+      devices_[2], displays_[3].id(), TouchCalibrationData());
 
   EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
   EXPECT_TRUE(AreAssociated(displays_[0], devices_[0]));
@@ -517,8 +515,7 @@ TEST_F(TouchAssociationFromPrefTest, AssociatingDeviceToNewDisplay) {
   // Reassociate display with id 4 to touch device with id 3. This will
   // bring the display to the top of the priority list.
   touch_device_manager()->AddTouchCalibrationData(
-      TouchDeviceIdentifier::FromDevice(devices_[0]), displays_[2].id(),
-      TouchCalibrationData());
+      devices_[0], displays_[2].id(), TouchCalibrationData());
 
   touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
 
@@ -546,8 +543,7 @@ TEST_F(TouchAssociationFromPrefTest,
   // bring the display to the top of the priority list. This should work even
   // though the association of devices and displays is already complete.
   touch_device_manager()->AddTouchCalibrationData(
-      TouchDeviceIdentifier::FromDevice(devices_[0]), displays_[2].id(),
-      TouchCalibrationData());
+      devices_[0], displays_[2].id(), TouchCalibrationData());
 
   EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 0u);
 
@@ -791,8 +787,7 @@ TEST_F(TouchAssociationWithDuplicateDeviceTest, UpdatePortBeforeAssociation) {
   // bring the display to the top of the priority list and map the port the
   // device is connected to, to display 3.
   touch_device_manager()->AddTouchCalibrationData(
-      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
-      TouchCalibrationData());
+      devices_[2], displays_[3].id(), TouchCalibrationData());
 
   touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
 
@@ -821,8 +816,7 @@ TEST_F(TouchAssociationWithDuplicateDeviceTest, ChangeAssociation) {
   // bring the display to the top of the priority list and map the port the
   // device is connected to, to display 3.
   touch_device_manager()->AddTouchCalibrationData(
-      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
-      TouchCalibrationData());
+      devices_[2], displays_[3].id(), TouchCalibrationData());
 
   touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
 

@@ -423,6 +423,12 @@ AuditorResult AnnotationInstance::CreateCompleteAnnotation(
   combination->type = AnnotationInstance::Type::ANNOTATION_COMPLETE;
   combination->second_id.clear();
   combination->second_id_hash_code = 0;
+  if (other->runtime_proto) {
+    if (!combination->runtime_proto)
+      combination->runtime_proto =
+          base::WrapUnique(other->runtime_proto->New());
+    combination->runtime_proto->MergeFrom(*other->runtime_proto);
+  }
 
   // Update comment.
   std::string new_comments = combination->proto.comments();

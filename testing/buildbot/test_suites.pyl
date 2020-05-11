@@ -608,8 +608,6 @@
           '--env-var', 'LIBVA_FOOL_POSTP', '1',
           '--gtest_filter="VaapiTest.*"',
         ],
-        # TODO(crbug.com/1075843): Promote out of experimental.
-        'experiment_percentage': 100,
       },
     },
 

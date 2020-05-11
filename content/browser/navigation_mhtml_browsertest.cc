@@ -86,7 +86,7 @@ class MhtmlArchive {
     base::ScopedAllowBlockingForTesting allow_blocking_;
     EXPECT_TRUE(file_directory_.CreateUniqueTempDir());
     base::FilePath file_path = file_directory_.GetPath().AppendASCII(file);
-    EXPECT_NE(-1, base::WriteFile(file_path, document.data(), document.size()));
+    EXPECT_TRUE(base::WriteFile(file_path, document));
     return net::FilePathToFileURL(file_path);
   }
 

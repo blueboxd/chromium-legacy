@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/policy/schema_registry_factory.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"

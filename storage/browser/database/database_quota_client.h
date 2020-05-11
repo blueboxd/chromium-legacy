@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -29,7 +30,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
   explicit DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
 
   // QuotaClient method overrides
-  ID id() const override;
+  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

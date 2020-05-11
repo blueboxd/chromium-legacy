@@ -243,9 +243,7 @@ class FileSystemURLLoaderFactoryTest
   void SetUpFileAutoMountContext() {
     const base::FilePath mnt_point = SetUpAutoMountContext();
 
-    ASSERT_EQ(static_cast<int>(sizeof(kTestFileData)) - 1,
-              base::WriteFile(mnt_point.AppendASCII("foo"), kTestFileData,
-                              sizeof(kTestFileData) - 1));
+    ASSERT_TRUE(base::WriteFile(mnt_point.AppendASCII("foo"), kTestFileData));
   }
 
   FileSystemURL CreateURL(const base::FilePath& file_path) {
@@ -284,7 +282,7 @@ class FileSystemURLLoaderFactoryTest
     if (!dir.CreateUniqueTempDir())
       result = base::File::FILE_ERROR_FAILED;
     local_path = dir.GetPath().AppendASCII("tmp");
-    if (buf_size != base::WriteFile(local_path, buf, buf_size))
+    if (!base::WriteFile(local_path, base::StringPiece(buf, buf_size)))
       result = base::File::FILE_ERROR_FAILED;
     EXPECT_EQ(base::File::FILE_OK, result);
 
@@ -606,8 +604,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest,
   base::FilePath mnt_point = SetUpAutoMountContext();
   EXPECT_TRUE(base::CreateDirectory(mnt_point));
   EXPECT_TRUE(base::CreateDirectory(mnt_point.AppendASCII("foo")));
-  EXPECT_EQ(10,
-            base::WriteFile(mnt_point.AppendASCII("bar"), "1234567890", 10));
+  EXPECT_TRUE(base::WriteFile(mnt_point.AppendASCII("bar"), "1234567890"));
 
   auto client =
       TestLoad(GURL("filesystem:http://automount/external/mnt_name/"));

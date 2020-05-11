@@ -694,7 +694,7 @@ TEST(ProcessMetricsTest, GetDiskUsageBytesPerSecond) {
   // Write a megabyte on disk.
   const int kMegabyte = 1024 * 1014;
   std::string data(kMegabyte, 'x');
-  ASSERT_EQ(kMegabyte, base::WriteFile(temp_path, data.c_str(), data.size()));
+  ASSERT_TRUE(base::WriteFile(temp_path, data));
 
   // Validate that the counters move up.
   EXPECT_GT(metrics->GetDiskUsageBytesPerSecond(), 0U);

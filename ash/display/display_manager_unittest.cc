@@ -1168,14 +1168,12 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   const ui::TouchscreenDevice touchdevice(
       11, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test touch device"), gfx::Size(123, 456), 1);
-  const display::TouchDeviceIdentifier touch_device_identifier_2 =
-      display::TouchDeviceIdentifier::FromDevice(touchdevice);
 
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
   const display::ManagedDisplayInfo display_info1 = GetDisplayInfoAt(0);
   const display::ManagedDisplayInfo display_info2 = GetDisplayInfoAt(1);
 
-  EXPECT_FALSE(tdm_test_api.GetTouchDeviceCount(display_info2));
+  EXPECT_FALSE(tdm_test_api.AreAssociated(display_info2, touchdevice));
 
   const display::TouchCalibrationData::CalibrationPointPairQuad
       point_pair_quad = {
@@ -1189,15 +1187,14 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
 
   // Set the touch calibration data for the secondary display.
   display_manager()->SetTouchCalibrationData(
-      display_info2.id(), point_pair_quad, bounds_at_calibration,
-      touch_device_identifier_2);
+      display_info2.id(), point_pair_quad, bounds_at_calibration, touchdevice);
 
-  EXPECT_TRUE(tdm_test_api.GetTouchDeviceCount(display_info2));
+  EXPECT_TRUE(tdm_test_api.AreAssociated(display_info2, touchdevice));
   EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
                             touchdevice, display_info2.id()));
 
   // Clearing touch calibration data from the secondary display.
-  touch_device_manager->ClearTouchCalibrationData(touch_device_identifier_2,
+  touch_device_manager->ClearTouchCalibrationData(touchdevice,
                                                   GetDisplayInfoAt(1).id());
 
   EXPECT_TRUE(touch_device_manager
@@ -1213,7 +1210,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
                                              bounds_at_calibration);
   display_manager()->SetTouchCalibrationData(
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
-      touch_device_identifier_2);
+      touchdevice);
 
   EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
                               touchdevice, GetDisplayInfoAt(1).id()));
@@ -1234,8 +1231,7 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
 
   // Make sure multiple touch devices works.
   display_manager()->SetTouchCalibrationData(
-      display_info2.id(), point_pair_quad, bounds_at_calibration,
-      touch_device_identifier_2);
+      display_info2.id(), point_pair_quad, bounds_at_calibration, touchdevice);
 
   EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
                             touchdevice, GetDisplayInfoAt(1).id()));
@@ -1243,12 +1239,10 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   const ui::TouchscreenDevice touchdevice_2(
       12, ui::InputDeviceType::INPUT_DEVICE_USB,
       std::string("test touch device 2"), gfx::Size(234, 567), 1);
-  display::TouchDeviceIdentifier touch_device_identifier_2_2 =
-      display::TouchDeviceIdentifier::FromDevice(touchdevice_2);
 
   display_manager()->SetTouchCalibrationData(
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
-      touch_device_identifier_2_2);
+      touchdevice_2);
   EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
                               touchdevice_2, GetDisplayInfoAt(1).id()));
   EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(

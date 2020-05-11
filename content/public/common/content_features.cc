@@ -130,6 +130,10 @@ const base::Feature kCanvas2DImageChromium {
 const base::Feature kCanvasOopRasterization{"CanvasOopRasterization",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, code cache does not use a browsing_data filter for deletions.
+extern const base::Feature kCodeCacheDeletionWithoutFilter{
+    "CodeCacheDeletionWithoutFilter", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, event.movement is calculated in blink instead of in browser.
 const base::Feature kConsolidatedMovementXY{"ConsolidatedMovementXY",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

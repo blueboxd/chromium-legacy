@@ -161,15 +161,6 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   bool AnimationsPreserveAxisAlignment(const PropertyHandle&) const;
 
-  using MissingPropertyValueMap = HashMap<String, String>;
-  void ResolveUnderlyingPropertyValues(const PropertyHandleSet& all_properties,
-                                       MissingPropertyValueMap& map);
-
-  void AddMissingProperties(const MissingPropertyValueMap& property_map,
-                            const PropertyHandleSet& all_properties,
-                            const PropertyHandleSet& keyframe_properties,
-                            V8ObjectBuilder& object_builder);
-
   Member<Element> effect_target_;
   Member<Element> target_element_;
   String target_pseudo_;

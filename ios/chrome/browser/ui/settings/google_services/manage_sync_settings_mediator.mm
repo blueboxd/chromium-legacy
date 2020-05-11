@@ -5,8 +5,9 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 
 #include "base/auto_reset.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"

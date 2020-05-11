@@ -772,7 +772,6 @@
 <translation id="1979095679518582070">この機能をオフにしても、システム アップデートやセキュリティといった重要なサービスで必要な情報はデバイスから引き続き送信されます。</translation>
 <translation id="1979280758666859181">古いバージョンの <ph name="PRODUCT_NAME" /> のチャンネルに変更しようとしています。このチャンネル変更は、チャンネルのバージョンとお使いのデバイスにインストールされているバージョンとが一致したときに適用されます。</translation>
 <translation id="197989455406964291">KDC でサポートされていない暗号化タイプです</translation>
-<translation id="1982354452682152483">説明がありません。</translation>
 <translation id="1984417487208496350">保護なし（推奨されません）</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="1989112275319619282">閲覧</translation>
@@ -786,6 +785,7 @@
 <translation id="2002109485265116295">リアルタイム</translation>
 <translation id="2003130567827682533">「<ph name="NAME" />」データサービスを有効にするには、まず Wi-Fi ネットワークに接続してください</translation>
 <translation id="2006638907958895361"><ph name="APP" /> でリンクを開く</translation>
+<translation id="2006864819935886708">接続</translation>
 <translation id="2007404777272201486">問題の報告...</translation>
 <translation id="2010501376126504057">対応デバイス</translation>
 <translation id="2017334798163366053">パフォーマンス データの収集を無効にする</translation>
@@ -1382,7 +1382,6 @@
 <translation id="276221322463921688">モニターの向き</translation>
 <translation id="2762441749940182211">カメラがブロックされています</translation>
 <translation id="2765217105034171413">小</translation>
-<translation id="2766091842833763951">設定に問題があったため、<ph name="APP_NAME" /> をセットアップできませんでした。組織のデバイス管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
 <translation id="2766161002040448006">保護者に聞く</translation>
 <translation id="2767127727915954024">このサイトのタブをすべて閉じるまでの間、<ph name="ORIGIN" /> は「<ph name="FILENAME" />」を編集できるようになります</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。</translation>
@@ -1673,12 +1672,6 @@
 <translation id="3143515551205905069">同期をキャンセル</translation>
 <translation id="3143754809889689516">最初から再生</translation>
 <translation id="3144647712221361880">別のユーザーとしてリンクを開く</translation>
-<translation id="3145187901750964977">仮想マシンをインストールできませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
-<translation id="3149477159749171726">バージョン:
-    <ph name="LINUX_VERSION" />
-
-    説明:
-    <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
 <translation id="3150693969729403281">安全確認を今すぐ実行</translation>
 <translation id="3150927491400159470">ハード再読み込み</translation>
@@ -1714,7 +1707,6 @@
 <translation id="3192947282887913208">音声ファイル</translation>
 <translation id="3199127022143353223">サーバー</translation>
 <translation id="3200941271596533635">リーダーモードの切り替え</translation>
-<translation id="3201306578844503970">ネットワーク エラーが発生したため、仮想マシンをインストールできませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
 <translation id="3201422919974259695">使用可能な USB デバイスがここに表示されます。</translation>
 <translation id="3202131003361292969">パス</translation>
 <translation id="3202173864863109533">このタブの音声はミュートされています。</translation>
@@ -2009,7 +2001,6 @@
 <translation id="3592260987370335752">詳細(&amp;L)</translation>
 <translation id="359283478042092570">ログイン</translation>
 <translation id="3593965109698325041">証明書名の制約</translation>
-<translation id="3595381248165458839">組織のデバイス管理者にお問い合わせください</translation>
 <translation id="3596235046596950091">クラウド サービスを有効にする</translation>
 <translation id="3596414637720633074">シークレット モードでサードパーティの Cookie をブロックします</translation>
 <translation id="3599221874935822507">浮き彫り</translation>
@@ -2617,7 +2608,6 @@
 <translation id="4379281552162875326">「<ph name="APP_NAME" />」をアンインストールしますか？</translation>
 <translation id="4380648069038809855">全画面表示に切り替えました</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />、他 1 件のアカウント}other{<ph name="EMAIL" />、他 <ph name="EXTRA_ACCOUNTS" /> 件のアカウント}}</translation>
-<translation id="43829217466934313"><ph name="APP_NAME" /> はこのデバイスで許可されていません。組織のデバイス管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
 <translation id="4384312707950789900">優先ネットワークに追加</translation>
 <translation id="4384652540891215547">拡張機能を有効にする</translation>
 <translation id="438503109373656455">サラトガ</translation>
@@ -3204,6 +3194,7 @@
 <translation id="51918995459521422"><ph name="ORIGIN" /> で複数のファイルがダウンロードされようとしています</translation>
 <translation id="5192062846343383368">管理設定を確認するにはファミリー リンク アプリを開いてください</translation>
 <translation id="5193988420012215838">クリップボードにコピーされました</translation>
+<translation id="5197255632782567636">インターネット</translation>
 <translation id="5198430103906431024">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。</translation>
 <translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{この拡張機能を確認するには、クリックしてください}other{これらの拡張機能を確認するには、クリックしてください}}</translation>
 <translation id="5204673965307125349">デバイスで Powerwash を実行してもう一度お試しください。</translation>
@@ -3272,7 +3263,6 @@
 <translation id="5280426389926346830">ショートカットを作成しますか？</translation>
 <translation id="528208740344463258">Android アプリをダウンロードして使用するには、まずこの必須のアップデートをインストールする必要があります。<ph name="DEVICE_TYPE" /> の更新中、ご利用いただくことはできません。インストールが完了すると、<ph name="DEVICE_TYPE" /> は再起動されます。</translation>
 <translation id="5282733140964383898">「トラッキング拒否」を有効にすると、閲覧トラフィックにリクエストが含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。たとえば、このリクエストに対応して、ユーザーが過去にアクセスしたウェブサイトに関係なく広告を表示するウェブサイトもあります。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、ウェブサイトでのコンテンツ、サービス、広告、おすすめ情報の表示、レポート統計情報の作成などにこれらのデータが利用されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
-<translation id="5283049351426079445"><ph name="APP_NAME" /> をインストールしてもよろしいですか？</translation>
 <translation id="5283677936944177147">デバイスの機種またはシリアル番号を特定できませんでした。</translation>
 <translation id="5284445933715251131">ダウンロードを続行</translation>
 <translation id="5285635972691565180">ディスプレイ <ph name="DISPLAY_ID" /></translation>
@@ -3457,6 +3447,7 @@
 <translation id="5518219166343146486">クリップボードにコピーされているテキストや画像にサイトがアクセスする際に確認する</translation>
 <translation id="5518584115117143805">メール暗号化証明書</translation>
 <translation id="5519045302974745794">EasyUnlock</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="5521078259930077036">このホーム ページでよろしいですか？</translation>
 <translation id="5522156646677899028">この拡張機能にはセキュリティ上の重大な問題があります。</translation>
 <translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{管理者が 1 個の拡張機能をインストールしました}other{管理者が # 個の拡張機能をインストールしました}}</translation>
@@ -3551,6 +3542,7 @@
 <translation id="562935524653278697">管理者がブックマーク、履歴、パスワードなどの設定の同期を無効にしました。</translation>
 <translation id="5632566673632479864">お使いのアカウント <ph name="EMAIL" /> は、メイン アカウントとして使用できなくなりました。このアカウントは <ph name="DOMAIN" /> で管理されているため、ブックマーク、履歴、パスワードなどの設定はこのデバイスから削除されます。</translation>
 <translation id="5632592977009207922">ダウンロードしています（残り <ph name="PERCENT_REMAINING" />%）</translation>
+<translation id="563371367637259496">モバイル</translation>
 <translation id="563535393368633106">アクセスする前に確認する（推奨）</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> を使用するには、最初に<ph name="LINK_START" />ネットワークのログイン ページにアクセス<ph name="LINK_END" />する必要がある場合があります。その場合は、数秒でログイン ページが自動的に開きます。ログイン ページが自動的に開かない場合、そのネットワークは使用できません。</translation>
 <translation id="5637476008227280525">モバイルデータの有効化</translation>
@@ -3881,7 +3873,6 @@
 <translation id="6075731018162044558">このデバイスの長期 API アクセス トークンを取得できませんでした。</translation>
 <translation id="6075907793831890935">デバイス <ph name="HOSTNAME" /> とのデータ交換</translation>
 <translation id="6076175485108489240">位置情報を使用するとともに、位置情報の利用を許可されているアプリやサービスがデバイスの位置情報を使用することを許可します。Google は位置情報を定期的に収集し、これを匿名のデータとして、位置情報の精度向上や位置情報に基づくサービスの改善に使用することがあります。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
-<translation id="6076448957780543068">このスクリーンショットを含める</translation>
 <translation id="6076491747490570887">寒色グレー</translation>
 <translation id="6077131872140550515">優先ネットワークから削除</translation>
 <translation id="6077189836672154517"><ph name="DEVICE_TYPE" /> のヒントや最新情報</translation>
@@ -3953,7 +3944,6 @@
 <translation id="6155141482566063812">バックグラウンドのタブで画面が共有されています</translation>
 <translation id="6156323911414505561">ブックマーク バーを表示する</translation>
 <translation id="6156863943908443225">スクリプト キャッシュ</translation>
-<translation id="6157197137667039897"><ph name="APP_NAME" /> をインストールできませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
 <translation id="6160625263637492097">認証用の証明書の提供</translation>
 <translation id="6163363155248589649">標準(&amp;N)</translation>
 <translation id="6163376401832887457">Kerberos 設定</translation>
@@ -3980,7 +3970,6 @@
 <translation id="6202517672944764518">ダウンロード済みコンテンツ</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="6207200176136643843">リセットしてデフォルトのズームレベルに戻す</translation>
-<translation id="6207282396926186323"><ph name="APP_NAME" />（Linux アプリ）のインストール</translation>
 <translation id="6207937957461833379">国/地域</translation>
 <translation id="6208521041562685716">モバイルデータを有効化しています</translation>
 <translation id="6209908325007204267">デバイスには Chrome Enterprise Upgrade が含まれていますが、ユーザー名が Enterprise アカウントに関連付けられていません。サブデバイスで g.co/ChromeEnterpriseAccount にアクセスし、Enterprise アカウントを作成してください。</translation>
@@ -4116,7 +4105,6 @@
 <translation id="6384275966486438344">検索設定を次に変更します: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385149369087767061">インターネットに接続して、もう一度お試しください</translation>
 <translation id="6385543213911723544">サイトでは Cookie データの保存と読み込みが可能です</translation>
-<translation id="6386099547750337629">この動作が想定外の場合は、サポートにお問い合わせください。</translation>
 <translation id="6387674443318562538">縦に分割</translation>
 <translation id="6388429472088318283">言語を検索</translation>
 <translation id="6389891144950120352">EasyUnlock の画面ロック</translation>
@@ -5149,7 +5137,6 @@
 <translation id="7768784765476638775">選択して読み上げ</translation>
 <translation id="7769672763586021400">モデル ID</translation>
 <translation id="7770612696274572992">他のデバイスから画像がコピーされました</translation>
-<translation id="7770651108375708429">Wi-Fi の接続を解除する</translation>
 <translation id="7771452384635174008">レイアウト</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="7772127298218883077"><ph name="PRODUCT_NAME" /> について</translation>
@@ -5530,7 +5517,6 @@
 <translation id="8226742006292257240">ランダムに生成され、ご使用のパソコンに割り当てられた TPM パスワードは以下のとおりです:</translation>
 <translation id="8227119283605456246">添付ファイル</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> のパスワードを保存しますか？</translation>
-<translation id="8233762480744368479">インターネット設定</translation>
 <translation id="8234795456569844941">問題解決の手がかりとして、具体的にどのような操作を行ったときにプロフィール エラーのメッセージが表示されたかをお知らせください。</translation>
 <translation id="8236123533334037984">このアップロードをスキャンして、組織のセキュリティ ポリシーと照合しています。</translation>
 <translation id="8236917170563564587">代わりにこのタブを共有</translation>
@@ -5687,7 +5673,6 @@
 <translation id="84297032718407999">あと <ph name="LOGOUT_TIME_LEFT" />でログアウトします</translation>
 <translation id="8431190899827883166">タップを表示</translation>
 <translation id="8431909052837336408">SIM PIN を変更</translation>
-<translation id="8433186206711564395">ネットワーク設定</translation>
 <translation id="8434480141477525001">NaCl デバッグ ポート</translation>
 <translation id="8435395510592618362"><ph name="APP_NAME" /> で本人確認を行う</translation>
 <translation id="8438328416656800239">スマートなブラウザをぜひご利用ください</translation>
@@ -5878,7 +5863,6 @@
 <translation id="8688579245973331962">名前が見つからない場合</translation>
 <translation id="8688591111840995413">不正なパスワード</translation>
 <translation id="8688672835843460752">使用可能</translation>
-<translation id="8691418731028620688">Wi-Fi に接続する</translation>
 <translation id="8695825812785969222">場所を開く（&amp;L）...</translation>
 <translation id="8698269656364382265">前の画面に戻るには、左端から中央にスワイプします。</translation>
 <translation id="869884720829132584">アプリケーション メニュー</translation>
@@ -6044,7 +6028,6 @@
 <translation id="8872777911145321141">サイトからバーチャル リアリティ デバイスとデータの使用を求められたときに確認する（推奨）</translation>
 <translation id="8874184842967597500">未接続</translation>
 <translation id="8875520811099717934">Linux のアップグレード</translation>
-<translation id="8875775314572167244">イーサネット設定</translation>
 <translation id="8876307312329369159">この設定はデモセッションでは変更できません。</translation>
 <translation id="8877448029301136595">[親ディレクトリ]</translation>
 <translation id="8879284080359814990">タブで表示(&amp;S)</translation>
@@ -6084,6 +6067,7 @@
 <translation id="8926389886865778422">再表示させない</translation>
 <translation id="892706138619340876">一部の設定がリセットされました</translation>
 <translation id="8930351635855238750">新しい Cookie 設定はページの再読み込み後に有効になります</translation>
+<translation id="8930622219860340959">ワイヤレス</translation>
 <translation id="8931076093143205651">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、Android の機能向上にご協力ください。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。このデバイスの診断データや使用状況データを Google に送信するよう所有者が設定している可能性があります。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。</translation>
 <translation id="8931394284949551895">新しいデバイス</translation>
 <translation id="8931475688782629595">同期する内容の管理</translation>
@@ -6251,7 +6235,6 @@
 <translation id="9148126808321036104">もう一度ログインする</translation>
 <translation id="9149866541089851383">編集...</translation>
 <translation id="9150045010208374699">カメラを使用する</translation>
-<translation id="9150429437595727962">Wi-Fi 設定</translation>
 <translation id="9153934054460603056">ID とパスワードを保存する</translation>
 <translation id="9154194610265714752">更新完了</translation>
 <translation id="91568222606626347">ショートカットを作成...</translation>

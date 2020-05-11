@@ -158,18 +158,31 @@ void QuicHttp3Logger::OnSettingsFrameReceived(
   UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ReceivedSettings.CountPlusOne",
                               frame.values.size() + 1, /* min = */ 1,
                               /* max = */ 10, /* buckets = */ 10);
+  int reserved_identifier_count = 0;
   for (const auto& value : frame.values) {
     if (value.first == quic::SETTINGS_QPACK_MAX_TABLE_CAPACITY) {
-      UMA_HISTOGRAM_COUNTS_10000(
-          "Net.QuicSession.ReceivedSettings.MaxTableCapacity", value.second);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "Net.QuicSession.ReceivedSettings.MaxTableCapacity2", value.second);
     } else if (value.first == quic::SETTINGS_MAX_HEADER_LIST_SIZE) {
-      UMA_HISTOGRAM_COUNTS_10000(
-          "Net.QuicSession.ReceivedSettings.MaxHeaderListSize", value.second);
+      UMA_HISTOGRAM_COUNTS_1M(
+          "Net.QuicSession.ReceivedSettings.MaxHeaderListSize2", value.second);
     } else if (value.first == quic::SETTINGS_QPACK_BLOCKED_STREAMS) {
       UMA_HISTOGRAM_COUNTS_1000(
           "Net.QuicSession.ReceivedSettings.BlockedStreams", value.second);
+    } else if (value.first >= 0x21 && value.first % 0x1f == 2) {
+      // Reserved setting identifiers are defined at
+      // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#name-defined-settings-parameters.
+      // These should not be treated specially on the receive side, because they
+      // are sent to exercise the requirement that unknown identifiers are
+      // ignored.  Here an exception is made for logging only, to understand
+      // what kind of identifiers are received.
+      reserved_identifier_count++;
     }
   }
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Net.QuicSession.ReceivedSettings.ReservedCountPlusOne",
+      reserved_identifier_count + 1, /* min = */ 1,
+      /* max = */ 5, /* buckets = */ 5);
 
   if (!net_log_.IsCapturing())
     return;

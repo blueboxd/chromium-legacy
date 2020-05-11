@@ -701,7 +701,6 @@
 <translation id="9034924485347205037">File Linux</translation>
 <translation id="9035012421917565900">Non è possibile spostare di nuovo gli elementi in "<ph name="DESTINATION_NAME" />", quindi non potrai annullare questa azione.</translation>
 <translation id="9038620279323455325">Esiste già un file chiamato "<ph name="FILE_NAME" />". Scegli un altro nome.</translation>
-<translation id="9062992083244091966">Per aprire file con le app <ph name="APP_NAME" />, devi prima spostarli nella cartella dei file condivisi dell'app <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Trasferimento in corso...</translation>
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="9099674669267916096">Numero di pagine</translation>

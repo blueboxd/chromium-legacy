@@ -12,6 +12,7 @@ import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/blink/public/mojom/background_fetch/background_fetch.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
+import "third_party/blink/public/mojom/frame/reporting_observer.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/notifications/notification.mojom";
@@ -180,12 +181,16 @@ interface ServiceWorker {
   // When the service worker is new and going to be registered,
   // |subresource_loader_factories| is non-null and it should be used for all
   // subsequent requests.
+  // |reporting_observer_receiver| will be set to the worker global scope so
+  // that reports queued to the remote of |reporting_observer_receiver| will
+  // be notified to ReportingObservers registered with the global scope.
   InitializeGlobalScope(
       pending_associated_remote<ServiceWorkerHost> service_worker_host,
       ServiceWorkerRegistrationObjectInfo registration_info,
       ServiceWorkerObjectInfo service_worker_info,
       FetchHandlerExistence fetch_handler_existence,
-      URLLoaderFactoryBundle? subresource_loader_factories);
+      URLLoaderFactoryBundle? subresource_loader_factories,
+      pending_receiver<ReportingObserver>? reporting_observer_receiver);
 
   // These methods dispatch InstallEvent and ActivateEvent to the
   // ServiceWorkerGlobalScope.

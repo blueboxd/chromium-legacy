@@ -6,7 +6,7 @@
 
 #import <CoreLocation/CoreLocation.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/application_context.h"

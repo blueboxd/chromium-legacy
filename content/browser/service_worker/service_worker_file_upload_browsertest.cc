@@ -147,8 +147,8 @@ class ServiceWorkerFileUploadTest : public testing::WithParamInterface<bool>,
     base::FilePath file_path;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &file_path));
-    ASSERT_EQ(static_cast<int>(kFileSize),
-              base::WriteFile(file_path, kFileContent, kFileSize));
+    ASSERT_TRUE(
+        base::WriteFile(file_path, base::StringPiece(kFileContent, kFileSize)));
 
     // Fill out the form to refer to the test file.
     base::RunLoop run_loop;
@@ -394,8 +394,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest, Subresource) {
   base::FilePath file_path;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.GetPath(), &file_path));
-  ASSERT_EQ(static_cast<int>(kFileSize),
-            base::WriteFile(file_path, kFileContent, kFileSize));
+  ASSERT_TRUE(
+      base::WriteFile(file_path, base::StringPiece(kFileContent, kFileSize)));
 
   std::string result;
   RunSubresourceTest(file_path, &result);
@@ -419,8 +419,8 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerFileUploadTest,
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_path = temp_dir.GetPath().Append(nonAsciiFilename);
-  ASSERT_EQ(static_cast<int>(kFileSize),
-            base::WriteFile(file_path, kFileContent, kFileSize));
+  ASSERT_TRUE(
+      base::WriteFile(file_path, base::StringPiece(kFileContent, kFileSize)));
 
   std::string result;
   RunSubresourceTest(file_path, &result);

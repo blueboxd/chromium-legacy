@@ -1019,8 +1019,10 @@ public class ChromeFullscreenManager extends FullscreenManager
 
         // Make sure the dominant control offsets have been set.
         Tab tab = getTab();
-        TabBrowserControlsOffsetHelper offsetHelper = TabBrowserControlsOffsetHelper.get(tab);
-        if (offsetHelper.offsetInitialized()) {
+        TabBrowserControlsOffsetHelper offsetHelper = null;
+        if (tab != null) offsetHelper = TabBrowserControlsOffsetHelper.get(tab);
+
+        if (offsetHelper != null && offsetHelper.offsetInitialized()) {
             updateFullscreenManagerOffsets(false, offsetHelper.topControlsOffset(),
                     offsetHelper.bottomControlsOffset(), offsetHelper.contentOffset(),
                     offsetHelper.topControlsMinHeightOffset(),

@@ -96,8 +96,8 @@ source_set("test_headers") {
     "platform/scheduler/test/web_fake_thread_scheduler.h",
     "platform/scheduler/test/web_mock_thread_scheduler.h",
   ]
+  public_deps = [ ":blink_headers" ]
   deps = [
-    ":blink_headers",
     "//base:base",
     "//cc:cc",
     "//testing/gmock:gmock",

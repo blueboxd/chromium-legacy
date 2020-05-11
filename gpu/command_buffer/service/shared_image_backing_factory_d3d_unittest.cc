@@ -581,7 +581,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, Dawn_SkiaGL) {
     pass.EndPass();
     wgpu::CommandBuffer commands = encoder.Finish();
 
-    wgpu::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.GetDefaultQueue();
     queue.Submit(1, &commands);
   }
 
@@ -696,7 +696,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, GL_Dawn_Skia_UnclearTexture) {
     pass.EndPass();
     wgpu::CommandBuffer commands = encoder.Finish();
 
-    wgpu::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.GetDefaultQueue();
     queue.Submit(1, &commands);
   }
 
@@ -781,7 +781,7 @@ TEST_F(SharedImageBackingFactoryD3DTest, UnclearDawn_SkiaFails) {
     pass.EndPass();
     wgpu::CommandBuffer commands = encoder.Finish();
 
-    wgpu::Queue queue = device.CreateQueue();
+    wgpu::Queue queue = device.GetDefaultQueue();
     queue.Submit(1, &commands);
   }
 

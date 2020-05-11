@@ -415,10 +415,7 @@ class CoverageReportPostProcessor(object):
     html_report_path = os.path.join(
         GetFullPath(dir_path), DIRECTORY_COVERAGE_HTML_REPORT_NAME)
 
-    # '+' is used instead of os.path.join because both of them are absolute
-    # paths and os.path.join ignores the first path.
-    # TODO(crbug.com/809150): Think of a generic cross platform fix (Windows).
-    return self.report_root_dir + html_report_path
+    return self.CombineAbsolutePaths(self.report_root_dir, html_report_path)
 
   def GetCoverageHtmlReportPathForFile(self, file_path):
     """Given a file path, returns the corresponding html report path."""
@@ -426,10 +423,17 @@ class CoverageReportPostProcessor(object):
         self._MapToLocal(file_path)), '"%s" is not a file.' % file_path
     html_report_path = os.extsep.join([GetFullPath(file_path), 'html'])
 
+    return self.CombineAbsolutePaths(self.report_root_dir, html_report_path)
+
+  def CombineAbsolutePaths(self, path1, path2):
+    if GetHostPlatform() == 'win':
+      # Absolute paths in Windows may start with a drive letter and colon.
+      # Remove them from the second path before appending to the first.
+      _, path2 = os.path.splitdrive(path2)
+
     # '+' is used instead of os.path.join because both of them are absolute
     # paths and os.path.join ignores the first path.
-    # TODO(crbug.com/809150): Think of a generic cross platform fix (Windows).
-    return self.report_root_dir + html_report_path
+    return path1 + path2
 
   def GenerateFileViewHtmlIndexFile(self, per_file_coverage_summary,
                                     file_view_index_file_path):

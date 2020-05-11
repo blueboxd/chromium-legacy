@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/ios/block_types.h"
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"

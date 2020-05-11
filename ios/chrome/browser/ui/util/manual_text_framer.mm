@@ -6,8 +6,9 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
 #import "ios/chrome/browser/ui/util/unicode_util.h"

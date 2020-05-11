@@ -69,6 +69,7 @@
     "MIDIAccess",
     "MIDIInput",
     "MIDIPort",
+    "VirtualKeyboard",
     "XR",
     "XRSession",
     "XRSpace",

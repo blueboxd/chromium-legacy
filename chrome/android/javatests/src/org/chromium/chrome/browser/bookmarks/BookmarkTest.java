@@ -120,6 +120,7 @@ public class BookmarkTest {
 
     private BookmarkManager mManager;
     private BookmarkModel mBookmarkModel;
+    private BookmarkBridge mBookmarkBridge;
     private RecyclerView mItemsContainer;
     private String mTestPage;
     private String mTestPageFoo;
@@ -143,6 +144,7 @@ public class BookmarkTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mBookmarkModel = new BookmarkModel(Profile.fromWebContents(
                     mActivityTestRule.getActivity().getActivityTab().getWebContents()));
+            mBookmarkBridge = mActivityTestRule.getActivity().getBookmarkBridgeForTesting();
         });
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE_URL_GOOGLE);
@@ -244,7 +246,7 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         // All actions with BookmarkModel needs to run on UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            long bookmarkIdLong = BookmarkBridge.getUserBookmarkIdForTab(
+            long bookmarkIdLong = mBookmarkBridge.getUserBookmarkIdForTab(
                     mActivityTestRule.getActivity().getActivityTabProvider().get());
             BookmarkId id = new BookmarkId(bookmarkIdLong, BookmarkType.NORMAL);
             Assert.assertTrue("The test page is not added as bookmark: ",
@@ -277,7 +279,7 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         // All actions with BookmarkModel needs to run on UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            long bookmarkIdLong = BookmarkBridge.getUserBookmarkIdForTab(
+            long bookmarkIdLong = mBookmarkBridge.getUserBookmarkIdForTab(
                     mActivityTestRule.getActivity().getActivityTabProvider().get());
             BookmarkId id = new BookmarkId(bookmarkIdLong, BookmarkType.NORMAL);
             Assert.assertTrue("The test page is not added as bookmark: ",
@@ -312,7 +314,7 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         // All actions with BookmarkModel needs to run on UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            long bookmarkIdLong = BookmarkBridge.getUserBookmarkIdForTab(
+            long bookmarkIdLong = mBookmarkBridge.getUserBookmarkIdForTab(
                     mActivityTestRule.getActivity().getActivityTabProvider().get());
             BookmarkId id = new BookmarkId(bookmarkIdLong, BookmarkType.NORMAL);
             Assert.assertTrue("The test page is not added as bookmark: ",

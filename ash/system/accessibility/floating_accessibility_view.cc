@@ -117,7 +117,7 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
   a11y_tray_button_ =
       tray_button_container->AddChildView(std::make_unique<FloatingMenuButton>(
           this, kUnifiedMenuAccessibilityIcon,
-          IDS_ASH_STATUS_TRAY_ACCESSIBILITY,
+          IDS_ASH_FLOATING_ACCESSIBILITY_DETAILED_MENU_OPEN,
           /*flip_for_rtl*/ true, kTrayItemSize));
 
   std::unique_ptr<views::View> position_button_container =

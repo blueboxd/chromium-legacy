@@ -635,8 +635,7 @@ ci.android_fyi_builder(
         category = 'emulator|M|x86',
         short_name = 'rel',
     ),
-    schedule = '0 7 * * *',
-    triggered_by = [],
+    goma_jobs=goma.jobs.J150,
 )
 
 # TODO(hypan): remove this once there is no associated disabled tests

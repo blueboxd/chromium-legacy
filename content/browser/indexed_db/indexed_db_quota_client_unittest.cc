@@ -144,7 +144,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   void SetFileSizeTo(const base::FilePath& path, int size) {
     std::string junk(size, 'a');
-    ASSERT_EQ(size, base::WriteFile(path, junk.c_str(), size));
+    ASSERT_TRUE(base::WriteFile(path, junk));
   }
 
   void AddFakeIndexedDB(const url::Origin& origin, int size) {

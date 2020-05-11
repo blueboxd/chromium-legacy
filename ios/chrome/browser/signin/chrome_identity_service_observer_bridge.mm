@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -9,10 +9,11 @@
 #include <stddef.h>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/metrics/metrics_log.h"

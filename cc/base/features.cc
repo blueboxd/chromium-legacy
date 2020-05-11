@@ -47,4 +47,7 @@ bool IsMainLatencyRecoveryEnabled() {
 #endif
 }
 
+const base::Feature kScrollUnification{"ScrollUnification",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

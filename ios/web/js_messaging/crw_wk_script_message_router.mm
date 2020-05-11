@@ -4,7 +4,7 @@
 
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/web/common/features.h"
 #include "ios/web/navigation/wk_navigation_util.h"
 #import "net/base/mac/url_conversions.h"

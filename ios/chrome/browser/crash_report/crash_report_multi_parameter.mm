@@ -6,8 +6,9 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"

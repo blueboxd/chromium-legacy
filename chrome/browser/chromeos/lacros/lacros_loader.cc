@@ -5,8 +5,11 @@
 #include "chrome/browser/chromeos/lacros/lacros_loader.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -43,6 +46,19 @@ bool IsLacrosAllowed() {
   }
 }
 
+const char kLacrosComponentName[] = "lacros-fishfood";
+const char kUserDataDir[] = "/home/chronos/user/lacros";
+
+bool CheckIfPreviouslyInstalled(
+    scoped_refptr<component_updater::CrOSComponentManager> manager) {
+  if (!manager->IsRegisteredMayBlock(kLacrosComponentName))
+    return false;
+
+  // Since we're already on a background thread, delete the user-data-dir
+  // associated with lacros.
+  base::DeleteFileRecursively(base::FilePath(kUserDataDir));
+  return true;
+}
 }  // namespace
 
 // static
@@ -71,7 +87,6 @@ void LacrosLoader::Init() {
   if (!IsLacrosAllowed())
     return;
 
-  const char kLacrosComponentName[] = "lacros-fishfood";
   if (chromeos::features::IsLacrosComponentUpdaterEnabled()) {
     // TODO(crbug.com/1078607): Remove non-error logging from this class.
     LOG(WARNING) << "Starting lacros component load.";
@@ -81,12 +96,10 @@ void LacrosLoader::Init() {
                                   base::BindOnce(&LacrosLoader::OnLoadComplete,
                                                  weak_factory_.GetWeakPtr()));
   } else {
-    // Clean-up code is currently blocked on fixing the implementation of
-    // IsRegistered. https://crbug.com/(1077348)
-    // if (cros_component_manager_->IsRegistered(kLacrosComponentName)) {
-    // Clean up any old disk images, since the user turned off the flag.
-    // cros_component_manager_->Unload(kLacrosComponentName);
-    // }
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&CheckIfPreviouslyInstalled, cros_component_manager_),
+        base::BindOnce(&LacrosLoader::CleanUp, weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -112,13 +125,14 @@ void LacrosLoader::Start() {
   options.environment["XDG_RUNTIME_DIR"] = "/run/chrome";
   options.kill_on_parent_death = true;
 
-  std::vector<std::string> argv = {chrome_path,
-                                   "--ozone-platform=wayland",
-                                   "--user-data-dir=/home/chronos/user/lacros",
-                                   "--enable-gpu-rasterization",
-                                   "--enable-oop-rasterization",
-                                   "--lang=en-US",
-                                   "--breakpad-dump-location=/tmp"};
+  std::vector<std::string> argv = {
+      chrome_path,
+      "--ozone-platform=wayland",
+      std::string("--user-data-dir=") + kUserDataDir,
+      "--enable-gpu-rasterization",
+      "--enable-oop-rasterization",
+      "--lang=en-US",
+      "--breakpad-dump-location=/tmp"};
   lacros_process_ = base::LaunchProcess(argv, options);
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
 }
@@ -133,4 +147,9 @@ void LacrosLoader::OnLoadComplete(
   }
   lacros_path_ = path;
   LOG(WARNING) << "Loaded lacros image at " << lacros_path_.MaybeAsASCII();
+}
+
+void LacrosLoader::CleanUp(bool previously_installed) {
+  if (previously_installed)
+    cros_component_manager_->Unload(kLacrosComponentName);
 }

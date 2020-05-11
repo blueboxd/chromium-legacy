@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
-import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -55,12 +54,14 @@ public class DisclosureNotification implements
     DisclosureNotification(
             @Named(APP_CONTEXT) Context context,
             Resources resources,
+            NotificationManagerProxy notificationManager,
             TrustedWebActivityModel model,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
         mContext = context;
         mResources = resources;
-        mNotificationManager = new NotificationManagerProxyImpl(mContext);
+        mNotificationManager = notificationManager;
         mModel = model;
+
         mModel.addObserver(this);
         lifecycleDispatcher.register(this);
     }

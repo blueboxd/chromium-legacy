@@ -4,7 +4,7 @@
 
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/web/public/deprecated/crw_js_injection_evaluator.h"
 #import "ios/web/public/deprecated/crw_js_injection_manager.h"
 

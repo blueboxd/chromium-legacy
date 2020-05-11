@@ -733,11 +733,8 @@ suite('CrostiniPageTests', function() {
         const button = dialog.$$('#resize');
         button.click();
         await crostiniBrowserProxy.resolvePromise('resizeCrostiniDisk', true);
-        assertFalse(button.disabled);
-        assertTrue(isVisible(dialog.$$('#done')));
-        assertFalse(isVisible(dialog.$$('#resizing')));
-        assertFalse(isVisible(dialog.$$('#resize-error')));
-        assertFalse(dialog.$$('#cancel').disabled);
+        // Dialog should close itself.
+        await test_util.eventToPromise('close', dialog);
       });
 
       test('DiskResizeConfirmationDialogShownAndAccepted', async function() {

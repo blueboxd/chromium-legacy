@@ -41,6 +41,7 @@ struct ParkableStringManager::Statistics {
   size_t overhead_size;
   size_t total_size;
   int64_t savings_size;
+  size_t on_disk_size;
 };
 
 namespace {
@@ -159,6 +160,9 @@ bool ParkableStringManager::OnMemoryDump(
   // Has to be uint64_t.
   dump->AddScalar("savings_size", "bytes",
                   stats.savings_size > 0 ? stats.savings_size : 0);
+  dump->AddScalar("on_disk_size", "bytes", stats.on_disk_size);
+  dump->AddScalar("on_disk_footprint", "bytes",
+                  data_allocator().disk_footprint());
 
   pmd->AddSuballocation(dump->guid(),
                         WTF::Partitions::kAllocatedObjectPoolName);
@@ -421,6 +425,9 @@ ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
     if (str->has_compressed_data())
       stats.overhead_size += str->compressed_size();
 
+    if (str->has_on_disk_data())
+      stats.on_disk_size += str->on_disk_size();
+
     // Since ParkableStringManager wants to have a finer breakdown of memory
     // footprint, this doesn't directly use
     // |ParkableStringImpl::MemoryFootprintForDump()|. However we want the two
@@ -439,6 +446,9 @@ ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
     stats.compressed_size += str->compressed_size();
     stats.metadata_size += kParkableStringImplActualSize;
 
+    if (str->has_on_disk_data())
+      stats.on_disk_size += str->on_disk_size();
+
     // See comment above.
     size_t memory_footprint =
         str->compressed_size() + kParkableStringImplActualSize;
@@ -450,6 +460,7 @@ ParkableStringManager::Statistics ParkableStringManager::ComputeStatistics()
     size_t size = str->CharactersSizeInBytes();
     stats.original_size += size;
     stats.metadata_size += kParkableStringImplActualSize;
+    stats.on_disk_size += str->on_disk_size();
   }
 
   stats.total_size = stats.uncompressed_size + stats.compressed_size +

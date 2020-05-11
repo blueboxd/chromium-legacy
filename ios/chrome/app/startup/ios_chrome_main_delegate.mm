@@ -4,7 +4,6 @@
 
 #include "ios/chrome/app/startup/ios_chrome_main_delegate.h"
 
-#include "base/logging.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "third_party/skia/include/core/SkGraphics.h"

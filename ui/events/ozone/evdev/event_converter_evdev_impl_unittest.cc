@@ -166,11 +166,13 @@ TEST_F(EventConverterEvdevImplTest, KeyPress) {
   event = dispatched_event(0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_BACK, event->key_code());
+  EXPECT_EQ(0x7002au, event->scan_code());
   EXPECT_EQ(0, event->flags());
 
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_BACK, event->key_code());
+  EXPECT_EQ(0x7002au, event->scan_code());
   EXPECT_EQ(0, event->flags());
 }
 
@@ -203,11 +205,13 @@ TEST_F(EventConverterEvdevImplTest, KeyRepeat) {
   event = dispatched_event(0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_BACK, event->key_code());
+  EXPECT_EQ(0x7002au, event->scan_code());
   EXPECT_EQ(0, event->flags());
 
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_BACK, event->key_code());
+  EXPECT_EQ(0x7002au, event->scan_code());
   EXPECT_EQ(0, event->flags());
 }
 
@@ -246,21 +250,25 @@ TEST_F(EventConverterEvdevImplTest, KeyWithModifier) {
   event = dispatched_event(0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_SHIFT, event->key_code());
+  EXPECT_EQ(0x700e1u, event->scan_code());
   EXPECT_EQ(ui::EF_SHIFT_DOWN, event->flags());
 
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_A, event->key_code());
+  EXPECT_EQ(0x70004u, event->scan_code());
   EXPECT_EQ(ui::EF_SHIFT_DOWN, event->flags());
 
   event = dispatched_event(2);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_A, event->key_code());
+  EXPECT_EQ(0x70004u, event->scan_code());
   EXPECT_EQ(ui::EF_SHIFT_DOWN, event->flags());
 
   event = dispatched_event(3);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_SHIFT, event->key_code());
+  EXPECT_EQ(0x700e1u, event->scan_code());
   EXPECT_EQ(0, event->flags());
 }
 
@@ -301,31 +309,37 @@ TEST_F(EventConverterEvdevImplTest, KeyWithDuplicateModifier) {
   event = dispatched_event(0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_CONTROL, event->key_code());
+  EXPECT_EQ(0x700e1u, event->scan_code());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, event->flags());
 
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_CONTROL, event->key_code());
+  EXPECT_EQ(0x700e5u, event->scan_code());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, event->flags());
 
   event = dispatched_event(2);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_Z, event->key_code());
+  EXPECT_EQ(0x7001du, event->scan_code());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, event->flags());
 
   event = dispatched_event(3);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_Z, event->key_code());
+  EXPECT_EQ(0x7001du, event->scan_code());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, event->flags());
 
   event = dispatched_event(4);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_CONTROL, event->key_code());
+  EXPECT_EQ(0x700e1u, event->scan_code());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, event->flags());
 
   event = dispatched_event(5);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_CONTROL, event->key_code());
+  EXPECT_EQ(0x700e5u, event->scan_code());
   EXPECT_EQ(0, event->flags());
 }
 
@@ -350,11 +364,13 @@ TEST_F(EventConverterEvdevImplTest, KeyWithLock) {
   event = dispatched_event(0);
   EXPECT_EQ(ui::ET_KEY_PRESSED, event->type());
   EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
+  EXPECT_EQ(0x70039u, event->scan_code());
   EXPECT_EQ(ui::EF_MOD3_DOWN, event->flags());
 
   event = dispatched_event(1);
   EXPECT_EQ(ui::ET_KEY_RELEASED, event->type());
   EXPECT_EQ(ui::VKEY_CAPITAL, event->key_code());
+  EXPECT_EQ(0x70039u, event->scan_code());
   EXPECT_EQ(ui::EF_NONE, event->flags());
 }
 

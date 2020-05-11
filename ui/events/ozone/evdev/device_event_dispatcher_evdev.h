@@ -27,6 +27,7 @@ struct COMPONENT_EXPORT(EVDEV) KeyEventParams {
   KeyEventParams(int device_id,
                  int flags,
                  unsigned int code,
+                 unsigned int scan_code,
                  bool down,
                  bool suppress_auto_repeat,
                  base::TimeTicks timestamp);
@@ -37,6 +38,7 @@ struct COMPONENT_EXPORT(EVDEV) KeyEventParams {
   int device_id;
   int flags;
   unsigned int code;
+  unsigned int scan_code;
   bool down;
   bool suppress_auto_repeat;
   base::TimeTicks timestamp;

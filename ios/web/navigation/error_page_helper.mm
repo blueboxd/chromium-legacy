@@ -4,7 +4,7 @@
 
 #import "ios/web/navigation/error_page_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"

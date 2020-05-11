@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/tabs/closing_web_state_observer.h"
 
-#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/ios/ios_restore_live_tab.h"

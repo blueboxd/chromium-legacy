@@ -97,7 +97,7 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
     return *fmp_detector_;
   }
 
-  void RegisterNotifySwapTime(PaintEvent, ReportTimeCallback);
+  void RegisterNotifySwapTime(ReportTimeCallback);
   void ReportSwapTime(PaintEvent, WebSwapResult, base::TimeTicks timestamp);
 
   void ReportSwapResultHistogram(WebSwapResult);

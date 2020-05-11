@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_navigation_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"

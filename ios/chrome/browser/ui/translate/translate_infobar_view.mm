@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/translate/translate_infobar_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/procedural_block_types.h"

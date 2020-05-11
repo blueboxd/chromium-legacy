@@ -4,7 +4,6 @@
 
 #import "ios/showcase/test/showcase_test_case.h"
 
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/showcase/test/showcase_test_case_app_interface.h"
 #import "ios/testing/earl_grey/coverage_utils.h"

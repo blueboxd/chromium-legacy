@@ -41,6 +41,11 @@ class InstallServiceWorkItem : public WorkItem {
   // the SCM. For example,
   // "C:\Program Files (x86)\Google\Chrome\ElevationService.exe" /svc
   //
+  // |registry_path| is the path in HKEY_LOCAL_MACHINE under which
+  // the service persists information, for instance if the service has to
+  // persist a versioned service name. An example |registry_path| is
+  // "Software\ProductFoo".
+  //
   // |clsid| is the CLSID and AppId to register.
   // If COM CLSID/AppId registration is not required, pass in GUID_NULL for
   // |clsid|.
@@ -50,12 +55,14 @@ class InstallServiceWorkItem : public WorkItem {
   InstallServiceWorkItem(const base::string16& service_name,
                          const base::string16& display_name,
                          const base::CommandLine& service_cmd_line,
+                         const base::string16& registry_path,
                          const GUID& clsid,
                          const GUID& iid);
 
   ~InstallServiceWorkItem() override;
 
   static bool DeleteService(const base::string16& service_name,
+                            const base::string16& registry_path,
                             const GUID& clsid,
                             const GUID& iid);
 

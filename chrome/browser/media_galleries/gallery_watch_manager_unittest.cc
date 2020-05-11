@@ -381,8 +381,8 @@ TEST_F(GalleryWatchManagerTest, TestWatchOperation) {
 
   base::RunLoop success_loop;
   ExpectGalleryChanged(&success_loop);
-  ASSERT_EQ(4, base::WriteFile(temp_dir.GetPath().AppendASCII("fake file"),
-                               "blah", 4));
+  ASSERT_TRUE(
+      base::WriteFile(temp_dir.GetPath().AppendASCII("fake file"), "blah"));
   success_loop.Run();
 }
 
@@ -400,8 +400,8 @@ TEST_F(GalleryWatchManagerTest, TestWatchOperationAfterProfileShutdown) {
   // Trigger a watch that should have been removed when the profile was
   // destroyed to catch regressions. crbug.com/467627
   base::RunLoop run_loop;
-  ASSERT_EQ(4, base::WriteFile(temp_dir.GetPath().AppendASCII("fake file"),
-                               "blah", 4));
+  ASSERT_TRUE(
+      base::WriteFile(temp_dir.GetPath().AppendASCII("fake file"), "blah"));
   run_loop.RunUntilIdle();
 }
 

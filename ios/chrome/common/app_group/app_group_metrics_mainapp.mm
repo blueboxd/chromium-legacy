@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"

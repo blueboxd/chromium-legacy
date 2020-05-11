@@ -461,13 +461,48 @@ cr.define('device_page_tests', function() {
         isPrimary: n === 1,
         isInternal: n === 1,
         rotation: 0,
-        modes: [{
-          deviceScaleFactor: 1.0,
-          widthInNativePixels: 1920,
-          heightInNativePixels: 1080,
-          width: 1920,
-          height: 1080,
-        }],
+        modes: [
+          {
+            deviceScaleFactor: 1.0,
+            widthInNativePixels: 1920,
+            heightInNativePixels: 1080,
+            width: 1920,
+            height: 1080,
+            refreshRate: 60,
+          },
+          {
+            deviceScaleFactor: 1.0,
+            widthInNativePixels: 1920,
+            heightInNativePixels: 1080,
+            width: 1920,
+            height: 1080,
+            refreshRate: 30,
+          },
+          {
+            deviceScaleFactor: 1.0,
+            widthInNativePixels: 3000,
+            heightInNativePixels: 2000,
+            width: 3000,
+            height: 2000,
+            refreshRate: 45,
+          },
+          {
+            deviceScaleFactor: 1.0,
+            widthInNativePixels: 3000,
+            heightInNativePixels: 2000,
+            width: 3000,
+            height: 2000,
+            refreshRate: 75,
+          },
+          {
+            deviceScaleFactor: 1.0,
+            widthInNativePixels: 3000,
+            heightInNativePixels: 2000,
+            width: 3000,
+            height: 2000,
+            refreshRate: 100,
+          }
+        ],
         bounds: {
           left: 0,
           top: 0,
@@ -883,6 +918,27 @@ cr.define('device_page_tests', function() {
 
             // Sanity check the second display is not internal.
             expectFalse(displayPage.displays[1].isInternal);
+
+
+            // Verify the display modes are parsed correctly.
+
+            // 5 total modes, 2 parent modes.
+            expectEquals(5, displayPage.modeToParentModeMap_.size);
+            expectEquals(0, displayPage.modeToParentModeMap_.get(0));
+            expectEquals(0, displayPage.modeToParentModeMap_.get(1));
+            expectEquals(2, displayPage.modeToParentModeMap_.get(2));
+            expectEquals(2, displayPage.modeToParentModeMap_.get(3));
+            expectEquals(2, displayPage.modeToParentModeMap_.get(4));
+
+            // Two resolution options, one for each parent mode.
+            expectEquals(2, displayPage.refreshRateList_.length);
+
+            // Each parent mode has the correct number of refresh rates.
+            expectEquals(2, displayPage.parentModeToRefreshRateMap_.size);
+            expectEquals(
+                2, displayPage.parentModeToRefreshRateMap_.get(0).length);
+            expectEquals(
+                3, displayPage.parentModeToRefreshRateMap_.get(2).length);
 
             // Ambient EQ never shown on non-internal display regardless of
             // whether it is enabled.

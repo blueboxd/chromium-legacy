@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_factory.h"
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/reading_list/core/reading_list_entry.h"

@@ -181,6 +181,7 @@ public class ContentShellActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (mShellManager != null) mShellManager.destroy();
+        mWindowAndroid.destroy();
         super.onDestroy();
     }
 

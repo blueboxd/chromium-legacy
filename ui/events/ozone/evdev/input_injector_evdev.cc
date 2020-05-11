@@ -80,9 +80,9 @@ void InputInjectorEvdev::InjectKeyEvent(DomCode physical_key,
   int native_keycode = KeycodeConverter::DomCodeToNativeKeycode(physical_key);
   int evdev_code = NativeCodeToEvdevCode(native_keycode);
 
-  dispatcher_->DispatchKeyEvent(
-      KeyEventParams(kDeviceIdForInjection, ui::EF_NONE, evdev_code, down,
-                     suppress_auto_repeat, EventTimeForNow()));
+  dispatcher_->DispatchKeyEvent(KeyEventParams(
+      kDeviceIdForInjection, ui::EF_NONE, evdev_code, 0 /*scan_code*/, down,
+      suppress_auto_repeat, EventTimeForNow()));
 }
 
 }  // namespace ui

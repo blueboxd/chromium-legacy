@@ -369,8 +369,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      *         is bookmarked.
      */
     protected boolean shouldCheckBookmarkStar(@NonNull Tab currentTab) {
-        return sItemBookmarkedForTesting != null ? sItemBookmarkedForTesting
-                                                 : BookmarkBridge.hasBookmarkIdForTab(currentTab);
+        return sItemBookmarkedForTesting != null
+                ? sItemBookmarkedForTesting
+                : mBookmarkBridge != null && mBookmarkBridge.hasBookmarkIdForTab(currentTab);
     }
 
     /**

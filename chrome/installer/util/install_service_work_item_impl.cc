@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
-#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/install_util.h"
 
 using base::win::RegKey;
@@ -147,12 +146,14 @@ InstallServiceWorkItemImpl::InstallServiceWorkItemImpl(
     const base::string16& service_name,
     const base::string16& display_name,
     const base::CommandLine& service_cmd_line,
+    const base::string16& registry_path,
     const GUID& clsid,
     const GUID& iid)
     : com_registration_work_items_(WorkItem::CreateWorkItemList()),
       service_name_(service_name),
       display_name_(display_name),
       service_cmd_line_(service_cmd_line),
+      registry_path_(registry_path),
       clsid_(clsid),
       iid_(iid),
       rollback_existing_service_(false),
@@ -388,8 +389,7 @@ bool InstallServiceWorkItemImpl::DeleteServiceImpl() {
   // This is to allow for identifying that an existing instance of the service
   // is still installed when a future install or upgrade runs.
   base::win::RegKey key;
-  auto result = key.Open(HKEY_LOCAL_MACHINE,
-                         install_static::GetClientStateKeyPath().c_str(),
+  auto result = key.Open(HKEY_LOCAL_MACHINE, registry_path_.c_str(),
                          KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (result != ERROR_SUCCESS)
     return result == ERROR_FILE_NOT_FOUND || result == ERROR_PATH_NOT_FOUND;
@@ -465,12 +465,8 @@ bool InstallServiceWorkItemImpl::SetServiceName(
     const base::string16& service_name) const {
   base::win::RegKey key;
 
-  // This assumes that a WorkItem to create the key has already executed before
-  // this WorkItem. this is generally true since one is added in
-  // AddUninstallShortcutWorkItems.
-  auto result = key.Open(HKEY_LOCAL_MACHINE,
-                         install_static::GetClientStateKeyPath().c_str(),
-                         KEY_SET_VALUE | KEY_WOW64_32KEY);
+  auto result = key.Create(HKEY_LOCAL_MACHINE, registry_path_.c_str(),
+                           KEY_SET_VALUE | KEY_WOW64_32KEY);
   DCHECK(result == ERROR_SUCCESS);
   if (result != ERROR_SUCCESS) {
     ::SetLastError(result);
@@ -491,8 +487,7 @@ bool InstallServiceWorkItemImpl::SetServiceName(
 base::string16 InstallServiceWorkItemImpl::GetCurrentServiceName() const {
   base::win::RegKey key;
 
-  auto result = key.Open(HKEY_LOCAL_MACHINE,
-                         install_static::GetClientStateKeyPath().c_str(),
+  auto result = key.Open(HKEY_LOCAL_MACHINE, registry_path_.c_str(),
                          KEY_QUERY_VALUE | KEY_WOW64_32KEY);
   if (result != ERROR_SUCCESS)
     return service_name_;

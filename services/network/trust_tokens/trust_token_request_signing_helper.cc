@@ -79,7 +79,7 @@ const char* const TrustTokenRequestSigningHelper::kSignableRequestHeaders[]{
 };
 
 constexpr char
-    TrustTokenRequestSigningHelper::kCanonicalizedRequestDataUrlKey[];
+    TrustTokenRequestSigningHelper::kCanonicalizedRequestDataDestinationKey[];
 constexpr char
     TrustTokenRequestSigningHelper::kCanonicalizedRequestDataPublicKeyKey[];
 constexpr uint8_t

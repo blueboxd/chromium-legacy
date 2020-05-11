@@ -1097,6 +1097,15 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(ukm_recorder.EntryHasMetric(
         entry, ukm::builders::OptimizationGuide::
                    kNavigationHintsFetchRequestLatencyName));
+    EXPECT_TRUE(ukm_recorder.EntryHasMetric(
+        entry, ukm::builders::OptimizationGuide::
+                   kNavigationHintsFetchAttemptStatusName));
+    ukm_recorder.ExpectEntryMetric(
+        entry,
+        ukm::builders::OptimizationGuide::
+            kNavigationHintsFetchAttemptStatusName,
+        static_cast<int>(optimization_guide::RaceNavigationFetchAttemptStatus::
+                             kRaceNavigationFetchHostAndURL));
   }
 
   // Change ECT to unknown. Hints should not be fetched at the time of
@@ -1135,6 +1144,9 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_FALSE(prev_nav_ukm_recorder.EntryHasMetric(
         entry, ukm::builders::OptimizationGuide::
                    kNavigationHintsFetchRequestLatencyName));
+    EXPECT_FALSE(prev_nav_ukm_recorder.EntryHasMetric(
+        entry, ukm::builders::OptimizationGuide::
+                   kNavigationHintsFetchAttemptStatusName));
   }
 
   // Change ECT back to a low value. Hints should be fetched at the time of
@@ -1175,6 +1187,15 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(prev_nav_ukm_recorder.EntryHasMetric(
         entry, ukm::builders::OptimizationGuide::
                    kNavigationHintsFetchRequestLatencyName));
+    EXPECT_TRUE(prev_nav_ukm_recorder.EntryHasMetric(
+        entry, ukm::builders::OptimizationGuide::
+                   kNavigationHintsFetchAttemptStatusName));
+    prev_nav_ukm_recorder.ExpectEntryMetric(
+        entry,
+        ukm::builders::OptimizationGuide::
+            kNavigationHintsFetchAttemptStatusName,
+        static_cast<int>(optimization_guide::RaceNavigationFetchAttemptStatus::
+                             kRaceNavigationFetchHostAndURL));
   }
 
   // Navigate again to a webpage with the
@@ -1218,6 +1239,15 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(prev_nav_ukm_recorder.EntryHasMetric(
         entry, ukm::builders::OptimizationGuide::
                    kNavigationHintsFetchRequestLatencyName));
+    EXPECT_TRUE(prev_nav_ukm_recorder.EntryHasMetric(
+        entry, ukm::builders::OptimizationGuide::
+                   kNavigationHintsFetchAttemptStatusName));
+    prev_nav_ukm_recorder.ExpectEntryMetric(
+        entry,
+        ukm::builders::OptimizationGuide::
+            kNavigationHintsFetchAttemptStatusName,
+        static_cast<int>(optimization_guide::RaceNavigationFetchAttemptStatus::
+                             kRaceNavigationFetchHostAndURL));
   }
 }
 

@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 
 #import "base/ios/block_types.h"
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/version_info/version_info.h"

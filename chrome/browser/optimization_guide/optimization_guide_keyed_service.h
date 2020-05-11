@@ -41,7 +41,6 @@ class PredictionManagerBrowserTest;
 
 class GURL;
 class OptimizationGuideHintsManager;
-class OptimizationGuideNavigationData;
 
 class OptimizationGuideKeyedService
     : public KeyedService,
@@ -114,8 +113,7 @@ class OptimizationGuideKeyedService
 
   // Notifies |hints_manager_| that the navigation associated with
   // |navigation_redirect_chain| has finished.
-  void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain,
-                          OptimizationGuideNavigationData* navigation_data);
+  void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain);
 
   // Clears data specific to the user.
   void ClearData();

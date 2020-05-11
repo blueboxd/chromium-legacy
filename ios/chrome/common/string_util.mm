@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 

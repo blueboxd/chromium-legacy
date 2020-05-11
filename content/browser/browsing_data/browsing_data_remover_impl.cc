@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -457,9 +459,20 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         delete_begin, delete_end, filter_builder->BuildNetworkServiceFilter(),
         CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
 
-    storage_partition->ClearCodeCaches(
-        delete_begin, delete_end, nullable_url_filter,
-        CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
+    if (base::FeatureList::IsEnabled(
+            features::kCodeCacheDeletionWithoutFilter)) {
+      // Experimentally perform blacklist deletions without filter and skip
+      // origin specific deletions. See crbug.com/1040039#26.
+      if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+        storage_partition->ClearCodeCaches(
+            delete_begin, delete_end, /*filter=*/base::NullCallback(),
+            CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
+      }
+    } else {
+      storage_partition->ClearCodeCaches(
+          delete_begin, delete_end, nullable_url_filter,
+          CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
+    }
 
     // TODO(crbug.com/1985971) : Implement filtering for NetworkHistory.
     if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {

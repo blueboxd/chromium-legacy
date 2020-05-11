@@ -65,7 +65,8 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
   void AnimateYPosition(AppListViewState target_view_state,
-                        const TransformAnimator& animator) override;
+                        const TransformAnimator& animator,
+                        float default_offset) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerDestroying() override;

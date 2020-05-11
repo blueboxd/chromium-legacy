@@ -81,6 +81,11 @@ class COMPONENT_EXPORT(EVDEV) EventConverterEvdevImpl
   // Save y-axis events of relative devices to be flushed at EV_SYN time.
   int y_offset_ = 0;
 
+  // Saves the last scan code seen in order to attach it to the next key event.
+  // The scan code is sent as a separate event message EV_MSC with subtype
+  // MSC_SCAN prior to the EV_KEY message that contains the key code.
+  unsigned int last_scan_code_ = 0;
+
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FdWatchController controller_;
 

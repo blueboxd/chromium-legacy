@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 
 using content::BrowserContext;
@@ -52,7 +53,7 @@ void StorageInfoFetcher::ClearStorage(const std::string& host,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &storage::QuotaManager::DeleteHostData, quota_manager_, host, type,
-          storage::QuotaClient::kAllClientsMask,
+          storage::AllQuotaClientTypes(),
           base::BindOnce(&StorageInfoFetcher::OnUsageClearedInternal, this)));
 }
 

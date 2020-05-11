@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Command, MenuSource} from 'chrome://bookmarks/bookmarks.js';
+import {BrowserProxy, Command, MenuSource} from 'chrome://bookmarks/bookmarks.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestBookmarksBrowserProxy} from 'chrome://test/bookmarks/test_browser_proxy.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {createFolder, createItem, customClick, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
@@ -171,6 +172,7 @@ suite('<bookmarks-list> integration test', function() {
 suite('<bookmarks-list> command manager integration test', function() {
   let app;
   let store;
+  let proxy;
 
   setup(function() {
     store = new TestStore({
@@ -179,6 +181,9 @@ suite('<bookmarks-list> command manager integration test', function() {
     });
     store.replaceSingleton();
     store.setReducersEnabled(true);
+
+    proxy = new TestBookmarksBrowserProxy();
+    BrowserProxy.instance_ = proxy;
 
     app = document.createElement('bookmarks-app');
     app.style.height = '100%';
@@ -197,10 +202,11 @@ suite('<bookmarks-list> command manager integration test', function() {
       return Promise.resolve();
     };
 
+    proxy.resetResolver('recordInHistogram');
     const list = app.$$('bookmarks-list');
     list.fire('contextmenu', {clientX: 0, clientY: 0});
 
-    await flushTasks();
+    await proxy.whenCalled('recordInHistogram');
 
     assertEquals(MenuSource.LIST, commandManager.menuSource_);
     assertDeepEquals(

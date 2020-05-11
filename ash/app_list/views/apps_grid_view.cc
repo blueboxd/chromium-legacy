@@ -625,6 +625,7 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
   if (drag_view_ || pulsing_blocks_model_.view_size())
     return;
 
+  items_need_layer_for_drag_ = true;
   for (const auto& entry : view_model_.entries())
     static_cast<AppListItemView*>(entry.view)->EnsureLayer();
   drag_view_ = view;
@@ -934,6 +935,7 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
       this, original_drag_view->item(),
       contents_view_->GetAppListMainView()->view_delegate(),
       false /* is_in_folder */);
+  items_need_layer_for_drag_ = true;
   auto* view_ptr = items_container_->AddChildView(std::move(view));
   for (const auto& entry : view_model_.entries())
     static_cast<AppListItemView*>(entry.view)->EnsureLayer();
@@ -2101,8 +2103,8 @@ void AppsGridView::UpdateOpacity(bool restore_opacity) {
   // view (i.e. this class).
   if (restore_opacity) {
     // If drag is in progress, layers are still required, so just update the
-    // opacity (the layers will be deleted when drag operation ends).
-    if (drag_view_) {
+    // opacity (the layers will be deleted when drag operation completes).
+    if (items_need_layer_for_drag_) {
       for (const auto& entry : view_model_.entries()) {
         if (drag_view_ != entry.view)
           entry.view->layer()->SetOpacity(1.0f);
@@ -3039,6 +3041,8 @@ void AppsGridView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
 void AppsGridView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   if (drag_view_)
     return;
+
+  items_need_layer_for_drag_ = false;
   for (const auto& entry : view_model_.entries())
     entry.view->DestroyLayer();
   bounds_animator_->SetAnimationDuration(

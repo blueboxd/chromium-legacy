@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"

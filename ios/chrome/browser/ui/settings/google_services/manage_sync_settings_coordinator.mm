@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/google/core/common/google_util.h"

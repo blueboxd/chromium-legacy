@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Linux-filer</translation>
 <translation id="9035012421917565900">Elementerne kan ikke flyttes tilbage til "<ph name="DESTINATION_NAME" />", så du kan ikke fortryde denne handling.</translation>
 <translation id="9038620279323455325">Der findes allerede en fil med navnet "<ph name="FILE_NAME" />". Vælg et andet navn.</translation>
-<translation id="9062992083244091966">Hvis du vil åbne filerne med <ph name="APP_NAME" />-apps, skal du først flytte dem til mappen med delte <ph name="APP_NAME" />-filer.</translation>
 <translation id="9064939804718829769">Overfører...</translation>
 <translation id="9065203028668620118">Rediger</translation>
 <translation id="9099674669267916096">Sideantal</translation>

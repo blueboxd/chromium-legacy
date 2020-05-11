@@ -14,8 +14,8 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/file_source_request.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
-#include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -179,11 +179,24 @@ DeepScanningRequest::~DeepScanningRequest() {
 }
 
 void DeepScanningRequest::Start() {
+  auto settings =
+      enterprise_connectors::ConnectorsManager::GetInstance()
+          ->GetAnalysisSettings(
+              item_->GetURL(),
+              enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED);
+  if (!settings.has_value()) {
+    OnScanComplete(BinaryUploadService::Result::SUCCESS,
+                   DeepScanningClientResponse());
+    return;
+  }
+  analysis_settings_ = std::move(settings.value());
+
   // Indicate we're now scanning the file.
   callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
 
-  auto request = std::make_unique<DownloadItemRequest>(
-      item_, /*read_immediately=*/true,
+  auto request = std::make_unique<FileSourceRequest>(
+      analysis_settings_.block_unsupported_file_types, item_->GetFullPath(),
+      item_->GetTargetFilePath().BaseName(),
       base::BindOnce(&DeepScanningRequest::OnScanComplete,
                      weak_ptr_factory_.GetWeakPtr()));
   request->set_filename(item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());

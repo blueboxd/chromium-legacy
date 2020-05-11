@@ -35,6 +35,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
@@ -528,6 +529,7 @@ public class InstantStartTest {
     @Test
     @SmallTest
     @Feature({"RenderTest"})
+    @DisabledTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)

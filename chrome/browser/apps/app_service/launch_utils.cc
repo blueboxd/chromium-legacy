@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
@@ -64,6 +65,9 @@ bool IsInstalledApp(Profile* profile, const std::string& app_id) {
 void SetAppIdForWebContents(Profile* profile,
                             content::WebContents* web_contents,
                             const std::string& app_id) {
+  if (!web_app::AreWebAppsEnabled(profile)) {
+    return;
+  }
   extensions::TabHelper::CreateForWebContents(web_contents);
   web_app::WebAppTabHelper::CreateForWebContents(web_contents);
   const extensions::Extension* extension =

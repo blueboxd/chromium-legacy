@@ -647,7 +647,7 @@ const base::Feature kMediaFeeds{"MediaFeeds",
 
 // Enables checking Media Feeds against safe search to prevent adult content.
 const base::Feature kMediaFeedsSafeSearch{"MediaFeedsSafeSearch",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Send events to devtools rather than to chrome://media-internals
 const base::Feature kMediaInspectorLogging{"MediaInspectorLogging",

@@ -10,10 +10,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"

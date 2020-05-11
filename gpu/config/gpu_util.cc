@@ -530,7 +530,14 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
     if (use_gl == gl::kGLImplementationSwiftShaderName)
       use_swift_shader = true;
-    else if (use_gl == gl::kGLImplementationSwiftShaderForWebGLName)
+    else if (use_gl == gl::kGLImplementationANGLEName) {
+      if (command_line->HasSwitch(switches::kUseANGLE)) {
+        std::string use_angle =
+            command_line->GetSwitchValueASCII(switches::kUseANGLE);
+        if (use_angle == gl::kANGLEImplementationSwiftShaderName)
+          use_swift_shader = true;
+      }
+    } else if (use_gl == gl::kGLImplementationSwiftShaderForWebGLName)
       return ComputeGpuFeatureInfoForSwiftShader();
     else if (use_gl == gl::kGLImplementationDisabledName)
       return ComputeGpuFeatureInfoWithNoGpu();

@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Linux-fájlok</translation>
 <translation id="9035012421917565900">Az elemek nem helyezhetők vissza ide: „<ph name="DESTINATION_NAME" />”. Nem tudja visszavonni a műveletet.</translation>
 <translation id="9038620279323455325">Már van „<ph name="FILE_NAME" />” nevű fájl. Válasszon másik nevet.</translation>
-<translation id="9062992083244091966">Ha a(z) <ph name="APP_NAME" /> alkalmazással szeretne fájlokat megnyitni, először helyezze át őket a(z) <ph name="APP_NAME" /> megosztott fájljainak mappájába.</translation>
 <translation id="9064939804718829769">Átvitel...</translation>
 <translation id="9065203028668620118">Szerkesztés</translation>
 <translation id="9099674669267916096">Oldalak száma</translation>

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 
-#include "base/logging.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"

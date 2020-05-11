@@ -5,8 +5,9 @@
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 
 #include <memory>
+#include <ostream>
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -4,7 +4,6 @@
 
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
-import("//build/config/jumbo.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//headless/headless.gni")
@@ -239,7 +238,7 @@ inspector_protocol_generate("protocol_sources") {
 
 # Code needed in both processes. Only exposed through |headless| and
 # |headless_non_renderer| components.
-jumbo_source_set("headless_shared_sources") {
+source_set("headless_shared_sources") {
   visibility = [
     "//headless:headless_non_renderer",
     "//headless:headless",
@@ -300,12 +299,12 @@ jumbo_source_set("headless_shared_sources") {
 }
 
 # Code that is needed in a renderer process.
-jumbo_component("headless") {
+component("headless") {
   deps = [ ":headless_shared_sources" ]
 }
 
 # Code that is not needed in a renderer process.
-jumbo_component("headless_non_renderer") {
+component("headless_non_renderer") {
   sources = [
     "lib/browser/headless_browser_context_impl.cc",
     "lib/browser/headless_browser_context_impl.h",
@@ -715,7 +714,7 @@ if (is_win) {
 
 # Headless library with all included dependencies. Use this library unless you
 # have browser/child dependencies restrictions.
-jumbo_static_library("headless_shell_lib") {
+static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
     "app/headless_shell.h",

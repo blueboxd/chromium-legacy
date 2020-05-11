@@ -78,8 +78,8 @@ IndexedDBQuotaClient::IndexedDBQuotaClient(
 
 IndexedDBQuotaClient::~IndexedDBQuotaClient() = default;
 
-QuotaClient::ID IndexedDBQuotaClient::id() const {
-  return kIndexedDatabase;
+storage::QuotaClientType IndexedDBQuotaClient::type() const {
+  return storage::QuotaClientType::kIndexedDatabase;
 }
 
 void IndexedDBQuotaClient::OnQuotaManagerDestroyed() {}

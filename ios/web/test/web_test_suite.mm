@@ -4,7 +4,7 @@
 
 #include "ios/web/public/test/web_test_suite.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "ios/testing/verify_custom_webkit.h"

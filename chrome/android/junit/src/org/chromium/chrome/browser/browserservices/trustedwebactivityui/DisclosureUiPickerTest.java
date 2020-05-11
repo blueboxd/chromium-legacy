@@ -39,8 +39,6 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 
-import dagger.Lazy;
-
 /**
  * Tests for {@link DisclosureUiPicker}.
  */
@@ -144,16 +142,4 @@ public class DisclosureUiPickerTest {
         when(mNotificationManager.getNotificationChannel(eq(channelId))).thenReturn(channel);
     }
 
-    private static class FilledLazy<T> implements Lazy<T> {
-        private final T mContents;
-
-        FilledLazy(T contents) {
-            mContents = contents;
-        }
-
-        @Override
-        public T get() {
-            return mContents;
-        }
-    }
 }

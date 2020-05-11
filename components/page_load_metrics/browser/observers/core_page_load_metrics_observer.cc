@@ -279,6 +279,18 @@ const char kHistogramFontPreloadLargestContentfulPaint[] =
     "PageLoad.Clients.FontPreload.PaintTiming."
     "NavigationToLargestContentfulPaint";
 
+// Navigation metrics from the navigation start.
+const char kHistogramNavigationTimingNavigationStartToFirstRequestStart[] =
+    "PageLoad.Experimental.NavigationTiming.NavigationStartToFirstRequestStart";
+const char kHistogramNavigationTimingNavigationStartToFirstResponseStart[] =
+    "PageLoad.Experimental.NavigationTiming."
+    "NavigationStartToFirstResponseStart";
+
+// Navigation metrics between milestones.
+const char kHistogramNavigationTimingFirstRequestStartToFirstResponseStart[] =
+    "PageLoad.Experimental.NavigationTiming."
+    "FirstRequestStartToFirstResponseStart";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
@@ -314,6 +326,7 @@ CorePageLoadMetricsObserver::OnCommit(
   }
   UMA_HISTOGRAM_COUNTS_100("PageLoad.Navigation.RedirectChainLength",
                            redirect_chain_size_);
+  RecordNavigationTimingHistograms(navigation_handle);
   return CONTINUE_OBSERVING;
 }
 
@@ -737,6 +750,41 @@ void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
     }
     network_bytes_including_headers_ += resource->delta_bytes;
   }
+}
+
+void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
+    content::NavigationHandle* navigation_handle) {
+  // Record metrics for navigation only when all relevant milestones are
+  // recorded and in the expected order. It is allowed that they have the same
+  // value for some cases (e.g., internal redirection for HSTS).
+  if (navigation_handle->NavigationStart().is_null() ||
+      navigation_handle->FirstRequestStart().is_null() ||
+      navigation_handle->FirstResponseStart().is_null())
+    return;
+  // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
+  // after the issue 1076710 is fixed.
+  if (navigation_handle->NavigationStart() >
+          navigation_handle->FirstRequestStart() ||
+      navigation_handle->FirstRequestStart() >
+          navigation_handle->FirstResponseStart()) {
+    return;
+  }
+
+  // Record the elapsed time from the navigation start milestone.
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingNavigationStartToFirstRequestStart,
+      navigation_handle->FirstRequestStart() -
+          navigation_handle->NavigationStart());
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingNavigationStartToFirstResponseStart,
+      navigation_handle->FirstResponseStart() -
+          navigation_handle->NavigationStart());
+
+  // Record the intervals between milestones.
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingFirstRequestStartToFirstResponseStart,
+      navigation_handle->FirstResponseStart() -
+          navigation_handle->FirstRequestStart());
 }
 
 // This method records values for metrics that were not recorded during any

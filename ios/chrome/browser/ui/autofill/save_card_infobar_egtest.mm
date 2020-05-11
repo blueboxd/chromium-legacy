@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/metrics/metrics_app_interface.h"

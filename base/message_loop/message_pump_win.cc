@@ -218,8 +218,6 @@ void MessagePumpForUI::DoRunLoop() {
     // work.
 
     in_native_loop_ = false;
-    state_->delegate->BeforeDoInternalWork();
-    DCHECK(!in_native_loop_);
 
     bool more_work_is_plausible = ProcessNextWindowsMessage();
     in_native_loop_ = false;
@@ -476,6 +474,12 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
   MSG msg;
   bool has_msg = false;
   {
+    // ::PeekMessage() may process sent messages (regardless of |had_messages|
+    // as ::GetQueueStatus() is an optimistic check that may racily have missed
+    // an incoming event -- it doesn't hurt to have empty internal units of work
+    // when ::PeekMessage turns out to be a no-op).
+    state_->delegate->BeforeDoInternalWork();
+
     static const auto kAdditionalFlags =
         FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
 
@@ -517,6 +521,8 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
     return ProcessPumpReplacementMessage();
 
+  state_->delegate->BeforeDoInternalWork();
+
   for (Observer& observer : observers_)
     observer.WillDispatchMSG(msg);
   ::TranslateMessage(&msg);
@@ -538,6 +544,10 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   // replacement kMsgHaveWork to possibly be posted), and finally dispatches
   // that peeked replacement. Note that the re-post of kMsgHaveWork may be
   // asynchronous to this thread!!
+
+  // As in ProcessNextWindowsMessage() since ::PeekMessage() may process
+  // sent-messages.
+  state_->delegate->BeforeDoInternalWork();
 
   MSG msg;
   const bool have_message =

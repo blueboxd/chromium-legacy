@@ -7,8 +7,8 @@
 #import <CoreText/CoreText.h>
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/check_op.h"
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/manual_text_framer.h"

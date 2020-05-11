@@ -203,7 +203,8 @@ class MojomProcessor(object):
             generate_message_ids=args.generate_message_ids,
             generate_fuzzing=args.generate_fuzzing,
             enable_kythe_annotations=args.enable_kythe_annotations,
-            extra_cpp_template_paths=args.extra_cpp_template_paths)
+            extra_cpp_template_paths=args.extra_cpp_template_paths,
+            generate_extra_cpp_only=args.generate_extra_cpp_only)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -341,6 +342,11 @@ def main():
       default=[],
       help="Provide a path to a new template (.tmpl) that is used to generate "
       "additional C++ source/header files ")
+  generate_parser.add_argument(
+      "--generate_extra_cpp_only",
+      help="If set and extra_cpp_template_paths provided, will only generate"
+      "extra_cpp_template related C++ bindings",
+      action="store_true")
   generate_parser.add_argument(
       "--disallow_native_types",
       help="Disallows the [Native] attribute to be specified on structs or "

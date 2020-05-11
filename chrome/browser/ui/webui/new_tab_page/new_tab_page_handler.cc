@@ -171,7 +171,7 @@ NewTabPageHandler::NewTabPageHandler(
     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
     Profile* profile,
     content::WebContents* web_contents,
-    const base::Time& ntp_creation_time)
+    const base::Time& ntp_navigation_start_time)
     : chrome_colors_service_(
           chrome_colors::ChromeColorsFactory::GetForProfile(profile)),
       instant_service_(InstantServiceFactory::GetForProfile(profile)),
@@ -190,7 +190,7 @@ NewTabPageHandler::NewTabPageHandler(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS)),
       web_contents_(web_contents),
-      ntp_creation_time_(ntp_creation_time),
+      ntp_navigation_start_time_(ntp_navigation_start_time),
       logger_(NTPUserDataLogger::GetOrCreateFromWebContents(web_contents)) {
   CHECK(instant_service_);
   CHECK(ntp_background_service_);
@@ -465,7 +465,7 @@ void NewTabPageHandler::OnMostVisitedTilesRendered(
   // This call flushes all most visited impression logs to UMA histograms.
   // Therefore, it must come last.
   logger_->LogEvent(NTP_ALL_TILES_LOADED,
-                    base::Time::FromJsTime(time) - ntp_creation_time_);
+                    base::Time::FromJsTime(time) - ntp_navigation_start_time_);
 }
 
 void NewTabPageHandler::OnMostVisitedTileNavigation(

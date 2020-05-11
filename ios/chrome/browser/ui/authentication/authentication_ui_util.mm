@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 
+#include "base/check.h"
 #include "base/format_macros.h"
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #include "ios/chrome/grit/ios_strings.h"

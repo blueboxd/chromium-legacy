@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/main/browser_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser_agent_util.h"

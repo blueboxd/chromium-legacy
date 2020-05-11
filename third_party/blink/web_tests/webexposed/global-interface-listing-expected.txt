@@ -5500,6 +5500,7 @@ interface Navigator
     getter userAgentData
     getter vendor
     getter vendorSub
+    getter virtualKeyboard
     getter wakeLock
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
@@ -8823,6 +8824,19 @@ interface VideoTrackWriter
     attribute @@toStringTag
     getter track
     getter writable
+    method constructor
+interface VirtualKeyboard : EventTarget
+    attribute @@toStringTag
+    getter onoverlaygeometrychange
+    getter overlaysContent
+    method constructor
+    method hide
+    method show
+    setter onoverlaygeometrychange
+    setter overlaysContent
+interface VirtualKeyboardOverlayGeometryChangeEvent : Event
+    attribute @@toStringTag
+    getter boundingRect
     method constructor
 interface VisualViewport : EventTarget
     attribute @@toStringTag

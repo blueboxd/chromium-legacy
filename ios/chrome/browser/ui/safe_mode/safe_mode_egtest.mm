@@ -4,7 +4,6 @@
 
 #include "base/feature_list.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/safe_mode/safe_mode_app_interface.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"

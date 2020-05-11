@@ -59,6 +59,10 @@ class IsolatedPrerenderPageLoadMetricsObserver
   // that this can be done in an event notification.
   void GetPrefetchMetrics();
 
+  // Records the corresponding UKM events.
+  void RecordPrefetchProxyEvent();
+  void RecordAfterSRPEvent();
+
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                         const GURL& currently_committed_url,

@@ -23,6 +23,8 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
+import org.chromium.android_webview.AwFeatureList;
+import org.chromium.android_webview.AwFeatures;
 import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwProxyController;
@@ -172,6 +174,9 @@ public class WebViewChromiumAwInit {
 
             AwBrowserProcess.start();
             AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
+            if (AwFeatureList.isEnabled(AwFeatures.WEBVIEW_COLLECT_NONEMBEDDED_METRICS)) {
+                AwBrowserProcess.transmitRecordedMetrics();
+            }
 
             mSharedStatics = new SharedStatics();
             if (BuildInfo.isDebugAndroid()) {

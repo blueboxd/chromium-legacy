@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.StrictMode;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
@@ -22,7 +21,6 @@ import android.view.WindowManager.BadTokenException;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.IntentUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -39,6 +37,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
+import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.ExternalNavigationParams;
@@ -143,38 +142,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public void didStartActivity(Intent intent) {}
 
     @Override
-    public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
-        boolean activityWasLaunched;
-        // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            ExternalNavigationHandler.forcePdfViewerAsIntentHandlerIfNeeded(intent);
-            if (proxy) {
-                dispatchAuthenticatedIntent(intent);
-                activityWasLaunched = true;
-            } else {
-                Context context = getAvailableContext();
-                if (context instanceof Activity) {
-                    activityWasLaunched = ((Activity) context).startActivityIfNeeded(intent, -1);
-                } else {
-                    activityWasLaunched = false;
-                }
-            }
-            if (activityWasLaunched) {
-                ExternalNavigationHandler.recordExternalNavigationDispatched(intent);
-            }
-            return activityWasLaunched;
-        } catch (SecurityException e) {
-            // https://crbug.com/808494: Handle the URL in Chrome if dispatching to another
-            // application fails with a SecurityException. This happens due to malformed manifests
-            // in another app.
-            return false;
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-            return false;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+    public @StartActivityIfNeededResult int maybeHandleStartActivityIfNeeded(
+            Intent intent, boolean proxy) {
+        return StartActivityIfNeededResult.DID_NOT_HANDLE;
     }
 
     @Override

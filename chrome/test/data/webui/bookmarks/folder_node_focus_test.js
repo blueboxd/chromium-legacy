@@ -22,9 +22,9 @@ suite('<bookmarks-folder-node>', function() {
     const node = getFolderNode(id);
     const activeElement = node.shadowRoot.activeElement;
     assertTrue(
-        activeElement != null && activeElement == getDeepActiveElement());
+        activeElement != null && activeElement === getDeepActiveElement());
     const badAction = selectFolder(id);
-    if (store.lastAction != null && badAction.name == store.lastAction.name) {
+    if (store.lastAction != null && badAction.name === store.lastAction.name) {
       assertNotEquals(badAction.id, store.lastAction.id);
     }
   }

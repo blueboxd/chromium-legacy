@@ -90,13 +90,6 @@ class CORE_EXPORT Keyframe : public GarbageCollected<Keyframe> {
   // Returns a set of the properties represented in this keyframe.
   virtual PropertyHandleSet Properties() const = 0;
 
-  // A keyframe that is marked as having missing properties will include
-  // property-value pairs for the set of animated properties across all
-  // keyframes. The additional properties have values based on the underlying
-  // value.
-  virtual bool HasMissingProperties() { return false; }
-  virtual void SetHasMissingProperties() {}
-
   // Creates a clone of this keyframe.
   //
   // The clone should have the same (property, value) pairs, offset value,

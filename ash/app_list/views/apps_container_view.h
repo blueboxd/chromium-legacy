@@ -116,7 +116,8 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage {
                       AppListViewState target_view_state,
                       const OpacityAnimator& animator) override;
   void AnimateYPosition(AppListViewState target_view_state,
-                        const TransformAnimator& animator) override;
+                        const TransformAnimator& animator,
+                        float default_offset) override;
 
   SuggestionChipContainerView* suggestion_chip_container_view_for_test() {
     return suggestion_chip_container_view_;

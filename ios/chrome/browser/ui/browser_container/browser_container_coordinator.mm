@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_mediator.h"

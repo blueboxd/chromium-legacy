@@ -332,6 +332,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     page_flip_delay_in_ms_ = page_flip_delay_in_ms;
   }
 
+  views::BoundsAnimator* bounds_animator_for_testing() {
+    return bounds_animator_.get();
+  }
+
  private:
   class FadeoutLayerDelegate;
   friend class test::AppsGridViewTestApi;
@@ -741,6 +745,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   AppListItemView* selected_view_ = nullptr;
 
   AppListItemView* drag_view_ = nullptr;
+
+  // Set while apps grid items have layers to handle app list item drag
+  // operation. It's reset when the app list bounds animations requested after
+  // drag state is cleared complete.
+  bool items_need_layer_for_drag_ = false;
 
   // The index of the drag_view_ when the drag starts.
   GridIndex drag_view_init_index_;

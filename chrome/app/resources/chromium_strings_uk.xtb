@@ -21,7 +21,6 @@
 <translation id="1929939181775079593">Chromium не відповідає. Перезапустити зараз?</translation>
 <translation id="1966382378801805537">Chromium не може визначити чи встановити веб-переглядач за умовчанням</translation>
 <translation id="2008474315282236005">1 елемент буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як <ph name="USER_EMAIL" />.</translation>
-<translation id="2147976119693222405">ОС Chromium не вдалося синхронізувати ваші дані. Виправити.</translation>
 <translation id="2185166961232948079">Chromium – Вхід у мережу– <ph name="PAGE_TITLE" /></translation>
 <translation id="2241627712206172106">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chromium на свій смак.</translation>
 <translation id="2294245788148774212">Додатково: допоможіть покращувати функції та підвищувати продуктивність ОС Chromium, автоматично надсилаючи в Google дані про діагностику та використання.</translation>
@@ -39,7 +38,6 @@
 <translation id="2718390899429598676">Задля підвищення безпеки Chromium шифруватиме ваші дані.</translation>
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
 <translation id="2799223571221894425">Перезапустити</translation>
-<translation id="2805036593126168338">ОС Chromium не вдалося синхронізувати ваші паролі. Виправити.</translation>
 <translation id="2847479871509788944">Видалити з Chromium…</translation>
 <translation id="2910007522516064972">Про &amp;Chromium</translation>
 <translation id="2977470724722393594">У вас остання версія Chromium</translation>

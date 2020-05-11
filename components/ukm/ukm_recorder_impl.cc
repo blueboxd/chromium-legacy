@@ -96,6 +96,7 @@ enum class DroppedDataReason {
   EXTENSION_NOT_SYNCED = 7,
   NOT_MATCHED = 8,
   EMPTY_URL = 9,
+  REJECTED_BY_FILTER = 10,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -154,11 +155,22 @@ void AppendWhitelistedUrls(
   }
 }
 
+// Returns true if the event corresponding to |event_hash| has a comprehensive
+// decode map that includes all valid metrics.
+bool HasComprehensiveDecodeMap(int64_t event_hash) {
+  // All events other than "Identifiability" conforms to its decode map.
+  // TODO(asanka): It is technically an abstraction violation for
+  // //components/ukm to know this fact.
+  return event_hash != builders::Identifiability::kEntryNameHash;
+}
+
 bool HasUnknownMetrics(const builders::DecodeMap& decode_map,
                        const mojom::UkmEntry& entry) {
   const auto it = decode_map.find(entry.event_hash);
   if (it == decode_map.end())
     return true;
+  if (!HasComprehensiveDecodeMap(entry.event_hash))
+    return false;
   const auto& metric_map = it->second.metric_map;
   for (const auto& metric : entry.metrics) {
     if (metric_map.count(metric.first) == 0)
@@ -292,6 +304,12 @@ void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
   is_webstore_extension_callback_ = callback;
 }
 
+void UkmRecorderImpl::SetEntryFilter(
+    std::unique_ptr<UkmEntryFilter> entry_filter) {
+  DCHECK(!entry_filter_ || !entry_filter);
+  entry_filter_ = std::move(entry_filter);
+}
+
 // TODO(rkaplow): This should be refactored.
 void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -368,6 +386,8 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
         event_aggregate.dropped_due_to_sampling);
     proto_aggregate->set_dropped_due_to_whitelist(
         event_aggregate.dropped_due_to_whitelist);
+    proto_aggregate->set_dropped_due_to_filter(
+        event_aggregate.dropped_due_to_filter);
     for (const auto& metric_and_aggregate : event_aggregate.metrics) {
       const MetricAggregate& aggregate = metric_and_aggregate.second;
       Aggregate::Metric* proto_metric = proto_aggregate->add_metrics();
@@ -391,6 +411,11 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
           event_aggregate.dropped_due_to_whitelist) {
         proto_metric->set_dropped_due_to_whitelist(
             aggregate.dropped_due_to_whitelist);
+      }
+      if (aggregate.dropped_due_to_filter !=
+          event_aggregate.dropped_due_to_filter) {
+        proto_metric->set_dropped_due_to_filter(
+            aggregate.dropped_due_to_filter);
       }
     }
   }
@@ -497,6 +522,27 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedEntries() const {
+  return true;
+}
+
+bool UkmRecorderImpl::ApplyEntryFilter(mojom::UkmEntry* entry) {
+  base::flat_set<uint64_t> dropped_metric_hashes;
+
+  if (!entry_filter_)
+    return true;
+
+  bool keep_entry = entry_filter_->FilterEntry(entry, &dropped_metric_hashes);
+
+  for (auto metric : dropped_metric_hashes) {
+    recordings_.event_aggregations[entry->event_hash]
+        .metrics[metric]
+        .dropped_due_to_filter++;
+  }
+
+  if (!keep_entry) {
+    recordings_.event_aggregations[entry->event_hash].dropped_due_to_filter++;
+    return false;
+  }
   return true;
 }
 
@@ -632,11 +678,15 @@ void UkmRecorderImpl::RecordSource(std::unique_ptr<UkmSource> source) {
 
 void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   DCHECK(!HasUnknownMetrics(decode_map_, *entry));
 
   if (!recording_enabled_) {
     RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
+    return;
+  }
+
+  if (!ApplyEntryFilter(entry.get())) {
+    RecordDroppedEntry(DroppedDataReason::REJECTED_BY_FILTER);
     return;
   }
 

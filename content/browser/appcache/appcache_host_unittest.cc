@@ -118,11 +118,11 @@ class AppCacheHostTest : public testing::Test {
     void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
     void NotifyStorageAccessed(const url::Origin& origin,
                                blink::mojom::StorageType type) override {}
-    void NotifyStorageModified(storage::QuotaClient::ID client_id,
+    void NotifyStorageModified(storage::QuotaClientType client_id,
                                const url::Origin& origin,
                                blink::mojom::StorageType type,
                                int64_t delta) override {}
-    void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
+    void SetUsageCacheEnabled(storage::QuotaClientType client_id,
                               const url::Origin& origin,
                               blink::mojom::StorageType type,
                               bool enabled) override {}

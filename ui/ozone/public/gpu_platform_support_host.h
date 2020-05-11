@@ -10,8 +10,6 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace ui {

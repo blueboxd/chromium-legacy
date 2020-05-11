@@ -202,6 +202,9 @@ class RenderingRepresentativePerfTest(object):
       rerun: Is this a rerun or initial run
     """
     for story_name in values_per_story:
+      # The experimental stories will not be considered for failing the tests
+      if (self.is_experimental_story(story_name)):
+        continue
       if len(values_per_story[story_name]['ci_095']) == 0:
         print(('[  FAILED  ] {}/{} has no valid values for {}. Check ' +
           'run_benchmark logs for more information.').format(
@@ -294,9 +297,18 @@ class RenderingRepresentativePerfTest(object):
   def is_control_story(self, story_name):
     # The story tagged as control story in upper_limit_data, will be used to
     # identify possible flake and invalidates the results.
-    return (
-      'control' in self.upper_limit_data[story_name] and
-      self.upper_limit_data[story_name]['control'] == True)
+    return self.story_has_attribute_enabled(story_name, 'control')
+
+  def is_experimental_story(self, story_name):
+    # The story tagged as experimental story in upper_limit_data, will be used
+    # to gather the performance results, but the test would not be failed as
+    # a result of.
+    return self.story_has_attribute_enabled(story_name, 'experimental')
+
+  def story_has_attribute_enabled(self, story_name, attribute):
+    return (attribute in self.upper_limit_data[story_name] and
+      self.upper_limit_data[story_name][attribute] == True)
+
 
   def set_platform_specific_attributes(self):
     if self.benchmark == 'rendering.desktop':

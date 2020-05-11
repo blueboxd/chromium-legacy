@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 208 tests; 204 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 210 tests; 206 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS the registerProtocolHandler method should exist on the navigator object
 PASS the unregisterProtocolHandler method should exist on the navigator object
 PASS registerProtocolHandler: Valid URL "%s" should work.
@@ -56,6 +56,8 @@ PASS registerProtocolHandler: Invalid URL "chrome://web-platform.test:8444/%s" s
 PASS unregisterProtocolHandler: Invalid URL "chrome://web-platform.test:8444/%s" should throw SECURITY_ERR.
 PASS registerProtocolHandler: Invalid URL "foo://web-platform.test:8444/%s" should throw SECURITY_ERR.
 PASS unregisterProtocolHandler: Invalid URL "foo://web-platform.test:8444/%s" should throw SECURITY_ERR.
+PASS registerProtocolHandler: Invalid URL "blob: URL" should throw SECURITY_ERR.
+PASS unregisterProtocolHandler: Invalid URL "blob: URL" should throw SECURITY_ERR.
 PASS registerProtocolHandler: Attempting to override the "about" protocol should throw SECURITY_ERR.
 PASS unregisterProtocolHandler: Attempting to override the "about" protocol should throw SECURITY_ERR.
 PASS registerProtocolHandler: Attempting to override the "attachment" protocol should throw SECURITY_ERR.

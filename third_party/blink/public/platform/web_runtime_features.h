@@ -161,6 +161,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
   BLINK_PLATFORM_EXPORT static void EnableTextFragmentAnchor(bool);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
+  BLINK_PLATFORM_EXPORT static void EnableScrollUnification(bool);
   BLINK_PLATFORM_EXPORT static void EnableUserActivationPostMessageTransfer(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableUserActivationSameOriginVisibility(

@@ -8,7 +8,8 @@
 #include <cmath>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

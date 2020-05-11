@@ -21,6 +21,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -108,7 +109,8 @@ HangWatchScope::~HangWatchScope() {
 HangWatcher::HangWatcher()
     : monitor_period_(kMonitoringPeriod),
       should_monitor_(WaitableEvent::ResetPolicy::AUTOMATIC),
-      thread_(this, kThreadName) {
+      thread_(this, kThreadName),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   // |thread_checker_| should not be bound to the constructing thread.
   DETACH_FROM_THREAD(hang_watcher_thread_checker_);
 
@@ -141,6 +143,59 @@ bool HangWatcher::IsWatchListEmpty() {
   return watch_states_.empty();
 }
 
+void HangWatcher::Wait() {
+  while (true) {
+    // Amount by which the actual time spent sleeping can deviate from
+    // the target time and still be considered timely.
+    constexpr base::TimeDelta wait_drift_tolerance =
+        base::TimeDelta::FromMilliseconds(100);
+
+    base::TimeTicks time_before_wait = tick_clock_->NowTicks();
+
+    // Sleep until next scheduled monitoring or until signaled.
+    bool was_signaled = should_monitor_.TimedWait(monitor_period_);
+
+    if (after_wait_callback_) {
+      after_wait_callback_.Run(time_before_wait);
+    }
+
+    base::TimeTicks time_after_wait = tick_clock_->NowTicks();
+    base::TimeDelta wait_time = time_after_wait - time_before_wait;
+    bool wait_was_normal =
+        wait_time <= (monitor_period_ + wait_drift_tolerance);
+
+    if (!wait_was_normal) {
+      // If the time spent waiting was too high it might indicate the machine is
+      // very slow or that that it went to sleep. In any case we can't trust the
+      // hang watch scopes that are currently live. Update the ignore threshold
+      // to make sure they don't trigger a hang on subsequent monitors then keep
+      // waiting.
+
+      base::AutoLock auto_lock(watch_state_lock_);
+
+      // Find the latest deadline among the live watch states. They might change
+      // atomically while iterating but that's fine because if they do that
+      // means the new HangWatchScope was constructed very soon after the
+      // abnormal sleep happened and might be affected by the root cause still.
+      // Ignoring it is cautious and harmless.
+      base::TimeTicks latest_deadline;
+      for (const auto& state : watch_states_) {
+        base::TimeTicks deadline = state->GetDeadline();
+        if (deadline > latest_deadline) {
+          latest_deadline = deadline;
+        }
+      }
+
+      deadline_ignore_threshold_ = latest_deadline;
+    }
+
+    // Stop waiting.
+    if (wait_was_normal || was_signaled) {
+      return;
+    }
+  }
+}
+
 void HangWatcher::Run() {
   // Monitor() should only run on |thread_|. Bind |thread_checker_| here to make
   // sure of that.
@@ -159,8 +214,7 @@ void HangWatcher::Run() {
     }
 
     if (keep_monitoring_.load(std::memory_order_relaxed)) {
-      // Sleep until next scheduled monitoring.
-      should_monitor_.TimedWait(monitor_period_);
+      Wait();
     }
   }
 }
@@ -200,15 +254,13 @@ base::TimeTicks HangWatcher::WatchStateSnapShot::GetHighestDeadline() const {
 HangWatcher::WatchStateSnapShot::WatchStateSnapShot(
     const HangWatchStates& watch_states,
     base::TimeTicks snapshot_time,
-    base::TimeTicks previous_latest_expired_deadline)
+    base::TimeTicks deadline_ignore_threshold)
     : snapshot_time_(snapshot_time) {
   // Initial copy of the values.
   for (const auto& watch_state : watch_states) {
     base::TimeTicks deadline = watch_state.get()->GetDeadline();
 
-    // Some hangs that were already recorded are still live, snapshot is
-    // not actionable.
-    if (deadline <= previous_latest_expired_deadline) {
+    if (deadline <= deadline_ignore_threshold) {
       hung_watch_state_copies_.clear();
       return;
     }
@@ -259,7 +311,7 @@ std::string HangWatcher::WatchStateSnapShot::PrepareHungThreadListCrashKey()
 HangWatcher::WatchStateSnapShot HangWatcher::GrabWatchStateSnapshotForTesting()
     const {
   WatchStateSnapShot snapshot(watch_states_, base::TimeTicks::Now(),
-                              latest_expired_deadline_);
+                              deadline_ignore_threshold_);
   return snapshot;
 }
 
@@ -283,7 +335,7 @@ void HangWatcher::Monitor() {
       watch_states_.cbegin(), watch_states_.cend(),
       [this, now](const std::unique_ptr<internal::HangWatchState>& state) {
         base::TimeTicks deadline = state->GetDeadline();
-        return deadline > latest_expired_deadline_ && deadline < now;
+        return deadline > deadline_ignore_threshold_ && deadline < now;
       });
 
   // If at least a thread is hung we need to capture.
@@ -296,7 +348,7 @@ void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
   base::AutoLock scope_lock(capture_lock_);
 
   WatchStateSnapShot watch_state_snapshot(watch_states_, capture_time,
-                                          latest_expired_deadline_);
+                                          deadline_ignore_threshold_);
 
   // The hung thread(s) could detected at the start of Monitor() could have
   // moved on from their scopes. If that happened and there are no more hung
@@ -325,7 +377,7 @@ void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
   // Timeline C : L----------------------------5------6----7---8------9---N
   // **********************************************************************
   // In the example when a Monitor() happens during timeline A
-  // |latest_expired_deadline_| (L) is at time zero and deadlines (1-4)
+  // |deadline_ignore_threshold_| (L) is at time zero and deadlines (1-4)
   // are before Now() (N) . A hang is captured and L is updated. During
   // the next Monitor() (timeline B) a new deadline is over but we can't
   // capture a hang because deadlines 2-4 are still live and already counted
@@ -340,7 +392,7 @@ void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
     RecordHang();
 
   // Update after running the actual capture.
-  latest_expired_deadline_ = latest_expired_deadline;
+  deadline_ignore_threshold_ = latest_expired_deadline;
 
   capture_in_progress.store(false, std::memory_order_relaxed);
 }
@@ -361,9 +413,23 @@ void HangWatcher::SetMonitoringPeriodForTesting(base::TimeDelta period) {
   monitor_period_ = period;
 }
 
+void HangWatcher::SetAfterWaitCallbackForTesting(
+    RepeatingCallback<void(TimeTicks)> callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
+  after_wait_callback_ = callback;
+}
+
 void HangWatcher::SignalMonitorEventForTesting() {
   DCHECK_CALLED_ON_VALID_THREAD(constructing_thread_checker_);
   should_monitor_.Signal();
+}
+
+void HangWatcher::StopMonitoringForTesting() {
+  keep_monitoring_.store(false, std::memory_order_relaxed);
+}
+
+void HangWatcher::SetTickClockForTesting(const base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void HangWatcher::BlockIfCaptureInProgress() {

@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -22,7 +23,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
+#include "components/unified_consent/unified_consent_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
@@ -171,7 +177,7 @@ void SyncConsentScreen::OnAcceptAndContinue(
     const std::vector<int>& consent_description,
     int consent_confirmation,
     bool enable_os_sync,
-    bool review_browser_sync) {
+    bool enable_browser_sync) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   if (is_hidden())
     return;
@@ -181,11 +187,39 @@ void SyncConsentScreen::OnAcceptAndContinue(
   profile_->GetPrefs()->SetBoolean(syncer::prefs::kOsSyncFeatureEnabled,
                                    enable_os_sync);
 
-  // TODO(crbug.com/1013466): Remove |review_browser_sync|. Defer browser sync
-  // startup until this point, then enable or disable it based on the toggle.
-  if (review_browser_sync) {
-    profile_->GetPrefs()->SetBoolean(prefs::kShowSyncSettingsOnSessionStart,
-                                     true);
+  // For historical reasons, Chrome OS always has a "sync-consented" primary
+  // account in IdentityManager and always has browser sync "enabled". If the
+  // user disables the browser sync toggle we disable all browser data types,
+  // as if the user had opened browser sync settings and turned off all the
+  // toggles.
+  // TODO(crbug.com/1046746, crbug.com/1050677): Once all Chrome OS code is
+  // converted to the "consent aware" IdentityManager API, and the browser sync
+  // settings WebUI is converted to allow browser sync to be turned on/off, then
+  // this workaround can be removed.
+  syncer::SyncService* sync_service = GetSyncService(profile_);
+  if (sync_service) {
+    syncer::SyncUserSettings* sync_settings = sync_service->GetUserSettings();
+    if (!enable_browser_sync) {
+      syncer::UserSelectableTypeSet empty_set;
+      sync_settings->SetSelectedTypes(/*sync_everything=*/false, empty_set);
+    }
+    sync_settings->SetSyncRequested(true);
+    sync_settings->SetFirstSetupComplete(
+        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+  }
+  // Set a "sync-consented" primary account. See comment above.
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  CoreAccountId account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
+  DCHECK(!account_id.empty());
+  identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(account_id);
+
+  // Only enable URL-keyed metrics if the user turned on browser sync.
+  if (enable_browser_sync) {
+    unified_consent::UnifiedConsentService* consent_service =
+        UnifiedConsentServiceFactory::GetForProfile(profile_);
+    if (consent_service)
+      consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   }
 
   exit_callback_.Run(Result::NEXT);

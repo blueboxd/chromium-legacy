@@ -287,7 +287,7 @@
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">报告背光信息</translation>
-<translation id="1488406778491620405">无障碍功能“<ph name="PRODUCT_NAME" />”让使用屏幕阅读器的视障用户能够获取对无标签网络图片的说明。如果选择启用该功能，用户将能选择使用匿名 Google 服务自动提供对他们遇到的无标签网络图片的说明。
+<translation id="1488406778491620405">无障碍功能“<ph name="PRODUCT_NAME" />”让使用屏幕阅读器的视障用户能够获取对无标签网络图片的说明。如果选择启用该功能，用户将能选择使用匿名 Google 服务为他们遇到的无标签网络图片提供自动说明。
 
           如果该功能已被启用，系统会将图片内容发送给 Google 服务器以便生成说明，但不会发送任何 Cookie 或其他用户数据，而且 Google 不会保存或记录任何图片内容。
 

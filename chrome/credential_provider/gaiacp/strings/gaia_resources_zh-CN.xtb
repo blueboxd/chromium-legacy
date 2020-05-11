@@ -17,7 +17,7 @@
 <translation id="4267670563222825190">找不到您帐号的任何网域用户。请与管理员联系。</translation>
 <translation id="4744575902940448763">无法将您的工作帐号密码同步到您的 Windows 个人资料，因为贵组织不允许用户更新设备上的密码。请联系您的管理员以获得帮助。</translation>
 <translation id="5186761973554910131">您在尝试更改密码期间提供的计算机名称无效。请与管理员联系。</translation>
-<translation id="5265714013989877288">无法继续，因为更改您的 Windows 密码时出错。请联系您的管理员。</translation>
+<translation id="5265714013989877288">更改您的 Windows 密码时出错，因此操作无法继续。请联系您的管理员。</translation>
 <translation id="5581861273642234526">另一个工作帐号已与此设备相关联。请使用您的 Windows 帐号登录。</translation>
 <translation id="6033715878377252112">Windows 版 Google 凭据提供程序助手</translation>
 <translation id="6149399665202317746">Windows 版 Google 凭据提供程序</translation>
@@ -25,7 +25,7 @@
 <translation id="6463752215771576050">无法为此计算机进行企业管理注册。请改用其他工作帐号登录。</translation>
 <translation id="6582876473835446261">Windows 密码不正确。请重试。</translation>
 <translation id="6657585470893396449">密码</translation>
-<translation id="6976261330898712570">此设备尚未加入贵组织的设备管理系统。请使用您的工作帐号登录。</translation>
+<translation id="6976261330898712570">此设备尚未在贵单位的设备管理系统中注册。请使用您的工作帐号登录。</translation>
 <translation id="7209941495304122410">输入 Windows 密码</translation>
 <translation id="74122330823428762">仅允许锁定此设备的用户登录</translation>
 <translation id="7536769223115622137">添加工作帐号</translation>

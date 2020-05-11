@@ -140,7 +140,7 @@ void QuotaBackendImpl::ReserveQuotaInternal(const QuotaReservationInfo& info) {
   DCHECK(!info.origin.opaque());
   DCHECK(quota_manager_proxy_.get());
   quota_manager_proxy_->NotifyStorageModified(
-      QuotaClient::kFileSystem, info.origin,
+      QuotaClientType::kFileSystem, info.origin,
       FileSystemTypeToQuotaStorageType(info.type), info.delta);
 }
 

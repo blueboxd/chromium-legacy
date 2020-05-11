@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"

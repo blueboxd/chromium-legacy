@@ -5,6 +5,7 @@
 import argparse
 import os
 import shutil
+import subprocess
 import sys
 
 
@@ -12,7 +13,7 @@ def main():
   description = 'Packages WebKit build for Clusterfuzz.'
   parser = argparse.ArgumentParser(description=description)
   parser.add_argument('--output',
-                    help='Output directory for build products.')
+                    help='Name of the outout file.')
   parser.add_argument('--webkit_build',
                       help='WebKit build directory to copy.')
   parser.add_argument('--clusterfuzz_script',
@@ -28,6 +29,11 @@ def main():
         opts.clusterfuzz_script,
         os.path.join(opts.output,
                      os.path.basename(opts.clusterfuzz_script)))
+
+  zip_command = ['zip', '--symlinks', '-r', os.extsep.join([opts.output, 'zip']), opts.output]
+  proc = subprocess.Popen(zip_command)
+  proc.communicate()
+  return proc.returncode
 
 
 if __name__ == '__main__':

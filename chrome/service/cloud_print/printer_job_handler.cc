@@ -386,11 +386,10 @@ PrinterJobHandler::HandlePrintDataResponse(const net::URLFetcher* source,
   if (base::CreateTemporaryFile(&job_details_.print_data_file_path_)) {
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent", JOB_HANDLER_DATA,
                               JOB_HANDLER_MAX);
-    int ret = base::WriteFile(job_details_.print_data_file_path_,
-                              data.c_str(), data.length());
+    bool ret = base::WriteFile(job_details_.print_data_file_path_, data);
     source->GetResponseHeaders()->GetMimeType(
         &job_details_.print_data_mime_type_);
-    if (ret == static_cast<int>(data.length())) {
+    if (ret) {
       UpdateJobStatus(PRINT_JOB_STATUS_IN_PROGRESS, JOB_SUCCESS);
       return CloudPrintURLFetcher::STOP_PROCESSING;
     }

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/web_state_list/web_state_list_favicon_driver_observer.h"
 
-#include "base/logging.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"

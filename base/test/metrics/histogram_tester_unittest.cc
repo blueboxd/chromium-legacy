@@ -72,6 +72,8 @@ TEST_F(HistogramTesterTest, TestUniqueSample) {
   UMA_HISTOGRAM_COUNTS_100(kHistogram2, 2);
 
   tester.ExpectUniqueSample(kHistogram2, 2, 3);
+  tester.ExpectUniqueTimeSample(kHistogram2,
+                                base::TimeDelta::FromMilliseconds(2), 3);
 }
 
 TEST_F(HistogramTesterTest, TestBucketsSample) {

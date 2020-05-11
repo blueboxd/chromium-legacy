@@ -8,12 +8,17 @@
 #include "third_party/blink/renderer/core/animation/animation_test_helper.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -303,5 +308,85 @@ TEST_P(StyleResolverFontRelativeUnitTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          StyleResolverFontRelativeUnitTest,
                          testing::Values("em", "rem", "ex", "ch"));
+
+namespace {
+
+const CSSImageValue& GetBackgroundImageValue(Element* element) {
+  DCHECK(element);
+  const auto* style = element->GetComputedStyle();
+  DCHECK(style);
+  const CSSValue* computed_value = ComputedStyleUtils::ComputedPropertyValue(
+      GetCSSPropertyBackgroundImage(), *style);
+
+  const CSSValueList* bg_img_list = To<CSSValueList>(computed_value);
+  return To<CSSImageValue>(bg_img_list->Item(0));
+}
+
+}  // namespace
+
+TEST_F(StyleResolverTest, BackgroundImageFetch) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style id="sheet">
+      #none {
+        display: none;
+        background-image: url(img-none.png);
+      }
+      #inside-none {
+        background-image: url(img-inside-none.png);
+      }
+      #hidden {
+        visibility: hidden;
+        background-image: url(img-hidden.png);
+      }
+      #inside-hidden {
+        background-image: url(img-inside-hidden.png);
+      }
+      #contents {
+        display: contents;
+        background-image: url(img-contents.png);
+      }
+      #non-slotted {
+        background-image: url(img-non-slotted.png);
+      }
+    </style>
+    <div id="none">
+      <div id="inside-none"></div>
+    </div>
+    <div id="hidden">
+      <div id="inside-hidden"></div>
+    </div>
+    <div id="contents"></div>
+    <div id="host">
+      <div id="non-slotted"></div>
+    </div>
+  )HTML");
+
+  GetDocument().getElementById("host")->AttachShadowRootInternal(
+      ShadowRootType::kOpen);
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* none = GetDocument().getElementById("none");
+  auto* inside_none = GetDocument().getElementById("inside-none");
+  auto* hidden = GetDocument().getElementById("hidden");
+  auto* inside_hidden = GetDocument().getElementById("inside-hidden");
+  auto* contents = GetDocument().getElementById("contents");
+  auto* non_slotted = GetDocument().getElementById("non-slotted");
+
+  inside_none->EnsureComputedStyle();
+  non_slotted->EnsureComputedStyle();
+
+  EXPECT_TRUE(GetBackgroundImageValue(none).IsCachePending())
+      << "No fetch for display:none";
+  EXPECT_TRUE(GetBackgroundImageValue(inside_none).IsCachePending())
+      << "No fetch inside display:none";
+  EXPECT_FALSE(GetBackgroundImageValue(hidden).IsCachePending())
+      << "Fetch for visibility:hidden";
+  EXPECT_FALSE(GetBackgroundImageValue(inside_hidden).IsCachePending())
+      << "Fetch for inherited visibility:hidden";
+  EXPECT_TRUE(GetBackgroundImageValue(contents).IsCachePending())
+      << "No fetch for display:contents";
+  EXPECT_TRUE(GetBackgroundImageValue(non_slotted).IsCachePending())
+      << "No fetch for element outside the flat tree";
+}
 
 }  // namespace blink

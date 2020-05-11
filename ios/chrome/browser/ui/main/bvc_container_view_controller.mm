@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/check_op.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

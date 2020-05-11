@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"

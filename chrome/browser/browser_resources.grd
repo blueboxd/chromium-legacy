@@ -414,10 +414,6 @@
         <include name="IDR_MEDIA_ROUTER_INTERNALS_CSS" file="resources\media_router\media_router_internals.css" compress="gzip" type="BINDATA" />
         <include name="IDR_MEDIA_ROUTER_INTERNALS_JS" file="resources\media_router\media_router_internals.js" compress="gzip" type="BINDATA" />
       </if>
-      <if expr="chromeos or is_win or is_macosx">
-        <include name="IDR_CAST_HTML" file="resources\cast\cast.html" type="BINDATA" />
-        <include name="IDR_CAST_JS" file="resources\cast\cast.js" type="BINDATA" />
-      </if>
       <if expr="not is_android">
         <include name="IDR_IME_WINDOW_CLOSE" file="resources\input_ime\ime_window_close.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />

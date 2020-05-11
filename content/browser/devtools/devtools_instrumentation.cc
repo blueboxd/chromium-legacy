@@ -663,6 +663,33 @@ std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
                                   WarnSameSiteUnspecifiedLaxAllowUnsafe);
   }
 
+  // There can only be one of the following warnings.
+  if (status.HasWarningReason(net::CanonicalCookie::CookieInclusionStatus::
+                                  WARN_STRICT_LAX_DOWNGRADE_STRICT_SAMESITE)) {
+    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
+                                  WarnSameSiteStrictLaxDowngradeStrict);
+  } else if (status.HasWarningReason(
+                 net::CanonicalCookie::CookieInclusionStatus::
+                     WARN_STRICT_CROSS_DOWNGRADE_STRICT_SAMESITE)) {
+    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
+                                  WarnSameSiteStrictCrossDowngradeStrict);
+  } else if (status.HasWarningReason(
+                 net::CanonicalCookie::CookieInclusionStatus::
+                     WARN_STRICT_CROSS_DOWNGRADE_LAX_SAMESITE)) {
+    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
+                                  WarnSameSiteStrictCrossDowngradeLax);
+  } else if (status.HasWarningReason(
+                 net::CanonicalCookie::CookieInclusionStatus::
+                     WARN_LAX_CROSS_DOWNGRADE_STRICT_SAMESITE)) {
+    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
+                                  WarnSameSiteLaxCrossDowngradeStrict);
+  } else if (status.HasWarningReason(
+                 net::CanonicalCookie::CookieInclusionStatus::
+                     WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE)) {
+    warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
+                                  WarnSameSiteLaxCrossDowngradeLax);
+  }
+
   return warning_reasons;
 }
 }  // namespace

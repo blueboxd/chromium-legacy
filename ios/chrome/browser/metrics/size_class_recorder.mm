@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/metrics/size_class_recorder.h"
 #import "ios/chrome/browser/metrics/size_class_recorder_private.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 

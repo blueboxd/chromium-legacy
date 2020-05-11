@@ -11,9 +11,12 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/public/identity_manager/consent_level.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
@@ -26,6 +29,16 @@ void PersistSystemInputMethod(const std::string& input_method) {
 
   g_browser_process->local_state()->SetString(
         language_prefs::kPreferredKeyboardLayout, input_method);
+}
+
+// Returns the user email, whether or not they have consented to browser sync.
+std::string GetUserName(Profile* profile) {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
+    return std::string();
+  return identity_manager
+      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+      .email;
 }
 
 static void SetUserLastInputMethodPreference(const std::string& username,
@@ -77,7 +90,7 @@ static void SetUserLastInputMethod(
 
   PrefService* const local_state = g_browser_process->local_state();
 
-  SetUserLastInputMethodPreference(profile->GetProfileUserName(), input_method,
+  SetUserLastInputMethodPreference(GetUserName(profile), input_method,
                                    local_state);
 }
 

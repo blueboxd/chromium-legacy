@@ -54,6 +54,9 @@ class HistogramTester {
     ExpectUniqueSample(name, static_cast<HistogramBase::Sample>(sample),
                        expected_count);
   }
+  void ExpectUniqueTimeSample(StringPiece name,
+                              TimeDelta sample,
+                              HistogramBase::Count expected_count) const;
 
   // We know the exact number of samples in a bucket, but other buckets may
   // have samples as well. Measures the diff from the snapshot taken when this

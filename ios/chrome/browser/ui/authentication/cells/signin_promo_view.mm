@@ -4,9 +4,10 @@
 
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "build/branding_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"

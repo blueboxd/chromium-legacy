@@ -8,12 +8,14 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,11 +24,15 @@ using blink::mojom::StorageType;
 
 namespace storage {
 
-const StorageType kTemporary = StorageType::kTemporary;
-const StorageType kPersistent = StorageType::kPersistent;
+namespace {
 
-const QuotaClient::ID kClientFile = QuotaClient::kFileSystem;
-const QuotaClient::ID kClientDB = QuotaClient::kIndexedDatabase;
+constexpr StorageType kTemporary = StorageType::kTemporary;
+constexpr StorageType kPersistent = StorageType::kPersistent;
+
+constexpr QuotaClientType kClientFile = QuotaClientType::kFileSystem;
+constexpr QuotaClientType kClientDB = QuotaClientType::kIndexedDatabase;
+
+}  // namespace
 
 class MockQuotaManagerTest : public testing::Test {
  public:
@@ -61,9 +67,9 @@ class MockQuotaManagerTest : public testing::Test {
 
   void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
-                        int quota_client_mask) {
+                        QuotaClientTypes quota_client_types) {
     manager_->DeleteOriginData(
-        origin, type, quota_client_mask,
+        origin, type, std::move(quota_client_types),
         base::BindOnce(&MockQuotaManagerTest::DeletedOriginData,
                        weak_factory_.GetWeakPtr()));
   }
@@ -116,7 +122,7 @@ TEST_F(MockQuotaManagerTest, BasicOriginManipulation) {
   EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kPersistent, kClientDB));
 
-  manager()->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
+  manager()->AddOrigin(kOrigin1, kTemporary, {kClientFile}, base::Time::Now());
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kTemporary, kClientDB));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
@@ -126,7 +132,7 @@ TEST_F(MockQuotaManagerTest, BasicOriginManipulation) {
   EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kPersistent, kClientDB));
 
-  manager()->AddOrigin(kOrigin1, kPersistent, kClientFile, base::Time::Now());
+  manager()->AddOrigin(kOrigin1, kPersistent, {kClientFile}, base::Time::Now());
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kTemporary, kClientDB));
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
@@ -136,8 +142,8 @@ TEST_F(MockQuotaManagerTest, BasicOriginManipulation) {
   EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin2, kPersistent, kClientDB));
 
-  manager()->AddOrigin(kOrigin2, kTemporary, kClientFile | kClientDB,
-      base::Time::Now());
+  manager()->AddOrigin(kOrigin2, kTemporary, {kClientFile, kClientDB},
+                       base::Time::Now());
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
   EXPECT_FALSE(manager()->OriginHasData(kOrigin1, kTemporary, kClientDB));
   EXPECT_TRUE(manager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
@@ -153,13 +159,13 @@ TEST_F(MockQuotaManagerTest, OriginDeletion) {
   const url::Origin kOrigin2 = url::Origin::Create(GURL("http://host2:1/"));
   const url::Origin kOrigin3 = url::Origin::Create(GURL("http://host3:1/"));
 
-  manager()->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
-  manager()->AddOrigin(kOrigin2, kTemporary, kClientFile | kClientDB,
-      base::Time::Now());
-  manager()->AddOrigin(kOrigin3, kTemporary, kClientFile | kClientDB,
-      base::Time::Now());
+  manager()->AddOrigin(kOrigin1, kTemporary, {kClientFile}, base::Time::Now());
+  manager()->AddOrigin(kOrigin2, kTemporary, {kClientFile, kClientDB},
+                       base::Time::Now());
+  manager()->AddOrigin(kOrigin3, kTemporary, {kClientFile, kClientDB},
+                       base::Time::Now());
 
-  DeleteOriginData(kOrigin2, kTemporary, kClientFile);
+  DeleteOriginData(kOrigin2, kTemporary, {kClientFile});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, deletion_callback_count());
@@ -169,7 +175,7 @@ TEST_F(MockQuotaManagerTest, OriginDeletion) {
   EXPECT_TRUE(manager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
   EXPECT_TRUE(manager()->OriginHasData(kOrigin3, kTemporary, kClientDB));
 
-  DeleteOriginData(kOrigin3, kTemporary, kClientFile | kClientDB);
+  DeleteOriginData(kOrigin3, kTemporary, {kClientFile, kClientDB});
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, deletion_callback_count());
@@ -193,7 +199,7 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(origins().empty());
 
-  manager()->AddOrigin(kOrigin1, kTemporary, kClientFile, now - an_hour);
+  manager()->AddOrigin(kOrigin1, kTemporary, {kClientFile}, now - an_hour);
 
   GetModifiedOrigins(kTemporary, then);
   base::RunLoop().RunUntilIdle();
@@ -203,7 +209,7 @@ TEST_F(MockQuotaManagerTest, ModifiedOrigins) {
   EXPECT_EQ(1UL, origins().count(kOrigin1));
   EXPECT_EQ(0UL, origins().count(kOrigin2));
 
-  manager()->AddOrigin(kOrigin2, kTemporary, kClientFile, now);
+  manager()->AddOrigin(kOrigin2, kTemporary, {kClientFile}, now);
 
   GetModifiedOrigins(kTemporary, then);
   base::RunLoop().RunUntilIdle();

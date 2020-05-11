@@ -9,7 +9,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
@@ -84,7 +83,7 @@ proto_library("ntp_background_proto") {
 
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
-jumbo_static_library("browser") {
+static_library("browser") {
   sources = [
     "about_flags.cc",
     "about_flags.h",
@@ -1529,8 +1528,6 @@ jumbo_static_library("browser") {
     "resource_coordinator/utils.h",
     "resources_util.cc",
     "resources_util.h",
-    "search/instant_io_context.cc",
-    "search/instant_io_context.h",
     "search/search.cc",
     "search/search.h",
     "search/suggestions/suggestions_service_factory.cc",

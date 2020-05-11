@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"

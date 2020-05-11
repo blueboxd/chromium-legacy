@@ -310,9 +310,7 @@ CommandLine DefaultUnitTestPlatformDelegate::GetCommandLineForChildGTestProcess(
 
   std::string long_flags(
       StrCat({"--", kGTestFilterFlag, "=", JoinString(test_names, ":")}));
-  CHECK_EQ(static_cast<int>(long_flags.size()),
-           WriteFile(flag_file, long_flags.data(),
-                     static_cast<int>(long_flags.size())));
+  CHECK(WriteFile(flag_file, long_flags));
 
   new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
   new_cmd_line.AppendSwitchPath(kGTestFlagfileFlag, flag_file);

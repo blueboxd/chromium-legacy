@@ -447,10 +447,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       int64_t display_id,
       const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
       const gfx::Size& display_bounds,
-      const TouchDeviceIdentifier& touch_device_identifier);
+      const ui::TouchscreenDevice& touchdevice);
   void ClearTouchCalibrationData(
       int64_t display_id,
-      base::Optional<TouchDeviceIdentifier> touch_device_identifier);
+      base::Optional<ui::TouchscreenDevice> touchdevice);
   void UpdateZoomFactor(int64_t display_id, float zoom_factor);
   bool HasUnassociatedDisplay() const;
 #endif

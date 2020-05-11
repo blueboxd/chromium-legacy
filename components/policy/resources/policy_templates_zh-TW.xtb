@@ -296,7 +296,7 @@
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">回報背光資訊</translation>
-<translation id="1488406778491620405">「<ph name="PRODUCT_NAME" />」無障礙功能可讓螢幕閱讀器的視障使用者在網路上取得未標示圖片的說明。啟用這項功能的使用者將可使用去識別化的 Google 服務，針對在網路上遇到的未標示圖片取得自動說明。啟用這項功能後，系統會將圖片內容傳送給 Google 伺服器以產生說明內容。系統不會傳送 Cookie 或其他使用者資料，且 Google 不會儲存或記錄任何圖片內容。如果將這項政策設為 True，系統會啟用「<ph name="PRODUCT_NAME" />」功能，不過這項設定只會影響使用螢幕閱讀器或其他類似輔助技術的使用者。如果將這項政策設為 False，使用者將無法啟用這項功能。設好這項政策後，使用者即無法變更或覆寫設定。</translation>
+<translation id="1488406778491620405">「<ph name="PRODUCT_NAME" />」無障礙功能可讓螢幕閱讀器的視障使用者取得無標籤網路圖片的說明。啟用這項功能的使用者將可使用去識別化的 Google 服務，針對未加上標籤的網路圖片取得自動產生的說明。啟用這項功能後，系統會將圖片內容傳送給 Google 伺服器以產生說明內容。系統不會傳送 Cookie 或其他使用者資料，且 Google 不會儲存或記錄任何圖片內容。如果將這項政策設為 True，「<ph name="PRODUCT_NAME" />」功能即會啟用，不過這項設定只會影響螢幕閱讀器或其他類似輔助技術的使用者。如果將這項政策設為 False，使用者將無法啟用這項功能。設好這項政策後，使用者即無法變更或覆寫設定。</translation>
 <translation id="1497640071678474358">你可以設定網址模式清單，指定不可開啟彈出式視窗的網站。
 
           如果不設定這項政策，系統會根據「DefaultPopupsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
@@ -1586,7 +1586,7 @@
 
       這項政策僅能設為建議政策。你可以使用這項政策將一些建議語言代碼移到頂端，但使用者隨時能為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
       </translation>
-<translation id="3373381043600809954">啟用「<ph name="PRODUCT_NAME" />」。</translation>
+<translation id="3373381043600809954">啟用「<ph name="PRODUCT_NAME" />」</translation>
 <translation id="3378482432905539452">這項政策已遭到淘汰。請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控管是否要提供 Flash 外掛程式，並使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 指定是否要使用整合式 PDF 檢視器開啟 PDF 檔案。
 
       指定使用者能否在 <ph name="PRODUCT_NAME" /> 中啟用或停用的外掛程式清單。
@@ -2974,7 +2974,7 @@
       AudioCaptureAllowedUrls 中設為允許的網址才能執行音訊擷取。
 
       這項政策會影響所有類型的音訊輸入裝置，而不僅限於內建麥克風。</translation>
-<translation id="5417906792459853336">回報裝置的應用程式項目和使用狀況資訊。
+<translation id="5417906792459853336">回報裝置的應用程式清單和使用狀況資訊。
 
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置的應用程式和使用情況。</translation>

@@ -4,7 +4,9 @@
 
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

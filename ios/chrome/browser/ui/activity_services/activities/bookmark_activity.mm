@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/bookmarks/browser/bookmark_model.h"

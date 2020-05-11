@@ -4,8 +4,9 @@
 
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

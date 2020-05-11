@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "base/mac/foundation_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"

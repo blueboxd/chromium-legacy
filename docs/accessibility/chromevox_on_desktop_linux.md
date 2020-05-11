@@ -106,7 +106,8 @@ cd ~
 git clone https://chromium.googlesource.com/chromiumos/third_party/espeak-ng
 cd espeak-ng
 git checkout chrome
-sudo cp -r chrome-extension /usr/share/chromeos-assets/speech_synthesis/espeak-ng
+sudo mkdir -p /usr/share/chromeos-assets/speech_synthesis/espeak-ng
+sudo cp -r chrome-extension/* /usr/share/chromeos-assets/speech_synthesis/espeak-ng
 ```
 
 ## Braille

@@ -6,8 +6,8 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include "base/check.h"
 #include "base/ios/block_types.h"
-#include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"

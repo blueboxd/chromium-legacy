@@ -3,17 +3,24 @@
 // found in the LICENSE file.
 
 #include "base/threading/hang_watcher.h"
+#include <atomic>
 #include <memory>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_checker.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,11 +115,7 @@ class HangWatcherTest : public testing::Test {
   // Single threaded to avoid ThreadPool WorkerThreads registering.
   test::SingleThreadTaskEnvironment task_environment_{
       test::TaskEnvironment::TimeSource::MOCK_TIME};
-
-  // Used to unblock the monitored thread. Signaled from the test main thread.
-  WaitableEvent unblock_thread_;
 };
-}  // namespace
 
 class HangWatcherBlockingThreadTest : public HangWatcherTest {
  public:
@@ -159,8 +162,12 @@ class HangWatcherBlockingThreadTest : public HangWatcherTest {
     JoinThread();
   }
 
+  // Used to unblock the monitored thread. Signaled from the test main thread.
+  WaitableEvent unblock_thread_;
+
   BlockingThread thread_;
 };
+}  // namespace
 
 TEST_F(HangWatcherTest, NoRegisteredThreads) {
   ASSERT_FALSE(monitor_event_.IsSignaled());
@@ -233,6 +240,7 @@ TEST_F(HangWatcherBlockingThreadTest, NoHang) {
   ASSERT_FALSE(hang_event_.IsSignaled());
 }
 
+namespace {
 class HangWatcherSnapshotTest : public testing::Test {
  public:
   HangWatcherSnapshotTest() = default;
@@ -296,8 +304,10 @@ class HangWatcherSnapshotTest : public testing::Test {
 
   HangWatcher hang_watcher_;
 };
+}  // namespace
 
-TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
+// TODO(crbug.com/2193655): Test flaky on iPad.
+TEST_F(HangWatcherSnapshotTest, DISABLED_HungThreadIDs) {
   // During hang capture the list of hung threads should be populated.
   hang_watcher_.SetOnHangClosureForTesting(base::BindLambdaForTesting([this]() {
     EXPECT_EQ(hang_watcher_.GrabWatchStateSnapshotForTesting()
@@ -355,72 +365,158 @@ TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
   TestIDList(ConcatenateThreadIds({test_thread_id_}));
 }
 
-// |HangWatcher| relies on |WaitableEvent::TimedWait| to schedule monitoring
-// which cannot be tested using MockTime. Some tests will have to actually wait
-// in real time before observing results but the TimeDeltas used are chosen to
-// minimize flakiness as much as possible.
-class HangWatcherRealTimeTest : public testing::Test {
+namespace {
+
+// Determines how long the HangWatcher will wait between calls to
+// Monitor(). Choose a low value so that that successive invocations happens
+// fast. This makes tests that wait for monitoring run fast and makes tests that
+// expect no monitoring fail fast.
+const base::TimeDelta kMonitoringPeriod = base::TimeDelta::FromMilliseconds(1);
+
+// Test if and how often the HangWatcher periodically monitors for hangs.
+class HangWatcherPeriodicMonitoringTest : public testing::Test {
  public:
-  HangWatcherRealTimeTest() {
+  HangWatcherPeriodicMonitoringTest() {
+    hang_watcher_.SetMonitoringPeriodForTesting(kMonitoringPeriod);
     hang_watcher_.SetOnHangClosureForTesting(base::BindRepeating(
         &WaitableEvent::Signal, base::Unretained(&hang_event_)));
+
+    // HangWatcher uses a TickClock to detect how long it slept in between calls
+    // to Monitor(). Override that clock to control its subjective passage of
+    // time.
+    hang_watcher_.SetTickClockForTesting(&test_clock_);
   }
 
-  HangWatcherRealTimeTest(const HangWatcherRealTimeTest& other) = delete;
-  HangWatcherRealTimeTest& operator=(const HangWatcherRealTimeTest& other) =
-      delete;
+  HangWatcherPeriodicMonitoringTest(
+      const HangWatcherPeriodicMonitoringTest& other) = delete;
+  HangWatcherPeriodicMonitoringTest& operator=(
+      const HangWatcherPeriodicMonitoringTest& other) = delete;
 
  protected:
+  // Setup the callback invoked after waiting in HangWatcher to advance the
+  // tick clock by the desired time delta.
+  void InstallAfterWaitCallback(base::TimeDelta time_delta) {
+    hang_watcher_.SetAfterWaitCallbackForTesting(base::BindLambdaForTesting(
+        [this, time_delta](base::TimeTicks time_before_wait) {
+          test_clock_.Advance(time_delta);
+        }));
+  }
+
+  base::SimpleTestTickClock test_clock_;
+
+  // Single threaded to avoid ThreadPool WorkerThreads registering. Will run
+  // delayed tasks created by the tests.
+  test::SingleThreadTaskEnvironment task_environment_;
+
+  std::unique_ptr<base::TickClock> fake_tick_clock_;
   HangWatcher hang_watcher_;
 
   // Signaled when a hang is detected.
   WaitableEvent hang_event_;
 
-  std::atomic<int> monitor_count_{0};
-
   base::ScopedClosureRunner unregister_thread_closure_;
 };
+}  // namespace
 
-// TODO(https://crbug.com/1064116): Fix this test not to rely on timely task
-// execution, which results in flakiness on slower bots.
-TEST_F(HangWatcherRealTimeTest, DISABLED_PeriodicCallsCount) {
-  // These values are chosen to execute fast enough while running the unit tests
-  // but be large enough to buffer against clock precision problems.
-  const base::TimeDelta kMonitoringPeriod(
-      base::TimeDelta::FromMilliseconds(100));
-  const base::TimeDelta kExecutionTime = kMonitoringPeriod * 5;
+// Don't register any threads for hang watching. HangWatcher should not monitor.
+TEST_F(HangWatcherPeriodicMonitoringTest,
+       NoPeriodicMonitoringWithoutRegisteredThreads) {
+  RunLoop run_loop;
 
-  // HangWatcher::Monitor() will run once right away on thread registration.
-  // We want to make sure it runs at least once more from being scheduled.
-  constexpr int kMinimumMonitorCount = 2;
-
-  // Some amount of extra monitoring can happen but it has to be of the right
-  // order of magnitude. Otherwise it could indicate a problem like some code
-  // signaling the Thread to wake up excessivelly.
-  const int kMaximumMonitorCount = 2 * (kExecutionTime / kMonitoringPeriod);
-
-  auto increment_monitor_count = [this]() { ++monitor_count_; };
-
-  hang_watcher_.SetMonitoringPeriodForTesting(kMonitoringPeriod);
+  // If a call to HangWatcher::Monitor() takes place the test will instantly
+  // fail.
   hang_watcher_.SetAfterMonitorClosureForTesting(
-      base::BindLambdaForTesting(increment_monitor_count));
+      base::BindLambdaForTesting([&run_loop]() {
+        ADD_FAILURE() << "Monitoring took place!";
+        run_loop.Quit();
+      }));
 
-  hang_event_.TimedWait(kExecutionTime);
+  // Make the HangWatcher tick clock advance by exactly the monitoring period
+  // after waiting so it will never detect oversleeping between attempts to call
+  // Monitor(). This would inhibit monitoring and make the test pass for the
+  // wrong reasons.
+  InstallAfterWaitCallback(kMonitoringPeriod);
 
-  // No thread ever registered so no monitoring took place at all.
-  ASSERT_EQ(monitor_count_.load(), 0);
+  // Unblock the test thread. No thread ever registered after the HangWatcher
+  // was created in the test's constructor. No monitoring should have taken
+  // place.
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
 
+  // NOTE:
+  // A lack of calls could technically also be caused by the HangWatcher thread
+  // executing too slowly / being descheduled. This is a known limitation.
+  // It's expected for |TestTimeouts::tiny_timeout()| to be large enough that
+  // this is rare.
+}
+
+// During normal execution periodic monitorings should take place.
+TEST_F(HangWatcherPeriodicMonitoringTest, PeriodicCallsTakePlace) {
+  // HangWatcher::Monitor() will run once right away on thread registration.
+  // We want to make sure it runs at a couple more times from being scheduled.
+  constexpr int kMinimumMonitorCount = 3;
+
+  RunLoop run_loop;
+
+  // Setup the HangWatcher to unblock run_loop when the Monitor() has been
+  // invoked enough times.
+  hang_watcher_.SetAfterMonitorClosureForTesting(BarrierClosure(
+      kMinimumMonitorCount, base::BindLambdaForTesting([&run_loop, this]() {
+        // Test condition are confirmed, stop monitoring.
+        hang_watcher_.StopMonitoringForTesting();
+
+        // Unblock the test main thread.
+        run_loop.Quit();
+      })));
+
+  // Make the HangWatcher tick clock advance by exactly the monitoring period
+  // after waiting so it will never detect oversleeping between attempts to call
+  // Monitor(). This would inhibit monitoring.
+  InstallAfterWaitCallback(kMonitoringPeriod);
+
+  // Register a thread, kicks off monitoring.
   unregister_thread_closure_ = hang_watcher_.RegisterThread();
 
-  hang_event_.TimedWait(kExecutionTime);
-
-  ASSERT_GE(monitor_count_.load(), kMinimumMonitorCount);
-  ASSERT_LE(monitor_count_.load(), kMaximumMonitorCount);
+  run_loop.Run();
 
   // No monitored scope means no possible hangs.
   ASSERT_FALSE(hang_event_.IsSignaled());
 }
 
+// If the HangWatcher detects it slept for longer than expected it will not
+// monitor.
+TEST_F(HangWatcherPeriodicMonitoringTest, NoMonitorOnOverSleep) {
+  RunLoop run_loop;
+
+  // If a call to HangWatcher::Monitor() takes place the test will instantly
+  // fail.
+  hang_watcher_.SetAfterMonitorClosureForTesting(
+      base::BindLambdaForTesting([&run_loop]() {
+        ADD_FAILURE() << "Monitoring took place!";
+        run_loop.Quit();
+      }));
+
+  // Make the HangWatcher tick clock advance so much after waiting that it will
+  // detect oversleeping every time. This will keep it from monitoring.
+  InstallAfterWaitCallback(base::TimeDelta::FromMinutes(1));
+
+  // Register a thread, kicks off monitoring.
+  unregister_thread_closure_ = hang_watcher_.RegisterThread();
+
+  // Unblock the test thread. All waits were perceived as oversleeping so all
+  // monitoring was inhibited.
+  task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  // NOTE: A lack of calls could technically also be caused by the HangWatcher
+  // thread executing too slowly / being descheduled. This is a known
+  // limitation. It's expected for |TestTimeouts::tiny_timeout()| to be large
+  // enough that this happens rarely.
+}
+
+namespace {
 class HangWatchScopeBlockingTest : public testing::Test {
  public:
   HangWatchScopeBlockingTest() {
@@ -485,6 +581,7 @@ class HangWatchScopeBlockingTest : public testing::Test {
   HangWatcher hang_watcher_;
   base::ScopedClosureRunner unregister_thread_closure_;
 };
+}  // namespace
 
 // Tests that execution is unimpeded by ~HangWatchScope() when no capture ever
 // takes place.

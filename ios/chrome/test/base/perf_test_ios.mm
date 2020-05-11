@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/test/base/perf_test_ios.h"
 

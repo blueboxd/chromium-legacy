@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #import "base/ios/block_types.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"

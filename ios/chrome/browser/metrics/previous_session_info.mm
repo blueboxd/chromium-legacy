@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/version_info/version_info.h"

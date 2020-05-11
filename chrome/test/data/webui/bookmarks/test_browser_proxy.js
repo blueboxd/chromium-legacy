@@ -10,7 +10,11 @@ import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
  */
 export class TestBookmarksBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super(['getIncognitoAvailability', 'getCanEditBookmarks']);
+    super([
+      'getIncognitoAvailability',
+      'getCanEditBookmarks',
+      'recordInHistogram',
+    ]);
   }
 
   getIncognitoAvailability() {
@@ -27,5 +31,7 @@ export class TestBookmarksBrowserProxy extends TestBrowserProxy {
     return Promise.resolve('test');
   }
 
-  recordInHistogram(histogram, bucket, maxBucket) {}
+  recordInHistogram(histogram, bucket, maxBucket) {
+    this.methodCalled('recordInHistogram');
+  }
 }

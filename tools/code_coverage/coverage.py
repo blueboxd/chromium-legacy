@@ -157,7 +157,11 @@ def _ConfigureLLVMCoverageTools(args):
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
     LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
   else:
-    update.UpdatePackage('coverage_tools')
+    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
+
+  if coverage_utils.GetHostPlatform() == 'win':
+    LLVM_COV_PATH += '.exe'
+    LLVM_PROFDATA_PATH += '.exe'
 
   coverage_tools_exist = (
       os.path.exists(LLVM_COV_PATH) and os.path.exists(LLVM_PROFDATA_PATH))
@@ -290,8 +294,11 @@ def _BuildTargets(targets, jobs_count):
                 default value is derived based on CPUs availability.
   """
   logging.info('Building %s.', str(targets))
+  autoninja = 'autoninja'
+  if coverage_utils.GetHostPlatform() == 'win':
+    autoninja += '.bat'
 
-  subprocess_cmd = ['autoninja', '-C', BUILD_DIR]
+  subprocess_cmd = [autoninja, '-C', BUILD_DIR]
   if jobs_count is not None:
     subprocess_cmd.append('-j' + str(jobs_count))
 
@@ -690,8 +697,8 @@ def _ValidateCurrentPlatformIsSupported():
     current_platform = coverage_utils.GetHostPlatform()
 
   assert current_platform in [
-      'linux', 'mac', 'chromeos', 'ios'
-  ], ('Coverage is only supported on linux, mac, chromeos and ios.')
+      'linux', 'mac', 'chromeos', 'ios', 'win'
+  ], ('Coverage is only supported on linux, mac, chromeos, ios and win.')
 
 
 def _GetBuildArgs():
@@ -944,7 +951,7 @@ def Main():
   # Setup coverage binaries even when script is called with empty params. This
   # is used by coverage bot for initial setup.
   if len(sys.argv) == 1:
-    update.UpdatePackage('coverage_tools')
+    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
     print(__doc__)
     return
 
@@ -1019,8 +1026,9 @@ def Main():
         'otool')
     if os.path.exists(hermetic_otool_path):
       otool_path = hermetic_otool_path
-  binary_paths.extend(
-      coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR, otool_path))
+  if sys.platform.startswith('linux') or sys.platform.startswith('darwin'):
+    binary_paths.extend(
+        coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR, otool_path))
 
   assert args.format == 'html' or args.format == 'text', (
       '%s is not a valid output format for "llvm-cov show". Only "text" and '

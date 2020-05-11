@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/download/download_manager_metric_names.h"

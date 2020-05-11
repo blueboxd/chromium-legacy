@@ -230,6 +230,68 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     test_prerender->contents()->set_skip_final_checks(true);
   }
 
+  void VerifyBasicPageLoadUkms(const GURL& expected_source_url) {
+    using PageLoad = ukm::builders::PageLoad;
+    const auto& entries =
+        test_ukm_recorder_->GetMergedEntriesByName(PageLoad::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    for (const auto& kv : entries) {
+      test_ukm_recorder_->ExpectEntrySourceHasUrl(kv.second.get(),
+                                                  expected_source_url);
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::
+              kDocumentTiming_NavigationToDOMContentLoadedEventFiredName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kDocumentTiming_NavigationToLoadEventFiredName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(), PageLoad::kPaintTiming_NavigationToFirstPaintName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(), PageLoad::kMainFrameResource_SocketReusedName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(), PageLoad::kMainFrameResource_DNSDelayName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(), PageLoad::kMainFrameResource_ConnectDelayName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kMainFrameResource_RequestStartToSendStartName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kMainFrameResource_SendStartToReceiveHeadersEndName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kMainFrameResource_RequestStartToReceiveHeadersEndName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kMainFrameResource_NavigationStartToRequestStartName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(),
+          PageLoad::kMainFrameResource_HttpProtocolSchemeName));
+      EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+          kv.second.get(), PageLoad::kSiteEngagementScoreName));
+    }
+  }
+
+  void VerifyNavigationMetricsCount(int expected_count) {
+    // Verify if the elapsed time from the navigation start are recorded.
+    histogram_tester_.ExpectTotalCount(
+        internal::kHistogramNavigationTimingNavigationStartToFirstRequestStart,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::kHistogramNavigationTimingNavigationStartToFirstResponseStart,
+        expected_count);
+
+    // Verify if the intervals between adjacent milestones are recorded.
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingFirstRequestStartToFirstResponseStart,
+        expected_count);
+  }
+
   content::RenderFrameHost* RenderFrameHost() const {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
   }
@@ -274,54 +336,50 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
 
-  using PageLoad = ukm::builders::PageLoad;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(PageLoad::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(kv.second.get(), url);
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kDocumentTiming_NavigationToDOMContentLoadedEventFiredName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kDocumentTiming_NavigationToLoadEventFiredName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), PageLoad::kPaintTiming_NavigationToFirstPaintName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), PageLoad::kMainFrameResource_SocketReusedName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), PageLoad::kMainFrameResource_DNSDelayName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), PageLoad::kMainFrameResource_ConnectDelayName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kMainFrameResource_RequestStartToSendStartName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kMainFrameResource_SendStartToReceiveHeadersEndName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kMainFrameResource_RequestStartToReceiveHeadersEndName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kMainFrameResource_NavigationStartToRequestStartName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), PageLoad::kMainFrameResource_HttpProtocolSchemeName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), PageLoad::kSiteEngagementScoreName));
-  }
+  VerifyBasicPageLoadUkms(url);
 
   const auto& nostate_prefetch_entries =
       test_ukm_recorder_->GetMergedEntriesByName(NoStatePrefetch::kEntryName);
   EXPECT_EQ(0u, nostate_prefetch_entries.size());
 
-  // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
-  // have been recorded.
-  EXPECT_FALSE(NoPageLoadMetricsRecorded());
+  VerifyNavigationMetricsCount(1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, Redirect) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL final_url = embedded_test_server()->GetURL("/title1.html");
+  GURL first_url =
+      embedded_test_server()->GetURL("/server-redirect?" + final_url.spec());
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddPageExpectation(TimingField::kFirstPaint);
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  waiter->Wait();
+
+  histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHistogramParseDuration, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramParseBlockedOnScriptLoad, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramParseBlockedOnScriptExecution, 1);
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
+  histogram_tester_.ExpectTotalCount(internal::kHistogramPageLoadTotalBytes, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramPageTimingForegroundDuration, 1);
+
+  VerifyBasicPageLoadUkms(final_url);
+
+  const auto& nostate_prefetch_entries =
+      test_ukm_recorder_->GetMergedEntriesByName(NoStatePrefetch::kEntryName);
+  EXPECT_EQ(0u, nostate_prefetch_entries.size());
+
+  VerifyNavigationMetricsCount(1);
 }
 
 // Triggers nostate prefetch, and verifies that the UKM metrics related to
@@ -359,9 +417,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoStatePrefetchMetrics) {
         kv.second.get(), NoStatePrefetch::kPrefetchedRecently_PrefetchAgeName));
   }
 
-  // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
-  // have been recorded.
-  EXPECT_FALSE(NoPageLoadMetricsRecorded());
+  VerifyNavigationMetricsCount(1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CachedPage) {
@@ -385,6 +441,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CachedPage) {
                                                     PageLoad::kWasCachedName));
   }
 
+  VerifyNavigationMetricsCount(1);
+
   // Reset the UKM recorder so it would only contain the cached pageload.
   test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
 
@@ -404,6 +462,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CachedPage) {
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(cached_load_entry,
                                                    PageLoad::kWasCachedName));
   }
+
+  VerifyNavigationMetricsCount(2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
@@ -566,6 +626,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
+
+  VerifyNavigationMetricsCount(1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
@@ -580,6 +642,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
 
+  VerifyNavigationMetricsCount(1);
+
   waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(),
@@ -589,6 +653,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   // We expect one histogram sample for each navigation to title1.html.
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 2);
+
+  VerifyNavigationMetricsCount(2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
@@ -2239,6 +2305,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  // Navigation should record the metrics twice because of the initial pageload
+  // and the second pageload initiated by the link click.
+  VerifyNavigationMetricsCount(2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
@@ -2258,6 +2328,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForOmniboxMatch) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  VerifyNavigationMetricsCount(1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -2287,6 +2359,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  // Navigation should record the metrics twice because of the initial pageload
+  // and the second pageload initiated by the link click.
+  VerifyNavigationMetricsCount(2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -2319,6 +2395,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
+
+  // Navigation should record the metrics twice because of the initial pageload
+  // and the second pageload initiated by the link click.
+  VerifyNavigationMetricsCount(2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, FirstInputFromScroll) {
@@ -2470,6 +2550,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ServiceWorkerMetrics) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 2);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramServiceWorkerFirstPaint, 1);
+
+  // Navigation should record the metrics twice because of the initial pageload
+  // to register a service worker and the page load controlled by the service
+  // worker.
+  VerifyNavigationMetricsCount(2);
 }
 
 // Does a navigation to a page which records a WebFeature before commit.

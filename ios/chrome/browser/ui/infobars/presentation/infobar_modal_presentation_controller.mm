@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_presentation_controller.h"
 
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

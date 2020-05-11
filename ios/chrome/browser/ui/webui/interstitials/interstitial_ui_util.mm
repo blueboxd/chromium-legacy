@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/webui/interstitials/interstitial_ui_util.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "components/grit/dev_ui_components_resources.h"

@@ -135,6 +135,13 @@ class PLATFORM_EXPORT ParkableStringImpl final
     return metadata_->compressed_->size();
   }
 
+  // Returns the on-disk size, must not be called unless the string has data
+  // on-disk.
+  size_t on_disk_size() const {
+    DCHECK(has_on_disk_data());
+    return metadata_->on_disk_metadata_->size();
+  }
+
   Age age_for_testing() {
     MutexLocker locker(metadata_->mutex_);
     return metadata_->age_;

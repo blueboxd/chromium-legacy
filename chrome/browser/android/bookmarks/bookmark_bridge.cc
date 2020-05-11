@@ -154,8 +154,9 @@ static jlong JNI_BookmarkBridge_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(delegate);
 }
 
-static jlong JNI_BookmarkBridge_GetBookmarkIdForWebContents(
+jlong BookmarkBridge::GetBookmarkIdForWebContents(
     JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jweb_contents,
     jboolean only_editable) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -164,17 +165,16 @@ static jlong JNI_BookmarkBridge_GetBookmarkIdForWebContents(
   if (!web_contents)
     return kInvalidId;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  DCHECK_EQ(profile_,
+            Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents->GetURL());
-
   // Get all the nodes for |url| and sort them by date added.
   std::vector<const bookmarks::BookmarkNode*> nodes;
   bookmarks::ManagedBookmarkService* managed =
-      ManagedBookmarkServiceFactory::GetForProfile(profile);
+      ManagedBookmarkServiceFactory::GetForProfile(profile_);
   bookmarks::BookmarkModel* model =
-      BookmarkModelFactory::GetForBrowserContext(profile);
+      BookmarkModelFactory::GetForBrowserContext(profile_);
 
   model->GetNodesByURL(url, &nodes);
   std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);

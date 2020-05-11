@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/autofill/core/browser/autofill_address_policy_handler.h"
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"

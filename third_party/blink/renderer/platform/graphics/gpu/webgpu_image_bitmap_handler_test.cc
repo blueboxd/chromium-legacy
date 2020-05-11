@@ -111,7 +111,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
     ASSERT_EQ(success, true);
 
     // Compare content and results
-    uint32_t row_pitch = wgpu_info.wgpu_row_pitch;
+    uint32_t bytes_per_row = wgpu_info.wgpu_bytes_per_row;
     uint32_t content_row_index =
         (copyRect.Y() * width + copyRect.X()) * param.BytesPerPixel();
     uint32_t result_row_index = 0;
@@ -120,7 +120,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
                 memcmp(&contents[content_row_index], &results[result_row_index],
                        copyRect.Width() * param.BytesPerPixel()));
       content_row_index += width * param.BytesPerPixel();
-      result_row_index += row_pitch;
+      result_row_index += bytes_per_row;
     }
   }
 };
@@ -133,14 +133,14 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyGetWGPUResourceInfo) {
                           OpacityMode::kNonOpaque);
 
   // Prebaked expected values.
-  uint32_t expected_row_pitch = 256;
+  uint32_t expected_bytes_per_row = 256;
   uint64_t expected_size = 256;
 
   IntRect test_rect(0, 0, imageWidth, imageHeight);
   WebGPUImageUploadSizeInfo info =
       ComputeImageBitmapWebGPUUploadSizeInfo(test_rect, param);
   ASSERT_EQ(expected_size, info.size_in_bytes);
-  ASSERT_EQ(expected_row_pitch, info.wgpu_row_pitch);
+  ASSERT_EQ(expected_bytes_per_row, info.wgpu_bytes_per_row);
 }
 
 // Copy full image bitmap test

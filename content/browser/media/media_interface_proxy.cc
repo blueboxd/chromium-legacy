@@ -34,6 +34,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "content/browser/media/cdm_storage_impl.h"
@@ -70,31 +71,55 @@ bool IsValidCdmDisplayName(const std::string& cdm_name) {
   return cdm_name.size() <= kMaxCdmNameSize && base::IsStringASCII(cdm_name);
 }
 
-auto& GetCdmServiceSlot() {
+// A map hosts all media::mojom::CdmService remotes, each of which corresponds
+// to one CDM process. There should be only one instance of this class stored in
+// base::SequenceLocalStorageSlot. See below.
+class CdmServiceMap {
+ public:
+  CdmServiceMap() = default;
+
+  ~CdmServiceMap() {
+    DVLOG(1) << __func__ << ": max_remote_count_=" << max_remote_count_;
+    UMA_HISTOGRAM_COUNTS_100("Media.EME.MaxCdmProcessCount", max_remote_count_);
+  }
+
+  // Gets or creates a media::mojom::CdmService remote. The returned remote
+  // might not be bound, e.g. if it's newly created.
+  auto& GetOrCreateRemote(const base::Token& guid) {
+    auto& remote = remotes_[guid];
+    max_remote_count_ = std::max(max_remote_count_, remotes_.size());
+    return remote;
+  }
+
+  void EraseRemote(const base::Token& guid) {
+    DCHECK(remotes_.count(guid));
+    remotes_.erase(guid);
+  }
+
+ private:
+  std::map<base::Token, mojo::Remote<media::mojom::CdmService>> remotes_;
+  size_t max_remote_count_ = 0;
+};
+
+CdmServiceMap& GetCdmServiceMap() {
   // NOTE: Sequence-local storage is used to limit the lifetime of the Remote
   // objects to that of the UI-thread sequence. This ensures the Remotes are
   // destroyed when the task environment is torn down and reinitialized, e.g.,
   // between unit tests.
-  static base::NoDestructor<base::SequenceLocalStorageSlot<
-      std::map<base::Token, mojo::Remote<media::mojom::CdmService>>>>
-      slot;
-  return *slot;
+  static base::NoDestructor<base::SequenceLocalStorageSlot<CdmServiceMap>> slot;
+  return slot->GetOrCreateValue();
 }
 
-// Remove the CDM service instance for the CDM identified by |guid|.
-void RemoveCdmServiceForGuid(const base::Token& guid) {
-  auto* remotes = GetCdmServiceSlot().GetValuePointer();
-  DCHECK(remotes);
-  DCHECK(remotes->count(guid));
-  remotes->erase(guid);
+// Erases the CDM service instance for the CDM identified by |guid|.
+void EraseCdmServiceForGuid(const base::Token& guid) {
+  GetCdmServiceMap().EraseRemote(guid);
 }
 
 // Gets an instance of the CDM service for the CDM identified by |guid|.
 // Instances are started lazily as needed.
 media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid,
                                                const std::string& cdm_name) {
-  auto& remotes = GetCdmServiceSlot().GetOrCreateValue();
-  auto& remote = remotes[guid];
+  auto& remote = GetCdmServiceMap().GetOrCreateRemote(guid);
   if (!remote) {
     ServiceProcessHost::Launch(
         remote.BindNewPipeAndPassReceiver(),
@@ -103,9 +128,9 @@ media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid,
             .WithSandboxType(service_manager::SandboxType::kCdm)
             .Pass());
     remote.set_disconnect_handler(
-        base::BindOnce(&RemoveCdmServiceForGuid, guid));
+        base::BindOnce(&EraseCdmServiceForGuid, guid));
     remote.set_idle_handler(kCdmServiceIdleTimeout,
-                            base::BindRepeating(RemoveCdmServiceForGuid, guid));
+                            base::BindRepeating(EraseCdmServiceForGuid, guid));
   }
 
   return *remote.get();

@@ -43,7 +43,7 @@ class BASE_EXPORT RefCountedMemory
 
   // Alias for front() to make it possible for RefCountedMemory to implicitly
   // convert to span.
-  const unsigned char* data() { return front(); }
+  const unsigned char* data() const { return front(); }
 
  protected:
   friend class RefCountedThreadSafe<RefCountedMemory>;

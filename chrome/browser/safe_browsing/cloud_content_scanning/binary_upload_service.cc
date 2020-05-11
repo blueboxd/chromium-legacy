@@ -434,6 +434,10 @@ void BinaryUploadService::Request::set_digest(const std::string& digest) {
   deep_scanning_request_.set_digest(digest);
 }
 
+void BinaryUploadService::Request::clear_dlp_scan_request() {
+  deep_scanning_request_.clear_dlp_scan_request();
+}
+
 void BinaryUploadService::Request::FinishRequest(
     Result result,
     DeepScanningClientResponse response) {

@@ -151,8 +151,8 @@ bool FirstMeaningfulPaintDetector::SeenFirstMeaningfulPaint() const {
 void FirstMeaningfulPaintDetector::RegisterNotifySwapTime(PaintEvent event) {
   ++outstanding_swap_promise_count_;
   paint_timing_->RegisterNotifySwapTime(
-      event, CrossThreadBindOnce(&FirstMeaningfulPaintDetector::ReportSwapTime,
-                                 WrapCrossThreadWeakPersistent(this), event));
+      CrossThreadBindOnce(&FirstMeaningfulPaintDetector::ReportSwapTime,
+                          WrapCrossThreadWeakPersistent(this), event));
 }
 
 void FirstMeaningfulPaintDetector::ReportSwapTime(PaintEvent event,

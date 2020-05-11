@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_view.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"

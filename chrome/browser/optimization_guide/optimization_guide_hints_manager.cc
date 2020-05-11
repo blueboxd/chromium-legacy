@@ -201,9 +201,13 @@ bool IsOptimizationTypeSupportedByPageHint(
 // and its destructor is called.
 class ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder {
  public:
-  ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder()
+  explicit ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder(
+      content::NavigationHandle* navigation_handle)
       : race_attempt_status_(
-            optimization_guide::RaceNavigationFetchAttemptStatus::kUnknown) {}
+            optimization_guide::RaceNavigationFetchAttemptStatus::kUnknown),
+        navigation_data_(
+            OptimizationGuideNavigationData::GetFromNavigationHandle(
+                navigation_handle)) {}
 
   ~ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder() {
     DCHECK_NE(race_attempt_status_,
@@ -215,6 +219,8 @@ class ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder {
     base::UmaHistogramEnumeration(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         race_attempt_status_);
+    if (navigation_data_)
+      navigation_data_->set_hints_fetch_attempt_status(race_attempt_status_);
   }
 
   void set_race_attempt_status(
@@ -225,6 +231,7 @@ class ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder {
 
  private:
   optimization_guide::RaceNavigationFetchAttemptStatus race_attempt_status_;
+  OptimizationGuideNavigationData* navigation_data_;
 };
 
 // Returns true if the optimization type should be ignored when is newly
@@ -716,18 +723,6 @@ void OptimizationGuideHintsManager::LoadHintForNavigation(
     return;
   }
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
-  if (navigation_data) {
-    bool has_hint = hint_cache_->HasHint(url.host());
-    if (navigation_handle->HasCommitted()) {
-      navigation_data->set_has_hint_after_commit(has_hint);
-    } else {
-      navigation_data->set_has_hint_before_commit(has_hint);
-    }
-  }
-
   LoadHintForHost(url.host(), std::move(callback));
 }
 
@@ -1204,7 +1199,7 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     return;
 
   ScopedHintsManagerRaceNavigationHintsFetchAttemptRecorder
-      race_navigation_recorder;
+      race_navigation_recorder(navigation_handle);
 
   // We expect that if the URL is being fetched for, we have already run through
   // the logic to decide if we also require fetching hints for the host.
@@ -1215,15 +1210,10 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     return;
   }
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
-
   std::vector<std::string> hosts;
   std::vector<GURL> urls;
   if (!hint_cache_->HasHint(url.host())) {
     hosts.push_back(url.host());
-    navigation_data->set_was_hint_for_host_attempted_to_be_fetched(true);
     race_navigation_recorder.set_race_attempt_status(
         optimization_guide::RaceNavigationFetchAttemptStatus::
             kRaceNavigationFetchHost);
@@ -1251,6 +1241,9 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
       "OptimizationGuide.HintsManager.ConcurrentPageNavigationFetches",
       page_navigation_hints_fetchers_.size());
 
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
   navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
   it->second->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
@@ -1269,23 +1262,8 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
 }
 
 void OptimizationGuideHintsManager::OnNavigationFinish(
-    const std::vector<GURL>& navigation_redirect_chain,
-    OptimizationGuideNavigationData* navigation_data) {
+    const std::vector<GURL>& navigation_redirect_chain) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Populate navigation data with hint information.
-  const GURL navigation_url = navigation_redirect_chain.back();
-  if (navigation_data && navigation_url.has_host()) {
-    const std::string host = navigation_url.host();
-    navigation_data->set_has_hint_after_commit(hint_cache_->HasHint(host));
-
-    const optimization_guide::proto::Hint* loaded_hint =
-        hint_cache_->GetHostKeyedHintIfLoaded(host);
-    if (loaded_hint) {
-      navigation_data->set_serialized_hint_version_string(
-          loaded_hint->version());
-    }
-  }
 
   // The callbacks will be invoked when the fetch request comes back, so it
   // will be cleaned up later.

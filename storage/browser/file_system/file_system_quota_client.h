@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "storage/browser/file_system/file_system_quota_util.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
@@ -33,10 +34,10 @@ class FileSystemContext;
 class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
     : public QuotaClient {
  public:
-  FileSystemQuotaClient(FileSystemContext* file_system_context);
+  explicit FileSystemQuotaClient(FileSystemContext* file_system_context);
 
   // QuotaClient methods.
-  QuotaClient::ID id() const override;
+  QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

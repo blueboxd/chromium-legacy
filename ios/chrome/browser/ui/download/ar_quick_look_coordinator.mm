@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"

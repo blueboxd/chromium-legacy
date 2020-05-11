@@ -725,12 +725,15 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // outline-width
-  uint16_t OutlineWidth() const {
+  float OutlineWidth() const {
     if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
-    return OutlineWidthInternal().ToUnsigned();
+    return OutlineWidthInternal();
   }
-  void SetOutlineWidth(uint16_t v) { SetOutlineWidthInternal(LayoutUnit(v)); }
+  void SetOutlineWidth(float v) { SetOutlineWidthInternal(LayoutUnit(v)); }
+  // TODO(rego): This is a temporal method that will be removed once we start
+  // using the float OutlineWidth() in the painting code.
+  uint16_t OutlineWidthInt() const { return OutlineWidth(); }
 
   // -webkit-perspective-origin-x
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }

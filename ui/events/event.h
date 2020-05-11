@@ -749,6 +749,11 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 //    Japanese, etc. all use VKEY_Q for the key beside Tab, while French uses
 //    VKEY_A. The stored key_code_ is non-located (e.g. VKEY_SHIFT rather than
 //    VKEY_LSHIFT, VKEY_1 rather than VKEY_NUMPAD1).
+// -- |uint32_t scan_code_| [USE_OZONE only] supports remapping of the top
+//    function row based on a sysfs attribute provided by the kernel. This
+//    allows devices to have a custom top row layout and still be able to
+//    perform translation back and forth between F-Key and Action-Key. The
+//    value of this scan code is device specific.
 //
 // For a character event,
 // -- |bool is_char_| is true.
@@ -844,6 +849,14 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // events in an EventRewriter.
   void set_key_code(KeyboardCode key_code) { key_code_ = key_code; }
 
+#if defined(USE_OZONE)
+  // The scan code of the physical key. This is used to perform the mapping
+  // of top row keys from Actions back to F-Keys on new Chrome OS keyboards
+  // that supply the mapping via the kernel.
+  uint32_t scan_code() const { return scan_code_; }
+  void set_scan_code(uint32_t scan_code) { scan_code_ = scan_code; }
+#endif  // defined(USE_OZONE)
+
   // Returns the same value as key_code(), except that located codes are
   // returned in place of non-located ones (e.g. VKEY_LSHIFT or VKEY_RSHIFT
   // instead of VKEY_SHIFT). This is a hybrid of semantic and physical
@@ -885,6 +898,11 @@ class EVENTS_EXPORT KeyEvent : public Event {
   bool IsRepeated(KeyEvent** last_key_event);
 
   KeyboardCode key_code_;
+
+#if defined(USE_OZONE)
+  // The scan code of the physical key on Chrome OS.
+  uint32_t scan_code_ = 0;
+#endif  // defined(USE_OZONE)
 
   // DOM KeyboardEvent |code| (e.g. DomCode::US_A, DomCode::SPACE).
   // http://www.w3.org/TR/DOM-Level-3-Events-code/

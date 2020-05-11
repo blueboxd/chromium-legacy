@@ -6,7 +6,8 @@
 
 #import <AuthenticationServices/AuthenticationServices.h>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"

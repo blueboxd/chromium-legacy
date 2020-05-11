@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.util.VoiceRecognitionUtil;
 import org.chromium.chrome.browser.vr.keyboard.VrInputMethodManagerWrapper;
 import org.chromium.components.external_intents.RedirectHandler;
@@ -395,7 +394,7 @@ public class VrShell extends GvrLayout
     public void initializeNative(boolean forWebVr, boolean isStandaloneVrDevice) {
         Tab tab = mActivity.getActivityTab();
         if (mActivity.isInOverviewMode() || tab == null) {
-            launchNTP();
+            openNewTab(false /*incognito*/);
             tab = mActivity.getActivityTab();
         }
 
@@ -1175,11 +1174,6 @@ public class VrShell extends GvrLayout
     private int getTouchSlop() {
         ViewConfiguration vc = ViewConfiguration.get(mActivity);
         return vc.getScaledTouchSlop();
-    }
-
-    private void launchNTP() {
-        NewTabButton button = (NewTabButton) mActivity.findViewById(R.id.new_tab_button);
-        button.callOnClick();
     }
 
     @Override

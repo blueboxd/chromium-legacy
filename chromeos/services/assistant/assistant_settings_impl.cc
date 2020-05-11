@@ -22,6 +22,7 @@
 
 using SpeakerIdEnrollmentState =
     assistant_client::SpeakerIdEnrollmentUpdate::State;
+using VoicelessResponseStatus = assistant_client::VoicelessResponse::Status;
 
 namespace chromeos {
 namespace assistant {
@@ -65,20 +66,22 @@ void AssistantSettingsImpl::GetSettings(const std::string& selector,
   assistant_manager_service_->assistant_manager_internal()
       ->SendGetSettingsUiRequest(
           serialized_proto, std::string(),
-          [repeating_callback =
+          [weak_ptr = weak_factory_.GetWeakPtr(),
+           repeating_callback =
                base::AdaptCallbackForRepeating(std::move(callback)),
            task_runner = main_task_runner()](
               const assistant_client::VoicelessResponse& response) {
-            // This callback may be called from server multiple times. We should
-            // only process non-empty response.
-            std::string settings = UnwrapGetSettingsUiResponse(response);
             task_runner->PostTask(
                 FROM_HERE,
                 base::BindOnce(
-                    [](base::RepeatingCallback<void(const std::string&)>
-                           callback,
-                       const std::string& result) { callback.Run(result); },
-                    repeating_callback, settings));
+                    [](const base::WeakPtr<AssistantSettingsImpl> weak_ptr,
+                       const assistant_client::VoicelessResponse response,
+                       base::RepeatingCallback<void(const std::string&)>
+                           callback) {
+                      if (weak_ptr && !weak_ptr->ShouldIgnoreResponse(response))
+                        callback.Run(UnwrapGetSettingsUiResponse(response));
+                    },
+                    weak_ptr, response, repeating_callback));
           });
 }
 
@@ -205,6 +208,42 @@ void AssistantSettingsImpl::SyncDeviceAppsStatus(
                              weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void AssistantSettingsImpl::UpdateServerDeviceSettings() {
+  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
+
+  const std::string device_id =
+      assistant_manager_service_->assistant_manager()->GetDeviceId();
+  if (device_id.empty())
+    return;
+
+  // Update device id and device type.
+  assistant::SettingsUiUpdate update;
+  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
+      update.mutable_assistant_device_settings_update()
+          ->add_assistant_device_settings_update();
+  device_settings_update->set_device_id(device_id);
+  device_settings_update->set_assistant_device_type(
+      assistant::AssistantDevice::CROS);
+
+  if (assistant_state()->hotword_enabled().value()) {
+    device_settings_update->mutable_device_settings()->set_speaker_id_enabled(
+        true);
+  }
+
+  VLOG(1) << "Update assistant device locale: "
+          << assistant_state()->locale().value();
+  device_settings_update->mutable_device_settings()->set_locale(
+      assistant_state()->locale().value());
+
+  // Enable personal readout to grant permission for personal features.
+  device_settings_update->mutable_device_settings()->set_personal_readout(
+      assistant::AssistantDeviceSettings::PERSONAL_READOUT_ENABLED);
+
+  // Device settings update result is not handled because it is not included in
+  // the SettingsUiUpdateResult.
+  UpdateSettings(update.SerializeAsString(), base::DoNothing());
+}
+
 void AssistantSettingsImpl::HandleSpeakerIdEnrollmentUpdate(
     const assistant_client::SpeakerIdEnrollmentUpdate& update) {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
@@ -248,19 +287,6 @@ void AssistantSettingsImpl::HandleSpeakerIdEnrollmentStatusSync(
   }
 }
 
-ash::AssistantStateBase* AssistantSettingsImpl::assistant_state() {
-  return context_->assistant_state();
-}
-
-ash::AssistantController* AssistantSettingsImpl::assistant_controller() {
-  return context_->assistant_controller();
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-AssistantSettingsImpl::main_task_runner() {
-  return context_->main_task_runner();
-}
-
 void AssistantSettingsImpl::HandleStopSpeakerIdEnrollment() {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
   speaker_id_enrollment_client_.reset();
@@ -294,40 +320,41 @@ void AssistantSettingsImpl::HandleDeviceAppsStatusSync(
   std::move(callback).Run(gaia_user_context_ui.device_apps_enabled());
 }
 
-void AssistantSettingsImpl::UpdateServerDeviceSettings() {
-  DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
-
-  const std::string device_id =
-      assistant_manager_service_->assistant_manager()->GetDeviceId();
-  if (device_id.empty())
-    return;
-
-  // Update device id and device type.
-  assistant::SettingsUiUpdate update;
-  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
-      update.mutable_assistant_device_settings_update()
-          ->add_assistant_device_settings_update();
-  device_settings_update->set_device_id(device_id);
-  device_settings_update->set_assistant_device_type(
-      assistant::AssistantDevice::CROS);
-
-  if (assistant_state()->hotword_enabled().value()) {
-    device_settings_update->mutable_device_settings()->set_speaker_id_enabled(
-        true);
+bool AssistantSettingsImpl::ShouldIgnoreResponse(
+    const assistant_client::VoicelessResponse& response) const {
+  // If cancellation is indicated, we'll ignore |response|. This is currently
+  // only known to occur in browser testing when attempting to replay an S3
+  // session that was not previously recorded.
+  if (response.error_code == "CANCELLED") {
+    VLOG(1) << "Ignore settings response due to cancellation.";
+    return true;
   }
 
-  VLOG(1) << "Update assistant device locale: "
-          << assistant_state()->locale().value();
-  device_settings_update->mutable_device_settings()->set_locale(
-      assistant_state()->locale().value());
+  // If NO_RESPONSE_ERROR is indicated, we'll check to see if LibAssistant is
+  // restarting/shutting down. If so, we'll ignore |response| to avoid
+  // propagating fallback values. This may occur if the user quickly toggles
+  // Assistant enabled/disabled in settings.
+  if (response.status == VoicelessResponseStatus::NO_RESPONSE_ERROR &&
+      !assistant_manager_service_->assistant_manager_internal()) {
+    VLOG(1) << "Ignore settings response due to LibAssistant restart/shutdown.";
+    return true;
+  }
 
-  // Enable personal readout to grant permission for personal features.
-  device_settings_update->mutable_device_settings()->set_personal_readout(
-      assistant::AssistantDeviceSettings::PERSONAL_READOUT_ENABLED);
+  // Otherwise we'll allow |response| processing to proceed.
+  return false;
+}
 
-  // Device settings update result is not handled because it is not included in
-  // the SettingsUiUpdateResult.
-  UpdateSettings(update.SerializeAsString(), base::DoNothing());
+ash::AssistantStateBase* AssistantSettingsImpl::assistant_state() {
+  return context_->assistant_state();
+}
+
+ash::AssistantController* AssistantSettingsImpl::assistant_controller() {
+  return context_->assistant_controller();
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+AssistantSettingsImpl::main_task_runner() {
+  return context_->main_task_runner();
 }
 
 }  // namespace assistant

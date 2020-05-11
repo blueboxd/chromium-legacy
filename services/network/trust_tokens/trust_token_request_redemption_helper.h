@@ -199,10 +199,16 @@ class TrustTokenRequestRedemptionHelper : public TrustTokenRequestHelper {
   const SuitableTrustTokenOrigin top_level_origin_;
   const mojom::TrustTokenRefreshPolicy refresh_policy_;
 
-  // |signing_key_| and |verification_key_| are generated speculatively near the
+  // |bound_signing_key_| and |bound_verification_key_| form the key pair
+  // "bound" to the redemption; they are generated speculatively near the
   // beginning of redemption and committed to storage if the operation succeeds.
-  std::string signing_key_;
-  std::string verification_key_;
+  std::string bound_signing_key_;
+  std::string bound_verification_key_;
+  // |token_verification_key_| is the token issuance verification key
+  // corresponding to the token being redeemed. It's stored here speculatively
+  // when beginning redemption so that it can be placed in persistent storage
+  // alongside the SRR if redemption succeeds.
+  std::string token_verification_key_;
 
   TrustTokenStore* const token_store_;
   const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;

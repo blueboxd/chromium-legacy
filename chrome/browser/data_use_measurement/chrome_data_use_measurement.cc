@@ -135,7 +135,7 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
 
 void ChromeDataUseMeasurement::ReportUserTrafficDataUse(bool is_tab_visible,
                                                         int64_t recv_bytes) {
-  RecordTrafficSizeMetric(true, true, is_tab_visible, recv_bytes);
+  RecordDownstreamUserTrafficSizeMetric(is_tab_visible, recv_bytes);
 }
 
 void ChromeDataUseMeasurement::RecordContentTypeMetric(

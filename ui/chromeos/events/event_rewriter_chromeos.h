@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
@@ -246,11 +245,10 @@ class EventRewriterChromeOS : public EventRewriter {
   int RewriteModifierClick(const MouseEvent& event, int* flags);
 
   // Handle Fn/Action key remapping for Wilco keyboard layout.
-  bool RewriteTopRowKeysForLayoutWilco(
-      const KeyEvent& key_event,
-      bool search_is_pressed,
-      EventRewriterChromeOS::MutableKeyState* state,
-      KeyboardTopRowLayout layout);
+  bool RewriteTopRowKeysForLayoutWilco(const KeyEvent& key_event,
+                                       bool search_is_pressed,
+                                       MutableKeyState* state,
+                                       KeyboardTopRowLayout layout);
 
   // Take the keys being pressed into consideration, in contrast to
   // RewriteKeyEvent which computes the rewritten event and event rewrite

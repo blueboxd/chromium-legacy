@@ -4,7 +4,8 @@
 
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_viewport_adjustment_container.h"
 #import "ios/web/common/crw_web_view_content_view.h"

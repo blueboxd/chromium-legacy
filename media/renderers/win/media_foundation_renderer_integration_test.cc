@@ -6,11 +6,46 @@
 
 #include <memory>
 
-#include "media/base/test_data_util.h"
 #include "media/test/pipeline_integration_test_base.h"
 #include "media/test/test_media_source.h"
 
 namespace media {
+
+namespace {
+
+// TODO(xhwang): Generalize this to support more codecs, or use CanPlay() or
+// IsTypeSupported() which can take mime types directly.
+bool CanDecodeVp9() {
+  if (!MediaFoundationRenderer::IsSupported()) {
+    LOG(WARNING) << "MediaFoundationRenderer not supported";
+    return false;
+  }
+
+  MFT_REGISTER_TYPE_INFO input_type = {MFMediaType_Video, MFVideoFormat_VP90};
+  IMFActivate** activates = nullptr;
+  UINT32 count = 0;
+
+  if (FAILED(MFTEnumEx(MFT_CATEGORY_VIDEO_DECODER,
+                       MFT_ENUM_FLAG_SYNCMFT | MFT_ENUM_FLAG_ASYNCMFT |
+                           MFT_ENUM_FLAG_HARDWARE,
+                       &input_type, /*output_type=*/nullptr, &activates,
+                       &count))) {
+    return false;
+  }
+
+  for (UINT32 i = 0; i < count; ++i)
+    activates[i]->Release();
+  CoTaskMemFree(activates);
+
+  if (count == 0) {
+    LOG(WARNING) << "No decoder for VP9";
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
 
 class MediaFoundationRendererIntegrationTest
     : public testing::Test,
@@ -36,7 +71,7 @@ class MediaFoundationRendererIntegrationTest
 };
 
 TEST_F(MediaFoundationRendererIntegrationTest, BasicPlayback) {
-  if (!MediaFoundationRenderer::IsSupported())
+  if (!CanDecodeVp9())
     return;
 
   ASSERT_EQ(PIPELINE_OK, Start("bear-vp9.webm"));
@@ -45,7 +80,7 @@ TEST_F(MediaFoundationRendererIntegrationTest, BasicPlayback) {
 }
 
 TEST_F(MediaFoundationRendererIntegrationTest, BasicPlayback_MediaSource) {
-  if (!MediaFoundationRenderer::IsSupported())
+  if (!CanDecodeVp9())
     return;
 
   TestMediaSource source("bear-vp9.webm", 67504);

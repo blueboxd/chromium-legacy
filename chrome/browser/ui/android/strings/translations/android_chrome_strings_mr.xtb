@@ -125,7 +125,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# फाइल}other{# फायली}}</translation>
 <translation id="2017836877785168846">ॲड्रेस बारमधील इतिहास आणि आपोआप पूर्ण केलेले साफ करते.</translation>
 <translation id="2021896219286479412">फुल स्क्रीन साइट नियंत्रणे</translation>
-<translation id="2038563949887743358">डेस्कटॉप साइट विनंती चालू करा</translation>
+<translation id="2038563949887743358">डेस्कटॉप साइट विनंती सुरू करा</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />चा Chrome मध्ये देखील डेटा आहे</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="2056878612599315956">साइट थांबवली</translation>
@@ -247,7 +247,7 @@
 <translation id="3016635187733453316">हे डिव्हाइस इंटरनेटशी कनेक्ट केले असल्याची खात्री करा</translation>
 <translation id="3029704984691124060">सांकेतिक वाक्यांश जुळत नाहीत</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />मदत मिळवा<ph name="END_LINK" /></translation>
-<translation id="305593374596241526">स्‍थान बंद आहे; <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे चालू करा.</translation>
+<translation id="305593374596241526">स्‍थान बंद आहे; <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे सुरू करा.</translation>
 <translation id="3058498974290601450">तुम्ही सेटिंग्जमध्ये कधीही सिंक सुरू करू शकता</translation>
 <translation id="3060635849835183725">{BOOKMARKS_COUNT,plural, =1{<ph name="BOOKMARKS_COUNT_ONE" /> बुकमार्क}other{<ph name="BOOKMARKS_COUNT_MANY" /> बुकमार्क}}</translation>
 <translation id="3089395242580810162">गुप्त टॅबमध्ये उघडा</translation>
@@ -270,13 +270,13 @@
 <translation id="3254409185687681395">या पृष्ठास बुकमार्क करा</translation>
 <translation id="3259831549858767975">पृष्ठावरील प्रत्येकगोष्ट आणखी लहान बनवा</translation>
 <translation id="3269093882174072735">इमेज लोड करा</translation>
-<translation id="3269956123044984603">तुमच्या अन्य डिव्हाइसवरून तुमचे टॅब मिळविण्यासाठी, Android खाते सेटिंग्ज मधील “डेटा ऑटो-सिंक करा” चालू करा.</translation>
+<translation id="3269956123044984603">तुमच्या अन्य डिव्हाइसवरून तुमचे टॅब मिळविण्यासाठी, Android खाते सेटिंग्ज मधील “डेटा ऑटो-सिंक करा” सुरू करा.</translation>
 <translation id="3282568296779691940">Chrome वर साइन इन करा</translation>
 <translation id="3288003805934695103">पृष्ठ रीलोड करणे</translation>
 <translation id="32895400574683172">सूचनांना अनुमती आहे</translation>
 <translation id="3295530008794733555">आणखी जलद ब्राउझ करा. कमी डेटा वापरा.</translation>
 <translation id="3298243779924642547">Lite</translation>
-<translation id="3303414029551471755">आशय डाउनलोड करणे सुरु ठेवायचे?</translation>
+<translation id="3303414029551471755">आशय डाउनलोड करणे सुरू ठेवायचे?</translation>
 <translation id="3306398118552023113">हे अ‍ॅप Chrome मध्‍‍‍ये रन होत आहे</translation>
 <translation id="3315103659806849044">तुम्ही सध्या तुमचे सिंक आणि Google सेवा सेटिंग्ज कस्टमाइझ करत आहात. सिंक सुरू करणे पूर्ण करण्यासाठी, स्क्रीनच्या खालच्या बाजूला निश्चित करा बटणावर टॅप करा. वर नेव्‍हिगेट करा</translation>
 <translation id="3328801116991980348">साइट माहिती</translation>
@@ -300,7 +300,7 @@
 <translation id="3493531032208478708">सूचित केलेल्या आशयविषयी <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="3499246418971111862">chrome_qrcode_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="3513704683820682405">ऑगमेंटेड रिअ‍ॅलिटी</translation>
-<translation id="3518985090088779359">स्वीकारा आणि सुरु ठेवा</translation>
+<translation id="3518985090088779359">स्वीकारा आणि सुरू ठेवा</translation>
 <translation id="3522247891732774234">अपडेट उपलब्ध आहे. आणखी पर्याय</translation>
 <translation id="3524138585025253783">डेव्हलपर UI</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
@@ -584,7 +584,7 @@
 <translation id="5853623416121554550">थांबवले</translation>
 <translation id="5854790677617711513">30 दिवसांपेक्षा जुना</translation>
 <translation id="5858741533101922242">ब्लूटूथ अडॅप्टर सुरू करण्यात Chrome अक्षम आहे</translation>
-<translation id="5860491529813859533">चालू करा</translation>
+<translation id="5860491529813859533">सुरू करा</translation>
 <translation id="5862731021271217234">तुमच्या इतर डिव्हाइसवरून तुमचे टॅब मिळवण्यासाठी, सिंक सुरू करा</translation>
 <translation id="5864174910718532887">तपशील: साइटच्या नावानुसार क्रमाने लावलेले</translation>
 <translation id="5864419784173784555">दुसर्‍या डाउनलोडची वाट पाहत आहे…</translation>
@@ -616,7 +616,7 @@
 <translation id="6127379762771434464">आयटम काढला</translation>
 <translation id="6140912465461743537">देश/प्रदेश</translation>
 <translation id="614940544461990577">हे करून पहा:</translation>
-<translation id="6154478581116148741">तुमचे पासवर्ड या डिव्हाइसवरून एक्सपोर्ट करण्यासाठी सेटिंग्जमधील लॉक स्क्रीन चालू करा</translation>
+<translation id="6154478581116148741">तुमचे पासवर्ड या डिव्हाइसवरून एक्सपोर्ट करण्यासाठी सेटिंग्जमधील लॉक स्क्रीन सुरू करा</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6177111841848151710">वर्तमान शोध इंजिनसाठी अवरोधित केले</translation>
 <translation id="6192333916571137726">फाइल डाउनलोड करा</translation>
@@ -920,7 +920,7 @@
 <translation id="860043288473659153">कार्डधारकाचे नाव</translation>
 <translation id="8616006591992756292">तुमच्या Google खात्यात <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची अन्य स्वरूपे असू शकतात.</translation>
 <translation id="8617240290563765734">डाउनलोड केलेल्या आशयमध्ये नमूद केलेली सुचविलेली URL उघडायची?</translation>
-<translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून तुमचे टॅब प्राप्त करण्यासाठी, संकालन चालू करा</translation>
+<translation id="8636825310635137004">आपल्या इतर डिव्हाइसेस मधून तुमचे टॅब प्राप्त करण्यासाठी, संकालन सुरू करा</translation>
 <translation id="8641930654639604085">प्रौढ सामग्री असलेल्या साइटना अवरोधित करण्‍याचा प्रयत्न करा</translation>
 <translation id="8655129584991699539">तुम्ही Chrome सेटिंग्जमध्ये डेटा साफ करू शकता</translation>
 <translation id="8655599981421006542">नवीन टॅब तयार करण्यासाठी येथे टॅप करा आणि मागील टॅबवर परत जा</translation>

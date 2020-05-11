@@ -50,6 +50,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -85,7 +86,8 @@ const blink::mojom::StorageType kTemporary =
 const blink::mojom::StorageType kPersistent =
     blink::mojom::StorageType::kPersistent;
 
-const storage::QuotaClient::ID kClientFile = storage::QuotaClient::kFileSystem;
+const storage::QuotaClientType kClientFile =
+    storage::QuotaClientType::kFileSystem;
 
 const uint32_t kAllQuotaRemoveMask =
     StoragePartition::REMOVE_DATA_MASK_APPCACHE |
@@ -818,31 +820,33 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
   EXPECT_EQ(0u, Size());
 }
 
-TEST_F(StoragePartitionImplTest, QuotaClientMaskGeneration) {
-  EXPECT_EQ(storage::QuotaClient::kFileSystem,
-            StoragePartitionImpl::GenerateQuotaClientMask(
-                StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS));
-  EXPECT_EQ(storage::QuotaClient::kDatabase,
-            StoragePartitionImpl::GenerateQuotaClientMask(
-                StoragePartition::REMOVE_DATA_MASK_WEBSQL));
-  EXPECT_EQ(storage::QuotaClient::kAppcache,
-            StoragePartitionImpl::GenerateQuotaClientMask(
-                StoragePartition::REMOVE_DATA_MASK_APPCACHE));
-  EXPECT_EQ(storage::QuotaClient::kIndexedDatabase,
-            StoragePartitionImpl::GenerateQuotaClientMask(
-                StoragePartition::REMOVE_DATA_MASK_INDEXEDDB));
-  EXPECT_EQ(storage::QuotaClient::kFileSystem |
-                storage::QuotaClient::kDatabase |
-                storage::QuotaClient::kAppcache |
-                storage::QuotaClient::kIndexedDatabase,
-            StoragePartitionImpl::GenerateQuotaClientMask(kAllQuotaRemoveMask));
+TEST_F(StoragePartitionImplTest, QuotaClientTypesGeneration) {
+  EXPECT_THAT(StoragePartitionImpl::GenerateQuotaClientTypes(
+                  StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS),
+              testing::ElementsAre(storage::QuotaClientType::kFileSystem));
+  EXPECT_THAT(StoragePartitionImpl::GenerateQuotaClientTypes(
+                  StoragePartition::REMOVE_DATA_MASK_WEBSQL),
+              testing::ElementsAre(storage::QuotaClientType::kDatabase));
+  EXPECT_THAT(StoragePartitionImpl::GenerateQuotaClientTypes(
+                  StoragePartition::REMOVE_DATA_MASK_APPCACHE),
+              testing::ElementsAre(storage::QuotaClientType::kAppcache));
+  EXPECT_THAT(StoragePartitionImpl::GenerateQuotaClientTypes(
+                  StoragePartition::REMOVE_DATA_MASK_INDEXEDDB),
+              testing::ElementsAre(storage::QuotaClientType::kIndexedDatabase));
+  EXPECT_THAT(
+      StoragePartitionImpl::GenerateQuotaClientTypes(kAllQuotaRemoveMask),
+      testing::UnorderedElementsAre(
+          storage::QuotaClientType::kFileSystem,
+          storage::QuotaClientType::kDatabase,
+          storage::QuotaClientType::kAppcache,
+          storage::QuotaClientType::kIndexedDatabase));
 }
 
 void PopulateTestQuotaManagedPersistentData(storage::MockQuotaManager* manager,
                                             const url::Origin& origin1,
                                             const url::Origin& origin2) {
-  manager->AddOrigin(origin1, kPersistent, kClientFile, base::Time());
-  manager->AddOrigin(origin2, kPersistent, kClientFile,
+  manager->AddOrigin(origin1, kPersistent, {kClientFile}, base::Time());
+  manager->AddOrigin(origin2, kPersistent, {kClientFile},
                      base::Time::Now() - base::TimeDelta::FromDays(1));
 
   EXPECT_TRUE(manager->OriginHasData(origin1, kPersistent, kClientFile));
@@ -852,8 +856,8 @@ void PopulateTestQuotaManagedPersistentData(storage::MockQuotaManager* manager,
 void PopulateTestQuotaManagedTemporaryData(storage::MockQuotaManager* manager,
                                            const url::Origin& origin1,
                                            const url::Origin& origin2) {
-  manager->AddOrigin(origin1, kTemporary, kClientFile, base::Time::Now());
-  manager->AddOrigin(origin2, kTemporary, kClientFile,
+  manager->AddOrigin(origin1, kTemporary, {kClientFile}, base::Time::Now());
+  manager->AddOrigin(origin2, kTemporary, {kClientFile},
                      base::Time::Now() - base::TimeDelta::FromDays(1));
 
   EXPECT_TRUE(manager->OriginHasData(origin1, kTemporary, kClientFile));
@@ -876,8 +880,8 @@ void PopulateTestQuotaManagedData(storage::MockQuotaManager* manager,
 void PopulateTestQuotaManagedNonBrowsingData(
     const url::Origin& origin,
     storage::MockQuotaManager* manager) {
-  manager->AddOrigin(origin, kTemporary, kClientFile, base::Time());
-  manager->AddOrigin(origin, kPersistent, kClientFile, base::Time());
+  manager->AddOrigin(origin, kTemporary, {kClientFile}, base::Time());
+  manager->AddOrigin(origin, kPersistent, {kClientFile}, base::Time());
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverBoth) {

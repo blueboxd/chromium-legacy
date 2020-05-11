@@ -2285,7 +2285,7 @@ int ComputedStyle::OutlineOutsetExtent() const {
     return GraphicsContext::FocusRingOutsetExtent(
         OutlineOffset(), std::ceil(GetOutlineStrokeWidthForFocusRing()));
   }
-  return base::ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
+  return base::ClampAdd(OutlineWidthInt(), OutlineOffset()).Max(0);
 }
 
 float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
@@ -2294,7 +2294,7 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
   }
 
 #if defined(OS_MACOSX)
-  return OutlineWidth();
+  return OutlineWidthInt();
 #else
   // Draw an outline with thickness in proportion to the zoom level, but never
   // so narrow that it becomes invisible.

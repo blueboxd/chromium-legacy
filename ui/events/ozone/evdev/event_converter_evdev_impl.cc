@@ -122,8 +122,13 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
   for (int i = 0; i < count; ++i) {
     const input_event& input = inputs[i];
     switch (input.type) {
+      case EV_MSC:
+        if (input.code == MSC_SCAN)
+          last_scan_code_ = input.value;
+        break;
       case EV_KEY:
         ConvertKeyEvent(input);
+        last_scan_code_ = 0;
         break;
       case EV_REL:
         ConvertMouseMoveEvent(input);
@@ -133,6 +138,7 @@ void EventConverterEvdevImpl::ProcessEvents(const input_event* inputs,
           OnLostSync();
         else if (input.code == SYN_REPORT)
           FlushEvents(input);
+        last_scan_code_ = 0;
         break;
       case EV_SW:
         if (input.code == kSwitchStylusInserted) {
@@ -191,7 +197,7 @@ void EventConverterEvdevImpl::OnKeyChange(unsigned int key,
   key_state_.set(key, down);
 
   dispatcher_->DispatchKeyEvent(
-      KeyEventParams(input_device_.id, ui::EF_NONE, key, down,
+      KeyEventParams(input_device_.id, ui::EF_NONE, key, last_scan_code_, down,
                      false /* suppress_auto_repeat */, timestamp));
 }
 

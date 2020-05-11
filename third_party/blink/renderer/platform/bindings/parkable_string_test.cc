@@ -792,6 +792,32 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
       "savings_size", "bytes",
       2 * kStringSize - (kStringSize + 2 * kCompressedSize + 2 * kActualSize));
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(savings))));
+
+  MemoryAllocatorDump::Entry on_disk("on_disk_size", "bytes", 0);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(on_disk))));
+  MemoryAllocatorDump::Entry on_disk_footprint("on_disk_footprint", "bytes", 0);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(on_disk_footprint))));
+
+  WaitForDiskWriting();
+  EXPECT_TRUE(parkable1.Impl()->has_compressed_data());
+  EXPECT_TRUE(parkable2.Impl()->is_on_disk());
+
+  pmd = base::trace_event::ProcessMemoryDump(args);
+  manager.OnMemoryDump(&pmd);
+  dump = pmd.GetAllocatorDump("parkable_strings");
+  ASSERT_NE(nullptr, dump);
+  on_disk =
+      MemoryAllocatorDump::Entry("on_disk_size", "bytes", kCompressedSize);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(on_disk))));
+  // |parkable2| is on disk.
+  on_disk_footprint =
+      MemoryAllocatorDump::Entry("on_disk_footprint", "bytes", kCompressedSize);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(on_disk_footprint))));
+
+  // |parkable1| is compressed.
+  compressed =
+      MemoryAllocatorDump::Entry("compressed_size", "bytes", kCompressedSize);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(compressed))));
 }
 
 TEST_F(ParkableStringTest, MemoryFootprintForDump) {

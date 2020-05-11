@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "third_party/ocmock/OCMock/NSInvocation+OCMAdditions.h"

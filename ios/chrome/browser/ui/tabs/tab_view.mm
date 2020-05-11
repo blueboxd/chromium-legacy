@@ -6,7 +6,6 @@
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
 
 #include "base/feature_list.h"
 #include "base/ios/ios_util.h"

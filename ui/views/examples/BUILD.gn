@@ -22,6 +22,8 @@ jumbo_component("views_examples_lib") {
     "button_sticker_sheet.h",
     "checkbox_example.cc",
     "checkbox_example.h",
+    "colored_dialog_example.cc",
+    "colored_dialog_example.h",
     "combobox_example.cc",
     "combobox_example.h",
     "create_examples.cc",

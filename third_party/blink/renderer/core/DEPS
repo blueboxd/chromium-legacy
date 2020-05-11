@@ -15,6 +15,7 @@ include_rules = [
     "+base/profiler/sample_metadata.h",
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
+    "+base/values.h",
     "+base/task/sequence_manager/task_time_observer.h",
     "+base/test/bind_test_util.h",
     "+base/test/simple_test_tick_clock.h",

@@ -514,6 +514,24 @@
   <message name="IDS_OS_SETTINGS_TAG_POWER_SLEEP_COVER_CLOSED_ALT2" desc="Text for search result item which, when clicked, navigates the user to power settings, with an option to set whether the device sleeps when the lid is closed. Alternate phrase for: 'Sleep when cover is closed', 'Sleep when laptop is closed'">
     Sleep when lid is closed
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen orientation. Alternate phrase for: 'Monitor orientation', 'Screen orientation'">
+    Display resolution
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION_ALT1" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen resolution. Alternate phrase for: 'Display resolution', 'Screen resolution'">
+    Monitor resolution
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION_ALT2" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen resolution. Alternate phrase for: 'Display resolution', 'Monitor resolution'">
+    Screen resolution
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen orientation. Alternate phrase for: 'Monitor orientation', 'Screen orientation'">
+    Display refresh rate
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE_ALT1" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen refresh rate. Alternate phrase for: 'Display refresh rate', 'Screen refresh rate'">
+    Monitor refresh rate
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE_ALT2" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen refresh rate. Alternate phrase for: 'Display refresh rate', 'Monitor refresh rate'">
+    Screen refresh rate
+  </message>
 
   <!-- Personalization section. -->
   <message name="IDS_OS_SETTINGS_TAG_PERSONALIZATION" desc="Text for search result item which, when clicked, navigates the user to personalization settings. Alternate phrase for: 'Customization', 'Personal'">

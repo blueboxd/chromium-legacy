@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 
+#include "base/check_op.h"
 #import "base/ios/block_types.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/authentication_service.h"

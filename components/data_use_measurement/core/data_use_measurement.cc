@@ -76,19 +76,14 @@ DataUseMeasurement::~DataUseMeasurement() {
   DCHECK(!services_data_use_observer_list_.might_have_observers());
 }
 
-void DataUseMeasurement::RecordTrafficSizeMetric(bool is_user_traffic,
-                                                 bool is_downstream,
-                                                 bool is_tab_visible,
-                                                 int64_t bytes) {
+void DataUseMeasurement::RecordDownstreamUserTrafficSizeMetric(
+    bool is_tab_visible,
+    int64_t bytes) {
   RecordUMAHistogramCount(
-      GetHistogramName(is_user_traffic ? "DataUse.TrafficSize.User"
-                                       : "DataUse.TrafficSize.System",
-                       is_downstream ? DOWNSTREAM : UPSTREAM, CurrentAppState(),
-                       IsCurrentNetworkCellular()),
+      GetHistogramName("DataUse.TrafficSize.User", DOWNSTREAM,
+                       CurrentAppState(), IsCurrentNetworkCellular()),
       bytes);
-  if (is_user_traffic)
-    RecordTabStateHistogram(is_downstream ? DOWNSTREAM : UPSTREAM,
-                            CurrentAppState(), is_tab_visible, bytes);
+  RecordTabStateHistogram(DOWNSTREAM, CurrentAppState(), is_tab_visible, bytes);
 }
 
 #if defined(OS_ANDROID)

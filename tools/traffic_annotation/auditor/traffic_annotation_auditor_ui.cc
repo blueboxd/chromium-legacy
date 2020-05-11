@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/protobuf/src/google/protobuf/reflection.h"
 #include "third_party/protobuf/src/google/protobuf/text_format.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
@@ -242,13 +243,36 @@ bool WriteAnnotationsFile(const base::FilePath& filepath,
     line +=
         base::StringPrintf("\t%s", UpdateTextForTSV(policy.setting()).c_str());
 
-    // Chrome Policies.
+    // Chrome Policies. Read them from the runtime protobuf (using reflection),
+    // not from the compiled-in proto schema.
+    //
+    // This is because the compiled-in proto may be missing some policies that
+    // have been added since the last traffic_annotation_auditor build. This
+    // codepath would crash if it used only the compiled-in proto, as
+    // PolicyToText() expects a certain format from DebugString().
     std::string policies_text;
-    if (policy.chrome_policy_size()) {
-      for (int i = 0; i < policy.chrome_policy_size(); i++) {
-        if (i)
+    const auto* runtime_policy_field =
+        instance.runtime_proto->GetDescriptor()->FindFieldByName("policy");
+// Dirty hack: GetMessage() is a macro in windows_types.h, which causes a
+// compile failure on Windows.
+#undef GetMessage
+    const auto& runtime_policy =
+        instance.runtime_proto->GetReflection()->GetMessage(
+            *instance.runtime_proto, runtime_policy_field);
+    const auto* runtime_chrome_policy_field =
+        runtime_policy.GetDescriptor()->FindFieldByName("chrome_policy");
+    const auto& runtime_chrome_policy =
+        runtime_policy.GetReflection()
+            ->GetRepeatedFieldRef<google::protobuf::Message>(
+                runtime_policy, runtime_chrome_policy_field);
+    if (!runtime_chrome_policy.empty()) {
+      bool first = true;
+      for (const auto& msg : runtime_chrome_policy) {
+        if (first)
+          first = false;
+        else
           policies_text += "\n";
-        policies_text += PolicyToText(policy.chrome_policy(i).DebugString());
+        policies_text += PolicyToText(msg.DebugString());
       }
     } else {
       policies_text = policy.policy_exception_justification();

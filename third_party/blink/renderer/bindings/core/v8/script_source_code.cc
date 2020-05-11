@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 
+#include "base/feature_list.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 
@@ -47,7 +48,15 @@ String SourceMapUrlFromResponse(const ResourceResponse& response) {
   return response.HttpHeaderField(http_names::kXSourceMap);
 }
 
+const base::Feature kUnsafeScriptReportPostRedirectURL{
+    "UnsafeScriptReportPostRedirectURL", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
+
+// static
+bool ScriptSourceCode::UsePostRedirectURL() {
+  return base::FeatureList::IsEnabled(kUnsafeScriptReportPostRedirectURL);
+}
 
 ScriptSourceCode::ScriptSourceCode(
     const ParkableString& source,
@@ -84,8 +93,9 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
       cache_handler_(resource->CacheHandler()),
       streamer_(streamer),
       not_streaming_reason_(reason),
-      url_(
-          StripFragmentIdentifier(resource->GetResponse().CurrentRequestUrl())),
+      url_(StripFragmentIdentifier(
+          UsePostRedirectURL() ? resource->GetResponse().CurrentRequestUrl()
+                               : resource->Url())),
       source_map_url_(SourceMapUrlFromResponse(resource->GetResponse())),
       start_position_(TextPosition::MinimumPosition()),
       source_location_type_(ScriptSourceLocationType::kExternalFile) {

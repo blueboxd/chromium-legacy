@@ -772,7 +772,6 @@
 <translation id="1979095679518582070">Aunque esta opción esté desactivada, el dispositivo seguirá pudiendo enviar la información necesaria para realizar los servicios esenciales relacionados, por ejemplo, con la seguridad y las actualizaciones del sistema.</translation>
 <translation id="1979280758666859181">Vas a cambiar a un canal con una versión anterior de <ph name="PRODUCT_NAME" />. El cambio de canal se aplicará cuando la versión del canal coincida con la versión que esté instalada en ese momento en tu dispositivo.</translation>
 <translation id="197989455406964291">El centro de distribución de llaves (KDC) no es compatible con este tipo de cifrado</translation>
-<translation id="1982354452682152483">No hay ninguna descripción disponible.</translation>
 <translation id="1984417487208496350">Sin protección (no recomendado)</translation>
 <translation id="1987317783729300807">Cuentas</translation>
 <translation id="1989112275319619282">Examinar</translation>
@@ -786,6 +785,7 @@
 <translation id="2002109485265116295">En tiempo real</translation>
 <translation id="2003130567827682533">Para activar los datos de "<ph name="NAME" />", conéctate a una red Wi‑Fi</translation>
 <translation id="2006638907958895361">Abrir enlace en <ph name="APP" /></translation>
+<translation id="2006864819935886708">Conectividad</translation>
 <translation id="2007404777272201486">Notificar un problema...</translation>
 <translation id="2010501376126504057">Dispositivos compatibles</translation>
 <translation id="2017334798163366053">Inhabilitar recolección de datos de rendimiento</translation>
@@ -958,7 +958,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2225864335125757863">Cambia inmediatamente estas contraseñas para proteger tu cuenta:</translation>
 <translation id="2226449515541314767">Se ha bloqueado este sitio para que no tenga un control absoluto de los dispositivos MIDI.</translation>
-<translation id="222657802677009088">Configuración de impresora</translation>
+<translation id="222657802677009088">Configurar impresora</translation>
 <translation id="222704500187107962">Esta excepción se quitará automáticamente cuando salgas de la sesión de incógnito actual.</translation>
 <translation id="2227179592712503583">Eliminar sugerencia</translation>
 <translation id="2229161054156947610">Más de 1 hora</translation>
@@ -1382,7 +1382,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="276221322463921688">Orientación del monitor</translation>
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2765217105034171413">Pequeño</translation>
-<translation id="2766091842833763951">No se ha podido configurar <ph name="APP_NAME" /> debido a un problema de configuración. Ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2766161002040448006">Preguntar a padres</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio web.</translation>
 <translation id="276969039800130567">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -1673,12 +1672,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3143515551205905069">Cancelar sincronización</translation>
 <translation id="3143754809889689516">Reproducir desde el principio</translation>
 <translation id="3144647712221361880">Abrir enlace como</translation>
-<translation id="3145187901750964977">No se ha podido instalar la máquina virtual. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
-<translation id="3149477159749171726">Versión:
-    <ph name="LINUX_VERSION" />
-
-    Descripción:
-    <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
 <translation id="3150693969729403281">Comprobar seguridad ahora</translation>
 <translation id="3150927491400159470">Volver a cargar de manera forzada</translation>
@@ -1714,7 +1707,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3192947282887913208">Archivos de audio</translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3200941271596533635">Activar/Desactivar modo de lectura</translation>
-<translation id="3201306578844503970">No se ha podido instalar la máquina virtual debido a un error de red. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="3201422919974259695">Los dispositivos USB disponibles se mostrarán aquí.</translation>
 <translation id="3202131003361292969">Ruta</translation>
 <translation id="3202173864863109533">El audio de esta pestaña se está silenciando.</translation>
@@ -2009,7 +2001,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3592260987370335752">&amp;Más información</translation>
 <translation id="359283478042092570">Acceder</translation>
 <translation id="3593965109698325041">Restricciones de nombres de certificado</translation>
-<translation id="3595381248165458839">Ponte en contacto con el administrador de dispositivos de tu organización</translation>
 <translation id="3596235046596950091">Habilitar servicios en la nube</translation>
 <translation id="3596414637720633074">Bloquear cookies de terceros en el modo de incógnito</translation>
 <translation id="3599221874935822507">Elevada</translation>
@@ -2616,7 +2607,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4379281552162875326">¿Quieres desinstalar <ph name="APP_NAME" />?</translation>
 <translation id="4380648069038809855">Has iniciado el modo de pantalla completa</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> y 1 cuenta más}other{<ph name="EMAIL" /> y <ph name="EXTRA_ACCOUNTS" /> cuentas más}}</translation>
-<translation id="43829217466934313"><ph name="APP_NAME" /> no está permitido en este dispositivo. Ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="4384312707950789900">Añadir a las redes preferidas</translation>
 <translation id="4384652540891215547">Activar la extensión</translation>
 <translation id="438503109373656455">Rocinante</translation>
@@ -3203,6 +3193,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="51918995459521422"><ph name="ORIGIN" /> quiere descargar varios archivos</translation>
 <translation id="5192062846343383368">Abre la aplicación Family Link para ver la configuración de supervisión</translation>
 <translation id="5193988420012215838">Se ha copiado al portapapeles</translation>
+<translation id="5197255632782567636">Internet</translation>
 <translation id="5198430103906431024">Envía datos de uso y diagnóstico. Este dispositivo envía automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos servirán para aumentar la estabilidad de las aplicaciones y del sistema y realizar otras mejoras. Parte de los datos agregados también ayudarán a las aplicaciones y los partners de Google, como los desarrolladores de Android. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en tu cuenta de Google.</translation>
 <translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{Haz clic para ver la extensión}other{Haz clic para ver las extensiones}}</translation>
 <translation id="5204673965307125349">Realiza un powerwash e inténtalo de nuevo.</translation>
@@ -3271,7 +3262,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5280426389926346830">¿Quieres crear un acceso directo?</translation>
 <translation id="528208740344463258">Para descargar y utilizar aplicaciones de Android, primero debes instalar esta actualización. Mientras se actualiza tu <ph name="DEVICE_TYPE" />, no podrás usarlo. Tu <ph name="DEVICE_TYPE" /> se reiniciará cuando se complete la instalación.</translation>
 <translation id="5282733140964383898">Al habilitar la opción No hacer seguimiento, se incluirá una solicitud con tu tráfico de navegación. El efecto dependerá de si un sitio web responde a la solicitud y de cómo se interprete. Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios que no están basados en otros sitios web que has visitado. Muchos sitios web seguirán recogiendo y utilizando tus datos de navegación para, por ejemplo, mejorar la seguridad, proporcionar contenido, servicios, anuncios y recomendaciones sobre sus sitios web, y generar estadísticas de informes. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
-<translation id="5283049351426079445">¿Seguro que quieres instalar <ph name="APP_NAME" />?</translation>
 <translation id="5283677936944177147">¡Vaya! El sistema no ha podido determinar el número de serie o el modelo del dispositivo.</translation>
 <translation id="5284445933715251131">Seguir descargando</translation>
 <translation id="5285635972691565180">Pantalla <ph name="DISPLAY_ID" /></translation>
@@ -3456,6 +3446,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5518219166343146486">Preguntar cuando un sitio web quiera ver el texto y las imágenes que se hayan copiado en el portapapeles</translation>
 <translation id="5518584115117143805">Certificado de cifrado de correo electrónico</translation>
 <translation id="5519045302974745794">EasyUnlock</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="5521078259930077036">¿Es esta la página de inicio que esperabas?</translation>
 <translation id="5522156646677899028">Esta extensión tiene una vulnerabilidad de seguridad grave.</translation>
 <translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{Tu administrador ha instalado 1 extensión}other{Tu administrador ha instalado # extensiones}}</translation>
@@ -3550,6 +3541,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="562935524653278697">Tu administrador ha inhabilitado la sincronización de tus marcadores, tus contraseñas, tu historial y otros ajustes.</translation>
 <translation id="5632566673632479864">Tu cuenta <ph name="EMAIL" /> ya no puede ser tu cuenta principal. Dado que <ph name="DOMAIN" /> administra esta cuenta, tus marcadores, tu historial, tus contraseñas y otros ajustes se borrarán de este dispositivo.</translation>
 <translation id="5632592977009207922">Descargando, queda un <ph name="PERCENT_REMAINING" /> %</translation>
+<translation id="563371367637259496">Móvil</translation>
 <translation id="563535393368633106">Preguntar antes de acceder (recomendado)</translation>
 <translation id="5636996382092289526">Para utilizar la red <ph name="NETWORK_ID" />, es posible que primero tengas que <ph name="LINK_START" />acceder a la página de inicio de sesión de la red<ph name="LINK_END" />, que se abrirá de forma automática en unos segundos. Si no se abre, no podrás utilizar esa red.</translation>
 <translation id="5637476008227280525">Permitir datos móviles</translation>
@@ -3618,7 +3610,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5723508132121499792">No se están ejecutando aplicaciones en segundo plano.</translation>
 <translation id="5723967018671998714">Las cookies de terceros están bloqueadas en el modo de incógnito</translation>
 <translation id="5727728807527375859">Las extensiones, las aplicaciones y los temas pueden dañar tu ordenador. ¿Seguro que quieres continuar?</translation>
-<translation id="5728450728039149624">Opciones de pantalla de bloqueo</translation>
+<translation id="5728450728039149624">Opciones de bloqueo de pantalla Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
 <translation id="5732392974455271431">Tus padres pueden desbloquearlo</translation>
 <translation id="5734362860645681824">Comunicaciones</translation>
@@ -3684,7 +3676,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5817918615728894473">Vincular</translation>
 <translation id="5821565227679781414">Crear acceso directo</translation>
 <translation id="5825412242012995131">Activado (recomendado)</translation>
-<translation id="5825969630400862129">Ajustes de dispositivos conectados</translation>
+<translation id="5825969630400862129">Configuración de dispositivos conectados</translation>
 <translation id="5826395379250998812">Conecta tu <ph name="DEVICE_TYPE" /> al teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5826993284769733527">Semitransparente</translation>
 <translation id="5827266244928330802">Safari</translation>
@@ -3880,7 +3872,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6075731018162044558">¡Vaya! El sistema no ha podido obtener un token de acceso a la API a largo plazo para este dispositivo.</translation>
 <translation id="6075907793831890935">Intercambiar datos con el dispositivo denominado <ph name="HOSTNAME" /></translation>
 <translation id="6076175485108489240">Usar ubicación. Permite que los servicios y aplicaciones con permiso de ubicación utilicen la ubicación de este dispositivo. Es posible que Google recoja datos de ubicación periódicamente y que los utilice de forma anónima para mejorar la precisión de la ubicación y los servicios basados en la ubicación. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
-<translation id="6076448957780543068">Incluir esta captura de pantalla</translation>
 <translation id="6076491747490570887">Gris frío</translation>
 <translation id="6077131872140550515">Quitar de las redes preferidas</translation>
 <translation id="6077189836672154517">Consejos y novedades sobre <ph name="DEVICE_TYPE" /></translation>
@@ -3952,7 +3943,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6155141482566063812">La pestaña en segundo plano está compartiendo tu pantalla</translation>
 <translation id="6156323911414505561">Mostrar barra de marcadores</translation>
 <translation id="6156863943908443225">Caché de secuencia de comandos</translation>
-<translation id="6157197137667039897">No se ha podido instalar <ph name="APP_NAME" />. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="6160625263637492097">Proporcionar certificados para autenticación</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163376401832887457">Ajustes de Kerberos</translation>
@@ -3979,7 +3969,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6202517672944764518">Contenido descargado</translation>
 <translation id="6206311232642889873">Copia&amp;r imagen</translation>
 <translation id="6207200176136643843">Restablecer el nivel de zoom predeterminado</translation>
-<translation id="6207282396926186323">Instalar <ph name="APP_NAME" /> (aplicación de Linux)</translation>
 <translation id="6207937957461833379">País o región</translation>
 <translation id="6208521041562685716">Se están activando los datos móviles</translation>
 <translation id="6209908325007204267">Tu dispositivo incluye una Licencia de Chrome Enterprise, pero tu nombre de usuario no está asociado a ninguna cuenta de empresa. Accede a g.co/ChromeEnterpriseAccount desde otro dispositivo para crear una cuenta de empresa.</translation>
@@ -4115,7 +4104,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6384275966486438344">Cambiar configuración de búsqueda por: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385149369087767061">Conéctate a Internet y vuelve a intentarlo</translation>
 <translation id="6385543213911723544">Los sitios web pueden guardar y consultar datos de cookies</translation>
-<translation id="6386099547750337629">Si no te lo esperabas, ponte en contacto con el servicio de asistencia.</translation>
 <translation id="6387674443318562538">División vertical</translation>
 <translation id="6388429472088318283">Buscar idiomas</translation>
 <translation id="6389891144950120352">Desbloqueo sencillo de pantalla</translation>
@@ -4723,7 +4711,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7197190419934240522">Disfruta de la Búsqueda de Google y las funciones inteligentes de Google siempre que navegues</translation>
 <translation id="7197632491113152433">Hemos encontrado <ph name="NUMBER_OF_APPS" /> aplicaciones en tu cuenta que se pueden utilizar en este dispositivo.</translation>
 <translation id="7199158086730159431">Obtener a&amp;yuda</translation>
-<translation id="7199237594231970159">Privacidad de acceso verificado</translation>
+<translation id="7199237594231970159">Acceso de privacidad verificado</translation>
 <translation id="7200083590239651963">Seleccionar configuración</translation>
 <translation id="7201042526153088083">Instala aplicaciones y juegos de Google Play en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="720110658997053098">Mantener este dispositivo en modo kiosco de forma permanente</translation>
@@ -5091,7 +5079,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7690853182226561458">Añadir &amp;carpeta...</translation>
 <translation id="7691073721729883399">No se ha podido activar el directorio principal cifrado de la aplicación de kiosco.</translation>
 <translation id="7691077781194517083">No se puede restablecer esta llave de seguridad. Error <ph name="ERROR_CODE" />.</translation>
-<translation id="7691698019618282776">Actualizar Crostini</translation>
+<translation id="7691698019618282776">Actualización de Crostini</translation>
 <translation id="7696063401938172191">En tu "<ph name="PHONE_NAME" />":</translation>
 <translation id="7698408911093959127">{COUNT,plural, =1{1 elemento en la lista de marcadores}other{# elementos en la lista de marcadores}}</translation>
 <translation id="7699968112832915395">No se puede añadir la cuenta</translation>
@@ -5148,7 +5136,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7768784765476638775">Enunciar Selección</translation>
 <translation id="7769672763586021400">ID de modelo</translation>
 <translation id="7770612696274572992">Imagen copiada desde otro dispositivo</translation>
-<translation id="7770651108375708429">Desconectar Wi‑Fi</translation>
 <translation id="7771452384635174008">Diseño</translation>
 <translation id="7772032839648071052">Repite la contraseña</translation>
 <translation id="7772127298218883077">Información de <ph name="PRODUCT_NAME" /></translation>
@@ -5529,7 +5516,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8226742006292257240">Esta es la contraseña del TPM generada aleatoriamente que se ha asignado a tu ordenador:</translation>
 <translation id="8227119283605456246">Adjuntar archivo</translation>
 <translation id="8230134520748321204">¿Quieres guardar la contraseña de <ph name="ORIGIN" />?</translation>
-<translation id="8233762480744368479">Configuración de Internet</translation>
 <translation id="8234795456569844941">Ayuda a nuestros ingenieros a solucionar este problema. Indícanos lo que ha ocurrido justo antes de que apareciera el mensaje de error del perfil:</translation>
 <translation id="8236123533334037984">Tu organización está analizando esta subida para realizar una comprobación de seguridad.</translation>
 <translation id="8236917170563564587">Compartir esta pestaña</translation>
@@ -5686,7 +5672,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="84297032718407999">Tu sesión se cerrará en <ph name="LOGOUT_TIME_LEFT" /></translation>
 <translation id="8431190899827883166">Mostrar toques</translation>
 <translation id="8431909052837336408">Cambiar PIN de la tarjeta SIM</translation>
-<translation id="8433186206711564395">Configuración de red</translation>
 <translation id="8434480141477525001">Puerto de depuración NaCl</translation>
 <translation id="8435395510592618362">Verifica tu identidad con <ph name="APP_NAME" /></translation>
 <translation id="8438328416656800239">Cambia a un navegador inteligente</translation>
@@ -5790,7 +5775,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Pulsa para avanzar y acceder al menú contextual para ver el historial</translation>
 <translation id="8584280235376696778">&amp;Abrir vídeo en una pestaña nueva</translation>
-<translation id="8585480574870650651">Quitar Crostini</translation>
+<translation id="8585480574870650651">Eliminar Crostini</translation>
 <translation id="8588866096426746242">Mostrar estadísticas del perfil</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" />: proyectando RV a un visor</translation>
 <translation id="8590375307970699841">Configurar actualizaciones automáticas</translation>
@@ -5877,7 +5862,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8688579245973331962">¿No aparece tu nombre?</translation>
 <translation id="8688591111840995413">Contraseña incorrecta</translation>
 <translation id="8688672835843460752">Disponible</translation>
-<translation id="8691418731028620688">Conectar Wi‑Fi</translation>
 <translation id="8695825812785969222">Abrir &amp;ubicación...</translation>
 <translation id="8698269656364382265">Para volver a la pantalla anterior, desliza el dedo horizontalmente desde la izquierda.</translation>
 <translation id="869884720829132584">Menú de aplicaciones</translation>
@@ -6042,8 +6026,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8872155268274985541">El archivo de manifiesto de la actualización externa de kiosco no es válido. Se ha producido un error al actualizar la aplicación de kiosco. Extrae el dispositivo USB.</translation>
 <translation id="8872777911145321141">Preguntar cuando un sitio web quiera usar tus dispositivos y datos de realidad virtual (recomendado)</translation>
 <translation id="8874184842967597500">No conectado</translation>
-<translation id="8875520811099717934">Actualizar Linux</translation>
-<translation id="8875775314572167244">Configuración de Ethernet</translation>
+<translation id="8875520811099717934">Actualización de Linux</translation>
 <translation id="8876307312329369159">Este ajuste no se puede cambiar en una sesión de demostración.</translation>
 <translation id="8877448029301136595">[directorio principal]</translation>
 <translation id="8879284080359814990">&amp;Mostrar como pestaña</translation>
@@ -6083,6 +6066,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8926389886865778422">No preguntar de nuevo</translation>
 <translation id="892706138619340876">Se han recuperado algunas opciones de configuración</translation>
 <translation id="8930351635855238750">La nueva configuración de cookies se aplicará al volver a cargar la página</translation>
+<translation id="8930622219860340959">Conexión inalámbrica</translation>
 <translation id="8931076093143205651">Envía datos de uso y diagnóstico. Contribuye a mejorar tu experiencia de Android enviando automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos servirán para aumentar la estabilidad de las aplicaciones y del sistema y realizar otras mejoras. Parte de los datos agregados también ayudarán a las aplicaciones y los partners de Google, como los desarrolladores de Android. El propietario ha aplicado este ajuste. El propietario puede elegir si se envían a Google datos de uso y diagnóstico de este dispositivo. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en tu cuenta de Google.</translation>
 <translation id="8931394284949551895">Nuevos dispositivos</translation>
 <translation id="8931475688782629595">Gestionar qué sincronizas</translation>
@@ -6124,7 +6108,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8977811652087512276">La contraseña es incorrecta o el archivo está dañado</translation>
 <translation id="8978154919215542464">Activada: sincronizar todo</translation>
 <translation id="897939795688207351">En <ph name="ORIGIN" /></translation>
-<translation id="8980345560318123814">Informes de opiniones</translation>
+<translation id="8980345560318123814">Informes de comentarios</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" />: ha fallado</translation>
 <translation id="8983632908660087688"><ph name="ORIGIN" /> puede editar <ph name="FILENAME" /></translation>
 <translation id="8985264973231822211">Activo hace <ph name="DEVICE_LAST_ACTIVATED_TIME" /> día</translation>
@@ -6250,7 +6234,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
 <translation id="9149866541089851383">Editar...</translation>
 <translation id="9150045010208374699">Utilizar la cámara</translation>
-<translation id="9150429437595727962">Configuración de Wi‑Fi</translation>
 <translation id="9153934054460603056">Guardar la identidad y la contraseña</translation>
 <translation id="9154194610265714752">Actualizado</translation>
 <translation id="91568222606626347">Crear acceso directo...</translation>

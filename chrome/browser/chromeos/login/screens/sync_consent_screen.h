@@ -89,7 +89,7 @@ class SyncConsentScreen : public BaseScreen,
   void OnAcceptAndContinue(const std::vector<int>& consent_description,
                            int consent_confirmation,
                            bool enable_os_sync,
-                           bool review_browser_sync);
+                           bool enable_browser_sync);
 
   static std::unique_ptr<base::AutoReset<bool>> ForceBrandedBuildForTesting(
       bool value);

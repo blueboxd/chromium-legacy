@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_banner_overlay_request_cancel_handler.h"

@@ -23,6 +23,7 @@ class MockAnimationTimeline : public AnimationTimeline {
   MockAnimationTimeline(Document* document) : AnimationTimeline(document) {}
 
   MOCK_CONST_METHOD0(IsActive, bool());
+  MOCK_METHOD0(ZeroTimeInSeconds, double());
   MOCK_METHOD0(InitialStartTimeForAnimations,
                base::Optional<base::TimeDelta>());
   MOCK_METHOD0(NeedsAnimationTimingUpdate, bool());

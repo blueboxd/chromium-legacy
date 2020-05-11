@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 
+#include "base/check.h"
 #import "base/ios/block_types.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller.h"

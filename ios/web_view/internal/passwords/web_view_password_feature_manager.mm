@@ -4,7 +4,7 @@
 
 #include "ios/web_view/internal/passwords/web_view_password_feature_manager.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"

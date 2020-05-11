@@ -8,12 +8,14 @@
 #include "base/macros.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
+class NavigationHandle;
 class WebContents;
 class WebUI;
 }
@@ -24,7 +26,8 @@ class Profile;
 
 class NewTabPageUI : public ui::MojoWebUIController,
                      public new_tab_page::mojom::PageHandlerFactory,
-                     public InstantServiceObserver {
+                     public InstantServiceObserver,
+                     content::WebContentsObserver {
  public:
   explicit NewTabPageUI(content::WebUI* web_ui);
   ~NewTabPageUI() override;
@@ -48,6 +51,10 @@ class NewTabPageUI : public ui::MojoWebUIController,
   void NtpThemeChanged(const NtpTheme& theme) override;
   void MostVisitedInfoChanged(const InstantMostVisitedInfo& info) override;
 
+  // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
   // Updates the load time data with the current theme's background color. That
   // way the background color is available as soon as the page loads and we
   // prevent a potential white flicker.
@@ -59,14 +66,9 @@ class NewTabPageUI : public ui::MojoWebUIController,
   Profile* profile_;
   InstantService* instant_service_;
   content::WebContents* web_contents_;
-  // Time this NewTabPageUI object was created. Used for logging the WebUI NTP's
-  // load performance. We want the WebUI NTP's load performance to be comparable
-  // to the local NTP, which uses the navigation start as the reference time.
-  // However, retrieving the navigation start time would require a significant
-  // amount of plumbing. Since the NewTabPageUI is created within a few
-  // milliseconds of starting the navigation this object's creation time should
-  // be equivalent in practice.
-  base::Time creation_time_;
+  // Time the NTP started loading. Used for logging the WebUI NTP's load
+  // performance.
+  base::Time navigation_start_time_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

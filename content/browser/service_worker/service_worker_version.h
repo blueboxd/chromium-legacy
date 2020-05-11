@@ -580,6 +580,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return receiver_;
   }
 
+  void set_reporting_observer_receiver(
+      mojo::PendingReceiver<blink::mojom::ReportingObserver>
+          reporting_observer_receiver) {
+    reporting_observer_receiver_ = std::move(reporting_observer_receiver);
+  }
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class EmbeddedWorkerInstanceTest;
@@ -1065,6 +1071,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // control another client and we know the worker needs to be used more.
   // Used only when ServiceWorkerTerminationOnNoControllee is on.
   base::CancelableOnceClosure stop_on_no_controllee_callback_;
+
+  mojo::PendingReceiver<blink::mojom::ReportingObserver>
+      reporting_observer_receiver_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 

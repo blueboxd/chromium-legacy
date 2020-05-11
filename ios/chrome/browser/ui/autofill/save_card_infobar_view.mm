@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"

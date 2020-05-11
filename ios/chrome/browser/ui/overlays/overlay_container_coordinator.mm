@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_view_controller.h"

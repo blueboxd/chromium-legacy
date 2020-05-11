@@ -9,8 +9,9 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/version.h"
 #include "components/google/core/common/google_util.h"
 #include "components/version_info/version_info.h"

@@ -51,6 +51,7 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/reporting_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
@@ -2604,6 +2605,11 @@ void LocalFrame::OnScreensChange() {
     DomWindow()->DispatchEvent(
         *Event::Create(event_type_names::kScreenschange));
   }
+}
+
+void LocalFrame::BindReportingObserver(
+    mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) {
+  ReportingContext::From(DomWindow())->Bind(std::move(receiver));
 }
 
 bool LocalFrame::ShouldThrottleDownload() {

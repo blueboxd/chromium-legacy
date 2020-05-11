@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 
-#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"

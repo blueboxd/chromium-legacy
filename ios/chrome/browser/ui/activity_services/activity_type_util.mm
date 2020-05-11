@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -30,6 +30,8 @@ const PrefixTypeAssociation prefixTypeAssociations[] = {
     {NATIVE_TWITTER, @"com.apple.UIKit.activity.PostToTwitter", true},
     {NATIVE_WEIBO, @"com.apple.UIKit.activity.PostToWeibo", true},
     {NATIVE_CLIPBOARD, @"com.apple.UIKit.activity.CopyToPasteboard", true},
+    {NATIVE_SAVE_IMAGE, @"com.apple.UIKit.activity.SaveToCameraRoll", true},
+    {NATIVE_PRINT, @"com.apple.UIKit.activity.Print", true},
     {PRINT, @"com.google.chrome.printActivity", true},
     {FIND_IN_PAGE, @"com.google.chrome.FindInPageActivityType", true},
     {GENERATE_QR_CODE, @"com.google.chrome.GenerateQrCodeActivityType", true},
@@ -88,10 +90,14 @@ void RecordMetricForActivity(ActivityType type) {
     case NATIVE_CLIPBOARD:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuClipboard"));
       break;
+    case NATIVE_SAVE_IMAGE:
+      base::RecordAction(base::UserMetricsAction("MobileShareMenuSaveImage"));
+      break;
     case FIND_IN_PAGE:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuFindInPage"));
       break;
     case PRINT:
+    case NATIVE_PRINT:
       base::RecordAction(base::UserMetricsAction("MobileShareMenuPrint"));
       break;
     case READ_LATER:

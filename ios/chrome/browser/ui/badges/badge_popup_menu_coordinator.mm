@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/main/browser.h"

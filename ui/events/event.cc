@@ -139,6 +139,14 @@ std::string ScrollEventPhaseToString(ScrollEventPhase phase) {
   }
 }
 
+#if defined(USE_OZONE)
+uint32_t ScanCodeFromNative(const PlatformEvent& native_event) {
+  const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
+  DCHECK(event->IsKeyEvent());
+  return event->scan_code();
+}
+#endif  // defined(USE_OZONE)
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -785,6 +793,9 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event)
 KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
     : Event(native_event, EventTypeFromNative(native_event), event_flags),
       key_code_(KeyboardCodeFromNative(native_event)),
+#if defined(USE_OZONE)
+      scan_code_(ScanCodeFromNative(native_event)),
+#endif  // defined(USE_OZONE)
       code_(CodeFromNative(native_event)),
       is_char_(IsCharFromNative(native_event)) {
   InitializeNative();
@@ -838,14 +849,21 @@ KeyEvent::KeyEvent(base::char16 character,
 KeyEvent::KeyEvent(const KeyEvent& rhs)
     : Event(rhs),
       key_code_(rhs.key_code_),
+#if defined(USE_OZONE)
+      scan_code_(rhs.scan_code_),
+#endif  // defined(USE_OZONE)
       code_(rhs.code_),
       is_char_(rhs.is_char_),
-      key_(rhs.key_) {}
+      key_(rhs.key_) {
+}
 
 KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
   if (this != &rhs) {
     Event::operator=(rhs);
     key_code_ = rhs.key_code_;
+#if defined(USE_OZONE)
+    scan_code_ = rhs.scan_code_;
+#endif  // defined(USE_OZONE)
     code_ = rhs.code_;
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;

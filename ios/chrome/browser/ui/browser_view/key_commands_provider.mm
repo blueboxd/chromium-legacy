@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"

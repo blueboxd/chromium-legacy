@@ -470,6 +470,7 @@
 <translation id="4913169188695071480">पुन: ताजा गर्ने काम रोक्नुहोस्</translation>
 <translation id="4915549754973153784">अन्य यन्त्रहरूलाई स्क्यान गर्दा <ph name="BEGIN_LINK" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# पृष्ठ}other{# पृष्ठहरू}}</translation>
+<translation id="49268022542405662">तपाईंका पासवर्डहरू एक्स्पोर्ट गरी एउटा पाठ फाइलका रूपमा डाउनलोड गरिने छ। गन्तव्य फोल्डर हेर्ने अनुमति भएका जोसुकै व्यक्ति वा जुनसुकै एप यी पासवर्डहरू हेर्न सक्ने छन्।</translation>
 <translation id="4932247056774066048">तपाईं <ph name="DOMAIN_NAME" /> ले व्यवस्थापन गरेको खाताबाट साइन आउट गरिरहनुभएको हुनाले तपाईंको Chrome को डेटा यस यन्त्रबाट मेटाइने छ। यो डेटा तपाईंको Google खातामै रहिरहने छ।</translation>
 <translation id="4943703118917034429">भर्चुअल रियालिटी</translation>
 <translation id="4943872375798546930">कुनै नतिजा छैन</translation>
@@ -752,6 +753,7 @@
 <translation id="7302081693174882195">विवरणहरू: बचत गरिएको डेटाको मात्राअनुसार क्रमबद्ध गरिएको</translation>
 <translation id="7328017930301109123">लाइट मोडमा हुँदा Chrome ले पृष्ठहरू अझ छिटो लोड गर्नुका साथै ६० प्रतिशतसम्म कम डेटा प्रयोग गर्छ।</translation>
 <translation id="7333031090786104871">अघिल्लो साइट अझै थपिँदै</translation>
+<translation id="7340958967809483333">Discover का विकल्पहरू</translation>
 <translation id="7352939065658542140">भिडियो</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{चयन गरिएको १ वस्तु सेयर गर्नुहोस्}other{चयन गरिएका # वस्तुहरू सेयर गर्नुहोस्}}</translation>
 <translation id="7359002509206457351">भुक्तानी विधिहरूमाथि पहुँच राख्नुहोस्</translation>
@@ -816,6 +818,7 @@
 <translation id="780301667611848630">भयो, धन्यवाद</translation>
 <translation id="7810647596859435254">निम्नमार्फत खोल्नुहोस्…</translation>
 <translation id="7821588508402923572">तपाईंले बचत गर्नुभएको डेटा यहाँ देखिने छ</translation>
+<translation id="7835852323729233924">प्ले भइरहेको मिडिया</translation>
 <translation id="783819812427904514">भिडियो अनम्युट गर्नुहोस्</translation>
 <translation id="784934925303690534">समयको दायरा</translation>
 <translation id="7851858861565204677">अन्य यन्त्रहरू</translation>

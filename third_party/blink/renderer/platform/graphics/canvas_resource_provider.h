@@ -129,7 +129,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
       const CanvasColorParams&,
       bool is_origin_top_left,
       RasterMode raster_mode,
-      uint32_t shared_image_usage_flags);
+      uint32_t shared_image_usage_flags,
+      unsigned msaa_sample_count = 0u);
 
   static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
       const IntSize&,

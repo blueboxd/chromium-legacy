@@ -31,7 +31,7 @@ suite('drag and drop', function() {
   function getListItem(id) {
     const items = list.root.querySelectorAll('bookmarks-item');
     for (let i = 0; i < items.length; i++) {
-      if (items[i].itemId == id) {
+      if (items[i].itemId === id) {
         return items[i];
       }
     }
@@ -61,8 +61,10 @@ suite('drag and drop', function() {
     const classList = bookmarkElement.getDropTarget().classList;
     Object.keys(dragStyles).forEach(dragStyle => {
       assertEquals(
-          dragStyle == style, classList.contains(dragStyles[dragStyle]),
-          dragStyles[dragStyle] + (dragStyle == style ? ' missing' : ' found') +
+          dragStyle === style.toString(),
+          classList.contains(dragStyles[dragStyle]),
+          dragStyles[dragStyle] +
+              (dragStyle === style.toString() ? ' missing' : ' found') +
               ' in classList ' + classList);
     });
   }
@@ -70,7 +72,7 @@ suite('drag and drop', function() {
   function createDragData(ids, sameProfile) {
     return {
       elements: ids.map(id => store.data.nodes[id]),
-      sameProfile: sameProfile == undefined ? true : sameProfile,
+      sameProfile: sameProfile === undefined ? true : sameProfile,
     };
   }
 

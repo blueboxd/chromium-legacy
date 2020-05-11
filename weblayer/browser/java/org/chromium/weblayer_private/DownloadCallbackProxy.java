@@ -46,7 +46,7 @@ public final class DownloadCallbackProxy {
     private boolean interceptDownload(String url, String userAgent, String contentDisposition,
             String mimetype, long contentLength) throws RemoteException {
         if (mClient == null) {
-            return true;
+            return false;
         }
 
         return mClient.interceptDownload(
@@ -84,7 +84,7 @@ public final class DownloadCallbackProxy {
         }
 
         if (mClient == null) {
-            DownloadCallbackProxyJni.get().allowDownload(callbackId, false);
+            DownloadCallbackProxyJni.get().allowDownload(callbackId, true);
             return;
         }
 

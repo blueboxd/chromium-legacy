@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"

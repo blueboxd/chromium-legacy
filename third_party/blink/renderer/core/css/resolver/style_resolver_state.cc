@@ -156,6 +156,12 @@ void StyleResolverState::CacheUserAgentBorderAndBackground() {
 }
 
 void StyleResolverState::LoadPendingResources() {
+  if ((ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
+      StyleRef().Display() == EDisplay::kNone ||
+      StyleRef().Display() == EDisplay::kContents ||
+      StyleRef().IsEnsuredOutsideFlatTree())
+    return;
+
   element_style_resources_.LoadPendingResources(Style());
 }
 

@@ -6,7 +6,6 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"

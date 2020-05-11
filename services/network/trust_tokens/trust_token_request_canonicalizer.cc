@@ -9,6 +9,7 @@
 #include "base/strings/string_piece.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/network/public/mojom/trust_tokens.mojom-shared.h"
 #include "services/network/trust_tokens/trust_token_http_headers.h"
 #include "services/network/trust_tokens/trust_token_request_signing_helper.h"
@@ -33,13 +34,15 @@ TrustTokenRequestCanonicalizer::Canonicalize(
 
   // Here and below, the lines beginning with numbers are a reproduction of the
   // normative pseudocode from the design doc.
-  // 1. If sign-request-data is 'include', add 'url': <request_url> to the
-  // structure.
+  // 1. If sign-request-data is 'include', add 'url': <request's destination's
+  // eTLD+1> to the structure.
   // 1a. The key and value are both of CBOR type “text string”.
   if (sign_request_data == mojom::TrustTokenSignRequestData::kInclude) {
     canonicalized_request.emplace(
-        TrustTokenRequestSigningHelper::kCanonicalizedRequestDataUrlKey,
-        destination.spec());
+        TrustTokenRequestSigningHelper::kCanonicalizedRequestDataDestinationKey,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            destination,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   }
 
   // 2. If sign-request-data is 'include' or 'headers-only', for each value

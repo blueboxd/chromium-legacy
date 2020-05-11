@@ -4,7 +4,7 @@
 
 #include "ios/chrome/common/app_group/app_group_constants.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"

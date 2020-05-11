@@ -6,7 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #import "ios/web/common/web_view_creation_util.h"

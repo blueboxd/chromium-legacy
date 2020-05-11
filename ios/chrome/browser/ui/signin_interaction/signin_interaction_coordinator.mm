@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 
+#include "base/check_op.h"
 #import "base/ios/block_types.h"
-#include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"

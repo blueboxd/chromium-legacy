@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.Telephony;
@@ -909,7 +910,7 @@ public class ExternalNavigationHandler {
 
     private boolean launchExternalIntent(Intent targetIntent, boolean shouldProxyForInstantApps) {
         try {
-            if (!mDelegate.startActivityIfNeeded(targetIntent, shouldProxyForInstantApps)) {
+            if (!startActivityIfNeeded(targetIntent, shouldProxyForInstantApps)) {
                 if (DEBUG) Log.i(TAG, "The current Activity was the only targeted Activity.");
                 return false;
             }
@@ -1307,7 +1308,7 @@ public class ExternalNavigationHandler {
     /**
      * Records the dispatching of an external intent.
      */
-    public static void recordExternalNavigationDispatched(Intent intent) {
+    static void recordExternalNavigationDispatched(Intent intent) {
         ArrayList<String> specializedHandlers =
                 intent.getStringArrayListExtra(EXTRA_EXTERNAL_NAV_PACKAGES);
         if (specializedHandlers != null && specializedHandlers.size() > 0) {
@@ -1322,7 +1323,7 @@ public class ExternalNavigationHandler {
      *
      * @param intent Intent to open.
      */
-    public static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
+    static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
         if (intent == null || !isPdfIntent(intent)) return;
         resolveIntent(intent, true /* allowSelfOpen (ignored) */);
     }
@@ -1410,6 +1411,70 @@ public class ExternalNavigationHandler {
         }
 
         delegate.didStartActivity(intent);
+    }
+
+    /**
+     * Start an activity for the intent. Used for intents that may be handled internally or
+     * externally.
+     * @param intent The intent we want to send.
+     * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
+     *              used by Instant Apps intents).
+     * @returns whether an activity was started for the intent.
+     */
+    private boolean startActivityIfNeeded(Intent intent, boolean proxy) {
+        @ExternalNavigationDelegate.StartActivityIfNeededResult
+        int delegateResult = mDelegate.maybeHandleStartActivityIfNeeded(intent, proxy);
+
+        switch (delegateResult) {
+            case ExternalNavigationDelegate.StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START:
+                return true;
+            case ExternalNavigationDelegate.StartActivityIfNeededResult
+                    .HANDLED_WITHOUT_ACTIVITY_START:
+                return false;
+            case ExternalNavigationDelegate.StartActivityIfNeededResult.DID_NOT_HANDLE:
+                return startActivityIfNeededInternal(intent, proxy);
+        }
+
+        assert false;
+        return false;
+    }
+
+    /**
+     * Implementation of startActivityIfNeeded() that is used when the delegate does not handle the
+     * event.
+     */
+    private boolean startActivityIfNeededInternal(Intent intent, boolean proxy) {
+        boolean activityWasLaunched;
+        // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try {
+            forcePdfViewerAsIntentHandlerIfNeeded(intent);
+            if (proxy) {
+                mDelegate.dispatchAuthenticatedIntent(intent);
+                activityWasLaunched = true;
+            } else {
+                Context context = getAvailableContext(mDelegate);
+                if (context instanceof Activity) {
+                    activityWasLaunched = ((Activity) context).startActivityIfNeeded(intent, -1);
+                } else {
+                    activityWasLaunched = false;
+                }
+            }
+            if (activityWasLaunched) {
+                recordExternalNavigationDispatched(intent);
+            }
+            return activityWasLaunched;
+        } catch (SecurityException e) {
+            // https://crbug.com/808494: Handle the URL internally if dispatching to another
+            // application fails with a SecurityException. This happens due to malformed manifests
+            // in another app.
+            return false;
+        } catch (RuntimeException e) {
+            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
+            return false;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**

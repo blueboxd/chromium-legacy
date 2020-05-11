@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

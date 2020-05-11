@@ -67,10 +67,11 @@ class DataUseMeasurement
   void AddServicesDataUseObserver(ServicesDataUseObserver* observer);
   void RemoveServicesDataUseObserver(ServicesDataUseObserver* observer);
 
-  void RecordTrafficSizeMetric(bool is_user_traffic,
-                               bool is_downstream,
-                               bool is_tab_visible,
-                               int64_t bytes);
+  // Should be called to record downstream data used by user-initiated trafffic
+  // requests. |is_tab_visible| is set to true if the traffic was initiated from
+  // a tab that was visible in foreground when the data use was observed.
+  void RecordDownstreamUserTrafficSizeMetric(bool is_tab_visible,
+                                             int64_t bytes);
 
  protected:
   // Specifies that data is received or sent, respectively.

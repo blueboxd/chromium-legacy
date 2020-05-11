@@ -538,6 +538,11 @@ void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
   DCHECK(entries_.empty());
 }
 
+const std::list<std::unique_ptr<BackForwardCacheImpl::Entry>>&
+BackForwardCacheImpl::GetEntries() {
+  return entries_;
+}
+
 BackForwardCacheImpl::Entry* BackForwardCacheImpl::GetEntry(
     int navigation_entry_id) {
   auto matching_entry = std::find_if(

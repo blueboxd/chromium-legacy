@@ -28,6 +28,7 @@ enum ProbeCategoryEnum {
   kMemory,
   kBacklight,
   kFan,
+  kStatefulPartition,
 };
 
 // An enumeration of the different categories of errors that can occur when
@@ -237,6 +238,23 @@ struct FanInfo {
   uint32 speed_rpm;
 };
 
+// Stateful partition probe result. Can either be populated with a valid
+// StatefulPartitionInfo or an error retrieving the information.
+union StatefulPartitionResult {
+  // A valid StatefulPartitionInfo.
+  StatefulPartitionInfo partition_info;
+  // The error that occurred attempting to retrieve the StatefulPartitionInfo.
+  ProbeError error;
+};
+
+// Stateful partition info
+struct StatefulPartitionInfo {
+  // Available space for user data storage in the device in bytes.
+  uint64 available_space;
+  // Total space for user data storage in the device in bytes.
+  uint64 total_space;
+};
+
 // A collection of all the device's telemetry information that cros_healthd is
 // capable of reporting. Note that every field in TelemetryInfo is nullable, and
 // the response for a particular ProbeTelemetryInfo request will only contain
@@ -270,4 +288,8 @@ struct TelemetryInfo {
   // Information about each of the device's fans. Only present when kFan was
   // included in the categories input to ProbeTelemetryInfo.
   FanResult? fan_result;
+  // Information about the stateful partition. Only present when
+  // kStatefulPartition was included in the categories input to
+  // ProbeTelemetryInfo.
+  StatefulPartitionResult? stateful_partition_result;
 };

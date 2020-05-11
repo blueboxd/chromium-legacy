@@ -146,21 +146,36 @@ void OptimizationGuideKeyedService::OnNavigationStartOrRedirect(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes()) {
-    hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
-                                                base::DoNothing());
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (hints_manager_) {
+    base::flat_set<optimization_guide::proto::OptimizationType>
+        registered_optimization_types =
+            hints_manager_->registered_optimization_types();
+
+    if (!registered_optimization_types.empty()) {
+      hints_manager_->OnNavigationStartOrRedirect(navigation_handle,
+                                                  base::DoNothing());
+    }
+    if (navigation_data) {
+      navigation_data->set_registered_optimization_types(
+          hints_manager_->registered_optimization_types());
+    }
+  }
+
+  if (prediction_manager_ && navigation_data) {
+    navigation_data->set_registered_optimization_targets(
+        prediction_manager_->registered_optimization_targets());
   }
 }
 
 void OptimizationGuideKeyedService::OnNavigationFinish(
-    const std::vector<GURL>& navigation_redirect_chain,
-    OptimizationGuideNavigationData* navigation_data) {
+    const std::vector<GURL>& navigation_redirect_chain) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (hints_manager_) {
-    hints_manager_->OnNavigationFinish(navigation_redirect_chain,
-                                       navigation_data);
-  }
+  if (hints_manager_)
+    hints_manager_->OnNavigationFinish(navigation_redirect_chain);
 }
 
 void OptimizationGuideKeyedService::RegisterOptimizationTypesAndTargets(

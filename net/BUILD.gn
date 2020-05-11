@@ -4918,6 +4918,26 @@ fuzzer_test("disk_cache_lpm_fuzzer") {
   ]
 }
 
+proto_library("backoff_entry_serializer_fuzzer_input") {
+  proto_in_dir = "//"
+  sources = [ "base/backoff_entry_serializer_fuzzer_input.proto" ]
+  link_deps = [ "//testing/libfuzzer/proto:json_proto" ]
+}
+
+fuzzer_test("net_backoff_entry_serializer_fuzzer") {
+  sources = [ "base/backoff_entry_serializer_fuzzer.cc" ]
+  deps = [
+    ":backoff_entry_serializer_fuzzer_input",
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+    "//testing/libfuzzer/proto:json_proto",
+    "//testing/libfuzzer/proto:json_proto_converter",
+    "//third_party/libprotobuf-mutator",
+  ]
+}
+
 fuzzer_test("net_data_url_fuzzer") {
   sources = [ "base/data_url_fuzzer.cc" ]
   deps = [

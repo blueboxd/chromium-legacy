@@ -12,9 +12,10 @@
 #include <stdint.h>
 #include <cmath>
 
+#include "base/check_op.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"

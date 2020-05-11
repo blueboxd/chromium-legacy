@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_NET_CROSS_ORIGIN_EMBEDDER_POLICY_REPORTER_H_
 #define CONTENT_BROWSER_NET_CROSS_ORIGIN_EMBEDDER_POLICY_REPORTER_H_
 
+#include <initializer_list>
 #include <string>
 
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
+#include "third_party/blink/public/mojom/frame/reporting_observer.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -48,11 +52,18 @@ class CONTENT_EXPORT CrossOriginEmbedderPolicyReporter final
       mojo::PendingReceiver<network::mojom::CrossOriginEmbedderPolicyReporter>
           receiver) override;
 
+  void BindObserver(
+      mojo::PendingRemote<blink::mojom::ReportingObserver> observer);
+
   // https://mikewest.github.io/corpp/#abstract-opdef-queue-coep-navigation-violation
   // Queue a violation report for COEP mismatch for nested frame navigation.
   void QueueNavigationReport(const GURL& blocked_url, bool report_only);
 
  private:
+  void QueueAndNotify(std::initializer_list<
+                          std::pair<base::StringPiece, base::StringPiece>> body,
+                      bool report_only);
+
   // See the class comment.
   StoragePartition* const storage_partition_;
 
@@ -62,6 +73,7 @@ class CONTENT_EXPORT CrossOriginEmbedderPolicyReporter final
 
   mojo::ReceiverSet<network::mojom::CrossOriginEmbedderPolicyReporter>
       receiver_set_;
+  mojo::Remote<blink::mojom::ReportingObserver> observer_;
 };
 
 }  // namespace content

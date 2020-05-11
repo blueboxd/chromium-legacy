@@ -4,15 +4,20 @@
 
 source_set("prerender") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  public = [
+    "preload_controller_delegate.h",
+    "prerender_service.h",
+    "prerender_service_factory.h",
+  ]
   sources = [
     "preload_controller.h",
     "preload_controller.mm",
-    "preload_controller_delegate.h",
-    "prerender_service.h",
-    "prerender_service.mm",
-    "prerender_service_factory.h",
     "prerender_service_factory.mm",
+    "prerender_service_impl.h",
+    "prerender_service_impl.mm",
   ]
+
+  friend = [ ":unit_tests" ]
 
   deps = [
     "//base",
@@ -44,13 +49,23 @@ source_set("prerender") {
   ]
 }
 
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "fake_prerender_service.h",
+    "fake_prerender_service.mm",
+  ]
+
+  deps = [ ":prerender" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   sources = [
     "preload_controller_unittest.mm",
-    "prerender_service_unittest.mm",
+    "prerender_service_impl_unittest.mm",
   ]
   deps = [
     ":prerender",

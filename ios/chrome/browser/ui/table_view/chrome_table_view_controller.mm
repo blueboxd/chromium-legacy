@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/material_components/chrome_app_bar_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cell.h"

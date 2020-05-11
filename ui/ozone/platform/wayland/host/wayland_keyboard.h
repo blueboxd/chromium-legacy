@@ -80,6 +80,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
   // EventAutoRepeatHandler::Delegate
   void FlushInput(base::OnceClosure closure) override;
   void DispatchKey(unsigned int key,
+                   unsigned int scan_code,
                    bool down,
                    bool repeat,
                    base::TimeTicks timestamp,

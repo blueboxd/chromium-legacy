@@ -4,7 +4,7 @@
 
 #import "ios/chrome/test/app/chrome_test_util.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/metrics/metrics_pref_names.h"

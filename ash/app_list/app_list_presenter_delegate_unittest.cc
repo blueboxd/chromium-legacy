@@ -477,6 +477,54 @@ TEST_F(PopulatedAppListTest, CancelItemDragOnMouseCaptureLoss) {
   EXPECT_EQ("Item 2", apps_grid_view_->GetItemViewAt(2)->item()->id());
 }
 
+// Tests that apps grid item layers are not destroyed immediately after item
+// drag ends.
+TEST_F(PopulatedAppListTest,
+       ItemLayersNotDestroyedDuringBoundsAnimationAfterDrag) {
+  InitializeAppsGrid();
+  const int kItemCount = 5;
+  app_list_test_model_->PopulateApps(kItemCount);
+  ShowAppListInAppsFullScreen();
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  AppListView::SetShortAnimationForTesting(false);
+
+  AppListItemView* const dragged_view = apps_grid_view_->GetItemViewAt(0);
+
+  // Drag the first item between items 1 and 2.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(dragged_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressLeftButton();
+  dragged_view->FireMouseDragTimerForTest();
+  event_generator->MoveMouseTo(
+      apps_grid_view_->GetItemViewAt(2)->GetBoundsInScreen().left_center());
+
+  // Items should have layers during app list item drag.
+  for (int i = 0; i < kItemCount; ++i) {
+    views::View* item_view = apps_grid_view_->view_model()->view_at(i);
+    EXPECT_TRUE(item_view->layer()) << "at " << i;
+  }
+
+  EXPECT_TRUE(apps_grid_view_->dragging());
+  event_generator->ReleaseLeftButton();
+
+  // After the drag is released, the item bounds should animate to their final
+  // bounds.
+  EXPECT_TRUE(apps_grid_view_->bounds_animator_for_testing()->IsAnimating());
+  for (int i = 0; i < kItemCount; ++i) {
+    views::View* item_view = apps_grid_view_->view_model()->view_at(i);
+    EXPECT_TRUE(item_view->layer()) << "at " << i;
+  }
+
+  // Layers should be destroyed once the bounds animation completes.
+  apps_grid_view_->bounds_animator_for_testing()->Cancel();
+  for (int i = 0; i < kItemCount; ++i) {
+    views::View* item_view = apps_grid_view_->view_model()->view_at(i);
+    EXPECT_FALSE(item_view->layer()) << "at " << i;
+  }
+}
+
 // Tests that apps grid item drag operation can continue normally after display
 // rotation (and app list config change).
 TEST_F(PopulatedAppListTest, ScreenRotationDuringAppsGridItemDrag) {

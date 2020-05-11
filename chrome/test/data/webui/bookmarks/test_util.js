@@ -140,7 +140,7 @@ export function customClick(element, config, eventName) {
   element.dispatchEvent(new MouseEvent('mousedown', props));
   element.dispatchEvent(new MouseEvent('mouseup', props));
   element.dispatchEvent(new MouseEvent(eventName, props));
-  if (config && config.detail == 2) {
+  if (config && config.detail === 2) {
     element.dispatchEvent(new MouseEvent('dblclick', props));
   }
 }
@@ -156,7 +156,7 @@ export function findFolderNode(rootNode, id) {
   let node;
   while (nodes.length) {
     node = nodes.pop();
-    if (node.itemId == id) {
+    if (node.itemId === id) {
       return node;
     }
 

@@ -13,12 +13,18 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.StrictMode;
 
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
+import org.chromium.android_webview.common.metrics.AwNonembeddedUmaReplayer;
 import org.chromium.android_webview.common.services.ICrashReceiverService;
+import org.chromium.android_webview.common.services.IMetricsBridgeService;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.android_webview.policy.AwPolicyProvider;
+import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
+import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecordList;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -319,6 +325,50 @@ public final class AwBrowserProcess {
                 Log.w(TAG, "Could not bind to Minidump-copying Service " + intent);
             }
         });
+    }
+
+    /**
+     * Connect to {@link org.chromium.android_webview.services.MetricsBridgeService} to retrieve
+     * any recorded UMA metrics from nonembedded WebView services and transmit them back using
+     * UMA APIs.
+     */
+    public static void transmitRecordedMetrics() {
+        final Context appContext = ContextUtils.getApplicationContext();
+        final Intent intent = new Intent();
+        intent.setClassName(getWebViewPackageName(), ServiceNames.METRICS_BRIDGE_SERVICE);
+
+        ServiceConnection connection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                // onServiceConnected is called on the UI thread, so punt this back to the
+                // background thread.
+                PostTask.postTask(TaskTraits.THREAD_POOL_BEST_EFFORT, () -> {
+                    try {
+                        IMetricsBridgeService metricsService =
+                                IMetricsBridgeService.Stub.asInterface(service);
+
+                        byte[] data = metricsService.retrieveNonembeddedMetrics();
+                        HistogramRecordList list = HistogramRecordList.parseFrom(data);
+                        for (HistogramRecord record : list.getRecordsList()) {
+                            AwNonembeddedUmaReplayer.replayMethodCall(record);
+                        }
+                    } catch (InvalidProtocolBufferException e) {
+                        Log.d(TAG, "Malformed metrics log proto", e);
+                    } catch (RemoteException e) {
+                        Log.d(TAG, "Remote Exception calling MetricsBridgeService#retrieveMetrics",
+                                e);
+                    } finally {
+                        appContext.unbindService(this);
+                    }
+                });
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName className) {}
+        };
+        if (!appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
+            Log.d(TAG, "Could not bind to MetricsBridgeService " + intent);
+        }
     }
 
     // Do not instantiate this class.

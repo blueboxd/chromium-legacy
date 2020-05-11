@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/jumbo.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
-jumbo_static_library("safe_browsing") {
+static_library("safe_browsing") {
   sources = [
     "chrome_controller_client.cc",
     "chrome_controller_client.h",
@@ -171,8 +170,6 @@ jumbo_static_library("safe_browsing") {
         "download_protection/download_feedback.h",
         "download_protection/download_feedback_service.cc",
         "download_protection/download_feedback_service.h",
-        "download_protection/download_item_request.cc",
-        "download_protection/download_item_request.h",
         "download_protection/download_protection_service.cc",
         "download_protection/download_protection_service.h",
         "download_protection/download_protection_util.cc",

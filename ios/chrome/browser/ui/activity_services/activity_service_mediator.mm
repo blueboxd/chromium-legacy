@@ -129,7 +129,7 @@
 }
 
 - (NSArray*)applicationActivitiesForImageData:(ShareImageData*)data {
-  // TODO(crbug.com/1068606): Implement and add Save and Copy activities.
+  // For images, we're using the native activities.
   return @[];
 }
 
@@ -137,7 +137,7 @@
     (NSArray<id<ChromeActivityItemSource>>*)items {
   NSMutableSet* mutableSet = [[NSMutableSet alloc] init];
   for (id<ChromeActivityItemSource> item in items) {
-    [mutableSet addObjectsFromArray:[item.excludedActivityTypes allObjects]];
+    [mutableSet unionSet:item.excludedActivityTypes];
   }
   return mutableSet;
 }

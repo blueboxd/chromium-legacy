@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/signin/device_accounts_provider_impl.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "ios/chrome/browser/signin/constants.h"

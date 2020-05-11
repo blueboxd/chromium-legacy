@@ -6,7 +6,7 @@
 
 #include <objc/runtime.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/objc_zombie.h"
 

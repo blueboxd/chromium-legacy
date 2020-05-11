@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/auto_reset.h"
+#include "base/check_op.h"
 #include "base/ios/block_types.h"
-#include "base/logging.h"
 #import "base/mac/foundation_util.h"
 
 #include "base/mac/scoped_cftyperef.h"

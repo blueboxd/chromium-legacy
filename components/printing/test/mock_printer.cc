@@ -264,10 +264,8 @@ bool MockPrinter::SaveSource(unsigned int page,
                              const base::FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
-  const uint8_t* source_data = pages_[page]->source_data();
-  uint32_t source_size = pages_[page]->source_size();
-  base::WriteFile(filepath, reinterpret_cast<const char*>(source_data),
-                  source_size);
+  base::WriteFile(filepath, base::make_span(pages_[page]->source_data(),
+                                            pages_[page]->source_size()));
   return true;
 }
 

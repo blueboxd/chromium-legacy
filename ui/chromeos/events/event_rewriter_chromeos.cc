@@ -7,10 +7,8 @@
 #include <fcntl.h>
 #include <stddef.h>
 
-#include <vector>
-
-#include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
@@ -28,10 +26,8 @@
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
@@ -549,11 +545,12 @@ EventDispatchDetails EventRewriterChromeOS::RewriteEvent(
 void EventRewriterChromeOS::BuildRewrittenKeyEvent(
     const KeyEvent& key_event,
     const MutableKeyState& state,
-    std::unique_ptr<Event>* rewritten_event) {
-  KeyEvent* rewritten_key_event =
-      new KeyEvent(key_event.type(), state.key_code, state.code, state.flags,
-                   state.key, key_event.time_stamp());
-  rewritten_event->reset(rewritten_key_event);
+    std::unique_ptr<ui::Event>* rewritten_event) {
+  auto key_event_ptr = std::make_unique<KeyEvent>(
+      key_event.type(), state.key_code, state.code, state.flags, state.key,
+      key_event.time_stamp());
+  key_event_ptr->set_scan_code(key_event.scan_code());
+  *rewritten_event = std::move(key_event_ptr);
 }
 
 // static
@@ -1501,10 +1498,11 @@ EventDispatchDetails EventRewriterChromeOS::RewriteKeyEventInContext(
 
       if (should_release) {
         // If the key should be released, create a key event for it.
-        std::unique_ptr<KeyEvent> dispatched_event = std::make_unique<KeyEvent>(
+        auto dispatched_event = std::make_unique<KeyEvent>(
             key_event.type(), key_state_iter->first.key_code,
             key_state_iter->first.code, event_flags, key_state_iter->first.key,
             key_event.time_stamp());
+        dispatched_event->set_scan_code(key_event.scan_code());
         details = SendEventFinally(continuation, dispatched_event.get());
 
         key_state_iter = pressed_key_states_.erase(key_state_iter);
@@ -1566,7 +1564,7 @@ EventDispatchDetails EventRewriterChromeOS::RewriteKeyEventInContext(
 bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     const KeyEvent& key_event,
     bool search_is_pressed,
-    EventRewriterChromeOS::MutableKeyState* state,
+    MutableKeyState* state,
     KeyboardTopRowLayout layout) {
   // When the kernel issues an function key (Fn modifier help down) and the
   // search key is pressed, the function key needs to be mapped to its
@@ -1642,7 +1640,7 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
        {EF_NONE, DomCode::F12, DomKey::F12, VKEY_F12}},
   };
 
-  EventRewriterChromeOS::MutableKeyState incoming_without_command = *state;
+  MutableKeyState incoming_without_command = *state;
   incoming_without_command.flags &= ~EF_COMMAND_DOWN;
 
   if ((state->key_code >= VKEY_F1) && (state->key_code <= VKEY_F12)) {

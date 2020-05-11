@@ -12,13 +12,13 @@
 namespace blink {
 
 namespace {
-static constexpr uint64_t kDawnRowPitchAlignmentBits = 8;
+static constexpr uint64_t kDawnBytesPerRowAlignmentBits = 8;
 
-// Calculate row pitch for T2B/B2T copy
+// Calculate bytes per row for T2B/B2T copy
 // TODO(shaobo.yan@intel.com): Using Dawn's constants once they are exposed
-uint64_t AlignWebGPURowPitch(uint64_t bytesPerRow) {
-  return (((bytesPerRow - 1) >> kDawnRowPitchAlignmentBits) + 1)
-         << kDawnRowPitchAlignmentBits;
+uint64_t AlignWebGPUBytesPerRow(uint64_t bytesPerRow) {
+  return (((bytesPerRow - 1) >> kDawnBytesPerRowAlignmentBits) + 1)
+         << kDawnBytesPerRowAlignmentBits;
 }
 
 }  // anonymous namespace
@@ -29,14 +29,15 @@ WebGPUImageUploadSizeInfo ComputeImageBitmapWebGPUUploadSizeInfo(
   WebGPUImageUploadSizeInfo info;
   uint64_t bytes_per_pixel = color_params.BytesPerPixel();
 
-  uint64_t row_pitch = AlignWebGPURowPitch(rect.Width() * bytes_per_pixel);
+  uint64_t bytes_per_row =
+      AlignWebGPUBytesPerRow(rect.Width() * bytes_per_pixel);
 
-  // Currently, row pitch for buffer copy view in WebGPU is an uint32_t type
+  // Currently, bytes per row for buffer copy view in WebGPU is an uint32_t type
   // value and the maximum value is std::numeric_limits<uint32_t>::max().
-  DCHECK(row_pitch <= std::numeric_limits<uint32_t>::max());
+  DCHECK(bytes_per_row <= std::numeric_limits<uint32_t>::max());
 
-  info.wgpu_row_pitch = static_cast<uint32_t>(row_pitch);
-  info.size_in_bytes = row_pitch * rect.Height();
+  info.wgpu_bytes_per_row = static_cast<uint32_t>(bytes_per_row);
+  info.size_in_bytes = bytes_per_row * rect.Height();
 
   return info;
 }
@@ -74,7 +75,7 @@ bool CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
     return false;
 
   bool read_pixels_successful = sk_image->readPixels(
-      info, dst.data(), wgpu_info.wgpu_row_pitch, rect.X(), rect.Y());
+      info, dst.data(), wgpu_info.wgpu_bytes_per_row, rect.X(), rect.Y());
 
   if (!read_pixels_successful) {
     return false;

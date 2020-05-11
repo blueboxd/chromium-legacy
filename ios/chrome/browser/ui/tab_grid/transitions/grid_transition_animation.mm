@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
 
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_to_tab_transition_view.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/util/property_animator_group.h"

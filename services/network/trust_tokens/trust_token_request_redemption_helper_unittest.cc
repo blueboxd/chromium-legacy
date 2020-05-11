@@ -112,7 +112,7 @@ class MockKeyPairGenerator
 // Check that redemption fails if it would result in too many issuers being
 // configured for the redemption top-level origin.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfTooManyIssuers) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
   auto toplevel =
@@ -146,7 +146,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfTooManyIssuers) {
 
 // Check that redemption fails if its key commitment request fails.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyCommitmentFails) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   // Have the key commitment getter return nullptr, denoting that the key
   // commitment fetch failed.
@@ -174,7 +174,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfNoTokensToRedeem) {
   // Establish the following state:
   // * Initialize an _empty_ trust token store.
   // * Successfully return from the key commitment query.
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -208,7 +208,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -254,7 +254,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -301,7 +301,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyPairGenerationFails) {
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -350,7 +350,8 @@ class TrustTokenBeginRedemptionPostconditionsTest
     // that the redemption request redeems; its key needs to match the key
     // commitment's key so that it does not get evicted from storage after the
     // key commitment is updated to reflect the key commitment result).
-    std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+    std::unique_ptr<TrustTokenStore> store =
+        TrustTokenStore::CreateForTesting();
     store->AddTokens(
         *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
         std::vector<std::string>{"a token"},
@@ -419,7 +420,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -478,7 +479,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -545,7 +546,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -612,7 +613,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
@@ -669,15 +670,15 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->AddTokens(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
       std::vector<std::string>{"a token"},
-      /*key=*/"");
+      /*key=*/"token verification key");
 
   auto key_commitment_result = mojom::TrustTokenKeyCommitmentResult::New();
-  key_commitment_result->keys.push_back(
-      mojom::TrustTokenVerificationKey::New());
+  key_commitment_result->keys.push_back(mojom::TrustTokenVerificationKey::New(
+      "token verification key", /*expiry=*/base::Time::Max()));
   key_commitment_result->batch_size =
       mojom::TrustTokenKeyCommitmentBatchSize::New(
           static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
@@ -718,19 +719,22 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
       store->RetrieveNonstaleRedemptionRecord(
           *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/")),
           *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/"))),
-      Optional(AllOf(Property(&SignedTrustTokenRedemptionRecord::body,
-                              "a successfully-extracted SRR"),
-                     Property(&SignedTrustTokenRedemptionRecord::public_key,
-                              "verification key"),
-                     Property(&SignedTrustTokenRedemptionRecord::signing_key,
-                              "signing key"))));
+      Optional(AllOf(
+          Property(&SignedTrustTokenRedemptionRecord::body,
+                   "a successfully-extracted SRR"),
+          Property(&SignedTrustTokenRedemptionRecord::public_key,
+                   "verification key"),
+          Property(&SignedTrustTokenRedemptionRecord::token_verification_key,
+                   "token verification key"),
+          Property(&SignedTrustTokenRedemptionRecord::signing_key,
+                   "signing key"))));
 }
 
 // Check that a "refresh" refresh mode is rejected unless the request's
 // initiating origin is the issuer origin.
 TEST_F(TrustTokenRequestRedemptionHelperTest,
        RejectsRefreshFromNonissuerOrigin) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestRedemptionHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
@@ -754,7 +758,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
 // present in the store for the given issuer-toplevel pair, the request should
 // return early with kAlreadyExists.
 TEST_F(TrustTokenRequestRedemptionHelperTest, RedemptionRecordCacheHit) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->SetRedemptionRecord(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")),
@@ -790,7 +794,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   // that the redemption request redeems; its key needs to match the key
   // commitment's key so that it does not get evicted from storage after the key
   // commitment is updated to reflect the key commitment result).
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
   store->SetRedemptionRecord(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com")),
@@ -858,7 +862,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
 }
 
 TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsUnsuitableInsecureIssuer) {
-  auto store = TrustTokenStore::CreateInMemory();
+  auto store = TrustTokenStore::CreateForTesting();
   TrustTokenRequestRedemptionHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
@@ -873,7 +877,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsUnsuitableInsecureIssuer) {
 
 TEST_F(TrustTokenRequestRedemptionHelperTest,
        RejectsUnsuitableNonHttpNonHttpsIssuer) {
-  auto store = TrustTokenStore::CreateInMemory();
+  auto store = TrustTokenStore::CreateForTesting();
   TrustTokenRequestRedemptionHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kUseCached, store.get(),
@@ -890,7 +894,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RequiresInitiatorForSrrRefresh) {
   // Refresh mode "refresh" requires that the request's initiator to
   // be same-origin with the request's issuer. Test that, in this case, the
   // redemption helper requires that the request have an initiator.
-  auto store = TrustTokenStore::CreateInMemory();
+  auto store = TrustTokenStore::CreateForTesting();
   TrustTokenRequestRedemptionHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       mojom::TrustTokenRefreshPolicy::kRefresh, store.get(),

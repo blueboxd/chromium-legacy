@@ -10,6 +10,8 @@ import android.content.Context;
  * Util class for dealing with resources.
  */
 public class ResourceUtil {
+    public static final int REQUIRED_PACKAGE_IDENTIFIER = 12;
+
     private ResourceUtil() {}
 
     /** Gets the ID of a resource in a remote context. */
@@ -22,7 +24,7 @@ public class ResourceUtil {
 
         // Force the returned ID to use our magic package ID.
         id &= 0x00ffffff;
-        id |= 0x0c000000;
+        id |= (0x01000000 * REQUIRED_PACKAGE_IDENTIFIER);
         return id;
     }
 }

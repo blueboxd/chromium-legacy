@@ -17,6 +17,7 @@
 <translation id="5007392906805964215">Xem</translation>
 <translation id="5073204694187207510">Ẩn lưới toàn màn hình</translation>
 <translation id="5082793167783849073">Tạo một nhóm để so sánh nhanh các trang. Để bắt đầu, hãy chạm và giữ một đường dẫn liên kết.</translation>
+<translation id="5533021382642990449">Hiển thị sau</translation>
 <translation id="5580090775658607195">Đã nhóm <ph name="TAB_COUNT" /> tab</translation>
 <translation id="58326064309361797">Kéo các tab để nhóm lại với nhau</translation>
 <translation id="6040143037577758943">Đóng</translation>
@@ -31,7 +32,9 @@
 <translation id="7966321538264951561">Đóng nội dung đề xuất.</translation>
 <translation id="814503310257431685">Xem tất cả</translation>
 <translation id="8205266828577616993">Chuyển tab lên trên</translation>
+<translation id="8304833501377495048">Không hiển thị lại dải thẻ?</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Đóng <ph name="TABS_COUNT_ONE" /> tab đã chọn}other{Đóng <ph name="TABS_COUNT_MANY" /> tab đã chọn}}</translation>
+<translation id="8749939518995770034">Đã đóng dải thẻ</translation>
 <translation id="9150694013019234766">Chuyển đổi giữa các tab trong nhóm tab ở gần cuối màn hình</translation>
 <translation id="9169594135889675189">Thêm tab mới vào nhóm</translation>
 <translation id="959682366969460160">Sắp xếp gọn gàng</translation>

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/voice/fake_voice_search_availability.h"
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"

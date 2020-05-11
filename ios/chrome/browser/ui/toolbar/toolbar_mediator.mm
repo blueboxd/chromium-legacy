@@ -264,6 +264,10 @@
   // Never show the loading UI for an NTP.
   BOOL isLoading = self.webState->IsLoading() && !isNTP;
   [self.consumer setLoadingState:isLoading];
+  if (isLoading) {
+    [self.consumer
+        setLoadingProgressFraction:self.webState->GetLoadingProgress()];
+  }
   [self updateBookmarksForWebState:self.webState];
   [self updateShareMenuForWebState:self.webState];
 }

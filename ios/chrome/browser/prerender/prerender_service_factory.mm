@@ -7,7 +7,7 @@
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/prerender/prerender_service.h"
+#include "ios/chrome/browser/prerender/prerender_service_impl.h"
 #include "ios/web/public/browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,7 +38,7 @@ std::unique_ptr<KeyedService> PrerenderServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<PrerenderService>(browser_state);
+  return std::make_unique<PrerenderServiceImpl>(browser_state);
 }
 
 bool PrerenderServiceFactory::ServiceIsNULLWhileTesting() const {

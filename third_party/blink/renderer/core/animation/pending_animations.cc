@@ -165,14 +165,8 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
       waiting_for_compositor_animation_start_.push_back(animation);
       continue;
     }
-    double zero_time = 0;
-    if (IsA<DocumentTimeline>(animation->timeline())) {
-      zero_time = To<DocumentTimeline>(animation->timeline())
-                      ->ZeroTime()
-                      .since_origin()
-                      .InSecondsF();
-    }
-    animation->NotifyReady(monotonic_animation_start_time - zero_time);
+    animation->NotifyReady(monotonic_animation_start_time -
+                           animation->timeline()->ZeroTimeInSeconds());
   }
 }
 

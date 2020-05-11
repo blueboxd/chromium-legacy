@@ -76,6 +76,11 @@ class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
   static DiskDataAllocator& Instance();
   static void Bind(mojo::PendingReceiver<mojom::blink::DiskAllocator> receiver);
 
+  int64_t disk_footprint() {
+    MutexLocker locker(mutex_);
+    return file_tail_;
+  }
+
  protected:
   // Protected methods for testing.
   DiskDataAllocator();

@@ -434,7 +434,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos eliminados</translation>
 <translation id="4665282149850138822">Se agregó <ph name="NAME" /> a la pantalla principal</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
-<translation id="4688610874307684559">Se ejecuta en Chrome (inicial)</translation>
+<translation id="4688610874307684559">Se ejecuta en Chrome (notificación inicial)</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}other{<ph name="SHIPPING_OPTION_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> más}}</translation>
 <translation id="4696983787092045100">Enviar texto a tus dispositivos</translation>
 <translation id="4698034686595694889">Ver sin conexión en <ph name="APP_NAME" /></translation>

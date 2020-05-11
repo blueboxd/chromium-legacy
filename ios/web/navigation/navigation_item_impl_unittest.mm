@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ios/web/navigation/wk_navigation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

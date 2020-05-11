@@ -50,8 +50,9 @@ UsageTracker::UsageTracker(
     : type_(type) {
   for (const auto& client : clients) {
     if (client->DoesSupport(type)) {
-      client_tracker_map_[client->id()] = std::make_unique<ClientUsageTracker>(
-          this, client, type, special_storage_policy);
+      client_tracker_map_[client->type()] =
+          std::make_unique<ClientUsageTracker>(this, client, type,
+                                               special_storage_policy);
     }
   }
 }
@@ -60,11 +61,12 @@ UsageTracker::~UsageTracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
+ClientUsageTracker* UsageTracker::GetClientTracker(
+    QuotaClientType client_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto found = client_tracker_map_.find(client_id);
-  if (found != client_tracker_map_.end())
-    return found->second.get();
+  auto it = client_tracker_map_.find(client_type);
+  if (it != client_tracker_map_.end())
+    return it->second.get();
   return nullptr;
 }
 
@@ -159,7 +161,7 @@ void UsageTracker::GetHostUsageWithBreakdown(
   }
 }
 
-void UsageTracker::UpdateUsageCache(QuotaClient::ID client_id,
+void UsageTracker::UpdateUsageCache(QuotaClientType client_id,
                                     const url::Origin& origin,
                                     int64_t delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -212,7 +214,7 @@ std::set<url::Origin> UsageTracker::GetCachedOrigins() const {
   return origins;
 }
 
-void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
+void UsageTracker::SetUsageCacheEnabled(QuotaClientType client_id,
                                         const url::Origin& origin,
                                         bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -270,7 +272,7 @@ void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
 void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
                                              AccumulateInfo* info,
                                              const std::string& host,
-                                             QuotaClient::ID client,
+                                             QuotaClientType client,
                                              int64_t usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->usage += usage;
@@ -279,29 +281,26 @@ void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
     info->usage = 0;
 
   switch (client) {
-    case QuotaClient::kFileSystem:
+    case QuotaClientType::kFileSystem:
       info->usage_breakdown->fileSystem += usage;
       break;
-    case QuotaClient::kDatabase:
+    case QuotaClientType::kDatabase:
       info->usage_breakdown->webSql += usage;
       break;
-    case QuotaClient::kAppcache:
+    case QuotaClientType::kAppcache:
       info->usage_breakdown->appcache += usage;
       break;
-    case QuotaClient::kIndexedDatabase:
+    case QuotaClientType::kIndexedDatabase:
       info->usage_breakdown->indexedDatabase += usage;
       break;
-    case QuotaClient::kServiceWorkerCache:
+    case QuotaClientType::kServiceWorkerCache:
       info->usage_breakdown->serviceWorkerCache += usage;
       break;
-    case QuotaClient::kServiceWorker:
+    case QuotaClientType::kServiceWorker:
       info->usage_breakdown->serviceWorker += usage;
       break;
-    case QuotaClient::kBackgroundFetch:
+    case QuotaClientType::kBackgroundFetch:
       info->usage_breakdown->backgroundFetch += usage;
-      break;
-    case QuotaClient::kAllClientsMask:
-      NOTREACHED();
       break;
   }
 

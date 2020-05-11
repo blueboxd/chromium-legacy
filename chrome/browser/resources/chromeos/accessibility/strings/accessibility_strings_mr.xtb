@@ -98,7 +98,7 @@
 <translation id="1666326070478924810">बोलण्यासाठी निवडा सेटिंग्ज</translation>
 <translation id="1674262202423278359">ChromeVox नेव्हिगेशन</translation>
 <translation id="16777221443363124">मेनू बार</translation>
-<translation id="1680732992526857724"><ph name="NAME" />, चालू करा</translation>
+<translation id="1680732992526857724"><ph name="NAME" />, सुरू करा</translation>
 <translation id="1686878109459149415">सोनेरी</translation>
 <translation id="1690731385917361335">कोणतेही आयटम नाहीत</translation>
 <translation id="1700517974991662022">भेट दिलेला</translation>
@@ -226,7 +226,7 @@
 <translation id="2766299274563946262">डावीकडे सेल नाही</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{आणखी #}other{आणखी #}}</translation>
 <translation id="280499067616661124">पृष्ठामध्ये ChromeVox शोधा</translation>
-<translation id="2808001342598757276">स्क्रीन चालू करा</translation>
+<translation id="2808001342598757276">स्क्रीन सुरू करा</translation>
 <translation id="2811019999044652585">टूलबार किंवा सिस्टम ट्रे सारख्या स्क्रीनच्या अन्य भागांवर जाण्यासाठी, Control+पुढे जा की, दाबा. Chromebook वर, पुढे जा की, अंक 2 की, च्या वर असते.</translation>
 <translation id="2811204574343810641">पंक्ती</translation>
 <translation id="2841013758207633010">वेळ</translation>
@@ -276,14 +276,14 @@
 <translation id="3103579948980282461">मध्यम जांभळा लाल</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">संकुचित केलेले</translation>
-<translation id="3112457281078985179">ChromeVox चालू किंवा बंद करण्यासाठी, Control+Alt+Z वापरा.</translation>
+<translation id="3112457281078985179">ChromeVox सुरू किंवा बंद करण्यासाठी, Control+Alt+Z वापरा.</translation>
 <translation id="3131002934070407451">संख्या याप्रमाणे वाचा:</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">ऑलिव्ह</translation>
 <translation id="3138767756593758860">महत्त्वाच्या खूणांची सूची दर्शवा</translation>
 <translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">पुढील रेखा</translation>
-<translation id="3153024374267644603">भाषण चालू</translation>
+<translation id="3153024374267644603">भाषण सुरू</translation>
 <translation id="3153928844647607688">सारणी <ph name="TABLENAME" />, <ph name="TABLEROWS" /> बाय <ph name="TABLECOLS" /></translation>
 <translation id="3159493096109238499">फिकट तपकिरी</translation>
 <translation id="316542773973815724">नेव्हिगेशन</translation>
@@ -602,7 +602,7 @@
 <translation id="5704453877234251104">आपोआप पूर्ण करण्यासाठी अप किंवा डाउन ॲरो दाबा</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5725079927589231571">फिकट मळकट निळा</translation>
-<translation id="5732189279857692565">हे दुसरे शीर्षक आहे. सुरु ठेवा; Search+H किंंवा Search+Shift+H दाबा</translation>
+<translation id="5732189279857692565">हे दुसरे शीर्षक आहे. सुरू ठेवा; Search+H किंंवा Search+Shift+H दाबा</translation>
 <translation id="5748623122140342504">मागील स्तर 5 शीर्षक</translation>
 <translation id="5760594853119905566">परिशिष्ट</translation>
 <translation id="5805940204952508776">दोन बोटांनी टॅप करा</translation>
@@ -731,7 +731,7 @@
 <translation id="6897341342232909480">डावीकडे हलवा</translation>
 <translation id="6901540140423170855">तारीख</translation>
 <translation id="6910211073230771657">हटवला</translation>
-<translation id="6910969481785184048">चालू करा, बंद करा आणि थांबा</translation>
+<translation id="6910969481785184048">सुरू करा, बंद करा आणि थांबा</translation>
 <translation id="6919104639734799681">सारणी सू‍ची दर्शवा</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6949846980769640811">हलका निळसर</translation>

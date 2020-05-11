@@ -87,17 +87,13 @@ class BlobURLTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     temp_file1_ = temp_dir_.GetPath().AppendASCII("BlobFile1.dat");
-    ASSERT_EQ(static_cast<int>(base::size(kTestFileData1) - 1),
-              base::WriteFile(temp_file1_, kTestFileData1,
-                              base::size(kTestFileData1) - 1));
+    ASSERT_TRUE(base::WriteFile(temp_file1_, kTestFileData1));
     base::File::Info file_info1;
     base::GetFileInfo(temp_file1_, &file_info1);
     temp_file_modification_time1_ = file_info1.last_modified;
 
     temp_file2_ = temp_dir_.GetPath().AppendASCII("BlobFile2.dat");
-    ASSERT_EQ(static_cast<int>(base::size(kTestFileData2) - 1),
-              base::WriteFile(temp_file2_, kTestFileData2,
-                              base::size(kTestFileData2) - 1));
+    ASSERT_TRUE(base::WriteFile(temp_file2_, kTestFileData2));
     base::File::Info file_info2;
     base::GetFileInfo(temp_file2_, &file_info2);
     temp_file_modification_time2_ = file_info2.last_modified;
@@ -341,9 +337,7 @@ TEST_F(BlobURLTest, TestGetLargeFileRequest) {
   large_data.reserve(kBufferSize * 5);
   for (int i = 0; i < kBufferSize * 5; ++i)
     large_data.append(1, static_cast<char>(i % 256));
-  ASSERT_EQ(
-      static_cast<int>(large_data.size()),
-      base::WriteFile(large_temp_file, large_data.data(), large_data.size()));
+  ASSERT_TRUE(base::WriteFile(large_temp_file, large_data));
   blob_data_->AppendFile(large_temp_file, 0,
                          std::numeric_limits<uint64_t>::max(), base::Time());
   TestSuccessNonrangeRequest(large_data, large_data.size());

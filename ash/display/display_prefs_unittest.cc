@@ -46,6 +46,7 @@
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace ash {
@@ -342,9 +343,10 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   display_manager()->UpdateZoomFactor(id2, zoom_factor_2);
 
   // Set touch calibration data for display |id2|.
-  uint32_t id_1 = 1234;
-  uint32_t port_1 = 5678;
-  const display::TouchDeviceIdentifier touch_device_identifier_1(id_1, port_1);
+  ui::TouchscreenDevice touchdevice(11, ui::InputDeviceType::INPUT_DEVICE_USB,
+                                    std::string("test touch device"),
+                                    gfx::Size(123, 456), 1);
+  touchdevice.phys = "5678";
   display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad_1 = {
       {std::make_pair(gfx::Point(10, 10), gfx::Point(11, 12)),
        std::make_pair(gfx::Point(190, 10), gfx::Point(195, 8)),
@@ -352,9 +354,11 @@ TEST_F(DisplayPrefsTest, BasicStores) {
        std::make_pair(gfx::Point(190, 90), gfx::Point(189, 88))}};
   gfx::Size touch_size_1(200, 150);
 
-  uint32_t id_2 = 2345;
-  uint32_t port_2 = 3456;
-  const display::TouchDeviceIdentifier touch_device_identifier_2(id_2, port_2);
+  ui::TouchscreenDevice touchdevice_2(12, ui::InputDeviceType::INPUT_DEVICE_USB,
+                                      std::string("test touch device 2"),
+                                      gfx::Size(132, 465), 1);
+  touchdevice_2.phys = "3456";
+
   display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad_2 = {
       {std::make_pair(gfx::Point(10, 10), gfx::Point(11, 12)),
        std::make_pair(gfx::Point(190, 10), gfx::Point(195, 8)),
@@ -364,15 +368,17 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 
   // Create a 3rd touch device which has the same primary ID as the 2nd touch
   // device but is connected to a different port.
-  uint32_t port_3 = 1357;
-  const display::TouchDeviceIdentifier touch_device_identifier_3(id_2, port_3);
+  ui::TouchscreenDevice touchdevice_3(15, ui::InputDeviceType::INPUT_DEVICE_USB,
+                                      std::string("test touch device 3"),
+                                      gfx::Size(231, 416), 1);
+  touchdevice_3.phys = "1357";
 
-  display_manager()->SetTouchCalibrationData(
-      id2, point_pair_quad_1, touch_size_1, touch_device_identifier_1);
-  display_manager()->SetTouchCalibrationData(
-      id2, point_pair_quad_2, touch_size_2, touch_device_identifier_2);
-  display_manager()->SetTouchCalibrationData(
-      id2, point_pair_quad_2, touch_size_1, touch_device_identifier_3);
+  display_manager()->SetTouchCalibrationData(id2, point_pair_quad_1,
+                                             touch_size_1, touchdevice);
+  display_manager()->SetTouchCalibrationData(id2, point_pair_quad_2,
+                                             touch_size_2, touchdevice_2);
+  display_manager()->SetTouchCalibrationData(id2, point_pair_quad_2,
+                                             touch_size_1, touchdevice_3);
 
   const base::DictionaryValue* displays =
       local_state()->GetDictionary(prefs::kSecondaryDisplays);
@@ -1231,9 +1237,13 @@ TEST_F(DisplayPrefsTest, LegacyTouchCalibrationDataSupport) {
   gfx::Size touch_size_2(300, 300);
   display::TouchCalibrationData data_2(point_pair_quad, touch_size_2);
 
-  display::TouchDeviceIdentifier identifier(12345);
+  const ui::TouchscreenDevice touchdevice_4(
+      19, ui::InputDeviceType::INPUT_DEVICE_USB,
+      std::string("test touch device 4"), gfx::Size(231, 416), 1);
+  display::TouchDeviceIdentifier identifier =
+      display::TouchDeviceIdentifier::FromDevice(touchdevice_4);
   display_manager()->SetTouchCalibrationData(id_2, point_pair_quad,
-                                             touch_size_2, identifier);
+                                             touch_size_2, touchdevice_4);
 
   EXPECT_TRUE(tdm->touch_associations().count(identifier));
   EXPECT_TRUE(tdm->touch_associations().at(identifier).count(id_2));

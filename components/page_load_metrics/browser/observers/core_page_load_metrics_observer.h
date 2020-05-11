@@ -106,6 +106,16 @@ extern const char kHistogramFontPreloadFirstPaint[];
 extern const char kHistogramFontPreloadFirstContentfulPaint[];
 extern const char kHistogramFontPreloadLargestContentfulPaint[];
 
+// Navigation metrics from the navigation start.
+extern const char
+    kHistogramNavigationTimingNavigationStartToFirstRequestStart[];
+extern const char
+    kHistogramNavigationTimingNavigationStartToFirstResponseStart[];
+
+// Navigation metrics between milestones.
+extern const char
+    kHistogramNavigationTimingFirstRequestStartToFirstResponseStart[];
+
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
   FIRST_MEANINGFUL_PAINT_BACKGROUNDED,
@@ -187,6 +197,8 @@ class CorePageLoadMetricsObserver
                                  int behavior_flags) override;
 
  private:
+  void RecordNavigationTimingHistograms(
+      content::NavigationHandle* navigation_handle);
   void RecordTimingHistograms(
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
   void RecordByteAndResourceHistograms(

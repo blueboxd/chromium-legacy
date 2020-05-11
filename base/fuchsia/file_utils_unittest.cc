@@ -35,7 +35,7 @@ TEST_F(OpenDirectoryTest, OpenNonExistent) {
 // OpenDirectory() should open only directories.
 TEST_F(OpenDirectoryTest, OpenFile) {
   auto file_path = temp_dir.GetPath().AppendASCII("test_file");
-  ASSERT_TRUE(WriteFile(file_path, "foo", 3));
+  ASSERT_TRUE(WriteFile(file_path, "foo"));
   auto dir = OpenDirectory(file_path);
   ASSERT_FALSE(dir);
 }

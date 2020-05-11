@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
+#include "third_party/blink/renderer/core/animation/css/css_keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
@@ -356,9 +357,6 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     start_keyframe->SetEasing(default_timing_function);
     keyframes.push_front(start_keyframe);
   }
-  // Defer insertion of the missing properties.
-  if (start_properties.size() < animated_properties.size())
-    start_keyframe->SetHasMissingProperties();
 
   // 7.  Similarly, if there is no keyframe in keyframes with offset 1, or if
   //     amongst the keyframes in keyframes with offset 1 not all of the
@@ -380,15 +378,12 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     end_keyframe->SetEasing(default_timing_function);
     keyframes.push_back(end_keyframe);
   }
-  // Defer insertion of the missing properties.
-  if (end_properties.size() < animated_properties.size())
-    end_keyframe->SetHasMissingProperties();
 
   DCHECK_GE(keyframes.size(), 2U);
   DCHECK_EQ(keyframes.front()->CheckedOffset(), 0);
   DCHECK_EQ(keyframes.back()->CheckedOffset(), 1);
 
-  auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(
+  auto* model = MakeGarbageCollected<CssKeyframeEffectModel>(
       keyframes, EffectModel::kCompositeReplace, &start_keyframe->Easing());
   if (animation_index > 0 && model->HasSyntheticKeyframes()) {
     UseCounter::Count(element.GetDocument(),

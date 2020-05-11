@@ -49,10 +49,6 @@ class BASE_EXPORT RefCountedBase {
   }
 
   void AddRef() const {
-    // TODO(maruel): Add back once it doesn't assert 500 times/sec.
-    // Current thread books the critical section "AddRelease"
-    // without release it.
-    // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);
     DCHECK(!needs_adopt_ref_)
@@ -70,11 +66,6 @@ class BASE_EXPORT RefCountedBase {
   // Returns true if the object should self-delete.
   bool Release() const {
     ReleaseImpl();
-
-    // TODO(maruel): Add back once it doesn't assert 500 times/sec.
-    // Current thread books the critical section "AddRelease"
-    // without release it.
-    // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
 
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);

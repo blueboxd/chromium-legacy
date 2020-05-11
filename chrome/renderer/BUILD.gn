@@ -4,7 +4,6 @@
 
 import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
@@ -42,7 +41,7 @@ grit("resources") {
   }
 }
 
-jumbo_static_library("renderer") {
+static_library("renderer") {
   sources = [
     "benchmarking_extension.cc",
     "benchmarking_extension.h",
@@ -443,7 +442,7 @@ jumbo_static_library("renderer") {
   }
 }
 
-jumbo_static_library("test_support") {
+static_library("test_support") {
   testonly = true
   visibility = [ "//chrome/test:test_support" ]
 

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"

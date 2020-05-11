@@ -97,9 +97,10 @@ class OptimizationGuideHintsManager
       const std::vector<optimization_guide::proto::OptimizationType>&
           optimization_types);
 
-  // Returns whether there have been any optimization types registered.
-  bool HasRegisteredOptimizationTypes() const {
-    return !registered_optimization_types_.empty();
+  // Returns the optimization types that are registered.
+  base::flat_set<optimization_guide::proto::OptimizationType>
+  registered_optimization_types() const {
+    return registered_optimization_types_;
   }
 
   // Returns whether there is an optimization filter loaded for
@@ -158,10 +159,8 @@ class OptimizationGuideHintsManager
                                    base::OnceClosure callback);
 
   // Notifies |this| that a navigation with redirect chain
-  // |navigation_redirect_chain| has finished. The |navigation_data| will be
-  // updated based on the current state of |this|.
-  void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain,
-                          OptimizationGuideNavigationData* navigation_data);
+  // |navigation_redirect_chain| has finished.
+  void OnNavigationFinish(const std::vector<GURL>& navigation_redirect_chain);
 
   // Add hints to the cache with the provided metadata. For testing only.
   void AddHintForTesting(

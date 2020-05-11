@@ -180,7 +180,7 @@ MATCHER_P2(Header,
 }  // namespace
 
 TEST_F(TrustTokenRequestSigningHelperTest, WontSignIfNoRedemptionRecord) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -208,7 +208,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
   // "Signed-Headers" request header and the additionalSignedHeaders Fetch
   // param.
 
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -253,7 +253,7 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   // the "Signed-Headers" request header or the additionalSignedHeaders Fetch
   // param; this tests the former.
 
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -292,7 +292,7 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   // the "Signed-Headers" request header or the additionalSignedHeaders Fetch
   // param; this tests the latter.
 
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -330,7 +330,7 @@ class TrustTokenRequestSigningHelperTestWithMockTime
 };
 
 TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -360,7 +360,7 @@ TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
 // Test SRR attachment without request signing:
 TEST_F(TrustTokenRequestSigningHelperTest,
        RedemptionRecordAttachmentWithoutSigning) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -391,7 +391,7 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 
 // Test a round-trip sign-and-verify with no headers.
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -426,7 +426,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
 
 // Test a round-trip sign-and-verify with signed headers.
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -458,7 +458,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyWithHeaders) {
 // Test a round-trip sign-and-verify with signed headers when adding a timestamp
 // header via |should_add_timestamp|.
 TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -497,10 +497,10 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
 }
 
 // Test a round-trip sign-and-verify additionally signing over the destination
-// URL (signRequestData = "include").
+// eTLD+1 (signRequestData = "include").
 TEST_F(TrustTokenRequestSigningHelperTest,
        SignAndVerifyWithHeadersAndDestinationUrl) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
@@ -519,7 +519,7 @@ TEST_F(TrustTokenRequestSigningHelperTest,
                                         std::make_unique<IdentitySigner>(),
                                         std::move(canonicalizer));
 
-  auto my_request = MakeURLRequest("https://destination.com/");
+  auto my_request = MakeURLRequest("https://sub.destination.com/path?query");
   my_request->set_initiator(
       url::Origin::Create(GURL("https://initiator.com/")));
   mojom::TrustTokenOperationStatus result =
@@ -527,7 +527,8 @@ TEST_F(TrustTokenRequestSigningHelperTest,
 
   // In addition to testing that the signing data equals
   // ReconstructSigningDataAndAssertSignatureVerifies's reconstruction of the
-  // data, explicitly check that it contains a "url" field with the right value.
+  // data, explicitly check that it contains a "destination" field with the
+  // right value.
   EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -539,17 +540,17 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   std::string signature_string;
   ASSERT_NO_FATAL_FAILURE(
       AssertHasSignatureAndExtract(*my_request, &signature_string));
-  std::string retrieved_url_spec;
+  std::string retrieved_url;
   ASSERT_NO_FATAL_FAILURE(AssertDecodesToCborAndExtractField(
-      signature_string, "url", &retrieved_url_spec));
-  ASSERT_EQ(retrieved_url_spec, GURL("https://destination.com").spec());
+      signature_string, "destination", &retrieved_url));
+  ASSERT_EQ(retrieved_url, "destination.com");
 }
 
 // When signing fails, the request should have an empty
 // Sec-Signed-Redemption-Record header attached, and none of the other headers
 // that could potentially be added during signing.
 TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   TrustTokenRequestSigningHelper::Params params(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),

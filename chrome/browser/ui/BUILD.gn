@@ -7,7 +7,6 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
-import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
@@ -29,7 +28,7 @@ import("//ui/views/features.gni")
 
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
-jumbo_static_library("ui") {
+static_library("ui") {
   sources = [
     "accelerator_utils.h",
     "app_list/app_list_util.cc",
@@ -1555,7 +1554,6 @@ jumbo_static_library("ui") {
   if (is_chromeos) {
     assert(enable_extensions)
     assert(toolkit_views)
-    never_build_jumbo = true
     sources += [
       "app_list/app_sync_ui_state.cc",
       "app_list/app_sync_ui_state.h",
@@ -2372,13 +2370,6 @@ jumbo_static_library("ui") {
         "webui/signin/dice_turn_sync_on_helper_delegate_impl.h",
       ]
     }
-  }
-
-  if (is_win || is_mac || is_chromeos) {
-    sources += [
-      "webui/cast/cast_ui.cc",
-      "webui/cast/cast_ui.h",
-    ]
   }
 
   if (is_win || is_mac) {

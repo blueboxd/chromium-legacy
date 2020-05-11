@@ -51,32 +51,26 @@ class TrustTokenStore {
     // Returns whether the given Signed Redemption Record has expired.
     // This is implemented with a delegate to abstract away reading
     // the values of SRRs (they're opaque to this store).
-    virtual bool IsRecordExpired(
-        const SignedTrustTokenRedemptionRecord& record) = 0;
+    //
+    // |issuer| is the issuer that issued the SRR.
+    virtual bool IsRecordExpired(const SignedTrustTokenRedemptionRecord& record,
+                                 const SuitableTrustTokenOrigin& issuer) = 0;
   };
 
-  // Creates a new TrustTokenStore passing read and write operations through
-  // to the given persister.
-  //
-  // Until the underlying BoringSSL functionality is implemented to extract
-  // expiry timestamps from Signed Redemption Record bodies, defaults to
-  // never expiring stored SRRs.
-  //
-  // |persister| must not be null.
-  explicit TrustTokenStore(std::unique_ptr<TrustTokenPersister> persister);
-
-  // Creates a TrustTokenStore relying on the given delegate for judging whether
-  // signed redemption records have expired.
-  //
-  // |persister| must not be null.
-  TrustTokenStore(
-      std::unique_ptr<TrustTokenPersister> persister,
-      std::unique_ptr<RecordExpiryDelegate> expiry_delegate_for_testing);
+  // Creates a TrustTokenStore relying on the given persister for underlying
+  // storage and the given delegate for judging whether signed redemption
+  // records have expired.
+  TrustTokenStore(std::unique_ptr<TrustTokenPersister> persister,
+                  std::unique_ptr<RecordExpiryDelegate> expiry_delegate);
 
   virtual ~TrustTokenStore();
 
-  // Creates a TrustTokenStore on top of an in-memory persister.
-  static std::unique_ptr<TrustTokenStore> CreateInMemory();
+  // Creates a TrustTokenStore with defaults useful for testing: an in-memory
+  // persister and never expiring stored SRRs. Callers may provide custom values
+  // for one argument or both.
+  static std::unique_ptr<TrustTokenStore> CreateForTesting(
+      std::unique_ptr<TrustTokenPersister> persister = nullptr,
+      std::unique_ptr<RecordExpiryDelegate> expiry_delegate = nullptr);
 
   //// Methods related to ratelimits:
 

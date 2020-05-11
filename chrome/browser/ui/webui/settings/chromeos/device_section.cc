@@ -310,6 +310,31 @@ const std::vector<SearchConcept>& GetDisplayExternalSearchConcepts() {
        {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT1,
         IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT2,
         SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayResolution},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION_ALT1,
+        IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION_ALT2,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>&
+GetDisplayExternalWithRefreshSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayRefreshRate},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE_ALT1,
+        IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -396,6 +421,10 @@ bool IsTouchCalibrationAvailable() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableTouchCalibrationSetting) &&
          display::HasExternalTouchscreenDevice();
+}
+
+bool IsListAllDisplayModesEnabled() {
+  return display::features::IsListAllDisplayModesEnabled();
 }
 
 void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
@@ -508,8 +537,17 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DISPLAY_RESOLUTION_TEXT_NATIVE},
       {"displayResolutionSublabel", IDS_SETTINGS_DISPLAY_RESOLUTION_SUBLABEL},
       {"displayResolutionMenuItem", IDS_SETTINGS_DISPLAY_RESOLUTION_MENU_ITEM},
+      {"displayResolutionOnlyMenuItem",
+       IDS_SETTINGS_DISPLAY_RESOLUTION_ONLY_MENU_ITEM},
       {"displayResolutionInterlacedMenuItem",
        IDS_SETTINGS_DISPLAY_RESOLUTION_INTERLACED_MENU_ITEM},
+      {"displayRefreshRateTitle", IDS_SETTINGS_DISPLAY_REFRESH_RATE_TITLE},
+      {"displayRefreshRateSublabel",
+       IDS_SETTINGS_DISPLAY_REFRESH_RATE_SUBLABEL},
+      {"displayRefreshRateMenuItem",
+       IDS_SETTINGS_DISPLAY_REFRESH_RATE_MENU_ITEM},
+      {"displayRefreshRateInterlacedMenuItem",
+       IDS_SETTINGS_DISPLAY_REFRESH_RATE_INTERLACED_MENU_ITEM},
       {"displayZoomTitle", IDS_SETTINGS_DISPLAY_ZOOM_TITLE},
       {"displayZoomSublabel", IDS_SETTINGS_DISPLAY_ZOOM_SUBLABEL},
       {"displayZoomValue", IDS_SETTINGS_DISPLAY_ZOOM_VALUE},
@@ -546,7 +584,7 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
                           IsUnifiedDesktopAvailable());
 
   html_source->AddBoolean("listAllDisplayModes",
-                          display::features::IsListAllDisplayModesEnabled());
+                          IsListAllDisplayModesEnabled());
 
   html_source->AddBoolean("deviceSupportsAmbientColor",
                           DoesDeviceSupportAmbientColor());
@@ -855,6 +893,12 @@ void DeviceSection::OnGetDisplayLayoutInfo(
     delegate()->AddSearchTags(GetDisplayExternalSearchConcepts());
   else
     delegate()->RemoveSearchTags(GetDisplayExternalSearchConcepts());
+
+  // Refresh Rate dropdown.
+  if (has_external_display && IsListAllDisplayModesEnabled())
+    delegate()->AddSearchTags(GetDisplayExternalWithRefreshSearchConcepts());
+  else
+    delegate()->RemoveSearchTags(GetDisplayExternalWithRefreshSearchConcepts());
 
   // Orientation settings.
   if (!unified_desktop_mode)

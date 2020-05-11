@@ -52,8 +52,7 @@ gfx::Transform CalculateEventTransformer(int touch_device_id) {
       << " is invalid. No such device connected to system";
 
   int64_t previous_display_id =
-      display_manager->touch_device_manager()->GetAssociatedDisplay(
-          display::TouchDeviceIdentifier::FromDevice(*device_it));
+      display_manager->touch_device_manager()->GetAssociatedDisplay(*device_it);
 
   // If the touch device is not associated with any display. This may happen in
   // tests when the test does not setup the |ui::TouchDeviceTransform| before
@@ -169,15 +168,12 @@ void TouchCalibratorController::CompleteCalibration(
     const CalibrationPointPairQuad& pairs,
     const gfx::Size& display_size) {
   bool did_find_touch_device = false;
-  display::TouchDeviceIdentifier touch_device_identifier =
-      display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
-
   const std::vector<ui::TouchscreenDevice>& device_list =
       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices();
+  ui::TouchscreenDevice target_device;
   for (const auto& device : device_list) {
     if (device.id == touch_device_id_) {
-      touch_device_identifier =
-          display::TouchDeviceIdentifier::FromDevice(device);
+      target_device = device;
       did_find_touch_device = true;
       break;
     }
@@ -187,14 +183,6 @@ void TouchCalibratorController::CompleteCalibration(
     VLOG(1) << "No touch device with id: " << touch_device_id_ << " found to "
             << "complete touch calibration for display with id: "
             << target_display_.id() << ". Storing it as a fallback";
-  } else if (touch_device_identifier ==
-             display::TouchDeviceIdentifier::
-                 GetFallbackTouchDeviceIdentifier()) {
-    LOG(ERROR)
-        << "Hash collision in generating touch device identifier for "
-        << " device. Hash Generated: " << touch_device_identifier
-        << " || Fallback touch device identifier: "
-        << display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
   }
 
   if (opt_callback_) {
@@ -205,7 +193,7 @@ void TouchCalibratorController::CompleteCalibration(
   }
   StopCalibrationAndResetParams();
   Shell::Get()->display_manager()->SetTouchCalibrationData(
-      target_display_.id(), pairs, display_size, touch_device_identifier);
+      target_display_.id(), pairs, display_size, target_device);
 }
 
 bool TouchCalibratorController::IsCalibrating() const {

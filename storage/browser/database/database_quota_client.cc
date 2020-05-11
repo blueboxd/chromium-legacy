@@ -21,6 +21,7 @@
 #include "net/base/url_util.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/database/database_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -97,8 +98,8 @@ DatabaseQuotaClient::~DatabaseQuotaClient() {
   }
 }
 
-QuotaClient::ID DatabaseQuotaClient::id() const {
-  return kDatabase;
+storage::QuotaClientType DatabaseQuotaClient::type() const {
+  return storage::QuotaClientType::kDatabase;
 }
 
 void DatabaseQuotaClient::OnQuotaManagerDestroyed() {}

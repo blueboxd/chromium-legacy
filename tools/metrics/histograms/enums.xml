@@ -35822,6 +35822,66 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
 </enum>
 
+<enum name="IsolatedPrerenderPrefetchStatus">
+  <int value="0" label="Prefetch Used, No Probe">
+    The interceptor used a prefetch.
+  </int>
+  <int value="1" label="Prefetch Used, Probe Success">
+    The interceptor used a prefetch after successfully probing the origin.
+  </int>
+  <int value="2" label="Prefetch Not Used, Probe Failed">
+    The interceptor was not able to use an available prefetch because the origin
+    probe failed.
+  </int>
+  <int value="3" label="Prefetch Not Started">
+    The url was eligible to be prefetched, but the network request was never
+    made.
+  </int>
+  <int value="4" label="Prefetch Not,Eligible: Google Domain">
+    The url was not eligible to be prefetched because it is a Google-owned
+    domain.
+  </int>
+  <int value="5" label="Prefetch Not Eligible: User Has Cookies">
+    The url was not eligible to be prefetched because the user had cookies for
+    that origin.
+  </int>
+  <int value="6" label="Prefetch Not Eligible: User Has ServiceWorker">
+    The url was not eligible to be prefetched because there was a registered
+    service worker for that origin.
+  </int>
+  <int value="7" label="Prefetch Not Eligible: Scheme Is Not HTTPS">
+    The url was not eligible to be prefetched because its scheme was not
+    https://.
+  </int>
+  <int value="8" label="Prefetch Not Eligible: Host Is IP Address">
+    The url was not eligible to be prefetched because its host was an IP
+    address.
+  </int>
+  <int value="9" label="Prefetch Not Eligible: Non-Default Storage Partition">
+    The url was not eligible to be prefetched because it uses a non-default
+    storage partition.
+  </int>
+  <int value="10" label="Prefetch Not Finished In Time">
+    The network request was cancelled before it finished. This happens when
+    there is a new navigation.
+  </int>
+  <int value="11" label="Prefetch Failed: Net Error">
+    The prefetch failed because of a net error.
+  </int>
+  <int value="12" label="Prefetch Failed: Non 2XX Status">
+    The prefetch failed with a non-2XX HTTP response code.
+  </int>
+  <int value="13" label="Prefetch Failed: Not HTML">
+    The prefetch's Content-Type header was not html.
+  </int>
+  <int value="14" label="Prefetch Successful">
+    The prefetch finished successfully but was never used.
+  </int>
+  <int value="15" label="Navigated To Link Not On SRP">
+    The navigation off of the Google SRP was to a url that was not on the SRP.
+  </int>
+</enum>
+
 <enum name="IsPinnedToTaskbarResult">
   <int value="0" label="Not pinned"/>
   <int value="1" label="Pinned"/>
@@ -38422,6 +38482,7 @@ from previous Chrome versions.
   <int value="-1738416948" label="OptimizationHints:enabled"/>
   <int value="-1736075054" label="EnableFullscreenAppList:enabled"/>
   <int value="-1735643253" label="enable-display-list-2d-canvas"/>
+  <int value="-1734885284" label="enable-navigation-predictor"/>
   <int value="-1734254845" label="ash-enable-night-light"/>
   <int value="-1732888954" label="UseButtonTranslateBubbleUI:enabled"/>
   <int value="-1732561795" label="ConsistentOmniboxGeolocation:enabled"/>
@@ -38852,6 +38913,7 @@ from previous Chrome versions.
   <int value="-1261263046"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:disabled"/>
   <int value="-1259901957" label="VrBrowserKeyboard:disabled"/>
+  <int value="-1258141852" label="ScrollUnification:enabled"/>
   <int value="-1256823053" label="WebRtcHWVP9Encoding:enabled"/>
   <int value="-1256747007"
       label="OminboxUIExperimentUseGenericSearchEngineIcon:disabled"/>
@@ -38864,6 +38926,7 @@ from previous Chrome versions.
   <int value="-1252706530" label="AutoFetchOnNetErrorPage:disabled"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
   <int value="-1251359563" label="SharingRenameDevices:disabled"/>
+  <int value="-1250965985" label="MediaFeeds:enabled"/>
   <int value="-1250611337" label="ChromeVoxArcSupport:disabled"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1247631459" label="TerminalSystemAppSplits:disabled"/>
@@ -39693,6 +39756,7 @@ from previous Chrome versions.
   <int value="-310615515" label="EnableSuggestedFiles:disabled"/>
   <int value="-307260007" label="ExtensionsCheckup:disabled"/>
   <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>
+  <int value="-304777110" label="PreconnectToSearch:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
   <int value="-297716805"
@@ -40064,6 +40128,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentMaxAutocompleteMatches:disabled"/>
   <int value="119309423" label="WebAssemblyThreads:disabled"/>
   <int value="120429808" label="disable-new-profile-management"/>
+  <int value="120519004" label="NavigationPredictor:disabled"/>
   <int value="121684313" label="QuickUnlockPin:enabled"/>
   <int value="121858954" label="enable-supervised-user-safesites"/>
   <int value="123097915" label="FaviconsFromWebManifest:enabled"/>
@@ -40202,6 +40267,7 @@ from previous Chrome versions.
   <int value="307543404" label="disable-team-drives"/>
   <int value="307670929"
       label="enable-ambient-authentication-in-guest-session"/>
+  <int value="309795366" label="ScrollUnification:disabled"/>
   <int value="310143091"
       label="AutofillImportNonFocusableCreditCardForms:enabled"/>
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
@@ -40872,6 +40938,7 @@ from previous Chrome versions.
   <int value="1094095931" label="enable-vulkan"/>
   <int value="1094506652" label="UseGoogleLocalNtp:enabled"/>
   <int value="1095061640" label="enable-prominent-url-app-flow"/>
+  <int value="1095706700" label="NavigationPredictor:enabled"/>
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
   <int value="1097935876" label="CrostiniShowMicSetting:enabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
@@ -40907,6 +40974,7 @@ from previous Chrome versions.
   <int value="1133207726" label="MediaInspectorLogging:enabled"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
   <int value="1138349838" label="EnableMDRoundedCornersOnDialogs:disabled"/>
+  <int value="1138690502" label="PreconnectToSearch:enabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1140541604" label="WinrtGeolocationImplementation:enabled"/>
@@ -41556,6 +41624,7 @@ from previous Chrome versions.
   <int value="1874195462" label="ChromeHomeMenuItemsExpandSheet:disabled"/>
   <int value="1874604540" label="UseSuggestionsEvenIfFew:disabled"/>
   <int value="1878331098" label="GuestViewCrossProcessFrames:enabled"/>
+  <int value="1880955305" label="enable-preconnect-to-search"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>
   <int value="1885368291" label="TurnOffStreamingMediaCaching:enabled"/>
@@ -41648,6 +41717,7 @@ from previous Chrome versions.
   <int value="1972232935" label="DisplayMoveWindowAccels:enabled"/>
   <int value="1972720114" label="WebPaymentsJustInTimePaymentApp:enabled"/>
   <int value="1974565950" label="enable-experimental-accessibility-labels"/>
+  <int value="1974776131" label="MediaFeeds:disabled"/>
   <int value="1975657253" label="ScalableAppList:disabled"/>
   <int value="1976644015" label="enable-forbid-sync-xhr-in-page-dismissal"/>
   <int value="1979222611" label="XRSandbox:disabled"/>
@@ -49821,6 +49891,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OptimizationGuideNavigationHostCoveredStatus">
+  <obsolete>
+    Removed as of 04/2020.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Covered">
     The main frame host of the navigation was covered by a hint or was attempted
@@ -66952,6 +67025,7 @@ Full version information for the fingerprint enum values:
   <int value="7" label="Extension not synced"/>
   <int value="8" label="Not matched"/>
   <int value="9" label="Empty URL"/>
+  <int value="10" label="Rejected by filter"/>
 </enum>
 
 <enum name="UkmResetReason">

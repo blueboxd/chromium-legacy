@@ -211,7 +211,8 @@ views::View* AssistantPageView::GetLastFocusableView() {
 }
 
 void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
-                                         const TransformAnimator& animator) {
+                                         const TransformAnimator& animator,
+                                         float default_offset) {
   // Assistant page view may host native views for its content. The native view
   // hosts use view to widget coordinate conversion to calculate the native view
   // bounds, and thus depend on the view transform values.
@@ -223,8 +224,8 @@ void AssistantPageView::AnimateYPosition(AppListViewState target_view_state,
   if (needs_layout())
     Layout();
 
-  animator.Run(layer(), this);
-  animator.Run(view_shadow_->shadow()->shadow_layer(), nullptr);
+  animator.Run(default_offset, layer(), this);
+  animator.Run(default_offset, view_shadow_->shadow()->shadow_layer(), nullptr);
 }
 
 void AssistantPageView::UpdatePageOpacityForState(AppListState state,

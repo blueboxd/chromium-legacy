@@ -23,7 +23,9 @@ namespace {
 // this array may either refer to features defined in the header of this file or
 // in other locations in the code base (e.g. content/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
-    &features::kWebViewConnectionlessSafeBrowsing};
+    &features::kWebViewCollectNonembeddedMetrics,
+    &features::kWebViewConnectionlessSafeBrowsing,
+};
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
   for (size_t i = 0; i < base::size(kFeaturesExposedToJava); ++i) {

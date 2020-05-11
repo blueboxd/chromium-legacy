@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/core/keyed_service.h"

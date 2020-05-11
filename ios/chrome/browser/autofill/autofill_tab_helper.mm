@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"

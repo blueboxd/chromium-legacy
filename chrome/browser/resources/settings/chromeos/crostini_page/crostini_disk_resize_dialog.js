@@ -147,6 +147,7 @@ Polymer({
             succeeded => {
               if (succeeded) {
                 this.resizeState_ = ResizeState.DONE;
+                this.$.diskResizeDialog.close();
               } else {
                 this.resizeState_ = ResizeState.ERROR;
               }

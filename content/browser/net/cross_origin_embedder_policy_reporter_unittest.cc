@@ -13,6 +13,7 @@
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/frame/reporting_observer.mojom.h"
 
 namespace content {
 namespace {
@@ -48,6 +49,28 @@ class TestNetworkContext : public network::TestNetworkContext {
   std::vector<Report> reports_;
 };
 
+class TestObserver final : public blink::mojom::ReportingObserver {
+ public:
+  explicit TestObserver(
+      mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver)
+      : receiver_(this, std::move(receiver)) {}
+
+  // blink::mojom::ReportingObserver implementation.
+  void Notify(blink::mojom::ReportPtr report) override {
+    reports_.push_back(std::move(report));
+  }
+
+  void FlushForTesting() { receiver_.FlushForTesting(); }
+
+  const std::vector<blink::mojom::ReportPtr>& reports() const {
+    return reports_;
+  }
+
+ private:
+  mojo::Receiver<blink::mojom::ReportingObserver> receiver_;
+  std::vector<blink::mojom::ReportPtr> reports_;
+};
+
 class CrossOriginEmbedderPolicyReporterTest : public testing::Test {
  public:
   using Report = TestNetworkContext::Report;
@@ -57,22 +80,54 @@ class CrossOriginEmbedderPolicyReporterTest : public testing::Test {
 
   StoragePartition* storage_partition() { return &storage_partition_; }
   const TestNetworkContext& network_context() const { return network_context_; }
-
-  base::Value CreateBodyForCorp(base::StringPiece s) {
+  base::Value CreateBodyForCorp(base::StringPiece s) const {
     base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey("type", base::Value("corp"));
-    dict.SetKey("blocked-url", base::Value(s));
+    for (const auto& pair : CreateBodyForCorpInternal(s)) {
+      dict.SetKey(std::move(pair.first), base::Value(std::move(pair.second)));
+    }
     return dict;
   }
 
   base::Value CreateBodyForNavigation(base::StringPiece s) {
     base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetKey("type", base::Value("navigation"));
-    dict.SetKey("blocked-url", base::Value(s));
+    for (const auto& pair : CreateBodyForNavigationInternal(s)) {
+      dict.SetKey(std::move(pair.first), base::Value(std::move(pair.second)));
+    }
     return dict;
   }
 
+  blink::mojom::ReportBodyPtr CreateMojomBodyForCorp(base::StringPiece s) {
+    auto body = blink::mojom::ReportBody::New();
+    for (const auto& pair : CreateBodyForCorpInternal(s)) {
+      body->body.push_back(blink::mojom::ReportBodyElement::New(
+          std::move(pair.first), std::move(pair.second)));
+    }
+    return body;
+  }
+
+  blink::mojom::ReportBodyPtr CreateMojomBodyForNavigation(
+      base::StringPiece s) {
+    auto body = blink::mojom::ReportBody::New();
+    for (const auto& pair : CreateBodyForNavigationInternal(s)) {
+      body->body.push_back(blink::mojom::ReportBodyElement::New(
+          std::move(pair.first), std::move(pair.second)));
+    }
+    return body;
+  }
+
  private:
+  std::vector<std::pair<std::string, std::string>> CreateBodyForCorpInternal(
+      base::StringPiece s) const {
+    return {std::make_pair("type", "corp"),
+            std::make_pair("blocked-url", s.as_string())};
+  }
+
+  std::vector<std::pair<std::string, std::string>>
+  CreateBodyForNavigationInternal(base::StringPiece s) const {
+    return {std::make_pair("type", "navigation"),
+            std::make_pair("blocked-url", s.as_string())};
+  }
+
   base::test::TaskEnvironment task_environment_;
   TestNetworkContext network_context_;
   TestStoragePartition storage_partition_;
@@ -139,6 +194,34 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, UserAndPassForCorp) {
   EXPECT_EQ(r2.group, "e2");
   EXPECT_EQ(r2.url, kContextUrl);
   EXPECT_EQ(r2.body, CreateBodyForCorp("https://www2.example.com/y"));
+}
+
+TEST_F(CrossOriginEmbedderPolicyReporterTest, ObserverForCorp) {
+  const GURL kContextUrl("https://example.com/path");
+  mojo::PendingRemote<blink::mojom::ReportingObserver> observer_remote;
+  TestObserver observer(observer_remote.InitWithNewPipeAndPassReceiver());
+
+  CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
+                                             base::nullopt, base::nullopt);
+  reporter.BindObserver(std::move(observer_remote));
+  reporter.QueueCorpViolationReport(GURL("https://u:p@www1.example.com/x"),
+                                    /*report_only=*/false);
+  reporter.QueueCorpViolationReport(GURL("https://u:p@www2.example.com/y"),
+                                    /*report_only=*/true);
+
+  observer.FlushForTesting();
+  ASSERT_EQ(2u, observer.reports().size());
+  const blink::mojom::Report& r1 = *(observer.reports()[0]);
+  const blink::mojom::Report& r2 = *(observer.reports()[1]);
+
+  EXPECT_EQ(r1.type, "coep");
+  EXPECT_EQ(r1.url, kContextUrl);
+  EXPECT_TRUE(mojo::Equals(
+      r1.body, CreateMojomBodyForCorp("https://www1.example.com/x")));
+  EXPECT_EQ(r2.type, "coep");
+  EXPECT_EQ(r2.url, kContextUrl);
+  EXPECT_TRUE(mojo::Equals(
+      r2.body, CreateMojomBodyForCorp("https://www2.example.com/y")));
 }
 
 TEST_F(CrossOriginEmbedderPolicyReporterTest, Clone) {
@@ -209,6 +292,35 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, BasicNavigation) {
   EXPECT_EQ(r2.group, "e2");
   EXPECT_EQ(r2.url, kContextUrl);
   EXPECT_EQ(r2.body, CreateBodyForNavigation("http://www2.example.com:41/y"));
+}
+
+TEST_F(CrossOriginEmbedderPolicyReporterTest, ObserverForNavigation) {
+  const GURL kContextUrl("https://example.com/path");
+  mojo::PendingRemote<blink::mojom::ReportingObserver> observer_remote;
+  TestObserver observer(observer_remote.InitWithNewPipeAndPassReceiver());
+
+  CrossOriginEmbedderPolicyReporter reporter(storage_partition(), kContextUrl,
+                                             base::nullopt, base::nullopt);
+  reporter.BindObserver(std::move(observer_remote));
+  reporter.QueueNavigationReport(GURL("https://www1.example.com/x#foo?bar=baz"),
+                                 /*report_only=*/false);
+  reporter.QueueNavigationReport(GURL("http://www2.example.com:41/y"),
+                                 /*report_only=*/true);
+
+  observer.FlushForTesting();
+  ASSERT_EQ(2u, observer.reports().size());
+  const blink::mojom::Report& r1 = *(observer.reports()[0]);
+  const blink::mojom::Report& r2 = *(observer.reports()[1]);
+
+  EXPECT_EQ(r1.type, "coep");
+  EXPECT_EQ(r1.url, kContextUrl);
+  EXPECT_TRUE(mojo::Equals(
+      r1.body,
+      CreateMojomBodyForNavigation("https://www1.example.com/x#foo?bar=baz")));
+  EXPECT_EQ(r2.type, "coep");
+  EXPECT_EQ(r2.url, kContextUrl);
+  EXPECT_TRUE(mojo::Equals(
+      r2.body, CreateMojomBodyForNavigation("http://www2.example.com:41/y")));
 }
 
 TEST_F(CrossOriginEmbedderPolicyReporterTest, UserAndPassForNavigation) {

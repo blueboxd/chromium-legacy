@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
+#import "ios/chrome/browser/ui/activity_services/data/chrome_activity_image_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_item_thumbnail_generator.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_url_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_image_data.h"
@@ -181,7 +182,7 @@ TEST_F(ActivityServiceMediatorTest, ActivitiesForImageData) {
 }
 
 // Tests that computing the list of excluded activities works for one item.
-TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes) {
+TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_SingleItem) {
   ChromeActivityURLSource* activityURLSource = [[ChromeActivityURLSource alloc]
         initWithShareURL:[NSURL URLWithString:@"https://example.com"]
                  subject:@"Does not matter"
@@ -192,6 +193,27 @@ TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes) {
 
   EXPECT_TRUE(
       [activityURLSource.excludedActivityTypes isEqualToSet:computedExclusion]);
+}
+
+// Tests that computing the list of excluded activities works for two item.
+TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_TwoItems) {
+  ChromeActivityURLSource* activityURLSource = [[ChromeActivityURLSource alloc]
+        initWithShareURL:[NSURL URLWithString:@"https://example.com"]
+                 subject:@"Does not matter"
+      thumbnailGenerator:mocked_thumbnail_generator_];
+  ChromeActivityImageSource* activityImageSource =
+      [[ChromeActivityImageSource alloc] initWithImage:[[UIImage alloc] init]
+                                                 title:@"something"];
+
+  NSMutableSet* expectedSet = [[NSMutableSet alloc]
+      initWithSet:activityURLSource.excludedActivityTypes];
+  [expectedSet unionSet:activityImageSource.excludedActivityTypes];
+
+  NSSet* computedExclusion = [mediator_ excludedActivityTypesForItems:@[
+    activityURLSource, activityImageSource
+  ]];
+
+  EXPECT_TRUE([expectedSet isEqualToSet:computedExclusion]);
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Success) {

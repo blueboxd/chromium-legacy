@@ -36,6 +36,7 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_switches.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/navigation_predictor/search_engine_preconnector.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
@@ -2632,10 +2633,19 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     {"enable-save-data", flag_descriptions::kEnableSaveDataName,
-     flag_descriptions::kEnableSaveDataDescription, kOsCrOS,
+     flag_descriptions::kEnableSaveDataDescription, kOsCrOS | kOsLinux,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kEnableDataReductionProxy)},
-#endif  // OS_CHROMEOS
+    {"enable-navigation-predictor",
+     flag_descriptions::kEnableNavigationPredictorName,
+     flag_descriptions::kEnableNavigationPredictorDescription,
+     kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(blink::features::kNavigationPredictor)},
+#endif  // OS_CHROMEOS || OS_LINUX
+    {"enable-preconnect-to-search",
+     flag_descriptions::kEnablePreconnectToSearchName,
+     flag_descriptions::kEnablePreconnectToSearchDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPreconnectToSearch)},
     {"enable-noscript-previews", flag_descriptions::kEnableNoScriptPreviewsName,
      flag_descriptions::kEnableNoScriptPreviewsDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kNoScriptPreviews)},
@@ -5102,6 +5112,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPercentBasedScrollingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPercentBasedScrolling)},
 
+    {"scroll-unification", flag_descriptions::kScrollUnificationName,
+     flag_descriptions::kScrollUnificationDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kScrollUnification)},
+
 #if defined(OS_WIN)
     {"elastic-overscroll-win", flag_descriptions::kElasticOverscrollWinName,
      flag_descriptions::kElasticOverscrollWinDescription, kOsWin,
@@ -5505,6 +5519,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSuggestedContentToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSuggestedContentToggle)},
 #endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+    {"enable-media-feeds", flag_descriptions::kEnableMediaFeedsName,
+     flag_descriptions::kEnableMediaFeedsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kMediaFeeds)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -6,7 +6,7 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/web/js_messaging/crw_js_window_id_manager.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/public/deprecated/crw_js_injection_manager.h"

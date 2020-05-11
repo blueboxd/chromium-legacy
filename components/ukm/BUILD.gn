@@ -13,6 +13,7 @@ static_library("ukm") {
     "app_source_url_recorder.h",
     "scheme_constants.cc",
     "scheme_constants.h",
+    "ukm_entry_filter.h",
     "ukm_pref_names.cc",
     "ukm_pref_names.h",
     "ukm_recorder_impl.cc",

@@ -123,6 +123,12 @@ cr.define('settings.display', function() {
         value: [],
       },
 
+      /** @private {!DropdownMenuOptionList} */
+      refreshRateList_: {
+        type: Array,
+        value: [],
+      },
+
       /** @private */
       unifiedDesktopAvailable_: {
         type: Boolean,
@@ -151,6 +157,21 @@ cr.define('settings.display', function() {
       unifiedDesktopMode_: {
         type: Boolean,
         value: false,
+      },
+
+      /**
+       * @type {!chrome.settingsPrivate.PrefObject}
+       * @private
+       */
+      selectedParentModePref_: {
+        type: Object,
+        value: function() {
+          return {
+            key: 'fakeDisplayParentModePref',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 0,
+          };
+        },
       },
 
       /** @private */
@@ -198,11 +219,22 @@ cr.define('settings.display', function() {
       'updateNightLightScheduleSettings_(prefs.ash.night_light.schedule_type.*,' +
           ' prefs.ash.night_light.enabled.*)',
       'onSelectedModeChange_(selectedModePref_.value)',
+      'onSelectedParentModeChange_(selectedParentModePref_.value)',
       'onSelectedZoomChange_(selectedZoomPref_.value)',
       'onDisplaysChanged_(displays.*)',
     ],
 
-    /** @private {number} Selected mode index received from chrome. */
+    /**
+     * This represents the index of the mode with the highest refresh rate at
+     * the current resolution.
+     * @private {number}
+     */
+    currentSelectedParentModeIndex_: -1,
+
+    /**
+     * This is the index of the currently selected mode.
+     * @private {number} Selected mode index received from chrome.
+     */
     currentSelectedModeIndex_: -1,
 
     /**
@@ -224,6 +256,23 @@ cr.define('settings.display', function() {
 
     /** @private {!settings.Route|undefined} */
     currentRoute_: undefined,
+
+    /**
+     * Maps a parentModeIndex to the list of possible refresh rates.
+     * All modes have a modeIndex corresponding to the index in the selected
+     * display's mode list. Parent mode indexes represent the mode with the
+     * highest refresh rate at a given resolution. There is 1 and only 1
+     * parentModeIndex for each possible resolution .
+     * @private {!Map<number, DropdownMenuOptionList>}
+     */
+    parentModeToRefreshRateMap_: new Map(),
+
+    /**
+     * Map containing an entry for each display mode mapping its modeIndex to
+     * the corresponding parentModeIndex value.
+     * @private {!Map<number, number>} Mode index values for slider.
+     */
+    modeToParentModeMap_: new Map(),
 
     /** @override */
     created() {
@@ -249,6 +298,7 @@ cr.define('settings.display', function() {
           assert(this.displayChangedListener_));
 
       this.currentSelectedModeIndex_ = -1;
+      this.currentSelectedParentModeIndex_ = -1;
     },
 
     /**
@@ -416,35 +466,213 @@ cr.define('settings.display', function() {
           !resolutionPref.value.recommended;
     },
 
+
     /**
-     * Returns the list of display modes that is shown to the user in a drop
-     * down menu.
+     * Parses the display modes for |selectedDisplay|. |displayModeList_| will
+     * contain entries representing a combined resolution + refresh rate.
+     * Only one parse*DisplayModes_ method must be called, depending on the
+     * state of |listAllDisplayModes_|.
      * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
-     * @return {!DropdownMenuOptionList}
      * @private
      */
-    getDisplayModeOptionList_(selectedDisplay) {
+    parseCompoundDisplayModes_(selectedDisplay) {
+      assert(!this.listAllDisplayModes_);
       const optionList = [];
-
-      const listAllModes = this.listAllDisplayModes_;
-
       for (let i = 0; i < selectedDisplay.modes.length; ++i) {
         const mode = selectedDisplay.modes[i];
 
-        const id = listAllModes && mode.isInterlaced ?
-            'displayResolutionInterlacedMenuItem' :
-            'displayResolutionMenuItem';
+        const id = 'displayResolutionMenuItem';
         const refreshRate = Math.round(mode.refreshRate * 100) / 100;
-        const option = this.i18n(
+        const resolution = this.i18n(
             id, mode.width.toString(), mode.height.toString(),
             refreshRate.toString());
 
         optionList.push({
-          name: option,
+          name: resolution,
           value: i,
         });
       }
-      return optionList;
+      this.displayModeList_ = optionList;
+    },
+
+    /**
+     * Uses the modes of |selectedDisplay| to build a nested map of width =>
+     * height => refreshRate => modeIndex. modeIndex is the index of the
+     * resolution + refreshRate combination in |selectedDisplay|'s mode list.
+     * This is used to traverse all possible display modes in ascending order.
+     * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+     * @return {!Map<number, Map<number, Map<number, number>>>}
+     * @private
+     */
+    createModeMap_(selectedDisplay) {
+      const modes = new Map();
+      for (let i = 0; i < selectedDisplay.modes.length; ++i) {
+        const mode = selectedDisplay.modes[i];
+        if (!modes.has(mode.width)) {
+          modes.set(mode.width, new Map());
+        }
+
+        if (!modes.get(mode.width).has(mode.height)) {
+          modes.get(mode.width).set(mode.height, new Map());
+        }
+
+        modes.get(mode.width).get(mode.height).set(mode.refreshRate, i);
+      }
+      return modes;
+    },
+
+    /**
+     * Parses the display modes for |selectedDisplay|. |displayModeList_| will
+     * contain entries representing only resolution options.
+     * The 'parentMode' for a resolution is the highest refresh rate. This
+     * method goes through the mode list for a given display creating data
+     * structures so that given a resolution, the default refresh rate is
+     * selected, and other possible refresh rates at that resolution are shown
+     * in a dropdown. Only one parse*DisplayModes_ method must be called,
+     * depending on the state of |listAllDisplayModes_|.
+     * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+     * @private
+     */
+    parseSplitDisplayModes_(selectedDisplay) {
+      assert(this.listAllDisplayModes_);
+      // Clear the mappings before recalculating.
+      this.modeToParentModeMap_ = new Map();
+      this.parentModeToRefreshRateMap_ = new Map();
+
+      // Build the modes into a nested map of width => height => refresh rate.
+      const modes = this.createModeMap_(selectedDisplay);
+
+      // Traverse the modes ordered by width (asc), height (asc),
+      // refresh rate (desc).
+      const widthsArr = Array.from(modes.keys()).sort();
+      for (let i = 0; i < widthsArr.length; i++) {
+        const width = widthsArr[i];
+        const heightsMap = modes.get(width);
+        const heightArr = Array.from(heightsMap.keys());
+        for (let j = 0; j < heightArr.length; j++) {
+          // The highest/first refresh rate for each width/height pair
+          // (resolution) is the default and therefore the "parent" mode.
+          const height = heightArr[j];
+          const refreshRates = heightsMap.get(height);
+
+          this.addResolution_(width, height, refreshRates);
+
+          // For each of the refresh rates at a given resolution, add an entry
+          // to |parentModeToRefreshRateMap_|. This allows us to retrieve a
+          // list of all the possible refresh rates given a resolution's
+          // parentModeIndex.
+          const refreshRatesArr = Array.from(refreshRates.keys());
+          for (let k = 0; k < refreshRatesArr.length; k++) {
+            const parentModeIndex = Array.from(refreshRates.values())[0];
+            const rate = refreshRatesArr[k];
+            const modeIndex = refreshRates.get(rate);
+            const isInterlaced = selectedDisplay.modes[modeIndex].isInterlaced;
+
+            this.addRefreshRate_(
+                parentModeIndex, modeIndex, rate, isInterlaced);
+          }
+        }
+      }
+
+      // Use the new sort order.
+      this.sortResolutionList_();
+    },
+
+    /**
+     * Adds a an entry in |displayModeList_| for the resolution represented by
+     * |width| and |height| and possible |refreshRates|.
+     * @param {number} width
+     * @param {number} height
+     * @param {Map<number,number>} refreshRates each possible refresh rate for
+     *   the resolution mapped to the corresponding modeIndex.
+     * @private
+     */
+    addResolution_(width, height, refreshRates) {
+      assert(this.listAllDisplayModes_);
+      const parentModeIndex = Array.from(refreshRates.values())[0];
+
+      // Add an entry in the outer map for |parentModeIndex|. The inner
+      // array (the value at |parentModeIndex) will be populated with all
+      // possible refresh rates for the given resolution.
+      this.parentModeToRefreshRateMap_.set(parentModeIndex, new Array());
+
+      const resolutionOption =
+          this.i18n('displayResolutionOnlyMenuItem', width, height);
+
+      // Only store one entry in the |resolutionList| per resolution,
+      // mapping it to the parentModeIndex for that resolution.
+      this.displayModeList_.push({
+        name: resolutionOption,
+        value: parentModeIndex,
+      });
+    },
+
+    /**
+     * Adds a an entry in |parentModeToRefreshRateMap_| for the refresh rate
+     * represented by |rate|.
+     * @param {number} parentModeIndex
+     * @param {number} modeIndex
+     * @param {number} rate
+     * @param {boolean|undefined} isInterlaced
+     * @private
+     */
+    addRefreshRate_(parentModeIndex, modeIndex, rate, isInterlaced) {
+      assert(this.listAllDisplayModes_);
+      // Maintain a mapping from a given |modeIndex| back to the
+      // corresponding |parentModeIndex|.
+      this.modeToParentModeMap_.set(modeIndex, parentModeIndex);
+
+      // Truncate at two decimal places for display. If the refresh rate
+      // is a whole number, remove the mantissa.
+      let refreshRate = Number(rate).toFixed(2);
+      if (refreshRate.endsWith('.00')) {
+        refreshRate = refreshRate.substring(0, refreshRate.length - 3);
+      }
+
+      const id = isInterlaced ? 'displayRefreshRateInterlacedMenuItem' :
+                                'displayRefreshRateMenuItem';
+
+      const refreshRateOption = this.i18n(id, refreshRate.toString());
+
+      this.parentModeToRefreshRateMap_.get(parentModeIndex).push({
+        name: refreshRateOption,
+        value: modeIndex,
+      });
+    },
+
+    /**
+     * Sorts |displayModeList_| in descending order. First order sort is width,
+     * second order sort is height.
+     * @private
+     */
+    sortResolutionList_() {
+      const getWidthFromResolutionString = function(str) {
+        return Number(str.substr(0, str.indexOf(' ')));
+      };
+
+      this.displayModeList_ =
+          this.displayModeList_
+              .sort((first, second) => {
+                return getWidthFromResolutionString(first.name) -
+                    getWidthFromResolutionString(second.name);
+              })
+              .reverse();
+    },
+
+    /**
+     * Parses display modes for |selectedDisplay|. A 'mode' is a resolution +
+     * refresh rate combo. If |listAllDisplayModes_| is on, resolution and
+     * refresh rate are parsed into separate dropdowns and
+     * |parentModeToRefreshRateMap_| + |modeToParentModeMap_| are populated.
+     * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+     * @private
+     */
+    updateDisplayModeStructures_(selectedDisplay) {
+      if (this.listAllDisplayModes_) {
+        this.parseSplitDisplayModes_(selectedDisplay);
+      } else {
+        this.parseCompoundDisplayModes_(selectedDisplay);
+      }
     },
 
     /**
@@ -502,6 +730,7 @@ cr.define('settings.display', function() {
       // are out of sync, and therefore getResolutionText_() and
       // onSelectedModeChange_() will be no-ops.
       this.currentSelectedModeIndex_ = -1;
+      this.currentSelectedParentModeIndex_ = -1;
       const numModes = selectedDisplay.modes.length;
       this.modeValues_ =
           numModes == 0 ? [] : Array.from(Array(numModes).keys());
@@ -519,17 +748,33 @@ cr.define('settings.display', function() {
         this.browserProxy_.highlightDisplay(selectedDisplay.id);
       }
 
-      this.displayModeList_ = this.getDisplayModeOptionList_(selectedDisplay);
+      this.updateDisplayModeStructures_(selectedDisplay);
+
       // Set |selectedDisplay| first since only the resolution slider depends
       // on |selectedModePref_|.
       this.selectedDisplay = selectedDisplay;
       this.selectedTab_ = this.displays.indexOf(this.selectedDisplay);
 
-      // Now that everything is in sync, set the selected mode to its correct
-      // value right before updating the pref.
-      this.currentSelectedModeIndex_ =
-          this.getSelectedModeIndex_(selectedDisplay);
+      const currentModeIndex = this.getSelectedModeIndex_(selectedDisplay);
+
+      this.currentSelectedModeIndex_ = currentModeIndex;
+      // This will also cause the parent mode to be updated.
       this.set('selectedModePref_.value', this.currentSelectedModeIndex_);
+
+      if (this.listAllDisplayModes_) {
+        // Now that everything is in sync, set the selected mode to its correct
+        // value right before updating the pref.
+        this.currentSelectedParentModeIndex_ =
+            this.modeToParentModeMap_.get(currentModeIndex);
+        this.refreshRateList_ = this.parentModeToRefreshRateMap_.get(
+            this.currentSelectedParentModeIndex_);
+      } else {
+        this.currentSelectedParentModeIndex_ = currentModeIndex;
+      }
+
+      this.set(
+          'selectedParentModePref_.value',
+          this.currentSelectedParentModeIndex_);
 
       this.updateLogicalResolutionText_(
           /** @type {number} */ (this.selectedZoomPref_.value));
@@ -543,6 +788,17 @@ cr.define('settings.display', function() {
      */
     showDropDownResolutionSetting_(display) {
       return !display.isInternal;
+    },
+
+    /**
+     * Returns true if the refresh rate setting needs to be displayed.
+     * @param {!chrome.system.display.DisplayUnitInfo} display
+     * @return {boolean}
+     * @private
+     */
+    showRefreshRateSetting_(display) {
+      return this.listAllDisplayModes_ &&
+          this.showDropDownResolutionSetting_(display);
     },
 
     /**
@@ -890,12 +1146,73 @@ cr.define('settings.display', function() {
     },
 
     /**
-     * Updates the selected mode based on the latest pref value.
+     * Handles a change in the |selectedParentModePref| value triggered via the
+     * observer.
+     * @param {number} newModeIndex The new index value
      * @private
      */
-    onSelectedModeSliderChange_() {
-      if (this.currentSelectedModeIndex_ == -1 ||
-          this.currentSelectedModeIndex_ == this.selectedModePref_.value) {
+    onSelectedParentModeChange_(newModeIndex) {
+      if (this.currentSelectedParentModeIndex_ == newModeIndex) {
+        return;
+      }
+
+      if (!this.hasNewParentModeBeenSet()) {
+        // Don't change the selected display mode until we have received an
+        // update from Chrome and the mode differs from the current mode.
+        return;
+      }
+
+      // Reset |selectedModePref| to the parentMode.
+      this.set('selectedModePref_.value', this.selectedParentModePref_.value);
+    },
+
+    /**
+     * Returns True if a new parentMode has been set and we have received an
+     * update from Chrome.
+     * @return {boolean}
+     * @private
+     */
+    hasNewParentModeBeenSet() {
+      if (this.currentSelectedParentModeIndex_ == -1) {
+        return false;
+      }
+
+      return this.currentSelectedParentModeIndex_ !=
+          this.selectedParentModePref_.value;
+    },
+
+    /**
+     * Returns True if a new mode has been set and we have received an update
+     * from Chrome.
+     * @return {boolean}
+     * @private
+     */
+    hasNewModeBeenSet() {
+      if (this.currentSelectedModeIndex_ == -1) {
+        return false;
+      }
+
+      if (this.currentSelectedParentModeIndex_ !=
+          this.selectedParentModePref_.value) {
+        return true;
+      }
+
+      return this.currentSelectedModeIndex_ != this.selectedModePref_.value;
+    },
+
+    /**
+     * Handles a change in |selectedModePref| triggered via the observer.
+     * @param {number} newModeIndex The new index value
+     * @private
+     */
+    onSelectedModeChange_(newModeIndex) {
+      // We want to ignore all value changes to the pref due to the slider being
+      // dragged. See http://crbug/845712 for more info.
+      if (this.currentSelectedModeIndex_ == newModeIndex) {
+        return;
+      }
+
+      if (!this.hasNewModeBeenSet()) {
         // Don't change the selected display mode until we have received an
         // update from Chrome and the mode differs from the current mode.
         return;
@@ -905,25 +1222,12 @@ cr.define('settings.display', function() {
             displayMode: this.selectedDisplay.modes[
                 /** @type {number} */ (this.selectedModePref_.value)]
           };
+
+      this.refreshRateList_ = this.parentModeToRefreshRateMap_.get(
+          /** @type {number} */ (this.selectedParentModePref_.value));
       settings.display.systemDisplayApi.setDisplayProperties(
           this.selectedDisplay.id, properties,
           this.setPropertiesCallback_.bind(this));
-    },
-
-    /**
-     * Handles a change in the |selectedModePref| value triggered via the
-     * observer
-     * @param {number} newModeIndex The new index value for which thie function
-     *     is called.
-     * @private
-     */
-    onSelectedModeChange_(newModeIndex) {
-      // We want to ignore all value changes to the pref due to the slider being
-      // dragged. See http://crbug/845712 for more info.
-      if (this.currentSelectedModeIndex_ == newModeIndex) {
-        return;
-      }
-      this.onSelectedModeSliderChange_();
     },
 
     /**

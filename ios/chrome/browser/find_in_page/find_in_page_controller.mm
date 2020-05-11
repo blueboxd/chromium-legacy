@@ -9,8 +9,9 @@
 #import <cmath>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/find_in_page/features.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"

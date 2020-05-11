@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -1559,8 +1560,9 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr registration_info,
     mojom::blink::ServiceWorkerObjectInfoPtr service_worker_info,
     mojom::blink::FetchHandlerExistence fetch_hander_existence,
-    std::unique_ptr<PendingURLLoaderFactoryBundle>
-        subresource_loader_factories) {
+    std::unique_ptr<PendingURLLoaderFactoryBundle> subresource_loader_factories,
+    mojo::PendingReceiver<mojom::blink::ReportingObserver>
+        reporting_observer_receiver) {
   DCHECK(IsContextThread());
   DCHECK(!global_scope_initialized_);
 
@@ -1593,6 +1595,10 @@ void ServiceWorkerGlobalScope::InitializeGlobalScope(
       GetExecutionContext(), std::move(service_worker_info));
 
   SetFetchHandlerExistence(fetch_hander_existence);
+
+  if (reporting_observer_receiver) {
+    ReportingContext::From(this)->Bind(std::move(reporting_observer_receiver));
+  }
 
   global_scope_initialized_ = true;
   if (!pause_evaluation_)

@@ -9,6 +9,29 @@
   </outputs>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+       <!-- colored dialog example -->
+      <message translateable="false" name="IDS_COLORED_DIALOG_CHOOSER_CHECKBOX">
+        Use Dark Theme
+      </message>
+      <message translateable="false" name="IDS_COLORED_DIALOG_CHOOSER_BUTTON">
+        Send Feedback
+      </message>
+      <message translateable="false" name="IDS_COLORED_DIALOG_CHOOSER_CONFIRM_LABEL">
+        Thank you! We received the following response: <ph name="USER_FEEDBACK">$1<ex>I like it.</ex></ph>
+      </message>
+      <message translateable="false" name="IDS_COLORED_DIALOG_TITLE">
+        Send Feedback to Chromium
+      </message>
+      <message translateable="false" name="IDS_COLORED_DIALOG_TEXTFIELD_PLACEHOLDER">
+        Please type your quick feedback here...
+      </message>
+      <message translateable="false" name="IDS_COLORED_DIALOG_TEXTFIELD_AX_LABEL">
+        Input Feedback
+      </message>
+      <message translateable="false" name="IDS_COLORED_DIALOG_SUBMIT_BUTTON">
+        Submit
+      </message>
+
       <!-- layout base example -->
       <message translateable="false" name="IDS_LAYOUT_BASE_ADD_LABEL">
         Add

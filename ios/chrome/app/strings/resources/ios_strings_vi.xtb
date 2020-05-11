@@ -193,7 +193,6 @@
 <translation id="3328801116991980348">Thông tin về trang web</translation>
 <translation id="3329904751041170572">Không thể kết nối với máy chủ.</translation>
 <translation id="3335947283844343239">Mở lại Tab đã Đóng</translation>
-<translation id="3343651535143698944">Thêm trang web ngoại lệ</translation>
 <translation id="3371831930909698441">Có tính năng dịch. Các tùy chọn nằm ở gần cuối màn hình.</translation>
 <translation id="3393920035788932672">Cửa sổ bật lên được cho phép</translation>
 <translation id="3443810440409579745">Đã nhận tab.</translation>
@@ -441,6 +440,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6638511529934826365">Thu phóng văn bản…</translation>
 <translation id="6642362222295953972">Chuyển sang tab đang mở</translation>
 <translation id="6643016212128521049">Xóa</translation>
+<translation id="6645899968535965230">Mã QR: <ph name="PAGE_TITLE" /></translation>
 <translation id="6656103420185847513">Chỉnh sửa thư mục</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6668619169535738264">Chỉnh sửa dấu trang</translation>
@@ -563,7 +563,6 @@ Vì tài khoản của bạn do <ph name="HOSTED_DOMAIN" /> quản lý, nên d�
 <translation id="8319076807703933069">Tìm kiếm mới</translation>
 <translation id="8323906514956095947">Chạm và giữ để hiển thị thêm tùy chọn về tab</translation>
 <translation id="8328777765163860529">Đóng tất cả</translation>
-<translation id="8332159733957009464">Trang web ngoại lệ</translation>
 <translation id="8386068868580335421">Đặt lại</translation>
 <translation id="8407669440184693619">Không tìm thấy mật khẩu nào cho trang web này</translation>
 <translation id="842017693807136194">Đăng nhập bằng</translation>

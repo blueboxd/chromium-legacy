@@ -6,10 +6,10 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/i18n/i18n_constants.h"
 #import "base/ios/block_types.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/common/features.h"

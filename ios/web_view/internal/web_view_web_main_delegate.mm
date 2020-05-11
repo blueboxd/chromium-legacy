@@ -4,7 +4,6 @@
 
 #import "ios/web_view/internal/web_view_web_main_delegate.h"
 
-#include "base/logging.h"
 #import "base/mac/bundle_locations.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -117,6 +117,9 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   // The time when uploading starts.
   base::TimeTicks upload_start_time_;
 
+  // The settings to apply to this scan.
+  enterprise_connectors::AnalysisSettings analysis_settings_;
+
   base::WeakPtrFactory<DeepScanningRequest> weak_ptr_factory_;
 };
 

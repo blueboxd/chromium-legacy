@@ -31,6 +31,9 @@ class LacrosLoader {
   void OnLoadComplete(component_updater::CrOSComponentManager::Error error,
                       const base::FilePath& path);
 
+  // Removes any state that Lacros left behind.
+  void CleanUp(bool previously_installed);
+
   scoped_refptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 

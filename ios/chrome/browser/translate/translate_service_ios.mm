@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/logging.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

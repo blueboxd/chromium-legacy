@@ -39,6 +39,7 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -344,6 +345,11 @@ IconEffects ExtensionAppsBase::GetIconEffects(
   if (extension->from_bookmark()) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
+    if (!BookmarkAppIsLocallyInstalled(
+            extensions::ExtensionPrefs::Get(profile_), extension)) {
+      icon_effects =
+          static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
+    }
   }
   return icon_effects;
 }

@@ -262,6 +262,11 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordMetrics() {
   if (!data_saver_enabled_at_commit_)
     return;
 
+  RecordPrefetchProxyEvent();
+  RecordAfterSRPEvent();
+}
+
+void IsolatedPrerenderPageLoadMetricsObserver::RecordPrefetchProxyEvent() {
   ukm::builders::PrefetchProxy builder(GetDelegate().GetSourceId());
 
   if (min_days_since_last_visit_to_origin_.has_value()) {
@@ -292,7 +297,7 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordMetrics() {
   builder.Setcount_css_js_loaded_network_before_fcp(
       ukm_loaded_css_js_from_network_before_fcp);
 
-  if (srp_metrics_ && srp_metrics_->prefetch_eligible_count_ > 0) {
+  if (srp_metrics_ && srp_metrics_->predicted_urls_count_ > 0) {
     builder.Setordered_eligible_pages_bitmask(
         srp_metrics_->ordered_eligible_pages_bitmask_);
     builder.Setprefetch_eligible_count(srp_metrics_->prefetch_eligible_count_);
@@ -301,10 +306,33 @@ void IsolatedPrerenderPageLoadMetricsObserver::RecordMetrics() {
     builder.Setprefetch_successful_count(
         srp_metrics_->prefetch_successful_count_);
   }
+  builder.Record(ukm::UkmRecorder::Get());
+}
 
-  if (after_srp_metrics_ && after_srp_metrics_.value().prefetch_status_) {
-    builder.Setprefetch_usage(
-        static_cast<int>(after_srp_metrics_.value().prefetch_status_.value()));
+void IsolatedPrerenderPageLoadMetricsObserver::RecordAfterSRPEvent() {
+  if (!after_srp_metrics_)
+    return;
+
+  const IsolatedPrerenderTabHelper::AfterSRPMetrics& metrics =
+      *after_srp_metrics_;
+
+  ukm::builders::PrefetchProxy_AfterSRPClick builder(
+      GetDelegate().GetSourceId());
+
+  builder.SetPrefetchEligibleCount(metrics.prefetch_eligible_count_);
+
+  if (metrics.prefetch_status_) {
+    builder.SetSRPClickPrefetchStatus(
+        static_cast<int>(metrics.prefetch_status_.value()));
+  }
+
+  if (metrics.clicked_link_srp_position_) {
+    builder.SetClickedLinkSRPPosition(
+        metrics.clicked_link_srp_position_.value());
+  }
+
+  if (metrics.probe_latency_) {
+    builder.SetProbeLatencyMs(metrics.probe_latency_.value().InMilliseconds());
   }
 
   builder.Record(ukm::UkmRecorder::Get());

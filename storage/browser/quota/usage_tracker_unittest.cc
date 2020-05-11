@@ -15,6 +15,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/url_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/usage_tracker.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,7 +50,7 @@ class MockQuotaClient : public QuotaClient {
  public:
   MockQuotaClient() = default;
 
-  ID id() const override { return kFileSystem; }
+  QuotaClientType type() const override { return QuotaClientType::kFileSystem; }
 
   void OnQuotaManagerDestroyed() override {}
 
@@ -155,7 +156,7 @@ class UsageTrackerTest : public testing::Test {
 
   void UpdateUsage(const url::Origin& origin, int64_t delta) {
     quota_client_->UpdateUsage(origin, delta);
-    usage_tracker_.UpdateUsageCache(quota_client_->id(), origin, delta);
+    usage_tracker_.UpdateUsageCache(quota_client_->type(), origin, delta);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -222,7 +223,7 @@ class UsageTrackerTest : public testing::Test {
   }
 
   void SetUsageCacheEnabled(const url::Origin& origin, bool enabled) {
-    usage_tracker_.SetUsageCacheEnabled(quota_client_->id(), origin, enabled);
+    usage_tracker_.SetUsageCacheEnabled(quota_client_->type(), origin, enabled);
   }
 
  private:

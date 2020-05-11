@@ -2527,7 +2527,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
        kBackgroundPaintInScrollingContents) &&
       layer_->BackgroundIsKnownToBeOpaqueInRect(box->PhysicalPaddingBoxRect(),
                                                 true) &&
-      !layer_->CompositesWithTransform() && !layer_->CompositesWithOpacity();
+      !layer_->CompositesWithTransform();
 
   if (!force_prefer_compositing_to_lcd_text &&
       !box->GetDocument()

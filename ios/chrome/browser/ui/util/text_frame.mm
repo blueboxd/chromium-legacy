@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/util/text_frame.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

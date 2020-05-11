@@ -7,7 +7,7 @@
 #import <CoreMedia/CoreMedia.h>
 #import <Vision/Vision.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_string_util.h"
 

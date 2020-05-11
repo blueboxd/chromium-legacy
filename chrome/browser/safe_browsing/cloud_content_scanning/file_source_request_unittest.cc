@@ -30,7 +30,8 @@ void GetResultsForFileContents(const std::string& file_contents,
   base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.doc");
   base::WriteFile(file_path, file_contents.data(), file_contents.size());
 
-  FileSourceRequest request(file_path, base::DoNothing());
+  FileSourceRequest request(false, file_path, file_path.BaseName(),
+                            base::DoNothing());
 
   bool called = false;
   base::RunLoop run_loop;
@@ -57,8 +58,8 @@ TEST(FileSourceRequestTest, InvalidFiles) {
 
   {
     // Non-existent files should return UNKNOWN and have no information set.
-    FileSourceRequest request(temp_dir.GetPath().AppendASCII("not_a_real.doc"),
-                              base::DoNothing());
+    base::FilePath path = temp_dir.GetPath().AppendASCII("not_a_real.doc");
+    FileSourceRequest request(false, path, path.BaseName(), base::DoNothing());
 
     bool called = false;
     base::RunLoop run_loop;
@@ -81,7 +82,8 @@ TEST(FileSourceRequestTest, InvalidFiles) {
   {
     // Directories should not be used as paths passed to GetFileSHA256Blocking,
     // so they should return UNKNOWN and have no information set.
-    FileSourceRequest request(temp_dir.GetPath(), base::DoNothing());
+    base::FilePath path = temp_dir.GetPath();
+    FileSourceRequest request(false, path, path.BaseName(), base::DoNothing());
 
     bool called = false;
     base::RunLoop run_loop;
@@ -168,7 +170,8 @@ TEST(FileSourceRequestTest, PopulatesDigest) {
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
-  FileSourceRequest request(file_path, base::DoNothing());
+  FileSourceRequest request(false, file_path, file_path.BaseName(),
+                            base::DoNothing());
 
   base::RunLoop run_loop;
   request.GetRequestData(base::BindLambdaForTesting(
@@ -194,7 +197,8 @@ TEST(FileSourceRequestTest, PopulatesFilename) {
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
-  FileSourceRequest request(file_path, base::DoNothing());
+  FileSourceRequest request(false, file_path, file_path.BaseName(),
+                            base::DoNothing());
 
   base::RunLoop run_loop;
   request.GetRequestData(base::BindLambdaForTesting(
@@ -219,7 +223,8 @@ TEST(FileSourceRequestTest, CachesResults) {
   BinaryUploadService::Result async_result;
   BinaryUploadService::Request::Data async_data;
 
-  FileSourceRequest request(file_path, base::DoNothing());
+  FileSourceRequest request(false, file_path, file_path.BaseName(),
+                            base::DoNothing());
 
   bool called = false;
   base::RunLoop run_loop;
@@ -266,7 +271,8 @@ TEST(FileSourceRequestTest, Encrypted) {
                  .AppendASCII("download_protection")
                  .AppendASCII("encrypted.zip");
 
-  FileSourceRequest request(test_zip, base::DoNothing());
+  FileSourceRequest request(false, test_zip, test_zip.BaseName(),
+                            base::DoNothing());
 
   bool called = false;
   base::RunLoop run_loop;
@@ -294,7 +300,7 @@ TEST(FileSourceRequestTest, Encrypted) {
   EXPECT_EQ(request.deep_scanning_request().digest(), data.hash);
 }
 
-TEST(FileSourceRequestTest, UnsupportedFileType) {
+TEST(FileSourceRequestTest, UnsupportedFileTypeBlock) {
   base::test::TaskEnvironment task_environment;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -303,8 +309,10 @@ TEST(FileSourceRequestTest, UnsupportedFileType) {
   base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.xyz");
   base::WriteFile(file_path, normal_contents.data(), normal_contents.size());
 
-  FileSourceRequest request(file_path, base::DoNothing());
+  FileSourceRequest request(true, file_path, file_path.BaseName(),
+                            base::DoNothing());
   request.set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request.set_request_malware_scan(MalwareDeepScanningClientRequest());
 
   bool called = false;
   base::RunLoop run_loop;
@@ -322,7 +330,50 @@ TEST(FileSourceRequestTest, UnsupportedFileType) {
   run_loop.Run();
 
   ASSERT_TRUE(called);
+
   EXPECT_EQ(result, BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE);
+  EXPECT_EQ(data.contents, normal_contents);
+  EXPECT_EQ(data.size, normal_contents.size());
+  // printf "Normal file contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+  EXPECT_EQ(data.hash,
+            "29644C10BD036866FCFD2BDACFF340DB5DE47A90002D6AB0C42DE6A22C26158B");
+  EXPECT_EQ(request.deep_scanning_request().digest(), data.hash);
+}
+
+TEST(FileSourceRequestTest, UnsupportedFileTypeNoBlock) {
+  base::test::TaskEnvironment task_environment;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  std::string normal_contents = "Normal file contents";
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.xyz");
+  base::WriteFile(file_path, normal_contents.data(), normal_contents.size());
+
+  FileSourceRequest request(false, file_path, file_path.BaseName(),
+                            base::DoNothing());
+  request.set_request_dlp_scan(DlpDeepScanningClientRequest());
+  request.set_request_malware_scan(MalwareDeepScanningClientRequest());
+
+  bool called = false;
+  base::RunLoop run_loop;
+  BinaryUploadService::Result result;
+  BinaryUploadService::Request::Data data;
+  request.GetRequestData(base::BindLambdaForTesting(
+      [&run_loop, &called, &result, &data](
+          BinaryUploadService::Result tmp_result,
+          const BinaryUploadService::Request::Data& tmp_data) {
+        called = true;
+        run_loop.Quit();
+        result = tmp_result;
+        data = tmp_data;
+      }));
+  run_loop.Run();
+
+  ASSERT_TRUE(called);
+
+  // The dlp request should have been removed since the type is unsupported.
+  EXPECT_FALSE(request.deep_scanning_request().has_dlp_scan_request());
+  EXPECT_EQ(result, BinaryUploadService::Result::SUCCESS);
   EXPECT_EQ(data.contents, normal_contents);
   EXPECT_EQ(data.size, normal_contents.size());
   // printf "Normal file contents" | sha256sum |  tr '[:lower:]' '[:upper:]'

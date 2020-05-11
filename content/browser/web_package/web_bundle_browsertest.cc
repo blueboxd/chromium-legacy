@@ -367,10 +367,8 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
     base::FilePath tmp_file_path;
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &tmp_file_path));
-    if (!content.empty()) {
-      ASSERT_TRUE(
-          base::WriteFile(tmp_file_path, content.data(), content.size()) > 0);
-    }
+    if (!content.empty())
+      ASSERT_TRUE(base::WriteFile(tmp_file_path, content));
     *file_path = tmp_file_path.AddExtension(FILE_PATH_LITERAL(".wbn"));
     ASSERT_TRUE(base::Move(tmp_file_path, *file_path));
   }

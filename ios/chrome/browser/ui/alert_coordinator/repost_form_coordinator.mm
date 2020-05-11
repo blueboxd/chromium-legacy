@@ -4,7 +4,8 @@
 
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"

@@ -19,7 +19,7 @@
 <translation id="1195412055398077112">오버스캔</translation>
 <translation id="119944043368869598">모두 삭제</translation>
 <translation id="1199716647557067911">스위치 제어를 중지하시겠습니까?</translation>
-<translation id="121097972571826261">단어 단위 앞으로 이동</translation>
+<translation id="121097972571826261">한 단어 앞으로 이동</translation>
 <translation id="1229194443904279055">선택 중지</translation>
 <translation id="1247372569136754018">마이크(내부)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />에서 충전 중</translation>
@@ -111,7 +111,7 @@
 <translation id="2298170939937364391">전체 화면 돋보기가 사용 설정되었습니다. 사용 중지하려면 Ctrl+Search+M을 다시 누르세요.</translation>
 <translation id="2302092602801625023">Family Link에서 관리되는 계정입니다.</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
-<translation id="2322173485024759474">글자 단위 뒤로 이동</translation>
+<translation id="2322173485024759474">한 글자 뒤로 이동</translation>
 <translation id="2339073806695260576">실행기에서 스타일러스 버튼을 탭하여 메모를 작성하거나, 스크린샷을 찍거나, 레이저 포인터 또는 돋보기를 활용할 수 있습니다.</translation>
 <translation id="2341729377289034582">세로로 잠김</translation>
 <translation id="2352467521400612932">스타일러스 설정</translation>
@@ -472,7 +472,7 @@
 <translation id="6777216307882431711">연결된 USB-C 기기 전원 공급 중</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
-<translation id="6818242057446442178">단어 단위 뒤로 이동</translation>
+<translation id="6818242057446442178">한 단어 뒤로 이동</translation>
 <translation id="6820676911989879663">잠시 쉬어 가세요.</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> 활성화</translation>
 <translation id="6878400149835617132">바로가기 사용 중지됨</translation>
@@ -586,7 +586,7 @@
 <translation id="8308637677604853869">이전 메뉴</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">메모 만들기</translation>
-<translation id="8371779926711439835">글자 단위 앞으로 이동</translation>
+<translation id="8371779926711439835">한 글자 앞으로 이동</translation>
 <translation id="8375916635258623388">이 <ph name="DEVICE_NAME" />과(와) 휴대전화가 자동으로 연결됩니다.</translation>
 <translation id="8388750414311082622">마지막 데스크는 삭제할 수 없습니다.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" />의 옵션 메뉴</translation>

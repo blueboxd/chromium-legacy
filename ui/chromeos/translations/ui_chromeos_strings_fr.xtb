@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Fichiers Linux</translation>
 <translation id="9035012421917565900">Les éléments ne pourront pas être redéplacés vers "<ph name="DESTINATION_NAME" />". Cette action est donc irréversible.</translation>
 <translation id="9038620279323455325">Le nom "<ph name="FILE_NAME" />" est déjà attribué à un fichier. Veuillez en choisir un autre.</translation>
-<translation id="9062992083244091966">Pour ouvrir des fichiers avec les applications <ph name="APP_NAME" />, déplacez-les d'abord dans le dossier de fichiers partagés <ph name="APP_NAME" />.</translation>
 <translation id="9064939804718829769">Transfert en cours…</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9099674669267916096">Nombre de pages</translation>

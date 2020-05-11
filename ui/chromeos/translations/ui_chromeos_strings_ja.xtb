@@ -702,7 +702,6 @@
 <translation id="9034924485347205037">Linux ファイル</translation>
 <translation id="9035012421917565900">この操作は元に戻せません（これらのアイテムを「<ph name="DESTINATION_NAME" />」に戻すことはできません）。</translation>
 <translation id="9038620279323455325">「<ph name="FILE_NAME" />」という名前のファイルはすでに存在します。別の名前を選択してください。</translation>
-<translation id="9062992083244091966"><ph name="APP_NAME" /> アプリでファイルを開くには、<ph name="APP_NAME" /> 共有ファイル フォルダにファイルを移動してください。</translation>
 <translation id="9064939804718829769">処理しています...</translation>
 <translation id="9065203028668620118">編集</translation>
 <translation id="9099674669267916096">ページ数</translation>

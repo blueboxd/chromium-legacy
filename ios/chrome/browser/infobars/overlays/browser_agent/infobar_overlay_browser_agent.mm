@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
 #include "ios/chrome/browser/infobars/overlays/infobar_overlay_util.h"
 

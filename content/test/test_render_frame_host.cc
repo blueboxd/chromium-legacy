@@ -431,6 +431,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
       is_signed_exchange_inner_response;
   response->connection_info = connection_info;
   response->ssl_info = ssl_info;
+  response->load_timing.send_start = base::TimeTicks::Now();
+  response->load_timing.receive_headers_start = base::TimeTicks::Now();
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(std::move(response));

@@ -23,12 +23,16 @@ mojom_component("frame") {
     "intrinsic_sizing_info.mojom",
     "lifecycle.mojom",
     "media_player_action.mojom",
+    "reporting_observer.mojom",
     "sudden_termination_disabler_type.mojom",
     "tree_scope_type.mojom",
     "user_activation_update_types.mojom",
   ]
 
-  public_deps = [ "//ui/gfx/geometry/mojom" ]
+  public_deps = [
+    "//ui/gfx/geometry/mojom",
+    "//url/mojom:url_mojom_gurl",
+  ]
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"

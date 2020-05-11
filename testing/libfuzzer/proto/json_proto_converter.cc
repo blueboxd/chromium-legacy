@@ -66,4 +66,10 @@ std::string JsonProtoConverter::Convert(const JsonObject& json_object) {
   return data_.str();
 }
 
+std::string JsonProtoConverter::Convert(
+    const json_proto::ArrayValue& json_array) {
+  AppendArray(json_array);
+  return data_.str();
+}
+
 }  // namespace json_proto

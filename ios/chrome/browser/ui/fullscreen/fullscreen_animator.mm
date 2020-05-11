@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 

@@ -25,10 +25,12 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
+#include "chrome/browser/chromeos/app_mode/app_session.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -58,6 +60,11 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -75,12 +82,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/audio_service.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -104,6 +113,7 @@
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/page_transition_types.h"
 
 namespace em = enterprise_management;
 
@@ -466,6 +476,19 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   std::string version_;
 
   DISALLOW_COPY_AND_ASSIGN(AppDataLoadWaiter);
+};
+
+// Replaces settings urls for KioskSettingsNavigationThrottle.
+class ScopedSettingsPages {
+ public:
+  ScopedSettingsPages(
+      std::vector<KioskSettingsNavigationThrottle::SettingsPage>* pages) {
+    KioskSettingsNavigationThrottle::SetSettingPagesForTesting(pages);
+  }
+
+  ~ScopedSettingsPages() {
+    KioskSettingsNavigationThrottle::SetSettingPagesForTesting(nullptr);
+  }
 };
 
 }  // namespace
@@ -1317,6 +1340,84 @@ IN_PROC_BROWSER_TEST_F(KioskTest, GetVolumeList) {
   StartAppLaunchFromLoginScreen(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, SettingsWindow) {
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchWithOptions(true /* check_launch_data */,
+                              false /* terminate_app */,
+                              true /* keep_app_open */);
+
+  // At this moment, app session should be initialized.
+  std::vector<KioskSettingsNavigationThrottle::SettingsPage> settings_pages = {
+      {"https://page1.com/", /*allow_subpages*/ true},
+      {"https://page2.com/", /*allow_subpages*/ false},
+  };
+
+  const GURL page1("https://page1.com/");
+  const GURL page1_sub("https://page1.com/sub");
+  const GURL page2("https://page2.com/");
+  const GURL page2_sub("https://page2.com/sub");
+  const GURL page3("https://page3.com/");
+
+  // Replace the settings whitelist with |settings_pages|.
+  ScopedSettingsPages pages(&settings_pages);
+  AppSession* app_session = KioskAppManager::Get()->app_session();
+
+  // App session should be initialized.
+  ASSERT_TRUE(app_session);
+  ASSERT_EQ(app_session->GetSettingsBrowserForTesting(), nullptr);
+
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+
+  {
+    // Open browser with url page1.
+    NavigateParams params(profile, page1, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    Navigate(&params);
+    // Wait for browser to be handled.
+    base::RunLoop waiter;
+    app_session->SetOnHandleBrowserCallbackForTesting(waiter.QuitClosure());
+    waiter.Run();
+  }
+
+  Browser* settings_browser = app_session->GetSettingsBrowserForTesting();
+
+  ASSERT_TRUE(settings_browser);
+
+  content::WebContents* web_contents =
+      settings_browser->tab_strip_model()->GetActiveWebContents();
+  // Try navigating to an allowed subpage.
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, page1_sub, 1);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page1_sub);
+
+  {
+    // Open another browser with url page2.
+    // Also, expect navigation inside of the old window to page2.
+    content::TestNavigationObserver settings_navigation_observer(web_contents,
+                                                                 1);
+    NavigateParams params(profile, page2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    Navigate(&params);
+    // Wait for browser to be handled.
+    base::RunLoop waiter;
+    app_session->SetOnHandleBrowserCallbackForTesting(waiter.QuitClosure());
+    waiter.Run();
+    // Also wait for navigaiton to finish.
+    settings_navigation_observer.Wait();
+  }
+  // The settings browser should not have changed.
+  ASSERT_EQ(settings_browser, app_session->GetSettingsBrowserForTesting());
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
+
+  // Try navigating to a disallowed subpage.
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, page2_sub, 1);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
+
+  // Try navigating to a disallowed page.
+  NavigateToURLBlockUntilNavigationsComplete(web_contents, page3, 1);
+  EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
 }
 
 // Verifies that an enterprise device does not auto-launch kiosk mode when cros
@@ -2271,7 +2372,6 @@ class KioskEnterpriseTest : public KioskTest {
   }
 
  private:
-
   DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};

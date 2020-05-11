@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model_observer.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 

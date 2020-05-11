@@ -6,7 +6,7 @@
 
 #import <objc/runtime.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"

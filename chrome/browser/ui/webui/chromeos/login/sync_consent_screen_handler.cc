@@ -119,9 +119,6 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
   RememberLocalizedValue("syncConsentScreenChromeBrowserSyncName",
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
                          builder);
-  RememberLocalizedValue(
-      "syncConsentReviewBrowserSyncOptions",
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_BROWSER_SYNC_OPTIONS, builder);
 }
 
 void SyncConsentScreenHandler::Bind(SyncConsentScreen* screen) {
@@ -203,14 +200,14 @@ void SyncConsentScreenHandler::HandleAcceptAndContinue(
     const login::StringList& consent_description,
     const std::string& consent_confirmation,
     bool enable_os_sync,
-    bool review_browser_sync) {
+    bool enable_browser_sync) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   std::vector<int> consent_description_ids;
   int consent_confirmation_id;
   GetConsentIDs(known_string_ids_, consent_description, consent_confirmation,
                 &consent_description_ids, &consent_confirmation_id);
   screen_->OnAcceptAndContinue(consent_description_ids, consent_confirmation_id,
-                               enable_os_sync, review_browser_sync);
+                               enable_os_sync, enable_browser_sync);
 
   SyncConsentScreen::SyncConsentScreenTestDelegate* test_delegate =
       screen_->GetDelegateForTesting();

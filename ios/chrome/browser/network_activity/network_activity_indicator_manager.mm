@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/threading/thread_checker.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

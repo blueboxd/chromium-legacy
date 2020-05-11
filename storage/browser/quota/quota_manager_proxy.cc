@@ -63,7 +63,7 @@ void QuotaManagerProxy::NotifyStorageAccessed(const url::Origin& origin,
     manager_->NotifyStorageAccessed(origin, type);
 }
 
-void QuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
+void QuotaManagerProxy::NotifyStorageModified(QuotaClientType client_id,
                                               const url::Origin& origin,
                                               blink::mojom::StorageType type,
                                               int64_t delta) {
@@ -112,7 +112,7 @@ void QuotaManagerProxy::NotifyWriteFailed(const url::Origin& origin) {
     manager_->NotifyWriteFailed(origin);
 }
 
-void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
+void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClientType client_id,
                                              const url::Origin& origin,
                                              blink::mojom::StorageType type,
                                              bool enabled) {

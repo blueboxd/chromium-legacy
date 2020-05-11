@@ -41,6 +41,11 @@ UPPER_LIMIT_DATA_SAMPLE = {
         'ci_095': 20,
         'avg': 10
     },
+    'story_7': {
+        'ci_095': 20,
+        'avg': 10,
+        'experimental': True,
+    },
 }
 
 
@@ -96,7 +101,7 @@ class TestRepresentativePerfScript(unittest.TestCase):
         ['story_4', 'frame_times', '', 10, 1],  # Record with no avg.
         ['story_5', 'frame_times', 12, 0, 3],  # Record with count of 0.
         ['story_6', 'frame_times', 12, 40, 40],  # High noise record.
-        ['story_7', 'frame_times', 12, 40, 4],
+        ['story_8', 'frame_times', 12, 40, 4],
         ['story_3', 'frame_times', 7, 20, 15],
         ['story_3', 'frame_times', 12, 20, 16]
     ])
@@ -105,7 +110,7 @@ class TestRepresentativePerfScript(unittest.TestCase):
 
     values_per_story = perf_test.parse_csv_results(csv_obj)
     # Existing Frame_times stories in upper_limits should be listed.
-    # All stories but story_2 & story_7.
+    # All stories but story_2 & story_8.
     self.assertEquals(len(values_per_story), 5)
     self.assertEquals(values_per_story['story_1']['averages'], [16.0])
     self.assertEquals(values_per_story['story_1']['ci_095'], [1.5])
@@ -192,3 +197,38 @@ class TestRepresentativePerfScript(unittest.TestCase):
     self.assertEquals(output['tests'][BENCHMARK]['story_1']['actual'], 'PASS')
     self.assertEquals(output['tests'][BENCHMARK]['story_3']['actual'], 'FAIL')
     self.assertEquals(output['tests'][BENCHMARK]['story_4']['actual'], 'FAIL')
+
+  # Experimental stories should not fail the test
+  def test_compare_values_3(self):
+    values_per_story = {
+        'story_1': {
+            'averages': [16.0, 17.0, 21.0],
+            'ci_095': [2.0, 15.0, 16.0],
+        },
+        'story_7':
+        {  # Experimental story with higher value than the upper limit.
+            'averages': [20, 26],
+            'ci_095': [14, 16]
+        }
+    }
+
+    sample_perf_results = create_sample_perf_results(['story_1', 'story_7'], [],
+                                                     BENCHMARK)
+    rerun = False
+    perf_test = perf_test_initializer()
+    perf_test.result_recorder[rerun].set_tests(sample_perf_results)
+
+    self.assertEquals(perf_test.result_recorder[rerun].fails, 0)
+
+    perf_test.compare_values(values_per_story, rerun)
+    result_recorder = perf_test.result_recorder[rerun]
+    self.assertEquals(result_recorder.tests, 2)
+    self.assertEquals(result_recorder.failed_stories, set([]))
+
+    result_recorder.invalidate_failures(BENCHMARK)
+    (output, overall_return_code) = result_recorder.get_output(0)
+
+    self.assertEquals(overall_return_code, 0)
+    self.assertEquals(output['num_failures_by_type'].get('FAIL', 0), 0)
+    self.assertEquals(output['tests'][BENCHMARK]['story_1']['actual'], 'PASS')
+    self.assertEquals(output['tests'][BENCHMARK]['story_7']['actual'], 'PASS')

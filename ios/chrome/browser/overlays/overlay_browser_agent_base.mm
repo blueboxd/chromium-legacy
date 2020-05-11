@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/overlays/public/overlay_browser_agent_base.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_callback_installer.h"

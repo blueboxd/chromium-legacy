@@ -26,6 +26,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -211,11 +212,15 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
 
 NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, true),
+      content::WebContentsObserver(web_ui->GetWebContents()),
       page_factory_receiver_(this),
       profile_(Profile::FromWebUI(web_ui)),
       instant_service_(InstantServiceFactory::GetForProfile(profile_)),
       web_contents_(web_ui->GetWebContents()),
-      creation_time_(base::Time::Now()) {
+      // We initialize navigation_start_time_ to a reasonable value to account
+      // for the unlikely case where the NewTabPageHandler is created before we
+      // received the DidStartNavigation event.
+      navigation_start_time_(base::Time::Now()) {
   content::WebUIDataSource::Add(profile_,
                                 CreateNewTabPageUiHtmlSource(profile_));
 
@@ -259,7 +264,7 @@ void NewTabPageUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
   page_handler_ = std::make_unique<NewTabPageHandler>(
       std::move(pending_page_handler), std::move(pending_page), profile_,
-      web_contents_, creation_time_);
+      web_contents_, navigation_start_time_);
 }
 
 void NewTabPageUI::NtpThemeChanged(const NtpTheme& theme) {
@@ -269,6 +274,13 @@ void NewTabPageUI::NtpThemeChanged(const NtpTheme& theme) {
 }
 
 void NewTabPageUI::MostVisitedInfoChanged(const InstantMostVisitedInfo& info) {}
+
+void NewTabPageUI::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame()) {
+    navigation_start_time_ = base::Time::Now();
+  }
+}
 
 void NewTabPageUI::UpdateBackgroundColor(const NtpTheme& theme) {
   std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);

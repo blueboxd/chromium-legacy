@@ -10,6 +10,9 @@
 
 #include "base/strings/string_piece.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/process_internals/process_internals.mojom.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
@@ -24,8 +27,8 @@ namespace {
 
 using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
 
-::mojom::FrameInfoPtr FrameTreeNodeToFrameInfo(FrameTreeNode* ftn) {
-  RenderFrameHost* frame = ftn->current_frame_host();
+::mojom::FrameInfoPtr RenderFrameHostToFrameInfo(RenderFrameHostImpl* frame,
+                                                 bool is_bfcached) {
   auto frame_info = ::mojom::FrameInfo::New();
 
   frame_info->routing_id = frame->GetRoutingID();
@@ -34,6 +37,7 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
       frame->GetLastCommittedURL().is_valid()
           ? base::make_optional(frame->GetLastCommittedURL())
           : base::nullopt;
+  frame_info->is_bfcached = is_bfcached;
 
   SiteInstanceImpl* site_instance =
       static_cast<SiteInstanceImpl*>(frame->GetSiteInstance());
@@ -49,8 +53,9 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
           ? base::make_optional(site_instance->GetSiteURL())
           : base::nullopt;
 
-  for (size_t i = 0; i < ftn->child_count(); ++i) {
-    frame_info->subframes.push_back(FrameTreeNodeToFrameInfo(ftn->child_at(i)));
+  for (size_t i = 0; i < frame->child_count(); ++i) {
+    frame_info->subframes.push_back(RenderFrameHostToFrameInfo(
+        frame->child_at(i)->current_frame_host(), is_bfcached));
   }
 
   return frame_info;
@@ -162,7 +167,16 @@ void ProcessInternalsHandlerImpl::GetAllWebContentsInfo(
     auto info = ::mojom::WebContentsInfo::New();
     info->title = base::UTF16ToUTF8(web_contents->GetTitle());
     info->root_frame =
-        FrameTreeNodeToFrameInfo(web_contents->GetFrameTree()->root());
+        RenderFrameHostToFrameInfo(web_contents->GetMainFrame(), false);
+
+    // Retrieve all root frames from bfcache as well.
+    NavigationControllerImpl& controller = web_contents->GetController();
+    const auto& entries = controller.GetBackForwardCache().GetEntries();
+    for (const auto& entry : entries) {
+      info->bfcached_root_frames.push_back(
+          RenderFrameHostToFrameInfo((*entry).render_frame_host.get(), true));
+    }
+
     infos.push_back(std::move(info));
   }
 

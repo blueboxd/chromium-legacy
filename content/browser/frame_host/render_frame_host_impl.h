@@ -105,6 +105,7 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
+#include "third_party/blink/public/mojom/frame/reporting_observer.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
@@ -163,7 +164,7 @@ namespace mojom {
 class CacheStorage;
 class GeolocationService;
 class WebUsbService;
-}
+}  // namespace mojom
 }  // namespace blink
 
 namespace gfx {
@@ -2286,6 +2287,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Updates the |lifecycle_state_|. Called when there is a change in the
   // RenderFrameHost LifecycleState.
   void SetLifecycleState(LifecycleState state);
+
+  void BindReportingObserver(
+      mojo::PendingReceiver<blink::mojom::ReportingObserver>
+          reporting_observer_receiver);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

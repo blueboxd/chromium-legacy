@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
 
-#include "base/logging.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
 

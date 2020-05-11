@@ -26,6 +26,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_database.h"
 #include "storage/browser/quota/quota_features.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -47,8 +48,6 @@ namespace {
 const StorageType kTemp = StorageType::kTemporary;
 const StorageType kPerm = StorageType::kPersistent;
 const StorageType kSync = StorageType::kSyncable;
-
-const int kAllClients = QuotaClient::kAllClientsMask;
 
 // Values in bytes.
 const int64_t kAvailableSpaceForApp = 13377331U;
@@ -72,6 +71,7 @@ std::tuple<int64_t, int64_t> GetVolumeInfoForTests(
 url::Origin ToOrigin(const std::string& url) {
   return url::Origin::Create(GURL(url));
 }
+
 }  // namespace
 
 class QuotaManagerTest : public testing::Test {
@@ -111,10 +111,9 @@ class QuotaManagerTest : public testing::Test {
     additional_callback_count_ = 0;
   }
 
-  MockStorageClient* CreateClient(
-      const MockOriginData* mock_data,
-      size_t mock_data_size,
-      QuotaClient::ID id) {
+  MockStorageClient* CreateClient(const MockOriginData* mock_data,
+                                  size_t mock_data_size,
+                                  QuotaClientType id) {
     return new MockStorageClient(quota_manager_->proxy(),
                                  mock_data, id, mock_data_size);
   }
@@ -244,20 +243,20 @@ class QuotaManagerTest : public testing::Test {
 
   void DeleteOriginData(const url::Origin& origin,
                         StorageType type,
-                        int quota_client_mask) {
+                        QuotaClientTypes quota_client_types) {
     quota_status_ = QuotaStatusCode::kUnknown;
     quota_manager_->DeleteOriginData(
-        origin, type, quota_client_mask,
+        origin, type, std::move(quota_client_types),
         base::BindOnce(&QuotaManagerTest::StatusCallback,
                        weak_factory_.GetWeakPtr()));
   }
 
   void DeleteHostData(const std::string& host,
                       StorageType type,
-                      int quota_client_mask) {
+                      QuotaClientTypes quota_client_types) {
     quota_status_ = QuotaStatusCode::kUnknown;
     quota_manager_->DeleteHostData(
-        host, type, quota_client_mask,
+        host, type, std::move(quota_client_types),
         base::BindOnce(&QuotaManagerTest::StatusCallback,
                        weak_factory_.GetWeakPtr()));
   }
@@ -470,6 +469,11 @@ class QuotaManagerTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_;
 
+  static std::vector<QuotaClientType> AllClients() {
+    // TODO(pwnall): Implement using something other than an empty vector?
+    return {};
+  }
+
  private:
   base::Time IncrementMockTime() {
     ++mock_time_counter_;
@@ -520,9 +524,9 @@ TEST_F(QuotaManagerTest, GetUsageInfo) {
     { "http://example.com/",   kPerm,  40 },
   };
   RegisterClient(
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem));
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem));
   RegisterClient(
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase));
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase));
 
   GetUsageInfo();
   task_environment_.RunUntilIdle();
@@ -550,7 +554,7 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Simple) {
     { "http://foo.com/", kPerm, 80 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), kPerm);
   task_environment_.RunUntilIdle();
@@ -603,7 +607,7 @@ TEST_F(QuotaManagerTest, GetUsage_NoClient) {
 }
 
 TEST_F(QuotaManagerTest, GetUsage_EmptyClient) {
-  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClientType::kFileSystem));
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
@@ -643,7 +647,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_MultiOrigins) {
     { "http://foo.com/",        kPerm,  40 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   // This time explicitly sets a temporary global quota.
   const int kPoolSize = 100;
@@ -681,9 +685,9 @@ TEST_F(QuotaManagerTest, GetUsage_MultipleClients) {
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   GetStorageCapacity();
   RegisterClient(
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem));
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem));
   RegisterClient(
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase));
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase));
 
   const int64_t kPoolSize = GetAvailableDiskSpaceForTest();
   const int64_t kPerHostQuota = kPoolSize / 5;
@@ -739,11 +743,11 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_Simple) {
       {"http://foo.com/", kTemp, 8},
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase);
   MockStorageClient* client3 =
-      CreateClient(kData3, base::size(kData3), QuotaClient::kAppcache);
+      CreateClient(kData3, base::size(kData3), QuotaClientType::kAppcache);
   RegisterClient(client1);
   RegisterClient(client2);
   RegisterClient(client3);
@@ -812,7 +816,7 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultiOrigins) {
       {"http://baz.com/", kTemp, 30}, {"http://foo.com/", kPerm, 40},
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://foo.com/"), kTemp);
   task_environment_.RunUntilIdle();
@@ -845,9 +849,9 @@ TEST_F(QuotaManagerTest, GetUsageWithBreakdown_MultipleClients) {
   };
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   RegisterClient(
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem));
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem));
   RegisterClient(
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase));
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase));
 
   GetUsageAndQuotaWithBreakdown(ToOrigin("http://foo.com/"), kTemp);
   task_environment_.RunUntilIdle();
@@ -888,7 +892,7 @@ void QuotaManagerTest::GetUsage_WithModifyTestBody(const StorageType type) {
     { "http://foo.com:1/", type,  20 },
   };
   MockStorageClient* client =
-      CreateClient(data, base::size(data), QuotaClient::kFileSystem);
+      CreateClient(data, base::size(data), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), type);
@@ -930,7 +934,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_WithAdditionalTasks) {
     { "http://foo.com/",        kPerm, 40 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   const int kPoolSize = 100;
   const int kPerHostQuota = 20;
@@ -963,7 +967,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
     { "http://foo.com/",        kPerm, 40 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
   const int kPoolSize = 100;
   const int kPerHostQuota = 20;
   SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
@@ -973,8 +977,8 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_NukeManager) {
   RunAdditionalUsageAndQuotaTask(ToOrigin("http://foo.com/"), kTemp);
   RunAdditionalUsageAndQuotaTask(ToOrigin("http://bar.com/"), kTemp);
 
-  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, kAllClients);
-  DeleteOriginData(ToOrigin("http://bar.com/"), kTemp, kAllClients);
+  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, AllQuotaClientTypes());
+  DeleteOriginData(ToOrigin("http://bar.com/"), kTemp, AllQuotaClientTypes());
 
   // Nuke before waiting for callbacks.
   set_quota_manager(nullptr);
@@ -989,7 +993,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Overbudget) {
     { "http://usage200/",  kTemp, 200 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
   const int kPoolSize = 100;
   const int kPerHostQuota = 20;
   SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailableForSystem);
@@ -1029,7 +1033,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   GetStorageCapacity();
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   // Test when not overbugdet.
@@ -1149,7 +1153,7 @@ TEST_F(QuotaManagerTest, OriginInUse) {
 }
 
 TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
-  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClientType::kFileSystem));
 
   GetPersistentHostQuota("foo.com");
   task_environment_.RunUntilIdle();
@@ -1177,7 +1181,7 @@ TEST_F(QuotaManagerTest, GetAndSetPerststentHostQuota) {
 
 TEST_F(QuotaManagerTest, GetAndSetPersistentUsageAndQuota) {
   GetStorageCapacity();
-  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClientType::kFileSystem));
 
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), kPerm);
   task_environment_.RunUntilIdle();
@@ -1213,7 +1217,7 @@ TEST_F(QuotaManagerTest, GetQuotaLowAvailableDiskSpace) {
   };
 
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   const int kPoolSize = 10000000;
@@ -1252,7 +1256,7 @@ TEST_F(QuotaManagerTest,
   };
 
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   const int kPoolSize = 10000000;
@@ -1270,7 +1274,7 @@ TEST_F(QuotaManagerTest,
 }
 
 TEST_F(QuotaManagerTest, GetSyncableQuota) {
-  RegisterClient(CreateClient(nullptr, 0, QuotaClient::kFileSystem));
+  RegisterClient(CreateClient(nullptr, 0, QuotaClientType::kFileSystem));
 
   // Pre-condition check: available disk space (for testing) is less than
   // the default quota for syncable storage.
@@ -1303,7 +1307,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_MultiOrigins) {
     { "http://foo.com/",        kTemp, 40 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   SetPersistentHostQuota("foo.com", 100);
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), kPerm);
@@ -1325,7 +1329,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_WithAdditionalTasks) {
     { "http://foo.com/",        kTemp,  40 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
   SetPersistentHostQuota("foo.com", 100);
 
   GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), kPerm);
@@ -1354,7 +1358,7 @@ TEST_F(QuotaManagerTest, GetPersistentUsageAndQuota_NukeManager) {
     { "http://foo.com/",        kTemp,  40 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
   SetPersistentHostQuota("foo.com", 100);
 
   set_additional_callback_count(0);
@@ -1379,7 +1383,7 @@ TEST_F(QuotaManagerTest, GetUsage_Simple) {
     { "http://foo.com/",   kTemp, 7000000 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   GetGlobalUsage(kPerm);
   task_environment_.RunUntilIdle();
@@ -1412,7 +1416,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithModification) {
   };
 
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetGlobalUsage(kPerm);
@@ -1458,7 +1462,7 @@ TEST_F(QuotaManagerTest, GetUsage_WithDeleteOrigin) {
     { "http://bar.com/",   kTemp,  4000 },
   };
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
@@ -1512,9 +1516,9 @@ TEST_F(QuotaManagerTest, EvictOriginData) {
     { "http://bar.com/",   kTemp,     9 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
 
@@ -1572,7 +1576,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataHistogram) {
 
   base::HistogramTester histograms;
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
@@ -1638,7 +1642,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   };
   static const int kNumberOfTemporaryOrigins = 3;
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
@@ -1721,7 +1725,7 @@ TEST_F(QuotaManagerTest, GetEvictionRoundInfo) {
 
   mock_special_storage_policy()->AddUnlimited(GURL("http://unlimited/"));
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   const int kPoolSize = 10000000;
@@ -1741,7 +1745,7 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
     { "http://foo.com/",   kTemp,     1 },
   };
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetGlobalUsage(kTemp);
@@ -1756,7 +1760,7 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   task_environment_.RunUntilIdle();
   int64_t predelete_host_pers = usage();
 
-  DeleteHostData(std::string(), kTemp, kAllClients);
+  DeleteHostData(std::string(), kTemp, AllQuotaClientTypes());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
 
@@ -1772,7 +1776,7 @@ TEST_F(QuotaManagerTest, DeleteHostDataSimple) {
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_host_pers, usage());
 
-  DeleteHostData("foo.com", kTemp, kAllClients);
+  DeleteHostData("foo.com", kTemp, AllQuotaClientTypes());
   task_environment_.RunUntilIdle();
   EXPECT_EQ(QuotaStatusCode::kOk, status());
 
@@ -1804,9 +1808,9 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
     { "http://bar.com/",   kTemp,     9 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
 
@@ -1831,9 +1835,9 @@ TEST_F(QuotaManagerTest, DeleteHostDataMultiple) {
   const int64_t predelete_bar_pers = usage();
 
   reset_status_callback_count();
-  DeleteHostData("foo.com", kTemp, kAllClients);
-  DeleteHostData("bar.com", kTemp, kAllClients);
-  DeleteHostData("foo.com", kTemp, kAllClients);
+  DeleteHostData("foo.com", kTemp, AllQuotaClientTypes());
+  DeleteHostData("bar.com", kTemp, AllQuotaClientTypes());
+  DeleteHostData("foo.com", kTemp, AllQuotaClientTypes());
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(3, status_callback_count());
@@ -1890,9 +1894,9 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
     { "http://bar.com/",   kTemp,     9 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kDatabase);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
 
@@ -1927,9 +1931,9 @@ TEST_F(QuotaManagerTest, DeleteOriginDataMultiple) {
   task_environment_.RunUntilIdle();
 
   reset_status_callback_count();
-  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, kAllClients);
-  DeleteOriginData(ToOrigin("http://bar.com/"), kTemp, kAllClients);
-  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, kAllClients);
+  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, AllQuotaClientTypes());
+  DeleteOriginData(ToOrigin("http://bar.com/"), kTemp, AllQuotaClientTypes());
+  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, AllQuotaClientTypes());
   task_environment_.RunUntilIdle();
 
   EXPECT_EQ(3, status_callback_count());
@@ -1974,7 +1978,7 @@ TEST_F(QuotaManagerTest, GetCachedOrigins) {
     { "http://c.com/",   kTemp,    4000 },
   };
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   // TODO(kinuko): Be careful when we add cache pruner.
@@ -2020,7 +2024,7 @@ TEST_F(QuotaManagerTest, NotifyAndLRUOrigin) {
     { "http://c.com/",   kTemp,  0 },
   };
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GURL origin;
@@ -2060,7 +2064,7 @@ TEST_F(QuotaManagerTest, GetLRUOriginWithOriginInUse) {
     { "http://c.com/",   kTemp,  0 },
   };
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GURL origin;
@@ -2115,7 +2119,7 @@ TEST_F(QuotaManagerTest, GetOriginsModifiedSince) {
     { "http://c.com/",   kTemp,  0 },
   };
   MockStorageClient* client =
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem);
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem);
   RegisterClient(client);
 
   GetOriginsModifiedSince(kTemp, base::Time());
@@ -2242,13 +2246,13 @@ TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleOrigin) {
     { "http://foo.com/",   kTemp, 8 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kAppcache);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kAppcache);
   MockStorageClient* client3 =
-      CreateClient(kData3, base::size(kData3), QuotaClient::kDatabase);
-  MockStorageClient* client4 =
-      CreateClient(kData4, base::size(kData4), QuotaClient::kIndexedDatabase);
+      CreateClient(kData3, base::size(kData3), QuotaClientType::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, base::size(kData4),
+                                            QuotaClientType::kIndexedDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
   RegisterClient(client3);
@@ -2259,26 +2263,28 @@ TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleOrigin) {
   const int64_t predelete_foo_tmp = usage();
 
   DeleteOriginData(ToOrigin("http://foo.com/"), kTemp,
-                   QuotaClient::kFileSystem);
+                   {QuotaClientType::kFileSystem});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 1, usage());
 
-  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, QuotaClient::kAppcache);
+  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp,
+                   {QuotaClientType::kAppcache});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
 
-  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp, QuotaClient::kDatabase);
+  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp,
+                   {QuotaClientType::kDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
 
   DeleteOriginData(ToOrigin("http://foo.com/"), kTemp,
-                   QuotaClient::kIndexedDatabase);
+                   {QuotaClientType::kIndexedDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
@@ -2299,13 +2305,13 @@ TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleHost) {
     { "http://foo.com:4444/",   kTemp, 8 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kAppcache);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kAppcache);
   MockStorageClient* client3 =
-      CreateClient(kData3, base::size(kData3), QuotaClient::kDatabase);
-  MockStorageClient* client4 =
-      CreateClient(kData4, base::size(kData4), QuotaClient::kIndexedDatabase);
+      CreateClient(kData3, base::size(kData3), QuotaClientType::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, base::size(kData4),
+                                            QuotaClientType::kIndexedDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
   RegisterClient(client3);
@@ -2315,25 +2321,25 @@ TEST_F(QuotaManagerTest, DeleteSpecificClientTypeSingleHost) {
   task_environment_.RunUntilIdle();
   const int64_t predelete_foo_tmp = usage();
 
-  DeleteHostData("foo.com", kTemp, QuotaClient::kFileSystem);
+  DeleteHostData("foo.com", kTemp, {QuotaClientType::kFileSystem});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 1, usage());
 
-  DeleteHostData("foo.com", kTemp, QuotaClient::kAppcache);
+  DeleteHostData("foo.com", kTemp, {QuotaClientType::kAppcache});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
 
-  DeleteHostData("foo.com", kTemp, QuotaClient::kDatabase);
+  DeleteHostData("foo.com", kTemp, {QuotaClientType::kDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 4 - 2 - 1, usage());
 
-  DeleteHostData("foo.com", kTemp, QuotaClient::kIndexedDatabase);
+  DeleteHostData("foo.com", kTemp, {QuotaClientType::kIndexedDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
@@ -2354,13 +2360,13 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleOrigin) {
     { "http://foo.com/",   kTemp, 8 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kAppcache);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kAppcache);
   MockStorageClient* client3 =
-      CreateClient(kData3, base::size(kData3), QuotaClient::kDatabase);
-  MockStorageClient* client4 =
-      CreateClient(kData4, base::size(kData4), QuotaClient::kIndexedDatabase);
+      CreateClient(kData3, base::size(kData3), QuotaClientType::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, base::size(kData4),
+                                            QuotaClientType::kIndexedDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
   RegisterClient(client3);
@@ -2371,14 +2377,15 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleOrigin) {
   const int64_t predelete_foo_tmp = usage();
 
   DeleteOriginData(ToOrigin("http://foo.com/"), kTemp,
-                   QuotaClient::kFileSystem | QuotaClient::kDatabase);
+                   {QuotaClientType::kFileSystem, QuotaClientType::kDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 4 - 1, usage());
 
-  DeleteOriginData(ToOrigin("http://foo.com/"), kTemp,
-                   QuotaClient::kAppcache | QuotaClient::kIndexedDatabase);
+  DeleteOriginData(
+      ToOrigin("http://foo.com/"), kTemp,
+      {QuotaClientType::kAppcache, QuotaClientType::kIndexedDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
@@ -2399,13 +2406,13 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleHost) {
     { "http://foo.com:4444/",   kTemp, 8 },
   };
   MockStorageClient* client1 =
-      CreateClient(kData1, base::size(kData1), QuotaClient::kFileSystem);
+      CreateClient(kData1, base::size(kData1), QuotaClientType::kFileSystem);
   MockStorageClient* client2 =
-      CreateClient(kData2, base::size(kData2), QuotaClient::kAppcache);
+      CreateClient(kData2, base::size(kData2), QuotaClientType::kAppcache);
   MockStorageClient* client3 =
-      CreateClient(kData3, base::size(kData3), QuotaClient::kDatabase);
-  MockStorageClient* client4 =
-      CreateClient(kData4, base::size(kData4), QuotaClient::kIndexedDatabase);
+      CreateClient(kData3, base::size(kData3), QuotaClientType::kDatabase);
+  MockStorageClient* client4 = CreateClient(kData4, base::size(kData4),
+                                            QuotaClientType::kIndexedDatabase);
   RegisterClient(client1);
   RegisterClient(client2);
   RegisterClient(client3);
@@ -2416,14 +2423,15 @@ TEST_F(QuotaManagerTest, DeleteMultipleClientTypesSingleHost) {
   const int64_t predelete_foo_tmp = usage();
 
   DeleteHostData("foo.com", kTemp,
-      QuotaClient::kFileSystem | QuotaClient::kAppcache);
+                 {QuotaClientType::kFileSystem, QuotaClientType::kAppcache});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(predelete_foo_tmp - 2 - 1, usage());
 
-  DeleteHostData("foo.com", kTemp,
-      QuotaClient::kDatabase | QuotaClient::kIndexedDatabase);
+  DeleteHostData(
+      "foo.com", kTemp,
+      {QuotaClientType::kDatabase, QuotaClientType::kIndexedDatabase});
   task_environment_.RunUntilIdle();
   GetHostUsage("foo.com", kTemp);
   task_environment_.RunUntilIdle();
@@ -2438,7 +2446,7 @@ TEST_F(QuotaManagerTest, GetUsageAndQuota_Incognito) {
     { "http://foo.com/", kPerm, 80 },
   };
   RegisterClient(
-      CreateClient(kData, base::size(kData), QuotaClient::kFileSystem));
+      CreateClient(kData, base::size(kData), QuotaClientType::kFileSystem));
 
   // Query global usage to warmup the usage tracker caching.
   GetGlobalUsage(kTemp);

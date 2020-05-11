@@ -78,8 +78,7 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath result;
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &result));
-    EXPECT_EQ(int{contents.size()},
-              base::WriteFile(result, contents.data(), contents.size()));
+    EXPECT_TRUE(base::WriteFile(result, contents));
     return result;
   }
 
@@ -135,9 +134,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFileNonASCII) {
       temp_dir_.GetPath().Append(base::FilePath::FromUTF8Unsafe("😋.txt"));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    EXPECT_EQ(
-        int{file_contents.size()},
-        base::WriteFile(test_file, file_contents.data(), file_contents.size()));
+    EXPECT_TRUE(base::WriteFile(test_file, file_contents));
   }
 
   SelectFileDialogParams dialog_params;

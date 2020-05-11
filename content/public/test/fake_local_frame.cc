@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/fake_local_frame.h"
+
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 
@@ -94,6 +95,9 @@ void FakeLocalFrame::OnScreensChange() {}
 void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
 void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}
 #endif
+
+void FakeLocalFrame::BindReportingObserver(
+    mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) {}
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

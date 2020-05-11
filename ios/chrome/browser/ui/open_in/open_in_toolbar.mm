@@ -6,7 +6,8 @@
 
 #include <cmath>
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

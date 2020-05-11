@@ -1365,13 +1365,15 @@ void UserSessionManager::InitProfilePreferences(
                 gaia_id);
 
     DCHECK(account_info.has_value());
-    if (features::IsSplitSyncConsentEnabled()) {
-      if (is_new_profile) {
-        if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
-          // Set the account without recording browser sync consent.
-          identity_manager->GetPrimaryAccountMutator()
-              ->SetUnconsentedPrimaryAccount(account_info->account_id);
-        }
+    if (features::IsSplitSettingsSyncEnabled()) {
+      // In theory this should only be done for new profiles. However, if user
+      // profile prefs failed to save or the prefs are corrupted by a crash then
+      // the IdentityManager will start up without a primary account. See test
+      // CrashRestoreComplexTest.RestoreSessionForThreeUsers.
+      if (!identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired)) {
+        // Set the account without recording browser sync consent.
+        identity_manager->GetPrimaryAccountMutator()
+            ->SetUnconsentedPrimaryAccount(account_info->account_id);
       }
       CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
       CHECK_EQ(
@@ -1380,7 +1382,7 @@ void UserSessionManager::InitProfilePreferences(
           gaia_id);
     } else {
       // Set a primary account here because the profile might have been
-      // created with the feature SplitSyncConsent enabled. Then the
+      // created with the feature SplitSettingsSync enabled. Then the
       // profile might only have an unconsented primary account.
       identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
           account_info->account_id);

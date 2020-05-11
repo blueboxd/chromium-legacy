@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/scanner/camera_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
 

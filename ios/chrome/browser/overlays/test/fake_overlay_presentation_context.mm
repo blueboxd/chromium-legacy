@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ios/chrome/browser/overlays/public/overlay_presentation_context_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 

@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper_delegate.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_manager.h"
 #include "ios/web/common/features.h"

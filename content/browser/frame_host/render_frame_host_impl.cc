@@ -7787,6 +7787,18 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       navigation_request->TakeClientSecurityState();
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter =
       navigation_request->TakeCoepReporter();
+  if (coep_reporter) {
+    mojo::PendingRemote<blink::mojom::ReportingObserver> remote;
+    mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver =
+        remote.InitWithNewPipeAndPassReceiver();
+    coep_reporter->BindObserver(std::move(remote));
+    // As some tests overrides the associated frame after commit, do not
+    // call GetAssociatedLocalFrame now.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RenderFrameHostImpl::BindReportingObserver,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
+  }
 
   frame_tree_node()->navigator()->DidNavigate(this, *params,
                                               std::move(navigation_request),
@@ -8744,6 +8756,11 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
       break;
   }
   lifecycle_state_ = state;
+}
+
+void RenderFrameHostImpl::BindReportingObserver(
+    mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) {
+  GetAssociatedLocalFrame()->BindReportingObserver(std::move(receiver));
 }
 
 }  // namespace content

@@ -20,6 +20,8 @@ namespace media_feeds {
 // Fetcher object to retrieve a Media Feed schema.org object from a URL.
 class MediaFeedsFetcher {
  public:
+  static const char kFetchSizeKbHistogramName[];
+
   enum class Status {
     kOk,
     kRequestFailed,

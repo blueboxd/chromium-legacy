@@ -421,20 +421,4 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     public TabPersistentStore getTabPersistentStoreForTesting() {
         return mTabSaver;
     }
-
-    /**
-     * Add a {@link TabPersistentStoreObserver} to {@link TabPersistentStore}.
-     * @param observer The observer to add.
-     */
-    public void addTabPersistentStoreObserver(TabPersistentStoreObserver observer) {
-        mTabSaver.addObserver(observer);
-    }
-
-    /**
-     * Remove a {@link TabPersistentStoreObserver} from {@link TabPersistentStore}.
-     * @param observer The observer to remove.
-     */
-    public void removeTabPersistentStoreObserver(TabPersistentStoreObserver observer) {
-        mTabSaver.removeObserver(observer);
-    }
 }

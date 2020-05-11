@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

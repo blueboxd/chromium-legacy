@@ -243,37 +243,11 @@ class DeepScanningUtilsFileTypeSupportedTest : public testing::Test {
 TEST_F(DeepScanningUtilsFileTypeSupportedTest, DLP) {
   // With a DLP-only scan, only the types returned by SupportedDlpFileTypes()
   // will be supported, and other types will fail.
-  for (const base::FilePath::StringType type : SupportedDlpFileTypes()) {
-    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/false,
-                                  /*for_dlp_scan=*/true, FilePath(type)));
+  for (const base::FilePath::StringType& type : SupportedDlpFileTypes()) {
+    EXPECT_TRUE(FileTypeSupportedForDlp(FilePath(type)));
   }
-  for (const auto& type : UnsupportedDlpFileTypes()) {
-    EXPECT_FALSE(FileTypeSupported(/*for_malware_scan=*/false,
-                                   /*for_dlp_scan=*/true, FilePath(type)));
-  }
-}
-
-TEST_F(DeepScanningUtilsFileTypeSupportedTest, Malware) {
-  // With a Malware-only scan, every type is supported.
-  for (const base::FilePath::StringType type : SupportedDlpFileTypes()) {
-    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
-                                  /*for_dlp_scan=*/false, FilePath(type)));
-  }
-  for (const auto& type : UnsupportedDlpFileTypes()) {
-    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
-                                  /*for_dlp_scan=*/false, FilePath(type)));
-  }
-}
-
-TEST_F(DeepScanningUtilsFileTypeSupportedTest, MalwareAndDLP) {
-  // With a Malware and DLP scan, every type is supported.
-  for (const base::FilePath::StringType type : SupportedDlpFileTypes()) {
-    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
-                                  /*for_dlp_scan=*/true, FilePath(type)));
-  }
-  for (const auto& type : UnsupportedDlpFileTypes()) {
-    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
-                                  /*for_dlp_scan=*/true, FilePath(type)));
+  for (const base::FilePath::StringType& type : UnsupportedDlpFileTypes()) {
+    EXPECT_FALSE(FileTypeSupportedForDlp(FilePath(type)));
   }
 }
 

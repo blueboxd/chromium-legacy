@@ -6,10 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SYSTEM_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_dom_overlay_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_session_init.h"
@@ -21,6 +18,10 @@
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -84,8 +85,7 @@ class XRSystem final : public EventTargetWithInlineData,
 
   XRFrameProvider* frameProvider();
 
-  const mojo::AssociatedRemote<
-      device::mojom::blink::XREnvironmentIntegrationProvider>&
+  device::mojom::blink::XREnvironmentIntegrationProvider*
   xrEnvironmentProviderRemote();
 
   // VRServiceClient overrides.
@@ -315,7 +315,7 @@ class XRSystem final : public EventTargetWithInlineData,
   // when ending an XR session.
   class OverlayFullscreenExitObserver : public NativeEventListener {
    public:
-    OverlayFullscreenExitObserver(XRSystem* xr);
+    explicit OverlayFullscreenExitObserver(XRSystem* xr);
     ~OverlayFullscreenExitObserver() override;
 
     // NativeEventListener
@@ -422,10 +422,12 @@ class XRSystem final : public EventTargetWithInlineData,
 
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
-  mojo::Remote<device::mojom::blink::VRService> service_;
-  mojo::AssociatedRemote<device::mojom::blink::XREnvironmentIntegrationProvider>
+  HeapMojoRemote<device::mojom::blink::VRService> service_;
+  HeapMojoAssociatedRemote<
+      device::mojom::blink::XREnvironmentIntegrationProvider,
+      HeapMojoWrapperMode::kWithoutContextObserver>
       environment_provider_;
-  mojo::Receiver<device::mojom::blink::VRServiceClient> receiver_{this};
+  HeapMojoReceiver<device::mojom::blink::VRServiceClient, XRSystem> receiver_;
 
   // Time at which navigation started. Used as the base for relative timestamps,
   // such as for Gamepad objects.

@@ -39,6 +39,12 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                  const base::android::JavaRef<jobject>& j_profile);
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
+  jlong GetBookmarkIdForWebContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jweb_contents,
+      jboolean only_editable);
+
   bool IsDoingExtensiveChanges(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 

@@ -7,12 +7,16 @@ package org.chromium.components.external_intents;
 import android.app.Activity;
 import android.content.Intent;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * A delegate for the class responsible for navigating to external applications from Chrome. Used
@@ -59,14 +63,30 @@ public interface ExternalNavigationDelegate {
     void didStartActivity(Intent intent);
 
     /**
-     * Start an activity for the intent. Used for intents that may be handled internally or
-     * externally. If the user chooses to handle the intent internally, this routine must return
-     * false.
+     * Used by maybeHandleStartActivityIfNeeded() below.
+     */
+    @IntDef({StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START,
+            StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START,
+            StartActivityIfNeededResult.DID_NOT_HANDLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface StartActivityIfNeededResult {
+        int HANDLED_WITH_ACTIVITY_START = 0;
+        int HANDLED_WITHOUT_ACTIVITY_START = 1;
+        int DID_NOT_HANDLE = 2;
+    }
+
+    /**
+     * Gives the embedder the opportunity to handle starting an activity for the intent. Used for
+     * intents that may be handled internally or externally. If the embedder handles this intent,
+     * this method should return StartActivityIfNeededResult.HANDLED_{WITH, WITHOUT}_ACTIVITY_START
+     * as appropriate. To have ExternalNavigationHandler handle this intent, return
+     * StartActivityIfNeededResult.NOT_HANDLED.
      * @param intent The intent we want to send.
      * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
      *              used by Instant Apps intents).
      */
-    boolean startActivityIfNeeded(Intent intent, boolean proxy);
+    @StartActivityIfNeededResult
+    int maybeHandleStartActivityIfNeeded(Intent intent, boolean proxy);
 
     /**
      * Display a dialog warning the user that they may be leaving Chrome by starting this

@@ -781,6 +781,10 @@
       status: "stable",
     },
     {
+      name: "FlexGaps",
+      status: "experimental",
+    },
+    {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,
     },
@@ -865,6 +869,7 @@
     },
     {
       name: "IdleDetection",
+      origin_trial_feature_name: "IdleDetection",
       status: "experimental",
     },
     {
@@ -1241,6 +1246,11 @@
     {
       name: "OrientationEvent",
       status: {"Android": "stable"},
+    },
+    {
+      name: "OriginIsolationHeader",
+      origin_trial_feature_name: "OriginIsolationHeader",
+      status: "experimental",
     },
     {
       name: "OriginPolicy",
@@ -1837,6 +1847,10 @@
     },
     {
       name: "VideoRotateToFullscreen",
+    },
+    {
+      name: "VirtualKeyboard",
+      status: "test",
     },
     {
       name: "VisibilityCollapseColumn",

@@ -260,7 +260,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // those two cases. Bug 88109.
     bool is_auto_start = browser_defaults::kSyncAutoStarts;
 #if defined(OS_CHROMEOS)
-    if (chromeos::features::IsSplitSyncConsentEnabled())
+    if (chromeos::features::IsSplitSettingsSyncEnabled())
       is_auto_start = false;
 #endif
     init_params.start_behavior = is_auto_start

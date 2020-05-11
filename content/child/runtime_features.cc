@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -296,6 +297,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      net::features::kCookiesWithoutSameSiteMustBeSecure, kEnableOnly},
     {wf::EnablePointerLockOptions, features::kPointerLockOptions, kEnableOnly},
     {wf::EnableDocumentPolicy, features::kDocumentPolicy, kUseFeatureState},
+    {wf::EnableScrollUnification, features::kScrollUnification,
+     kUseFeatureState},
     {wf::EnableNeverSlowMode, features::kNeverSlowMode, kUseFeatureState},
     {wf::EnableShadowDOMV0, blink::features::kWebComponentsV0Enabled,
      kEnableOnly},
@@ -349,7 +352,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {"FeaturePolicyForClientHints",
            features::kFeaturePolicyForClientHints, kUseFeatureState},
-          {"LayoutNGFlexBox", blink::features::kFlexNG, kEnableOnly},
+          {"FlexGaps", blink::features::kFlexGaps, kEnableOnly},
           {"FontAccess", blink::features::kFontAccess, kUseFeatureState},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching,
            kUseFeatureState},
@@ -359,9 +362,12 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow,
            kEnableOnly},
           {"LayoutNG", blink::features::kLayoutNG, kUseFeatureState},
+          {"LayoutNGFlexBox", blink::features::kFlexNG, kEnableOnly},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
           {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},
+          {"OriginIsolationHeader", features::kOriginIsolationHeader,
+           kUseFeatureState},
           {"RawClipboard", blink::features::kRawClipboard, kEnableOnly},
           {"ShadowDOMV0", blink::features::kWebComponentsV0Enabled,
            kEnableOnly},

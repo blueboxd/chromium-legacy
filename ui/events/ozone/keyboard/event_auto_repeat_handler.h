@@ -21,6 +21,7 @@ class COMPONENT_EXPORT(EVENTS_OZONE) EventAutoRepeatHandler {
     // Useful under janky situations.
     virtual void FlushInput(base::OnceClosure closure) = 0;
     virtual void DispatchKey(unsigned int key,
+                             unsigned int scan_code,
                              bool down,
                              bool repeat,
                              base::TimeTicks timestamp,
@@ -32,6 +33,7 @@ class COMPONENT_EXPORT(EVENTS_OZONE) EventAutoRepeatHandler {
   ~EventAutoRepeatHandler();
 
   void UpdateKeyRepeat(unsigned int key,
+                       unsigned int scan_code,
                        bool down,
                        bool suppress_auto_repeat,
                        int device_id);
@@ -47,7 +49,7 @@ class COMPONENT_EXPORT(EVENTS_OZONE) EventAutoRepeatHandler {
  private:
   static constexpr unsigned int kInvalidKey = 0;
 
-  void StartKeyRepeat(unsigned int key, int device_id);
+  void StartKeyRepeat(unsigned int key, unsigned int scan_code, int device_id);
   void ScheduleKeyRepeat(const base::TimeDelta& delay);
   void OnRepeatTimeout(unsigned int sequence);
   void OnRepeatCommit(unsigned int sequence);
@@ -55,6 +57,7 @@ class COMPONENT_EXPORT(EVENTS_OZONE) EventAutoRepeatHandler {
   // Key repeat state.
   bool auto_repeat_enabled_ = true;
   unsigned int repeat_key_ = kInvalidKey;
+  unsigned int repeat_scan_code_ = 0;
   unsigned int repeat_sequence_ = 0;
   int repeat_device_id_ = 0;
   base::TimeDelta repeat_delay_;

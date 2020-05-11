@@ -201,6 +201,9 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
 
   // Creates user profiles with open user sessions to simulate crashes.
   void CreateUserProfiles() {
+    // NOTE: This does not include IdentityManager prefs like
+    // kGoogleServicesAccountId, so the IdentityManager will not initialize
+    // itself with a primary account.
     base::DictionaryValue prefs;
     prefs.SetString(prefs::kSessionExitType, "Crashed");
     std::string prefs_json;

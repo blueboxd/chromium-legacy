@@ -475,6 +475,7 @@ android_library("browser_java") {
     ":common_aidl_java",
     ":common_crash_java",
     ":common_java",
+    ":common_metrics_java",
     ":common_platform_services_java",
     ":common_variations_java",
     ":resources",
@@ -522,6 +523,20 @@ android_library("browser_java") {
 
   android_manifest_for_lint = system_webview_android_manifest
   min_sdk_version = 21
+}
+
+android_library("common_metrics_java") {
+  sources = [
+    "java/src/org/chromium/android_webview/common/metrics/AwNonembeddedUmaRecorder.java",
+    "java/src/org/chromium/android_webview/common/metrics/AwNonembeddedUmaReplayer.java",
+  ]
+  deps = [
+    ":common_aidl_java",
+    ":common_java",
+    "//android_webview/proto:metrics_bridge_records_proto_java",
+    "//base:base_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
+  ]
 }
 
 android_library("common_variations_java") {
@@ -606,6 +621,7 @@ android_aidl("common_aidl") {
   sources = [
     "java/src/org/chromium/android_webview/common/services/ICrashReceiverService.aidl",
     "java/src/org/chromium/android_webview/common/services/IDeveloperUiService.aidl",
+    "java/src/org/chromium/android_webview/common/services/IMetricsBridgeService.aidl",
     "java/src/org/chromium/android_webview/common/services/IVariationsSeedServer.aidl",
     "java/src/org/chromium/android_webview/common/services/IVariationsSeedServerCallback.aidl",
   ]

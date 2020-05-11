@@ -115,6 +115,10 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
     bool claimed = false;
     uint8_t alternate_setting = 0;
 
+    // The count of outstanding requests, including associated interfaces
+    // claimed which require keeping the handles owned by this object open.
+    int reference_count = 0;
+
     // Closures to execute when |function_path| has been populated.
     std::vector<OpenInterfaceCallback> ready_callbacks;
 
@@ -177,6 +181,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                               IsochronousTransferCallback callback,
                               mojom::UsbTransferStatus status);
   bool AllFunctionsEnumerated() const;
+  void ReleaseInterfaceReference(Interface* interface);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

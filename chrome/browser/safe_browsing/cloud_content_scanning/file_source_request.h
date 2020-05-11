@@ -15,7 +15,9 @@ namespace safe_browsing {
 // GetRequestData will return quickly.
 class FileSourceRequest : public BinaryUploadService::Request {
  public:
-  FileSourceRequest(base::FilePath path,
+  FileSourceRequest(bool block_unsupported_types,
+                    base::FilePath path,
+                    base::FilePath file_name,
                     BinaryUploadService::Callback callback);
   FileSourceRequest(const FileSourceRequest&) = delete;
   FileSourceRequest& operator=(const FileSourceRequest&) = delete;
@@ -39,7 +41,14 @@ class FileSourceRequest : public BinaryUploadService::Request {
   BinaryUploadService::Result cached_result_;
   Data cached_data_;
 
+  bool block_unsupported_types_;
+
+  // Path to the file on disk.
   base::FilePath path_;
+
+  // File name excluding the path.
+  base::FilePath file_name_;
+
   base::WeakPtrFactory<FileSourceRequest> weakptr_factory_{this};
 };
 

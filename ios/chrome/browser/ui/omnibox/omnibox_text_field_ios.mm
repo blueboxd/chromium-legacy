@@ -6,10 +6,11 @@
 
 #import <CoreText/CoreText.h>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/grit/components_scaled_resources.h"

@@ -15,6 +15,7 @@ namespace json_proto {
 class JsonProtoConverter {
  public:
   std::string Convert(const json_proto::JsonObject&);
+  std::string Convert(const json_proto::ArrayValue&);
 
  private:
   std::stringstream data_;

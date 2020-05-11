@@ -356,17 +356,15 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
     // Ensure the mouse is visible and move to start position, in case it will
     // trigger any hover or mousemove effects.
     context->web_view()->SetIsActive(true);
-
-    // Send mouse move event using pointer actions
-    SyntheticPointerActionParams param = SyntheticPointerActionParams(
-        SyntheticPointerActionParams::PointerActionType::MOVE);
-    param.set_position(gfx::PointF(start_x, start_y));
-
-    SyntheticPointerActionListParams params;
-    params.PushPointerActionParams(param);
-    params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
-
-    injector->QueueSyntheticPointerAction(params, base::DoNothing());
+    blink::WebMouseEvent mouseMove(blink::WebInputEvent::Type::kMouseMove,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   ui::EventTimeForNow());
+    mouseMove.SetPositionInWidget(start_x, start_y);
+    CHECK(context->web_view()->MainFrameWidget());
+    context->web_view()->MainFrameWidget()->HandleInputEvent(
+        blink::WebCoalescedInputEvent(mouseMove));
+    context->web_view()->MainFrameWidget()->SetCursorVisibilityState(
+        cursor_visible);
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =

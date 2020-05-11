@@ -26,10 +26,6 @@ namespace util {
 namespace chromeos {
 
 namespace {
-bool SetFileContents(const base::FilePath& path, const std::string& contents) {
-  return static_cast<std::string::size_type>(base::WriteFile(
-             path, contents.c_str(), contents.size())) == contents.size();
-}
 
 // Since it would be very hard to mock sysfs instead we will send in our own
 // implementation of WaitForKernelNotification which instead will block on a
@@ -68,6 +64,7 @@ void RunLoopRunWithTimeout(base::TimeDelta timeout) {
                                                        timeout);
   run_loop.Run();
 }
+
 }  // namespace
 
 class TestSystemMemoryPressureEvaluator : public SystemMemoryPressureEvaluator {
@@ -113,14 +110,14 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, ParseMarginFileGood) {
 
   base::FilePath margin_file = tmp_dir.GetPath().Append("margin");
 
-  ASSERT_TRUE(SetFileContents(margin_file, "123"));
+  ASSERT_TRUE(base::WriteFile(margin_file, "123"));
   const std::vector<int> parts1 =
       TestSystemMemoryPressureEvaluator::GetMarginFileParts(
           margin_file.value());
   ASSERT_EQ(1u, parts1.size());
   ASSERT_EQ(123, parts1[0]);
 
-  ASSERT_TRUE(SetFileContents(margin_file, "123 456"));
+  ASSERT_TRUE(base::WriteFile(margin_file, "123 456"));
   const std::vector<int> parts2 =
       TestSystemMemoryPressureEvaluator::GetMarginFileParts(
           margin_file.value());
@@ -135,19 +132,19 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, ParseMarginFileBad) {
   base::FilePath margin_file = tmp_dir.GetPath().Append("margin");
 
   // An empty margin file is bad.
-  ASSERT_TRUE(SetFileContents(margin_file, ""));
+  ASSERT_TRUE(base::WriteFile(margin_file, ""));
   ASSERT_TRUE(
       TestSystemMemoryPressureEvaluator::GetMarginFileParts(margin_file.value())
           .empty());
 
   // The numbers will be in base10, so 4a6 would be invalid.
-  ASSERT_TRUE(SetFileContents(margin_file, "123 4a6"));
+  ASSERT_TRUE(base::WriteFile(margin_file, "123 4a6"));
   ASSERT_TRUE(
       TestSystemMemoryPressureEvaluator::GetMarginFileParts(margin_file.value())
           .empty());
 
   // The numbers must be integers.
-  ASSERT_TRUE(SetFileContents(margin_file, "123.2 412.3"));
+  ASSERT_TRUE(base::WriteFile(margin_file, "123.2 412.3"));
   ASSERT_TRUE(
       TestSystemMemoryPressureEvaluator::GetMarginFileParts(margin_file.value())
           .empty());
@@ -238,11 +235,11 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
 
   // Set the margin values to 500 (critical) and 1000 (moderate).
   const std::string kMarginContents = "500 1000";
-  ASSERT_TRUE(SetFileContents(margin_file, kMarginContents));
+  ASSERT_TRUE(base::WriteFile(margin_file, kMarginContents));
 
   // Write the initial available contents.
   const std::string kInitialAvailableContents = "1500";
-  ASSERT_TRUE(SetFileContents(available_file, kInitialAvailableContents));
+  ASSERT_TRUE(base::WriteFile(available_file, kInitialAvailableContents));
 
   base::test::TaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::UI);
@@ -286,7 +283,7 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
             evaluator->current_vote());
 
   // Moderate Pressure.
-  ASSERT_TRUE(SetFileContents(available_file, "900"));
+  ASSERT_TRUE(base::WriteFile(available_file, "900"));
   TriggerKernelNotification(write_end.get());
   // TODO(bgeffon): Use RunLoop::QuitClosure() instead of relying on "spin for
   // 1 second".
@@ -295,28 +292,28 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
             evaluator->current_vote());
 
   // Critical Pressure.
-  ASSERT_TRUE(SetFileContents(available_file, "450"));
+  ASSERT_TRUE(base::WriteFile(available_file, "450"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL,
             evaluator->current_vote());
 
   // Moderate Pressure.
-  ASSERT_TRUE(SetFileContents(available_file, "550"));
+  ASSERT_TRUE(base::WriteFile(available_file, "550"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,
             evaluator->current_vote());
 
   // No pressure, note: this will not cause any event.
-  ASSERT_TRUE(SetFileContents(available_file, "1150"));
+  ASSERT_TRUE(base::WriteFile(available_file, "1150"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             evaluator->current_vote());
 
   // Back into moderate.
-  ASSERT_TRUE(SetFileContents(available_file, "950"));
+  ASSERT_TRUE(base::WriteFile(available_file, "950"));
   TriggerKernelNotification(write_end.get());
   RunLoopRunWithTimeout(base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE,

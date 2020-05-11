@@ -6,6 +6,7 @@
 
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
@@ -18,9 +19,9 @@ CacheStorageQuotaClient::CacheStorageQuotaClient(
 
 CacheStorageQuotaClient::~CacheStorageQuotaClient() = default;
 
-storage::QuotaClient::ID CacheStorageQuotaClient::id() const {
+storage::QuotaClientType CacheStorageQuotaClient::type() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return GetIDFromOwner(owner_);
+  return GetClientTypeFromOwner(owner_);
 }
 
 void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {}
@@ -90,13 +91,13 @@ bool CacheStorageQuotaClient::DoesSupport(
 }
 
 // static
-storage::QuotaClient::ID CacheStorageQuotaClient::GetIDFromOwner(
+storage::QuotaClientType CacheStorageQuotaClient::GetClientTypeFromOwner(
     CacheStorageOwner owner) {
   switch (owner) {
     case CacheStorageOwner::kCacheAPI:
-      return kServiceWorkerCache;
+      return storage::QuotaClientType::kServiceWorkerCache;
     case CacheStorageOwner::kBackgroundFetch:
-      return kBackgroundFetch;
+      return storage::QuotaClientType::kBackgroundFetch;
   }
 }
 

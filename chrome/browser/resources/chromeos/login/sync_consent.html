@@ -106,13 +106,10 @@
             <div class="overview-list-item-description" consent-description>
               [[i18nDynamic(locale, 'syncConsentScreenChromeSyncDescription')]]
             </div>
-            <!-- TODO(jamescook): Remove this after adding a toggle to control
-                 browser sync. -->
-            <cr-checkbox id="reviewBrowserSyncOptionsBox" consent-description>
-              [[i18nDynamic(locale, 'syncConsentReviewBrowserSyncOptions')]]
-            </cr-checkbox>
           </div>
-          <!-- TODO(jamescook): Add cr-toggle to control browser sync. -->
+          <cr-toggle id="browserSyncToggle" checked
+              aria-labelledby="browserSyncName">
+          </cr-toggle>
         </div>
 
         <!-- Personalize Google services -->

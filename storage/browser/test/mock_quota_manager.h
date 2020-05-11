@@ -13,8 +13,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_task.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -58,14 +60,13 @@ class MockQuotaManager : public QuotaManager {
                                GetOriginsCallback callback) override;
 
   // Removes an origin from the canned list of origins, but doesn't touch
-  // anything on disk. The caller must provide |quota_client_mask| which
+  // anything on disk. The caller must provide |quota_client_types| which
   // specifies the types of QuotaClients which should be removed from this
-  // origin as a bitmask built from QuotaClient::IDs. Setting the mask to
-  // QuotaClient::kAllClientsMask will remove all clients from the origin,
-  // regardless of type.
+  // origin. Setting the mask to AllQuotaClientTypes() will remove all clients
+  // from the origin, regardless of type.
   void DeleteOriginData(const url::Origin& origin,
                         blink::mojom::StorageType type,
-                        int quota_client_mask,
+                        QuotaClientTypes quota_client_types,
                         StatusCallback callback) override;
 
   // Overrides QuotaManager's implementation so that tests can observe
@@ -77,12 +78,12 @@ class MockQuotaManager : public QuotaManager {
 
   // Helper methods for timed-deletion testing:
   // Adds an origin to the canned list that will be searched through via
-  // GetOriginsModifiedSince. The caller must provide |quota_client_mask|
-  // which specifies the types of QuotaClients this canned origin contains
-  // as a bitmask built from QuotaClient::IDs.
+  // GetOriginsModifiedSince.
+  // |quota_clients| specified the types of QuotaClients this canned origin
+  // contains.
   bool AddOrigin(const url::Origin& origin,
                  StorageType type,
-                 int quota_client_mask,
+                 QuotaClientTypes quota_client_types,
                  base::Time modified);
 
   // Helper methods for timed-deletion testing:
@@ -91,7 +92,7 @@ class MockQuotaManager : public QuotaManager {
   // canned list with the proper StorageType and client, returns true.
   bool OriginHasData(const url::Origin& origin,
                      StorageType type,
-                     QuotaClient::ID quota_client) const;
+                     QuotaClientType quota_client_type) const;
 
   std::map<const url::Origin, int> write_error_tracker() const {
     return write_error_tracker_;
@@ -109,13 +110,19 @@ class MockQuotaManager : public QuotaManager {
   struct OriginInfo {
     OriginInfo(const url::Origin& origin,
                StorageType type,
-               int quota_client_mask,
+               QuotaClientTypes quota_clients,
                base::Time modified);
     ~OriginInfo();
 
+    OriginInfo(const OriginInfo&) = delete;
+    OriginInfo& operator=(const OriginInfo&) = delete;
+
+    OriginInfo(OriginInfo&&);
+    OriginInfo& operator=(OriginInfo&&);
+
     url::Origin origin;
     StorageType type;
-    int quota_client_mask;
+    QuotaClientTypes quota_client_types;
     base::Time modified;
   };
 

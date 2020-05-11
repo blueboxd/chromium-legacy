@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

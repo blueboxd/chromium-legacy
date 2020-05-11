@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_piece.h"
 #import "ios/chrome/browser/ui/list_model/list_item.h"

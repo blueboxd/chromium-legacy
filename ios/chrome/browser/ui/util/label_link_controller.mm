@@ -7,7 +7,7 @@
 #include <map>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/util/CRUILabel+AttributeUtils.h"

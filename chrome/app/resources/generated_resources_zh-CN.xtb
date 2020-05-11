@@ -481,7 +481,7 @@
 <translation id="1623723619460186680">减少蓝光</translation>
 <translation id="1627276047960621195">文件描述符</translation>
 <translation id="1627408615528139100">已下载</translation>
-<translation id="1628948239858170093">先扫描文件再将其打开？</translation>
+<translation id="1628948239858170093">打开前，先扫描文件？</translation>
 <translation id="1629314197035607094">密码已过期</translation>
 <translation id="1630768113285622200">重启并继续</translation>
 <translation id="1630873818549593964">您孩子的 Google 课堂数据会受到妥善保护。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
@@ -769,7 +769,6 @@
 <translation id="1979095679518582070">关闭这项功能，设备仍然可以发送基本服务（例如系统更新和安全服务）所需的信息。</translation>
 <translation id="1979280758666859181">您正将版本更改为较旧版的 <ph name="PRODUCT_NAME" />。该版本的版本号必须与您设备上目前所安装版本的版本号相符，版本变更才会生效。</translation>
 <translation id="197989455406964291">KDC 不支持加密类型</translation>
-<translation id="1982354452682152483">未提供说明。</translation>
 <translation id="1984417487208496350">不提供任何保护（不建议）</translation>
 <translation id="1987317783729300807">帐号</translation>
 <translation id="1989112275319619282">浏览</translation>
@@ -783,6 +782,7 @@
 <translation id="2002109485265116295">实时</translation>
 <translation id="2003130567827682533">若想激活“<ph name="NAME" />”的数据流量服务，请先连接到 Wi-Fi 网络</translation>
 <translation id="2006638907958895361">在<ph name="APP" />中打开链接</translation>
+<translation id="2006864819935886708">连接</translation>
 <translation id="2007404777272201486">报告问题...</translation>
 <translation id="2010501376126504057">兼容的设备</translation>
 <translation id="2017334798163366053">停用性能数据收集</translation>
@@ -1183,7 +1183,7 @@
 <translation id="2509495747794740764">缩放值必须是一个介于 10 到 200 之间的数字。</translation>
 <translation id="2509566264613697683">8 倍</translation>
 <translation id="2510988373360790637">移除蓝牙设备</translation>
-<translation id="2513396635448525189">登入图片</translation>
+<translation id="2513396635448525189">登录图片</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">扫描</translation>
 <translation id="2518024842978892609">使用您的客户端证书</translation>
@@ -1272,7 +1272,7 @@
 <translation id="2636625531157955190">Chrome 无法访问这张图片。</translation>
 <translation id="2637400434494156704">PIN 码不正确。您还剩 1 次尝试机会。</translation>
 <translation id="2638087589890736295">必须输入密码才能开始同步</translation>
-<translation id="2638662041295312666">登录图片</translation>
+<translation id="2638662041295312666">登录帐号图片</translation>
 <translation id="264083724974021997">连接到您的手机 - 对话框</translation>
 <translation id="2641065435954454414">正在准备下载</translation>
 <translation id="2642111877055905627">足球</translation>
@@ -1378,7 +1378,6 @@
 <translation id="276221322463921688">显示器方向</translation>
 <translation id="2762441749940182211">已禁止使用摄像头</translation>
 <translation id="2765217105034171413">小</translation>
-<translation id="2766091842833763951">无法设置 <ph name="APP_NAME" />，因为出现了配置问题。请与贵组织的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="2766161002040448006">询问家长的意见</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> 将能够修改“<ph name="FILENAME" />”中的内容，除非您关闭此网站的所有标签页</translation>
 <translation id="276969039800130567">您已用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。</translation>
@@ -1669,12 +1668,6 @@
 <translation id="3143515551205905069">取消同步</translation>
 <translation id="3143754809889689516">从头播放</translation>
 <translation id="3144647712221361880">以其他身份打开链接</translation>
-<translation id="3145187901750964977">无法安装虚拟机。请重试，或与贵单位的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
-<translation id="3149477159749171726">版本：
-    <ph name="LINUX_VERSION" />
-
-    说明：
-    <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
 <translation id="3150693969729403281">立即进行安全检查</translation>
 <translation id="3150927491400159470">硬性重新加载</translation>
@@ -1710,7 +1703,6 @@
 <translation id="3192947282887913208">音频文件</translation>
 <translation id="3199127022143353223">服务器</translation>
 <translation id="3200941271596533635">开启/关闭阅读器模式</translation>
-<translation id="3201306578844503970">无法安装虚拟机，因为发生了网络连接错误。请重试，或与贵单位的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="3201422919974259695">可用的 USB 设备会显示在此处。</translation>
 <translation id="3202131003361292969">路径</translation>
 <translation id="3202173864863109533">此标签页已静音。</translation>
@@ -2005,7 +1997,6 @@
 <translation id="3592260987370335752">了解详情(&amp;L)</translation>
 <translation id="359283478042092570">输入</translation>
 <translation id="3593965109698325041">证书名称约束</translation>
-<translation id="3595381248165458839">请与贵组织的设备管理员联系</translation>
 <translation id="3596235046596950091">启用云服务</translation>
 <translation id="3596414637720633074">在无痕模式下阻止第三方 Cookie</translation>
 <translation id="3599221874935822507">凸起</translation>
@@ -2612,7 +2603,6 @@
 <translation id="4379281552162875326">卸载“<ph name="APP_NAME" />”？</translation>
 <translation id="4380648069038809855">已进入全屏模式</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" />，以及另外 1 个帐号}other{<ph name="EMAIL" />，以及另外 <ph name="EXTRA_ACCOUNTS" /> 个帐号}}</translation>
-<translation id="43829217466934313">不允许在此设备上使用 <ph name="APP_NAME" />。请与贵组织的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="4384312707950789900">添加到首选网络列表</translation>
 <translation id="4384652540891215547">激活该扩展程序</translation>
 <translation id="438503109373656455">小马</translation>
@@ -3199,6 +3189,7 @@
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下载多个文件</translation>
 <translation id="5192062846343383368">打开 Family Link 应用，查看您的监管设置</translation>
 <translation id="5193988420012215838">已复制到剪贴板</translation>
+<translation id="5197255632782567636">互联网</translation>
 <translation id="5198430103906431024">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会有助于提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据还会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。</translation>
 <translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{点击即可查看该扩展程序}other{点击即可查看这些扩展程序}}</translation>
 <translation id="5204673965307125349">请对此设备执行 Powerwash，然后重试。</translation>
@@ -3267,7 +3258,6 @@
 <translation id="5280426389926346830">创建快捷方式？</translation>
 <translation id="528208740344463258">要下载并使用 Android 应用，请先安装这项必不可少的更新。在您的<ph name="DEVICE_TYPE" />进行更新期间，您将无法使用此设备。待安装完毕后，您的<ph name="DEVICE_TYPE" />将会重启。</translation>
 <translation id="5282733140964383898">如果您启用了“不跟踪”，即意味着您的浏览流量中将会包含一个请求。所造成的任何影响均取决于网站是否回应该请求以及如何解读该请求。例如：某些网站在收到该请求后，可能会向您展示广告（这些广告并不是根据您访问过的其他网站展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、服务、广告和推荐内容，以及为了生成报告统计信息。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="5283049351426079445">确定要安装<ph name="APP_NAME" />吗？</translation>
 <translation id="5283677936944177147">糟糕！系统未能确定设备型号或序列号。</translation>
 <translation id="5284445933715251131">继续下载</translation>
 <translation id="5285635972691565180">显示屏 <ph name="DISPLAY_ID" /></translation>
@@ -3452,6 +3442,7 @@
 <translation id="5518219166343146486">当网站想查看复制到剪贴板的文字和图片时询问您</translation>
 <translation id="5518584115117143805">电子邮件加密证书</translation>
 <translation id="5519045302974745794">EasyUnlock</translation>
+<translation id="5519195206574732858">LTE</translation>
 <translation id="5521078259930077036">这是您想要的主页吗？</translation>
 <translation id="5522156646677899028">该扩展程序存在严重的安全漏洞。</translation>
 <translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{您的管理员已安装了 1 个扩展程序}other{您的管理员已安装了 # 个扩展程序}}</translation>
@@ -3546,6 +3537,7 @@
 <translation id="562935524653278697">您的管理员已停止同步您的书签、历史记录、密码及其他设置。</translation>
 <translation id="5632566673632479864">您的帐号 <ph name="EMAIL" /> 已无法再用作主帐号。该帐号由 <ph name="DOMAIN" /> 管理，因此您的书签、历史记录、密码及其他设置将从此设备中清除。</translation>
 <translation id="5632592977009207922">正在下载，还剩 <ph name="PERCENT_REMAINING" />%</translation>
+<translation id="563371367637259496">移动网络</translation>
 <translation id="563535393368633106">使用前先询问（推荐）</translation>
 <translation id="5636996382092289526">要使用“<ph name="NETWORK_ID" />”，您可能需要先<ph name="LINK_START" />访问该网络的登录页面<ph name="LINK_END" />，该页面会在几秒钟后自动打开。如果未打开，就表示该网络无法使用。</translation>
 <translation id="5637476008227280525">移动数据开关</translation>
@@ -3876,7 +3868,6 @@
 <translation id="6075731018162044558">糟糕！系统无法为此设备获得长期的 API 访问令牌。</translation>
 <translation id="6075907793831890935">与名为“<ph name="HOSTNAME" />”的设备交换数据</translation>
 <translation id="6076175485108489240">使用位置信息。允许具有位置权限的应用和服务使用您设备的位置信息。Google 可能会定期收集位置数据，并以匿名方式使用这类数据，从而提高位置信息精确度并改善基于地理位置的服务。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
-<translation id="6076448957780543068">包括此屏幕截图</translation>
 <translation id="6076491747490570887">冷灰色</translation>
 <translation id="6077131872140550515">从首选网络列表中移除</translation>
 <translation id="6077189836672154517">与 <ph name="DEVICE_TYPE" /> 相关的提示和最新资讯</translation>
@@ -3948,7 +3939,6 @@
 <translation id="6155141482566063812">背景标签页正在共享您的屏幕</translation>
 <translation id="6156323911414505561">显示书签栏</translation>
 <translation id="6156863943908443225">脚本缓存</translation>
-<translation id="6157197137667039897">无法安装 <ph name="APP_NAME" />。请重试，或与贵组织的设备管理员联系。错误代码：<ph name="ERROR_CODE" />。</translation>
 <translation id="6160625263637492097">提供用于验证身份的证书</translation>
 <translation id="6163363155248589649">正常(&amp;N)</translation>
 <translation id="6163376401832887457">Kerberos 设置</translation>
@@ -3975,7 +3965,6 @@
 <translation id="6202517672944764518">已下载的内容</translation>
 <translation id="6206311232642889873">复制图片(&amp;Y)</translation>
 <translation id="6207200176136643843">重置为默认缩放级别</translation>
-<translation id="6207282396926186323">安装<ph name="APP_NAME" />（Linux 应用）</translation>
 <translation id="6207937957461833379">国家/地区</translation>
 <translation id="6208521041562685716">正在激活移动数据</translation>
 <translation id="6209908325007204267">您的设备随附了一份 Chrome 企业版升级许可，但您的用户名并未与任何企业帐号关联。请先在辅助设备上前往 g.co/ChromeEnterpriseAccount 创建一个企业帐号。</translation>
@@ -4111,7 +4100,6 @@
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST" /></translation>
 <translation id="6385149369087767061">请连接到互联网，然后重试</translation>
 <translation id="6385543213911723544">网站可以保存和读取 Cookie 数据</translation>
-<translation id="6386099547750337629">如果您不希望如此，请与支持团队联系。</translation>
 <translation id="6387674443318562538">垂直分割</translation>
 <translation id="6388429472088318283">搜索语言</translation>
 <translation id="6389891144950120352">EasyUnlock 屏幕锁定</translation>
@@ -4719,7 +4707,7 @@
 <translation id="7197190419934240522">每次浏览时都可畅享 Google 搜索功能和 Google 智能工具</translation>
 <translation id="7197632491113152433">我们发现，您的帐号中有 <ph name="NUMBER_OF_APPS" /> 款可在此设备上使用的应用。</translation>
 <translation id="7199158086730159431">获取帮助(&amp;E)</translation>
-<translation id="7199237594231970159">隐私设置“已验证的访问权限”</translation>
+<translation id="7199237594231970159">“已验证的访问权限”隐私设置</translation>
 <translation id="7200083590239651963">选择配置</translation>
 <translation id="7201042526153088083">在 <ph name="DEVICE_TYPE" /> 上通过 Google Play 安装应用和游戏。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="720110658997053098">让此设备永久处于自助服务终端模式</translation>
@@ -5144,7 +5132,6 @@
 <translation id="7768784765476638775">随选朗读</translation>
 <translation id="7769672763586021400">型号 ID</translation>
 <translation id="7770612696274572992">从其他设备复制的图片</translation>
-<translation id="7770651108375708429">断开 Wi-Fi</translation>
 <translation id="7771452384635174008">布局</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7772127298218883077">关于<ph name="PRODUCT_NAME" /></translation>
@@ -5524,7 +5511,6 @@
 <translation id="8226742006292257240">以下是一个分配给您计算机的、随机生成的 TPM 密码：</translation>
 <translation id="8227119283605456246">附上文件</translation>
 <translation id="8230134520748321204">要保存 <ph name="ORIGIN" /> 的密码吗？</translation>
-<translation id="8233762480744368479">互联网设置</translation>
 <translation id="8234795456569844941">请告诉我们在您收到个人资料错误消息之前发生的情况，以帮助我们的工程师解决此问题：</translation>
 <translation id="8236123533334037984">贵组织正在扫描您上传的文件，以审核它是否符合安全政策。</translation>
 <translation id="8236917170563564587">改为分享此标签页</translation>
@@ -5681,7 +5667,6 @@
 <translation id="84297032718407999">您将在 <ph name="LOGOUT_TIME_LEFT" />后退出登录</translation>
 <translation id="8431190899827883166">显示点按操作反馈</translation>
 <translation id="8431909052837336408">更改 SIM 卡 PIN 码</translation>
-<translation id="8433186206711564395">网络设置</translation>
 <translation id="8434480141477525001">NaCl调试端口</translation>
 <translation id="8435395510592618362">通过“<ph name="APP_NAME" />”验证您的身份</translation>
 <translation id="8438328416656800239">改用智能浏览器</translation>
@@ -5872,7 +5857,6 @@
 <translation id="8688579245973331962">看不到您的姓名？</translation>
 <translation id="8688591111840995413">密码错误</translation>
 <translation id="8688672835843460752">可用</translation>
-<translation id="8691418731028620688">连接 Wi-Fi</translation>
 <translation id="8695825812785969222">打开位置(&amp;L)...</translation>
 <translation id="8698269656364382265">要返回到上一个屏幕，请从屏幕左侧向右侧滑动。</translation>
 <translation id="869884720829132584">应用菜单</translation>
@@ -6038,7 +6022,6 @@
 <translation id="8872777911145321141">在网站想使用您的虚拟实境设备和数据时询问您（推荐）</translation>
 <translation id="8874184842967597500">未连接</translation>
 <translation id="8875520811099717934">Linux 升级</translation>
-<translation id="8875775314572167244">以太网设置</translation>
 <translation id="8876307312329369159">在演示会话中，此设置无法更改。</translation>
 <translation id="8877448029301136595">[上级目录]</translation>
 <translation id="8879284080359814990">显示为标签页(&amp;S)</translation>
@@ -6078,6 +6061,7 @@
 <translation id="8926389886865778422">不再询问</translation>
 <translation id="892706138619340876">部分设置已重置</translation>
 <translation id="8930351635855238750">您需要重新加载网页，才能使新的 Cookie 设置生效</translation>
+<translation id="8930622219860340959">无线</translation>
 <translation id="8931076093143205651">发送使用情况数据和诊断数据。自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您的 Android 使用体验。这些数据会有助于提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据还会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。此设备的所有者可以选择向 Google 发送此设备的诊断数据和使用情况数据。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。</translation>
 <translation id="8931394284949551895">新设备</translation>
 <translation id="8931475688782629595">管理您的同步数据</translation>
@@ -6245,7 +6229,6 @@
 <translation id="9148126808321036104">重新登录</translation>
 <translation id="9149866541089851383">编辑...</translation>
 <translation id="9150045010208374699">使用您的摄像头</translation>
-<translation id="9150429437595727962">Wi-Fi 设置</translation>
 <translation id="9153934054460603056">保存身份信息和密码</translation>
 <translation id="9154194610265714752">已更新</translation>
 <translation id="91568222606626347">创建快捷方式…</translation>

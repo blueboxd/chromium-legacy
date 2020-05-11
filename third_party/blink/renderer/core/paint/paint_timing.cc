@@ -169,12 +169,11 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
   RegisterNotifySwapTime(
-      event, CrossThreadBindOnce(&PaintTiming::ReportSwapTime,
-                                 WrapCrossThreadWeakPersistent(this), event));
+      CrossThreadBindOnce(&PaintTiming::ReportSwapTime,
+                          WrapCrossThreadWeakPersistent(this), event));
 }
 
-void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
-                                         ReportTimeCallback callback) {
+void PaintTiming::RegisterNotifySwapTime(ReportTimeCallback callback) {
   // ReportSwapTime will queue a swap-promise, the callback is called when the
   // compositor submission of the current render frame completes or fails to
   // happen.

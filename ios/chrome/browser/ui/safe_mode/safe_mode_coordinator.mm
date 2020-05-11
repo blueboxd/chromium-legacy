@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 
-#include "base/logging.h"
+#include <ostream>
+
+#include "base/notreached.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_view_controller.h"
 

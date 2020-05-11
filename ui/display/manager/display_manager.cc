@@ -49,6 +49,7 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_util.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/events/devices/touchscreen_device.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1472,25 +1473,25 @@ void DisplayManager::SetTouchCalibrationData(
     int64_t display_id,
     const TouchCalibrationData::CalibrationPointPairQuad& point_pair_quad,
     const gfx::Size& display_bounds,
-    const TouchDeviceIdentifier& touch_device_identifier) {
+    const ui::TouchscreenDevice& touchdevice) {
   // We do not proceed with setting the calibration and association if the
   // touch device identified by |touch_device_identifier| is an internal touch
   // device.
-  if (IsInternalTouchscreenDevice(touch_device_identifier))
+  if (touchdevice.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL)
     return;
 
   // Id of the display the touch device in context is currently associated
   // with. This display id will be equal to |display_id| if no reassociation is
   // being performed.
   int64_t previous_display_id =
-      touch_device_manager_->GetAssociatedDisplay(touch_device_identifier);
+      touch_device_manager_->GetAssociatedDisplay(touchdevice);
 
   bool update_add_support = false;
   bool update_remove_support = false;
 
   TouchCalibrationData calibration_data(point_pair_quad, display_bounds);
-  touch_device_manager_->AddTouchCalibrationData(touch_device_identifier,
-                                                 display_id, calibration_data);
+  touch_device_manager_->AddTouchCalibrationData(touchdevice, display_id,
+                                                 calibration_data);
 
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
@@ -1531,10 +1532,9 @@ void DisplayManager::SetTouchCalibrationData(
 
 void DisplayManager::ClearTouchCalibrationData(
     int64_t display_id,
-    base::Optional<TouchDeviceIdentifier> touch_device_identifier) {
-  if (touch_device_identifier) {
-    touch_device_manager_->ClearTouchCalibrationData(*touch_device_identifier,
-                                                     display_id);
+    base::Optional<ui::TouchscreenDevice> touchdevice) {
+  if (touchdevice) {
+    touch_device_manager_->ClearTouchCalibrationData(*touchdevice, display_id);
   } else {
     touch_device_manager_->ClearAllTouchCalibrationData(display_id);
   }

@@ -19,6 +19,8 @@
 <translation id="1195412055398077112">अत्याधिकस्क्यान</translation>
 <translation id="119944043368869598">सबै सफा गर्नुहोस्</translation>
 <translation id="1199716647557067911">तपाईंलाई साँच्चिकै स्विचमार्फत पहुँच राख्ने सुविधा निष्क्रिय पार्न चाहनुहुन्छ?</translation>
+<translation id="121097972571826261">कर्सरलाई एक शब्द अगाडि लैजानुहोस्</translation>
+<translation id="1229194443904279055">पाठ चयन गर्न छाडियोस्</translation>
 <translation id="1247372569136754018">माइक्रोफोन (आन्तरिक)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> द्वारा चार्ज हुँदै</translation>
 <translation id="1255033239764210633">मौसम कस्तो छ?</translation>
@@ -109,6 +111,7 @@
 <translation id="2298170939937364391">फुल स्क्रिन म्याग्निफायर सक्षम पारियो। यसलाई निष्क्रिय पार्न फेरि Ctrl+Search+M थिच्नुहोस्।</translation>
 <translation id="2302092602801625023">यो खाता Family Link मार्फत व्यवस्थित गरिन्छ</translation>
 <translation id="2303600792989757991">सञ्झ्याल सिंहावलोकन टगल गर्नुहोस्</translation>
+<translation id="2322173485024759474">कर्सरलाई एक अक्षर पछाडि लैजानुहोस्</translation>
 <translation id="2339073806695260576">टिपोट गर्न, स्क्रिनसट खिच्न, लेजर पोइन्टर वा म्याग्निफाइङ्ग ग्लासको प्रयोग गर्न सेल्फमा रहेको स्टाइलस बटनमा ट्याप गर्नुहोस्।</translation>
 <translation id="2341729377289034582">ठाडो अवस्थामा लक गरियो</translation>
 <translation id="2352467521400612932">स्टाइलस सम्बन्धी सेटिङहरू</translation>
@@ -238,6 +241,7 @@
 <translation id="383629559565718788">किबोर्डका सेटिङहरू देखाउनुहोस्</translation>
 <translation id="3846575436967432996">सञ्जाल जानकारी उपलब्ध छैन</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
+<translation id="385300504083504382">पाठको सुरुवातमा जानुहोस्</translation>
 <translation id="3891340733213178823">साइन आउट गर्न Ctrl+Shift+Q लाई दुईपटक थिच्नुहोस्।</translation>
 <translation id="3893630138897523026">ChromeVox (बोली पृष्ठपोषण)</translation>
 <translation id="3897533311200664389">पाठमार्फत गरिने क्वेरी सुरु गर्नुहोस्</translation>
@@ -346,6 +350,7 @@
 <translation id="5379115545237091094">अत्यधिक प्रयासहरू भए</translation>
 <translation id="5397578532367286026">यो प्रयोगकर्ताको उपयोग र इतिहासलाई व्यवस्थापक (<ph name="MANAGER_EMAIL" />) ले chrome.com मा पुनरीक्षण गर्न सक्छ।</translation>
 <translation id="5400461572260843123">द्रुत सेटिङहरू, सूचना केन्द्रमाथि पहुँच राख्न search + left बटन थिच्नुहोस्।</translation>
+<translation id="5428899915242071344">पाठ चयन गर्न थालियोस्</translation>
 <translation id="5430931332414098647">तात्कालिक टेदरिङ</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">सबै उपलब्ध प्रयोगकर्ताहरू यस सत्रमा पहिले नै थपिएका छन्।</translation>
@@ -467,6 +472,7 @@
 <translation id="6777216307882431711">जडान गरिएका USB-C यन्त्रहरू चार्ज गर्दै</translation>
 <translation id="6790428901817661496">प्ले गर्नुहोस्</translation>
 <translation id="6803622936009808957">समर्थित रिजोलुशन फेला नपारेदेखि मिरर डिस्प्ले गर्न सकेन। सट्टामा विस्तारित डेस्कटप प्रविष्ट गरियो।</translation>
+<translation id="6818242057446442178">कर्सरलाई एक शब्द पछाडि लैजानुहोस्</translation>
 <translation id="6820676911989879663">विश्राम लिनुहोस्!</translation>
 <translation id="6857811139397017780">सक्रिय <ph name="NETWORKSERVICE" /></translation>
 <translation id="6878400149835617132">सर्टकट निष्क्रिय पारियो</translation>
@@ -580,6 +586,7 @@
 <translation id="8308637677604853869">अघिल्लो मेनु</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">टिपोट सिर्जना गर्नुहोस्</translation>
+<translation id="8371779926711439835">कर्सरलाई एक अक्षर अगाडि लैजानुहोस्</translation>
 <translation id="8375916635258623388">यो <ph name="DEVICE_NAME" /> र तपाईंको फोन स्वतः जोडिने छन्</translation>
 <translation id="8388750414311082622">अन्तिम डेस्क हटाउन सकिँदैन।</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> का लागि विकल्प मेनु</translation>

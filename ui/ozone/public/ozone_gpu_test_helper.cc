@@ -9,10 +9,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_sender.h"
-#include "ipc/message_filter.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 

@@ -630,9 +630,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Returns true if the element or any ancestor is transformed.
   bool CompositesWithTransform() const;
 
-  // Returns true if the element or any ancestor has non 1 opacity.
-  bool CompositesWithOpacity() const;
-
   bool PaintsWithTransform(GlobalPaintFlags) const;
   bool PaintsIntoOwnBacking(GlobalPaintFlags) const;
   bool PaintsIntoOwnOrGroupedBacking(GlobalPaintFlags) const;

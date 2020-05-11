@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 

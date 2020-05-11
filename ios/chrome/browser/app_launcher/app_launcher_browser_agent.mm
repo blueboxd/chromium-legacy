@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_browser_agent.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_util.h"

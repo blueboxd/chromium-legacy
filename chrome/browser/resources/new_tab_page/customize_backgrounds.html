@@ -136,7 +136,7 @@
 </style>
 <ntp-grid id="collections" columns="3" hidden="[[selectedCollection]]">
   <div id="uploadFromDevice" class="tile" role="button"
-      on-click="onUploadFromDeviceClick_">
+      on-click="onUploadFromDeviceClick_" tabindex="0">
     <div class$="[[getCustomBackgroundClass_(theme, backgroundSelection)]]">
       <div class="image">
       </div>
@@ -149,7 +149,8 @@
     </div>
     <div class="label"></div>
   </div>
-  <div id="noBackground" class="tile" role="button" on-click="onDefaultClick_">
+  <div id="noBackground" class="tile" role="button" on-click="onDefaultClick_"
+       tabindex="0">
     <div class$="[[getNoBackgroundClass_(theme, backgroundSelection)]]">
       <div class="image">
         <ntp-mini-page></ntp-mini-page>

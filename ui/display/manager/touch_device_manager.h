@@ -145,17 +145,17 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
       const std::vector<ui::TouchscreenDevice>& all_devices);
 
   // Adds/updates the touch calibration data for touch device identified by
-  // |identifier| and display with id |display_id|. This updates the mapping for
+  // |device| and display with id |display_id|. This updates the mapping for
   // |active_touch_associations_|.
-  void AddTouchCalibrationData(const TouchDeviceIdentifier& identifier,
+  void AddTouchCalibrationData(const ui::TouchscreenDevice& device,
                                int64_t display_id,
                                const TouchCalibrationData& data);
 
   // Clears any touch calibration data associated with the pair, touch device
-  // identified by |identifier| and display identified by |display_id|.
+  // identified by |device| and display identified by |display_id|.
   // NOTE: This does not disassociate the pair, it only resets the calibration
   // data.
-  void ClearTouchCalibrationData(const TouchDeviceIdentifier& identifier,
+  void ClearTouchCalibrationData(const ui::TouchscreenDevice& device,
                                  int64_t display_id);
 
   // Clears all touch calibration data associated with the display identified
@@ -173,20 +173,20 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
       int64_t display_id = kInvalidDisplayId) const;
 
   // Returns true of the display identified by |display_id| is associated with
-  // the touch device identified by |identifier|.
+  // the touch device identified by |device|.
   bool DisplayHasTouchDevice(int64_t display_id,
-                             const TouchDeviceIdentifier& identifier) const;
+                             const ui::TouchscreenDevice& device) const;
 
   // Returns the display id of the display that the touch device identified by
-  // |identifier| is currently associated with. Returns |kInvalidDisplayId| if
+  // |device| is currently associated with. Returns |kInvalidDisplayId| if
   // no display associated to touch device was found.
-  int64_t GetAssociatedDisplay(const TouchDeviceIdentifier& identifier) const;
+  int64_t GetAssociatedDisplay(const ui::TouchscreenDevice& device) const;
 
   // Returns a list of touch devices that are associated with the display with
   // id as |display_id|. This list only includes active associations, that is,
   // the devices that are currently connected to the system and associated with
   // this display.
-  std::vector<TouchDeviceIdentifier> GetAssociatedTouchDevicesForDisplay(
+  std::vector<ui::TouchscreenDevice> GetAssociatedTouchDevicesForDisplay(
       int64_t display_id) const;
 
   // Registers the touch associations and port associations retrieved from the
@@ -259,11 +259,6 @@ DISPLAY_MANAGER_EXPORT std::ostream& operator<<(
 
 // Returns true if the device has any external touch devices attached.
 DISPLAY_MANAGER_EXPORT bool HasExternalTouchscreenDevice();
-
-// Returns true if the touch device identified by |identifier| is an
-// internal touchscreen device.
-DISPLAY_MANAGER_EXPORT bool IsInternalTouchscreenDevice(
-    const TouchDeviceIdentifier& identifier);
 }  // namespace display
 
 #endif  // UI_DISPLAY_MANAGER_TOUCH_DEVICE_MANAGER_H_

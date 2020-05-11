@@ -231,10 +231,6 @@
 #include "chrome/browser/ui/webui/discards/discards_ui.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/cast/cast_ui.h"
-#endif
-
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
 #endif
@@ -768,12 +764,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIMediaRouterInternalsHost &&
       media_router::MediaRouterEnabled(profile)) {
     return &NewWebUI<media_router::MediaRouterInternalsUI>;
-  }
-#endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  if (url.host_piece() == chrome::kChromeUICastHost &&
-      media_router::MediaRouterEnabled(profile)) {
-    return &NewWebUI<CastUI>;
   }
 #endif
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)

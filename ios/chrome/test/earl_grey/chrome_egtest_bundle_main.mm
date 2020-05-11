@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/at_exit.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"

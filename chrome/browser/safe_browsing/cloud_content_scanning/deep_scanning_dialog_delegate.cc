@@ -540,8 +540,9 @@ bool DeepScanningDialogDelegate::UploadData() {
 void DeepScanningDialogDelegate::PrepareFileRequest(
     const base::FilePath& path) {
   auto request = std::make_unique<FileSourceRequest>(
-      path, base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
-                           weak_ptr_factory_.GetWeakPtr(), path));
+      data_.settings.block_unsupported_file_types, path, path.BaseName(),
+      base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
+                     weak_ptr_factory_.GetWeakPtr(), path));
 
   FileSourceRequest* request_raw = request.get();
   PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request_raw);
@@ -596,11 +597,6 @@ void DeepScanningDialogDelegate::UploadFileForDeepScanning(
     BinaryUploadService::Result result,
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
-  DCHECK(
-      !data_.do_dlp_scan ||
-      (DlpDeepScanningClientRequest::FILE_UPLOAD ==
-       request->deep_scanning_request().dlp_scan_request().content_source()));
-
   BinaryUploadService* upload_service = GetBinaryUploadService();
   if (upload_service)
     upload_service->MaybeUploadForDeepScanning(std::move(request));

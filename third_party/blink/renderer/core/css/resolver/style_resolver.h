@@ -153,8 +153,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   void AddMatchedRulesToTracker(const ElementRuleCollector&);
 
-  void LoadPendingResources(StyleResolverState&);
-
   void CollectPseudoRulesForElement(const Element&,
                                     ElementRuleCollector&,
                                     PseudoId,

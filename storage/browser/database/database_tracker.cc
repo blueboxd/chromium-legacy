@@ -370,7 +370,7 @@ bool DatabaseTracker::DeleteClosedDatabase(
 
   if (quota_manager_proxy_.get() && db_file_size)
     quota_manager_proxy_->NotifyStorageModified(
-        QuotaClient::kDatabase, GetOriginFromIdentifier(origin_identifier),
+        QuotaClientType::kDatabase, GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary, -db_file_size);
 
   // Clean up the main database and invalidate the cached record.
@@ -447,7 +447,7 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
 
   if (quota_manager_proxy_.get() && deleted_size) {
     quota_manager_proxy_->NotifyStorageModified(
-        QuotaClient::kDatabase, GetOriginFromIdentifier(origin_identifier),
+        QuotaClientType::kDatabase, GetOriginFromIdentifier(origin_identifier),
         blink::mojom::StorageType::kTemporary, -deleted_size);
   }
 
@@ -654,7 +654,7 @@ int64_t DatabaseTracker::UpdateOpenDatabaseInfoAndNotify(
       info->SetDatabaseSize(name, new_size);
     if (quota_manager_proxy_.get())
       quota_manager_proxy_->NotifyStorageModified(
-          QuotaClient::kDatabase, GetOriginFromIdentifier(origin_id),
+          QuotaClientType::kDatabase, GetOriginFromIdentifier(origin_id),
           blink::mojom::StorageType::kTemporary, new_size - old_size);
     for (auto& observer : observers_)
       observer.OnDatabaseSizeChanged(origin_id, name, new_size);

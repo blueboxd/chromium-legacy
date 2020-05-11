@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/numerics/ranges.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"

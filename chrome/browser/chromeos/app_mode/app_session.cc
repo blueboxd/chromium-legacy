@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_session_plugin_handler.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_settings_navigation_throttle.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -174,10 +175,33 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
         browser->tab_strip_model()->GetActiveWebContents();
     std::string url_string =
         active_tab ? active_tab->GetURL().spec() : std::string();
-    LOG(WARNING) << "Browser opened in kiosk session"
-                 << ", url=" << url_string;
 
-    browser->window()->Close();
+    if (KioskSettingsNavigationThrottle::IsSettingsPage(url_string)) {
+      if (app_session_->settings_browser_ &&
+          browser != app_session_->settings_browser_) {
+        // Navigate to this page in the old browser, the current one will be
+        // closed.
+        browser->window()->Close();
+        NavigateParams nav_params(
+            app_session_->settings_browser_, GURL(url_string),
+            ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
+        Navigate(&nav_params);
+      } else {
+        app_session_->settings_browser_ = browser;
+        // We have to first call Restore() because the window was created as a
+        // fullscreen window, having no prior bounds.
+        // TODO(crbug.com/1015383): Figure out how to do it more cleanly.
+        browser->window()->Restore();
+        browser->window()->Maximize();
+      }
+    } else {
+      LOG(WARNING) << "Browser opened in kiosk session"
+                   << ", url=" << url_string;
+      browser->window()->Close();
+    }
+    // Call the callback to notify tests that browser was handled.
+    if (app_session_->on_handle_browser_callback_)
+      std::move(app_session_->on_handle_browser_callback_).Run();
   }
 
   // BrowserListObserver overrides:
@@ -194,6 +218,10 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
     // The app browser was removed.
     if (browser == browser_) {
       app_session_->OnLastAppWindowClosed();
+    }
+
+    if (browser == app_session_->settings_browser_) {
+      app_session_->settings_browser_ = nullptr;
     }
   }
 
@@ -256,6 +284,11 @@ void AppSession::InitForWebKiosk(Browser* browser) {
 
 void AppSession::SetAttemptUserExitForTesting(base::OnceClosure closure) {
   attempt_user_exit_ = std::move(closure);
+}
+
+void AppSession::SetOnHandleBrowserCallbackForTesting(
+    base::OnceClosure closure) {
+  on_handle_browser_callback_ = std::move(closure);
 }
 
 void AppSession::OnAppWindowAdded(AppWindow* app_window) {

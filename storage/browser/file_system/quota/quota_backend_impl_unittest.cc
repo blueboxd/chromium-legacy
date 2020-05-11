@@ -49,12 +49,12 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // We don't mock them.
   void NotifyOriginInUse(const url::Origin& origin) override {}
   void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
-  void SetUsageCacheEnabled(QuotaClient::ID client_id,
+  void SetUsageCacheEnabled(QuotaClientType client_id,
                             const url::Origin& origin,
                             blink::mojom::StorageType type,
                             bool enabled) override {}
 
-  void NotifyStorageModified(QuotaClient::ID client_id,
+  void NotifyStorageModified(QuotaClientType client_id,
                              const url::Origin& origin,
                              blink::mojom::StorageType type,
                              int64_t delta) override {

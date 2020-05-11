@@ -642,9 +642,7 @@ TEST_F(PpdProviderTest, ResolveUserSuppliedUrlPpdFromFile) {
 
   std::string user_ppd_contents = "Woohoo";
 
-  ASSERT_EQ(base::WriteFile(filename, user_ppd_contents.data(),
-                            user_ppd_contents.size()),
-            static_cast<int>(user_ppd_contents.size()));
+  ASSERT_TRUE(base::WriteFile(filename, user_ppd_contents));
 
   Printer::PpdReference ref;
   ref.user_supplied_ppd_url =
@@ -669,9 +667,7 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath filename = temp_dir.GetPath().Append("my_spiffy.ppd");
 
-    ASSERT_EQ(base::WriteFile(filename, user_ppd_contents.data(),
-                              user_ppd_contents.size()),
-              static_cast<int>(user_ppd_contents.size()));
+    ASSERT_TRUE(base::WriteFile(filename, user_ppd_contents));
 
     ref.user_supplied_ppd_url =
         base::StringPrintf("file://%s", filename.MaybeAsASCII().c_str());
@@ -970,9 +966,7 @@ TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
 
   // Write different contents to disk, so that the cached contents are
   // now stale.
-  ASSERT_EQ(base::WriteFile(filename, disk_ppd_contents.data(),
-                            disk_ppd_contents.size()),
-            static_cast<int>(disk_ppd_contents.size()));
+  ASSERT_TRUE(base::WriteFile(filename, disk_ppd_contents));
 
   provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
                                            base::Unretained(this)));

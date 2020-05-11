@@ -35,37 +35,15 @@ class DataUseMeasurementTest : public testing::Test {
   // reflected in proper histograms.
   void TestForAUserRequest(const std::string& target_dimension) {
     base::HistogramTester histogram_tester;
-    data_use_measurement_.RecordTrafficSizeMetric(
-        true /* is_user_traffic */, true /* is_downstream */,
+    data_use_measurement_.RecordDownstreamUserTrafficSizeMetric(
         true /* is_tab_visible */, 5 /* bytest */);
-    data_use_measurement_.RecordTrafficSizeMetric(
-        true /* is_user_traffic */, false /* is_downstream */,
+    data_use_measurement_.RecordDownstreamUserTrafficSizeMetric(
         true /* is_tab_visible */, 5 /* bytest */);
     histogram_tester.ExpectTotalCount("DataUse.TrafficSize.User.Downstream." +
                                           target_dimension + kConnectionType,
-                                      1);
-    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.User.Upstream." +
-                                          target_dimension + kConnectionType,
-                                      1);
+                                      2);
   }
 
-  // This function makes a service request and confirms that its effect is
-  // reflected in proper histograms.
-  void TestForAServiceRequest(const std::string& target_dimension) {
-    base::HistogramTester histogram_tester;
-    data_use_measurement_.RecordTrafficSizeMetric(
-        false /* is_user_traffic */, true /* is_downstream */,
-        true /* is_tab_visible */, 5 /* bytest */);
-    data_use_measurement_.RecordTrafficSizeMetric(
-        false /* is_user_traffic */, false /* is_downstream */,
-        true /* is_tab_visible */, 5 /* bytest */);
-    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Downstream." +
-                                          target_dimension + kConnectionType,
-                                      1);
-    histogram_tester.ExpectTotalCount("DataUse.TrafficSize.System.Upstream." +
-                                          target_dimension + kConnectionType,
-                                      1);
-  }
 
   DataUseMeasurement* data_use_measurement() { return &data_use_measurement_; }
 
@@ -86,7 +64,6 @@ TEST_F(DataUseMeasurementTest, UserNotUserTest) {
   data_use_measurement()->OnApplicationStateChangeForTesting(
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
 #endif
-  TestForAServiceRequest("Foreground.");
   TestForAUserRequest("Foreground.");
 }
 
@@ -97,7 +74,6 @@ TEST_F(DataUseMeasurementTest, UserNotUserTest) {
 TEST_F(DataUseMeasurementTest, ApplicationStateTest) {
   data_use_measurement()->OnApplicationStateChangeForTesting(
       base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
-  TestForAServiceRequest("Background.");
   TestForAUserRequest("Background.");
 }
 #endif

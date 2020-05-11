@@ -55,6 +55,7 @@ import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -104,7 +105,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         }
 
         @Override
-        public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
+        public @StartActivityIfNeededResult int maybeHandleStartActivityIfNeeded(
+                Intent intent, boolean proxy) {
             // Note: This method will not be called if shouldDisableExternalIntentRequestsForUrl()
             // returns false.
 
@@ -117,32 +119,32 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
                             && isPackageSpecializedHandler(mClientPackageName, intent)) {
                         intent.setPackage(mClientPackageName);
                     } else if (!isExternalProtocol) {
-                        return false;
+                        return StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START;
                     }
                 }
 
                 if (proxy) {
                     dispatchAuthenticatedIntent(intent);
                     mHasActivityStarted = true;
-                    return true;
+                    return StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START;
                 } else {
                     // If android fails to find a handler, handle it ourselves.
                     Context context = getAvailableContext();
                     if (context instanceof Activity
                             && ((Activity) context).startActivityIfNeeded(intent, -1)) {
                         mHasActivityStarted = true;
-                        return true;
+                        return StartActivityIfNeededResult.HANDLED_WITH_ACTIVITY_START;
                     }
                 }
-                return false;
+                return StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START;
             } catch (SecurityException e) {
                 // https://crbug.com/808494: Handle the URL in Chrome if dispatching to another
                 // application fails with a SecurityException. This happens due to malformed
                 // manifests in another app.
-                return false;
+                return StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START;
             } catch (RuntimeException e) {
                 IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-                return false;
+                return StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START;
             }
         }
 

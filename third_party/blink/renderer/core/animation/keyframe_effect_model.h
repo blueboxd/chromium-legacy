@@ -90,6 +90,10 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   template <class K>
   void SetFrames(HeapVector<K>& keyframes);
 
+  // Keyframes for CSS animations require additional processing to lazy
+  // evaluate computed values.
+  virtual KeyframeVector GetComputedKeyframes(Element*) { return keyframes_; }
+
   CompositeOperation Composite() const { return composite_; }
   void SetComposite(CompositeOperation composite);
 
@@ -220,7 +224,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
 // Time independent representation of an Animation's keyframes.
 template <class K>
-class KeyframeEffectModel final : public KeyframeEffectModelBase {
+class KeyframeEffectModel : public KeyframeEffectModelBase {
  public:
   using KeyframeVector = HeapVector<Member<K>>;
   KeyframeEffectModel(

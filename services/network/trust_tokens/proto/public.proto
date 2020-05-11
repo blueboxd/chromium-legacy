@@ -6,6 +6,7 @@ syntax = "proto2";
 
 package network;
 
+// Mandatory boilerplate since Chromium only supports lite protobufs:
 option optimize_for = LITE_RUNTIME;
 
 // Message TrustToken represents a signed trust token received from
@@ -15,7 +16,7 @@ message TrustToken {
   // BoringSSL.
   optional bytes body = 1;  // required
 
-  // The key with which the Token was signed. Tokens
+  // The key with which the token was signed. Tokens
   // are only provided to servers while their commitment keys
   // remain active.
   optional bytes signing_key = 2;  // required
@@ -28,12 +29,14 @@ message TrustToken {
 // with the SRR.
 message SignedTrustTokenRedemptionRecord {
   // The body of an SRR encodes information such as its top-level
-  // origin and its expiration time. The encoding is opaque to //net; BoringSSL
-  // provides interfaces to read data from the body that is pertinent to
-  // protocol execution.
-  optional bytes body = 1;
+  // origin and its expiration time.
+  optional bytes body = 1;  // required
+
   // If one of public_key or signing_key is present, the other must also be
   // present.
   optional bytes public_key = 2;
   optional bytes signing_key = 3;
+
+  // The token verification key for the token redeemed to obtain this SRR.
+  optional bytes token_verification_key = 4;  // required
 }

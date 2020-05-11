@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 
+#include "base/check_op.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"

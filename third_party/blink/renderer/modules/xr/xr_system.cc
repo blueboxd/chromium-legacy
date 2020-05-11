@@ -709,6 +709,9 @@ XRSystem::XRSystem(LocalFrame& frame, int64_t ukm_source_id)
     : ExecutionContextLifecycleObserver(frame.DomWindow()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
+      service_(frame.DomWindow()),
+      environment_provider_(frame.DomWindow()),
+      receiver_(this, frame.DomWindow()),
       navigation_start_(
           frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()),
       feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
@@ -745,10 +748,9 @@ XRFrameProvider* XRSystem::frameProvider() {
   return frame_provider_;
 }
 
-const mojo::AssociatedRemote<
-    device::mojom::blink::XREnvironmentIntegrationProvider>&
+device::mojom::blink::XREnvironmentIntegrationProvider*
 XRSystem::xrEnvironmentProviderRemote() {
-  return environment_provider_;
+  return environment_provider_.get();
 }
 
 void XRSystem::AddEnvironmentProviderErrorHandler(
@@ -801,7 +803,7 @@ void XRSystem::ExitPresent(base::OnceClosure on_exited) {
     }
   }
 
-  if (service_) {
+  if (service_.is_bound()) {
     service_->ExitPresent(std::move(on_exited));
   } else {
     // The service was already shut down, run the callback immediately.
@@ -813,7 +815,7 @@ void XRSystem::SetFramesThrottled(const XRSession* session, bool throttled) {
   // The service only cares if the immersive session is throttling frames.
   if (session->immersive()) {
     // If we have an immersive session, we should have a service.
-    DCHECK(service_);
+    DCHECK(service_.is_bound());
     service_->SetFramesThrottled(throttled);
   }
 }
@@ -887,7 +889,7 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
   // If TryEnsureService() doesn't set |service_|, then we don't have any WebXR
   // hardware, so we need to reject as being unsupported.
   TryEnsureService();
-  if (!service_) {
+  if (!service_.is_bound()) {
     query->Resolve(false, &exception_state);
     return promise;
   }
@@ -938,7 +940,7 @@ void XRSystem::RequestImmersiveSession(LocalFrame* frame,
   // If TryEnsureService() doesn't set |service_|, then we don't have any WebXR
   // hardware.
   TryEnsureService();
-  if (!service_) {
+  if (!service_.is_bound()) {
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kNoDevicesMessage, exception_state);
     return;
@@ -1003,7 +1005,8 @@ void XRSystem::RequestInlineSession(LocalFrame* frame,
   // If no sensors are requested, or if we don't have a service and sensors are
   // not required, then just create a sensorless session.
   if (sensor_requirement == SensorRequirement::kNone ||
-      (!service_ && sensor_requirement != SensorRequirement::kRequired)) {
+      (!service_.is_bound() &&
+       sensor_requirement != SensorRequirement::kRequired)) {
     query->Resolve(CreateSensorlessInlineSession());
     return;
   }
@@ -1011,7 +1014,7 @@ void XRSystem::RequestInlineSession(LocalFrame* frame,
   // If we don't have a service, then we don't have any WebXR hardware.
   // If we didn't already create a sensorless session, we can't create a session
   // without hardware, so just reject now.
-  if (!service_) {
+  if (!service_.is_bound()) {
     DVLOG(2) << __func__ << ": rejecting session - no service";
     query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                                   kSessionNotSupported, exception_state);
@@ -1371,7 +1374,7 @@ void XRSystem::AddedEventListener(
   // If we're adding an event listener we should spin up the service, if we can,
   // so that we can actually register for notifications.
   TryEnsureService();
-  if (!service_)
+  if (!service_.is_bound())
     return;
 
   if (event_type == event_type_names::kDevicechange) {
@@ -1469,7 +1472,7 @@ void XRSystem::OnEnvironmentProviderDisconnect() {
 
 void XRSystem::TryEnsureService() {
   // If we already have a service, there's nothing to do.
-  if (service_)
+  if (service_.is_bound())
     return;
 
   // If the service has been disconnected in the past or our context has been
@@ -1494,6 +1497,9 @@ void XRSystem::TryEnsureService() {
 void XRSystem::Trace(Visitor* visitor) {
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
+  visitor->Trace(service_);
+  visitor->Trace(environment_provider_);
+  visitor->Trace(receiver_);
   visitor->Trace(outstanding_support_queries_);
   visitor->Trace(outstanding_request_queries_);
   visitor->Trace(fullscreen_event_manager_);

@@ -4,8 +4,10 @@
 
 #import "ios/web/web_state/ui/crw_web_view_scroll_view_delegate_proxy.h"
 
+#include <ostream>
+
+#include "base/check_op.h"
 #import "base/ios/crb_protocol_observers.h"
-#include "base/logging.h"
 #import "ios/web/web_state/ui/crw_web_view_scroll_view_proxy+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

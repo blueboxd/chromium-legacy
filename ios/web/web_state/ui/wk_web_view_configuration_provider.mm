@@ -7,9 +7,10 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#include "base/check.h"
 #include "base/ios/ios_util.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/safe_browsing/core/features.h"
 #include "ios/web/common/features.h"

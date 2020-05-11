@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #include "ios/chrome/common/ui/util/constraints_ui_util.h"
 

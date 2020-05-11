@@ -83,7 +83,7 @@ class MockCryptographer
 // Check that issuance fails if it would result in too many issuers being
 // configured for the issuance top-level origin.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfTooManyIssuers) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
   auto toplevel =
@@ -112,7 +112,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfTooManyIssuers) {
 // Check that issuance fails if the number of tokens stored for the issuer is
 // already at capacity.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAtCapacity) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   auto issuer = *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
 
@@ -135,7 +135,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAtCapacity) {
 
 // Check that issuance fails if its key commitment request fails.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -158,7 +158,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfKeyCommitmentFails) {
 // Reject if initializing the cryptography delegate fails.
 TEST_F(TrustTokenRequestIssuanceHelperTest,
        RejectsIfInitializingCryptographerFails) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -188,7 +188,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 
 // Reject if one of the keys in the commitment is malformed.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -220,7 +220,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfAddingKeyFails) {
 // Reject if there's an error getting blinded, unsigned tokens from BoringSSL.
 TEST_F(TrustTokenRequestIssuanceHelperTest,
        RejectsIfGettingBlindedTokensFails) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -258,7 +258,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 // Check that the issuance helper sets the Sec-Trust-Token header on the
 // outgoing request.
 TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -300,7 +300,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsRequestHeader) {
 // Check that the issuance helper sets the LOAD_BYPASS_CACHE flag on the
 // outgoing request.
 TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -338,7 +338,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, SetsLoadFlag) {
 // Check that the issuance helper rejects responses lacking the Sec-Trust-Token
 // response header.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -379,7 +379,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseOmitsHeader) {
 // Check that the issuance helper handles an issuance response rejected by the
 // underlying cryptographic library.
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -431,7 +431,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsIfResponseIsUnusable) {
 // Check that, when preconditions are met and the underlying cryptographic steps
 // successfully complete, the begin/finalize methods succeed.
 TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -482,7 +482,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, Success) {
 // Check that a successful Begin call associates the issuer with the issuance
 // toplevel origin.
 TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -522,7 +522,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, AssociatesIssuerWithToplevel) {
 // Check that a successful end-to-end Begin/Finalize flow stores the obtained
 // trust tokens in the trust token store.
 TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));
@@ -582,7 +582,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, StoresObtainedTokens) {
 }
 
 TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsUnsuitableInsecureIssuer) {
-  auto store = TrustTokenStore::CreateInMemory();
+  auto store = TrustTokenStore::CreateForTesting();
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       store.get(), g_fixed_key_commitment_getter.get(),
@@ -596,7 +596,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest, RejectsUnsuitableInsecureIssuer) {
 
 TEST_F(TrustTokenRequestIssuanceHelperTest,
        RejectsUnsuitableNonHttpNonHttpsIssuer) {
-  auto store = TrustTokenStore::CreateInMemory();
+  auto store = TrustTokenStore::CreateForTesting();
   TrustTokenRequestIssuanceHelper helper(
       *SuitableTrustTokenOrigin::Create(GURL("https://toplevel.com/")),
       store.get(), g_fixed_key_commitment_getter.get(),
@@ -609,7 +609,7 @@ TEST_F(TrustTokenRequestIssuanceHelperTest,
 }
 
 TEST_F(TrustTokenRequestIssuanceHelperTest, RespectsMaximumBatchsize) {
-  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateInMemory();
+  std::unique_ptr<TrustTokenStore> store = TrustTokenStore::CreateForTesting();
 
   SuitableTrustTokenOrigin issuer =
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com/"));

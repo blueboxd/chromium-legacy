@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 

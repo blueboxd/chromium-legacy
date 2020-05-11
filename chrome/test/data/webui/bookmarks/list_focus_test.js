@@ -30,7 +30,7 @@ suite('<bookmarks-list>', function() {
    */
   function getItem(id) {
     return assert(
-        Array.from(items).find(({itemId}) => itemId == id),
+        Array.from(items).find(({itemId}) => itemId === id),
         `Item ${id} does not exist in items.`);
   }
 

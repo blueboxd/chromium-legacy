@@ -100,7 +100,9 @@
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "services/network/throttling/throttling_network_transaction_factory.h"
+#include "services/network/trust_tokens/expiry_inspecting_record_expiry_delegate.h"
 #include "services/network/trust_tokens/has_trust_tokens_answerer.h"
+#include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/sqlite_trust_token_persister.h"
 #include "services/network/trust_tokens/suitable_trust_token_origin.h"
@@ -1785,7 +1787,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
           base::BindOnce(&NetworkContext::FinishConstructingTrustTokenStore,
                          weak_factory_.GetWeakPtr()));
     } else {
-      trust_token_store_->OnStoreReady(TrustTokenStore::CreateInMemory());
+      trust_token_store_->OnStoreReady(std::make_unique<TrustTokenStore>(
+          std::make_unique<InMemoryTrustTokenPersister>(),
+          std::make_unique<ExpiryInspectingRecordExpiryDelegate>(
+              network_service()->trust_token_key_commitments())));
     }
   }
 
@@ -2070,11 +2075,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   if (params_->enable_domain_reliability) {
     domain_reliability_monitor_ =
         std::make_unique<domain_reliability::DomainReliabilityMonitor>(
+            result.url_request_context.get(),
             params_->domain_reliability_upload_reporter,
             base::BindRepeating(&NetworkContext::CanUploadDomainReliability,
                                 base::Unretained(this)));
-    domain_reliability_monitor_->InitURLRequestContext(
-        result.url_request_context.get());
     domain_reliability_monitor_->AddBakedInConfigs();
     domain_reliability_monitor_->SetDiscardUploads(
         params_->discard_domain_reliablity_uploads);
@@ -2285,8 +2289,10 @@ void NetworkContext::InitializeCorsParams() {
 
 void NetworkContext::FinishConstructingTrustTokenStore(
     std::unique_ptr<SQLiteTrustTokenPersister> persister) {
-  trust_token_store_->OnStoreReady(
-      std::make_unique<TrustTokenStore>(std::move(persister)));
+  trust_token_store_->OnStoreReady(std::make_unique<TrustTokenStore>(
+      std::move(persister),
+      std::make_unique<ExpiryInspectingRecordExpiryDelegate>(
+          network_service()->trust_token_key_commitments())));
 }
 
 void NetworkContext::GetOriginPolicyManager(

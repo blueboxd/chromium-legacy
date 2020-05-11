@@ -5,9 +5,9 @@
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 
 #include "base/base_switches.h"
+#include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"

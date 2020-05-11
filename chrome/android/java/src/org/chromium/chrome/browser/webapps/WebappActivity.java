@@ -230,12 +230,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    public void finishNativeInitialization() {
-        getFullscreenManager().setTab(getActivityTab());
-        super.finishNativeInitialization();
-    }
-
-    @Override
     public void onStartWithNative() {
         super.onStartWithNative();
         WebappDirectoryManager.cleanUpDirectories();

@@ -5,8 +5,8 @@
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_state_manager.h"

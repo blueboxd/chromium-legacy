@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/web/public/web_state.h"
 

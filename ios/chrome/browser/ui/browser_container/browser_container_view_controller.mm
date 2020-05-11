@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

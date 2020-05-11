@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/overlays/default_overlay_request_cancel_handler.h"
 #include "ios/chrome/browser/overlays/overlay_request_impl.h"

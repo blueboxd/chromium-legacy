@@ -16,6 +16,7 @@ class Document;
 class EventTarget;
 class LocalFrame;
 
+// We use UntracedMember<> here to do custom weak processing.
 typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
 
 // Registry for keeping track of event handlers. Note that only handlers on

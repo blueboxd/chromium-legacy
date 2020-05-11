@@ -20,6 +20,10 @@ class FullscreenNotificationBlocker
       message_center::MessageCenter* message_center);
   ~FullscreenNotificationBlocker() override;
 
+  static bool BlockForMixedFullscreen(
+      const message_center::Notification& notification,
+      bool is_fullscreen);
+
   // message_center::NotificationBlocker:
   bool ShouldShowNotificationAsPopup(
       const message_center::Notification& notification) const override;
@@ -29,7 +33,8 @@ class FullscreenNotificationBlocker
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* container) override;
 
-  bool should_block_ = false;
+  // Set to true if all displays have a fullscreen window.
+  bool all_fullscreen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenNotificationBlocker);
 };

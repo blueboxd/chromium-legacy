@@ -166,7 +166,7 @@ struct TraceTrait<const T> : public TraceTrait<T> {};
 
 template <typename T>
 void TraceTrait<T>::Trace(Visitor* visitor, const void* self) {
-  static_assert(WTF::IsTraceable<T>::value, "T should not be traced");
+  static_assert(WTF::IsTraceable<T>::value, "T should be traceable");
   static_cast<T*>(const_cast<void*>(self))->Trace(visitor);
 }
 
@@ -268,7 +268,7 @@ struct TraceInCollectionTrait<kNoWeakHandling, T, Traits> {
 
   static void Trace(blink::Visitor* visitor, const T& t) {
     static_assert(IsTraceableInCollectionTrait<Traits>::value,
-                  "T should not be traced");
+                  "T should be traceable");
     visitor->Trace(t);
   }
 };
@@ -387,7 +387,7 @@ struct TraceInCollectionTrait<kNoWeakHandling,
                     const LinkedHashSetNode<Value>& self) {
     static_assert(
         IsTraceableInCollectionTrait<Traits>::value || IsWeak<Value>::value,
-        "T should not be traced");
+        "T should be traceable (or weak)");
     TraceInCollectionTrait<kNoWeakHandling, Value,
                            typename Traits::ValueTraits>::Trace(visitor,
                                                                 self.value_);
@@ -427,7 +427,7 @@ struct TraceInCollectionTrait<
     static_assert(!IsWeak<Node>::value,
                   "ListHashSet does not support weakness");
     static_assert(IsTraceableInCollectionTrait<Traits>::value,
-                  "T should not be traced");
+                  "T should be traceable");
     visitor->Trace(node);
   }
 };

@@ -226,6 +226,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void LeaveBackForwardCache(base::TimeTicks navigation_start);
 
   void SetIsFrozen(bool frozen);
+  void SetVisibility(blink::mojom::PageVisibilityState visibility);
 
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.

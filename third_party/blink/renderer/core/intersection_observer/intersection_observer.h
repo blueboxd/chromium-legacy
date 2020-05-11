@@ -168,7 +168,10 @@ class CORE_EXPORT IntersectionObserver final
   void ProcessCustomWeakness(const LivenessBroker&);
 
   const Member<IntersectionObserverDelegate> delegate_;
+
+  // We use UntracedMember<> here to do custom weak processing.
   UntracedMember<Node> root_;
+
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;
   DOMHighResTimeStamp delay_;

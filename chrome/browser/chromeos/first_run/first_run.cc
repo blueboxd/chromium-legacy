@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -170,11 +169,7 @@ bool ShouldLaunchHelpApp(Profile* profile) {
   if (profile->GetPrefs()->GetBoolean(prefs::kFirstRunTutorialShown))
     return false;
 
-  bool is_pref_synced =
-      PrefServiceSyncableFromProfile(profile)->IsPrioritySyncing();
-  bool is_user_ephemeral =
-      user_manager->IsCurrentUserNonCryptohomeDataEphemeral();
-  if (!is_pref_synced && is_user_ephemeral)
+  if (user_manager->IsCurrentUserNonCryptohomeDataEphemeral())
     return false;
 
   return true;

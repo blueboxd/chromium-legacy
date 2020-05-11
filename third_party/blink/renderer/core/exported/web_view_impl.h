@@ -42,6 +42,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -105,7 +106,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
  public:
   static WebViewImpl* Create(
       WebViewClient*,
-      bool is_hidden,
+      mojom::blink::PageVisibilityState visibility,
       bool compositing_enabled,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);
@@ -326,9 +327,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   LocalDOMWindow* PagePopupWindow() const;
 
   PageScheduler* Scheduler() const override;
-  void SetVisibilityState(PageVisibilityState visibility_state,
+  void SetVisibilityState(mojom::blink::PageVisibilityState visibility_state,
                           bool is_initial_state) override;
-  PageVisibilityState GetVisibilityState() override;
+  mojom::blink::PageVisibilityState GetVisibilityState() override;
 
   // Called by a full frame plugin inside this view to inform it that its
   // zoom level has been updated.  The plugin should only call this function
@@ -503,7 +504,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebViewImpl(
       WebViewClient*,
-      bool is_hidden,
+      mojom::blink::PageVisibilityState visibility,
       bool does_composite,
       WebViewImpl* opener,
       mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle);
@@ -727,6 +728,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Set when a measurement begins, reset when the measurement is taken.
   base::Optional<base::TimeTicks> update_layers_start_time_;
 
+  mojom::blink::PageLifecycleStatePtr lifecycle_state_;
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
 };
 

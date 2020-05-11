@@ -103,6 +103,7 @@ mojom("mojom_platform") {
     "oom_intervention/oom_intervention.mojom",
     "page/display_cutout.mojom",
     "page/page.mojom",
+    "page/page_visibility_state.mojom",
     "page/spatial_navigation.mojom",
     "page/widget.mojom",
     "payments/payment_app.mojom",

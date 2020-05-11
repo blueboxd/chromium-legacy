@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -310,6 +311,7 @@ TEST(PasswordFeatureManagerUtil, SyncDisablesAccountStorage) {
 TEST(PasswordFeatureManagerUtil, OptOutClearsStorePreference) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+  base::HistogramTester histogram_tester;
 
   TestingPrefServiceSimple pref_service;
   pref_service.registry()->RegisterDictionaryPref(
@@ -342,6 +344,9 @@ TEST(PasswordFeatureManagerUtil, OptOutClearsStorePreference) {
   EXPECT_EQ(GetDefaultPasswordStore(&pref_service, &sync_service),
             autofill::PasswordForm::Store::kAccountStore);
   EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountStorage.SignedInAccountFoundDuringOptOut", true,
+      1);
 }
 
 }  // namespace features_util

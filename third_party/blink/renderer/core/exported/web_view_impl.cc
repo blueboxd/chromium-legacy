@@ -238,21 +238,24 @@ WebView* WebView::Create(
     WebView* opener,
     CrossVariantMojoAssociatedReceiver<mojom::PageBroadcastInterfaceBase>
         page_handle) {
-  return WebViewImpl::Create(client, is_hidden, compositing_enabled,
-                             static_cast<WebViewImpl*>(opener),
-                             std::move(page_handle));
+  return WebViewImpl::Create(
+      client,
+      is_hidden ? mojom::blink::PageVisibilityState::kHidden
+                : mojom::blink::PageVisibilityState::kVisible,
+      compositing_enabled, static_cast<WebViewImpl*>(opener),
+      std::move(page_handle));
 }
 
 WebViewImpl* WebViewImpl::Create(
     WebViewClient* client,
-    bool is_hidden,
+    mojom::blink::PageVisibilityState visibility,
     bool compositing_enabled,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle) {
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
   auto web_view = base::AdoptRef(new WebViewImpl(
-      client, is_hidden, compositing_enabled, opener, std::move(page_handle)));
+      client, visibility, compositing_enabled, opener, std::move(page_handle)));
   web_view->AddRef();
   return web_view.get();
 }
@@ -275,7 +278,7 @@ void WebViewImpl::SetPrerendererClient(
 
 WebViewImpl::WebViewImpl(
     WebViewClient* client,
-    bool is_hidden,
+    mojom::blink::PageVisibilityState visibility,
     bool does_composite,
     WebViewImpl* opener,
     mojo::PendingAssociatedReceiver<mojom::blink::PageBroadcast> page_handle)
@@ -285,6 +288,7 @@ WebViewImpl::WebViewImpl(
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
+      lifecycle_state_(mojom::blink::PageLifecycleState::New()),
       receiver_(this, std::move(page_handle)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
@@ -296,9 +300,9 @@ WebViewImpl::WebViewImpl(
       Page::CreateOrdinary(page_clients, opener ? opener->GetPage() : nullptr);
   CoreInitializer::GetInstance().ProvideModulesToPage(*AsView().page,
                                                       AsView().client);
-  SetVisibilityState(
-      is_hidden ? PageVisibilityState::kHidden : PageVisibilityState::kVisible,
-      /*is_initial_state=*/true);
+
+  SetVisibilityState(visibility, /*is_initial_state=*/true);
+  lifecycle_state_->visibility = visibility;
 
   // When not compositing, keep the Page in the loop so that it will paint all
   // content into the root layer, as multiple layers can only be used when
@@ -2404,8 +2408,15 @@ void WebViewImpl::SetPageLifecycleState(
   Page* page = GetPage();
   if (!page)
     return;
-  Scheduler()->SetPageFrozen(state->is_frozen);
 
+  if (state->visibility != lifecycle_state_->visibility) {
+    SetVisibilityState(state->visibility, /*is_initial_state =*/false);
+  }
+  if (state->is_frozen != lifecycle_state_->is_frozen) {
+    Scheduler()->SetPageFrozen(state->is_frozen);
+  }
+
+  lifecycle_state_ = std::move(state);
   // Tell the browser that the freezing or resuming was successful.
   std::move(callback).Run();
 }
@@ -3306,15 +3317,20 @@ PageScheduler* WebViewImpl::Scheduler() const {
   return GetPage()->GetPageScheduler();
 }
 
-void WebViewImpl::SetVisibilityState(PageVisibilityState visibility_state,
-                                     bool is_initial_state) {
+void WebViewImpl::SetVisibilityState(
+    mojom::blink::PageVisibilityState visibility_state,
+    bool is_initial_state) {
   DCHECK(GetPage());
+  if (!is_initial_state) {
+    // Preserve the side effects of visibility change.
+    AsView().client->OnPageVisibilityChanged(visibility_state);
+  }
   GetPage()->SetVisibilityState(visibility_state, is_initial_state);
-  GetPage()->GetPageScheduler()->SetPageVisible(visibility_state ==
-                                                PageVisibilityState::kVisible);
+  GetPage()->GetPageScheduler()->SetPageVisible(
+      visibility_state == mojom::blink::PageVisibilityState::kVisible);
 }
 
-PageVisibilityState WebViewImpl::GetVisibilityState() {
+mojom::blink::PageVisibilityState WebViewImpl::GetVisibilityState() {
   DCHECK(GetPage());
   return GetPage()->GetVisibilityState();
 }
@@ -3358,7 +3374,8 @@ void WebViewImpl::SetPageFrozen(bool frozen) {
 void WebViewImpl::PutPageIntoBackForwardCache() {
   DCHECK(GetPage());
 
-  SetVisibilityState(PageVisibilityState::kHidden, /*is_initial_state=*/false);
+  SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
+                     /*is_initial_state=*/false);
 
   for (Frame* frame = GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
@@ -3408,7 +3425,8 @@ void WebViewImpl::RestorePageFromBackForwardCache(
       }
     }
   }
-  SetVisibilityState(PageVisibilityState::kVisible, /*is_initial_state=*/false);
+  SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
+                     /*is_initial_state=*/false);
 }
 
 WebFrameWidget* WebViewImpl::MainFrameWidget() {

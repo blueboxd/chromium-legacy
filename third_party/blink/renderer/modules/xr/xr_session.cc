@@ -327,12 +327,16 @@ XRSession::XRSession(
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       enabled_features_(std::move(enabled_features)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
-      client_receiver_(this, std::move(client_receiver)),
+      client_receiver_(this, xr->GetExecutionContext()),
+      input_receiver_(this, xr->GetExecutionContext()),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
-              xr_->GetExecutionContext())),
+              xr->GetExecutionContext())),
       uses_input_eventing_(uses_input_eventing),
       sensorless_session_(sensorless_session) {
+  client_receiver_.Bind(
+      std::move(client_receiver),
+      xr->GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   // Ensure that frame focus is considered in the initial visibilityState.
   UpdateVisibilityState();
@@ -422,7 +426,8 @@ const AtomicString& XRSession::InterfaceName() const {
 mojo::PendingAssociatedRemote<device::mojom::blink::XRInputSourceButtonListener>
 XRSession::GetInputClickListener() {
   DCHECK(!input_receiver_.is_bound());
-  return input_receiver_.BindNewEndpointAndPassRemote();
+  return input_receiver_.BindNewEndpointAndPassRemote(
+      xr_->GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
 void XRSession::updateRenderState(XRRenderStateInit* init,
@@ -1984,6 +1989,8 @@ void XRSession::Trace(Visitor* visitor) {
   visitor->Trace(canvas_input_provider_);
   visitor->Trace(overlay_element_);
   visitor->Trace(dom_overlay_state_);
+  visitor->Trace(client_receiver_);
+  visitor->Trace(input_receiver_);
   visitor->Trace(callback_collection_);
   visitor->Trace(create_anchor_promises_);
   visitor->Trace(request_hit_test_source_promises_);

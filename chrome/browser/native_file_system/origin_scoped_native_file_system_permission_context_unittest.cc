@@ -26,6 +26,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/webui/webui_allowlist.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -566,12 +567,18 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_WhitelistedOrigin_InitialState) {
+       GetWritePermissionGrant_AllowlistedOrigin_InitialState) {
   SetDefaultContentSettingValue(
       ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
 
-  // Whitelisted origin gets granted.
+  auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context());
+  allowlist->RegisterAutoGrantedPermission(
+      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+  allowlist->RegisterAutoGrantedPermission(
+      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+
+  // Allowlisted origin automatically gets write permission.
   auto grant1 = permission_context()->GetWritePermissionGrant(
       kChromeOrigin, kTestPath, /*is_directory=*/false, process_id(),
       frame_id(), UserAction::kOpen);
@@ -594,10 +601,16 @@ TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
 }
 
 TEST_F(OriginScopedNativeFileSystemPermissionContextTest,
-       GetWritePermissionGrant_WhitelistedOrigin_ExistingGrant) {
+       GetWritePermissionGrant_AllowlistedOrigin_ExistingGrant) {
   SetDefaultContentSettingValue(
       ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
       CONTENT_SETTING_BLOCK);
+
+  auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context());
+  allowlist->RegisterAutoGrantedPermission(
+      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+  allowlist->RegisterAutoGrantedPermission(
+      kChromeOrigin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
 
   // Initial grant (file).
   auto grant1 = permission_context()->GetWritePermissionGrant(

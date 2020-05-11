@@ -342,6 +342,8 @@ void EventHandlerRegistry::Trace(Visitor* visitor) {
 }
 
 void EventHandlerRegistry::ProcessCustomWeakness(const LivenessBroker& info) {
+  // We use Vector<UntracedMember<>> here to avoid BlinkGC allocation in a
+  // custom weak callback.
   Vector<UntracedMember<EventTarget>> dead_targets;
   for (int i = 0; i < kEventHandlerClassCount; ++i) {
     EventHandlerClass handler_class = static_cast<EventHandlerClass>(i);

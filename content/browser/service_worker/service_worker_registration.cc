@@ -368,14 +368,11 @@ void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
                      std::move(callback), most_recent_version));
 }
 
-void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
-  if (!context_)
-    return;
-  DCHECK_EQ(active_version(), version);
+void ServiceWorkerRegistration::OnNoControlleesInActiveVersion() {
+  DCHECK(context_);
   if (is_uninstalling()) {
-    // TODO(falken): This can destroy the caller during this observer function
-    // call, which is impolite and dangerous. Try to make this async, or make
-    // OnNoControllees not an observer function.
+    // TODO(falken): This can destroy the caller (ServiceWorkerVersion). Try to
+    // make this async.
     Clear();
     return;
   }

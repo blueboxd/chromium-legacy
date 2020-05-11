@@ -188,7 +188,10 @@ class NetworkResourcesData final
     int64_t pending_encoded_data_length_;
 
     scoped_refptr<SharedBuffer> buffer_;
+
+    // We use UntracedMember<> here to do custom weak processing.
     UntracedMember<const Resource> cached_resource_;
+
     scoped_refptr<BlobDataHandle> downloaded_file_blob_;
     Vector<AtomicString> certificate_;
     scoped_refptr<EncodedFormData> post_data_;

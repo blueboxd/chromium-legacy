@@ -26,19 +26,28 @@ class TestSystemWebAppInstallation {
 
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpTabbedMultiWindowApp();
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpStandaloneSingleWindowApp();
+
+  // This method automatically grants Native File System read and write
+  // permissions to the App.
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppThatReceivesLaunchFiles(
       IncludeLaunchDirectory include_launch_directory);
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithEnabledOriginTrials(const OriginTrialsMap& origin_to_trials);
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppNotShownInLauncher();
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppNotShownInSearch();
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpAppWithAdditionalSearchTerms();
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpChromeUntrustedApp();
 
@@ -64,12 +73,16 @@ class TestSystemWebAppInstallation {
   std::unique_ptr<KeyedService> CreateWebAppProvider(SystemAppInfo info,
                                                      Profile* profile);
 
+  // Must be called in SetUp*App() methods, before WebAppProvider is created.
+  void RegisterAutoGrantedPermissions(ContentSettingsType permission);
+
   SystemWebAppManager::UpdatePolicy update_policy_ =
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate;
   std::unique_ptr<TestWebAppProviderCreator> test_web_app_provider_creator_;
   const SystemAppType type_;
   std::unique_ptr<TestSystemWebAppWebUIControllerFactory>
       web_ui_controller_factory_;
+  std::set<ContentSettingsType> auto_granted_permissions_;
 };
 
 }  // namespace web_app

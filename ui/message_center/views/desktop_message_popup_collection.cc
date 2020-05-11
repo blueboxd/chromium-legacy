@@ -93,6 +93,13 @@ bool DesktopMessagePopupCollection::IsPrimaryDisplayForNotification() const {
   return true;
 }
 
+bool DesktopMessagePopupCollection::BlockForMixedFullscreen(
+    const Notification& notification) const {
+  // Always return false. Notifications for fullscreen will be blocked by
+  // chrome/browser/notifications/fullscreen_notification_blocker.
+  return false;
+}
+
 // Anytime the display configuration changes, we need to recompute the alignment
 // on the primary display. But, we get different events on different platforms.
 // On Windows, for example, when switching from a laptop display to an external

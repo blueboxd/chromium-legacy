@@ -907,6 +907,19 @@ void ServiceWorkerContextCore::OnControlleeRemoved(
                          version->version_id(), version->scope(), client_uuid);
 }
 
+void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
+  DCHECK_EQ(this, version->context().get());
+
+  ServiceWorkerRegistration* registration =
+      GetLiveRegistration(version->registration_id());
+  if (registration && registration->active_version() == version)
+    registration->OnNoControlleesInActiveVersion();
+
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextCoreObserver::OnNoControllees,
+                         version->version_id(), version->scope());
+}
+
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
   DCHECK_EQ(this, version->context().get());
@@ -993,13 +1006,6 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
       version->version_id(),
       ConsoleMessage(source, message_level, message, line_number, source_url));
-}
-
-void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
-  DCHECK_EQ(this, version->context().get());
-  observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextCoreObserver::OnNoControllees,
-                         version->version_id(), version->scope());
 }
 
 ServiceWorkerStorage* ServiceWorkerContextCore::storage() const {

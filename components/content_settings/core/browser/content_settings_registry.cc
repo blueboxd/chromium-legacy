@@ -503,7 +503,7 @@ void ContentSettingsRegistry::Init() {
 
   Register(ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
            "native-file-system-write-guard", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(kChromeUIScheme),
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK,
                          CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,
@@ -514,7 +514,7 @@ void ContentSettingsRegistry::Init() {
 
   Register(ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD,
            "native-file-system-read-guard", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(kChromeUIScheme),
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK,
                          CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,

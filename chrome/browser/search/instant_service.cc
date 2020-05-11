@@ -25,6 +25,7 @@
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
@@ -1013,6 +1014,25 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterBooleanPref(prefs::kNtpUseMostVisitedTiles, false);
   registry->RegisterBooleanPref(prefs::kNtpShortcutsVisible, true);
+}
+
+// static
+bool InstantService::ShouldServiceRequest(
+    const GURL& url,
+    content::BrowserContext* browser_context,
+    int render_process_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto* instant_service = InstantServiceFactory::GetForProfile(
+      static_cast<Profile*>(browser_context));
+
+  if (!instant_service)
+    return false;
+
+  // The process_id for the navigation request will be -1. If
+  // so, allow this request since it's not going to another renderer.
+  return render_process_id == -1 ||
+         instant_service->IsInstantProcess(render_process_id);
 }
 
 void InstantService::UpdateCustomBackgroundPrefsWithColor(

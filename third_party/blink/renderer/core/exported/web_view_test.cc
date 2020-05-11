@@ -5751,10 +5751,10 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(PageVisibilityState::kHidden,
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(PageVisibilityState::kVisible,
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   // Total input delay is >300ms.
@@ -5772,7 +5772,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
 // calculate longest input delay.
 TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->SetVisibilityState(PageVisibilityState::kHidden,
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5796,7 +5796,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(PageVisibilityState::kVisible,
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event));
@@ -5825,10 +5825,10 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
 
   EXPECT_FALSE(interactive_detector->GetLongestInputDelay().has_value());
 
-  web_view->SetVisibilityState(PageVisibilityState::kHidden,
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
-  web_view->SetVisibilityState(PageVisibilityState::kVisible,
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
   test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
 

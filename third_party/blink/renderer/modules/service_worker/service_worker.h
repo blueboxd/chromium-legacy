@@ -33,8 +33,6 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_object_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -42,6 +40,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/workers/abstract_worker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -54,7 +55,6 @@ class MODULES_EXPORT ServiceWorker final
       public mojom::blink::ServiceWorkerObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
-  USING_PRE_FINALIZER(ServiceWorker, Dispose);
 
  public:
   static ServiceWorker* From(ExecutionContext*,
@@ -74,9 +74,6 @@ class MODULES_EXPORT ServiceWorker final
   ServiceWorker(ExecutionContext*, WebServiceWorkerObjectInfo);
   ~ServiceWorker() override;
   void Trace(Visitor*) override;
-
-  // Pre-finalization needed to promptly release owned WebServiceWorker.
-  void Dispose();
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
@@ -119,10 +116,15 @@ class MODULES_EXPORT ServiceWorker final
   // |host_| keeps the Mojo connection to the
   // browser-side ServiceWorkerObjectHost, whose lifetime is bound
   // to |host_| via the Mojo connection.
-  mojo::AssociatedRemote<mojom::blink::ServiceWorkerObjectHost> host_;
+  HeapMojoAssociatedRemote<mojom::blink::ServiceWorkerObjectHost,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      host_;
   // Receives messages from the content::ServiceWorkerObjectHost in the browser
   // process.
-  mojo::AssociatedReceiver<mojom::blink::ServiceWorkerObject> receiver_{this};
+  HeapMojoAssociatedReceiver<mojom::blink::ServiceWorkerObject,
+                             ServiceWorker,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_;
 };
 
 }  // namespace blink

@@ -32,9 +32,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
 #include "base/time/time.h"
-#include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -100,6 +100,7 @@ class WebView {
   // their output.
   // |page_handle| is only set for views that are part of a WebContents' frame
   // tree.
+  // TODO(yuzus): Remove |is_hidden| and start using |PageVisibilityState|.
   BLINK_EXPORT static WebView* Create(
       WebViewClient*,
       bool is_hidden,
@@ -394,9 +395,9 @@ class WebView {
   // Visibility -----------------------------------------------------------
 
   // Sets the visibility of the WebView.
-  virtual void SetVisibilityState(PageVisibilityState visibility_state,
+  virtual void SetVisibilityState(mojom::PageVisibilityState visibility_state,
                                   bool is_initial_state) = 0;
-  virtual PageVisibilityState GetVisibilityState() = 0;
+  virtual mojom::PageVisibilityState GetVisibilityState() = 0;
 
   // FrameOverlay ----------------------------------------------------------
 

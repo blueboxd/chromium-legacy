@@ -182,10 +182,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
         const base::string16& message,
         int line_number,
         const GURL& source_url) {}
-    // Called when all controllees are removed.
-    // Note regarding BackForwardCache integration:
-    // Clients in back-forward cache don't count as controllees.
-    virtual void OnNoControllees(ServiceWorkerVersion* version) {}
     virtual void OnNoWork(ServiceWorkerVersion* version) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
                                          size_t size) {}

@@ -312,6 +312,7 @@ source_set("web_applications_on_extensions_test_support") {
     "//chrome/browser",
     "//chrome/browser/web_applications/components",
     "//components/keyed_service/content",
+    "//ui/webui",
   ]
 }
 

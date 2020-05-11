@@ -71,6 +71,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/accessibility/ax_mode.h"
@@ -158,6 +159,8 @@ struct CONTENT_EXPORT CreatedWindow {
   std::unique_ptr<WebContentsImpl> contents;
   GURL target_url;
 };
+
+using PageVisibilityState = blink::mojom::PageVisibilityState;
 
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.

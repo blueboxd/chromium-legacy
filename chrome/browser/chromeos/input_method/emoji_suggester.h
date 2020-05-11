@@ -31,6 +31,8 @@ class EmojiSuggester : public Suggester {
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;
 
+  void LoadEmojiMapForTesting(const std::string& emoji_data);
+
  private:
   void ShowSuggestion(const std::string& text);
 

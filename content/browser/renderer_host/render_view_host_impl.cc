@@ -278,8 +278,10 @@ RenderViewHostImpl::RenderViewHostImpl(
   input_device_change_observer_ =
       std::make_unique<InputDeviceChangeObserver>(this);
 
-  page_lifecycle_state_manager_ =
-      std::make_unique<PageLifecycleStateManager>(this);
+  bool initially_visible = !GetWidget()->delegate()->IsHidden();
+  page_lifecycle_state_manager_ = std::make_unique<PageLifecycleStateManager>(
+      this, initially_visible ? blink::mojom::PageVisibilityState::kVisible
+                              : blink::mojom::PageVisibilityState::kHidden);
 
   GetWidget()->set_owner_delegate(this);
 }
@@ -472,6 +474,11 @@ void RenderViewHostImpl::LeaveBackForwardCache(
 
 void RenderViewHostImpl::SetIsFrozen(bool frozen) {
   page_lifecycle_state_manager_->SetIsFrozen(frozen);
+}
+
+void RenderViewHostImpl::SetVisibility(
+    blink::mojom::PageVisibilityState visibility) {
+  page_lifecycle_state_manager_->SetVisibility(visibility);
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

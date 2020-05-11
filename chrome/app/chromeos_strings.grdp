@@ -4543,27 +4543,6 @@
     Linux Application
   </message>
 
-  <!-- Crostini app install dialog messages-->
-  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_INSTALL_BUTTON" desc="Label for the button in the Crostini app install dialog to begin installing a Linux app.">
-    Install
-  </message>
-  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_TITLE_TEXT" desc="Title text for the Crostini app install dialog">
-    Install <ph name="APP_NAME">$1<ex>GIMP</ex></ph> (Linux App)
-  </message>
-  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_BODY_TEXT" desc="General body text for the Crostini app install dialog">
-    Are you sure you want to install <ph name="APP_NAME">$1<ex>GIMP</ex></ph>?
-  </message>
-  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_PACKAGE_TEXT" desc="Body text for the package information in the Crostini app install dialog">
-    Version:
-    <ph name="LINUX_VERSION">$1<ex>0.8-1</ex></ph>
-
-    Description:
-    <ph name="LINUX_DESCRIPTION">$2<ex>GIMP is a really great text editor</ex></ph>
-  </message>
-  <message name="IDS_CROSTINI_APP_INSTALL_DIALOG_NO_DESCRIPTION_TEXT" desc="Body text for when their is no description to display in the Crostini app install dialog">
-    No description is available.
-  </message>
-
   <!-- Crostini export and import notification -->
   <message name="IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING" desc="Message to display in a notification when the operation is starting and we don't yet have an estimate for how long it will take">
     Starting...
@@ -4975,19 +4954,19 @@
     Please launch Plugin VM to install the Guest Operating System.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR" desc="Text of the Plugin VM installer if the installation failed due to an internal error.">
-    Couldn't install <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
+    Couldn't install <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_CONFIG_ERROR" desc="Text of the Plugin VM installer if the installation failed because there was an error in the configuration.">
-    Couldn't set up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> because of a configuration problem. Please contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
+    Couldn't set up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> because of a configuration problem. Please contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_DOWNLOAD_FAILED" desc="Text of the Plugin VM installer if the installation failed because something went wrong while downloading the virtual machine.">
-    Couldn't install the virtual machine because of a network error. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+    Couldn't install the virtual machine because of a network error. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_INSTALLING_FAILED" desc="Text of the Plugin VM installer if the installation failed because downloaded Plugin VM could not be installed.">
-    Couldn't install the virtual machine. Please try again, or contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+    Couldn't install the virtual machine. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although Plugin VM is disallowed.">
-    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> isn't allowed on this device. Contact your organization's device administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
+    <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> isn't allowed on this device. Contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text of the Plugin VM installer during downloading Plugin VM image, showing download progress.">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
@@ -5014,7 +4993,7 @@
     <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> license has expired
   </message>
   <message name="IDS_PLUGIN_VM_INVALID_LICENSE_MESSAGE" desc="Message in the notification shown when launching the 'Plugin VM' app failed due to an invalid, missing, or expired license.">
-    Contact your organization's device administrator
+    Contact your administrator
   </message>
   <message name="IDS_PLUGIN_VM_START_VM_ERROR_TITLE" desc="Title in the notification shown when launching the 'Plugin VM' app failed due to a network or unknown error.">
     Couldn't open <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>

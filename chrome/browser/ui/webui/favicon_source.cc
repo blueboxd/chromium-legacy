@@ -15,7 +15,7 @@
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/favicon/core/history_ui_favicon_request_handler.h"
@@ -206,13 +206,13 @@ bool FaviconSource::ShouldReplaceExistingSource() {
 
 bool FaviconSource::ShouldServiceRequest(
     const GURL& url,
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     int render_process_id) {
   if (url.SchemeIs(chrome::kChromeSearchScheme)) {
-    return InstantIOContext::ShouldServiceRequest(url, resource_context,
-                                                  render_process_id);
+    return InstantService::ShouldServiceRequest(url, browser_context,
+                                                render_process_id);
   }
-  return URLDataSource::ShouldServiceRequest(url, resource_context,
+  return URLDataSource::ShouldServiceRequest(url, browser_context,
                                              render_process_id);
 }
 

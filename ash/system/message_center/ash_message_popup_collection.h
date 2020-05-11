@@ -62,6 +62,8 @@ class ASH_EXPORT AshMessagePopupCollection
       views::Widget* widget,
       views::Widget::InitParams* init_params) override;
   bool IsPrimaryDisplayForNotification() const override;
+  bool BlockForMixedFullscreen(
+      const message_center::Notification& notification) const override;
   void NotifyPopupAdded(message_center::MessagePopupView* popup) override;
   void NotifyPopupClosed(message_center::MessagePopupView* popup) override;
 

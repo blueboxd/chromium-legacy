@@ -226,8 +226,8 @@ TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
   auto* orientation = ScreenOrientation::Create(frame->DomWindow());
   controller->SetOrientation(orientation);
   orientation->SetAngle(1234);
-  page->SetVisibilityState(PageVisibilityState::kHidden, false);
-  page->SetVisibilityState(PageVisibilityState::kVisible, false);
+  page->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden, false);
+  page->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible, false);
 }
 
 }  // namespace blink

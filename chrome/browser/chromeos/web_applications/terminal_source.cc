@@ -16,13 +16,13 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/webui_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "third_party/zlib/google/compression_utils.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace {
 constexpr base::FilePath::CharType kTerminalRoot[] =

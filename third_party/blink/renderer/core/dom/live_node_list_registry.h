@@ -32,8 +32,6 @@ enum NodeListInvalidationType : int;
 class CORE_EXPORT LiveNodeListRegistry {
   DISALLOW_NEW();
 
-  using Entry = std::pair<UntracedMember<const LiveNodeListBase>, unsigned>;
-
  public:
   LiveNodeListRegistry() = default;
   void Add(const LiveNodeListBase*, NodeListInvalidationType);
@@ -59,7 +57,11 @@ class CORE_EXPORT LiveNodeListRegistry {
   // by the GC, and updates the mask accordingly.
   void ProcessCustomWeakness(const LivenessBroker&);
 
+  // We use UntracedMember<> here to recalculate the mask in
+  // |ProcessCustomWeakness()|.
+  using Entry = std::pair<UntracedMember<const LiveNodeListBase>, unsigned>;
   Vector<Entry> data_;
+
   unsigned mask_ = 0;
   DISALLOW_COPY_AND_ASSIGN(LiveNodeListRegistry);
 };

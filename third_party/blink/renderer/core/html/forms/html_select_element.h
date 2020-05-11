@@ -287,7 +287,6 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> last_on_change_option_;
   Member<HTMLOptionElement> active_selection_anchor_;
   Member<HTMLOptionElement> active_selection_end_;
-  Member<HTMLOptionElement> option_to_scroll_to_;
   Member<HTMLOptionElement> suggested_option_;
   bool uses_menu_list_ = true;
   bool is_multiple_;

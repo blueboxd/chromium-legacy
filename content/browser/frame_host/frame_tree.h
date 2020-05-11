@@ -121,6 +121,10 @@ class CONTENT_EXPORT FrameTree {
   RenderFrameHostManager::Delegate* manager_delegate() {
     return manager_delegate_;
   }
+  const std::unordered_map<int /* SiteInstance ID */, RenderViewHostImpl*>&
+  render_view_hosts() const {
+    return render_view_host_map_;
+  }
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id| if it is part
   // of this FrameTree.

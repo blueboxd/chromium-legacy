@@ -785,8 +785,7 @@ void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
     ResetToDefaultSelection();
   if (last_on_change_option_ == &option)
     last_on_change_option_.Clear();
-  if (option_to_scroll_to_ == &option)
-    option_to_scroll_to_.Clear();
+  select_type_->OptionRemoved(option);
   if (active_selection_anchor_ == &option)
     active_selection_anchor_.Clear();
   if (active_selection_end_ == &option)
@@ -1209,7 +1208,6 @@ void HTMLSelectElement::Trace(Visitor* visitor) {
   visitor->Trace(last_on_change_option_);
   visitor->Trace(active_selection_anchor_);
   visitor->Trace(active_selection_end_);
-  visitor->Trace(option_to_scroll_to_);
   visitor->Trace(suggested_option_);
   visitor->Trace(select_type_);
   HTMLFormControlElementWithState::Trace(visitor);

@@ -1451,12 +1451,12 @@
   {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "enable-experimental-accessibility-language-detection-dynamic",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 86
   },
   {
     "name": "enable-experimental-accessibility-switch-access",

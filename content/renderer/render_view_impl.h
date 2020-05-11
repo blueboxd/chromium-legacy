@@ -237,6 +237,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void DidFocus(blink::WebLocalFrame* calling_frame) override;
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
+  void OnPageVisibilityChanged(PageVisibilityState visibility) override;
 
   // RenderView implementation -------------------------------------------------
 
@@ -403,7 +404,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnAudioStateChanged(bool is_audio_playing);
 
   // Page message handlers -----------------------------------------------------
-  void OnPageVisibilityChanged(PageVisibilityState visibility_state);
   void SetPageFrozen(bool frozen);
   void PutPageIntoBackForwardCache();
   void RestorePageFromBackForwardCache(base::TimeTicks navigation_start);

@@ -1139,7 +1139,9 @@ bool ServiceWorkerContainerHost::IsMatchingRegistration(
 
 void ServiceWorkerContainerHost::RemoveAllMatchingRegistrations() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(!controller_registration_);
+  // TODO(crbug.com/1015692): Change to DCHECK once the root cause is
+  // identified.
+  CHECK(!controller_registration_);
   for (const auto& it : matching_registrations_) {
     ServiceWorkerRegistration* registration = it.second.get();
     registration->RemoveListener(this);

@@ -35,17 +35,14 @@ bool IsAnonymousContainer(const LayoutObject* layout_object) {
 
 // This saves the static-position for an OOF-positioned object into its
 // paint-layer.
-void SaveStaticPositionForLegacy(const LayoutBox* layout_box,
-                                 const LayoutObject* container,
-                                 const NGLogicalStaticPosition& position) {
+void SaveStaticPositionOnPaintLayer(const LayoutBox* layout_box,
+                                    const LayoutObject* container,
+                                    const NGLogicalStaticPosition& position) {
   const LayoutObject* parent = layout_box->Parent();
   if (parent == container ||
       (parent->IsLayoutInline() && parent->ContainingBlock() == container)) {
     DCHECK(layout_box->Layer());
-    layout_box->Layer()->SetStaticInlinePosition(position.offset.inline_offset);
-    layout_box->Layer()->SetStaticBlockPosition(position.offset.block_offset);
-    layout_box->Layer()->SetStaticInlineEdge(position.inline_edge);
-    layout_box->Layer()->SetStaticBlockEdge(position.block_edge);
+    layout_box->Layer()->SetStaticPositionFromNG(position);
   }
 }
 
@@ -431,6 +428,9 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
     ComputeInlineContainingBlocks(*candidates);
     for (auto& candidate : *candidates) {
       const LayoutBox* layout_box = candidate.node.GetLayoutBox();
+      SaveStaticPositionOnPaintLayer(layout_box,
+                                     container_builder_->GetLayoutObject(),
+                                     candidate.static_position);
       if (IsContainingBlockForCandidate(candidate) &&
           (!only_layout || layout_box == only_layout)) {
         scoped_refptr<const NGLayoutResult> result =
@@ -442,9 +442,6 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
         if (layout_box != only_layout)
           candidate.node.UseLegacyOutOfFlowPositioning();
       } else {
-        SaveStaticPositionForLegacy(layout_box,
-                                    container_builder_->GetLayoutObject(),
-                                    candidate.static_position);
         container_builder_->AddOutOfFlowDescendant(candidate);
       }
     }

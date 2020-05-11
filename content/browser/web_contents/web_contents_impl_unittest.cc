@@ -70,6 +70,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/url_constants.h"
 
@@ -1669,57 +1670,24 @@ TEST_F(WebContentsImplTest, OccludeWithCapturer) {
   HideOrOccludeWithCapturerTest(contents(), Visibility::OCCLUDED);
 }
 
-namespace {
-
-void CheckVisibilityMessage(const IPC::Message* message,
-                            PageVisibilityState expected_state) {
-  ASSERT_TRUE(message);
-  std::tuple<content::PageVisibilityState> params;
-  ASSERT_TRUE(PageMsg_VisibilityChanged::Read(message, &params));
-  EXPECT_EQ(expected_state, std::get<0>(params));
-}
-
-}  // namespace
-
 TEST_F(WebContentsImplTest, HiddenCapture) {
-  TestRenderViewHost* const rvh =
-      static_cast<TestRenderViewHost*>(contents()->GetRenderViewHost());
   TestRenderWidgetHostView* rwhv = static_cast<TestRenderWidgetHostView*>(
       contents()->GetRenderWidgetHostView());
-  MockRenderProcessHost* const rph = rvh->GetProcess();
-  IPC::TestSink* const sink = &rph->sink();
 
   contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
   contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
   EXPECT_EQ(Visibility::HIDDEN, contents()->GetVisibility());
 
-  sink->ClearMessages();
   contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ true);
-  const IPC::Message* visibility_message =
-      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
-  CheckVisibilityMessage(visibility_message,
-                         PageVisibilityState::kHiddenButPainting);
   EXPECT_TRUE(rwhv->is_showing());
 
-  sink->ClearMessages();
   contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
-  visibility_message =
-      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
-  CheckVisibilityMessage(visibility_message, PageVisibilityState::kVisible);
   EXPECT_TRUE(rwhv->is_showing());
 
-  sink->ClearMessages();
   contents()->DecrementCapturerCount(/* stay_hidden */ true);
-  visibility_message =
-      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
-  CheckVisibilityMessage(visibility_message, PageVisibilityState::kVisible);
   EXPECT_TRUE(rwhv->is_showing());
 
-  sink->ClearMessages();
   contents()->DecrementCapturerCount(/* stay_hidden */ false);
-  visibility_message =
-      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
-  CheckVisibilityMessage(visibility_message, PageVisibilityState::kHidden);
   EXPECT_FALSE(rwhv->is_showing());
 }
 

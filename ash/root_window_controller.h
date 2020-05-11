@@ -209,6 +209,9 @@ class ASH_EXPORT RootWindowController {
   // currently active desk on this root.
   aura::Window* GetWindowForFullscreenMode();
 
+  // Returns true if window is fulllscreen and the shelf is hidden.
+  bool IsInFullscreenMode();
+
   // If touch exploration is enabled, update the touch exploration
   // controller so that synthesized touch events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);

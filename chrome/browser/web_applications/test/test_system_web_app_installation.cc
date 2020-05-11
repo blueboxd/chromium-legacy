@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/url_constants.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace web_app {
 
@@ -136,8 +137,14 @@ TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchFiles(
   else
     media_system_app_info.include_launch_directory = false;
 
-  return base::WrapUnique(new TestSystemWebAppInstallation(
-      SystemAppType::MEDIA, media_system_app_info));
+  auto* installation = new TestSystemWebAppInstallation(SystemAppType::MEDIA,
+                                                        media_system_app_info);
+  installation->RegisterAutoGrantedPermissions(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+  installation->RegisterAutoGrantedPermissions(
+      ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
+
+  return base::WrapUnique(installation);
 }
 
 // static
@@ -203,6 +210,12 @@ TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
   provider->SetSystemWebAppManager(std::move(system_web_app_manager));
   provider->Start();
+
+  const url::Origin app_origin = url::Origin::Create(info.install_url);
+  auto* allowlist = WebUIAllowlist::GetOrCreate(profile);
+  for (const auto& permission : auto_granted_permissions_)
+    allowlist->RegisterAutoGrantedPermission(app_origin, permission);
+
   return provider;
 }
 
@@ -237,6 +250,11 @@ SystemAppType TestSystemWebAppInstallation::GetType() {
 
 void TestSystemWebAppInstallation::SetManifest(std::string manifest) {
   web_ui_controller_factory_->set_manifest(std::move(manifest));
+}
+
+void TestSystemWebAppInstallation::RegisterAutoGrantedPermissions(
+    ContentSettingsType permission) {
+  auto_granted_permissions_.insert(permission);
 }
 
 }  // namespace web_app

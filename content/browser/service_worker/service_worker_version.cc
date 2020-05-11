@@ -2283,17 +2283,15 @@ void ServiceWorkerVersion::NotifyControlleeAdded(
 }
 
 void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
-  // The observers can destroy |this|, so protect it first.
-  // TODO(falken): Make OnNoControllees an explicit call to our registration
-  // instead of an observer callback, if it has dangerous side-effects like
-  // destroying the caller.
+  if (!context_)
+    return;
+
+  // The OnNoControllees() can destroy |this|, so protect it first.
   auto protect = base::WrapRefCounted(this);
-  if (context_)
-    context_->OnControlleeRemoved(this, uuid);
+  context_->OnControlleeRemoved(this, uuid);
   if (!HasControllee()) {
     RestartTick(&no_controllees_time_);
-    for (auto& observer : observers_)
-      observer.OnNoControllees(this);
+    context_->OnNoControllees(this);
   }
 }
 

@@ -39,8 +39,10 @@ class StyleResolverState;
 class CachedMatchedProperties final
     : public GarbageCollected<CachedMatchedProperties> {
  public:
-  // Caches data of MachedProperties. See MatchedPropertiesCache::Cache for
+  // Caches data of MatchedProperties. See |MatchedPropertiesCache::Cache| for
   // semantics.
+  // We use UntracedMember<> here because WeakMember<> would require using a
+  // HeapHashSet which is slower to iterate.
   Vector<UntracedMember<CSSPropertyValueSet>> matched_properties;
   Vector<MatchedProperties::Data> matched_properties_types;
 

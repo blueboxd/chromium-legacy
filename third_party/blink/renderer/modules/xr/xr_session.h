@@ -7,9 +7,7 @@
 
 #include "base/containers/span.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -22,6 +20,9 @@
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -481,9 +482,14 @@ class XRSession final
   unsigned int stage_parameters_id_ = 0;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
-  mojo::Receiver<device::mojom::blink::XRSessionClient> client_receiver_;
-  mojo::AssociatedReceiver<device::mojom::blink::XRInputSourceButtonListener>
-      input_receiver_{this};
+  HeapMojoReceiver<device::mojom::blink::XRSessionClient,
+                   XRSession,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      client_receiver_;
+  HeapMojoAssociatedReceiver<device::mojom::blink::XRInputSourceButtonListener,
+                             XRSession,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      input_receiver_;
 
   Member<XRFrameRequestCallbackCollection> callback_collection_;
   // Viewer pose in mojo space.

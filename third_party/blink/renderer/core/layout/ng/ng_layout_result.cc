@@ -69,7 +69,7 @@ NGLayoutResult::NGLayoutResult(
   }
   if (builder->overflow_block_size_ != kIndefiniteSize &&
       builder->overflow_block_size_ != intrinsic_block_size_) {
-    EnsureRareData()->overflow_block_size_ = builder->overflow_block_size_;
+    EnsureRareData()->overflow_block_size = builder->overflow_block_size_;
   }
   if (builder->custom_layout_data_) {
     EnsureRareData()->custom_layout_data =
@@ -254,6 +254,7 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
           To<NGPhysicalBoxFragment>(*other.physical_fragment_),
           check_same_block_size);
 
+  DCHECK(LinesUntilClamp() == other.LinesUntilClamp());
   DCHECK(UnpositionedListMarker() == other.UnpositionedListMarker());
   ExclusionSpace().CheckSameForSimplifiedLayout(other.ExclusionSpace());
 
@@ -275,6 +276,8 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 
   DCHECK_EQ(bitfields_.subtree_modified_margin_strut,
             other.bitfields_.subtree_modified_margin_strut);
+
+  DCHECK_EQ(CustomLayoutData(), other.CustomLayoutData());
 
   DCHECK_EQ(bitfields_.initial_break_before,
             other.bitfields_.initial_break_before);

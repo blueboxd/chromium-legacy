@@ -765,7 +765,9 @@ TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccessDelayed) {
 
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation enables the setting on a process when non-delayed.
-TEST(ProcessMitigationsTest, CheckWin10MsSignedPolicySuccess) {
+
+// Disabled due to crbug.com/1081080
+TEST(ProcessMitigationsTest, DISABLED_CheckWin10MsSignedPolicySuccess) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 
@@ -846,7 +848,10 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
 
 // This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
 // mitigation allows the loading of an unsigned DLL if intercept in place.
-TEST(ProcessMitigationsTest, MAYBE_CheckWin10MsSignedWithIntercept_Success) {
+
+// Disabled due to crbug.com/1081080. This test was previously disabled on ASAN
+// builds, so if re-enabling remember to test that behaviour.
+TEST(ProcessMitigationsTest, DISABLED_CheckWin10MsSignedWithIntercept_Success) {
   if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
     return;
 

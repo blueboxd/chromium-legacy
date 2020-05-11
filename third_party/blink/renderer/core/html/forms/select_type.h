@@ -28,6 +28,7 @@ class SelectType : public GarbageCollected<SelectType> {
                                HTMLSelectElement::SelectOptionFlags flags,
                                bool should_update_popup);
 
+  virtual void OptionRemoved(HTMLOptionElement& option);
   virtual void DidBlur() = 0;
   virtual void DidDetachLayoutTree();
   virtual void DidRecalcStyle(const StyleRecalcChange change);

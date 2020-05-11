@@ -13,10 +13,12 @@
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_media_app_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
 namespace {
@@ -59,6 +61,15 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   // The guest is in an <iframe>. Add it to CSP.
   std::string csp = std::string("frame-src ") + kChromeUIMediaAppGuestURL + ";";
   host_source->OverrideContentSecurityPolicyChildSrc(csp);
+
+  // Register auto-granted permissions.
+  auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin host_origin =
+      url::Origin::Create(GURL(kChromeUIMediaAppURL));
+  allowlist->RegisterAutoGrantedPermission(
+      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD);
+  allowlist->RegisterAutoGrantedPermission(
+      host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
 
   content::WebUIDataSource* untrusted_source =
       CreateMediaAppUntrustedDataSource();

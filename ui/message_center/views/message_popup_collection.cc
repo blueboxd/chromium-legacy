@@ -34,6 +34,8 @@ MessagePopupCollection::MessagePopupCollection()
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
+  // Ignore calls to update which can cause crashes.
+  is_updating_ = true;
   for (const auto& item : popup_items_)
     item.popup->Close();
   MessageCenter::Get()->RemoveObserver(this);
@@ -139,7 +141,7 @@ void MessagePopupCollection::OnNotificationUpdated(
     return;
 
   // Find Notification object with |notification_id|.
-  const auto& notifications = MessageCenter::Get()->GetPopupNotifications();
+  const auto& notifications = GetPopupNotifications();
   auto it = notifications.begin();
   while (it != notifications.end()) {
     if ((*it)->id() == notification_id)
@@ -388,25 +390,37 @@ void MessagePopupCollection::UpdateByAnimation() {
   }
 }
 
-bool MessagePopupCollection::AddPopup() {
-  std::set<std::string> existing_ids;
-  for (const auto& item : popup_items_)
-    existing_ids.insert(item.id);
-
-  auto notifications = MessageCenter::Get()->GetPopupNotifications();
-  Notification* new_notification = nullptr;
-  // Reverse iterating because notifications are in reverse chronological order.
-  for (auto it = notifications.rbegin(); it != notifications.rend(); ++it) {
+std::vector<Notification*> MessagePopupCollection::GetPopupNotifications()
+    const {
+  std::vector<Notification*> result;
+  for (auto* notification : MessageCenter::Get()->GetPopupNotifications()) {
     // Disables popup of custom notification on non-primary displays, since
     // currently custom notification supports only on one display at the same
     // time.
     // TODO(yoshiki): Support custom popup notification on multiple display
     // (https://crbug.com/715370).
     if (!IsPrimaryDisplayForNotification() &&
-        (*it)->type() == NOTIFICATION_TYPE_CUSTOM) {
+        notification->type() == NOTIFICATION_TYPE_CUSTOM) {
       continue;
     }
 
+    if (BlockForMixedFullscreen(*notification))
+      continue;
+
+    result.emplace_back(notification);
+  }
+  return result;
+}
+
+bool MessagePopupCollection::AddPopup() {
+  std::set<std::string> existing_ids;
+  for (const auto& item : popup_items_)
+    existing_ids.insert(item.id);
+
+  auto notifications = GetPopupNotifications();
+  Notification* new_notification = nullptr;
+  // Reverse iterating because notifications are in reverse chronological order.
+  for (auto it = notifications.rbegin(); it != notifications.rend(); ++it) {
     if (!existing_ids.count((*it)->id())) {
       new_notification = *it;
       break;
@@ -461,13 +475,16 @@ bool MessagePopupCollection::AddPopup() {
 
 void MessagePopupCollection::MarkRemovedPopup() {
   std::set<std::string> existing_ids;
-  for (Notification* notification :
-       MessageCenter::Get()->GetPopupNotifications()) {
+  for (Notification* notification : GetPopupNotifications()) {
     existing_ids.insert(notification->id());
   }
 
-  for (auto& item : popup_items_)
-    item.is_animating = !existing_ids.count(item.id);
+  for (auto& item : popup_items_) {
+    bool removing = !existing_ids.count(item.id);
+    item.is_animating = removing;
+    if (removing)
+      NotifyPopupRemoved(item.id);
+  }
 }
 
 void MessagePopupCollection::MoveDownPopups() {
@@ -585,8 +602,7 @@ bool MessagePopupCollection::HasAddedPopup() const {
   for (const auto& item : popup_items_)
     existing_ids.insert(item.id);
 
-  for (Notification* notification :
-       MessageCenter::Get()->GetPopupNotifications()) {
+  for (Notification* notification : GetPopupNotifications()) {
     if (!existing_ids.count(notification->id()))
       return true;
   }
@@ -595,8 +611,7 @@ bool MessagePopupCollection::HasAddedPopup() const {
 
 bool MessagePopupCollection::HasRemovedPopup() const {
   std::set<std::string> existing_ids;
-  for (Notification* notification :
-       MessageCenter::Get()->GetPopupNotifications()) {
+  for (Notification* notification : GetPopupNotifications()) {
     existing_ids.insert(notification->id());
   }
 

@@ -26,8 +26,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/common/page/page_visibility_state.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/web/web_window_features.h"
@@ -265,9 +265,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   static void AllVisitedStateChanged(bool invalidate_visited_link_hashes);
   static void VisitedStateChanged(LinkHash visited_hash);
 
-  void SetVisibilityState(PageVisibilityState visibility_state,
+  void SetVisibilityState(mojom::blink::PageVisibilityState visibility_state,
                           bool is_initial_state);
-  PageVisibilityState GetVisibilityState() const;
+  mojom::blink::PageVisibilityState GetVisibilityState() const;
   bool IsPageVisible() const;
 
   PageLifecycleState LifecycleState() const;
@@ -429,7 +429,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   float device_scale_factor_;
 
-  PageVisibilityState visibility_state_;
+  mojom::blink::PageVisibilityState visibility_state_;
 
   bool is_ordinary_;
 

@@ -67,6 +67,10 @@ class AppShortcutManager : public AppRegistrarObserver {
   // TODO(https://crbug.com/1069306): Implement UnregisterShortcutsMenuWithOS()
   // to support local offline installs and uninstalls.
 
+  // Builds initial ShortcutInfo without |ShortcutInfo::favicon| being read.
+  virtual std::unique_ptr<ShortcutInfo> BuildShortcutInfo(
+      const AppId& app_id) = 0;
+
   // The result of a call to GetShortcutInfo.
   using GetShortcutInfoCallback =
       base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>;

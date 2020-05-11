@@ -11,6 +11,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/message_center/fullscreen_notification_blocker.h"
 #include "ash/system/message_center/metrics_utils.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
@@ -141,6 +142,13 @@ void AshMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
 bool AshMessagePopupCollection::IsPrimaryDisplayForNotification() const {
   return screen_ &&
          GetCurrentDisplay().id() == screen_->GetPrimaryDisplay().id();
+}
+
+bool AshMessagePopupCollection::BlockForMixedFullscreen(
+    const message_center::Notification& notification) const {
+  return FullscreenNotificationBlocker::BlockForMixedFullscreen(
+      notification, RootWindowController::ForWindow(shelf_->GetWindow())
+                        ->IsInFullscreenMode());
 }
 
 void AshMessagePopupCollection::NotifyPopupAdded(

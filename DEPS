@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '4ca83c7cea29ca857b6c43874503044c983754ca',
+  'catapult_revision': 'd387d01d4d4ce43501b9dbd569cdf9d95a216500',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -866,7 +866,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'e388e52f5959c6d8b85a0481a108d151818e8f14',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'df8112e7e09f8e81ef6ed9dff4878b8895788445',
       'condition': 'checkout_linux',
   },
 
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@114c3da2e91f281b29ce59708f1f9f50eee5cd03',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ed6125c69a24ab9b9d52bff6da6a855f1d406dc5',
     'condition': 'checkout_src_internal',
   },
 

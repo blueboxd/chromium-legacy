@@ -75,6 +75,12 @@ class InstantService : public KeyedService,
   // Register prefs associated with the NTP.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Determine if this chrome-search: request is coming from an Instant render
+  // process.
+  static bool ShouldServiceRequest(const GURL& url,
+                                   content::BrowserContext* browser_context,
+                                   int render_process_id);
+
 #if defined(UNIT_TEST)
   int GetInstantProcessCount() const {
     return process_ids_.size();

@@ -766,6 +766,11 @@ aura::Window* RootWindowController::GetWindowForFullscreenMode() {
   return GetWindowForFullscreenModeInRoot(GetRootWindow());
 }
 
+bool RootWindowController::IsInFullscreenMode() {
+  auto* window = GetWindowForFullscreenMode();
+  return window && WindowState::Get(window)->GetHideShelfWhenFullscreen();
+}
+
 void RootWindowController::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   if (touch_exploration_manager_)

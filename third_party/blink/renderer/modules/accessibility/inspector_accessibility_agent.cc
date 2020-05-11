@@ -117,8 +117,6 @@ void FillGlobalStates(AXObject& ax_object,
                        CreateRelatedNodeListValue(*hidden_root)));
   }
 
-  AddHasPopupProperty(ax_object.HasPopup(), properties);
-
   ax::mojom::InvalidState invalid_state = ax_object.GetInvalidState();
   switch (invalid_state) {
     case ax::mojom::InvalidState::kNone:

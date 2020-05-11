@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/webui_allowlist_provider.h"
-#include "chrome/browser/ui/webui/webui_allowlist.h"
+#include "ui/webui/webui_allowlist_provider.h"
+#include "ui/webui/webui_allowlist.h"
 
 #include <map>
 #include <memory>

@@ -2629,8 +2629,12 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     // as soon as they are shown. But the Page and other classes do not expect
     // to be producing frames when the Page is hidden. So we make sure the Page
     // is shown first.
-    SendPageMessage(
-        new PageMsg_VisibilityChanged(MSG_ROUTING_NONE, page_visibility));
+    // TODO(yuzus): We should include RenderViewHosts in BackForwardCache in
+    // this iteration. Add a special method to get all RenderViewHosts in
+    // BackForwardCache in WebContentsImpl.
+    for (auto& entry : frame_tree_.render_view_hosts()) {
+      entry.second->SetVisibility(page_visibility);
+    }
   }
 
   // |GetRenderWidgetHostView()| can be null if the user middle clicks a link to
@@ -2662,8 +2666,10 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (page_visibility == PageVisibilityState::kHidden) {
     // Similar to when showing the page, we only hide the page after
     // hiding the individual RenderWidgets.
-    SendPageMessage(new PageMsg_VisibilityChanged(
-        MSG_ROUTING_NONE, PageVisibilityState::kHidden));
+    for (auto& entry : frame_tree_.render_view_hosts()) {
+      entry.second->SetVisibility(page_visibility);
+    }
+
   } else {
     for (FrameTreeNode* node : frame_tree_.Nodes()) {
       RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();

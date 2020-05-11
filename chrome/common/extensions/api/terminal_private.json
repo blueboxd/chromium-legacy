@@ -186,6 +186,19 @@
         ]
       },
       {
+        "name": "openOptionsPage",
+        "type": "function",
+        "description": "Open the Terminal Settings page.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Callback that will be called when complete.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getCroshSettings",
         "type": "function",
         "description": "Returns an object (DictionaryValue) containing UI settings such as font style and color used by the crosh extension.  This function is called by the terminal system app the first time it is run to migrate any previous settings.",

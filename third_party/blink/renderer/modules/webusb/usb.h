@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom-blink-forward.h"
 #include "services/device/public/mojom/usb_manager_client.mojom-blink.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
@@ -17,6 +15,9 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -31,13 +32,10 @@ class USB final : public EventTargetWithInlineData,
                   public device::mojom::blink::UsbDeviceManagerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(USB);
-  USING_PRE_FINALIZER(USB, Dispose);
 
  public:
   explicit USB(ExecutionContext&);
   ~USB() override;
-
-  void Dispose();
 
   // USB.idl
   ScriptPromise getDevices(ScriptState*, ExceptionState&);
@@ -84,11 +82,13 @@ class USB final : public EventTargetWithInlineData,
   bool IsContextSupported() const;
   bool IsFeatureEnabled(ReportOptions) const;
 
-  mojo::Remote<mojom::blink::WebUsbService> service_;
+  HeapMojoRemote<mojom::blink::WebUsbService> service_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_devices_requests_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_permission_requests_;
-  mojo::AssociatedReceiver<device::mojom::blink::UsbDeviceManagerClient>
-      client_receiver_{this};
+  HeapMojoAssociatedReceiver<device::mojom::blink::UsbDeviceManagerClient,
+                             USB,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      client_receiver_;
   HeapHashMap<String, WeakMember<USBDevice>> device_cache_;
 };
 

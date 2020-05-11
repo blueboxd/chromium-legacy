@@ -110,12 +110,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // NGOutOfFlowLayoutPart(container_style, builder).Run();
   //
   // See layout part for builder interaction.
-  void AddOutOfFlowChildCandidate(NGBlockNode,
-                                  const LogicalOffset& child_offset,
-                                  NGLogicalStaticPosition::InlineEdge =
-                                      NGLogicalStaticPosition::kInlineStart,
-                                  NGLogicalStaticPosition::BlockEdge =
-                                      NGLogicalStaticPosition::kBlockStart);
+  void AddOutOfFlowChildCandidate(
+      NGBlockNode,
+      const LogicalOffset& child_offset,
+      NGLogicalStaticPosition::InlineEdge =
+          NGLogicalStaticPosition::kInlineStart,
+      NGLogicalStaticPosition::BlockEdge = NGLogicalStaticPosition::kBlockStart,
+      bool needs_block_offset_adjustment = true);
 
   // This should only be used for inline-level OOF-positioned nodes.
   // |inline_container_direction| is the current text direction for determining

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -231,10 +232,13 @@ void OptOutOfAccountStorageAndClearSettings(
       base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage));
 
   std::string gaia_id = sync_service->GetAuthenticatedAccountInfo().gaia;
-  if (gaia_id.empty()) {
+  bool account_exists = !gaia_id.empty();
+  base::UmaHistogramBoolean(
+      "PasswordManager.AccountStorage.SignedInAccountFoundDuringOptOut",
+      account_exists);
+  if (!account_exists) {
     // In rare cases, it could happen that the account went away since the
     // opt-out UI was triggered.
-    // TODO(crbug.com/1063852): Add metrics.
     return;
   }
   ScopedAccountStorageSettingsUpdate(pref_service,

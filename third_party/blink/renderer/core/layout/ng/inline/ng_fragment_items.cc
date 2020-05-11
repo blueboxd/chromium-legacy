@@ -52,7 +52,8 @@ void NGFragmentItems::FinalizeAfterLayout(
     const auto& fragment =
         To<NGPhysicalBoxFragment>(result->PhysicalFragment());
     const NGFragmentItems* current = fragment.Items();
-    DCHECK(current);
+    if (UNLIKELY(!current))
+      continue;
     HashMap<const LayoutObject*, wtf_size_t> last_fragment_map;
     const Span items = current->Items();
     wtf_size_t index = 0;

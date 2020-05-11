@@ -51,6 +51,8 @@ class MockMessagePopupCollection : public DesktopMessagePopupCollection {
     is_primary_display_ = is_primary_display;
   }
 
+  void set_is_fullscreen(bool is_fullscreen) { is_fullscreen_ = is_fullscreen; }
+
   void set_new_popup_height(int new_popup_height) {
     new_popup_height_ = new_popup_height;
   }
@@ -83,6 +85,11 @@ class MockMessagePopupCollection : public DesktopMessagePopupCollection {
     return is_primary_display_;
   }
 
+  bool BlockForMixedFullscreen(
+      const Notification& notification) const override {
+    return is_fullscreen_;
+  }
+
  private:
   gfx::NativeWindow context_;
 
@@ -90,6 +97,7 @@ class MockMessagePopupCollection : public DesktopMessagePopupCollection {
 
   bool popup_timer_started_ = false;
   bool is_primary_display_ = true;
+  bool is_fullscreen_ = false;
   int new_popup_height_ = 84;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessagePopupCollection);
@@ -499,6 +507,20 @@ TEST_F(MessagePopupCollectionTest, NotShowCustomOnSubDisplay) {
   auto custom = CreateNotification("id");
   custom->set_type(NOTIFICATION_TYPE_CUSTOM);
   MessageCenter::Get()->AddNotification(std::move(custom));
+  EXPECT_FALSE(IsAnimating());
+  EXPECT_EQ(0u, GetPopupCounts());
+}
+
+TEST_F(MessagePopupCollectionTest, MixedFullscreenShow) {
+  popup_collection()->set_is_fullscreen(false);
+  AddNotification();
+  EXPECT_TRUE(IsAnimating());
+  EXPECT_EQ(1u, GetPopupCounts());
+}
+
+TEST_F(MessagePopupCollectionTest, MixedFullscreenBlock) {
+  popup_collection()->set_is_fullscreen(true);
+  AddNotification();
   EXPECT_FALSE(IsAnimating());
   EXPECT_EQ(0u, GetPopupCounts());
 }

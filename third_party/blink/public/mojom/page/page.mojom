@@ -4,6 +4,7 @@
 
 module blink.mojom;
 import "mojo/public/mojom/base/time.mojom";
+import "third_party/blink/public/mojom/page/page_visibility_state.mojom";
 
 // We need this structure to be able to atomically update the state of the page
 // to avoid it being in an inconsistent state (e.g. frozen but visible).
@@ -12,6 +13,7 @@ import "mojo/public/mojom/base/time.mojom";
 // with this struct.
 struct PageLifecycleState {
   bool is_frozen;
+  PageVisibilityState visibility;
 };
 
 // Used for broadcast messages from browser to renderer for messages that need

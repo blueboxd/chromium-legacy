@@ -51,8 +51,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
         ServiceWorkerRegistration* registration) {}
     virtual void OnRegistrationDeleted(
         ServiceWorkerRegistration* registration) {}
-    virtual void OnUpdateFound(
-        ServiceWorkerRegistration* registration) {}
+    virtual void OnUpdateFound(ServiceWorkerRegistration* registration) {}
     virtual void OnSkippedWaiting(ServiceWorkerRegistration* registation) {}
   };
 
@@ -206,6 +205,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void EnableNavigationPreload(bool enable);
   void SetNavigationPreloadHeader(const std::string& value);
 
+  // Called when all controllees are removed from |active_version()|.
+  void OnNoControlleesInActiveVersion();
+
  protected:
   ~ServiceWorkerRegistration() override;
 
@@ -218,7 +220,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       blink::mojom::ChangedServiceWorkerObjectsMask* mask);
 
   // ServiceWorkerVersion::Observer override.
-  void OnNoControllees(ServiceWorkerVersion* version) override;
   void OnNoWork(ServiceWorkerVersion* version) override;
 
   bool IsReadyToActivate() const;

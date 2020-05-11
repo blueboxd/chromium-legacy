@@ -63,7 +63,8 @@ InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
     : page_size(kDefaultPageSize),
       is_cursor_visible(true),
       is_vertical(false),
-      show_window_at_composition(false) {}
+      show_window_at_composition(false),
+      is_auxiliary_text_visible(false) {}
 
 InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() =
     default;
@@ -77,6 +78,10 @@ InputMethodEngine::~InputMethodEngine() = default;
 void InputMethodEngine::Enable(const std::string& component_id) {
   InputMethodEngineBase::Enable(component_id);
   EnableInputView();
+  // Resets candidate_window_property_ whenever a new component_id (aka
+  // engine_id) is enabled.
+  candidate_window_property_ = {component_id,
+                                InputMethodEngine::CandidateWindowProperty()};
 }
 
 bool InputMethodEngine::IsActive() const {
@@ -112,11 +117,15 @@ void InputMethodEngine::SetCastingEnabled(bool casting_enabled) {
 }
 
 const InputMethodEngine::CandidateWindowProperty&
-InputMethodEngine::GetCandidateWindowProperty() const {
-  return candidate_window_property_;
+InputMethodEngine::GetCandidateWindowProperty(const std::string& engine_id) {
+  if (candidate_window_property_.first != engine_id)
+    candidate_window_property_ = {engine_id,
+                                  InputMethodEngine::CandidateWindowProperty()};
+  return candidate_window_property_.second;
 }
 
 void InputMethodEngine::SetCandidateWindowProperty(
+    const std::string& engine_id,
     const CandidateWindowProperty& property) {
   // Type conversion from InputMethodEngine::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
@@ -134,7 +143,7 @@ void InputMethodEngine::SetCandidateWindowProperty(
   dest_property.total_candidates = property.total_candidates;
 
   candidate_window_.SetProperty(dest_property);
-  candidate_window_property_ = property;
+  candidate_window_property_ = {engine_id, property};
 
   if (IsActive()) {
     IMECandidateWindowHandlerInterface* cw_handler =

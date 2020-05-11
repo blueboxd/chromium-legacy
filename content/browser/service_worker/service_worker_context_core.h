@@ -139,6 +139,11 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void OnControlleeRemoved(ServiceWorkerVersion* version,
                            const std::string& client_uuid);
 
+  // Called when all controllees are removed.
+  // Note regarding BackForwardCache integration:
+  // Clients in back-forward cache don't count as controllees.
+  void OnNoControllees(ServiceWorkerVersion* version);
+
   // ServiceWorkerVersion::Observer overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
@@ -154,7 +159,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
-  void OnNoControllees(ServiceWorkerVersion* version) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerRegistry* registry() const { return registry_.get(); }

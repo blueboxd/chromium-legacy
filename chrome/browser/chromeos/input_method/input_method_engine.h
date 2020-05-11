@@ -114,14 +114,17 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
                      std::string* error) override;
   bool AcceptSuggestion(int context_id, std::string* error) override;
 
-  // This function returns the current property of the candidate window.
-  // The caller can use the returned value as the default property and
-  // modify some of specified items.
-  const CandidateWindowProperty& GetCandidateWindowProperty() const;
+  // This function returns the current property of the candidate window of the
+  // corresponding engine_id. If the CandidateWindowProperty is not set for the
+  // engine_id, a default value is set. The caller can use the returned value as
+  // the default property and modify some of specified items.
+  const CandidateWindowProperty& GetCandidateWindowProperty(
+      const std::string& engine_id);
 
-  // Change the property of the candidate window and repaint the candidate
-  // window widget.
-  void SetCandidateWindowProperty(const CandidateWindowProperty& property);
+  // Changes the property of the candidate window of the given engine_id and
+  // repaints the candidate window widget.
+  void SetCandidateWindowProperty(const std::string& engine_id,
+                                  const CandidateWindowProperty& property);
 
   // Show or hide the candidate window.
   bool SetCandidateWindowVisible(bool visible, std::string* error);
@@ -188,8 +191,8 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
   // The current candidate window.
   ui::CandidateWindow candidate_window_;
 
-  // The current candidate window property.
-  CandidateWindowProperty candidate_window_property_;
+  // The candidate window property of the current engine_id.
+  std::pair<std::string, CandidateWindowProperty> candidate_window_property_;
 
   // Indicates whether the candidate window is visible.
   bool window_visible_ = false;

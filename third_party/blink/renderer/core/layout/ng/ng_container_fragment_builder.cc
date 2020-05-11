@@ -166,13 +166,14 @@ void NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
     const LogicalOffset& child_offset,
     NGLogicalStaticPosition::InlineEdge inline_edge,
-    NGLogicalStaticPosition::BlockEdge block_edge) {
+    NGLogicalStaticPosition::BlockEdge block_edge,
+    bool needs_block_offset_adjustment) {
   DCHECK(child);
 
   // If an OOF-positioned candidate has a static-position which uses a
-  // non-block-start edge, we need to adjust its static-position when the final
-  // block-size is known.
-  bool needs_block_offset_adjustment =
+  // non-block-start edge, we may need to adjust its static-position when the
+  // final block-size is known.
+  needs_block_offset_adjustment &=
       block_edge != NGLogicalStaticPosition::BlockEdge::kBlockStart;
   has_oof_candidate_that_needs_block_offset_adjustment_ |=
       needs_block_offset_adjustment;

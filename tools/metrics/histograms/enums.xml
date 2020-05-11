@@ -22874,6 +22874,7 @@ Called by update_extension_histograms.py.-->
   <int value="1467" label="AUTOTESTPRIVATE_STARTSMOOTHNESSTRACKING"/>
   <int value="1468" label="AUTOTESTPRIVATE_STOPSMOOTHNESSTRACKING"/>
   <int value="1469" label="ACCESSIBILITY_PRIVATE_UPDATESWITCHACCESSBUBBLE"/>
+  <int value="1470" label="TERMINALPRIVATE_OPENOPTIONSPAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">

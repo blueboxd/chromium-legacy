@@ -1178,7 +1178,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
 
     // Page messages.
-    IPC_MESSAGE_HANDLER(PageMsg_VisibilityChanged, OnPageVisibilityChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
@@ -1618,6 +1617,14 @@ bool RenderViewImpl::AllowPopupsDuringPageUnload() {
          base::FeatureList::IsEnabled(features::kAllowPopupsDuringPageUnload);
 }
 
+void RenderViewImpl::OnPageVisibilityChanged(PageVisibilityState visibility) {
+#if defined(OS_ANDROID)
+  SuspendVideoCaptureDevices(visibility != PageVisibilityState::kVisible);
+#endif
+  for (auto& observer : observers_)
+    observer.OnPageVisibilityChanged(visibility);
+}
+
 bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }
@@ -1726,16 +1733,6 @@ void RenderViewImpl::OnSetRendererPrefs(
 void RenderViewImpl::OnMoveOrResizeStarted() {
   if (GetWebView())
     GetWebView()->CancelPagePopup();
-}
-
-void RenderViewImpl::OnPageVisibilityChanged(
-    PageVisibilityState visibility_state) {
-#if defined(OS_ANDROID)
-  SuspendVideoCaptureDevices(visibility_state != PageVisibilityState::kVisible);
-#endif
-
-  ApplyPageVisibilityState(visibility_state,
-                           /*initial_setting=*/false);
 }
 
 void RenderViewImpl::SetPageFrozen(bool frozen) {

@@ -498,11 +498,25 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   InlineEdge StaticInlineEdge() const {
     return static_cast<InlineEdge>(static_inline_edge_);
   }
-  void SetStaticInlineEdge(InlineEdge edge) { static_inline_edge_ = edge; }
   BlockEdge StaticBlockEdge() const {
     return static_cast<BlockEdge>(static_block_edge_);
   }
-  void SetStaticBlockEdge(BlockEdge edge) { static_block_edge_ = edge; }
+
+  void SetStaticPositionFromNG(const NGLogicalStaticPosition& position) {
+    static_inline_position_ = position.offset.inline_offset;
+    static_block_position_ = position.offset.block_offset;
+    static_inline_edge_ = position.inline_edge;
+    static_block_edge_ = position.block_edge;
+  }
+
+  NGLogicalStaticPosition GetStaticPosition() const {
+    NGLogicalStaticPosition position;
+    position.offset.inline_offset = static_inline_position_;
+    position.offset.block_offset = static_block_position_;
+    position.inline_edge = StaticInlineEdge();
+    position.block_edge = StaticBlockEdge();
+    return position;
+  }
 
   PhysicalOffset SubpixelAccumulation() const;
   void SetSubpixelAccumulation(const PhysicalOffset&);

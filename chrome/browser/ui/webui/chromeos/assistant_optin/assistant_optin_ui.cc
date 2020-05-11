@@ -66,11 +66,6 @@ GURL CreateAssistantOptInURL(ash::FlowType type) {
   return gurl;
 }
 
-void DisablePolymer2(content::URLDataSource* shared_source) {
-  if (shared_source)
-    shared_source->DisablePolymer2ForHost(chrome::kChromeUIAssistantOptInHost);
-}
-
 }  // namespace
 
 AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
@@ -112,10 +107,12 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   // TODO (https://crbug.com/739611): Remove this exception by migrating to
   // Polymer 2.
   if (base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions)) {
-    content::URLDataSource::GetSourceForURL(
+    auto* shared_source = content::URLDataSource::GetSourceForURL(
         Profile::FromWebUI(web_ui),
-        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"),
-        base::BindOnce(DisablePolymer2));
+        GURL("chrome://resources/polymer/v1_0/polymer/polymer.html"));
+    if (shared_source)
+      shared_source->DisablePolymer2ForHost(
+          chrome::kChromeUIAssistantOptInHost);
   }
 }
 

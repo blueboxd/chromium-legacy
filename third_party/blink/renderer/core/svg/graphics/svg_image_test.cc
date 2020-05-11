@@ -368,7 +368,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   // Set page visibility to 'hidden', and then wait for the animation timer to
   // fire. This should suspend the image animation. (Suspend the image's
   // animation timeline.)
-  WebView().SetVisibilityState(PageVisibilityState::kHidden,
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());
@@ -377,7 +377,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
 
   // Set page visibility to 'visible' - this should schedule a new animation
   // frame and resume the image animation.
-  WebView().SetVisibilityState(PageVisibilityState::kVisible,
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
   test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(1) +
                         timer->NextFireInterval());

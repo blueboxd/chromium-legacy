@@ -613,7 +613,10 @@ void MenuListSelectType::DidMutateSubtree() {
 class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
+  void Trace(Visitor* visitor) override;
+
   bool DefaultEventHandler(const Event& event) override;
+  void OptionRemoved(HTMLOptionElement& option) override;
   void DidBlur() override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SaveLastSelection() override;
@@ -642,9 +645,15 @@ class ListBoxSelectType final : public SelectType {
 
   Vector<bool> cached_state_for_active_selection_;
   Vector<bool> last_on_change_selection_;
+  Member<HTMLOptionElement> option_to_scroll_to_;
   bool is_in_non_contiguous_selection_ = false;
   bool active_selection_state_ = false;
 };
+
+void ListBoxSelectType::Trace(Visitor* visitor) {
+  visitor->Trace(option_to_scroll_to_);
+  SelectType::Trace(visitor);
+}
 
 bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   const auto* mouse_event = DynamicTo<MouseEvent>(event);
@@ -900,6 +909,11 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   return false;
 }
 
+void ListBoxSelectType::OptionRemoved(HTMLOptionElement& option) {
+  if (option_to_scroll_to_ == &option)
+    option_to_scroll_to_.Clear();
+}
+
 void ListBoxSelectType::DidBlur() {
   ClearLastOnChangeSelection();
 }
@@ -935,11 +949,11 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
 void ListBoxSelectType::ScrollToOption(HTMLOptionElement* option) {
   if (!option)
     return;
-  bool has_pending_task = select_->option_to_scroll_to_;
+  bool has_pending_task = option_to_scroll_to_;
   // We'd like to keep an HTMLOptionElement reference rather than the index of
   // the option because the task should work even if unselected option is
   // inserted before executing ScrollToOptionTask().
-  select_->option_to_scroll_to_ = option;
+  option_to_scroll_to_ = option;
   if (!has_pending_task) {
     select_->GetDocument()
         .GetTaskRunner(TaskType::kUserInteraction)
@@ -949,14 +963,14 @@ void ListBoxSelectType::ScrollToOption(HTMLOptionElement* option) {
 }
 
 void ListBoxSelectType::ScrollToOptionTask() {
-  HTMLOptionElement* option = select_->option_to_scroll_to_.Release();
+  HTMLOptionElement* option = option_to_scroll_to_.Release();
   if (!option || !select_->isConnected() || will_be_destroyed_)
     return;
-  // HTMLSelectElement::OptionRemoved() makes sure option_to_scroll_to_ doesn't
-  // have an option with another owner.
+  // OptionRemoved() makes sure option_to_scroll_to_ doesn't have an option
+  // with another owner.
   DCHECK_EQ(option->OwnerSelectElement(), select_);
   select_->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
-  if (!select_->GetLayoutObject() || select_->UsesMenuList())
+  if (!select_->GetLayoutObject())
     return;
   PhysicalRect bounds = option->BoundingBoxForScrollIntoView();
 
@@ -1187,6 +1201,8 @@ void SelectType::DidSelectOption(HTMLOptionElement*,
   select_->ScrollToSelection();
   select_->SetNeedsValidityCheck();
 }
+
+void SelectType::OptionRemoved(HTMLOptionElement& option) {}
 
 void SelectType::DidDetachLayoutTree() {}
 

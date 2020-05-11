@@ -201,7 +201,7 @@ Page::Page(PageClients& page_clients)
       tab_key_cycles_through_elements_(true),
       paused_(false),
       device_scale_factor_(1),
-      visibility_state_(PageVisibilityState::kVisible),
+      visibility_state_(mojom::blink::PageVisibilityState::kVisible),
       is_ordinary_(false),
       page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
@@ -510,8 +510,9 @@ void Page::VisitedStateChanged(LinkHash link_hash) {
   }
 }
 
-void Page::SetVisibilityState(PageVisibilityState visibility_state,
-                              bool is_initial_state) {
+void Page::SetVisibilityState(
+    mojom::blink::PageVisibilityState visibility_state,
+    bool is_initial_state) {
   if (visibility_state_ == visibility_state)
     return;
   visibility_state_ = visibility_state;
@@ -525,18 +526,18 @@ void Page::SetVisibilityState(PageVisibilityState visibility_state,
       });
 
   if (main_frame_) {
-    if (visibility_state_ == PageVisibilityState::kVisible)
+    if (visibility_state_ == mojom::blink::PageVisibilityState::kVisible)
       RestoreSVGImageAnimations();
     main_frame_->DidChangeVisibilityState();
   }
 }
 
-PageVisibilityState Page::GetVisibilityState() const {
+mojom::blink::PageVisibilityState Page::GetVisibilityState() const {
   return visibility_state_;
 }
 
 bool Page::IsPageVisible() const {
-  return visibility_state_ == PageVisibilityState::kVisible;
+  return visibility_state_ == mojom::blink::PageVisibilityState::kVisible;
 }
 
 void Page::SetLifecycleState(PageLifecycleState state) {

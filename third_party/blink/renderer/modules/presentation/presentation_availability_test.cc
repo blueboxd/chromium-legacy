@@ -40,7 +40,7 @@ TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
   // TODO(dcheng): Why are we calling functions on Page after it's been closed?
   // This case doesn't seem like it should be reachable as we should be shutting
   // down communication from the embedder on context detach.
-  page->SetVisibilityState(PageVisibilityState::kHidden,
+  page->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                            /*initial_state=*/false);
 }
 

@@ -188,10 +188,12 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
     : AbstractWorker(execution_context),
       was_stopped_(false),
       url_(info.url),
-      state_(info.state) {
+      state_(info.state),
+      host_(execution_context),
+      receiver_(this, execution_context) {
   DCHECK_NE(mojom::blink::kInvalidServiceWorkerVersionId, info.version_id);
   host_.Bind(
-          std::move(info.host_remote),
+      std::move(info.host_remote),
       execution_context->GetTaskRunner(blink::TaskType::kInternalDefault));
   receiver_.Bind(
       mojo::PendingAssociatedReceiver<mojom::blink::ServiceWorkerObject>(
@@ -201,12 +203,9 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
 
 ServiceWorker::~ServiceWorker() = default;
 
-void ServiceWorker::Dispose() {
-  host_.reset();
-  receiver_.reset();
-}
-
 void ServiceWorker::Trace(Visitor* visitor) {
+  visitor->Trace(host_);
+  visitor->Trace(receiver_);
   AbstractWorker::Trace(visitor);
 }
 

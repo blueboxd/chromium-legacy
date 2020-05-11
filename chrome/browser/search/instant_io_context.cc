@@ -71,24 +71,6 @@ void InstantIOContext::ClearInstantProcessesOnIO(
 }
 
 // static
-bool InstantIOContext::ShouldServiceRequest(
-    const GURL& url,
-    content::ResourceContext* resource_context,
-    int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  InstantIOContext* instant_io_context =
-      GetDataForResourceContext(resource_context);
-  if (!instant_io_context)
-    return false;
-
-  // The process_id for the navigation request will be -1. If
-  // so, allow this request since it's not going to another renderer.
-  return render_process_id == -1 ||
-         instant_io_context->IsInstantProcess(render_process_id);
-}
-
-// static
 bool InstantIOContext::IsInstantProcess(
     content::ResourceContext* resource_context,
     int render_process_id) {

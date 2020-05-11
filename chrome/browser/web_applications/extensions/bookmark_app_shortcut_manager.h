@@ -17,6 +17,9 @@ class BookmarkAppShortcutManager : public web_app::AppShortcutManager {
   explicit BookmarkAppShortcutManager(Profile* profile);
   ~BookmarkAppShortcutManager() override;
 
+  // AppShortcutManager:
+  std::unique_ptr<web_app::ShortcutInfo> BuildShortcutInfo(
+      const web_app::AppId& app_id) override;
   void GetShortcutInfoForApp(const web_app::AppId& app_id,
                              GetShortcutInfoCallback callback) override;
 

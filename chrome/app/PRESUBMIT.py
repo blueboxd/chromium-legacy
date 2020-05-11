@@ -19,7 +19,7 @@ def _CheckNoProductNameInGeneratedResources(input_api, output_api):
   """
 
   problems = []
-  filename_filter = lambda x: x.LocalPath().endswith('.grd')
+  filename_filter = lambda x: x.LocalPath().endswith(('.grd', '.grdp'))
 
   for f, line_num, line in input_api.RightHandSideLines(filename_filter):
     if 'PRODUCT_NAME' in line:

@@ -215,11 +215,11 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // SimpleURLLoader will stream the response body to
   // SimpleURLLoaderStreamConsumer on the current thread. Destroying the
   // SimpleURLLoader will cancel the request, and prevent any subsequent
-  // methods from being invoked on the Handler. The SimpleURLLoader may also be
-  // destroyed in any of the Handler's callbacks.
+  // methods from being invoked on the Consumer. The SimpleURLLoader may also be
+  // destroyed in any of the Consumer's callbacks.
   //
-  // |stream_handler| must remain valid until either the SimpleURLLoader is
-  // deleted, or the handler's OnComplete() method has been invoked by the
+  // |stream_consumer| must remain valid until either the SimpleURLLoader is
+  // deleted, or the consumer's OnComplete() method has been invoked by the
   // SimpleURLLoader.
   virtual void DownloadAsStream(
       mojom::URLLoaderFactory* url_loader_factory,

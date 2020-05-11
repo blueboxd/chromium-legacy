@@ -676,12 +676,20 @@ void ExtensionDownloader::HandleManifestResults(
     const base::Optional<ManifestParseFailure>& error) {
   if (!results) {
     VLOG(2) << "parsing manifest failed (" << fetch_data->full_url() << ")";
+    DCHECK(error.has_value());
+    ManifestInvalidErrorList manifest_invalid_errors;
+    manifest_invalid_errors.reserve(fetch_data->extension_ids().size());
+    // If the manifest parsing failed for all the extensions with a common
+    // error, add all extensions in the list with that error.
+    for (const auto& extension_id : fetch_data->extension_ids()) {
+      manifest_invalid_errors.push_back(
+          std::make_pair(extension_id, error.value().error));
+    }
     NotifyExtensionsDownloadStageChanged(
         fetch_data->extension_ids(),
         ExtensionDownloaderDelegate::Stage::FINISHED);
-    NotifyExtensionsDownloadFailed(
-        fetch_data->extension_ids(), fetch_data->request_ids(),
-        ExtensionDownloaderDelegate::Error::MANIFEST_INVALID);
+    NotifyExtensionsManifestInvalidFailure(manifest_invalid_errors,
+                                           fetch_data->request_ids());
     return;
   } else {
     VLOG(2) << "parsing manifest succeeded (" << fetch_data->full_url() << ")";
@@ -696,7 +704,7 @@ void ExtensionDownloader::HandleManifestResults(
 
   std::vector<UpdateManifestResult*> to_update;
   std::set<std::string> no_updates;
-  std::set<std::string> errors;
+  ManifestInvalidErrorList errors;
 
   // Examine the parsed manifest and kick off fetches of any new crx files.
   DetermineUpdates(*fetch_data, *results, &to_update, &no_updates, &errors);
@@ -729,11 +737,12 @@ void ExtensionDownloader::HandleManifestResults(
   NotifyExtensionsDownloadFailed(
       no_updates, fetch_data->request_ids(),
       ExtensionDownloaderDelegate::Error::NO_UPDATE_AVAILABLE);
+  ExtensionIdSet extension_ids_with_errors;
+  for (const auto& error : errors)
+    extension_ids_with_errors.insert(error.first);
   NotifyExtensionsDownloadStageChanged(
-      errors, ExtensionDownloaderDelegate::Stage::FINISHED);
-  NotifyExtensionsDownloadFailed(
-      errors, fetch_data->request_ids(),
-      ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED);
+      extension_ids_with_errors, ExtensionDownloaderDelegate::Stage::FINISHED);
+  NotifyExtensionsManifestInvalidFailure(errors, fetch_data->request_ids());
 }
 
 ExtensionDownloader::UpdateAvailability
@@ -812,7 +821,6 @@ ExtensionDownloader::GetUpdateAvailability(
     *update_result_out = const_cast<UpdateManifestResult*>(update);
     return UpdateAvailability::kAvailable;
   }
-
   return has_noupdate ? UpdateAvailability::kNoUpdate
                       : UpdateAvailability::kBadUpdateSpecification;
 }
@@ -822,7 +830,7 @@ void ExtensionDownloader::DetermineUpdates(
     const UpdateManifestResults& possible_updates,
     std::vector<UpdateManifestResult*>* to_update,
     std::set<std::string>* no_updates,
-    std::set<std::string>* errors) {
+    ManifestInvalidErrorList* errors) {
   DCHECK_NE(nullptr, to_update);
   DCHECK_NE(nullptr, no_updates);
   DCHECK_NE(nullptr, errors);
@@ -831,13 +839,17 @@ void ExtensionDownloader::DetermineUpdates(
   const std::map<std::string, std::vector<const UpdateManifestResult*>>
       update_groups = possible_updates.GroupSuccessfulByID();
 
+  // Contains IDs of extensions which neither have successful update entry nor
+  // are already inserted into |errors|.
+  ExtensionIdSet extension_errors;
+
   // For each extensions in the current batch, greedily find an update from
   // |possible_updates|.
   for (const std::string& extension_id : fetch_data.extension_ids()) {
     const auto it = update_groups.find(extension_id);
     if (it == update_groups.end()) {
       VLOG(2) << "Manifest doesn't have an update entry for " << extension_id;
-      errors->insert(extension_id);
+      extension_errors.insert(extension_id);
       continue;
     }
 
@@ -861,10 +873,23 @@ void ExtensionDownloader::DetermineUpdates(
         no_updates->insert(extension_id);
         break;
       case UpdateAvailability::kBadUpdateSpecification:
-        errors->insert(extension_id);
+        errors->emplace_back(extension_id,
+                             ManifestInvalidError::BAD_UPDATE_SPECIFICATION);
         break;
     }
   }
+  for (const auto& possible_update : possible_updates.update_list) {
+    const ExtensionId& id = possible_update.extension_id;
+    if (!extension_errors.count(id))
+      continue;
+    DCHECK(possible_update.parse_error);
+    // Report any error corresponding to an extension.
+    errors->emplace_back(id, possible_update.parse_error.value().error);
+    extension_errors.erase(id);
+  }
+  // For the remaining extensions, we have missing ids.
+  for (const auto& id : extension_errors)
+    errors->emplace_back(id, ManifestInvalidError::MISSING_APP_ID);
 }
 
 base::Optional<base::FilePath> ExtensionDownloader::GetCachedExtension(
@@ -1184,6 +1209,24 @@ void ExtensionDownloader::NotifyExtensionManifestUpdateCheckStatus(
   }
 }
 
+void ExtensionDownloader::NotifyExtensionsManifestInvalidFailure(
+    const ManifestInvalidErrorList& errors,
+    const std::set<int>& request_ids) {
+  for (const auto& error_data : errors) {
+    const ExtensionId& extension_id = error_data.first;
+    ManifestInvalidError manifest_invalid_error = error_data.second;
+    auto ping_iter = ping_results_.find(extension_id);
+    ExtensionDownloaderDelegate::FailureData data(manifest_invalid_error);
+    delegate_->OnExtensionDownloadFailed(
+        extension_id, ExtensionDownloaderDelegate::Error::MANIFEST_INVALID,
+        ping_iter == ping_results_.end()
+            ? ExtensionDownloaderDelegate::PingResult()
+            : ping_iter->second,
+        request_ids, data);
+    ping_results_.erase(extension_id);
+  }
+}
+
 void ExtensionDownloader::NotifyExtensionsDownloadStageChanged(
     std::set<std::string> extension_ids,
     ExtensionDownloaderDelegate::Stage stage) {
@@ -1206,8 +1249,13 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailedWithFailureData(
     ExtensionDownloaderDelegate::Error error,
     const ExtensionDownloaderDelegate::FailureData& data) {
   for (const auto& it : extension_ids) {
-    const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[it];
-    delegate_->OnExtensionDownloadFailed(it, error, ping, request_ids, data);
+    auto ping_iter = ping_results_.find(it);
+    delegate_->OnExtensionDownloadFailed(
+        it, error,
+        ping_iter == ping_results_.end()
+            ? ExtensionDownloaderDelegate::PingResult()
+            : ping_iter->second,
+        request_ids, data);
     ping_results_.erase(it);
   }
 }

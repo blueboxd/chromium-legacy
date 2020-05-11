@@ -5,6 +5,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 
 #include "base/base64.h"
+#include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -302,6 +303,10 @@ void SetUserOptedInWalletSyncTransport(PrefService* prefs,
 
 bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
                                       const CoreAccountId& account_id) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // On mobile, no specific opt-in is required.
+  return true;
+#else
   // Get the hash of the account id.
   std::string account_hash;
   base::Base64Encode(crypto::SHA256HashString(account_id.ToString()),
@@ -310,6 +315,7 @@ bool IsUserOptedInWalletSyncTransport(const PrefService* prefs,
   // Return whether the wallet opt-in bit is set.
   return GetSyncTransportOptInBitFieldForAccount(prefs, account_hash) &
          sync_transport_opt_in::kWallet;
+#endif  // OS_ANDROID || defined(OS_IOS)
 }
 
 void ClearSyncTransportOptIns(PrefService* prefs) {

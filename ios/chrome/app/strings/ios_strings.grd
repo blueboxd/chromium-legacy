@@ -1186,12 +1186,6 @@ Handoff must also be enabled in the General section of Settings, and your device
        <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_DESCRIPTION" desc="Description of Cookies displayed in Cookies settings screen">
         Cookies are files created by websites you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the webpage you visit.
       </message>
-      <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_ADD_SITE_EXCEPTION" desc="Label of the button used to a add site exception">
-         Add Site Exception
-      </message>
-      <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_SITE_EXCEPTIONS_HEADER" desc="Header of the site exceptions section.">
-       Sites Exceptions
-      </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync and Google Services settings.">
         For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph>.
       </message>

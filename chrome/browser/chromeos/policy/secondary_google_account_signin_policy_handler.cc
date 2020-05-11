@@ -32,12 +32,6 @@ void SecondaryGoogleAccountSigninPolicyHandler::ApplyPolicySettings(
     return;
   }
 
-  // Disallow secondary sign-in by enabling Mirror consistency. If Chrome OS
-  // Account Manager is not available, this has the effect of disabling
-  // secondary account sign-ins within the content area.
-  // TODO(https://crbug.com/938835): Clean this up after releasing Chrome OS
-  // Account Manager.
-  prefs->SetBoolean(prefs::kAccountConsistencyMirrorRequired, true);
   prefs->SetBoolean(chromeos::prefs::kSecondaryGoogleAccountSigninAllowed,
                     false);
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCESSIBILITY_PLATFORM_AURA_WINDOW_PROPERTIES_H_
-#define UI_ACCESSIBILITY_PLATFORM_AURA_WINDOW_PROPERTIES_H_
+#ifndef UI_ACCESSIBILITY_AURA_AURA_WINDOW_PROPERTIES_H_
+#define UI_ACCESSIBILITY_AURA_AURA_WINDOW_PROPERTIES_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ AX_EXPORT extern const aura::WindowProperty<ax::mojom::Role>* const
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_PLATFORM_AURA_WINDOW_PROPERTIES_H_
+#endif  // UI_ACCESSIBILITY_AURA_AURA_WINDOW_PROPERTIES_H_

@@ -32,9 +32,7 @@ import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
-import org.chromium.url.URI;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,37 +58,38 @@ public class AndroidPaymentAppFinderTest
 
     /** Downloads from the test server. */
     private static class TestServerDownloader extends PaymentManifestDownloader {
-        private URI mTestServerUri;
+        private GURL mTestServerUrl;
 
         /**
-         * @param uri The URI of the test server.
+         * @param uri The URL of the test server.
          */
-        /* package */ void setTestServerUri(URI uri) {
-            assert mTestServerUri == null : "Test server URI should be set only once";
-            mTestServerUri = uri;
+        /* package */ void setTestServerUrl(GURL url) {
+            assert mTestServerUrl == null : "Test server URL should be set only once";
+            mTestServerUrl = url;
         }
 
         @Override
         public void downloadPaymentMethodManifest(
-                Origin merchantOrigin, URI methodName, ManifestDownloadCallback callback) {
+                Origin merchantOrigin, GURL methodName, ManifestDownloadCallback callback) {
             super.downloadPaymentMethodManifest(
-                    merchantOrigin, substituteTestServerUri(methodName), callback);
+                    merchantOrigin, substituteTestServerUrl(methodName), callback);
         }
 
         @Override
         public void downloadWebAppManifest(Origin paymentMethodManifestOrigin,
-                URI webAppManifestUri, ManifestDownloadCallback callback) {
+                GURL webAppManifestUrl, ManifestDownloadCallback callback) {
             super.downloadWebAppManifest(paymentMethodManifestOrigin,
-                    substituteTestServerUri(webAppManifestUri), callback);
+                    substituteTestServerUrl(webAppManifestUrl), callback);
         }
 
-        private URI substituteTestServerUri(URI uri) {
-            try {
-                return new URI(uri.toString().replaceAll("https://", mTestServerUri.toString()));
-            } catch (URISyntaxException e) {
+        private GURL substituteTestServerUrl(GURL url) {
+            GURL changedUrl =
+                    new GURL(url.getSpec().replaceAll("https://", mTestServerUrl.getSpec()));
+            if (!changedUrl.isValid()) {
                 assert false;
                 return null;
             }
+            return changedUrl;
         }
     }
 
@@ -177,7 +176,7 @@ public class AndroidPaymentAppFinderTest
         mRule.startMainActivityOnBlankPage();
         mPackageManager.reset();
         mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mDownloader.setTestServerUri(new URI(mServer.getURL("/components/test/data/payments/")));
+        mDownloader.setTestServerUrl(new GURL(mServer.getURL("/components/test/data/payments/")));
         mPaymentApps = new ArrayList<>();
         mAllPaymentAppsCreated = false;
     }
@@ -296,13 +295,13 @@ public class AndroidPaymentAppFinderTest
         Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
     }
 
-    /** Invalid and relative URIs cannot be used as payment method names. */
+    /** Invalid and relative URLs cannot be used as payment method names. */
     @Test
     @Feature({"Payments"})
     public void testInvalidPaymentMethodNames() throws Throwable {
         Set<String> methods = new HashSet<>();
-        methods.add("https://"); // Invalid URI.
-        methods.add("../index.html"); // Relative URI.
+        methods.add("https://"); // Invalid URL.
+        methods.add("../index.html"); // Relative URL.
         mPackageManager.installPaymentApp(
                 "BobPay", "com.bobpay", "https://", /*signature=*/"01020304050607080900");
         mPackageManager.installPaymentApp(

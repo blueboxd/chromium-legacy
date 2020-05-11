@@ -29,8 +29,6 @@
 namespace {
 // The timeout for any JavaScript call in this file.
 const int64_t kJavaScriptExecutionTimeoutInSeconds = 5;
-
-constexpr int kNotSetRendererID = -1;
 }
 
 namespace autofill {

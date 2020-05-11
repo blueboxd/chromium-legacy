@@ -13,7 +13,6 @@ import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.os.Bundle;
 
-import org.junit.Assert;
 import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -27,10 +26,9 @@ import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
-import org.chromium.url.URI;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -366,13 +364,13 @@ public class AndroidPaymentAppFinderUnitTest {
 
             @Override
             public void downloadPaymentMethodManifest(
-                    Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
-                callback.onPaymentMethodManifestDownloadSuccess(uri,
+                    Origin merchantOrigin, GURL url, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess(url,
                         PaymentManifestDownloader.createOpaqueOriginForTest(), "some content here");
             }
 
             @Override
-            public void downloadWebAppManifest(Origin paynentMethodManifestOrigin, URI uri,
+            public void downloadWebAppManifest(Origin paynentMethodManifestOrigin, GURL url,
                     ManifestDownloadCallback callback) {
                 callback.onWebAppManifestDownloadSuccess("some content here");
             }
@@ -384,13 +382,9 @@ public class AndroidPaymentAppFinderUnitTest {
         PaymentManifestParser parser = new PaymentManifestParser() {
             @Override
             public void parsePaymentMethodManifest(
-                    URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
-                try {
-                    callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0]);
-                } catch (URISyntaxException e) {
-                    Assert.assertTrue(false);
-                }
+                    GURL paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
+                callback.onPaymentMethodManifestParseSuccess(
+                        new GURL[] {new GURL("https://bobpay.com/app.json")}, new GURL[0]);
             }
 
             @Override

@@ -36,10 +36,10 @@ class UIFont;
 
 // Adapted from NSPathUtilities.h and NSObjCRuntime.h.
 #if __LP64__ || NS_BUILD_32_LIKE_64
-typedef enum NSSearchPathDirectory : unsigned long NSSearchPathDirectory;
+enum NSSearchPathDirectory : unsigned long;
 typedef unsigned long NSSearchPathDomainMask;
 #else
-typedef enum NSSearchPathDirectory : unsigned int NSSearchPathDirectory;
+enum NSSearchPathDirectory : unsigned int;
 typedef unsigned int NSSearchPathDomainMask;
 #endif
 

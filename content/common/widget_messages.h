@@ -161,12 +161,6 @@ IPC_MESSAGE_ROUTED1(WidgetMsg_ForceRedraw, int /* snapshot_id */)
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
 
-// Sent to an OOPIF widget when the browser receives a FrameHostMsg_SetIsInert
-// from the target widget's embedding renderer changing its inertness. When a
-// widget is inert, it is unable to process input events.
-//
-// https://html.spec.whatwg.org/multipage/interaction.html#inert
-IPC_MESSAGE_ROUTED1(WidgetMsg_SetIsInert, bool /* inert */)
 
 // Sent by the browser to synchronize with the next compositor frame by
 // requesting an ACK be queued. Used only for tests.

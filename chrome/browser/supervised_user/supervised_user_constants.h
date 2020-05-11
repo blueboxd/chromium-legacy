@@ -9,9 +9,6 @@ namespace supervised_users {
 
 // Keys for supervised user settings. These are configured remotely and mapped
 // to preferences by the SupervisedUserPrefStore.
-#if defined(OS_CHROMEOS)
-extern const char kAccountConsistencyMirrorRequired[];
-#endif
 extern const char kAuthorizationHeaderFormat[];
 extern const char kCameraMicDisabled[];
 extern const char kContentPackDefaultFilteringBehavior[];

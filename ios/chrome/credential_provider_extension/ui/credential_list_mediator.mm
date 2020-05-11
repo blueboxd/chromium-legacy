@@ -61,15 +61,36 @@
 }
 
 - (void)fetchCredentials {
-  // TODO(crbug.com/1045454): Implement ordering and suggestions.
-  self.allCredentials = self.credentialStore.credentials;
-  self.suggestedCredentials = nil;
-  if (!self.allCredentials.count) {
-    [self.UIHandler showEmptyCredentials];
-    return;
-  }
-  [self.consumer presentSuggestedPasswords:self.suggestedCredentials
-                              allPasswords:self.allCredentials];
+  dispatch_queue_t priorityQueue =
+      dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0ul);
+  dispatch_async(priorityQueue, ^{
+    self.allCredentials = [self.credentialStore.credentials
+        sortedArrayUsingComparator:^NSComparisonResult(id<Credential> obj1,
+                                                       id<Credential> obj2) {
+          return [obj1.serviceName compare:obj2.serviceName];
+        }];
+
+    NSMutableArray* suggestions = [[NSMutableArray alloc] init];
+    for (id<Credential> credential in self.allCredentials) {
+      for (ASCredentialServiceIdentifier* identifier in self
+               .serviceIdentifiers) {
+        if ([identifier.identifier containsString:credential.serviceName]) {
+          [suggestions addObject:credential];
+          break;
+        }
+      }
+    }
+    self.suggestedCredentials = suggestions;
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+      if (!self.allCredentials.count) {
+        [self.UIHandler showEmptyCredentials];
+        return;
+      }
+      [self.consumer presentSuggestedPasswords:self.suggestedCredentials
+                                  allPasswords:self.allCredentials];
+    });
+  });
 }
 
 #pragma mark - CredentialListConsumerDelegate

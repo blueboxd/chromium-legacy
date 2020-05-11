@@ -27,6 +27,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
@@ -99,6 +100,8 @@ constexpr char kManifestUpdateCheckStatus[] =
 constexpr char kDisableReason[] =
     "Extensions.ForceInstalledNotLoadedDisableReason";
 constexpr char kBlacklisted[] = "Extensions.ForceInstalledAndBlackListed";
+constexpr char kExtensionManifestInvalid[] =
+    "Extensions.ForceInstalledFailureManifestInvalidErrorDetail";
 }  // namespace
 
 namespace extensions {
@@ -667,6 +670,22 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionManifestFetchFailed) {
                                       -net::Error::ERR_INVALID_ARGUMENT, 1);
   histogram_tester_.ExpectBucketCount(kFetchRetriesManifestFetchFailedStats,
                                       kFetchTries, 2);
+}
+
+// Errors occurred because the fetched update manifest was invalid.
+TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionManifestInvalid) {
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, extension.get());
+  installation_reporter_->ReportManifestInvalidFailure(
+      kExtensionId2, ManifestInvalidError::INVALID_PROTOCOL_ON_GUPDATE_TAG);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectUniqueSample(
+      kExtensionManifestInvalid,
+      ManifestInvalidError::INVALID_PROTOCOL_ON_GUPDATE_TAG, 1);
 }
 
 // Session in which either all the extensions installed successfully, or all

@@ -249,7 +249,7 @@ const char kExpirationDateRe[] =
     "|有効期限"              // ja-JP
     "|validade"              // pt-BR, pt-PT
     "|Срок действия карты";  // ru
-const char kGiftCardRe[] = "gift.?card";
+const char kGiftCardRe[] = "gift.?(card|cert)";
 const char kDebitGiftCardRe[] =
     "(?:visa|mastercard|discover|amex|american express).*gift.?card";
 const char kDebitCardRe[] = "debit.*card";

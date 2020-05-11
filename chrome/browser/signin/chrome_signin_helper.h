@@ -81,7 +81,6 @@ void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms);
 
 // Adds an account consistency header to Gaia requests from a connected profile,
 // with the exception of requests from gaia webview.
-// Returns true if the account consistency header was added to the request.
 // Removes the header if it is already in the headers but should not be there.
 void FixAccountConsistencyRequestHeader(
     ChromeRequestAdapter* request,
@@ -91,7 +90,7 @@ void FixAccountConsistencyRequestHeader(
     AccountConsistencyMethod account_consistency,
     std::string gaia_id,
 #if defined(OS_CHROMEOS)
-    bool account_consistency_mirror_required,
+    bool is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     bool is_sync_enabled,

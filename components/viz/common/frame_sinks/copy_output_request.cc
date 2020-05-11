@@ -19,7 +19,7 @@ CopyOutputRequest::CopyOutputRequest(ResultFormat result_format,
       scale_from_(1, 1),
       scale_to_(1, 1) {
   DCHECK(!result_callback_.is_null());
-  TRACE_EVENT_ASYNC_BEGIN0("viz", "CopyOutputRequest", this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("viz", "CopyOutputRequest", this);
 }
 
 CopyOutputRequest::~CopyOutputRequest() {
@@ -53,8 +53,8 @@ void CopyOutputRequest::SetUniformScaleRatio(int scale_from, int scale_to) {
 }
 
 void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
-  TRACE_EVENT_ASYNC_END1("viz", "CopyOutputRequest", this, "success",
-                         !result->IsEmpty());
+  TRACE_EVENT_NESTABLE_ASYNC_END1("viz", "CopyOutputRequest", this, "success",
+                                  !result->IsEmpty());
   if (result_task_runner_) {
     result_task_runner_->PostTask(
         FROM_HERE,

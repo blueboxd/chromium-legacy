@@ -270,29 +270,6 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForIncognitoProfile) {
       signin::AccountConsistencyMethod::kDisabled,
       AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
 }
-
-TEST(AccountConsistencyModeManagerTest, MirrorEnabledByPreference) {
-  // Creation of this object sets the current thread's id as UI thread.
-  content::BrowserTaskEnvironment task_environment;
-
-  TestingProfile::Builder profile_builder;
-  {
-    std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service =
-        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
-    RegisterUserProfilePrefs(pref_service->registry());
-    profile_builder.SetPrefService(std::move(pref_service));
-  }
-  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
-  profile->GetPrefs()->SetBoolean(prefs::kAccountConsistencyMirrorRequired,
-                                  true);
-
-  EXPECT_TRUE(
-      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile.get()));
-  EXPECT_FALSE(
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
-  EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
-            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
-}
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_MIRROR)

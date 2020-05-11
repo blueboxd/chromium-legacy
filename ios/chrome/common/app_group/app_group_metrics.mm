@@ -20,6 +20,30 @@ NSString* const kSearchExtensionDisplayCount = @"SearchExtensionDisplayCount";
 
 NSString* const kContentExtensionDisplayCount = @"ContentExtensionDisplayCount";
 
+NSString* const kCredentialExtensionDisplayCount =
+    @"CredentialExtensionDisplayCount";
+
+NSString* const kCredentialExtensionReauthCount =
+    @"CredentialExtensionReauthCount";
+
+NSString* const kCredentialExtensionCopyURLCount =
+    @"CredentialExtensionCopyURLCount";
+
+NSString* const kCredentialExtensionCopyUsernameCount =
+    @"CredentialExtensionCopyUsernameCount";
+
+NSString* const kCredentialExtensionCopyPasswordCount =
+    @"CredentialExtensionCopyPasswordCount";
+
+NSString* const kCredentialExtensionShowPasswordCount =
+    @"CredentialExtensionShowPasswordCount";
+
+NSString* const kCredentialExtensionSearchCount =
+    @"CredentialExtensionSearchCount";
+
+NSString* const kCredentialExtensionPasswordUseCount =
+    @"CredentialExtensionPasswordUseCount";
+
 // To avoid collision between session_ids from chrome or external
 // components, the session ID is offset depending on the application.
 int AppGroupSessionID(int session_id, AppGroupApplications application) {

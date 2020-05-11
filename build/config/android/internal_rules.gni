@@ -3600,13 +3600,6 @@ if (enable_java_templates) {
 
     if (_has_sources || _is_prebuilt) {
       _header_target_name = "${target_name}__header"
-
-      # TODO(wnwen): Enable turbine for non-chromium code when r8 optimizes out
-      #              bridge methods.
-      _enable_turbine = _has_sources && _chromium_code
-      if (defined(invoker.enable_turbine)) {
-        _enable_turbine = invoker.enable_turbine
-      }
     }
 
     # Temporary to avoid downstream breakage: https://crbug.com/1017190

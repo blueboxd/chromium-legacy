@@ -25,6 +25,13 @@ interface FrameWidget {
 
   // Toggles render throttling for an out-of-process iframe.
   UpdateRenderThrottlingStatusForSubFrame(bool is_throttled, bool subtree_throttled);
+
+  // When the browser receives a call to RenderFrameProxyHost::SetIsInert
+  // from the parent widget's embedding renderer changing its inertness,
+  // it sets the same inertness value to the renderer of the child subframe.
+  // When a widget is inert, it is unable to process input events.
+  // https://html.spec.whatwg.org/multipage/interaction.html#inert
+  SetIsInertForSubFrame(bool inert);
 };
 
 // Implemented in Browser, this interface defines frame-widget-specific methods that

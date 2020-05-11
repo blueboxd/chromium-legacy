@@ -912,8 +912,8 @@ void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
 
   ServiceWorkerRegistration* registration =
       GetLiveRegistration(version->registration_id());
-  if (registration && registration->active_version() == version)
-    registration->OnNoControlleesInActiveVersion();
+  if (registration)
+    registration->OnNoControllees(version);
 
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnNoControllees,

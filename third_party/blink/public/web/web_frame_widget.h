@@ -125,9 +125,8 @@ class WebFrameWidget : public WebWidget {
   virtual void SetRemoteViewportIntersection(const ViewportIntersectionState&) {
   }
 
-  // Sets the inert bit on an out-of-process iframe, causing it to ignore
-  // input.
-  virtual void SetIsInert(bool) {}
+  // Sets the inherited effective touch action on an out-of-process iframe.
+  virtual void SetInheritedEffectiveTouchAction(WebTouchAction) {}
 
   // Returns the currently focused WebLocalFrame (if any) inside this
   // WebFrameWidget. That is a WebLocalFrame which is focused and shares the

@@ -36,6 +36,36 @@
             android:paddingBottom="15dp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp">
+            <LinearLayout
+                android:id="@+id/fast_forward_message"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:gravity="top|center"
+                android:paddingTop="16dp"
+                android:orientation="horizontal"
+                android:background="@drawable/fast_forward_message_gradient"
+                android:visibility="gone">
+                <ImageView
+                    android:id="@+id/fast_rewind"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/accessibility_pause_video"
+                    app:srcCompat="@drawable/ic_fast_rewind_white_36dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fast_forward_hint"
+                    style="@style/TextAppearance.TextMedium.Primary.Light" />
+                <ImageView
+                    android:id="@+id/fast_forward"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/accessibility_pause_video"
+                    app:srcCompat="@drawable/ic_fast_forward_white_36dp" />
+            </LinearLayout>
+
             <ImageView
                 android:id="@+id/video_player_play_button"
                 android:layout_width="64dp"

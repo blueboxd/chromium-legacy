@@ -55,8 +55,6 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   // Invoked when the timer fires to refresh the title text.
   void UpdateWindowTitle();
 
-  static constexpr int kTitleIconSize = 20;
-
   // Timer that schedules title refreshes.
   RelaunchRequiredTimer relaunch_required_timer_;
 

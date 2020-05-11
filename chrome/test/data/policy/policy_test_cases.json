@@ -4253,7 +4253,7 @@
     "policy_pref_mapping_test": [
       {
         "policies": { "SecondaryGoogleAccountSigninAllowed": false },
-        "prefs": { "account_consistency_mirror.required": {} }
+        "prefs": { "account_manager.secondary_google_account_signin_allowed": {} }
       }
     ]
   },

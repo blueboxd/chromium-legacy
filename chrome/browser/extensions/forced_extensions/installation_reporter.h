@@ -16,6 +16,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
+#include "extensions/browser/updater/safe_manifest_parser.h"
 #include "extensions/common/extension_id.h"
 
 namespace content {
@@ -239,6 +240,10 @@ class InstallationReporter : public KeyedService {
     // Type of update check status received from server when manifest was
     // fetched.
     base::Optional<UpdateCheckStatus> update_check_status;
+    // Error detail when the fetched manifest was invalid. This includes errors
+    // occurred while parsing the manifest and errors occurred due to the
+    // internal details of the parsed manifest.
+    base::Optional<ManifestInvalidError> manifest_invalid_error;
   };
 
   class Observer : public base::CheckedObserver {
@@ -262,6 +267,12 @@ class InstallationReporter : public KeyedService {
 
   // Convenience function to get the InstallationReporter for a BrowserContext.
   static InstallationReporter* Get(content::BrowserContext* context);
+
+  // Reports detailed error type when extension fails to install with failure
+  // reason MANIFEST_INVALID. See InstallationData::manifest_invalid_error
+  // for more details.
+  void ReportManifestInvalidFailure(const ExtensionId& id,
+                                    ManifestInvalidError error);
 
   // Remembers failure reason and in-progress stages in memory.
   void ReportInstallationStage(const ExtensionId& id, Stage stage);

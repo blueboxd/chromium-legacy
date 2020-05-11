@@ -5,7 +5,7 @@
 #include "ui/views/accessibility/accessibility_alert_window.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/platform/aura_window_properties.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"

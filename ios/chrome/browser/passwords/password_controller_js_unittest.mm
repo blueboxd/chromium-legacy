@@ -55,16 +55,18 @@ NSString* GAIASignInForm(NSString* formAction,
 
 // Returns an autoreleased string of JSON for a parsed form.
 NSString* GAIASignInFormData(NSString* formOrigin, NSString* formName) {
-  return [NSString stringWithFormat:@"{"
-                                     "  \"origin\":\"%@\","
-                                     "  \"name\":\"%@\","
-                                     "  \"fields\":["
-                                     "    {\"name\":\"%@\", \"value\":\"\"},"
-                                     "    {\"name\":\"%@\",\"value\":\"\"}"
-                                     "  ]"
-                                     "}",
-                                    formOrigin, formName, kEmailInputID,
-                                    kPasswordInputID];
+  return [NSString
+      stringWithFormat:
+          @"{"
+           "  \"origin\":\"%@\","
+           "  \"name\":\"%@\","
+           "  \"unique_renderer_id\":0,"
+           "  \"fields\":["
+           "    {\"name\":\"%@\", \"value\":\"\", \"unique_renderer_id\":1},"
+           "    {\"name\":\"%@\",\"value\":\"\", \"unique_renderer_id\":2},"
+           "  ]"
+           "}",
+          formOrigin, formName, kEmailInputID, kPasswordInputID];
 }
 
 // Loads a page with a password form containing a username value already.
@@ -78,6 +80,9 @@ TEST_F(PasswordControllerJsTest,
   NSString* const username = @"john.doe@gmail.com";
   NSString* const password = @"super!secret";
   LoadHtmlAndInject(GAIASignInForm(formOrigin, username, YES), GURL(origin));
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   EXPECT_NSEQ(
       @YES, ExecuteJavaScriptWithFormat(
                 @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
@@ -100,6 +105,9 @@ TEST_F(PasswordControllerJsTest,
   NSString* const username2 = @"jean.dubois@gmail.com";
   NSString* const password = @"super!secret";
   LoadHtmlAndInject(GAIASignInForm(formOrigin, username1, YES), GURL(origin));
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   EXPECT_NSEQ(
       @NO, ExecuteJavaScriptWithFormat(
                @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
@@ -122,6 +130,9 @@ TEST_F(PasswordControllerJsTest,
   NSString* const username2 = @"jane.doe@gmail.com";
   NSString* const password = @"super!secret";
   LoadHtmlAndInject(GAIASignInForm(formOrigin, username1, NO), GURL(origin));
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   EXPECT_NSEQ(
       @YES, ExecuteJavaScriptWithFormat(
                 @"__gCrWeb.passwords.fillPasswordForm(%@, '%@', '%@')",
@@ -393,6 +404,9 @@ TEST_F(PasswordControllerJsTest, OriginsAreDifferentInPathes) {
        "  <input type='submit' value='Submit'>"
        "</form>"
        "</body></html>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
 
   NSString* const username = @"john.doe@gmail.com";
   NSString* const password = @"super!secret";
@@ -404,9 +418,12 @@ TEST_F(PasswordControllerJsTest, OriginsAreDifferentInPathes) {
                         "  \"action\":\"%s\","
                         "  \"origin\":\"%s\","
                         "  \"name\":\"login_form\","
+                        "  \"unique_renderer_id\":0,"
                         "  \"fields\":["
-                        "    {\"name\":\"name\", \"value\":\"name\"},"
-                        "    {\"name\":\"password\",\"value\":\"password\"}"
+                        "    {\"name\":\"name\", \"value\":\"name\", "
+                        "\"unique_renderer_id\":1},"
+                        "    {\"name\":\"password\",\"value\":\"password\", "
+                        "\"unique_renderer_id\":2}"
                         "  ]"
                         "}",
                        page_origin.c_str(), form_fill_data_origin.c_str()];
@@ -603,22 +620,27 @@ TEST_F(PasswordControllerJsTest, FillOnlyPasswordField) {
        "  Password: <input type='password' name='password' id='password'>"
        "</form>"
        "</body></html>");
-
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  // Run password forms search to set up unique IDs.
+  EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   NSString* const password = @"super!secret";
   std::string page_origin = BaseUrl() + "origin1";
   std::string form_fill_data_origin = BaseUrl() + "origin2";
 
   NSString* form_fill_data = [NSString
-      stringWithFormat:@"{"
-                        "  \"action\":\"%s\","
-                        "  \"origin\":\"%s\","
-                        "  \"name\":\"login_form\","
-                        "  \"fields\":["
-                        "    {\"name\":\"\", \"value\":\"\"},"
-                        "    {\"name\":\"password\",\"value\":\"password\"}"
-                        "  ]"
-                        "}",
-                       page_origin.c_str(), form_fill_data_origin.c_str()];
+      stringWithFormat:
+          @"{"
+           "  \"action\":\"%s\","
+           "  \"origin\":\"%s\","
+           "  \"name\":\"login_form\","
+           "  \"unique_renderer_id\":0,"
+           "  \"fields\":["
+           "    {\"name\":\"\", \"value\":\"\", \"unique_renderer_id\":-1},"
+           "    {\"name\":\"password\",\"value\":\"password\", "
+           "\"unique_renderer_id\":1}"
+           "  ]"
+           "}",
+          page_origin.c_str(), form_fill_data_origin.c_str()];
   EXPECT_NSEQ(@YES, ExecuteJavaScriptWithFormat(
                         @"__gCrWeb.passwords.fillPasswordForm(%@, '', '%@')",
                         form_fill_data, password));

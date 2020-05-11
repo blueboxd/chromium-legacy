@@ -21,6 +21,11 @@
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#endif
+
 namespace signin {
 
 HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(Profile* profile)
@@ -51,6 +56,19 @@ void HeaderModificationDelegateImpl::ProcessRequest(
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
 #endif
+
+#if defined(OS_CHROMEOS)
+  bool is_secondary_account_addition_allowed = true;
+  if (profile_->IsChild() &&
+      !base::FeatureList::IsEnabled(chromeos::features::kEduCoexistence)) {
+    is_secondary_account_addition_allowed = false;
+  }
+  if (!prefs->GetBoolean(
+          chromeos::prefs::kSecondaryGoogleAccountSigninAllowed)) {
+    is_secondary_account_addition_allowed = false;
+  }
+#endif
+
   FixAccountConsistencyRequestHeader(
       request_adapter, redirect_url, profile_->IsOffTheRecord(),
       prefs->GetInteger(prefs::kIncognitoModeAvailability),
@@ -59,7 +77,7 @@ void HeaderModificationDelegateImpl::ProcessRequest(
           ->GetPrimaryAccountInfo()
           .gaia,
 #if defined(OS_CHROMEOS)
-      prefs->GetBoolean(prefs::kAccountConsistencyMirrorRequired),
+      is_secondary_account_addition_allowed,
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       sync_service && sync_service->IsSyncFeatureEnabled(),

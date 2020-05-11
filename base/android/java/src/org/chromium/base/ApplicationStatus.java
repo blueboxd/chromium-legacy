@@ -9,7 +9,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Application.ActivityLifecycleCallbacks;
 import android.os.Bundle;
-import android.view.ViewTreeObserver;
+import android.view.Window;
 
 import androidx.annotation.AnyThread;
 import androidx.annotation.MainThread;
@@ -20,6 +20,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +39,9 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @JNINamespace("base::android")
 public class ApplicationStatus {
+    private static final String TOOLBAR_CALLBACK_WRAPPER_CLASS =
+            "androidx.appcompat.app.ToolbarActionBar$ToolbarCallbackWrapper";
+
     private static class ActivityInfo {
         private int mStatus = ActivityState.DESTROYED;
         private ObserverList<ActivityStateListener> mListeners = new ObserverList<>();
@@ -158,21 +166,49 @@ public class ApplicationStatus {
     }
 
     /**
-     * Monitors activity focus changes as a ViewTreeObserver.
+     * Intercepts calls to an existing Window.Callback. Most invocations are passed on directly
+     * to the composed Window.Callback but enables intercepting/manipulating others.
      *
      * This is used to relay window focus changes throughout the app and remedy a bug in the
      * appcompat library.
      */
-    private static class WindowFocusObserver
-            implements ViewTreeObserver.OnWindowFocusChangeListener {
+    @VisibleForTesting
+    static class WindowCallbackProxy implements InvocationHandler {
+        private final Window.Callback mCallback;
         private final Activity mActivity;
 
-        public WindowFocusObserver(Activity activity) {
+        public WindowCallbackProxy(Activity activity, Window.Callback callback) {
+            mCallback = callback;
             mActivity = activity;
         }
 
         @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getName().equals("onWindowFocusChanged") && args.length == 1
+                    && args[0] instanceof Boolean) {
+                onWindowFocusChanged((boolean) args[0]);
+                return null;
+            } else {
+                try {
+                    return method.invoke(mCallback, args);
+                } catch (InvocationTargetException e) {
+                    // Special-case for when a method is not defined on the underlying
+                    // Window.Callback object. Because we're using a Proxy to forward all method
+                    // calls, this breaks the Android framework's handling for apps built against
+                    // an older SDK. The framework expects an AbstractMethodError but due to
+                    // reflection it becomes wrapped inside an InvocationTargetException. Undo the
+                    // wrapping to signal the framework accordingly.
+                    if (e.getCause() instanceof AbstractMethodError) {
+                        throw e.getCause();
+                    }
+                    throw e;
+                }
+            }
+        }
+
         public void onWindowFocusChanged(boolean hasFocus) {
+            mCallback.onWindowFocusChanged(hasFocus);
+
             for (WindowFocusChangedListener listener : sWindowFocusListeners) {
                 listener.onWindowFocusChanged(mActivity, hasFocus);
             }
@@ -216,41 +252,100 @@ public class ApplicationStatus {
             @Override
             public void onActivityCreated(final Activity activity, Bundle savedInstanceState) {
                 onStateChange(activity, ActivityState.CREATED);
-                activity.getWindow()
-                        .getDecorView()
-                        .getViewTreeObserver()
-                        .addOnWindowFocusChangeListener(new WindowFocusObserver(activity));
+                Window.Callback callback = activity.getWindow().getCallback();
+                activity.getWindow().setCallback(createWindowCallbackProxy(activity, callback));
             }
 
             @Override
             public void onActivityDestroyed(Activity activity) {
                 onStateChange(activity, ActivityState.DESTROYED);
+                checkCallback(activity);
             }
 
             @Override
             public void onActivityPaused(Activity activity) {
                 onStateChange(activity, ActivityState.PAUSED);
+                checkCallback(activity);
             }
 
             @Override
             public void onActivityResumed(Activity activity) {
                 onStateChange(activity, ActivityState.RESUMED);
+                checkCallback(activity);
             }
 
             @Override
             public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+                checkCallback(activity);
             }
 
             @Override
             public void onActivityStarted(Activity activity) {
                 onStateChange(activity, ActivityState.STARTED);
+                checkCallback(activity);
             }
 
             @Override
             public void onActivityStopped(Activity activity) {
                 onStateChange(activity, ActivityState.STOPPED);
+                checkCallback(activity);
+            }
+
+            private void checkCallback(Activity activity) {
+                if (BuildConfig.DCHECK_IS_ON) {
+                    assert reachesWindowCallback(activity.getWindow().getCallback());
+                }
             }
         });
+    }
+
+    @VisibleForTesting
+    static Window.Callback createWindowCallbackProxy(Activity activity, Window.Callback callback) {
+        return (Window.Callback) Proxy.newProxyInstance(Window.Callback.class.getClassLoader(),
+                new Class[] {Window.Callback.class},
+                new ApplicationStatus.WindowCallbackProxy(activity, callback));
+    }
+
+    /**
+     * Tries to trace down to our WindowCallbackProxy from the given callback.
+     * Since the callback can be overwritten by embedder code we try to ensure
+     * that there at least seem to be a reference back to our callback by
+     * checking the declared fields of the given callback using reflection.
+     */
+    @VisibleForTesting
+    static boolean reachesWindowCallback(@Nullable Window.Callback callback) {
+        if (callback == null) return false;
+        if (callback.getClass().getName().equals(TOOLBAR_CALLBACK_WRAPPER_CLASS)) {
+            // We're actually not going to get called, see AndroidX report here:
+            // https://issuetracker.google.com/issues/155165145.
+            // But this was accepted in the old code as well so mimic that until
+            // AndroidX is fixed and updated.
+            return true;
+        }
+        if (Proxy.isProxyClass(callback.getClass())) {
+            return Proxy.getInvocationHandler(callback)
+                           instanceof ApplicationStatus.WindowCallbackProxy;
+        }
+        for (Class<?> c = callback.getClass(); c != Object.class; c = c.getSuperclass()) {
+            for (Field f : c.getDeclaredFields()) {
+                if (f.getType().isAssignableFrom(Window.Callback.class)) {
+                    boolean isAccessible = f.isAccessible();
+                    f.setAccessible(true);
+                    Window.Callback fieldCb;
+                    try {
+                        fieldCb = (Window.Callback) f.get(callback);
+                    } catch (IllegalAccessException ex) {
+                        continue;
+                    } finally {
+                        f.setAccessible(isAccessible);
+                    }
+                    if (reachesWindowCallback(fieldCb)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

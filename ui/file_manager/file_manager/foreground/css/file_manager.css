@@ -1605,7 +1605,7 @@ body.check-select #read-only-indicator {
   width: 16px;
 }
 
-.loading-indicator {
+body:not(.files-ng) .loading-indicator {
   height: 3px;
   left: 0;
   position: absolute;
@@ -1613,19 +1613,18 @@ body.check-select #read-only-indicator {
   width: 100%;
 }
 
-.list-view .loading-indicator {
+body.files-ng .loading-indicator {
+  left: calc(50% - 24px);
+  position: absolute;
+  right: calc(50% - 24px);
+  top: 64px;
+}
+
+body:not(.files-ng) .list-view .loading-indicator {
   top: 40px;
 }
 
-body.files-ng .loading-indicator {
-    --paper-progress-active-color: var(--google-blue-600);
-}
-
-body.files-ng .list-view .loading-indicator {
-  top: 48px;
-}
-
-.thumbnail-view .loading-indicator {
+body:not(.files-ng) .thumbnail-view .loading-indicator {
   top: 0;
 }
 

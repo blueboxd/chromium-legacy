@@ -243,8 +243,9 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
             String[] preferredRelatedApplications, SupportedDelegations supportedDelegations) {
         ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
         if (activity == null) return null;
-        if (!UriUtils.isURLValid(scope)) {
+        if (!UrlUtils.isURLValid(scope)) {
             Log.e(TAG, "service worker scope is not a valid URL");
+            return null;
         }
 
         return new ServiceWorkerPaymentApp(webContents, registrationId, scope, name, userHint,
@@ -258,11 +259,13 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
             String[] preferredRelatedApplications, SupportedDelegations supportedDelegations) {
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return null;
-        if (!UriUtils.isURLValid(swUrl)) {
+        if (!UrlUtils.isURLValid(swUrl)) {
             Log.e(TAG, "service worker installation url is not a valid URL");
+            return null;
         }
-        if (!UriUtils.isURLValid(scope)) {
+        if (!UrlUtils.isURLValid(scope)) {
             Log.e(TAG, "service worker scope is not a valid URL");
+            return null;
         }
 
         return new ServiceWorkerPaymentApp(webContents, name, swUrl, scope, useCache,

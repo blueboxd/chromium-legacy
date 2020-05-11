@@ -4180,11 +4180,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "WithEnhancedExperiment",
                     "enable_features": [
                         "PasswordCheck",
                         "PrivacySettingsRedesign",
-                        "SafeBrowsingEnhancedProtection"
+                        "SafeBrowsingEnhancedProtection",
+                        "SyncSetupFriendlySettings"
                     ]
                 }
             ]
@@ -5766,24 +5767,6 @@
                     },
                     "enable_features": [
                         "PulseInterval"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncSetupFriendlySettings": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncSetupFriendlySettings"
                     ]
                 }
             ]

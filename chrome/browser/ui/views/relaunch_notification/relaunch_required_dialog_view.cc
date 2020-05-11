@@ -71,8 +71,11 @@ bool RelaunchRequiredDialogView::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia RelaunchRequiredDialogView::GetWindowIcon() {
-  return gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, kTitleIconSize, gfx::kChromeIconGrey));
+  return gfx::CreateVectorIcon(
+      gfx::IconDescription(vector_icons::kBusinessIcon,
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
+                           gfx::kChromeIconGrey));
 }
 
 bool RelaunchRequiredDialogView::ShouldShowWindowIcon() const {
@@ -112,8 +115,9 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
       base::RecordAction, base::UserMetricsAction("RelaunchRequired_Close")));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_REQUIRED);
-  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  set_margins(
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
 
   auto label = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(IDS_RELAUNCH_REQUIRED_BODY,
@@ -124,10 +128,9 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
 
   // Align the body label with the left edge of the dialog's title.
   // TODO(bsep): Remove this when fixing https://crbug.com/810970.
-  int title_offset = 2 * views::LayoutProvider::Get()
-                             ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
-                             .left() +
-                     kTitleIconSize;
+  const int title_offset =
+      2 * provider->GetInsetsMetric(views::INSETS_DIALOG_TITLE).left() +
+      provider->GetDistanceMetric(DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE);
   label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, title_offset - margins().left(), 0, 0)));
 

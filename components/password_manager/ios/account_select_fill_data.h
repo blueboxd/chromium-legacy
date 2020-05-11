@@ -32,11 +32,8 @@ struct FormInfo {
   ~FormInfo();
   FormInfo(const FormInfo&);
   GURL origin;
-  base::string16 name;
   autofill::FormRendererId form_id;
-  base::string16 username_element;
   autofill::FieldRendererId username_element_id;
-  base::string16 password_element;
   autofill::FieldRendererId password_element_id;
 };
 
@@ -58,12 +55,9 @@ struct FillData {
   ~FillData();
 
   GURL origin;
-  base::string16 name;
   autofill::FormRendererId form_id;
-  base::string16 username_element;
   autofill::FieldRendererId username_element_id;
   base::string16 username_value;
-  base::string16 password_element;
   autofill::FieldRendererId password_element_id;
   base::string16 password_value;
 };
@@ -119,7 +113,6 @@ class AccountSelectFillData {
   mutable const FormInfo* last_requested_form_ = nullptr;
   // Keeps id of the last requested field if it was password otherwise the empty
   // string.
-  mutable base::string16 last_requested_password_field_;
   autofill::FieldRendererId last_requested_password_field_id_;
 
   // Returns form information from |forms_| that has id |form_identifier|.

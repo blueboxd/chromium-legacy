@@ -413,10 +413,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
                                  break_token, early_break);
 
   // Try to perform "simplified" layout.
-  // TODO(crbug.com/992953): Add a simplified layout pass for custom layout.
   if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
-      block_flow && !GetFlowThread(block_flow) &&
-      !block_flow->IsLayoutNGCustom()) {
+      !GetFlowThread(block_flow)) {
     DCHECK(layout_result);
 #if DCHECK_IS_ON()
     scoped_refptr<const NGLayoutResult> previous_result = layout_result;
@@ -431,7 +429,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 #if DCHECK_IS_ON()
     if (layout_result) {
       layout_result->CheckSameForSimplifiedLayout(
-          *previous_result, /* check_same_block_size */ false);
+          *previous_result, /* check_same_block_size */ !block_flow);
     }
 #endif
   } else {

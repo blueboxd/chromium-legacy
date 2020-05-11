@@ -64,6 +64,9 @@ cr.define('settings', function() {
        */
       isNarrow: {
         type: Boolean,
+        value: false,
+        readonly: true,
+        notify: true,
         observer: 'onNarrowChanged_',
       },
 
@@ -82,6 +85,12 @@ cr.define('settings', function() {
       showCrostini_: Boolean,
 
       /** @private */
+      showToolbar_: Boolean,
+
+      /** @private */
+      showNavMenu_: Boolean,
+
+      /** @private */
       showPluginVm_: Boolean,
 
       /** @private */
@@ -91,6 +100,16 @@ cr.define('settings', function() {
       lastSearchQuery_: {
         type: String,
         value: '',
+      },
+
+      /**
+       * The threshold at which the toolbar will change from normal to narrow
+       * mode, in px.
+       * @private {boolean}
+       */
+      narrowThreshold_: {
+        type: Number,
+        value: 900,
       },
     },
 
@@ -117,15 +136,6 @@ cr.define('settings', function() {
      * ES5 strict mode.
      */
     ready() {
-      // Lazy-create the drawer the first time it is opened or swiped into view.
-      listenOnce(this.$.drawer, 'cr-drawer-opening', () => {
-        this.$.drawerTemplate.if = true;
-      });
-
-      window.addEventListener('popstate', e => {
-        this.$.drawer.cancel();
-      });
-
       CrPolicyStrings = {
         controlledSettingExtension:
             loadTimeData.getString('controlledSettingExtension'),
@@ -153,6 +163,8 @@ cr.define('settings', function() {
       this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
       this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
       this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
+      this.showNavMenu_ = !loadTimeData.getBoolean('isKioskModeActive');
+      this.showToolbar_ = !loadTimeData.getBoolean('isKioskModeActive');
       this.showReset_ = loadTimeData.getBoolean('allowPowerwash');
 
       this.addEventListener('show-container', () => {
@@ -161,6 +173,25 @@ cr.define('settings', function() {
 
       this.addEventListener('hide-container', () => {
         this.$.container.style.visibility = 'hidden';
+      });
+
+      // If navigation menu is not shown, do not listen to the drawer.
+      if (!this.showNavMenu_) {
+        return;
+      }
+
+      this.async(() => {
+        // Lazy-create the drawer the first time it is opened or swiped into
+        // view.
+        const drawer = this.$$('#drawer');
+        assert(drawer);
+        listenOnce(drawer, 'cr-drawer-opening', () => {
+          this.$$('#drawerTemplate').if = true;
+        });
+
+        window.addEventListener('popstate', e => {
+          drawer.cancel();
+        });
       });
     },
 
@@ -253,6 +284,11 @@ cr.define('settings', function() {
 
       this.lastSearchQuery_ = urlSearchQuery;
 
+      // If toolbar is hidden, do not update anything.
+      if (!this.showToolbar_) {
+        return;
+      }
+
       const toolbar = /** @type {!OsToolbarElement} */ (this.$$('os-toolbar'));
       const searchField =
           /** @type {?CrToolbarSearchFieldElement} */ (
@@ -282,7 +318,7 @@ cr.define('settings', function() {
 
     // Override FindShortcutBehavior methods.
     handleFindShortcut(modalContextOpen) {
-      if (modalContextOpen) {
+      if (modalContextOpen || !this.showToolbar_) {
         return false;
       }
       this.$$('os-toolbar').getSearchField().showAndFocus();
@@ -291,6 +327,9 @@ cr.define('settings', function() {
 
     // Override FindShortcutBehavior methods.
     searchInputHasFocus() {
+      if (!this.showToolbar_) {
+        return;
+      }
       return this.$$('os-toolbar').getSearchField().isSearchFocused();
     },
 
@@ -335,6 +374,7 @@ cr.define('settings', function() {
      * @private
      */
     onIronActivate_(e) {
+      assert(this.showNavMenu_);
       const section = e.detail.selected;
       const path = new URL(section).pathname;
       const route = settings.Router.getInstance().getRouteForPath(path);
@@ -344,7 +384,7 @@ cr.define('settings', function() {
       if (this.isNarrow) {
         // If the onIronActivate event came from the drawer, close the drawer
         // and wait for the menu to close before navigating to |activeRoute_|.
-        this.$.drawer.close();
+        this.$$('#drawer').close();
         return;
       }
       this.navigateToActiveRoute_();
@@ -352,9 +392,11 @@ cr.define('settings', function() {
 
     /** @private */
     onMenuButtonTap_() {
-      this.$.drawer.toggle();
+      if (!this.showNavMenu_) {
+        return;
+      }
+      this.$$('#drawer').toggle();
     },
-
 
     /**
      * Navigates to |activeRoute_| if set. Used to delay navigation until after
@@ -380,7 +422,7 @@ cr.define('settings', function() {
      * @private
      */
     onMenuClose_() {
-      if (!this.$.drawer.wasCanceled()) {
+      if (!this.$$('#drawer').wasCanceled()) {
         // If a navigation happened, MainPageBehavior#currentRouteChanged
         // handles focusing the corresponding section when we call
         // settings.NavigateTo().
@@ -415,8 +457,8 @@ cr.define('settings', function() {
 
     /** @private */
     onNarrowChanged_() {
-      if (this.$.drawer.open && !this.isNarrow) {
-        this.$.drawer.close();
+      if (this.showNavMenu_ && this.$$('#drawer').open && !this.isNarrow) {
+        this.$$('#drawer').close();
       }
     },
   });

@@ -24,6 +24,13 @@ namespace syncer {
 
 namespace {
 
+// Used for UMA.
+enum class TrustedVaultFetchKeysAttemptForUMA {
+  kFirstAttempt,
+  kSecondAttempt,
+  kMaxValue = kSecondAttempt
+};
+
 // Used for the case where a null client is passed to SyncServiceCrypto.
 class EmptyTrustedVaultClient : public TrustedVaultClient {
  public:
@@ -453,7 +460,7 @@ void SyncServiceCrypto::OnTrustedVaultKeyRequired() {
     return;
   }
 
-  FetchTrustedVaultKeys();
+  FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
 }
 
 void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
@@ -541,7 +548,7 @@ void SyncServiceCrypto::SetSyncEngine(const CoreAccountInfo& account_info,
   // engine's initialization.
   if (state_.required_user_action ==
       RequiredUserAction::kFetchingTrustedVaultKeys) {
-    FetchTrustedVaultKeys();
+    FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
   }
 }
 
@@ -575,23 +582,30 @@ void SyncServiceCrypto::OnTrustedVaultClientKeysChanged() {
       break;
   }
 
-  FetchTrustedVaultKeys();
+  FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
 }
 
-void SyncServiceCrypto::FetchTrustedVaultKeys() {
+void SyncServiceCrypto::FetchTrustedVaultKeys(bool is_second_fetch_attempt) {
   DCHECK(state_.engine);
   DCHECK(state_.required_user_action ==
              RequiredUserAction::kFetchingTrustedVaultKeys ||
          state_.required_user_action ==
              RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
 
-  state_.deferred_trusted_vault_fetch_keys_pending = false;
+  UMA_HISTOGRAM_ENUMERATION(
+      "Sync.TrustedVaultFetchKeysAttempt",
+      is_second_fetch_attempt
+          ? TrustedVaultFetchKeysAttemptForUMA::kSecondAttempt
+          : TrustedVaultFetchKeysAttemptForUMA::kFirstAttempt);
+
+  if (!is_second_fetch_attempt) {
+    state_.deferred_trusted_vault_fetch_keys_pending = false;
+  }
 
   trusted_vault_client_->FetchKeys(
       state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
-                     weak_factory_.GetWeakPtr(),
-                     /*is_second_fetch_attempt=*/false));
+                     weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
 }
 
 void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
@@ -605,6 +619,8 @@ void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
   }
 
   DCHECK(state_.engine);
+
+  UMA_HISTOGRAM_COUNTS_100("Sync.TrustedVaultFetchedKeysCount", keys.size());
 
   if (keys.empty()) {
     // Nothing to do if no keys have been fetched from the client (e.g. user
@@ -621,16 +637,21 @@ void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
 }
 
 void SyncServiceCrypto::TrustedVaultKeysAdded(bool is_second_fetch_attempt) {
-  if (state_.required_user_action !=
-          RequiredUserAction::kFetchingTrustedVaultKeys &&
-      state_.required_user_action !=
-          RequiredUserAction::kTrustedVaultKeyRequiredButFetching) {
+  // Having kFetchingTrustedVaultKeys or kTrustedVaultKeyRequiredButFetching
+  // indicates OnTrustedVaultKeyAccepted() was not triggered, so the fetched
+  // trusted vault keys were insufficient.
+  bool success = state_.required_user_action !=
+                     RequiredUserAction::kFetchingTrustedVaultKeys &&
+                 state_.required_user_action !=
+                     RequiredUserAction::kTrustedVaultKeyRequiredButFetching;
+
+  UMA_HISTOGRAM_BOOLEAN("Sync.TrustedVaultAddKeysAttemptIsSuccessful", success);
+
+  if (success) {
     return;
   }
 
-  // Reaching this codepath indicates OnTrustedVaultKeyAccepted() was not
-  // triggered, so the fetched trusted vault keys were insufficient. Let the
-  // trusted vault client know.
+  // Let trusted vault client know, that fetched keys were insufficient.
   trusted_vault_client_->MarkKeysAsStale(
       state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysMarkedAsStale,
@@ -655,11 +676,7 @@ void SyncServiceCrypto::TrustedVaultKeysMarkedAsStale(
     return;
   }
 
-  trusted_vault_client_->FetchKeys(
-      state_.account_info,
-      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
-                     weak_factory_.GetWeakPtr(),
-                     /*is_second_fetch_attempt=*/true));
+  FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/true);
 }
 
 void SyncServiceCrypto::FetchTrustedVaultKeysCompletedButInsufficient() {
@@ -671,7 +688,7 @@ void SyncServiceCrypto::FetchTrustedVaultKeysCompletedButInsufficient() {
   // If FetchKeys() was intended to be called during an already existing ongoing
   // FetchKeys(), it needs to be invoked now that it's possible.
   if (state_.deferred_trusted_vault_fetch_keys_pending) {
-    FetchTrustedVaultKeys();
+    FetchTrustedVaultKeys(/*is_second_fetch_attempt=*/false);
     return;
   }
 

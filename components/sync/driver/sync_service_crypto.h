@@ -106,7 +106,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   void OnTrustedVaultClientKeysChanged();
 
   // Reads trusted vault keys from the client and feeds them to the sync engine.
-  void FetchTrustedVaultKeys();
+  void FetchTrustedVaultKeys(bool is_second_fetch_attempt);
 
   // Called at various stages of asynchronously fetching and processing trusted
   // vault encryption keys. |is_second_fetch_attempt| is useful for the case

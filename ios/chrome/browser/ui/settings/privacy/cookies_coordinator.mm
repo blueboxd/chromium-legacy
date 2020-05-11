@@ -65,10 +65,6 @@
   // TODO(crbug.com/1064961): Implement this.
 }
 
-- (void)deleteSiteExceptionWithItem:(TableViewItem*)item {
-  // TODO(crbug.com/1064961): Implement this.
-}
-
 #pragma mark - PrivacyCookiesViewControllerPresentationDelegate
 
 - (void)privacyCookiesViewControllerWasRemoved:

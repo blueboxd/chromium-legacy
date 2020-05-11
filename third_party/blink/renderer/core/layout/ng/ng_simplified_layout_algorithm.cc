@@ -30,7 +30,6 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   // calculations. If support for other layout types is added this logic will
   // need to be changed.
   bool is_block_flow = Node().IsBlockFlow();
-  DCHECK(is_block_flow);
   const NGPhysicalBoxFragment& physical_fragment =
       To<NGPhysicalBoxFragment>(result.PhysicalFragment());
 

@@ -6,11 +6,30 @@ source_set("safety_check") {
   sources = [
     "safety_check.cc",
     "safety_check.h",
+    "update_check_helper.cc",
+    "update_check_helper.h",
+    "url_constants.cc",
+    "url_constants.h",
   ]
 
   deps = [
     "//base",
     "//components/prefs",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//net",
+    "//services/network/public/cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "update_check_helper_unittest.cc" ]
+
+  deps = [
+    ":safety_check",
+    "//content/test:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
+    "//testing/gtest",
   ]
 }

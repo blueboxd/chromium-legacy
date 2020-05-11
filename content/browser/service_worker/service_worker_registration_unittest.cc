@@ -482,7 +482,6 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   }
 
   void TearDown() override {
-    registration_->active_version()->RemoveObserver(registration_.get());
     ServiceWorkerRegistrationTest::TearDown();
   }
 

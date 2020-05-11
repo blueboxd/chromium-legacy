@@ -118,24 +118,18 @@ IN_PROC_BROWSER_TEST_F(ChromeOsMirrorAccountConsistencyTest,
   ASSERT_EQ(user, user_manager::UserManager::Get()->FindUser(account_id_));
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
 
-  // Require account consistency.
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
-  supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kAccountConsistencyMirrorRequired,
-      std::make_unique<base::Value>(true));
   supervised_user_settings_service->SetActive(true);
 
   // Incognito is always disabled for child accounts.
   PrefService* prefs = profile->GetPrefs();
   prefs->SetInteger(prefs::kIncognitoModeAvailability,
                     IncognitoModePrefs::DISABLED);
-  ASSERT_TRUE(prefs->GetBoolean(prefs::kAccountConsistencyMirrorRequired));
 
-  ASSERT_EQ(3, signin::PROFILE_MODE_INCOGNITO_DISABLED |
-                   signin::PROFILE_MODE_ADD_ACCOUNT_DISABLED);
+  ASSERT_EQ(1, signin::PROFILE_MODE_INCOGNITO_DISABLED);
   TestMirrorRequestForProfile(test_server_.get(), profile,
-                              "mode=3,enable_account_consistency=true,"
+                              "mode=1,enable_account_consistency=true,"
                               "consistency_enabled_by_default=false");
 }
 

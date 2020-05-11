@@ -34,18 +34,6 @@ class SecondaryGoogleAccountSigninPolicyHandlerTest : public testing::Test {
     handler_.ApplyPolicySettings(policies_, &prefs_);
   }
 
-  bool GetMirrorAccountConsistencyPref() {
-    bool pref = false;
-    bool success =
-        prefs_.GetBoolean(prefs::kAccountConsistencyMirrorRequired, &pref);
-    EXPECT_TRUE(success);
-    return pref;
-  }
-
-  void SetAccountConsistencyPref(bool pref) {
-    prefs_.SetBoolean(prefs::kAccountConsistencyMirrorRequired, pref);
-  }
-
   bool GetSecondaryGoogleAccountSigninAllowedPref() {
     bool pref = false;
     bool success = prefs_.GetBoolean(
@@ -72,13 +60,11 @@ class SecondaryGoogleAccountSigninPolicyHandlerTest : public testing::Test {
 TEST_F(SecondaryGoogleAccountSigninPolicyHandlerTest,
        SettingPolicyToTrueDoesNotChangeDefaultPreferencesSetToTrue) {
   // Set prefs to |true|.
-  SetAccountConsistencyPref(true);
   SetSecondaryGoogleAccountSigninPref(true);
   // Set policy to |true|.
   ApplyPolicySettings(true /* policy value */);
 
   // Test that the prefs should be set to |true|.
-  EXPECT_TRUE(GetMirrorAccountConsistencyPref());
   EXPECT_TRUE(GetSecondaryGoogleAccountSigninAllowedPref());
 }
 
@@ -87,22 +73,12 @@ TEST_F(SecondaryGoogleAccountSigninPolicyHandlerTest,
 TEST_F(SecondaryGoogleAccountSigninPolicyHandlerTest,
        SettingPolicyToTrueDoesNotChangeDefaultPreferencesSetToFalse) {
   // Set prefs to |false|.
-  SetAccountConsistencyPref(false);
   SetSecondaryGoogleAccountSigninPref(false);
   // Set policy to |true|.
   ApplyPolicySettings(true /* policy value */);
 
   // Test that the prefs should be set to |false|.
-  EXPECT_FALSE(GetMirrorAccountConsistencyPref());
   EXPECT_FALSE(GetSecondaryGoogleAccountSigninAllowedPref());
-}
-
-TEST_F(SecondaryGoogleAccountSigninPolicyHandlerTest,
-       SettingPolicyToFalseEnablesMirror) {
-  SetAccountConsistencyPref(false);
-  ApplyPolicySettings(false /* policy value */);
-
-  EXPECT_TRUE(GetMirrorAccountConsistencyPref());
 }
 
 TEST_F(SecondaryGoogleAccountSigninPolicyHandlerTest,

@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_
 
-#include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -26,7 +26,7 @@ class Lock final : public ScriptWrappable,
                    public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Lock);
-  USING_PRE_FINALIZER(Lock, Dispose);
+
  public:
   Lock(ScriptState*,
        const String& name,
@@ -37,8 +37,6 @@ class Lock final : public ScriptWrappable,
   ~Lock() override;
 
   void Trace(Visitor*) override;
-
-  void Dispose();
 
   // Lock.idl
   String name() const { return name_; }
@@ -68,9 +66,9 @@ class Lock final : public ScriptWrappable,
 
   // An opaque handle; this one end of a mojo pipe. When this is closed,
   // the lock is released by the back end.
-  mojo::AssociatedRemote<mojom::blink::LockHandle> handle_;
+  HeapMojoAssociatedRemote<mojom::blink::LockHandle> handle_;
 
-  mojo::Remote<mojom::blink::ObservedFeature> lock_lifetime_;
+  HeapMojoRemote<mojom::blink::ObservedFeature> lock_lifetime_;
 
   // LockManager::OnLockReleased() is called when this lock is released, to
   // stop artificially keeping this instance alive. It is necessary in the

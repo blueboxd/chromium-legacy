@@ -179,13 +179,6 @@ bool ChildAccountService::SetActive(bool active) {
     settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       std::make_unique<base::Value>(false));
 
-#if defined(OS_CHROMEOS)
-    // Mirror account consistency is required for child accounts on Chrome OS.
-    settings_service->SetLocalSetting(
-        supervised_users::kAccountConsistencyMirrorRequired,
-        std::make_unique<base::Value>(true));
-#endif
-
 #if !defined(OS_CHROMEOS)
     // This is also used by user policies (UserPolicySigninService), but since
     // child accounts can not also be Dasher accounts, there shouldn't be any
@@ -211,10 +204,6 @@ bool ChildAccountService::SetActive(bool active) {
                                       nullptr);
     settings_service->SetLocalSetting(supervised_users::kGeolocationDisabled,
                                       nullptr);
-#if defined(OS_CHROMEOS)
-    settings_service->SetLocalSetting(
-        supervised_users::kAccountConsistencyMirrorRequired, nullptr);
-#endif
 
 #if !defined(OS_CHROMEOS)
     signin_util::SetUserSignoutAllowedForProfile(profile_, true);

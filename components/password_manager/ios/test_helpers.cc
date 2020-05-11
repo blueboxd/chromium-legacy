@@ -55,23 +55,17 @@ void SetPasswordFormFillData(const std::string& origin,
 }
 
 void SetFillData(const std::string& origin,
-                 const char* form_name,
                  uint32_t form_id,
-                 const char* username_field,
                  uint32_t username_field_id,
                  const char* username_value,
-                 const char* password_field,
                  uint32_t password_field_id,
                  const char* password_value,
                  FillData* fill_data) {
   DCHECK(fill_data);
   fill_data->origin = GURL(origin);
-  fill_data->name = base::UTF8ToUTF16(form_name);
   fill_data->form_id = FormRendererId(form_id);
-  fill_data->username_element = base::UTF8ToUTF16(username_field);
   fill_data->username_element_id = FieldRendererId(username_field_id);
   fill_data->username_value = base::UTF8ToUTF16(username_value);
-  fill_data->password_element = base::UTF8ToUTF16(password_field);
   fill_data->password_element_id = FieldRendererId(password_field_id);
   fill_data->password_value = base::UTF8ToUTF16(password_value);
 }

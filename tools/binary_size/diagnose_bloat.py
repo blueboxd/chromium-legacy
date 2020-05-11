@@ -17,6 +17,7 @@ from contextlib import contextmanager
 import distutils.spawn
 import json
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -222,6 +223,8 @@ class _BuildHelper(object):
     self.enable_chrome_android_internal = args.enable_chrome_android_internal
     self.extra_gn_args_str = args.gn_args
     self.apply_patch = args.extra_rev
+    self.max_jobs = args.max_jobs
+    self.max_load_average = args.max_load_average
     self.output_directory = args.output_directory
     self.target = args.target
     self.target_os = args.target_os
@@ -285,18 +288,10 @@ class _BuildHelper(object):
     return self.apk_name + '.size'
 
   def _SetDefaults(self):
-    if self.use_goma:
-      try:
-        goma_is_running = not subprocess.call(['goma_ctl', 'status'],
-                                              stdout=subprocess.DEVNULL,
-                                              stderr=subprocess.DEVNULL)
-        self.use_goma = self.use_goma and goma_is_running
-      finally:
-        # goma_ctl not in PATH.
-        self.use_goma = False
-
-      if not self.use_goma:
-        logging.warning('GOMA not running. Setting use_goma=false.')
+    has_goma_dir = os.path.exists(os.path.join(os.path.expanduser('~'), 'goma'))
+    self.use_goma = self.use_goma and has_goma_dir
+    self.max_load_average = (self.max_load_average or
+                             str(multiprocessing.cpu_count()))
 
     has_internal = os.path.exists(
         os.path.join(os.path.dirname(_SRC_ROOT), 'src-internal'))
@@ -311,6 +306,14 @@ class _BuildHelper(object):
       self.extra_gn_args_str = (
           'is_cfi=false generate_linker_map=true ' + self.extra_gn_args_str)
     self.extra_gn_args_str = ' ' + self.extra_gn_args_str.strip()
+
+    if not self.max_jobs:
+      if self.use_goma:
+        self.max_jobs = '10000'
+      elif has_internal:
+        self.max_jobs = '500'
+      else:
+        self.max_jobs = '50'
 
     if not self.target:
       if self.IsLinux():
@@ -342,6 +345,8 @@ class _BuildHelper(object):
 
   def _GenNinjaCmd(self):
     cmd = ['autoninja', '-C', self.output_directory]
+    cmd += ['-j', self.max_jobs] if self.max_jobs else []
+    cmd += ['-l', self.max_load_average] if self.max_load_average else []
     cmd += [self.target]
     return cmd
 
@@ -831,6 +836,13 @@ def main():
                            ', and Ninja/GN output.')
 
   build_group = parser.add_argument_group('build arguments')
+  build_group.add_argument('-j',
+                           dest='max_jobs',
+                           help='Run N jobs in parallel.')
+  build_group.add_argument('-l',
+                           dest='max_load_average',
+                           help='Do not start new jobs if the load average is '
+                           'greater than N.')
   build_group.add_argument('--no-goma',
                            action='store_false',
                            dest='use_goma',

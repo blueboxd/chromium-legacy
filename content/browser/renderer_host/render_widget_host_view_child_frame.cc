@@ -426,8 +426,8 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
 
 void RenderWidgetHostViewChildFrame::SetIsInert() {
   if (host() && frame_connector_) {
-    host()->Send(new WidgetMsg_SetIsInert(host()->GetRoutingID(),
-                                          frame_connector_->IsInert()));
+    host_->GetAssociatedFrameWidget()->SetIsInertForSubFrame(
+        frame_connector_->IsInert());
   }
 }
 

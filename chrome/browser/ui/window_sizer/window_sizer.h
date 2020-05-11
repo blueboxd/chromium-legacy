@@ -32,8 +32,6 @@ class Screen;
 // TODO(crbug.com/846736): Extract the platform-specific code out of this class.
 class WindowSizer {
  public:
-  class StateProvider;
-
   // An interface implemented by an object that can retrieve state from either a
   // persistent store or an existing window.
   class StateProvider {

@@ -18,21 +18,7 @@ Polymer({
     showSearch: {type: Boolean, value: true},
 
     // True when the toolbar is displaying in narrow mode.
-    narrow: {
-      type: Boolean,
-      reflectToAttribute: true,
-      readonly: true,
-      notify: true,
-    },
-
-    /**
-     * The threshold at which the toolbar will change from normal to narrow
-     * mode, in px.
-     */
-    narrowThreshold: {
-      type: Number,
-      value: 900,
-    },
+    narrow: {type: Boolean, value: false},
 
     /** @private */
     showingSearch_: {

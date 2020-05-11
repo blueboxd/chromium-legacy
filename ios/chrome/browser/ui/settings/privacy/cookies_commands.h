@@ -15,9 +15,6 @@
 // Updates Cookies settings with the given item type.
 - (void)selectedCookiesSettingType:(CookiesSettingType)settingType;
 
-// Deletes the site exception corresponding to the given TableViewItem.
-- (void)deleteSiteExceptionWithItem:(TableViewItem*)item;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PRIVACY_COOKIES_COMMANDS_H_

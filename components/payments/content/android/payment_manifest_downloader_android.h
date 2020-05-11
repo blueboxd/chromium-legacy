@@ -33,7 +33,7 @@ class PaymentManifestDownloaderAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jobject>& jmerchant_origin,
-      const base::android::JavaParamRef<jobject>& juri,
+      const base::android::JavaParamRef<jobject>& jurl,
       const base::android::JavaParamRef<jobject>& jcallback);
 
   void DownloadWebAppManifest(
@@ -41,7 +41,7 @@ class PaymentManifestDownloaderAndroid {
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jobject>&
           jpayment_method_manifest_origin,
-      const base::android::JavaParamRef<jobject>& juri,
+      const base::android::JavaParamRef<jobject>& jurl,
       const base::android::JavaParamRef<jobject>& jcallback);
 
   // Deletes this object.

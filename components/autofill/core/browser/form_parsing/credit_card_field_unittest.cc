@@ -304,6 +304,46 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
             field_candidates_map_[ASCIIToUTF16("year4")].BestHeuristicType());
 }
 
+TEST_F(CreditCardFieldTest, ParseGiftCard) {
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("Name on Card");
+  field.name = ASCIIToUTF16("name_on_card");
+  list_.push_back(std::make_unique<AutofillField>(field, ASCIIToUTF16("name")));
+
+  field.label = ASCIIToUTF16("Card Number");
+  field.name = ASCIIToUTF16("card_number");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("number")));
+
+  field.label = ASCIIToUTF16("Gift certificate");
+  field.name = ASCIIToUTF16("gift.certificate");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("giftcert")));
+
+  field.label = ASCIIToUTF16("Gift card");
+  field.name = ASCIIToUTF16("gift-card");
+  list_.push_back(
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("giftcard")));
+
+  Parse();
+  ASSERT_NE(nullptr, field_.get());
+  AddClassifications();
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("name")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NAME_FULL,
+            field_candidates_map_[ASCIIToUTF16("name")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("number")) !=
+              field_candidates_map_.end());
+  EXPECT_EQ(CREDIT_CARD_NUMBER,
+            field_candidates_map_[ASCIIToUTF16("number")].BestHeuristicType());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("giftcert")) ==
+              field_candidates_map_.end());
+  ASSERT_TRUE(field_candidates_map_.find(ASCIIToUTF16("giftcard")) ==
+              field_candidates_map_.end());
+}
+
 typedef struct {
   const std::string cc_fields_form_control_type;
   const std::string label;

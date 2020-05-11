@@ -27,14 +27,6 @@
 - (void)updateConsumer {
   // TODO(crbug.com/1064961): Implement this.
   [self.consumer cookiesSettingsOptionSelected:SettingTypeAllowCookies];
-  [self.consumer insertSiteExceptionsItems:[self populateSiteExceptions]];
-}
-
-- (NSArray*)populateSiteExceptions {
-  NSMutableArray* items = [[NSMutableArray alloc] init];
-  // TODO(crbug.com/1064961): Implement this.
-
-  return items;
 }
 
 @end

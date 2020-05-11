@@ -134,6 +134,16 @@ __gCrWeb.fill.EXTRACT_MASK_OPTIONS = 1 << 2;
 __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION = 0;
 
 /**
+ * The value for a unique form or field ID not set or missing.
+ *
+ * This variable is |kNotSetRendererID| from
+ * chromium/src/components/autofill/ios/browser/autofill_util.h
+ *
+ * @const {number}
+ */
+__gCrWeb.fill.RENDERER_ID_NOT_SET = -1;
+
+/**
  * Returns true if an element can be autocompleted.
  *
  * This method aims to provide the same logic as method
@@ -833,7 +843,7 @@ __gCrWeb.fill.webFormElementToFormData = function(
     const uniqueID = Symbol.for('__gChrome~uniqueID');
     form['unique_renderer_id'] = formElement[uniqueID];
   } catch (e) {
-    form['unique_renderer_id'] = -1;
+    form['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }
 
   // Note different from form_autofill_util.cc version of this method, which
@@ -1932,7 +1942,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
     const uniqueID = Symbol.for('__gChrome~uniqueID');
     field['unique_renderer_id'] = element[uniqueID];
   } catch (e) {
-    field['unique_renderer_id'] = -1;
+    field['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }
 
   field['form_control_type'] = element.type;

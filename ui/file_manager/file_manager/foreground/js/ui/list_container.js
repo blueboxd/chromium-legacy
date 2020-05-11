@@ -63,7 +63,9 @@ class ListContainer {
      * @type {!HTMLElement}
      * @const
      */
-    this.spinner = queryRequiredElement('.loading-indicator', element);
+    this.spinner = util.isFilesNg() ?
+        queryRequiredElement('files-spinner.loading-indicator', element) :
+        queryRequiredElement('paper-progress.loading-indicator', element);
 
     /**
      * @type {FileListModel}

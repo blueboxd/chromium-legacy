@@ -283,6 +283,7 @@ js_library("file_manager_ui") {
     ":suggest_apps_dialog",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/foreground/elements:files_message",
+    "//ui/file_manager/file_manager/foreground/elements:files_spinner",
     "//ui/file_manager/file_manager/foreground/elements:files_toast",
     "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
     "//ui/file_manager/file_manager/foreground/elements:files_tooltip",
@@ -414,6 +415,7 @@ js_library("list_container") {
   deps = [
     ":file_grid",
     ":file_table",
+    "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js/cr/ui:list_item",
   ]
 }

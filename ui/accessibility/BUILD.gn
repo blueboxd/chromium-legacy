@@ -132,8 +132,13 @@ jumbo_component("accessibility") {
     "ax_tree_update_forward.h",
     "null_ax_action_target.cc",
     "null_ax_action_target.h",
+
+    # ax_android_constants* are used in ax_assistant_structure.cc.
     "platform/ax_android_constants.cc",
     "platform/ax_android_constants.h",
+
+    # ax_platform_node* are used for enable/disable accessibility and
+    # test_ax_node_wrapper.
     "platform/ax_platform_node.cc",
     "platform/ax_platform_node.h",
     "platform/ax_platform_node_base.cc",
@@ -141,10 +146,19 @@ jumbo_component("accessibility") {
     "platform/ax_platform_node_delegate.h",
     "platform/ax_platform_node_delegate_base.cc",
     "platform/ax_platform_node_delegate_base.h",
+
+    # ax_platform_node_test_helper.{cc,h} are used in
+    # browser_view_browsertest.cc
     "platform/ax_platform_node_test_helper.cc",
     "platform/ax_platform_node_test_helper.h",
+
+    # ax_unique_id.{cc,h} are used in browser_accessibility.cc and
+    # view_accessibility.cc
     "platform/ax_unique_id.cc",
     "platform/ax_unique_id.h",
+
+    # compute_attributes.{cc,h} are used in
+    # accessibility_tree_formatter_blink.cc
     "platform/compute_attributes.cc",
     "platform/compute_attributes.h",
   ]
@@ -247,8 +261,8 @@ jumbo_component("accessibility") {
 
   if (use_aura) {
     sources += [
-      "platform/aura_window_properties.cc",
-      "platform/aura_window_properties.h",
+      "aura/aura_window_properties.cc",
+      "aura/aura_window_properties.h",
     ]
 
     public_deps += [ "//ui/aura" ]
@@ -267,6 +281,7 @@ source_set("ax_assistant") {
 static_library("test_support") {
   testonly = true
   sources = [
+    # test_ax_node_wrapper.{cc,h} are used in ax_range_unittest.cc
     "platform/test_ax_node_wrapper.cc",
     "platform/test_ax_node_wrapper.h",
     "test_ax_tree_manager.cc",

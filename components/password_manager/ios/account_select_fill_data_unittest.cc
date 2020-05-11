@@ -198,10 +198,7 @@ TEST_F(AccountSelectFillDataTest, GetFillData) {
 
       ASSERT_TRUE(fill_data);
       EXPECT_EQ(form_data.origin, fill_data->origin);
-      EXPECT_EQ(form_data.name, fill_data->name);
       EXPECT_EQ(form_data.form_renderer_id.value(), fill_data->form_id.value());
-      EXPECT_EQ(base::ASCIIToUTF16(kUsernameElements[form_i]),
-                fill_data->username_element);
       EXPECT_EQ(kUsernameUniqueIDs[form_i],
                 fill_data->username_element_id.value());
       EXPECT_EQ(base::ASCIIToUTF16(kUsernames[1]), fill_data->username_value);

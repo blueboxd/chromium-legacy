@@ -273,6 +273,7 @@ public class HomepagePromoTest {
 
     @Test
     @SmallTest
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O, message = "crbug.com/1080995")
     public void testExperimentTrackerSignals() {
         mHomepageTestRule.useChromeNTPForTest();
         ToolbarManager toolbarManager = mActivityTestRule.getActivity().getToolbarManager();

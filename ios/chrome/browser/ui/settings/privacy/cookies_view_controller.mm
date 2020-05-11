@@ -31,14 +31,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeBlockThirdPartyCookies,
   ItemTypeBlockAllCookies,
   ItemTypeCookiesDescriptionFooter,
-  ItemTypeSiteExceptionsHeader,
-  ItemTypeSiteExceptionItem,
-  ItemTypeAddSiteExceptions,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierCookiesContent = kSectionIdentifierEnumZero,
-  SectionIdentifierSiteExceptionsContent,
 };
 
 }  // namespace
@@ -61,8 +57,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   self.styler.cellBackgroundColor = UIColor.cr_systemBackgroundColor;
   self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
   self.tableView.backgroundColor = self.styler.tableViewBackgroundColor;
-  [self.tableView setEditing:YES animated:NO];
-  self.tableView.allowsSelectionDuringEditing = YES;
 
   if (!base::FeatureList::IsEnabled(kSettingsRefresh))
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
@@ -88,8 +82,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [super loadModel];
   [self.tableViewModel
       addSectionWithIdentifier:SectionIdentifierCookiesContent];
-  [self.tableViewModel
-      addSectionWithIdentifier:SectionIdentifierSiteExceptionsContent];
 
   SettingsMultilineDetailItem* allowCookies =
       [[SettingsMultilineDetailItem alloc] initWithType:ItemTypeAllowCookies];
@@ -143,25 +135,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES_DESCRIPTION);
   [self.tableViewModel addItem:cookiesDescriptionFooter
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
-
-  TableViewTextHeaderFooterItem* siteExceptionHeader =
-      [[TableViewTextHeaderFooterItem alloc]
-          initWithType:ItemTypeSiteExceptionsHeader];
-  siteExceptionHeader.text = l10n_util::GetNSString(
-      IDS_IOS_OPTIONS_PRIVACY_COOKIES_SITE_EXCEPTIONS_HEADER);
-  [self.tableViewModel setHeader:siteExceptionHeader
-        forSectionWithIdentifier:SectionIdentifierSiteExceptionsContent];
-
-  TableViewTextItem* addSiteExceptions =
-      [[TableViewTextItem alloc] initWithType:ItemTypeAddSiteExceptions];
-  addSiteExceptions.text = l10n_util::GetNSString(
-      IDS_IOS_OPTIONS_PRIVACY_COOKIES_ADD_SITE_EXCEPTION);
-  addSiteExceptions.textColor = [UIColor colorNamed:kBlueColor];
-  addSiteExceptions.useCustomSeparator = YES;
-  [self.tableViewModel addItem:addSiteExceptions
-       toSectionWithIdentifier:SectionIdentifierSiteExceptionsContent];
-
-  // TODO(crbug.com/1064961): Implement this.
 }
 
 #pragma mark - Private
@@ -227,40 +200,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [self.handler selectedCookiesSettingType:settingType];
 }
 
-- (BOOL)tableView:(UITableView*)tableView
-    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-  return itemType == ItemTypeSiteExceptionItem;
-}
-
-- (void)tableView:(UITableView*)tableView
-    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
-     forRowAtIndexPath:(NSIndexPath*)indexPath {
-  if (editingStyle != UITableViewCellEditingStyleDelete)
-    return;
-
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  [self.handler deleteSiteExceptionWithItem:item];
-  [self deleteItems:@[ indexPath ]];
-}
-
 #pragma mark - PrivacyCookiesConsumer
 
 - (void)cookiesSettingsOptionSelected:(CookiesSettingType)settingType {
   self.selectedSetting = [self itemTypeForCookiesSettingType:settingType];
-}
-
-- (void)insertSiteExceptionsItems:(NSArray<TableViewItem*>*)items {
-  if (!self.tableViewModel)
-    [self loadModel];
-
-  NSInteger index = 0;
-  for (TableViewItem* item in items) {
-    [item setType:ItemTypeSiteExceptionItem];
-    [self.tableViewModel insertItem:item
-            inSectionWithIdentifier:SectionIdentifierSiteExceptionsContent
-                            atIndex:index++];
-  }
 }
 
 @end

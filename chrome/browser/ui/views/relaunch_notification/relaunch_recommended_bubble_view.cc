@@ -84,8 +84,11 @@ bool RelaunchRecommendedBubbleView::ShouldShowCloseButton() const {
 }
 
 gfx::ImageSkia RelaunchRecommendedBubbleView::GetWindowIcon() {
-  return gfx::CreateVectorIcon(gfx::IconDescription(
-      vector_icons::kBusinessIcon, kTitleIconSize, gfx::kChromeIconGrey));
+  return gfx::CreateVectorIcon(
+      gfx::IconDescription(vector_icons::kBusinessIcon,
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
+                           gfx::kChromeIconGrey));
 }
 
 bool RelaunchRecommendedBubbleView::ShouldShowWindowIcon() const {
@@ -105,10 +108,11 @@ void RelaunchRecommendedBubbleView::Init() {
   // Align the body label with the left edge of the bubble's title.
   // TODO(bsep): Remove this when fixing https://crbug.com/810970.
   // Note: BubleFrameView applies INSETS_DIALOG_TITLE either side of the icon.
-  int title_offset = 2 * views::LayoutProvider::Get()
-                             ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
-                             .left() +
-                     kTitleIconSize;
+  const int title_offset = 2 * views::LayoutProvider::Get()
+                                   ->GetInsetsMetric(views::INSETS_DIALOG_TITLE)
+                                   .left() +
+                           ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE);
   label->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(0, title_offset - margins().left(), 0, 0)));
 

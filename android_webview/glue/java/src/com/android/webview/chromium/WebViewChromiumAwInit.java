@@ -23,7 +23,6 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
-import org.chromium.android_webview.AwFirebaseConfig;
 import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwProxyController;
@@ -139,8 +138,6 @@ public class WebViewChromiumAwInit {
             }
 
             final Context context = ContextUtils.getApplicationContext();
-
-            BuildInfo.setFirebaseAppId(AwFirebaseConfig.getFirebaseAppId());
 
             JNIUtils.setClassLoader(WebViewChromiumAwInit.class.getClassLoader());
 

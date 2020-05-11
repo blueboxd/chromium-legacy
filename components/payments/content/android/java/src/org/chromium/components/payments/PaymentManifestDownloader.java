@@ -13,7 +13,6 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
-import org.chromium.url.URI;
 
 /**
  * See comment in:
@@ -36,7 +35,7 @@ public class PaymentManifestDownloader {
          */
         @CalledByNative("ManifestDownloadCallback")
         void onPaymentMethodManifestDownloadSuccess(
-                URI paymentMethodManifestUrl, Origin paymentMethodManifestOrigin, String content);
+                GURL paymentMethodManifestUrl, Origin paymentMethodManifestOrigin, String content);
 
         /**
          * Called on successful download of a web app manifest.
@@ -83,7 +82,7 @@ public class PaymentManifestDownloader {
      * @param callback       The callback to invoke when finished downloading.
      */
     public void downloadPaymentMethodManifest(
-            Origin merchantOrigin, URI methodName, ManifestDownloadCallback callback) {
+            Origin merchantOrigin, GURL methodName, ManifestDownloadCallback callback) {
         ThreadUtils.assertOnUiThread();
         assert mNativeObject != 0;
         assert merchantOrigin != null;
@@ -96,16 +95,16 @@ public class PaymentManifestDownloader {
      *
      * @param paymentMethodManifestOrigin The origin of the payment method manifest that is pointing
      *                                    to this web app manifest.
-     * @param webAppManifestUri           The web app manifest URI with HTTPS scheme.
+     * @param webAppManifestUrl           The web app manifest URL with HTTPS scheme.
      * @param callback                    The callback to invoke when finished downloading.
      */
-    public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, URI webAppManifestUri,
+    public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, GURL webAppManifestUrl,
             ManifestDownloadCallback callback) {
         ThreadUtils.assertOnUiThread();
         assert mNativeObject != 0;
         assert paymentMethodManifestOrigin != null;
         PaymentManifestDownloaderJni.get().downloadWebAppManifest(mNativeObject,
-                PaymentManifestDownloader.this, paymentMethodManifestOrigin, webAppManifestUri,
+                PaymentManifestDownloader.this, paymentMethodManifestOrigin, webAppManifestUrl,
                 callback);
     }
 
@@ -123,30 +122,15 @@ public class PaymentManifestDownloader {
         return PaymentManifestDownloaderJni.get().createOpaqueOriginForTest();
     }
 
-    /**
-     * Converts GURL to URI through string serialization. Needed because C++ knows only how to
-     * create Java GURL objects, but web payments uses URI, which is a subclass of GURL, so casting
-     * is not possible.
-     *
-     * TODO(crbug.com/1065577): Use GURL direclly everywhere in web payments.
-     *
-     * @param gurl The GURL to convert. Cannot be null. Must be valid.
-     * @return The equivalent URI.
-     */
-    @CalledByNative
-    public static URI convertGURLToURI(GURL gurl) {
-        return URI.create(gurl.getPossiblyInvalidSpec());
-    }
-
     @NativeMethods
     interface Natives {
         long init(WebContents webContents);
         void downloadPaymentMethodManifest(long nativePaymentManifestDownloaderAndroid,
-                PaymentManifestDownloader caller, Origin merchantOrigin, URI methodName,
+                PaymentManifestDownloader caller, Origin merchantOrigin, GURL methodName,
                 ManifestDownloadCallback callback);
         void downloadWebAppManifest(long nativePaymentManifestDownloaderAndroid,
                 PaymentManifestDownloader caller, Origin paymentMethodManifestOrigin,
-                URI webAppManifestUri, ManifestDownloadCallback callback);
+                GURL webAppManifestUri, ManifestDownloadCallback callback);
         void destroy(long nativePaymentManifestDownloaderAndroid, PaymentManifestDownloader caller);
         Origin createOpaqueOriginForTest();
     }

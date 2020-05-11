@@ -116,14 +116,6 @@
   [self.cookiesCoordinator start];
 }
 
-#pragma mark - PrivacyTableViewControllerPresentationDelegate
-
-- (void)privacyTableViewControllerViewControllerWasRemoved:
-    (PrivacyTableViewController*)controller {
-  DCHECK_EQ(self.viewController, controller);
-  [self.delegate privacyCoordinatorViewControllerWasRemoved:self];
-}
-
 #pragma mark - ClearBrowsingDataUIDelegate
 
 - (void)openURL:(const GURL&)URL {

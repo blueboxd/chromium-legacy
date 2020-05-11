@@ -288,6 +288,13 @@ void InstallationMetrics::ReportMetrics() {
           "Extensions.ForceInstalledFailureUpdateCheckStatus",
           installation.update_check_status.value());
     }
+    if (installation.manifest_invalid_error) {
+      DCHECK_EQ(failure_reason,
+                InstallationReporter::FailureReason::MANIFEST_INVALID);
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ForceInstalledFailureManifestInvalidErrorDetail",
+          installation.manifest_invalid_error.value());
+    }
   }
   bool non_misconfigured_failure_occurred =
       misconfigured_extensions != missing_forced_extensions.size();

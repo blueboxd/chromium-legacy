@@ -61,6 +61,18 @@ Polymer({
             'showExperimentalAccessibilitySwitchAccess');
       },
     },
+
+    /**
+     * Whether the user is in kiosk mode.
+     * @private
+     */
+    isKioskModeActive_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isKioskModeActive');
+      }
+    },
+
   },
 
   /** @override */

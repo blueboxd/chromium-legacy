@@ -1737,6 +1737,9 @@ void QuicChromiumClientSession::OnConnectionClosed(
                              GetNumActiveStreams() > 0))) {
       stream_factory_->OnBlackholeAfterHandshakeConfirmed(this);
     }
+    UMA_HISTOGRAM_COUNTS_100(
+        "Net.QuicSession.CryptoRetransmitCount.HandshakeConfirmed",
+        connection()->GetStats().crypto_retransmit_count);
   } else {
     if (error == quic::QUIC_PUBLIC_RESET) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);
@@ -1751,6 +1754,9 @@ void QuicChromiumClientSession::OnConnectionClosed(
           "Net.QuicSession.ConnectionClose.HandshakeFailureUnknown.QuicError",
           error);
     }
+    UMA_HISTOGRAM_COUNTS_100(
+        "Net.QuicSession.CryptoRetransmitCount.HandshakeNotConfirmed",
+        connection()->GetStats().crypto_retransmit_count);
   }
 
   base::UmaHistogramSparse("Net.QuicSession.QuicVersion",

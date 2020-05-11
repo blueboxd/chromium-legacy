@@ -9,9 +9,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.url.URI;
-
-import java.net.URISyntaxException;
+import org.chromium.url.GURL;
 
 /** Parses payment manifests in a utility process. */
 @JNINamespace("payments")
@@ -21,11 +19,12 @@ public class PaymentManifestParser {
         /**
          * Called on successful parse of a payment method manifest.
          *
-         * @param webAppManifestUris  The URIs of the default applications in the parsed manifest.
-         * @param supportedOrigins    The URIs for the supported origins in the parsed manifest.
+         * @param webAppManifestUris  The URLs of the default applications in the parsed manifest.
+         * @param supportedOrigins    The URLs for the supported origins in the parsed manifest.
          */
         @CalledByNative("ManifestParseCallback")
-        void onPaymentMethodManifestParseSuccess(URI[] webAppManifestUris, URI[] supportedOrigins);
+        void onPaymentMethodManifestParseSuccess(
+                GURL[] webAppManifestUris, GURL[] supportedOrigins);
 
         /**
          * Called on successful parse of a web app manifest.
@@ -80,7 +79,7 @@ public class PaymentManifestParser {
      * @param callback The callback to invoke when finished parsing.
      */
     public void parsePaymentMethodManifest(
-            URI manifestUrl, String content, ManifestParseCallback callback) {
+            GURL manifestUrl, String content, ManifestParseCallback callback) {
         ThreadUtils.assertOnUiThread();
         assert mNativePaymentManifestParserAndroid != 0;
         PaymentManifestParserJni.get().parsePaymentMethodManifest(
@@ -101,17 +100,16 @@ public class PaymentManifestParser {
     }
 
     @CalledByNative
-    private static URI[] createUriArray(int numberOfWebAppManifests) {
-        return new URI[numberOfWebAppManifests];
+    private static GURL[] createUrlArray(int numberOfWebAppManifests) {
+        return new GURL[numberOfWebAppManifests];
     }
 
     @CalledByNative
-    private static boolean addUri(URI[] uris, int uriIndex, String uriToAdd) {
-        try {
-            uris[uriIndex] = new URI(uriToAdd);
-        } catch (URISyntaxException e) {
-            return false;
-        }
+    private static boolean addUrl(GURL[] uris, int uriIndex, String uriToAdd) {
+        GURL url = new GURL(uriToAdd);
+        if (!url.isValid()) return false;
+
+        uris[uriIndex] = new GURL(uriToAdd);
         return true;
     }
 
@@ -136,7 +134,7 @@ public class PaymentManifestParser {
     interface Natives {
         long createPaymentManifestParserAndroid(WebContents webContents);
         void destroyPaymentManifestParserAndroid(long nativePaymentManifestParserAndroid);
-        void parsePaymentMethodManifest(long nativePaymentManifestParserAndroid, URI manifestUrl,
+        void parsePaymentMethodManifest(long nativePaymentManifestParserAndroid, GURL manifestUrl,
                 String content, ManifestParseCallback callback);
         void parseWebAppManifest(long nativePaymentManifestParserAndroid, String content,
                 ManifestParseCallback callback);

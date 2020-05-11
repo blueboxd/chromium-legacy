@@ -756,8 +756,6 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_idb_version_change_event.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_idle_detector.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_idle_detector.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_idle_state.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_idle_state.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_iir_filter_node.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_iir_filter_node.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_image_bitmap_rendering_context.cc",

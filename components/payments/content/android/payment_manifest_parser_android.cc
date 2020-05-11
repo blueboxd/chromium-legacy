@@ -46,24 +46,24 @@ class ParseCallback {
       return;
     }
 
-    base::android::ScopedJavaLocalRef<jobjectArray> juris =
-        Java_PaymentManifestParser_createUriArray(env,
+    base::android::ScopedJavaLocalRef<jobjectArray> jurls =
+        Java_PaymentManifestParser_createUrlArray(env,
                                                   web_app_manifest_urls.size());
 
     for (size_t i = 0; i < web_app_manifest_urls.size(); ++i) {
-      bool is_valid_uri = Java_PaymentManifestParser_addUri(
-          env, juris, base::checked_cast<int>(i),
+      bool is_valid_uri = Java_PaymentManifestParser_addUrl(
+          env, jurls, base::checked_cast<int>(i),
           base::android::ConvertUTF8ToJavaString(
               env, web_app_manifest_urls[i].spec()));
       DCHECK(is_valid_uri);
     }
 
     base::android::ScopedJavaLocalRef<jobjectArray> jorigins =
-        Java_PaymentManifestParser_createUriArray(env,
+        Java_PaymentManifestParser_createUrlArray(env,
                                                   supported_origins.size());
 
     for (size_t i = 0; i < supported_origins.size(); ++i) {
-      bool is_valid_uri = Java_PaymentManifestParser_addUri(
+      bool is_valid_uri = Java_PaymentManifestParser_addUrl(
           env, jorigins, base::checked_cast<int>(i),
           base::android::ConvertUTF8ToJavaString(
               env, supported_origins[i].Serialize()));
@@ -72,7 +72,7 @@ class ParseCallback {
 
     // Can trigger synchronous deletion of PaymentManifestParserAndroid.
     Java_ManifestParseCallback_onPaymentMethodManifestParseSuccess(
-        env, jcallback_, juris, jorigins);
+        env, jcallback_, jurls, jorigins);
   }
 
   // Copies web app manifest into Java.

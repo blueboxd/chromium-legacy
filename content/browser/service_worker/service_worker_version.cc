@@ -2237,9 +2237,11 @@ void ServiceWorkerVersion::CleanUpExternalRequest(
 
 void ServiceWorkerVersion::OnNoWorkInBrowser() {
   DCHECK(!HasWorkInBrowser());
-  if (worker_is_idle_on_renderer_) {
-    for (auto& observer : observers_)
-      observer.OnNoWork(this);
+  if (context_ && worker_is_idle_on_renderer_) {
+    ServiceWorkerRegistration* registration =
+        context_->GetLiveRegistration(registration_id());
+    if (registration)
+      registration->OnNoWork(this);
   }
 }
 

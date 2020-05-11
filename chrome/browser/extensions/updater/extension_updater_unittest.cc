@@ -902,7 +902,7 @@ class ExtensionUpdaterTest : public testing::Test {
     UpdateManifestResults updates;
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    std::set<std::string> errors;
+    ManifestInvalidErrorList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     EXPECT_TRUE(updateable.empty());
@@ -1017,11 +1017,20 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    std::set<std::string> errors;
+    ManifestInvalidErrorList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id2, id3));
-    EXPECT_THAT(errors, testing::UnorderedElementsAre(id4, id5, id6));
+    std::vector<ExtensionId> ids_with_error({id4, id5, id6});
+    for (const auto& id : ids_with_error) {
+      auto it = std::find_if(
+          errors.begin(), errors.end(),
+          [&](const std::pair<ExtensionId, ManifestInvalidError>& error) {
+            return error.first == id;
+          });
+      EXPECT_TRUE(it != errors.end());
+    }
+    EXPECT_EQ(3u, errors.size());
     ASSERT_EQ(1u, updateable.size());
     EXPECT_EQ("1.1", updateable[0]->version);
   }
@@ -1058,7 +1067,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    std::set<std::string> errors;
+    ManifestInvalidErrorList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     // All the apps should be updateable.
@@ -1140,11 +1149,20 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::vector<UpdateManifestResult*> updateable;
     std::set<std::string> not_updateable;
-    std::set<std::string> errors;
+    ManifestInvalidErrorList errors;
     helper.downloader().DetermineUpdates(*fetch_data, updates, &updateable,
                                          &not_updateable, &errors);
     EXPECT_THAT(not_updateable, testing::UnorderedElementsAre(id1, id4));
-    EXPECT_THAT(errors, testing::UnorderedElementsAre(id2, id5, id7));
+    std::vector<ExtensionId> ids_with_error({id2, id5, id7});
+    for (const auto& id : ids_with_error) {
+      auto it = std::find_if(
+          errors.begin(), errors.end(),
+          [&](const std::pair<ExtensionId, ManifestInvalidError>& error) {
+            return error.first == id;
+          });
+      EXPECT_TRUE(it != errors.end());
+    }
+    EXPECT_EQ(3u, errors.size());
     ASSERT_EQ(2u, updateable.size());
     EXPECT_EQ("1.3.1.0", updateable[0]->version);
     EXPECT_EQ("1.6.1.0", updateable[1]->version);

@@ -77,11 +77,6 @@ public abstract class PaymentApp extends EditableOption {
     }
 
     /**
-     * Stub interface to be removed after resolving clank dependencies.
-     */
-    public interface PaymentRequestUpdateEventCallback {}
-
-    /**
      * The interface for the requester of payment details from the app.
      */
     public interface InstrumentDetailsCallback {

@@ -22,9 +22,6 @@ typedef NS_ENUM(NSInteger, CookiesSettingType) {
 // Called when a cookie setting option was selected.
 - (void)cookiesSettingsOptionSelected:(CookiesSettingType)settingType;
 
-// Inserts site exceptions item into the model, previous items aren't deleted.
-- (void)insertSiteExceptionsItems:(NSArray<TableViewItem*>*)items;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PRIVACY_COOKIES_CONSUMER_H_

@@ -97,10 +97,6 @@ void AccountConsistencyModeManager::RegisterProfilePrefs(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterBooleanPref(kDiceMigrationCompletePref, false);
 #endif
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kAccountConsistencyMirrorRequired,
-                                false);
-#endif
   registry->RegisterBooleanPref(prefs::kSigninAllowedOnNextStartup, true);
 }
 
@@ -180,9 +176,7 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
 #endif
 
 #if defined(OS_CHROMEOS)
-  return (chromeos::IsAccountManagerAvailable(profile) ||
-          profile->GetPrefs()->GetBoolean(
-              prefs::kAccountConsistencyMirrorRequired))
+  return chromeos::IsAccountManagerAvailable(profile)
              ? AccountConsistencyMethod::kMirror
              : AccountConsistencyMethod::kDisabled;
 #endif

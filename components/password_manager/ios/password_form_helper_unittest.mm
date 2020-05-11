@@ -291,8 +291,8 @@ TEST_F(PasswordFormHelperTest, FillPasswordFormWithFillData) {
   EXPECT_TRUE(ExecuteJavaScript(@"__gCrWeb.passwords.findPasswordForms();"));
   const std::string base_url = BaseUrl();
   FillData fill_data;
-  SetFillData(base_url, "gChrome~form~0", 0, "u1", 1, "john.doe@gmail.com",
-              "p1", 2, "super!secret", &fill_data);
+  SetFillData(base_url, 0, 1, "john.doe@gmail.com", 2, "super!secret",
+              &fill_data);
 
   __block int call_counter = 0;
   [helper_ fillPasswordFormWithFillData:fill_data

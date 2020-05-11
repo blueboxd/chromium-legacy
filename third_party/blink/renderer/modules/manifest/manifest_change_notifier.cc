@@ -14,12 +14,13 @@
 namespace blink {
 
 ManifestChangeNotifier::ManifestChangeNotifier(LocalDOMWindow& window)
-    : window_(window) {}
+    : window_(window), manifest_change_observer_(&window) {}
 
 ManifestChangeNotifier::~ManifestChangeNotifier() = default;
 
 void ManifestChangeNotifier::Trace(Visitor* visitor) {
   visitor->Trace(window_);
+  visitor->Trace(manifest_change_observer_);
 }
 
 void ManifestChangeNotifier::DidChangeManifest() {
@@ -57,10 +58,7 @@ void ManifestChangeNotifier::ReportManifestChange() {
   auto manifest_url = ManifestManager::From(*window_)->ManifestURL();
 
   EnsureManifestChangeObserver();
-
-  // |manifest_change_observer_| may be null for tests.
-  if (!manifest_change_observer_)
-    return;
+  DCHECK(manifest_change_observer_.is_bound());
 
   if (manifest_url.IsNull())
     manifest_change_observer_->ManifestUrlChanged(base::nullopt);
@@ -69,7 +67,7 @@ void ManifestChangeNotifier::ReportManifestChange() {
 }
 
 void ManifestChangeNotifier::EnsureManifestChangeObserver() {
-  if (manifest_change_observer_)
+  if (manifest_change_observer_.is_bound())
     return;
 
   AssociatedInterfaceProvider* provider =
@@ -77,7 +75,9 @@ void ManifestChangeNotifier::EnsureManifestChangeObserver() {
   if (!provider)
     return;
 
-  provider->GetInterface(&manifest_change_observer_);
+  provider->GetInterface(
+      manifest_change_observer_.BindNewEndpointAndPassReceiver(
+          window_->GetTaskRunner(TaskType::kInternalLoading)));
 }
 
 }  // namespace blink

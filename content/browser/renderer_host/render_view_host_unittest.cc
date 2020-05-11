@@ -107,6 +107,7 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   void UpdateRenderThrottlingStatusForSubFrame(
       bool is_throttled,
       bool subtree_throttled) override {}
+  void SetIsInertForSubFrame(bool inert) override {}
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
   int value_ = -1;

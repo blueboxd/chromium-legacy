@@ -6,16 +6,6 @@ an entry in this file that refers to reliable documentation of the project's
 license terms on the web (and add a note pointing here in the README file in
 that directory).
 
-Name: autopep8
-Short Name: autopep8
-URL: https://pypi.python.org/packages/source/a/autopep8/autopep8-1.0.3.tar.gz#md5=7c16d385cf9ad7c1d7fbcfcea2588a56
-Version: 1.0.3
-License: MIT
-License File: NOT_SHIPPED
-Security Critical: no
-Description: Used to reformat python code via format_blinkpy.py
-Local Modifications: None
-
 Name: pep8 - A Python style guide checker
 Short Name: pep8
 URL: https://pypi.python.org/packages/source/p/pep8/pep8-1.5.7.tar.gz#md5=f6adbdd69365ecca20513c709f9b7c93
@@ -23,10 +13,10 @@ Version: 1.5.7
 License: MIT
 License File: NOT_SHIPPED
 Security Critical: no
-Description: Used during presubmit checks and via lint_blinkpy.py and
-    format_blinkpy.py. There is overlap between pep8 and pylint, but pep8
-    catches a bunch of stylistic issues that pylint doesn't (e.g., warning
-    about blank lines, various whitespace issues, etc.).
+Description: Used during presubmit checks and via lint_blinkpy.py.
+    There is overlap between pep8 and pylint, but pep8 catches a bunch of
+    stylistic issues that pylint doesn't (e.g., warning about blank lines,
+    various whitespace issues, etc.).
 Local Modifications: None
 
 Name: web-platform-tests - Test Suites for Web Platform specifications

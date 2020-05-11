@@ -65,8 +65,6 @@ ServiceWorkerRegistration::~ServiceWorkerRegistration() {
   DCHECK(!listeners_.might_have_observers());
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
-  if (active_version())
-    active_version()->RemoveObserver(this);
 }
 
 void ServiceWorkerRegistration::SetStatus(Status status) {
@@ -162,13 +160,9 @@ void ServiceWorkerRegistration::SetActiveVersion(
       blink::mojom::ChangedServiceWorkerObjectsMask::New(false, false, false);
   if (version)
     UnsetVersionInternal(version.get(), mask.get());
-  if (active_version_)
-    active_version_->RemoveObserver(this);
   active_version_ = version;
-  if (active_version_) {
-    active_version_->AddObserver(this);
+  if (active_version_)
     active_version_->SetNavigationPreloadState(navigation_preload_state_);
-  }
   mask->active = true;
 
   NotifyVersionAttributesChanged(std::move(mask));
@@ -227,7 +221,6 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
     should_activate_when_ready_ = false;
     mask->waiting = true;
   } else if (active_version_.get() == version) {
-    active_version_->RemoveObserver(this);
     active_version_ = nullptr;
     mask->active = true;
   }
@@ -368,8 +361,11 @@ void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
                      std::move(callback), most_recent_version));
 }
 
-void ServiceWorkerRegistration::OnNoControlleesInActiveVersion() {
+void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   DCHECK(context_);
+  if (version != active_version())
+    return;
+
   if (is_uninstalling()) {
     // TODO(falken): This can destroy the caller (ServiceWorkerVersion). Try to
     // make this async.
@@ -395,10 +391,9 @@ void ServiceWorkerRegistration::OnNoControlleesInActiveVersion() {
 }
 
 void ServiceWorkerRegistration::OnNoWork(ServiceWorkerVersion* version) {
-  if (!context_)
-    return;
-  DCHECK_EQ(active_version(), version);
-  if (IsReadyToActivate())
+  DCHECK(context_);
+
+  if (version == active_version() && IsReadyToActivate())
     ActivateWaitingVersion(true /* delay */);
 }
 
@@ -703,7 +698,6 @@ void ServiceWorkerRegistration::Clear() {
   }
   if (active_version_.get()) {
     versions_to_doom.push_back(active_version_);
-    active_version_->RemoveObserver(this);
     active_version_ = nullptr;
     mask->active = true;
   }

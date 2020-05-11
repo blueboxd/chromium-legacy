@@ -127,9 +127,28 @@ const onSubmitButtonTouchEnd = function(evt) {
  * @param {string} identifier
  * @return {HTMLInputElement}
  */
+// TODO(crbug.com/1075444): Remove this function once stable IDs are used for
+// filling of generated passwords.
 const findInputByFieldIdentifier = function(inputs, identifier) {
   for (let i = 0; i < inputs.length; ++i) {
     if (identifier === __gCrWeb.form.getFieldIdentifier(inputs[i])) {
+      return inputs[i];
+    }
+  }
+  return null;
+};
+
+/**
+ * Returns the element from |inputs| which has the field identifier equal to
+ * |identifier| and null if there is no such element.
+ * @param {Array<HTMLInputElement>} inputs
+ * @param {number} identifier
+ * @return {HTMLInputElement}
+ */
+const findInputByUniqueFieldId = function(inputs, identifier) {
+  const uniqueID = Symbol.for('__gChrome~uniqueID');
+  for (let i = 0; i < inputs.length; ++i) {
+    if (identifier === inputs[i][uniqueID]) {
       return inputs[i];
     }
   }
@@ -263,7 +282,8 @@ const fillPasswordFormWithData = function(formData, username, password, win) {
 
   for (let i = 0; i < forms.length; i++) {
     const form = forms[i];
-    if (formData.name !== __gCrWeb.form.getFormIdentifier(form)) {
+    const uniqueID = Symbol.for('__gChrome~uniqueID');
+    if (formData.unique_renderer_id !== form[uniqueID]) {
       continue;
     }
     const inputs = getFormInputElements(form);
@@ -300,17 +320,17 @@ const fillPasswordFormWithData = function(formData, username, password, win) {
  * @return {boolean} Whether the form has been filled.
  */
 function fillUsernameAndPassword_(inputs, formData, username, password) {
-  const usernameIdentifier = formData.fields[0].name;
+  const usernameIdentifier = formData.fields[0].unique_renderer_id;
   let usernameInput = null;
-  if (usernameIdentifier !== '') {
-    usernameInput = findInputByFieldIdentifier(inputs, usernameIdentifier);
+  if (usernameIdentifier !== __gCrWeb.fill.RENDERER_ID_NOT_SET) {
+    usernameInput = findInputByUniqueFieldId(inputs, usernameIdentifier);
     if (!usernameInput || !__gCrWeb.common.isTextField(usernameInput) ||
         usernameInput.disabled) {
       return false;
     }
   }
   const passwordInput =
-      findInputByFieldIdentifier(inputs, formData.fields[1].name);
+      findInputByUniqueFieldId(inputs, formData.fields[1].unique_renderer_id);
   if (!passwordInput || passwordInput.type !== 'password' ||
       passwordInput.readOnly || passwordInput.disabled) {
     return false;

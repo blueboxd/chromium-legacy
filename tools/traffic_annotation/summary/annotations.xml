@@ -261,6 +261,7 @@ Refer to README.md for content description and update process.
  <item id="safe_browsing_realtime_url_lookup" hash_code="119324658" type="0" content_hash_code="71236226" os_list="linux,windows" file_path="components/safe_browsing/core/realtime/url_lookup_service.cc"/>
  <item id="safe_browsing_v4_get_hash" hash_code="8561691" type="0" content_hash_code="132435617" os_list="linux,windows" file_path="components/safe_browsing/core/db/v4_get_hash_protocol_manager.cc"/>
  <item id="safe_browsing_v4_update" hash_code="82509217" type="0" content_hash_code="5247849" os_list="linux,windows" file_path="components/safe_browsing/core/db/v4_update_protocol_manager.cc"/>
+ <item id="safety_check_update_connectivity" hash_code="137724067" type="0" content_hash_code="30977369" os_list="linux,windows" file_path="components/safety_check/update_check_helper.cc"/>
  <item id="save_file_manager" hash_code="56275203" type="0" content_hash_code="56692339" os_list="linux,windows" file_path="content/browser/download/save_file_manager.cc"/>
  <item id="sdch_dictionary_fetch" hash_code="47152935" type="0" deprecated="2017-09-16" content_hash_code="16764294" file_path=""/>
  <item id="search_suggest_service" hash_code="57785193" type="0" content_hash_code="132247652" os_list="linux,windows" file_path="chrome/browser/search/search_suggest/search_suggest_loader_impl.cc"/>

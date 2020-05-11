@@ -749,6 +749,7 @@ chrome_java_resources = [
   "java/res/drawable/email.xml",
   "java/res/drawable/explore_sites_dense_tile_background.xml",
   "java/res/drawable/face.xml",
+  "java/res/drawable/fast_forward_message_gradient.xml",
   "java/res/drawable/file_picker_scrim.xml",
   "java/res/drawable/google_pay.xml",
   "java/res/drawable/google_pay_with_divider.xml",

@@ -2586,6 +2586,60 @@ message SystemState {
   repeated VolumeInfo volume_infos = 1;
 }
 
+// A single entry in the install log for an extension.
+message ExtensionInstallReportLogEvent {
+  // Enumerates the possible event types.
+  enum EventType {
+    // Not used.
+    LOG_EVENT_TYPE_UNKNOWN = 0;
+    // Requested by policy to install the extension.
+    POLICY_REQUEST = 1;
+    // Install success.
+    SUCCESS = 2;
+    // Request canceled.
+    CANCELED = 3;
+    // Connectivity state changed.
+    CONNECTIVITY_CHANGE = 4;
+    // Session state changed.
+    SESSION_STATE_CHANGE = 5;
+    // Extension installation failed.
+    INSTALLATION_FAILED = 6;
+  }
+
+  // Enumerates the possible changes in session state.
+  enum SessionStateChangeType {
+    // Not used.
+    SESSION_STATE_CHANGE_TYPE_UNKNOWN = 0;
+    // Session starting.
+    LOGIN = 1;
+    // Session ending.
+    LOGOUT = 2;
+    // Suspending.
+    SUSPEND = 3;
+    // Resuming.
+    RESUME = 4;
+  }
+
+  // Timestamp, in microseconds since epoch. Set for all log
+  // events.
+  optional int64 timestamp = 1;
+
+  // Event type. Set for all log events.
+  optional EventType event_type = 2;
+
+  // Total and available space on the stateful partition, in bytes. Set for
+  // event types INSTALLATION_FAILED and SUCCESS.
+  optional int64 stateful_total = 3;
+  optional int64 stateful_free = 4;
+
+  // Network state. Set for event type SESSION_STATE_CHANGE of type LOGIN and
+  // CONNECTIVITY_CHANGE.
+  optional bool online = 5;
+
+  // Type of session state change. Set for event type SESSION_STATE_CHANGE.
+  optional SessionStateChangeType session_state_change_type = 6;
+}
+
 // A single entry in the push-install log for an app.
 message AppInstallReportLogEvent {
   // Enumerates the possible event types.
@@ -2664,6 +2718,19 @@ message AppInstallReportLogEvent {
 
   // ARC++ Android id.
   optional int64 android_id = 9;
+}
+
+// Log bucket for an app.
+message ExtensionInstallReport {
+  // Extension id for the extension.
+  optional string extension_id = 1;
+
+  // Whether the log is incomplete, e.g. due to the log ring buffer overflowing
+  // or disk corruption.
+  optional bool incomplete = 2;
+
+  // Log events for the extension.
+  repeated ExtensionInstallReportLogEvent logs = 3;
 }
 
 // Log bucket for an app.

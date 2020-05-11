@@ -34,6 +34,7 @@ void GetServiceWorkerErrorTypeForRegistration(
     case blink::ServiceWorkerStatusCode::kErrorProcessNotFound:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
+    case blink::ServiceWorkerStatusCode::kErrorDiskCache:
       *out_error = blink::mojom::ServiceWorkerErrorType::kInstall;
       return;
 
@@ -67,7 +68,6 @@ void GetServiceWorkerErrorTypeForRegistration(
     case blink::ServiceWorkerStatusCode::kErrorExists:
     case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
     case blink::ServiceWorkerStatusCode::kErrorState:
-    case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorInvalidArguments:
       // Unexpected, or should have bailed out before calling this, or we don't
       // have a corresponding blink error code yet.

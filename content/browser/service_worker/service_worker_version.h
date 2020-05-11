@@ -182,7 +182,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
         const base::string16& message,
         int line_number,
         const GURL& source_url) {}
-    virtual void OnNoWork(ServiceWorkerVersion* version) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
                                          size_t size) {}
 

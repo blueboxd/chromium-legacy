@@ -655,7 +655,6 @@ class CONTENT_EXPORT RenderWidget
                            const gfx::Rect& window_screen_rect);
   void OnSetViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state);
-  void OnSetIsInert(bool);
   void OnDragTargetDragEnter(
       const std::vector<DropData::Metadata>& drop_meta_data,
       const gfx::PointF& client_pt,

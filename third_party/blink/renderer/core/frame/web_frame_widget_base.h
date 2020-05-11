@@ -204,6 +204,10 @@ class CORE_EXPORT WebFrameWidgetBase
       bool is_throttled,
       bool subtree_throttled) override {}
 
+  // Sets the inert bit on an out-of-process iframe, causing it to ignore
+  // input.
+  void SetIsInertForSubFrame(bool inert) override {}
+
   // Called when the FrameView for this Widget's local root is created.
   virtual void DidCreateLocalRootView() {}
 

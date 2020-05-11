@@ -102,8 +102,6 @@ base::string16 GetOkButtonLabel(
 
 namespace safe_browsing {
 
-constexpr int kIconSize = 20;
-
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
@@ -236,8 +234,8 @@ void PasswordReuseModalWarningDialog::CreateGaiaPasswordReuseModalWarningDialog(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   // Makes message label align with title label.
-  int horizontal_adjustment =
-      kIconSize +
+  const int horizontal_adjustment =
+      provider->GetDistanceMetric(DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE) +
       provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
   if (base::i18n::IsRTL()) {
     message_body_label->SetBorder(
@@ -275,8 +273,11 @@ gfx::ImageSkia PasswordReuseModalWarningDialog::GetWindowIcon() {
   return password_type_.account_type() ==
                  ReusedPasswordAccountType::SAVED_PASSWORD
              ? gfx::ImageSkia()
-             : gfx::CreateVectorIcon(kSecurityIcon, kIconSize,
-                                     gfx::kChromeIconGrey);
+             : gfx::CreateVectorIcon(
+                   kSecurityIcon,
+                   ChromeLayoutProvider::Get()->GetDistanceMetric(
+                       DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
+                   gfx::kChromeIconGrey);
 }
 
 bool PasswordReuseModalWarningDialog::ShouldShowWindowIcon() const {

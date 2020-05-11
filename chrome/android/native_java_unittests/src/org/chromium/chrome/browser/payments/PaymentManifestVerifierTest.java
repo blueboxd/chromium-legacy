@@ -20,10 +20,9 @@ import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
-import org.chromium.url.URI;
 
-import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,7 +31,7 @@ public class PaymentManifestVerifierTest {
     private static final String ERROR_MESSAGE = "This is an error message.";
 
     private final Origin mTestOrigin;
-    private final URI mMethodName;
+    private final GURL mMethodName;
     private final ResolveInfo mAlicePay;
     private final ResolveInfo mBobPay;
     private final Set<ResolveInfo> mMatchingApps;
@@ -52,9 +51,9 @@ public class PaymentManifestVerifierTest {
     public static final Signature BOB_PAY_SIGNATURE = new Signature("01020304050607080900");
 
     @CalledByNative
-    private PaymentManifestVerifierTest() throws URISyntaxException {
+    private PaymentManifestVerifierTest() {
         mTestOrigin = PaymentManifestDownloader.createOpaqueOriginForTest();
-        mMethodName = new URI("https://example.com");
+        mMethodName = new GURL("https://example.com");
 
         mAlicePay = new ResolveInfo();
         mAlicePay.activityInfo = new ActivityInfo();
@@ -74,13 +73,13 @@ public class PaymentManifestVerifierTest {
 
             @Override
             public void downloadPaymentMethodManifest(
-                    Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
+                    Origin merchantOrigin, GURL url, ManifestDownloadCallback callback) {
                 callback.onPaymentMethodManifestDownloadSuccess(
-                        uri, mTestOrigin, "some content here");
+                        url, mTestOrigin, "some content here");
             }
 
             @Override
-            public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, URI uri,
+            public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, GURL url,
                     ManifestDownloadCallback callback) {
                 callback.onWebAppManifestDownloadSuccess("some content here");
             }
@@ -97,13 +96,9 @@ public class PaymentManifestVerifierTest {
         mParser = new PaymentManifestParser() {
             @Override
             public void parsePaymentMethodManifest(
-                    URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
-                try {
-                    callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://bobpay.com/app.json")}, new URI[0]);
-                } catch (URISyntaxException e) {
-                    assert false;
-                }
+                    GURL paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
+                callback.onPaymentMethodManifestParseSuccess(
+                        new GURL[] {new GURL("https://bobpay.com/app.json")}, new GURL[0]);
             }
 
             @Override
@@ -145,7 +140,7 @@ public class PaymentManifestVerifierTest {
 
                     @Override
                     public void downloadPaymentMethodManifest(
-                            Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
+                            Origin merchantOrigin, GURL url, ManifestDownloadCallback callback) {
                         callback.onManifestDownloadFailure(ERROR_MESSAGE);
                     }
 
@@ -156,7 +151,7 @@ public class PaymentManifestVerifierTest {
         verifier.verify();
 
         Mockito.verify(mCallback, Mockito.never())
-                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+                .onValidDefaultPaymentApp(Mockito.any(GURL.class), Mockito.any(ResolveInfo.class));
     }
 
     @CalledByNativeJavaTest
@@ -169,13 +164,13 @@ public class PaymentManifestVerifierTest {
 
                     @Override
                     public void downloadPaymentMethodManifest(
-                            Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
+                            Origin merchantOrigin, GURL url, ManifestDownloadCallback callback) {
                         callback.onPaymentMethodManifestDownloadSuccess(
-                                uri, mTestOrigin, "some content");
+                                url, mTestOrigin, "some content");
                     }
 
                     @Override
-                    public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, URI uri,
+                    public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, GURL url,
                             ManifestDownloadCallback callback) {
                         callback.onManifestDownloadFailure(ERROR_MESSAGE);
                     }
@@ -187,7 +182,7 @@ public class PaymentManifestVerifierTest {
         verifier.verify();
 
         Mockito.verify(mCallback, Mockito.never())
-                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+                .onValidDefaultPaymentApp(Mockito.any(GURL.class), Mockito.any(ResolveInfo.class));
         Mockito.verify(mCallback).onFinishedVerification();
         Mockito.verify(mCallback).onFinishedUsingResources();
     }
@@ -198,7 +193,7 @@ public class PaymentManifestVerifierTest {
                 mMatchingApps, null /* supportedOrigins */, mWebDataService,
                 mDownloader, new PaymentManifestParser() {
                     @Override
-                    public void parsePaymentMethodManifest(URI paymentMethodManifestUrl,
+                    public void parsePaymentMethodManifest(GURL paymentMethodManifestUrl,
                             String content, ManifestParseCallback callback) {
                         callback.onManifestParseFailure();
                     }
@@ -207,7 +202,7 @@ public class PaymentManifestVerifierTest {
         verifier.verify();
 
         Mockito.verify(mCallback, Mockito.never())
-                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+                .onValidDefaultPaymentApp(Mockito.any(GURL.class), Mockito.any(ResolveInfo.class));
         Mockito.verify(mCallback).onFinishedVerification();
         Mockito.verify(mCallback).onFinishedUsingResources();
     }
@@ -218,15 +213,11 @@ public class PaymentManifestVerifierTest {
                 mMatchingApps, null /* supportedOrigins */, mWebDataService,
                 mDownloader, new PaymentManifestParser() {
                     @Override
-                    public void parsePaymentMethodManifest(URI paymentMethodManifestUrl,
+                    public void parsePaymentMethodManifest(GURL paymentMethodManifestUrl,
                             String content, ManifestParseCallback callback) {
-                        try {
-                            callback.onPaymentMethodManifestParseSuccess(
-                                    new URI[] {new URI("https://alicepay.com/app.json")},
-                                    new URI[0]);
-                        } catch (URISyntaxException e) {
-                            Assert.assertTrue(false);
-                        }
+                        callback.onPaymentMethodManifestParseSuccess(
+                                new GURL[] {new GURL("https://alicepay.com/app.json")},
+                                new GURL[0]);
                     }
 
                     @Override
@@ -239,7 +230,7 @@ public class PaymentManifestVerifierTest {
         verifier.verify();
 
         Mockito.verify(mCallback, Mockito.never())
-                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+                .onValidDefaultPaymentApp(Mockito.any(GURL.class), Mockito.any(ResolveInfo.class));
         Mockito.verify(mCallback).onFinishedVerification();
         Mockito.verify(mCallback).onFinishedUsingResources();
     }
@@ -272,15 +263,11 @@ public class PaymentManifestVerifierTest {
         CountingParser parser = new CountingParser() {
             @Override
             public void parsePaymentMethodManifest(
-                    URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
-                try {
-                    callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://alicepay.com/app.json"),
-                                    new URI("https://bobpay.com/app.json")},
-                            new URI[0]);
-                } catch (URISyntaxException e) {
-                    Assert.assertTrue(false);
-                }
+                    GURL paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
+                callback.onPaymentMethodManifestParseSuccess(
+                        new GURL[] {new GURL("https://alicepay.com/app.json"),
+                                new GURL("https://bobpay.com/app.json")},
+                        new GURL[0]);
             }
 
             @Override
@@ -293,12 +280,12 @@ public class PaymentManifestVerifierTest {
         CountingDownloader downloader = new CountingDownloader() {
             @Override
             public void downloadPaymentMethodManifest(
-                    Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
-                callback.onPaymentMethodManifestDownloadSuccess(uri, mTestOrigin, "some content");
+                    Origin merchantOrigin, GURL url, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess(url, mTestOrigin, "some content");
             }
 
             @Override
-            public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, URI uri,
+            public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, GURL url,
                     ManifestDownloadCallback callback) {
                 if (mDownloadWebAppManifestCounter++ == 0) {
                     callback.onManifestDownloadFailure(ERROR_MESSAGE);
@@ -315,7 +302,7 @@ public class PaymentManifestVerifierTest {
         verifier.verify();
 
         Mockito.verify(mCallback, Mockito.never())
-                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+                .onValidDefaultPaymentApp(Mockito.any(GURL.class), Mockito.any(ResolveInfo.class));
         Mockito.verify(mCallback).onFinishedVerification();
         Mockito.verify(mCallback).onFinishedUsingResources();
         Assert.assertEquals(1, downloader.mDownloadWebAppManifestCounter);
@@ -328,15 +315,11 @@ public class PaymentManifestVerifierTest {
         CountingParser parser = new CountingParser() {
             @Override
             public void parsePaymentMethodManifest(
-                    URI paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
-                try {
-                    callback.onPaymentMethodManifestParseSuccess(
-                            new URI[] {new URI("https://alicepay.com/app.json"),
-                                    new URI("https://bobpay.com/app.json")},
-                            new URI[0]);
-                } catch (URISyntaxException e) {
-                    Assert.assertTrue(false);
-                }
+                    GURL paymentMethodManifestUrl, String content, ManifestParseCallback callback) {
+                callback.onPaymentMethodManifestParseSuccess(
+                        new GURL[] {new GURL("https://alicepay.com/app.json"),
+                                new GURL("https://bobpay.com/app.json")},
+                        new GURL[0]);
             }
 
             @Override
@@ -352,12 +335,12 @@ public class PaymentManifestVerifierTest {
         CountingDownloader downloader = new CountingDownloader() {
             @Override
             public void downloadPaymentMethodManifest(
-                    Origin merchantOrigin, URI uri, ManifestDownloadCallback callback) {
-                callback.onPaymentMethodManifestDownloadSuccess(uri, mTestOrigin, "some content");
+                    Origin merchantOrigin, GURL url, ManifestDownloadCallback callback) {
+                callback.onPaymentMethodManifestDownloadSuccess(url, mTestOrigin, "some content");
             }
 
             @Override
-            public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, URI uri,
+            public void downloadWebAppManifest(Origin paymentMethodManifestOrigin, GURL url,
                     ManifestDownloadCallback callback) {
                 mDownloadWebAppManifestCounter++;
                 callback.onWebAppManifestDownloadSuccess("some content");
@@ -371,7 +354,7 @@ public class PaymentManifestVerifierTest {
         verifier.verify();
 
         Mockito.verify(mCallback, Mockito.never())
-                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+                .onValidDefaultPaymentApp(Mockito.any(GURL.class), Mockito.any(ResolveInfo.class));
         Mockito.verify(mCallback).onFinishedVerification();
         Mockito.verify(mCallback).onFinishedUsingResources();
         Assert.assertEquals(1, downloader.mDownloadWebAppManifestCounter);

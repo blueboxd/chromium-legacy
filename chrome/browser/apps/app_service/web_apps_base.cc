@@ -56,15 +56,6 @@ apps::mojom::InstallSource GetHighestPriorityInstallSource(
   }
 }
 
-apps::mojom::Readiness GetWebAppCrOsReadiness(
-    const web_app::WebApp* web_app,
-    const apps::mojom::Readiness readiness) {
-  DCHECK(web_app->chromeos_data().has_value());
-  return web_app->chromeos_data().value().is_disabled
-             ? apps::mojom::Readiness::kDisabledByPolicy
-             : readiness;
-}
-
 }  // namespace
 
 namespace apps {
@@ -370,11 +361,7 @@ void WebAppsBase::OnContentSettingChanged(
 void WebAppsBase::OnWebAppInstalled(const web_app::AppId& app_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (web_app && Accepts(app_id)) {
-    apps::mojom::Readiness readiness = apps::mojom::Readiness::kReady;
-    readiness = web_app::IsChromeOs()
-                    ? GetWebAppCrOsReadiness(web_app, readiness)
-                    : readiness;
-    Publish(Convert(web_app, readiness), subscribers_);
+    Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);
   }
 }
 
@@ -462,10 +449,7 @@ void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
                                  std::vector<apps::mojom::AppPtr>* apps_out) {
   for (const web_app::WebApp& web_app : GetRegistrar().AllApps()) {
     if (!web_app.is_in_sync_install()) {
-      apps_out->push_back(
-          Convert(&web_app, web_app::IsChromeOs()
-                                ? GetWebAppCrOsReadiness(&web_app, readiness)
-                                : readiness));
+      apps_out->push_back(Convert(&web_app, readiness));
     }
   }
 }

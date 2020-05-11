@@ -642,7 +642,7 @@ void WebFrameWidgetImpl::SetRemoteViewportIntersection(
       intersection_state);
 }
 
-void WebFrameWidgetImpl::SetIsInert(bool inert) {
+void WebFrameWidgetImpl::SetIsInertForSubFrame(bool inert) {
   DCHECK(LocalRootImpl()->Parent());
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
   LocalRootImpl()->GetFrame()->SetIsInert(inert);

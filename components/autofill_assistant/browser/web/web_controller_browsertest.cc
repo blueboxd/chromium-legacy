@@ -1216,8 +1216,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   std::vector<std::string> expected_values;
 
   Selector a_selector;
+  a_selector.selectors.emplace_back("body");  //  Body has 'undefined' value
+  selectors.emplace_back(a_selector);
+  expected_values.emplace_back("");
+  GetFieldsValue(selectors, expected_values);
+
+  selectors.clear();
+  a_selector.selectors.clear();
   a_selector.selectors.emplace_back("#input1");
   selectors.emplace_back(a_selector);
+  expected_values.clear();
   expected_values.emplace_back("helloworld1");
   GetFieldsValue(selectors, expected_values);
 

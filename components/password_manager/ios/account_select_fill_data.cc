@@ -34,11 +34,8 @@ void AccountSelectFillData::Add(
       std::make_pair(form_data.form_renderer_id.value(), FormInfo()));
   FormInfo& form_info = iter_ok.first->second;
   form_info.origin = form_data.origin;
-  form_info.name = form_data.name;
   form_info.form_id = form_data.form_renderer_id;
-  form_info.username_element = form_data.username_field.name;
   form_info.username_element_id = form_data.username_field.unique_renderer_id;
-  form_info.password_element = form_data.password_field.name;
   form_info.password_element_id = form_data.password_field.unique_renderer_id;
 
   // Suggested credentials don't depend on a clicked form. It's better to use
@@ -107,14 +104,9 @@ std::unique_ptr<FillData> AccountSelectFillData::GetFillData(
   const Credential& credential = *it;
   auto result = std::make_unique<FillData>();
   result->origin = last_requested_form_->origin;
-  result->name = last_requested_form_->name;
   result->form_id = last_requested_form_->form_id;
-  result->username_element = last_requested_form_->username_element;
   result->username_element_id = last_requested_form_->username_element_id;
   result->username_value = credential.username;
-  result->password_element = last_requested_password_field_id_.is_null()
-                                 ? last_requested_form_->password_element
-                                 : last_requested_password_field_;
   result->password_element_id = last_requested_password_field_id_.is_null()
                                     ? last_requested_form_->password_element_id
                                     : last_requested_password_field_id_;

@@ -51,6 +51,8 @@
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_MEDIA_WEBVIEW_CONTENT_JS" file="file_manager/foreground/elements/files_safe_media_webview_content.js" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_VIDEO_WEBVIEW_CONTENT_CSS" file="file_manager/foreground/elements/files_safe_video_webview_content.css" flattenhtml="true" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_VIDEO_WEBVIEW_CONTENT_HTML" file="file_manager/foreground/elements/files_safe_video_webview_content.html" type="BINDATA" />
+      <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_SPINNER_HTML" file="file_manager/foreground/elements/files_spinner.html" type="BINDATA" />
+      <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_SPINNER_JS" file="file_manager/foreground/elements/files_spinner.js" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOAST_HTML" file="file_manager/foreground/elements/files_toast.html" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOAST_JS" file="file_manager/foreground/elements/files_toast.js" type="BINDATA" />
       <include compress="gzip" name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOGGLE_RIPPLE_HTML" file="file_manager/foreground/elements/files_toggle_ripple.html" type="BINDATA" />

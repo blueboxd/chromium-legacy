@@ -5,8 +5,10 @@
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/credential_provider_extension/metrics_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -218,6 +220,7 @@ const CGFloat kHeaderHeight = 70;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  UpdateUMACountForKey(app_group::kCredentialExtensionPasswordUseCount);
   id<Credential> credential = [self credentialForIndexPath:indexPath];
   [self.delegate userSelectedCredential:credential];
 }
@@ -226,6 +229,9 @@ const CGFloat kHeaderHeight = 70;
 
 - (void)updateSearchResultsForSearchController:
     (UISearchController*)searchController {
+  if (searchController.searchBar.text.length) {
+    UpdateUMACountForKey(app_group::kCredentialExtensionSearchCount);
+  }
   [self.delegate updateResultsWithFilter:searchController.searchBar.text];
 }
 

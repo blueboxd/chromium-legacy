@@ -49,6 +49,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -1090,6 +1091,18 @@ class SystemWebAppManagerAppSuspensionBrowserTest
     CHECK(app_found);
     return readiness;
   }
+
+  apps::mojom::IconKeyPtr GetAppIconKey(const AppId& app_id) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+    apps::mojom::IconKeyPtr icon_key;
+    bool app_found = proxy->AppRegistryCache().ForOneApp(
+        app_id, [&icon_key](const apps::AppUpdate& update) {
+          icon_key = update.IconKey();
+        });
+    CHECK(app_found);
+    return icon_key;
+  }
 };
 
 // Tests that System Apps can be suspended when the policy is set before the app
@@ -1111,6 +1124,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
 
   EXPECT_EQ(apps::mojom::Readiness::kDisabledByPolicy,
             GetAppReadiness(*settings_id));
+  EXPECT_TRUE(apps::IconEffects::kBlocked &
+              GetAppIconKey(*settings_id)->icon_effects);
 
   {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
@@ -1121,6 +1136,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
   apps::AppServiceProxyFactory::GetForProfile(browser()->profile())
       ->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+  EXPECT_FALSE(apps::IconEffects::kBlocked &
+               GetAppIconKey(*settings_id)->icon_effects);
 }
 
 // Tests that System Apps can be suspended when the policy is set after the app
@@ -1145,6 +1162,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
   proxy->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::mojom::Readiness::kDisabledByPolicy,
             GetAppReadiness(*settings_id));
+  EXPECT_TRUE(apps::IconEffects::kBlocked &
+              GetAppIconKey(*settings_id)->icon_effects);
 
   {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
@@ -1154,6 +1173,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
   }
   proxy->FlushMojoCallsForTesting();
   EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+  EXPECT_FALSE(apps::IconEffects::kBlocked &
+               GetAppIconKey(*settings_id)->icon_effects);
 }
 // This feature will only work when DesktopPWAsWithoutExtensions launches.
 INSTANTIATE_TEST_SUITE_P(All,

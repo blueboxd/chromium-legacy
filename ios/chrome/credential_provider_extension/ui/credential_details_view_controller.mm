@@ -5,8 +5,10 @@
 #import "ios/chrome/credential_provider_extension/ui/credential_details_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/credential_provider_extension/metrics_util.h"
 #import "ios/chrome/credential_provider_extension/ui/tooltip_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -175,6 +177,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   [self showToast:NSLocalizedString(
                       @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_URL_COPIED",
                       @"URL was copied")];
+  UpdateUMACountForKey(app_group::kCredentialExtensionCopyURLCount);
 }
 
 // Copy credential Username to clipboard.
@@ -184,6 +187,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   [self showToast:NSLocalizedString(
                       @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_USERNAME_COPIED",
                       @"Username was copied")];
+  UpdateUMACountForKey(app_group::kCredentialExtensionCopyUsernameCount);
 }
 
 // Copy password to clipboard.
@@ -193,6 +197,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   [self showToast:NSLocalizedString(
                       @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_PASSWORD_COPIED",
                       @"Password was copied")];
+  UpdateUMACountForKey(app_group::kCredentialExtensionCopyPasswordCount);
 }
 
 // Initiate process to show password unobfuscated.
@@ -260,6 +265,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
     self.clearPassword = nil;
     [self updatePasswordRow];
   } else {
+    UpdateUMACountForKey(app_group::kCredentialExtensionShowPasswordCount);
     [self.delegate unlockPasswordForCredential:self.credential
                              completionHandler:^(NSString* password) {
                                self.clearPassword = password;

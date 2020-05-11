@@ -66879,6 +66879,11 @@ Full version information for the fingerprint enum values:
   <int value="80" label="TRIM_MEMORY_COMPLETE"/>
 </enum>
 
+<enum name="TrustedVaultFetchKeysAttempt">
+  <int value="0" label="First attempt"/>
+  <int value="1" label="Second attempt"/>
+</enum>
+
 <enum name="TrustedWebActivityDelegatedNotificationSmallIconFallback">
   <int value="0" label="No fallback"/>
   <int value="1" label="Fallback icon mot provided"/>

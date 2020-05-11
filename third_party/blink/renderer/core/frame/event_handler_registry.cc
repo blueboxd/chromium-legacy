@@ -368,7 +368,7 @@ void EventHandlerRegistry::DocumentDetached(Document& document) {
        handler_class_index < kEventHandlerClassCount; ++handler_class_index) {
     EventHandlerClass handler_class =
         static_cast<EventHandlerClass>(handler_class_index);
-    Vector<UntracedMember<EventTarget>> targets_to_remove;
+    HeapVector<Member<EventTarget>> targets_to_remove;
     const EventTargetSet* targets = &targets_[handler_class];
     for (const auto& event_target : *targets) {
       if (Node* node = event_target.key->ToNode()) {

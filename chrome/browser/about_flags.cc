@@ -4073,8 +4073,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-autofill-account-wallet-storage",
      flag_descriptions::kEnableAutofillAccountWalletStorageName,
-     flag_descriptions::kEnableAutofillAccountWalletStorageDescription,
-     kOsDesktop,
+     flag_descriptions::kEnableAutofillAccountWalletStorageDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableAccountWalletStorage)},
 

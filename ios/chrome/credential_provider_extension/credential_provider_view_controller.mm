@@ -7,10 +7,12 @@
 #import <Foundation/Foundation.h>
 
 #include "ios/chrome/common/app_group/app_group_constants.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/credential_provider_extension/metrics_util.h"
 #import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
@@ -60,7 +62,7 @@
                   serviceIdentifiers:serviceIdentifiers
              reauthenticationHandler:self.reauthenticationHandler];
       [self.listCoordinator start];
-
+      UpdateUMACountForKey(app_group::kCredentialExtensionDisplayCount);
     } else {
       [self.extensionContext
           cancelRequestWithError:
@@ -183,6 +185,7 @@
 
 - (void)updateSuccessfulReauthTime {
   self.lastSuccessfulReauthTime = [[NSDate alloc] init];
+  UpdateUMACountForKey(app_group::kCredentialExtensionReauthCount);
 }
 
 @end

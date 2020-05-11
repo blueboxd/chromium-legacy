@@ -28,6 +28,10 @@ ExtensionDownloaderDelegate::FailureData::FailureData(
       response_code(response),
       fetch_tries(fetch_attempts) {}
 
+ExtensionDownloaderDelegate::FailureData::FailureData(
+    ManifestInvalidError manifest_invalid_error)
+    : manifest_invalid_error(manifest_invalid_error) {}
+
 ExtensionDownloaderDelegate::FailureData::~FailureData() = default;
 
 ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() = default;

@@ -12,15 +12,20 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import androidx.annotation.VisibleForTesting;
+import androidx.core.math.MathUtils;
+import androidx.core.view.GestureDetectorCompat;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
@@ -45,6 +50,9 @@ public class PickerVideoPlayer
 
     // The callback to use for reporting playback progress in tests.
     private static VideoPlaybackStatusCallback sProgressCallback;
+
+    // The amount of time (in milliseconds) to skip when fast forwarding/rewinding.
+    private static final int SKIP_LENGTH_IN_MS = 10000;
 
     // The resources to use.
     private Resources mResources;
@@ -73,11 +81,25 @@ public class PickerVideoPlayer
     // The remaining video playback time.
     private final TextView mRemainingTime;
 
+    // The message shown when seeking, to remind the user of the fast forward/back feature.
+    private final LinearLayout mFastForwardMessage;
+
     // The SeekBar showing the video playback progress (allows user seeking).
     private final SeekBar mSeekBar;
 
     // A flag to control when the playback monitor schedules new tasks.
     private boolean mRunPlaybackMonitoringTask;
+
+    // The object to convert touch events into gestures.
+    private GestureDetectorCompat mGestureDetector;
+
+    // An OnGestureListener class for handling double tap.
+    private class DoubleTapGestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            return onDoubleTapVideo(e);
+        }
+    }
 
     /**
      * Constructor for inflating from XML.
@@ -96,11 +118,21 @@ public class PickerVideoPlayer
         mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
         mRemainingTime = findViewById(R.id.remaining_time);
         mSeekBar = findViewById(R.id.seek_bar);
+        mFastForwardMessage = findViewById(R.id.fast_forward_message);
 
         mVideoOverlayContainer.setOnClickListener(this);
         mLargePlayButton.setOnClickListener(this);
         mMuteButton.setOnClickListener(this);
         mSeekBar.setOnSeekBarChangeListener(this);
+
+        mGestureDetector = new GestureDetectorCompat(context, new DoubleTapGestureListener());
+        mVideoOverlayContainer.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                mGestureDetector.onTouchEvent(event);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -175,6 +207,21 @@ public class PickerVideoPlayer
         return true;
     }
 
+    public boolean onDoubleTapVideo(MotionEvent e) {
+        int videoPos = mMediaPlayer.getCurrentPosition();
+        int duration = mMediaPlayer.getDuration();
+
+        // A click to the left (of the center of) the Play button counts as rewinding, and a click
+        // to the right of it counts as fast forwarding.
+        float x = e.getX();
+        float midX = mLargePlayButton.getX() + (mLargePlayButton.getWidth() / 2);
+        videoPos += (x > midX) ? SKIP_LENGTH_IN_MS : -SKIP_LENGTH_IN_MS;
+        MathUtils.clamp(videoPos, 0, duration);
+
+        mMediaPlayer.seekTo(videoPos, MediaPlayer.SEEK_CLOSEST);
+        return true;
+    }
+
     // OnClickListener:
 
     @Override
@@ -217,11 +264,13 @@ public class PickerVideoPlayer
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
         cancelFadeAwayAnimation();
+        mFastForwardMessage.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         fadeAwayVideoControls();
+        mFastForwardMessage.setVisibility(View.GONE);
     }
 
     private void showOverlayControls(boolean animateAway) {

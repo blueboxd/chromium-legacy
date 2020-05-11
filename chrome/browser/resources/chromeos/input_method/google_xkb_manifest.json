@@ -55,7 +55,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us.compact.qwerty&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::eng"
     },
     {
@@ -69,7 +68,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=us-ltr&language=id&passwordLayout=us-ltr&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::ind"
     },
     {
@@ -83,7 +81,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=us-ltr&language=fil&passwordLayout=us-ltr&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::fil"
     },
     {
@@ -97,7 +94,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=us-ltr&language=ms&passwordLayout=us-ltr&name=keyboard_us",
       "options_page": "hmm_options.html?code=xkb:us::msa"
     },
     {
@@ -113,7 +109,6 @@
       "layouts": [
         "us(intl)"
       ],
-      "input_view": "inputview.html#id=us-intl&language=en-US&passwordLayout=us-intl&name=keyboard_us_international",
       "options_page": "hmm_options.html?code=xkb:us:intl:eng"
     },
     {
@@ -129,7 +124,6 @@
       "layouts": [
         "us(intl_pc)"
       ],
-      "input_view": "inputview.html#id=us-intl&language=en-US&passwordLayout=us-intl&name=keyboard_us_international_pc",
       "options_page": "hmm_options.html?code=xkb:us:intl_pc:eng"
     },
     {
@@ -144,7 +138,6 @@
       "layouts": [
         "us(intl)"
       ],
-      "input_view": "inputview.html#id=nl.compact.qwerty&language=nl&passwordLayout=nl.compact.qwerty&name=keyboard_netherlands",
       "options_page": "hmm_options.html?code=xkb:us:intl:nld"
     },
     {
@@ -159,7 +152,6 @@
       "layouts": [
         "us(intl_pc)"
       ],
-      "input_view": "inputview.html#id=us-intl&language=nl&passwordLayout=us-intl&name=keyboard_us_international_pc",
       "options_page": "hmm_options.html?code=xkb:us:intl_pc:nld"
     },
     {
@@ -175,7 +167,6 @@
       "layouts": [
         "us(altgr-intl)"
       ],
-      "input_view": "inputview.html#id=us-altgr-intl&language=en-US&passwordLayout=us-altgr-intl&name=keyboard_us_extended",
       "options_page": "hmm_options.html?code=xkb:us:altgr-intl:eng"
     },
     {
@@ -191,7 +182,6 @@
       "layouts": [
         "us(dvorak)"
       ],
-      "input_view": "inputview.html#id=us-dvorak&language=en-US&passwordLayout=us-dvorak&name=keyboard_us_dvorak",
       "options_page": "hmm_options.html?code=xkb:us:dvorak:eng"
     },
     {
@@ -207,7 +197,6 @@
       "layouts": [
         "us(dvp)"
       ],
-      "input_view": "inputview.html#id=us-dvp&language=en-US&passwordLayout=us-dvp&name=keyboard_us_dvp",
       "options_page": "hmm_options.html?code=xkb:us:dvp:eng"
     },
     {
@@ -223,7 +212,6 @@
       "layouts": [
         "us(colemak)"
       ],
-      "input_view": "inputview.html#id=us-colemak&language=en-US&passwordLayout=us-colemak&name=keyboard_us_colemak",
       "options_page": "hmm_options.html?code=xkb:us:colemak:eng"
     },
     {
@@ -239,7 +227,6 @@
       "layouts": [
         "us(workman)"
       ],
-      "input_view": "inputview.html#id=us-workman&language=en-US&passwordLayout=us-workman&name=keyboard_us_workman",
       "options_page": "hmm_options.html?code=xkb:us:workman:eng"
     },
     {
@@ -255,7 +242,6 @@
       "layouts": [
         "us(workman-intl)"
       ],
-      "input_view": "inputview.html#id=us-workman-intl&language=en-US&passwordLayout=us-workman-intl&name=keyboard_us_workman_international",
       "options_page": "hmm_options.html?code=xkb:us:workman-intl:eng"
     },
     {
@@ -269,7 +255,6 @@
       "layouts": [
         "be"
       ],
-      "input_view": "inputview.html#id=be&language=nl&passwordLayout=be&name=keyboard_belgian",
       "options_page": "hmm_options.html?code=xkb:be::nld"
     },
     {
@@ -284,7 +269,6 @@
       "layouts": [
         "fr(oss)"
       ],
-      "input_view": "inputview.html#id=fr.compact.qwerty&language=fr&passwordLayout=fr.compact.qwerty&name=keyboard_french",
       "options_page": "hmm_options.html?code=xkb:fr::fra"
     },
     {
@@ -299,7 +283,6 @@
       "layouts": [
         "fr(bepo)"
       ],
-      "input_view": "inputview.html#id=fr-bepo&language=fr&passwordLayout=fr-bepo&name=keyboard_french_bepo",
       "options_page": "hmm_options.html?code=xkb:fr:bepo:fra"
     },
     {
@@ -313,7 +296,6 @@
       "layouts": [
         "be"
       ],
-      "input_view": "inputview.html#id=be&language=fr&passwordLayout=be&name=keyboard_belgian",
       "options_page": "hmm_options.html?code=xkb:be::fra"
     },
     {
@@ -327,7 +309,6 @@
       "layouts": [
         "fo"
       ],
-      "input_view": "inputview.html#id=fo&language=fo&passwordLayout=fo&name=keyboard_faroese",
       "options_page": "hmm_options.html?code=xkb:fo::fao"
     },
     {
@@ -342,7 +323,6 @@
       "layouts": [
         "ca"
       ],
-      "input_view": "inputview.html#id=ca.compact.qwerty&language=fr&passwordLayout=ca.compact.qwerty&name=keyboard_canadian_french",
       "options_page": "hmm_options.html?code=xkb:ca::fra"
     },
     {
@@ -357,7 +337,6 @@
       "layouts": [
         "ch(fr)"
       ],
-      "input_view": "inputview.html#id=ch-fr&language=fr&passwordLayout=ch-fr&name=keyboard_swiss_french",
       "options_page": "hmm_options.html?code=xkb:ch:fr:fra"
     },
     {
@@ -372,7 +351,6 @@
       "layouts": [
         "ca(multix)"
       ],
-      "input_view": "inputview.html#id=ca-multix&language=fr&passwordLayout=ca-multix&name=keyboard_canadian_multilingual",
       "options_page": "hmm_options.html?code=xkb:ca:multix:fra"
     },
     {
@@ -389,7 +367,6 @@
       "layouts": [
         "de"
       ],
-      "input_view": "inputview.html#id=de.compact.qwerty&language=de&passwordLayout=de.compact.qwerty&name=keyboard_german",
       "options_page": "hmm_options.html?code=xkb:de::ger"
     },
     {
@@ -407,7 +384,6 @@
       "layouts": [
         "de(neo)"
       ],
-      "input_view": "inputview.html#id=de-neo&language=de&passwordLayout=de-neo&name=keyboard_german_neo_2",
       "options_page": "hmm_options.html?code=xkb:de:neo:ger"
     },
     {
@@ -421,7 +397,6 @@
       "layouts": [
         "be"
       ],
-      "input_view": "inputview.html#id=be&language=de&passwordLayout=be&name=keyboard_belgian",
       "options_page": "hmm_options.html?code=xkb:be::ger"
     },
     {
@@ -436,7 +411,6 @@
       "layouts": [
         "ch"
       ],
-      "input_view": "inputview.html#id=ch&language=de&passwordLayout=ch&name=keyboard_swiss",
       "options_page": "hmm_options.html?code=xkb:ch::ger"
     },
     {
@@ -451,7 +425,6 @@
       "layouts": [
         "jp"
       ],
-      "input_view": "inputview.html#id=jp&language=ja&passwordLayout=jp&name=keyboard_japanese",
       "options_page": "hmm_options.html?code=xkb:jp::jpn"
     },
     {
@@ -465,7 +438,6 @@
       "layouts": [
         "ru"
       ],
-      "input_view": "inputview.html#id=ru&language=ru&passwordLayout=us-ltr&name=keyboard_russian",
       "options_page": "hmm_options.html?code=xkb:ru::rus"
     },
     {
@@ -479,7 +451,6 @@
       "layouts": [
         "ru(phonetic)"
       ],
-      "input_view": "inputview.html#id=ru-phonetic&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic",
       "options_page": "hmm_options.html?code=xkb:ru:phonetic:rus"
     },
     {
@@ -494,7 +465,6 @@
       "layouts": [
         "br"
       ],
-      "input_view": "inputview.html#id=br&language=pt-BR&passwordLayout=br&name=keyboard_brazilian",
       "options_page": "hmm_options.html?code=xkb:br::por"
     },
     {
@@ -509,7 +479,6 @@
       "layouts": [
         "us(intl)"
       ],
-      "input_view": "inputview.html#id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international",
       "options_page": "hmm_options.html?code=xkb:us:intl:por"
     },
     {
@@ -524,7 +493,6 @@
       "layouts": [
         "us(intl_pc)"
       ],
-      "input_view": "inputview.html#id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international_pc",
       "options_page": "hmm_options.html?code=xkb:us:intl_pc:por"
     },
     {
@@ -538,7 +506,6 @@
       "layouts": [
         "bg"
       ],
-      "input_view": "inputview.html#id=bg&language=bg&passwordLayout=us-ltr&name=keyboard_bulgarian",
       "options_page": "hmm_options.html?code=xkb:bg::bul"
     },
     {
@@ -552,7 +519,6 @@
       "layouts": [
         "bg(phonetic)"
       ],
-      "input_view": "inputview.html#id=bg-phonetic&language=bg&passwordLayout=us-ltr&name=keyboard_bulgarian_phonetic",
       "options_page": "hmm_options.html?code=xkb:bg:phonetic:bul"
     },
     {
@@ -567,7 +533,6 @@
       "layouts": [
         "ca(eng)"
       ],
-      "input_view": "inputview.html#id=ca-eng.compact.qwerty&language=en-CA&passwordLayout=ca-eng.compact.qwerty&name=keyboard_canadian_english",
       "options_page": "hmm_options.html?code=xkb:ca:eng:eng"
     },
     {
@@ -581,7 +546,6 @@
       "layouts": [
         "cz"
       ],
-      "input_view": "inputview.html#id=cz&language=cs&passwordLayout=cz&name=keyboard_czech",
       "options_page": "hmm_options.html?code=xkb:cz::cze"
     },
     {
@@ -596,7 +560,6 @@
       "layouts": [
         "cz(qwerty)"
       ],
-      "input_view": "inputview.html#id=cz-qwerty&language=cs&passwordLayout=cz-qwerty&name=keyboard_czech_qwerty",
       "options_page": "hmm_options.html?code=xkb:cz:qwerty:cze"
     },
     {
@@ -610,7 +573,6 @@
       "layouts": [
         "ee"
       ],
-      "input_view": "inputview.html#id=ee&language=et&passwordLayout=ee&name=keyboard_estonian",
       "options_page": "hmm_options.html?code=xkb:ee::est"
     },
     {
@@ -625,7 +587,6 @@
       "layouts": [
         "es"
       ],
-      "input_view": "inputview.html#id=es&language=es&passwordLayout=es&name=keyboard_spanish",
       "options_page": "hmm_options.html?code=xkb:es::spa"
     },
     {
@@ -640,7 +601,6 @@
       "layouts": [
         "es(cat)"
       ],
-      "input_view": "inputview.html#id=es-cat&language=ca&passwordLayout=es-cat&name=keyboard_catalan",
       "options_page": "hmm_options.html?code=xkb:es:cat:cat"
     },
     {
@@ -654,7 +614,6 @@
       "layouts": [
         "dk"
       ],
-      "input_view": "inputview.html#id=dk.compact.qwerty&language=da&passwordLayout=dk.compact.qwerty&name=keyboard_danish",
       "options_page": "hmm_options.html?code=xkb:dk::dan"
     },
     {
@@ -668,7 +627,6 @@
       "layouts": [
         "gr"
       ],
-      "input_view": "inputview.html#id=gr&language=el&passwordLayout=us-ltr&name=keyboard_greek",
       "options_page": "hmm_options.html?code=xkb:gr::gre"
     },
     {
@@ -682,7 +640,6 @@
       "layouts": [
         "il"
       ],
-      "input_view": "inputview.html#id=il&language=he&passwordLayout=us-rtl&name=keyboard_hebrew",
       "options_page": "hmm_options.html?code=xkb:il::heb"
     },
     {
@@ -698,7 +655,6 @@
       "layouts": [
         "latam"
       ],
-      "input_view": "inputview.html#id=latam&language=es&passwordLayout=latam&name=keyboard_latin_american",
       "options_page": "hmm_options.html?code=xkb:latam::spa"
     },
     {
@@ -712,7 +668,6 @@
       "layouts": [
         "lt"
       ],
-      "input_view": "inputview.html#id=lt&language=lt&passwordLayout=lt&name=keyboard_lithuanian",
       "options_page": "hmm_options.html?code=xkb:lt::lit"
     },
     {
@@ -726,7 +681,6 @@
       "layouts": [
         "lv(apostrophe)"
       ],
-      "input_view": "inputview.html#id=lv-apostrophe&language=lv&passwordLayout=lv-apostrophe&name=keyboard_latvian",
       "options_page": "hmm_options.html?code=xkb:lv:apostrophe:lav"
     },
     {
@@ -740,7 +694,6 @@
       "layouts": [
         "hr"
       ],
-      "input_view": "inputview.html#id=hr&language=hr&passwordLayout=hr&name=keyboard_croatian",
       "options_page": "hmm_options.html?code=xkb:hr::scr"
     },
     {
@@ -755,7 +708,6 @@
       "layouts": [
         "gb(extd)"
       ],
-      "input_view": "inputview.html#id=gb-extd.compact.qwerty&language=en-GB&passwordLayout=gb-extd.compact.qwerty&name=keyboard_uk",
       "options_page": "hmm_options.html?code=xkb:gb:extd:eng"
     },
     {
@@ -771,7 +723,6 @@
       "layouts": [
         "gb(dvorak)"
       ],
-      "input_view": "inputview.html#id=gb-dvorak&language=en-GB&passwordLayout=gb-dvorak&name=keyboard_uk_dvorak",
       "options_page": "hmm_options.html?code=xkb:gb:dvorak:eng"
     },
     {
@@ -785,7 +736,6 @@
       "layouts": [
         "fi"
       ],
-      "input_view": "inputview.html#id=fi.compact.qwerty&language=fi&passwordLayout=fi.compact.qwerty&name=keyboard_finnish",
       "options_page": "hmm_options.html?code=xkb:fi::fin"
     },
     {
@@ -799,7 +749,6 @@
       "layouts": [
         "hu"
       ],
-      "input_view": "inputview.html#id=hu&language=hu&passwordLayout=hu&name=keyboard_hungarian",
       "options_page": "hmm_options.html?code=xkb:hu::hun"
     },
     {
@@ -813,7 +762,6 @@
       "layouts": [
         "hu(qwerty)"
       ],
-      "input_view": "inputview.html#id=hu-qwerty&language=hu&passwordLayout=hu-qwerty&name=keyboard_hungarian_qwerty",
       "options_page": "hmm_options.html?code=xkb:hu:qwerty:hun"
     },
     {
@@ -828,7 +776,6 @@
       "layouts": [
         "it"
       ],
-      "input_view": "inputview.html#id=it&language=it&passwordLayout=it&name=keyboard_italian",
       "options_page": "hmm_options.html?code=xkb:it::ita"
     },
     {
@@ -842,7 +789,6 @@
       "layouts": [
         "is"
       ],
-      "input_view": "inputview.html#id=is.compact.qwerty&language=is&passwordLayout=is.compact.qwerty&name=keyboard_icelandic",
       "options_page": "hmm_options.html?code=xkb:is::ice"
     },
     {
@@ -858,7 +804,6 @@
       "layouts": [
         "no"
       ],
-      "input_view": "inputview.html#id=no.compact.qwerty&language=no&passwordLayout=no.compact.qwerty&name=keyboard_norwegian",
       "options_page": "hmm_options.html?code=xkb:no::nob"
     },
     {
@@ -872,7 +817,6 @@
       "layouts": [
         "pl"
       ],
-      "input_view": "inputview.html#id=pl&language=pl&passwordLayout=pl&name=keyboard_polish",
       "options_page": "hmm_options.html?code=xkb:pl::pol"
     },
     {
@@ -887,7 +831,6 @@
       "layouts": [
         "pt"
       ],
-      "input_view": "inputview.html#id=pt&language=pt-PT&passwordLayout=pt&name=keyboard_portuguese",
       "options_page": "hmm_options.html?code=xkb:pt::por"
     },
     {
@@ -901,7 +844,6 @@
       "layouts": [
         "ro"
       ],
-      "input_view": "inputview.html#id=ro&language=ro&passwordLayout=ro&name=keyboard_romanian",
       "options_page": "hmm_options.html?code=xkb:ro::rum"
     },
     {
@@ -915,7 +857,6 @@
       "layouts": [
         "ro(std)"
       ],
-      "input_view": "inputview.html#id=ro-std&language=ro&passwordLayout=ro-std&name=keyboard_romanian_standard",
       "options_page": "hmm_options.html?code=xkb:ro:std:rum"
     },
     {
@@ -929,7 +870,6 @@
       "layouts": [
         "se"
       ],
-      "input_view": "inputview.html#id=se.compact.qwerty&language=sv&passwordLayout=se.compact.qwerty&name=keyboard_swedish",
       "options_page": "hmm_options.html?code=xkb:se::swe"
     },
     {
@@ -943,7 +883,6 @@
       "layouts": [
         "sk"
       ],
-      "input_view": "inputview.html#id=sk&language=sk&passwordLayout=us-ltr&name=keyboard_slovakian",
       "options_page": "hmm_options.html?code=xkb:sk::slo"
     },
     {
@@ -957,7 +896,6 @@
       "layouts": [
         "si"
       ],
-      "input_view": "inputview.html#id=si&language=sl&passwordLayout=si&name=keyboard_slovenian",
       "options_page": "hmm_options.html?code=xkb:si::slv"
     },
     {
@@ -971,7 +909,6 @@
       "layouts": [
         "rs"
       ],
-      "input_view": "inputview.html#id=rs&language=sr&passwordLayout=us-ltr&name=keyboard_serbian",
       "options_page": "hmm_options.html?code=xkb:rs::srp"
     },
     {
@@ -985,7 +922,6 @@
       "layouts": [
         "tr"
       ],
-      "input_view": "inputview.html#id=tr&language=tr&passwordLayout=tr&name=keyboard_turkish",
       "options_page": "hmm_options.html?code=xkb:tr::tur"
     },
     {
@@ -999,7 +935,6 @@
       "layouts": [
         "tr(f)"
       ],
-      "input_view": "inputview.html#id=tr-f&language=tr&passwordLayout=tr-f&name=keyboard_turkish_f",
       "options_page": "hmm_options.html?code=xkb:tr:f:tur"
     },
     {
@@ -1013,7 +948,6 @@
       "layouts": [
         "ua"
       ],
-      "input_view": "inputview.html#id=ua&language=uk&passwordLayout=us-ltr&name=keyboard_ukrainian",
       "options_page": "hmm_options.html?code=xkb:ua::ukr"
     },
     {
@@ -1027,7 +961,6 @@
       "layouts": [
         "by"
       ],
-      "input_view": "inputview.html#id=by&language=be&passwordLayout=us-ltr&name=keyboard_belarusian",
       "options_page": "hmm_options.html?code=xkb:by::bel"
     },
     {
@@ -1041,7 +974,6 @@
       "layouts": [
         "am(phonetic)"
       ],
-      "input_view": "inputview.html#id=am-phonetic&language=hy&passwordLayout=us-ltr&name=keyboard_armenian_phonetic",
       "options_page": "hmm_options.html?code=xkb:am:phonetic:arm"
     },
     {
@@ -1055,7 +987,6 @@
       "layouts": [
         "ge"
       ],
-      "input_view": "inputview.html#id=ge&language=ka&passwordLayout=us-ltr&name=keyboard_georgian",
       "options_page": "hmm_options.html?code=xkb:ge::geo"
     },
     {
@@ -1069,7 +1000,6 @@
       "layouts": [
         "mn"
       ],
-      "input_view": "inputview.html#id=mn&language=mn&passwordLayout=us-ltr&name=keyboard_mongolian",
       "options_page": "hmm_options.html?code=xkb:mn::mon"
     },
     {
@@ -1083,7 +1013,6 @@
       "layouts": [
         "ie"
       ],
-      "input_view": "inputview.html#id=ie.compact.qwerty&language=ga&passwordLayout=ie.compact.qwerty&name=keyboard_irish",
       "options_page": "hmm_options.html?code=xkb:ie::ga"
     },
     {
@@ -1097,7 +1026,6 @@
       "layouts": [
         "mt"
       ],
-      "input_view": "inputview.html#id=mt&language=mt&passwordLayout=mt&name=keyboard_maltese",
       "options_page": "hmm_options.html?code=xkb:mt::mlt"
     },
     {
@@ -1111,7 +1039,6 @@
       "layouts": [
         "mk"
       ],
-      "input_view": "inputview.html#id=mk&language=mk&passwordLayout=us-ltr&name=keyboard_macedonian",
       "options_page": "hmm_options.html?code=xkb:mk::mkd"
     },
     {
@@ -1125,7 +1052,6 @@
       "layouts": [
         "kz"
       ],
-      "input_view": "inputview.html#id=kz&language=kk&passwordLayout=us-ltr&name=keyboard_kazakh",
       "options_page": "hmm_options.html?code=xkb:kz::kaz"
     },
     {
@@ -1141,7 +1067,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=pinyin-zh-CN.compact.qwerty&language=zh-CN&passwordLayout=pinyin-zh-CN.en.compact.qwerty&name=inputmethod_pinyin",
       "options_page": "hmm_options.html?code=zh-t-i0-pinyin"
     },
     {
@@ -1157,7 +1082,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=pinyin-zh-TW&language=zh-TW&passwordLayout=pinyin-zh-TW&name=inputmethod_traditional_pinyin",
       "options_page": "hmm_options.html?code=zh-hant-t-i0-pinyin"
     },
     {
@@ -1172,8 +1096,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=cangjie&language=zh-TW&passwordLayout=cangjie&name=inputmethod_cangjie"
+      ]
     },
     {
       "name": "__MSG_inputmethod_quick__",
@@ -1187,8 +1110,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=quick&language=zh-TW&passwordLayout=quick&name=inputmethod_quick"
+      ]
     },
     {
       "name": "__MSG_inputmethod_cantonese__",
@@ -1201,8 +1123,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=us&language=zh-CN&passwordLayout=us&name=inputmethod_cantonese"
+      ]
     },
     {
       "name": "__MSG_inputmethod_wubi__",
@@ -1216,8 +1137,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=wubi&language=zh-CN&passwordLayout=wubi&name=inputmethod_wubi"
+      ]
     },
     {
       "name": "__MSG_inputmethod_array__",
@@ -1231,8 +1151,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=array&language=zh-TW&passwordLayout=array&name=inputmethod_array"
+      ]
     },
     {
       "name": "__MSG_inputmethod_dayi__",
@@ -1246,8 +1165,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=dayi&language=zh-TW&passwordLayout=dayi&name=inputmethod_dayi"
+      ]
     },
     {
       "name": "__MSG_inputmethod_zhuyin__",
@@ -1262,7 +1180,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=zhuyin.compact.qwerty&language=zh-TW&passwordLayout=zhuyin.en.compact.qwerty&name=inputmethod_zhuyin",
       "options_page": "hmm_options.html?code=zh-hant-t-i0-und"
     },
     {
@@ -1273,8 +1190,7 @@
       "language": "am",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=am&passwordLayout=t13n&name=transliteration_am"
+      ]
     },
     {
       "name": "__MSG_transliteration_ar__",
@@ -1284,8 +1200,7 @@
       "language": "ar",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n-rtl&language=ar&passwordLayout=t13n-rtl&name=transliteration_ar"
+      ]
     },
     {
       "name": "__MSG_transliteration_bn__",
@@ -1295,8 +1210,7 @@
       "language": "bn",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=bn&passwordLayout=t13n&name=transliteration_bn"
+      ]
     },
     {
       "name": "__MSG_transliteration_el__",
@@ -1306,8 +1220,7 @@
       "language": "el",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=el&passwordLayout=t13n&name=transliteration_el"
+      ]
     },
     {
       "name": "__MSG_transliteration_fa__",
@@ -1317,8 +1230,7 @@
       "language": "fa",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n-rtl&language=fa&passwordLayout=t13n-rtl&name=transliteration_fa"
+      ]
     },
     {
       "name": "__MSG_transliteration_gu__",
@@ -1328,8 +1240,7 @@
       "language": "gu",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=gu&passwordLayout=t13n&name=transliteration_gu"
+      ]
     },
     {
       "name": "__MSG_transliteration_he__",
@@ -1339,8 +1250,7 @@
       "language": "he",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n-rtl&language=he&passwordLayout=t13n-rtl&name=transliteration_he"
+      ]
     },
     {
       "name": "__MSG_transliteration_hi__",
@@ -1350,8 +1260,7 @@
       "language": "hi",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=hi&passwordLayout=t13n&name=transliteration_hi"
+      ]
     },
     {
       "name": "__MSG_transliteration_kn__",
@@ -1361,8 +1270,7 @@
       "language": "kn",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=kn&passwordLayout=t13n&name=transliteration_kn"
+      ]
     },
     {
       "name": "__MSG_transliteration_ml__",
@@ -1372,8 +1280,7 @@
       "language": "ml",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=ml&passwordLayout=t13n&name=transliteration_ml"
+      ]
     },
     {
       "name": "__MSG_transliteration_mr__",
@@ -1383,8 +1290,7 @@
       "language": "mr",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=mr&passwordLayout=t13n&name=transliteration_mr"
+      ]
     },
     {
       "name": "__MSG_transliteration_ne__",
@@ -1394,8 +1300,7 @@
       "language": "ne",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=ne&passwordLayout=t13n&name=transliteration_ne"
+      ]
     },
     {
       "name": "__MSG_transliteration_or__",
@@ -1405,8 +1310,7 @@
       "language": "or",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=or&passwordLayout=t13n&name=transliteration_or"
+      ]
     },
     {
       "name": "__MSG_transliteration_pa__",
@@ -1416,8 +1320,7 @@
       "language": "pa",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=pa&passwordLayout=t13n&name=transliteration_pa"
+      ]
     },
     {
       "name": "__MSG_transliteration_sa__",
@@ -1427,8 +1330,7 @@
       "language": "sa",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=sa&passwordLayout=t13n&name=transliteration_sa"
+      ]
     },
     {
       "name": "__MSG_transliteration_sr__",
@@ -1438,8 +1340,7 @@
       "language": "sr",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=sr&passwordLayout=t13n&name=transliteration_sr"
+      ]
     },
     {
       "name": "__MSG_transliteration_ta__",
@@ -1449,8 +1350,7 @@
       "language": "ta",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=ta&passwordLayout=t13n&name=transliteration_ta"
+      ]
     },
     {
       "name": "__MSG_transliteration_te__",
@@ -1460,8 +1360,7 @@
       "language": "te",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=te&passwordLayout=t13n&name=transliteration_te"
+      ]
     },
     {
       "name": "__MSG_transliteration_ti__",
@@ -1471,8 +1370,7 @@
       "language": "ti",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n&language=ti&passwordLayout=t13n&name=transliteration_ti"
+      ]
     },
     {
       "name": "__MSG_transliteration_ur__",
@@ -1482,8 +1380,7 @@
       "language": "ur",
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=t13n-rtl&language=ur&passwordLayout=t13n-rtl&name=transliteration_ur"
+      ]
     },
     {
       "name": "__MSG_inputmethod_hangul__",
@@ -1495,7 +1392,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=ko&language=ko&passwordLayout=us-ltr&name=inputmethod_hangul",
       "options_page": "hmm_options.html?code=ko-t-i0-und"
     },
     {
@@ -1508,7 +1404,6 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=jp_us&language=ja&passwordLayout=us-ltr&name=appNameUSKeyboard",
       "options_page": "mozc_option.html"
     },
     {
@@ -1521,7 +1416,6 @@
       "layouts": [
         "jp"
       ],
-      "input_view": "inputview.html#id=jp&language=ja&passwordLayout=us-ltr&name=appNameJPKeyboard",
       "options_page": "mozc_option.html"
     },
     {
@@ -1534,8 +1428,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:bn_phone&language=bn&passwordLayout=us-ltr&name=keyboard_bengali_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_gujarati_phonetic__",
@@ -1547,8 +1440,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:gu_phone&language=gu&passwordLayout=us-ltr&name=keyboard_gujarati_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_devanagari_phonetic__",
@@ -1561,8 +1453,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:deva_phone&language=hi&passwordLayout=us-ltr&name=keyboard_devanagari_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_kannada_phonetic__",
@@ -1574,8 +1465,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:kn_phone&language=kn&passwordLayout=us-ltr&name=keyboard_kannada_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_malayalam_phonetic__",
@@ -1587,8 +1477,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ml_phone&language=ml&passwordLayout=us-ltr&name=keyboard_malayalam_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_inscript__",
@@ -1600,8 +1489,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ta_inscript&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_inscript"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_phonetic__",
@@ -1613,8 +1501,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ta_phone&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_tamil99__",
@@ -1626,8 +1513,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ta_tamil99&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_tamil99"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_typewriter__",
@@ -1639,8 +1525,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ta_typewriter&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_typewriter"
+      ]
     },
     {
       "name": "__MSG_keyboard_tamil_itrans__",
@@ -1652,8 +1537,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ta_itrans&language=ta&passwordLayout=us-ltr&name=keyboard_tamil_itrans"
+      ]
     },
     {
       "name": "__MSG_keyboard_telugu_phonetic__",
@@ -1665,8 +1549,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:te_phone&language=te&passwordLayout=us-ltr&name=keyboard_telugu_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_ethiopic__",
@@ -1678,8 +1561,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ethi&language=am&passwordLayout=us-ltr&name=keyboard_ethiopic"
+      ]
     },
     {
       "name": "__MSG_keyboard_thai_kedmanee__",
@@ -1691,8 +1573,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:th&language=th&passwordLayout=us-ltr&name=keyboard_thai_kedmanee"
+      ]
     },
     {
       "name": "__MSG_keyboard_thai_pattachote__",
@@ -1704,8 +1585,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:th_pattajoti&language=th&passwordLayout=us-ltr&name=keyboard_thai_pattachote"
+      ]
     },
     {
       "name": "__MSG_keyboard_thai_tis__",
@@ -1717,8 +1597,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:th_tis&language=th&passwordLayout=us-ltr&name=keyboard_thai_tis"
+      ]
     },
     {
       "name": "__MSG_keyboard_persian__",
@@ -1730,8 +1609,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:fa&language=fa&passwordLayout=us-rtl&name=keyboard_persian"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_tcvn__",
@@ -1743,8 +1621,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:vi_tcvn&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_tcvn"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_telex__",
@@ -1756,8 +1633,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:vi_telex&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_telex"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_viqr__",
@@ -1769,8 +1645,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:vi_viqr&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_viqr"
+      ]
     },
     {
       "name": "__MSG_keyboard_vietnamese_vni__",
@@ -1782,8 +1657,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:vi_vni&language=vi&passwordLayout=us-ltr&name=keyboard_vietnamese_vni"
+      ]
     },
     {
       "name": "__MSG_keyboard_arabic__",
@@ -1795,8 +1669,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ar&language=ar&passwordLayout=us-rtl&name=keyboard_arabic"
+      ]
     },
     {
       "name": "__MSG_keyboard_lao__",
@@ -1808,8 +1681,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:lo&language=lo&passwordLayout=us-ltr&name=keyboard_laothian"
+      ]
     },
     {
       "name": "__MSG_keyboard_nepali_inscript__",
@@ -1821,8 +1693,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ne_inscript&language=ne&passwordLayout=us-ltr&name=keyboard_nepali_inscript"
+      ]
     },
     {
       "name": "__MSG_keyboard_nepali_phonetic__",
@@ -1834,8 +1705,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ne_phone&language=ne&passwordLayout=us-ltr&name=keyboard_nepali_phonetic"
+      ]
     },
     {
       "name": "__MSG_keyboard_khmer__",
@@ -1847,8 +1717,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:km&language=km&passwordLayout=us-ltr&name=keyboard_khmer"
+      ]
     },
     {
       "name": "__MSG_keyboard_myanmar__",
@@ -1860,8 +1729,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:my&language=my&passwordLayout=us-ltr&name=keyboard_myanmar"
+      ]
     },
     {
       "name": "__MSG_keyboard_sinhala__",
@@ -1873,8 +1741,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:si&language=si&passwordLayout=us-ltr&name=keyboard_sinhala"
+      ]
     },
     {
       "name": "__MSG_keyboard_soranikurdish_en__",
@@ -1886,8 +1753,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ckb_en&language=ckb&passwordLayout=us-rtl&name=keyboard_soranikurdish_en"
+      ]
     },
     {
       "name": "__MSG_keyboard_soranikurdish_ar__",
@@ -1899,8 +1765,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ckb_ar&language=ckb&passwordLayout=us-rtl&name=keyboard_soranikurdish_ar"
+      ]
     },
     {
       "name": "__MSG_keyboard_myanmar_myansan__",
@@ -1912,8 +1777,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:my_myansan&language=my&passwordLayout=us-ltr&name=keyboard_myanmar_myansan"
+      ]
     },
     {
       "name": "__MSG_keyboard_russian_phonetic_aatseel__",
@@ -1925,8 +1789,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ru_phone_aatseel&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic_aatseel"
+      ]
     },
     {
       "name": "__MSG_keyboard_russian_phonetic_yazhert__",
@@ -1938,8 +1801,7 @@
       ],
       "layouts": [
         "us"
-      ],
-      "input_view": "inputview.html#id=m17n:ru_phone_yazhert&language=ru&passwordLayout=us-ltr&name=keyboard_russian_phonetic_yazhert"
+      ]
     }
   ],
   "manifest_version": 2,

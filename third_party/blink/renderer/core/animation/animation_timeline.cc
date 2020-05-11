@@ -216,6 +216,12 @@ void AnimationTimeline::ScheduleServiceOnNextFrame() {
     document_->View()->ScheduleAnimation();
 }
 
+void AnimationTimeline::MarkAnimationsCompositorPending(bool source_changed) {
+  for (const auto& animation : animations_) {
+    animation->SetCompositorPending(source_changed);
+  }
+}
+
 void AnimationTimeline::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(animations_needing_update_);

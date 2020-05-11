@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.infobar.IPHInfoBarSupport;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -361,11 +360,6 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     /** @return Whether the infobar is currently showing. */
     public boolean isShowing() {
         return mCurrentInfoBar != null;
-    }
-
-    private ChromeActivity getActivity() {
-        Tab tab = getCurrentTab();
-        return tab == null ? null : ((TabImpl) tab).getActivity();
     }
 
     /**
@@ -845,22 +839,32 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     private void maybeShowDownloadsStillInProgressIPH() {
         if (getDownloadCount().inProgress == 0) return;
-        if (getCurrentTab() == null || !(getActivity() instanceof ChromeTabbedActivity)) {
-            return;
-        }
-
-        ChromeTabbedActivity activity = (ChromeTabbedActivity) getActivity();
+        if (getCurrentTab() == null || getTabbedActivity() == null) return;
+        ChromeTabbedActivity activity = getTabbedActivity();
         activity.getToolbarButtonInProductHelpController().showDownloadContinuingIPH();
     }
 
     @Nullable
     private Tab getCurrentTab() {
-        if (!ApplicationStatus.hasVisibleActivities()) return null;
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(activity instanceof ChromeTabbedActivity)) return null;
-        Tab tab = ((ChromeTabbedActivity) activity).getActivityTab();
+        ChromeActivity activity = getActivity();
+        if (activity == null) return null;
+        Tab tab = activity.getActivityTab();
         if (tab == null || tab.isIncognito() != mIsIncognito) return null;
         return tab;
+    }
+
+    @Nullable
+    private static ChromeTabbedActivity getTabbedActivity() {
+        ChromeActivity activity = getActivity();
+        if (activity == null || !(activity instanceof ChromeTabbedActivity)) return null;
+        return (ChromeTabbedActivity) activity;
+    }
+
+    @Nullable
+    private static ChromeActivity getActivity() {
+        if (!ApplicationStatus.hasVisibleActivities()) return null;
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        return (activity instanceof ChromeActivity) ? (ChromeActivity) activity : null;
     }
 
     private Context getContext() {

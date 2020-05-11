@@ -1088,8 +1088,16 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   }
 
   auto* notifier = GetNotifier();
-  if (notifier)
-    notifier->NotifyLaunch(result->display_type(), result->id());
+  if (notifier) {
+    // Special-case chip results, because the display type of app results
+    // doesn't account for whether it's being displayed in the suggestion chips
+    // or app tiles.
+    if (launched_from == AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
+      notifier->NotifyLaunched(SearchResultDisplayType::kChip, result->id());
+    } else {
+      notifier->NotifyLaunched(result->display_type(), result->id());
+    }
+  }
 
   if (presenter_.IsVisibleDeprecated() && result->is_omnibox_search() &&
       IsAssistantAllowedAndEnabled() &&

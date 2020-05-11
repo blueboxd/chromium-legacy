@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -145,7 +145,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 Profile profile = Profile.fromWebContents(tab.getWebContents());
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
                 tracker.addOnInitializedCallback((ready) -> {
-                    mMediator.showIPH(feature, ((TabImpl) tab).getActivity(), anchor, tracker);
+                    mMediator.showIPH(feature, TabUtils.getActivity(tab), anchor, tracker);
                 });
                 mTabProvider.removeObserver(this);
             }
@@ -157,10 +157,8 @@ public class BrowsingModeBottomToolbarCoordinator {
      */
     void onVisibilityChanged(boolean isVisible) {
         if (isVisible) return;
-        TabImpl tabImpl = (TabImpl) mTabProvider.get();
-        if (tabImpl != null) {
-            mMediator.dismissIPH(tabImpl.getActivity());
-        }
+        Tab tab = mTabProvider.get();
+        if (tab != null) mMediator.dismissIPH(TabUtils.getActivity(tab));
     }
 
     /**

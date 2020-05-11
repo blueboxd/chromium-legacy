@@ -22,6 +22,7 @@ import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinato
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinatorFactory;
 import org.chromium.components.browser_ui.widget.image_tiles.TileConfig;
 import org.chromium.components.query_tiles.QueryTile;
+import org.chromium.components.query_tiles.QueryTileConstants;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
 
@@ -103,8 +104,11 @@ public class OmniboxQueryTileCoordinator {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
             return;
         }
-        getImageFetcher().fetchImage(queryTile.urls.get(0), ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME,
-                mTileWidth, mTileWidth, bitmap -> callback.onResult(Arrays.asList(bitmap)));
+
+        ImageFetcher.Params params = ImageFetcher.Params.createWithExpirationInterval(
+                queryTile.urls.get(0), ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME, mTileWidth,
+                mTileWidth, QueryTileConstants.IMAGE_EXPIRATION_INTERVAL_MINUTES);
+        getImageFetcher().fetchImage(params, bitmap -> callback.onResult(Arrays.asList(bitmap)));
     }
 
     /** Create an ImageFetcher instance. Only created if needed. */

@@ -37,7 +37,7 @@ class FilePath;
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
-}
+}  // namespace storage
 
 namespace content {
 
@@ -116,9 +116,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
           observer_list,
       ServiceWorkerContextWrapper* wrapper);
   // TODO(https://crbug.com/877356): Remove this copy mechanism.
-  ServiceWorkerContextCore(
-      ServiceWorkerContextCore* old_context,
-      ServiceWorkerContextWrapper* wrapper);
+  ServiceWorkerContextCore(ServiceWorkerContextCore* old_context,
+                           ServiceWorkerContextWrapper* wrapper);
   ~ServiceWorkerContextCore() override;
 
   void OnStorageWiped();
@@ -126,6 +125,19 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void OnMainScriptResponseSet(
       int64_t version_id,
       const ServiceWorkerVersion::MainScriptResponse& response);
+
+  // OnControlleeAdded/Removed are called asynchronously. It is possible the
+  // container host identified by |client_uuid| was already destroyed when they
+  // are called.
+  // Note regarding BackForwardCache integration:
+  // OnControlleeRemoved is called when a controllee enters back-forward
+  // cache, and OnControlleeAdded is called when a controllee is restored from
+  // back-forward cache.
+  void OnControlleeAdded(ServiceWorkerVersion* version,
+                         const std::string& client_uuid,
+                         const ServiceWorkerClientInfo& client_info);
+  void OnControlleeRemoved(ServiceWorkerVersion* version,
+                           const std::string& client_uuid);
 
   // ServiceWorkerVersion::Observer overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
@@ -142,11 +154,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                               const base::string16& message,
                               int line_number,
                               const GURL& source_url) override;
-  void OnControlleeAdded(ServiceWorkerVersion* version,
-                         const std::string& client_uuid,
-                         const ServiceWorkerClientInfo& client_info) override;
-  void OnControlleeRemoved(ServiceWorkerVersion* version,
-                           const std::string& client_uuid) override;
   void OnNoControllees(ServiceWorkerVersion* version) override;
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }

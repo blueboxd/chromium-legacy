@@ -268,6 +268,16 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
   }
 
   std::string url_string;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Information is managed on VK extension side so just use a default value
+  // here.
+  GURL url = extensions::Extension::GetResourceURL(
+      extensions::Extension::GetBaseURLFromExtensionId(component_extension.id),
+      "inputview.html#id=default");
+  if (!url.is_valid())
+    return false;
+  out->input_view_url = url;
+#else
   if (dict.GetString(extensions::manifest_keys::kInputView,
                      &url_string)) {
     GURL url = extensions::Extension::GetResourceURL(
@@ -278,6 +288,7 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
       return false;
     out->input_view_url = url;
   }
+#endif
 
   if (dict.GetString(extensions::manifest_keys::kOptionsPage,
                      &url_string)) {

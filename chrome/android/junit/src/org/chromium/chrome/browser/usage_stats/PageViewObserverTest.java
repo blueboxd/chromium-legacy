@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 import android.os.Build;
@@ -43,7 +44,9 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
 /** Unit tests for PageViewObserver. */
@@ -73,6 +76,8 @@ public final class PageViewObserverTest {
     @Mock
     private SuspensionTracker mSuspensionTracker;
     @Mock
+    private WindowAndroid mWindowAndroid;
+    @Mock
     private ChromeActivity mChromeActivity;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
@@ -83,6 +88,7 @@ public final class PageViewObserverTest {
     private UserDataHost mUserDataHost;
     private UserDataHost mUserDataHostTab2;
     private UserDataHost mDestroyedUserDataHost;
+    private WeakReference<Activity> mActivityRef;
 
     @Before
     public void setUp() {
@@ -95,7 +101,6 @@ public final class PageViewObserverTest {
 
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrlString();
-        doReturn(mChromeActivity).when(mTab).getActivity();
         doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab).getContext();
         doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab2).getContext();
         doReturn(true).when(mTab).isInitialized();
@@ -104,8 +109,12 @@ public final class PageViewObserverTest {
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();
         doReturn(mUserDataHostTab2).when(mTab2).getUserDataHost();
-        doReturn(mChromeActivity).when(mTab2).getActivity();
         doReturn(Promise.fulfilled("1")).when(mTokenTracker).getTokenForFqdn(anyString());
+
+        mActivityRef = new WeakReference<>(mChromeActivity);
+        when(mTab.getWindowAndroid()).thenReturn(mWindowAndroid);
+        when(mTab2.getWindowAndroid()).thenReturn(mWindowAndroid);
+        when(mWindowAndroid.getActivity()).thenReturn(mActivityRef);
     }
 
     @Test

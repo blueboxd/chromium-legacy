@@ -26,18 +26,23 @@ void AppListNotifierImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void AppListNotifierImpl::NotifyLaunch(ash::SearchResultDisplayType location,
-                                       const std::string& result) {
+void AppListNotifierImpl::NotifyLaunched(Location location,
+                                         const std::string& result) {
   launched_result_ = result;
-  // TODO(crbug.com/1076270): A known issue here is that a launch of an app from
-  // the app tiles after an impression will trigger an abandon of the results
-  // list. It's unclear whether this is desirable and, if not, whether the
-  // 'deduplication' should be handled in the notifier or its observers.
+
+  // Only two UI views appear at once: the app tiles and results list. If a
+  // launch occurs in one, mark the other as 'ignored' rather than abandoned.
+  if (location == Location::kList) {
+    DoStateTransition(Location::kTile, State::kIgnored);
+  } else if (location == Location::kTile) {
+    DoStateTransition(Location::kList, State::kIgnored);
+  }
+
   DoStateTransition(location, State::kLaunched);
 }
 
 void AppListNotifierImpl::NotifyResultsUpdated(
-    ash::SearchResultDisplayType location,
+    Location location,
     const std::vector<std::string>& results) {
   results_[location] = results;
 }
@@ -52,7 +57,8 @@ void AppListNotifierImpl::NotifySearchQueryChanged(
 void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
   view_ = view;
 
-  if (view == View::kHalf || view == View::kFullscreenSearch) {
+  if (view == ash::AppListViewState::kHalf ||
+      view == ash::AppListViewState::kFullscreenSearch) {
     DoStateTransition(Location::kList, State::kShown);
     DoStateTransition(Location::kTile, State::kShown);
   } else {
@@ -60,7 +66,8 @@ void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
     DoStateTransition(Location::kTile, State::kNone);
   }
 
-  if (view == View::kPeeking || view == View::kFullscreenAllApps) {
+  if (view == ash::AppListViewState::kPeeking ||
+      view == ash::AppListViewState::kFullscreenAllApps) {
     DoStateTransition(Location::kChip, State::kShown);
   } else {
     DoStateTransition(Location::kChip, State::kNone);
@@ -98,17 +105,18 @@ void AppListNotifierImpl::DoStateTransition(Location location,
                                             State new_state) {
   const State old_state = states_[location];
 
-  // Update most recent state. We special-case kLaunched, which is a temporary
-  // state that immediately becomes kNone because the launcher closes after a
+  // Update most recent state. We special-case kLaunched and kIgnored, which are
+  // temporary states reflecting a launch either in |location| or another view.
+  // They immediately transition to kNone because the launcher closes after a
   // launch.
-  if (new_state == State::kLaunched) {
+  if (new_state == State::kLaunched || new_state == State::kIgnored) {
     states_[location] = State::kNone;
   } else {
     states_[location] = new_state;
   }
 
-  // The following 5 overlapping cases are equivalent to the 8 explicit cases in
-  // the header comment.
+  // These overlapping cases are equivalent to the explicit cases in the header
+  // comment.
 
   // Restart timer on * -> kShown
   if (new_state == State::kShown) {
@@ -121,22 +129,30 @@ void AppListNotifierImpl::DoStateTransition(Location location,
     StopTimer(location);
   }
 
-  // Notify of impression on kShown -> {kSeen, kLaunched}.
+  // Notify of impression on kShown -> {kSeen, kIgnored, kLaunched}.
   if (old_state == State::kShown &&
-      (new_state == State::kSeen || new_state == State::kLaunched)) {
+      (new_state == State::kSeen || new_state == State::kLaunched ||
+       new_state == State::kIgnored)) {
     for (auto& observer : observers_) {
       observer.OnImpression(location, results_[location]);
     }
   }
 
-  // Notify of launch on * -> kLaunch.
+  // Notify of launch on * -> kLaunched.
   if (new_state == State::kLaunched) {
     for (auto& observer : observers_) {
       observer.OnLaunch(location, launched_result_, results_[location]);
     }
   }
 
-  // Notify of abandon on kSeen -> {kNone, kShown}
+  // Notify of ignore on * -> kIgnored.
+  if (new_state == State::kIgnored) {
+    for (auto& observer : observers_) {
+      observer.OnIgnore(location, results_[location]);
+    }
+  }
+
+  // Notify of abandon on kSeen -> {kNone, kShown}.
   if (old_state == State::kSeen &&
       (new_state == State::kNone || new_state == State::kShown)) {
     for (auto& observer : observers_) {

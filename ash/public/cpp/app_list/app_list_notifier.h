@@ -19,28 +19,38 @@ namespace ash {
 // A notifier interface implemented in Chrome and called from Ash, which allows
 // objects in Chrome to observe state changes in Ash. Its main use is to signal
 // events related to metrics and logging: search result impressions, abandons,
-// and launches. See method comments for definitions of these.
+// ignores, and launches. See method comments for definitions of these.
+//
+// Implementing notifiers guarantee that calls to each observer come in pairs.
+// Every OnImpression call will be followed by a call to one of OnAbandon,
+// OnIgnore, or OnLaunch, and vice versa. Each pair of calls will be passed
+// the same results vector.
 class ASH_PUBLIC_EXPORT AppListNotifier {
  public:
+  using Location = ash::SearchResultDisplayType;
+
   class Observer : public base::CheckedObserver {
    public:
     // Called when |results| have been displayed for the length of the
-    // impression timer. Guaranteed to be followed by either an |OnAbandon| or
-    // |OnLaunch| call with |results|.
-    virtual void OnImpression(SearchResultDisplayType location,
+    // impression timer.
+    virtual void OnImpression(Location location,
                               const std::vector<std::string>& results) {}
 
     // Called when an impression occurred for |results|, and the user then moved
     // to a different UI view. For example, by closing the launcher or
-    // changing the search query. Guaranteed to follow an OnImpression call with
-    // |results|.
-    virtual void OnAbandon(SearchResultDisplayType location,
+    // changing the search query.
+    virtual void OnAbandon(Location location,
                            const std::vector<std::string>& results) {}
 
+    // Called when the |location| UI view displayed |results|, but the user
+    // launched a result in a different UI view. This can only happen when
+    // |location| is kList or kTile.
+    virtual void OnIgnore(Location location,
+                          const std::vector<std::string>& results) {}
+
     // Called when the |launched| result is launched, and provides all |shown|
-    // results at |location| (including |launched|). Guaranteed to follow an
-    // OnImpression call with |shown|.
-    virtual void OnLaunch(SearchResultDisplayType location,
+    // results at |location| (including |launched|).
+    virtual void OnLaunch(Location location,
                           const std::string& launched,
                           const std::vector<std::string>& shown) {}
   };
@@ -52,20 +62,19 @@ class ASH_PUBLIC_EXPORT AppListNotifier {
 
   // Called to indicate a search |result| has been launched at the UI surface
   // |location|.
-  virtual void NotifyLaunch(ash::SearchResultDisplayType location,
-                            const std::string& result) = 0;
+  virtual void NotifyLaunched(Location location, const std::string& result) = 0;
 
   // Called to indicate the results displayed in the |location| UI surface have
   // changed. |results| should contain a complete list of what is now shown.
   virtual void NotifyResultsUpdated(
-      ash::SearchResultDisplayType location,
+      Location location,
       const std::vector<std::string>& results) = 0;
 
   // Called to indicate the user has updated the search query to |query|.
   virtual void NotifySearchQueryChanged(const base::string16& query) = 0;
 
   // Called to indicate the UI state is now |view|.
-  virtual void NotifyUIStateChanged(ash::AppListViewState view) = 0;
+  virtual void NotifyUIStateChanged(AppListViewState view) = 0;
 };
 
 }  // namespace ash

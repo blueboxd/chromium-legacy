@@ -914,6 +914,14 @@ bool SessionService::ShouldTrackBrowser(Browser* browser) const {
     return false;
   }
 
+  // System Web App windows can't be properly restored without storing the app
+  // type. Until that is implemented we skip them for session restore.
+  // TODO(crbug.com/1003170): Enable session restore for System Web Apps.
+  if (browser->app_controller() &&
+      browser->app_controller()->is_for_system_web_app()) {
+    return false;
+  }
+
   // Don't track custom_tab browser. It doesn't need to be restored.
   if (browser->is_type_custom_tab())
     return false;

@@ -121,6 +121,11 @@ void DocumentAnimations::UpdateAnimations(
     timeline->ScheduleNextService();
 }
 
+void DocumentAnimations::MarkAnimationsCompositorPending() {
+  for (auto& timeline : timelines_)
+    timeline->MarkAnimationsCompositorPending();
+}
+
 HeapVector<Member<Animation>> DocumentAnimations::getAnimations(
     const TreeScope& tree_scope) {
   // This method implements the Document::getAnimations method defined in the

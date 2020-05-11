@@ -36,8 +36,8 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -386,8 +386,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      */
     protected void startAutofillAssistantWithIntent(
             Intent targetIntent, String browserFallbackUrl) {
-        AutofillAssistantFacade.start(
-                ((TabImpl) mTab).getActivity(), targetIntent.getExtras(), browserFallbackUrl);
+        AutofillAssistantFacade.start((ChromeActivity) TabUtils.getActivity(mTab),
+                targetIntent.getExtras(), browserFallbackUrl);
     }
 
     /**

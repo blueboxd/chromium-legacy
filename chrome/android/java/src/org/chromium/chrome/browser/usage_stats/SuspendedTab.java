@@ -20,12 +20,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.UserData;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.MediaCaptureDevicesDispatcherAndroid;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabViewManager;
 import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.content_public.browser.WebContents;
@@ -109,7 +109,9 @@ public class SuspendedTab extends EmptyTabObserver implements UserData, TabViewP
             attachView();
         }
 
-        TabContentManager tabContentManager = ((TabImpl) mTab).getActivity().getTabContentManager();
+        TabContentManager tabContentManager =
+                ((ChromeActivity) mTab.getWindowAndroid().getActivity().get())
+                        .getTabContentManager();
         if (tabContentManager != null) {
             // We have to wait for the view to layout to cache a new thumbnail for it; otherwise,
             // its width and height won't be available yet.

@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.app.Activity;
+
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.List;
@@ -26,8 +29,12 @@ public interface TabModelSelector {
      *         {@link Tab}.
      */
     public static TabModelSelector from(Tab tab) {
-        if (tab == null || ((TabImpl) tab).getActivity() == null) return null;
-        return ((TabImpl) tab).getActivity().getTabModelSelector();
+        // TODO(jinsukkim): Remove this method.
+        Activity activity = TabUtils.getActivity(tab);
+        if (activity instanceof ChromeActivity) {
+            return ((ChromeActivity) activity).getTabModelSelector();
+        }
+        return null;
     }
 
     /**

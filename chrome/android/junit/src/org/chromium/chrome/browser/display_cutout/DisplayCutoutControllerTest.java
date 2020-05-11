@@ -10,7 +10,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
 import android.support.test.filters.SmallTest;
+import android.view.Window;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,6 +31,9 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Tests for {@link DisplayCutoutController} class.
@@ -38,6 +43,12 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 public class DisplayCutoutControllerTest {
     @Mock
     private TabImpl mTab;
+
+    @Mock
+    private WindowAndroid mWindowAndroid;
+
+    @Mock
+    private Window mWindow;
 
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
@@ -50,12 +61,19 @@ public class DisplayCutoutControllerTest {
 
     private DisplayCutoutController mDisplayCutoutController;
 
+    private WeakReference<Activity> mActivityRef;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        mActivityRef = new WeakReference<>(mChromeActivity);
+
         // Mock dependency on InsetObserverView.
-        when(mTab.getActivity()).thenReturn(mChromeActivity);
+
+        when(mChromeActivity.getWindow()).thenReturn(mWindow);
+        when(mTab.getWindowAndroid()).thenReturn(mWindowAndroid);
+        when(mWindowAndroid.getActivity()).thenReturn(mActivityRef);
         when(mChromeActivity.getInsetObserverView()).thenReturn(mInsetObserver);
 
         mDisplayCutoutController = spy(new DisplayCutoutController(mTab));
@@ -161,7 +179,7 @@ public class DisplayCutoutControllerTest {
         reset(mTab);
 
         mTabObserverCaptor.getValue().onInteractabilityChanged(mTab, true);
-        verify(mTab).getActivity();
+        verify(mWindow).getAttributes();
     }
 
     @Test
@@ -174,7 +192,7 @@ public class DisplayCutoutControllerTest {
         reset(mTab);
 
         mTabObserverCaptor.getValue().onInteractabilityChanged(mTab, false);
-        verify(mTab).getActivity();
+        verify(mWindow).getAttributes();
     }
 
     @Test
@@ -187,6 +205,6 @@ public class DisplayCutoutControllerTest {
         reset(mTab);
 
         mTabObserverCaptor.getValue().onShown(mTab, TabSelectionType.FROM_NEW);
-        verify(mTab).getActivity();
+        verify(mWindow).getAttributes();
     }
 }

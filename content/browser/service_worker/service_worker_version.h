@@ -182,19 +182,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
         const base::string16& message,
         int line_number,
         const GURL& source_url) {}
-    // OnControlleeAdded/Removed are called asynchronously. It is possible the
-    // provider host identified by |client_uuid| was already destroyed when they
-    // are called.
-    // Note regarding BackForwardCache integration:
-    // OnControlleeRemoved is called when a controllee enters back-forward
-    // cache, and OnControlleeAdded is called when a controllee is restored from
-    // back-forward cache.
-    virtual void OnControlleeAdded(ServiceWorkerVersion* version,
-                                   const std::string& client_uuid,
-                                   const ServiceWorkerClientInfo& client_info) {
-    }
-    virtual void OnControlleeRemoved(ServiceWorkerVersion* version,
-                                     const std::string& client_uuid) {}
     // Called when all controllees are removed.
     // Note regarding BackForwardCache integration:
     // Clients in back-forward cache don't count as controllees.

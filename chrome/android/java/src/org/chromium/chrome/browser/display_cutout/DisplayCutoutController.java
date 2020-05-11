@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.display_cutout;
 
 import android.app.Activity;
 import android.graphics.Rect;
+import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 
 import androidx.annotation.Nullable;
@@ -18,10 +19,8 @@ import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -42,6 +41,9 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
     /** The tab that this controller belongs to. */
     private Tab mTab;
+
+    /** {@link Window} of the current {@link Activity}. */
+    private Window mWindow;
 
     /** The current viewport fit value. */
     private @WebContentsObserver.ViewportFitType int mViewportFit = ViewportFit.AUTO;
@@ -73,7 +75,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
             assert tab == mTab;
 
             if (window != null) {
-                maybeAddInsetObserver(window.getActivity().get());
+                maybeAddInsetObserver(tab.getWindowAndroid().getActivity().get());
             } else {
                 maybeRemoveInsetObserver();
             }
@@ -97,7 +99,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         mTab = tab;
 
         tab.addObserver(mTabObserver);
-        maybeAddInsetObserver(TabUtils.getActivity(tab));
+        maybeAddInsetObserver(tab.getWindowAndroid().getActivity().get());
     }
 
     /**
@@ -111,6 +113,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
         if (mInsetObserverView == null) return;
         mInsetObserverView.addObserver(this);
+        mWindow = activity.getWindow();
     }
 
     /**
@@ -122,6 +125,7 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
         mInsetObserverView.removeObserver(this);
         mInsetObserverView = null;
+        mWindow = null;
     }
 
     @Override
@@ -202,12 +206,12 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
     @VisibleForTesting
     protected Object getWindowAttributes() {
-        return ((TabImpl) mTab).getActivity().getWindow().getAttributes();
+        return mWindow.getAttributes();
     }
 
     @VisibleForTesting
     protected void setWindowAttributes(Object attributes) {
-        ((TabImpl) mTab).getActivity().getWindow().setAttributes((LayoutParams) attributes);
+        mWindow.setAttributes((LayoutParams) attributes);
     }
 
     /** Updates the layout based on internal state. */

@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -54,20 +56,7 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
   Browser* CreateBrowserWithParams(Browser::CreateParams params) {
     Browser* browser = new Browser(params);
     AddBlankTabAndShow(browser);
-    browser_list_.push_back(browser);
     return browser;
-  }
-
-  bool CloseBrowser(Browser* browser) {
-    for (std::list<Browser*>::iterator iter = browser_list_.begin();
-         iter != browser_list_.end(); ++iter) {
-      if (*iter == browser) {
-        CloseBrowserSynchronously(*iter);
-        browser_list_.erase(iter);
-        return true;
-      }
-    }
-    return false;
   }
 
   Browser::CreateParams CreateParamsForApp(const std::string& name,
@@ -89,8 +78,6 @@ class SessionRestoreTestChromeOS : public InProcessBrowserTest {
   }
 
   Profile* profile() { return browser()->profile(); }
-
-  std::list<Browser*> browser_list_;
 };
 
 // Thse tests are in pairs. The PRE_ test creates some browser windows and
@@ -298,3 +285,58 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, OmitTerminalApp) {
   // We should only count browser() and test_app_name1.
   EXPECT_EQ(2u, total_count);
 }
+
+class SystemWebAppSessionRestoreTestChromeOS
+    : public web_app::SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppSessionRestoreTestChromeOS()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+    maybe_installation_->set_update_policy(
+        web_app::SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+  }
+
+  ~SystemWebAppSessionRestoreTestChromeOS() override = default;
+
+ protected:
+  size_t GetNumBrowsers() { return BrowserList::GetInstance()->size(); }
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppSessionRestoreTestChromeOS,
+                       PRE_OmitSystemWebApps) {
+  // Wait for the app to install, launch, and load, otherwise the app might not
+  // be restored.
+  WaitForSystemAppInstallAndLoad(GetMockAppType());
+  auto app_params = Browser::CreateParams::CreateForApp(
+      test_app_name1, true, gfx::Rect(), browser()->profile(), true);
+  Browser* app_browser = new Browser(app_params);
+  AddBlankTabAndShow(app_browser);
+
+  // There should be three browsers:
+  //   1. The SWA browser
+  //   2. The |test_app_name1| browser
+  //   3. The main browser window
+  EXPECT_EQ(3u, GetNumBrowsers());
+
+  SessionStartupPref::SetStartupPref(
+      browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppSessionRestoreTestChromeOS,
+                       OmitSystemWebApps) {
+  // There should only be two browsers:
+  //  1. The |test_app_name1| browser
+  //  2. The main browser window
+  EXPECT_EQ(2u, GetNumBrowsers());
+  for (auto* browser : *BrowserList::GetInstance()) {
+    EXPECT_TRUE(browser->app_name().empty() ||
+                browser->app_name() == test_app_name1);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppSessionRestoreTestChromeOS,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

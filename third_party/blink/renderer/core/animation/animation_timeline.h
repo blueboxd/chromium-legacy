@@ -87,6 +87,8 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   }
   virtual CompositorAnimationTimeline* EnsureCompositorTimeline() = 0;
 
+  void MarkAnimationsCompositorPending(bool source_changed = false);
+
   void Trace(Visitor*) override;
 
  protected:

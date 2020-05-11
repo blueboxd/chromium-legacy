@@ -378,7 +378,7 @@ class ArcBluetoothBridge
   void OnPairedError(
       mojom::BluetoothAddressPtr addr,
       device::BluetoothDevice::ConnectErrorCode error_code) const;
-  void OnForgetDone(mojom::BluetoothAddressPtr addr) const;
+  void OnForgetDone(mojom::BluetoothAddressPtr addr);
   void OnForgetError(mojom::BluetoothAddressPtr addr) const;
 
   void OnGattConnectStateChanged(mojom::BluetoothAddressPtr addr,
@@ -609,14 +609,32 @@ class ArcBluetoothBridge
   // Monotonically increasing value to use as handle to give to Android side.
   int32_t gatt_server_attribute_next_handle_ = 0;
 
-  // For established connection from remote device, this is { CONNECTED, null }.
-  // For ongoing connection to remote device, this is { CONNECTING, null }.
-  // For established connection to remote device, this is { CONNECTED, ptr }.
+  // The devices that ARC has tried to pair by CreateBond() (including the
+  // devices that the pair request is ongoing) but there is no
+  // BluetoothGattConnection object associated to, during the lifetime of
+  // Android BT service. The main reason we need to maintain this set is that we
+  // need to manually close the links created by pair but not used by any GATT
+  // connection when Android BT service goes down, otherwise these links will be
+  // lingering.
+  std::set<std::string> devices_paired_by_arc_;
+
+  // {state, connection}
+  // - For established connection from remote device, this is {CONNECTED, null}.
+  // - For ongoing connection to remote device, this is {CONNECTING, null}.
+  // - For established connection to remote device, this is {CONNECTED, ptr}.
   struct GattConnection {
     enum class ConnectionState { CONNECTING, CONNECTED } state;
     std::unique_ptr<device::BluetoothGattConnection> connection;
+    // Indicates whether we should call BluetoothDevice::Disconnect() when
+    // |connection| is closed. This field is true when the connection is
+    // initiated by ARC, i.e, when ConnectLEDevice is called, either 1) the link
+    // is down or 2) the remote device is paired by ARC firstly.
+    // TODO(b/151573141): Remove this field when Chrome can perform hard
+    // disconnect on a paired device correctly.
+    bool need_hard_disconnect;
     GattConnection(ConnectionState state,
-                   std::unique_ptr<device::BluetoothGattConnection> connection);
+                   std::unique_ptr<device::BluetoothGattConnection> connection,
+                   bool need_hard_disconnect);
     GattConnection();
     ~GattConnection();
     GattConnection(GattConnection&&);

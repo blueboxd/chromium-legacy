@@ -258,6 +258,14 @@ void ScrollTimeline::ServiceAnimations(TimingUpdateReason reason) {
   // Snapshot timeline state once at top of animation frame.
   if (reason == kTimingUpdateForAnimationFrame)
     SnapshotState();
+  // When scroll timeline goes from inactive to active the animations may need
+  // to be started and possibly composited.
+  bool was_active =
+      last_current_phase_and_time_ &&
+      last_current_phase_and_time_.value().phase == TimelinePhase::kActive;
+  if (!was_active && IsActive())
+    MarkAnimationsCompositorPending();
+
   AnimationTimeline::ServiceAnimations(reason);
 }
 

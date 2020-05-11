@@ -719,7 +719,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      *         {@link TabModel}.
      */
     @Deprecated
-    public ChromeActivity<?> getActivity() {
+    ChromeActivity<?> getActivity() {
         if (getWindowAndroid() == null) return null;
         Activity activity = ContextUtils.activityFromContext(getWindowAndroid().getContext().get());
         if (activity instanceof ChromeActivity) return (ChromeActivity<?>) activity;

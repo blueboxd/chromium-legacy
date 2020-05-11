@@ -2278,8 +2278,8 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
 void ServiceWorkerVersion::NotifyControlleeAdded(
     const std::string& uuid,
     const ServiceWorkerClientInfo& info) {
-  for (auto& observer : observers_)
-    observer.OnControlleeAdded(this, uuid, info);
+  if (context_)
+    context_->OnControlleeAdded(this, uuid, info);
 }
 
 void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
@@ -2288,8 +2288,8 @@ void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
   // instead of an observer callback, if it has dangerous side-effects like
   // destroying the caller.
   auto protect = base::WrapRefCounted(this);
-  for (auto& observer : observers_)
-    observer.OnControlleeRemoved(this, uuid);
+  if (context_)
+    context_->OnControlleeRemoved(this, uuid);
   if (!HasControllee()) {
     RestartTick(&no_controllees_time_);
     for (auto& observer : observers_)

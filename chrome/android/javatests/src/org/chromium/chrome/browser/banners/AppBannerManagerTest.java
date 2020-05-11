@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationList
 import org.chromium.chrome.browser.infobar.InstallableAmbientBadgeInfoBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -262,10 +262,8 @@ public class AppBannerManagerTest {
         }
     }
 
-    private String getExpectedDialogTitle(Tab tab) {
-        return ((TabImpl) tab)
-                .getActivity()
-                .getString(AppBannerManager.getHomescreenLanguageOption());
+    private static String getExpectedDialogTitle(Tab tab) {
+        return TabUtils.getActivity(tab).getString(AppBannerManager.getHomescreenLanguageOption());
     }
 
     private void waitUntilNoDialogsShowing(final Tab tab) {

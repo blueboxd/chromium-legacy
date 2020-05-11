@@ -601,11 +601,11 @@
   <message name="IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL" translateable="false" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the Plugin VM.">
     Manage Plugin VM sharing
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE" desc="TODO">
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE" desc="Title of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
     Unable to open with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
   </message>
-  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE" desc="TODO">
-    To open files with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> apps, first move them to <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> shared files folder.
+  <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with Plugin VM from a directory that hasn't been shared into the VM.">
+    To open files with <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> apps, first move them to <ph name="SHARED_DIRECTORY_LABEL">$2<ex>Plugin VM</ex></ph> folder.
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files

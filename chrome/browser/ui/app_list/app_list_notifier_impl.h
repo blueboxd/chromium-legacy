@@ -35,7 +35,7 @@ class OneShotTimer;
 // =============
 //
 // This class implements three state machines, one for each view,that are
-// completely independent. Each state machine can be in one of three primary
+// mostly independent. Each state machine can be in one of three primary
 // states:
 //
 //  - kNone: the view is not displayed.
@@ -43,10 +43,14 @@ class OneShotTimer;
 //  - kSeen: the same results on the view have been displayed for a certain
 //           amount of time.
 //
-// There is one extra 'transitional' state called kLaunch: a user has launched a
-// result. This exists only to simplify implementation. The state machine
-// doesn't stay in this state for any length of time, immediately after a
-// launch, the launcher closes and the state is set to kNone.
+// There are two extra 'transitional' states:
+//
+//  - kLaunched: a user has launched a result in this surface.
+//  - kIgnored: a user has launched a result in another visible surface.
+//
+// These states exist only to simplify implementation, and the state machine
+// doesn't stay in them for any length of time. Immediately after a transition
+// to kLaunch or kIgnore, the launcher closes and the state is set to kNone.
 //
 // Various user and background events cause _transitions_ between states. The
 // notifier performs _actions_ on a transition based on the (from, to) pair of
@@ -72,34 +76,45 @@ class OneShotTimer;
 //
 // These actions are triggered on a state transition.
 //
-//  From -> To        | Actions
-//  ------------------|---------------------------------------------------------
-//  kNone -> kNone    | No action.
-//                    |
-//  kNone -> kShown   | Start impression timer, as view just displayed.
-//                    |
-//  kShown -> kNone   | Cancel impression timer, as view changed.
-//                    |
-//  kShown -> kSeen   | Notify of an impression, as impression timer finished.
-//                    |
-//  kShown -> kShown  | Restart impression timer. Only possible for the app
-//                    | tiles or results list, when the search query is updated.
-//                    |
-//                    |
-//  kSeen -> kLaunch  | Notify of a launch and immediately set state to kNone,
-//                    | as user launched a result.
-//                    |
-//  kShown -> kLaunch | Notify of a launch and impression then set state to
-//                    | kNone and cancel impression timer, as user launched
-//                    | result so must have seen the results.
-//                    |
-//  kSeen -> kNone    | Notify of an abandon, as user closed launcher.
-//                    |
-//  kSeen -> kShown   | Notify of an abandon and restart timer, as user saw
-//                    | results but changed view or updated the search query.
+//  From -> To         | Actions
+//  -------------------|--------------------------------------------------------
+//  kNone -> kNone     | No action.
+//                     |
+//  kNone -> kShown    | Start impression timer, as view just displayed.
+//                     |
+//  kShown -> kNone    | Cancel impression timer, as view changed.
+//                     |
+//  kShown -> kSeen    | Notify of an impression, as impression timer finished.
+//                     |
+//  kShown -> kShown   | Restart impression timer. Only possible for the app
+//                     | tiles or results list, when the search query is
+//                     | updated.
+//                     |
+//                     |
+//  kSeen -> kLaunch   | Notify of a launch and immediately set state to kNone,
+//                     | as user launched a result.
+//                     |
+//  kShown -> kLaunch  | Notify of a launch and impression then set state to
+//                     | kNone and cancel impression timer, as user launched
+//                     | result so must have seen the results.
+//                     |
+//                     |
+//  kShown -> kIgnored | Notify of an ignore and impression, then set state to
+//                     | kNone and cancel timer, as user launched a result in
+//                     | a different view to must have seen the results.
+//                     |
+//  kSeen -> kIgnored  | Notify of an ignore, then set state to kNone, as user
+//                     | launched a result in a different view.
+//                     |
+//                     |
+//  kSeen -> kNone     | Notify of an abandon, as user closed launcher.
+//                     |
+//  kSeen -> kShown    | Notify of an abandon and restart timer, as user saw
+//                     | results but changed view or updated the search query.
 //
-// The states we consider impossible are kNone -> {kSeen, kLaunch}, kSeen ->
-// kSeen, and kLaunch -> anything, because kLaunch is a temporary state.
+// The transitions we consider impossible are kNone -> {kSeen, kLaunch},
+// kSeen -> kSeen, and {kLaunch, kIgnored } -> anything, because kLaunch and
+// kIgnored are temporary states.
 //
 // Discussion
 // ==========
@@ -118,24 +133,20 @@ class AppListNotifierImpl : public ash::AppListNotifier {
   // AppListNotifier:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void NotifyLaunch(ash::SearchResultDisplayType location,
-                    const std::string& result) override;
-  void NotifyResultsUpdated(ash::SearchResultDisplayType location,
+  void NotifyLaunched(Location location, const std::string& result) override;
+  void NotifyResultsUpdated(Location location,
                             const std::vector<std::string>& results) override;
   void NotifySearchQueryChanged(const base::string16& query) override;
   void NotifyUIStateChanged(ash::AppListViewState view) override;
 
  private:
-  using Results = std::vector<std::string>;
-  using Location = ash::SearchResultDisplayType;
-  using View = ash::AppListViewState;
-
   // Possible states of the state machine.
   enum class State {
     kNone,
     kShown,
     kSeen,
     kLaunched,
+    kIgnored,
   };
 
   // Performs all state transition logic.
@@ -158,9 +169,9 @@ class AppListNotifierImpl : public ash::AppListNotifier {
   base::flat_map<Location, std::unique_ptr<base::OneShotTimer>> timers_;
 
   // The current UI view.
-  View view_ = View::kClosed;
+  ash::AppListViewState view_ = ash::AppListViewState::kClosed;
   // The currently shown results for each UI view.
-  base::flat_map<Location, Results> results_;
+  base::flat_map<Location, std::vector<std::string>> results_;
   // The current search query, may be empty.
   base::string16 query_;
   // The ID of the most recently launched result.

@@ -660,7 +660,7 @@ class FileTasks {
                 strf('PLUGIN_VM_APP_NAME')),
             strf(
                 'UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE',
-                strf('PLUGIN_VM_APP_NAME')));
+                strf('PLUGIN_VM_APP_NAME'), strf('PLUGIN_VM_DIRECTORY_LABEL')));
       } else {
         FileTasks.recordZipHandlerUMA_(task.taskId);
         chrome.fileManagerPrivate.executeTask(

@@ -9,6 +9,7 @@
 #include "chromeos/grit/chromeos_help_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_help_app_bundle_resources_map.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/resources/grit/webui_resources.h"
 
@@ -31,6 +32,7 @@ content::WebUIDataSource* CreateHelpAppUntrustedDataSource(
 
   // Add device and feature flags.
   delegate->PopulateLoadTimeData(source);
+  source->AddLocalizedString("appName", IDS_HELP_APP_DISCOVER);
 
   source->UseStringsJs();
   source->AddFrameAncestor(GURL(kChromeUIHelpAppURL));

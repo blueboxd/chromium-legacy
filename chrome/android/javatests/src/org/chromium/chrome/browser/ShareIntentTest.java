@@ -30,11 +30,13 @@ import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -141,6 +143,12 @@ public class ShareIntentTest {
         @Override
         public BottomSheetController getBottomSheetController() {
             return mActivity.getBottomSheetController();
+        }
+
+        @Override
+        public TabModelSelector getTabModelSelector() {
+            // TabModelSelector remains uninitialized for this test. Return a mock instead.
+            return new MockTabModelSelector(1, 0, null);
         }
 
         @Override

@@ -205,13 +205,7 @@ void DocumentTimeline::SetPlaybackRate(double playback_rate) {
 
   // Corresponding compositor animation may need to be restarted to pick up
   // the new playback rate. Marking the effect changed forces this.
-  SetAllCompositorPending(true);
-}
-
-void DocumentTimeline::SetAllCompositorPending(bool source_changed) {
-  for (const auto& animation : animations_) {
-    animation->SetCompositorPending(source_changed);
-  }
+  MarkAnimationsCompositorPending(true);
 }
 
 double DocumentTimeline::PlaybackRate() const {

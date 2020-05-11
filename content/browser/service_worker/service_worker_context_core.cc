@@ -888,6 +888,25 @@ void ServiceWorkerContextCore::OnMainScriptResponseSet(
       version_id, response.response_time, response.last_modified);
 }
 
+void ServiceWorkerContextCore::OnControlleeAdded(
+    ServiceWorkerVersion* version,
+    const std::string& client_uuid,
+    const ServiceWorkerClientInfo& client_info) {
+  DCHECK_EQ(this, version->context().get());
+  observer_list_->Notify(
+      FROM_HERE, &ServiceWorkerContextCoreObserver::OnControlleeAdded,
+      version->version_id(), version->scope(), client_uuid, client_info);
+}
+
+void ServiceWorkerContextCore::OnControlleeRemoved(
+    ServiceWorkerVersion* version,
+    const std::string& client_uuid) {
+  DCHECK_EQ(this, version->context().get());
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextCoreObserver::OnControlleeRemoved,
+                         version->version_id(), version->scope(), client_uuid);
+}
+
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
   DCHECK_EQ(this, version->context().get());
@@ -974,25 +993,6 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
       version->version_id(),
       ConsoleMessage(source, message_level, message, line_number, source_url));
-}
-
-void ServiceWorkerContextCore::OnControlleeAdded(
-    ServiceWorkerVersion* version,
-    const std::string& client_uuid,
-    const ServiceWorkerClientInfo& client_info) {
-  DCHECK_EQ(this, version->context().get());
-  observer_list_->Notify(
-      FROM_HERE, &ServiceWorkerContextCoreObserver::OnControlleeAdded,
-      version->version_id(), version->scope(), client_uuid, client_info);
-}
-
-void ServiceWorkerContextCore::OnControlleeRemoved(
-    ServiceWorkerVersion* version,
-    const std::string& client_uuid) {
-  DCHECK_EQ(this, version->context().get());
-  observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextCoreObserver::OnControlleeRemoved,
-                         version->version_id(), version->scope(), client_uuid);
 }
 
 void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {

@@ -12,11 +12,12 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 
@@ -35,8 +36,9 @@ public class AutoSigninSnackbarController implements SnackbarManager.SnackbarCon
      */
     @CalledByNative
     private static void showSnackbar(Tab tab, String text) {
-        if (((TabImpl) tab).getActivity() == null) return;
-        SnackbarManager snackbarManager = ((TabImpl) tab).getActivity().getSnackbarManager();
+        ChromeActivity activity = (ChromeActivity) TabUtils.getActivity(tab);
+        if (activity == null) return;
+        SnackbarManager snackbarManager = activity.getSnackbarManager();
         AutoSigninSnackbarController snackbarController =
                 new AutoSigninSnackbarController(snackbarManager, tab);
         Snackbar snackbar = Snackbar.make(

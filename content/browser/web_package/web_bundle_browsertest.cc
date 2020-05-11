@@ -74,20 +74,25 @@ base::FilePath GetTestDataPath(base::StringPiece file) {
 }
 
 #if defined(OS_ANDROID)
-GURL CopyFileAndGetContentUri(const base::FilePath& file) {
+void CopyFileAndGetContentUri(const base::FilePath& file,
+                              GURL* content_uri,
+                              base::FilePath* new_file_path) {
+  DCHECK(content_uri);
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath tmp_dir;
-  CHECK(base::GetTempDir(&tmp_dir));
+  ASSERT_TRUE(base::GetTempDir(&tmp_dir));
   // The directory name "web_bundle" must be kept in sync with
   // content/shell/android/browsertests_apk/res/xml/file_paths.xml
   base::FilePath tmp_wbn_dir = tmp_dir.AppendASCII("web_bundle");
-  CHECK(base::CreateDirectoryAndGetError(tmp_wbn_dir, nullptr));
+  ASSERT_TRUE(base::CreateDirectoryAndGetError(tmp_wbn_dir, nullptr));
   base::FilePath tmp_dir_in_tmp_wbn_dir;
-  CHECK(
+  ASSERT_TRUE(
       base::CreateTemporaryDirInDir(tmp_wbn_dir, "", &tmp_dir_in_tmp_wbn_dir));
   base::FilePath temp_file = tmp_dir_in_tmp_wbn_dir.Append(file.BaseName());
-  CHECK(base::CopyFile(file, temp_file));
-  return GURL(base::GetContentUriFromFilePath(temp_file).value());
+  ASSERT_TRUE(base::CopyFile(file, temp_file));
+  if (new_file_path)
+    *new_file_path = temp_file;
+  *content_uri = GURL(base::GetContentUriFromFilePath(temp_file).value());
 }
 #endif  // OS_ANDROID
 
@@ -362,8 +367,10 @@ class WebBundleBrowserTestBase : public ContentBrowserTest {
     base::FilePath tmp_file_path;
     ASSERT_TRUE(
         base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &tmp_file_path));
-    ASSERT_TRUE(base::WriteFile(tmp_file_path, content.data(), content.size()) >
-                0);
+    if (!content.empty()) {
+      ASSERT_TRUE(
+          base::WriteFile(tmp_file_path, content.data(), content.size()) > 0);
+    }
     *file_path = tmp_file_path.AddExtension(FILE_PATH_LITERAL(".wbn"));
     ASSERT_TRUE(base::Move(tmp_file_path, *file_path));
   }
@@ -719,49 +726,43 @@ enum class TestFilePathMode {
   testing::Values(TestFilePathMode::kNormalFilePath)
 #endif  // OS_ANDROID
 
-class WebBundleTrustableFileBrowserTestBase : public WebBundleBrowserTestBase {
+class WebBundleTrustableFileBrowserTest
+    : public testing::WithParamInterface<TestFilePathMode>,
+      public WebBundleBrowserTestBase {
  protected:
-  WebBundleTrustableFileBrowserTestBase() = default;
-  ~WebBundleTrustableFileBrowserTestBase() override = default;
+  WebBundleTrustableFileBrowserTest() = default;
+  ~WebBundleTrustableFileBrowserTest() override = default;
 
-  void SetUp() override { WebBundleBrowserTestBase::SetUp(); }
+  void SetUp() override {
+    InitializeTestDataUrl();
+    SetEmptyPageUrl();
+    WebBundleBrowserTestBase::SetUp();
+  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kTrustableWebBundleFileUrl,
                                     test_data_url().spec());
   }
 
-  void SetTestDataUrl(const base::FilePath& test_data_path,
-                      TestFilePathMode path_mode) {
-    if (path_mode == TestFilePathMode::kNormalFilePath) {
-      test_data_url_ = net::FilePathToFileURL(test_data_path);
-      return;
+  void WriteWebBundleFile(const std::string& contents) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_FALSE(contents.empty());
+    ASSERT_TRUE(base::WriteFile(test_data_file_path_, contents.data(),
+                                contents.size()) > 0);
+  }
+
+  void WriteCommonWebBundleFile() {
+    std::string contents;
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::ReadFileToString(
+          GetTestDataPath("web_bundle_browsertest.wbn"), &contents));
     }
-#if defined(OS_ANDROID)
-    DCHECK_EQ(TestFilePathMode::kContentURI, path_mode);
-    test_data_url_ = CopyFileAndGetContentUri(test_data_path);
-#endif  // OS_ANDROID
+    WriteWebBundleFile(contents);
   }
+
   const GURL& test_data_url() const { return test_data_url_; }
-
- private:
-  GURL test_data_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileBrowserTestBase);
-};
-
-class WebBundleTrustableFileBrowserTest
-    : public testing::WithParamInterface<TestFilePathMode>,
-      public WebBundleTrustableFileBrowserTestBase {
- protected:
-  WebBundleTrustableFileBrowserTest() = default;
-  ~WebBundleTrustableFileBrowserTest() override = default;
-
-  void SetUp() override {
-    SetTestDataUrl(GetTestDataPath("web_bundle_browsertest.wbn"), GetParam());
-    SetEmptyPageUrl();
-    WebBundleTrustableFileBrowserTestBase::SetUp();
-  }
+  const GURL& empty_page_url() const { return empty_page_url_; }
 
   std::string ExecuteAndGetString(const std::string& script) {
     std::string result;
@@ -771,9 +772,21 @@ class WebBundleTrustableFileBrowserTest
     return result;
   }
 
-  const GURL& empty_page_url() const { return empty_page_url_; }
-
  private:
+  void InitializeTestDataUrl() {
+    base::FilePath file_path;
+    CreateTemporaryWebBundleFile("", &file_path);
+    if (GetParam() == TestFilePathMode::kNormalFilePath) {
+      test_data_file_path_ = file_path;
+      test_data_url_ = net::FilePathToFileURL(file_path);
+      return;
+    }
+#if defined(OS_ANDROID)
+    DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
+    CopyFileAndGetContentUri(file_path, &test_data_url_, &test_data_file_path_);
+#endif  // OS_ANDROID
+  }
+
   void SetEmptyPageUrl() {
     if (GetParam() == TestFilePathMode::kNormalFilePath) {
       empty_page_url_ =
@@ -782,10 +795,13 @@ class WebBundleTrustableFileBrowserTest
     }
 #if defined(OS_ANDROID)
     DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
-    empty_page_url_ =
-        CopyFileAndGetContentUri(GetTestDataPath("empty_page.html"));
+    CopyFileAndGetContentUri(GetTestDataPath("empty_page.html"),
+                             &empty_page_url_, nullptr /* new_file_path */);
 #endif  // OS_ANDROID
   }
+
+  GURL test_data_url_;
+  base::FilePath test_data_file_path_;
 
   GURL empty_page_url_;
 
@@ -794,15 +810,18 @@ class WebBundleTrustableFileBrowserTest
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest,
                        TrustableWebBundleFile) {
+  WriteCommonWebBundleFile();
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, RangeRequest) {
+  WriteCommonWebBundleFile();
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   RunTestScript("test-range-request.js");
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, Navigations) {
+  WriteCommonWebBundleFile();
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   // Move to page 1.
   NavigateToURLAndWaitForTitle(GURL(kTestPage1Url), "Page 1");
@@ -847,6 +866,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, Navigations) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, NavigationWithHash) {
+  WriteCommonWebBundleFile();
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   NavigateToURLAndWaitForTitle(GURL(kTestPageForHashUrl), "#hello");
 
@@ -859,6 +879,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, NavigationWithHash) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, BaseURI) {
+  WriteCommonWebBundleFile();
   NavigateToBundleAndWaitForReady(test_data_url(), GURL(kTestPageUrl));
   EXPECT_EQ(ExecuteAndGetString("(new Request('./foo/bar')).url"),
             "https://test.example.org/foo/bar");
@@ -875,68 +896,64 @@ IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, BaseURI) {
             "https://example.org/piyo/foo/bar");
 }
 
+IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, Iframe) {
+  net::EmbeddedTestServer third_party_server;
+  GURL primary_url_origin;
+  GURL third_party_origin;
+  std::string web_bundle_content;
+  SetUpSubPageTest(embedded_test_server(), &third_party_server,
+                   &primary_url_origin, &third_party_origin,
+                   &web_bundle_content);
+  WriteWebBundleFile(web_bundle_content);
+
+  NavigateToBundleAndWaitForReady(test_data_url(),
+                                  primary_url_origin.Resolve("/top"));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin,
+                 third_party_origin, &AddIframeAndWaitForMessage,
+                 true /* support_third_party_wbn_page */);
+}
+
+IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileBrowserTest, WindowOpen) {
+  net::EmbeddedTestServer third_party_server;
+  GURL primary_url_origin;
+  GURL third_party_origin;
+  std::string web_bundle_content;
+  SetUpSubPageTest(embedded_test_server(), &third_party_server,
+                   &primary_url_origin, &third_party_origin,
+                   &web_bundle_content);
+  WriteWebBundleFile(web_bundle_content);
+
+  NavigateToBundleAndWaitForReady(test_data_url(),
+                                  primary_url_origin.Resolve("/top"));
+  RunSubPageTest(shell()->web_contents(), primary_url_origin,
+                 third_party_origin, &WindowOpenAndWaitForMessage,
+                 true /* support_third_party_wbn_page */);
+}
+
 INSTANTIATE_TEST_SUITE_P(WebBundleTrustableFileBrowserTest,
                          WebBundleTrustableFileBrowserTest,
                          TEST_FILE_PATH_MODE_PARAMS);
 
-class WebBundleTrustableFileSubPageBrowserTests
-    : public testing::WithParamInterface<TestFilePathMode>,
-      public WebBundleTrustableFileBrowserTestBase {
- protected:
-  WebBundleTrustableFileSubPageBrowserTests() = default;
-  ~WebBundleTrustableFileSubPageBrowserTests() override = default;
-
-  void SetUp() override {
-    std::string web_bundle_content;
-    SetUpSubPageTest(embedded_test_server(), &third_party_server_,
-                     &primary_url_origin_, &third_party_origin_,
-                     &web_bundle_content);
-    base::FilePath file_path;
-    CreateTemporaryWebBundleFile(web_bundle_content, &file_path);
-
-    SetTestDataUrl(file_path, GetParam());
-    WebBundleTrustableFileBrowserTestBase::SetUp();
-  }
-
-  GURL primary_url_origin_;
-  GURL third_party_origin_;
-
- private:
-  net::EmbeddedTestServer third_party_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileSubPageBrowserTests);
-};
-
-IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileSubPageBrowserTests, Iframe) {
-  NavigateToBundleAndWaitForReady(test_data_url(),
-                                  primary_url_origin_.Resolve("/top"));
-  RunSubPageTest(shell()->web_contents(), primary_url_origin_,
-                 third_party_origin_, &AddIframeAndWaitForMessage,
-                 true /* support_third_party_wbn_page */);
-}
-
-IN_PROC_BROWSER_TEST_P(WebBundleTrustableFileSubPageBrowserTests, WindowOpen) {
-  NavigateToBundleAndWaitForReady(test_data_url(),
-                                  primary_url_origin_.Resolve("/top"));
-  RunSubPageTest(shell()->web_contents(), primary_url_origin_,
-                 third_party_origin_, &WindowOpenAndWaitForMessage,
-                 true /* support_third_party_wbn_page */);
-}
-
-INSTANTIATE_TEST_SUITE_P(WebBundleTrustableFileSubPageBrowserTests,
-                         WebBundleTrustableFileSubPageBrowserTests,
-                         TEST_FILE_PATH_MODE_PARAMS);
-
 class WebBundleTrustableFileNotFoundBrowserTest
-    : public WebBundleTrustableFileBrowserTestBase {
+    : public WebBundleBrowserTestBase {
  protected:
   WebBundleTrustableFileNotFoundBrowserTest() = default;
   ~WebBundleTrustableFileNotFoundBrowserTest() override = default;
   void SetUp() override {
-    SetTestDataUrl(GetTestDataPath("not_found"),
-                   TestFilePathMode::kNormalFilePath);
-    WebBundleTrustableFileBrowserTestBase::SetUp();
+    test_data_url_ = net::FilePathToFileURL(GetTestDataPath("not_found"));
+    WebBundleBrowserTestBase::SetUp();
   }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kTrustableWebBundleFileUrl,
+                                    test_data_url().spec());
+  }
+  const GURL& test_data_url() const { return test_data_url_; }
+
+ private:
+  GURL test_data_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebBundleTrustableFileNotFoundBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, NotFound) {
@@ -960,14 +977,17 @@ class WebBundleFileBrowserTest
   }
 
   GURL GetTestUrlForFile(base::FilePath file_path) const {
-    switch (GetParam()) {
-      case TestFilePathMode::kNormalFilePath:
-        return net::FilePathToFileURL(file_path);
+    GURL content_uri;
+    if (GetParam() == TestFilePathMode::kNormalFilePath) {
+      content_uri = net::FilePathToFileURL(file_path);
+    } else {
 #if defined(OS_ANDROID)
-      case TestFilePathMode::kContentURI:
-        return CopyFileAndGetContentUri(file_path);
+      DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
+      CopyFileAndGetContentUri(file_path, &content_uri,
+                               nullptr /* new_file_path */);
 #endif  // OS_ANDROID
     }
+    return content_uri;
   }
 
  private:

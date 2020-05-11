@@ -126,6 +126,6 @@ testcase.pluginVmErrorDialog = async () => {
       ['Unable to open with Plugin VM'], dialogTitles.map(el => el.text));
   chrome.test.assertEq(
       ['To open files with Plugin VM apps,' +
-       ' first move them to Plugin VM shared files folder.'],
+       ' first move them to Plugin VM folder.'],
       dialogTexts.map(el => el.text));
 };

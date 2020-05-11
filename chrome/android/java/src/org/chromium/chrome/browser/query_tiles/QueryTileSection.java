@@ -25,6 +25,7 @@ import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinato
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTileCoordinatorFactory;
 import org.chromium.components.browser_ui.widget.image_tiles.TileConfig;
 import org.chromium.components.query_tiles.QueryTile;
+import org.chromium.components.query_tiles.QueryTileConstants;
 import org.chromium.components.query_tiles.TileProvider;
 import org.chromium.components.query_tiles.TileUmaLogger;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -146,9 +147,10 @@ public class QueryTileSection {
         }
 
         String url = queryTile.urls.get(0);
-        // TODO(crbug.com/1058534) : Replace with correct API.
-        mImageFetcher.fetchImage(
-                url, ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME, size, size, callback);
+        ImageFetcher.Params params = ImageFetcher.Params.createWithExpirationInterval(url,
+                ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME, size, size,
+                QueryTileConstants.IMAGE_EXPIRATION_INTERVAL_MINUTES);
+        mImageFetcher.fetchImage(params, callback);
     }
 
     /**

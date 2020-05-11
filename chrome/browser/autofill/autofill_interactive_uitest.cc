@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+// Disable all tests in this file on Mac for flake (crbug.com/1079249)
+#if !defined(OS_MACOSX)
+
 #include <string>
 #include <tuple>
 #include <utility>
@@ -902,13 +906,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectFieldAndFill) {
 }
 
 // Test that autofill works when the website prefills the form.
-#if defined(OS_MACOSX)
-// Flaky on Mac https://crbug.com/1045545
-#define MAYBE_PrefillFormAndFill DISABLED_PrefillFormAndFill
-#else
-#define MAYBE_PrefillFormAndFill PrefillFormAndFill
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_PrefillFormAndFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, PrefillFormAndFill) {
   const char kPrefillScript[] =
       "<script>"
       "document.getElementById('firstname').value = 'Seb';"
@@ -996,18 +994,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ExpectFieldValue("phone", "");
 }
 
-#if defined(OS_MACOSX)
-// https://crbug.com/1045545
-#define MAYBE_FillChangeSecondFieldRefillAndClearSecondField \
-  DISABLED_FillChangeSecondFieldRefillAndClearSecondField
-#else
-#define MAYBE_FillChangeSecondFieldRefillAndClearSecondField \
-  FillChangeSecondFieldRefillAndClearSecondField
-#endif
-
 // Test that multiple autofillings work.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_FillChangeSecondFieldRefillAndClearSecondField) {
+                       FillChangeSecondFieldRefillAndClearSecondField) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1090,18 +1079,9 @@ IN_PROC_BROWSER_TEST_F(
   TryClearForm();
 }
 
-#if defined(OS_MACOSX)
-// https://crbug.com/1045545
-#define MAYBE_FillThenFillSomeWithAnotherProfileThenClear \
-  DISABLED_FillThenFillSomeWithAnotherProfileThenClear
-#else
-#define MAYBE_FillThenFillSomeWithAnotherProfileThenClear \
-  FillThenFillSomeWithAnotherProfileThenClear
-#endif
-
 // Test that multiple autofillings work.
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_FillThenFillSomeWithAnotherProfileThenClear) {
+                       FillThenFillSomeWithAnotherProfileThenClear) {
   CreateTestProfile();
   CreateSecondTestProfile();
 
@@ -1820,14 +1800,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicFormFill) {
   TryBasicFormFill();
 }
 
-#if defined(OS_MACOSX)
-// Flaky on Mac OS. See crbug.com/967588.
-#define MAYBE_AutofillAfterReload DISABLED_AutofillAfterReload
-#else
-#define MAYBE_AutofillAfterReload AutofillAfterReload
-#endif
 // Test that form filling works after reloading the current page.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
   CreateTestProfile();
 
   // Load the test page.
@@ -2080,14 +2054,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ComparePhoneNumbers) {
 }
 
 // Test that Autofill does not fill in Company Name if disabled
-// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
-#if defined(OS_MACOSX)
-#define MAYBE_NoAutofillForCompanyName DISABLED_NoAutofillForCompanyName
-#else
-#define MAYBE_NoAutofillForCompanyName NoAutofillForCompanyName
-#endif
 IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
-                       MAYBE_NoAutofillForCompanyName) {
+                       NoAutofillForCompanyName) {
   std::string addr_line1("1234 H St.");
   std::string company_name("Company X");
 
@@ -2219,16 +2187,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test forms with multiple email addresses are filled properly.
 // Entire form should be filled with one user gesture.
-// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
-#if defined(OS_MACOSX)
-#define MAYBE_MultipleEmailFilledByOneUserGesture \
-  DISABLED_MultipleEmailFilledByOneUserGesture
-#else
-#define MAYBE_MultipleEmailFilledByOneUserGesture \
-  MultipleEmailFilledByOneUserGesture
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       MAYBE_MultipleEmailFilledByOneUserGesture) {
+                       MultipleEmailFilledByOneUserGesture) {
   std::string email("bsmith@gmail.com");
 
   AutofillProfile profile;
@@ -2496,13 +2456,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 
 // Test that we can Autofill forms where some fields name change during the
 // fill.
-// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
-#if defined(OS_MACOSX)
-#define MAYBE_FieldsChangeName DISABLED_FieldsChangeName
-#else
-#define MAYBE_FieldsChangeName FieldsChangeName
-#endif
-IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, MAYBE_FieldsChangeName) {
+IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest, FieldsChangeName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2984,14 +2938,8 @@ IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
   ExpectFieldValue("phone_form1", "15125551234");
 }
 
-// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
-#if defined(OS_MACOSX)
-#define MAYBE_TwoDynamicChangingFormsFill DISABLED_TwoDynamicChangingFormsFill
-#else
-#define MAYBE_TwoDynamicChangingFormsFill TwoDynamicChangingFormsFill
-#endif
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       MAYBE_TwoDynamicChangingFormsFill) {
+                       TwoDynamicChangingFormsFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
 
@@ -3327,16 +3275,8 @@ IN_PROC_BROWSER_TEST_P(
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
-// TODO(https://crbug.com/1079249): This test fails on MacOS builders.
-#if defined(OS_MACOSX)
-#define MAYBE_DynamicFormFill_FirstElementDisappearsUnowned \
-  DISABLED_DynamicFormFill_FirstElementDisappearsUnowned
-#else
-#define MAYBE_DynamicFormFill_FirstElementDisappearsUnowned \
-  DynamicFormFill_FirstElementDisappearsUnowned
-#endif
 IN_PROC_BROWSER_TEST_P(AutofillDynamicFormInteractiveTest,
-                       MAYBE_DynamicFormFill_FirstElementDisappearsUnowned) {
+                       DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -3572,3 +3512,5 @@ INSTANTIATE_TEST_SUITE_P(All,
                          AutofillRestrictUnownedFieldsTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace autofill
+
+#endif  // !defined(OS_MACOSX)

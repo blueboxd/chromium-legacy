@@ -2045,7 +2045,7 @@ void Document::DidChangeVisibilityState() {
       *Event::CreateBubble(event_type_names::kWebkitvisibilitychange));
 
   if (IsPageVisible())
-    Timeline().SetAllCompositorPending();
+    GetDocumentAnimations().MarkAnimationsCompositorPending();
 
   if (hidden() && canvas_font_cache_)
     canvas_font_cache_->PruneAll();

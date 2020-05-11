@@ -82,7 +82,6 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   base::TimeTicks ZeroTime();
   void PauseAnimationsForTesting(double);
 
-  void SetAllCompositorPending(bool source_changed = false);
   void InvalidateKeyframeEffects(const TreeScope&);
 
   void SetPlaybackRate(double);

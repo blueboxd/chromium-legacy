@@ -98,7 +98,7 @@ TEST_F('ChromeVoxPanelTest', 'ActivateMenu', function() {
   });
 });
 
-TEST_F('ChromeVoxPanelTest', 'LinkMenu', function() {
+TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
     mockFeedback.call(() => CommandHandler.onCommand('showLinksList'))

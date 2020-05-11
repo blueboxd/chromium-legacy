@@ -19,11 +19,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenu;
 import org.chromium.chrome.browser.infobar.translate.TranslateMenuHelper;
 import org.chromium.chrome.browser.infobar.translate.TranslateTabLayout;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -172,7 +173,7 @@ public class TranslateCompactInfoBar extends InfoBar
             String targetLanguageCode, boolean alwaysTranslate, boolean triggeredFromMenu,
             String[] languages, String[] languageCodes, int[] hashCodes, int tabTextColor) {
         recordInfobarAction(INFOBAR_IMPRESSION);
-        SnackbarManageable snackbarManageable = tab != null ? ((TabImpl) tab).getActivity() : null;
+        SnackbarManageable snackbarManageable = (ChromeActivity) TabUtils.getActivity(tab);
 
         return new TranslateCompactInfoBar(snackbarManageable, initialStep, sourceLanguageCode,
                 targetLanguageCode, alwaysTranslate, triggeredFromMenu, languages, languageCodes,

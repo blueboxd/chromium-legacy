@@ -159,8 +159,11 @@ void BrowserNonClientFrameViewAsh::Init() {
   if (frame()->ShouldDrawFrameHeader())
     frame_header_ = CreateFrameHeader();
 
-  if (browser_view()->IsBrowserTypeWebApp())
-    SetUpForWebApp();
+  if (browser_view()->IsBrowserTypeWebApp() && !browser->is_type_app_popup()) {
+    // Add the container for extra web app buttons (e.g app menu button).
+    set_web_app_frame_toolbar(AddChildView(
+        std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
+  }
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
 }
@@ -695,12 +698,6 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
   header->SetBackButton(back_button_);
   header->SetLeftHeaderView(window_icon_);
   return header;
-}
-
-void BrowserNonClientFrameViewAsh::SetUpForWebApp() {
-  // Add the container for extra web app buttons (e.g app menu button).
-  set_web_app_frame_toolbar(AddChildView(
-      std::make_unique<WebAppFrameToolbarView>(frame(), browser_view())));
 }
 
 void BrowserNonClientFrameViewAsh::UpdateTopViewInset() {

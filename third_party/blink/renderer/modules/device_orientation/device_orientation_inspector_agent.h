@@ -34,7 +34,7 @@ class MODULES_EXPORT DeviceOrientationInspectorAgent final
   void DidCommitLoadForLocalFrame(LocalFrame*) override;
 
  private:
-  DeviceOrientationController* Controller();
+  DeviceOrientationController& Controller();
 
   Member<InspectedFrames> inspected_frames_;
   Member<SensorInspectorAgent> sensor_agent_;

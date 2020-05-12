@@ -3,7 +3,7 @@
     "Runs tests on 64-bit iOS 12 and 13 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-noncq."
   ],
-  "xcode build version": "11c29",
+  "xcode build version": "11e146",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "ios_use_goma_rbe=true",
@@ -23,40 +23,40 @@
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone X",
-      "os": "13.3",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPhone 7",
-      "os": "13.3",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
-      "os": "13.3",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
       "include": "eg2_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.3",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "app": "crashpad_tests",
       "device type": "iPhone X",
-      "os": "13.3",
+      "os": "13.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
@@ -64,7 +64,7 @@
       "device type": "iPhone X",
       "os": "12.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
@@ -72,7 +72,7 @@
       "device type": "iPhone 7",
       "os": "12.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
@@ -80,7 +80,7 @@
       "device type": "iPad (6th generation)",
       "os": "12.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "xcode parallelization": true,
@@ -88,14 +88,14 @@
       "device type": "iPad Air 2",
       "os": "12.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     },
     {
       "app": "crashpad_tests",
       "device type": "iPhone X",
       "os": "12.4",
       "pool":"chromium.tests.template",
-      "host os": "Mac-10.14.6"
+      "host os": "Mac-10.15"
     }
   ]
 }

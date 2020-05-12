@@ -25,19 +25,42 @@ namespace test {
 // by net::EmbeddedTestServer handlers.
 class TrustTokenRequestHandler {
  public:
-  // Initializes server-side Trust Tokens logic by generating |num_keys| many
-  // issuance key pairs and a Signed Redemption Record (SRR)
-  // signing-and-verification key pair.
-  //
-  // If |batch_size| is provided, the issuer will be willing to issue at most
-  // that many tokens per issuance operation.
-  static constexpr int kDefaultIssuerBatchSize = 10;
-  explicit TrustTokenRequestHandler(int num_keys,
-                                    int batch_size = kDefaultIssuerBatchSize);
+  struct Options;  // Definition below.
+  explicit TrustTokenRequestHandler(Options options);
+
+  // The default constructor uses reasonable default options.
+  TrustTokenRequestHandler();
 
   ~TrustTokenRequestHandler();
 
   // TODO(davidvc): Provide a way to specify when keys expire.
+
+  // See |Options::client_signing_outcome| below.
+  enum class SigningOutcome {
+    // Expect a well-formed SRR and possibly a Sec-Signature header.
+    kSuccess,
+    // Expect an empty Sec-Signed-Redemption-Record header and no Sec-Signature
+    // header.
+    kFailure,
+  };
+
+  struct Options {
+    // The number of issuance key pairs to provide via key commitment results.
+    int num_keys = 1;
+
+    // Specifies whether the client-side signing operation is expected to
+    // succeed. Unlike issuance and redemption, clients send signed requests
+    // even when the operation failures, but the outcome affects the shape of
+    // the expected request.
+    SigningOutcome client_signing_outcome = SigningOutcome::kSuccess;
+
+    // The number of tokens to sign per issuance operation; this value is also
+    // provided to the client as part of key commitment results.
+    int batch_size = 10;
+  };
+
+  // Updates the handler's options, resetting its internal state.
+  void UpdateOptions(Options options);
 
   // Returns a key commitment record suitable for inserting into a {issuer:
   // commitment} dictionary passed to the network service via
@@ -64,9 +87,17 @@ class TrustTokenRequestHandler {
   static const base::TimeDelta kSrrLifetime;
   base::Optional<std::string> Redeem(base::StringPiece redemption_request);
 
-  // Inspects |request| and returns true exactly when:
+  // Inspects |request| to see if its contents are the expected the result of a
+  // client-side signing operation.
+  //
+  // If the configured signing outcome (see Options) is kFailure, returns true
+  // exactly when the request contains an empty Sec-Signed-Redemption-Record
+  // header and no Sec-Signature header.
+  //
+  // If the configured signing outcome (see Options) is kSuccess, returns true
+  // exactly when:
   // - the request bears a well-formed Sec-Signature header with a valid
-  // signature over the request's canonical signing data;
+  // signature over the request's canonical signing data; and
   // - the signature's public key's hash was bound to a previous redemption
   // request; and
   // - the request contains a well-formed signed redemption record whose

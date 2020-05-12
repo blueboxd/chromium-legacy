@@ -148,6 +148,7 @@
 /llvm-build
 /llvm-build-tools
 /lss
+/marble
 /material_design_icons/src
 /mesa/src
 /mingw-w64

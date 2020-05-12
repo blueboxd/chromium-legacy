@@ -13,7 +13,6 @@ mojo::PendingRemote<chrome::mojom::FileUtilService> LaunchFileUtilService() {
   content::ServiceProcessHost::Launch<chrome::mojom::FileUtilService>(
       remote.InitWithNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SandboxType::kUtility)
           .WithDisplayName(IDS_UTILITY_PROCESS_FILE_UTILITY_NAME)
           .Pass());
   return remote;

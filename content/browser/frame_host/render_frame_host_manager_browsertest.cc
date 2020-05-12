@@ -2614,7 +2614,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // The previous RFH should still be pending deletion, as we wait for either
   // the FrameHostMsg_Unload_ACK or a timeout.
   ASSERT_TRUE(rfh->IsRenderFrameLive());
-  ASSERT_FALSE(rfh->is_active());
+  ASSERT_TRUE(rfh->IsPendingDeletion());
 
   // We specifically want verify behavior between unload and RFH destruction.
   ASSERT_FALSE(rfh_observer.deleted());
@@ -3339,7 +3339,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // The previous RFH should still be pending deletion, as we wait for either
   // the FrameHostMsg_Unload_ACK or a timeout.
   ASSERT_TRUE(rfh_a->IsRenderFrameLive());
-  ASSERT_FALSE(rfh_a->is_active());
+  ASSERT_TRUE(rfh_a->IsPendingDeletion());
 
   // The corresponding RVH should still be referenced by the proxy and the old
   // frame.
@@ -3409,7 +3409,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // The previous RFH should still be pending deletion, as we wait for either
   // the unload ACK or a timeout.
   ASSERT_TRUE(rfh_a->IsRenderFrameLive());
-  ASSERT_FALSE(rfh_a->is_active());
+  ASSERT_TRUE(rfh_a->IsPendingDeletion());
 
   // When the previous RFH was unloaded, it should have still gotten a
   // replacement proxy even though it's the last active frame in the process.
@@ -3793,7 +3793,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
   // The old RFH should now be pending deletion.  Verify it still has correct
   // last committed origin.
   EXPECT_EQ(url::Origin::Create(url_a), rfh_a->GetLastCommittedOrigin());
-  EXPECT_FALSE(rfh_a->is_active());
+  EXPECT_TRUE(rfh_a->IsPendingDeletion());
 
   // Wait for |rfh_a| to be deleted and double-check |rfh_b|'s origin.
   deleted_observer.WaitUntilDeleted();
@@ -3827,7 +3827,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, LastCommittedOrigin) {
   // the iframe's old RFH still has correct origin, even though it's pending
   // deletion.
   if (AreAllSitesIsolatedForTesting()) {
-    EXPECT_FALSE(child_rfh_b->is_active());
+    EXPECT_TRUE(child_rfh_b->IsPendingDeletion());
     EXPECT_NE(child_rfh_b, child->current_frame_host());
     EXPECT_EQ(url::Origin::Create(url_b),
               child_rfh_b->GetLastCommittedOrigin());
@@ -6188,7 +6188,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
 
   // At this point, |rfh| should still be live and pending deletion.
   EXPECT_FALSE(rfh_observer.deleted());
-  EXPECT_FALSE(rfh->is_active());
+  EXPECT_TRUE(rfh->IsPendingDeletion());
   EXPECT_TRUE(rfh->IsRenderFrameLive());
 
   // Meanwhile, the new page should have two subframes.

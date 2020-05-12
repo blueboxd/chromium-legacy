@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -647,6 +648,32 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   EXPECT_EQ(metadata.platform, version_info::GetOSType());
   EXPECT_EQ(metadata.architecture, content::GetLowEntropyCpuArchitecture());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());
+}
+
+TEST(ChromeContentBrowserClientTest, GenerateBrandVersionList) {
+  blink::UserAgentMetadata metadata;
+
+  metadata.brand_version_list =
+      GenerateBrandVersionList(84, base::nullopt, "84");
+  std::string brand_list = metadata.SerializeBrandVersionList();
+  EXPECT_EQ(R"("\\Not\"A;Brand";v="99", "Chromium";v="84")", brand_list);
+
+  metadata.brand_version_list =
+      GenerateBrandVersionList(85, base::nullopt, "85");
+  std::string brand_list_diff = metadata.SerializeBrandVersionList();
+  // Make sure the lists are different for different seeds
+  EXPECT_EQ(R"("Chromium";v="85", "\\Not;A\"Brand";v="99")", brand_list_diff);
+  EXPECT_NE(brand_list, brand_list_diff);
+
+  metadata.brand_version_list =
+      GenerateBrandVersionList(84, "Totally A Brand", "84");
+  std::string brand_list_w_brand = metadata.SerializeBrandVersionList();
+  EXPECT_EQ(
+      R"("\\Not\"A;Brand";v="99", "Chromium";v="84", "Totally A Brand";v="84")",
+      brand_list_w_brand);
+
+  // Should DCHECK on negative numbers
+  EXPECT_DCHECK_DEATH(GenerateBrandVersionList(-1, base::nullopt, "99"));
 }
 
 TEST(ChromeContentBrowserClientTest, LowEntropyCpuArchitecture) {

@@ -591,8 +591,8 @@ TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   navigation->set_drop_unload_ack(true);
   navigation->Commit();
   TestRenderFrameHost* dest_rfh = contents()->GetMainFrame();
-  EXPECT_FALSE(ntp_rfh->is_active());
-  EXPECT_TRUE(dest_rfh->is_active());
+  EXPECT_TRUE(ntp_rfh->IsPendingDeletion());
+  EXPECT_TRUE(dest_rfh->IsCurrent());
 
   // The new RFH should be able to update its favicons.
   {
@@ -1160,11 +1160,11 @@ TEST_P(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
   back_navigation1->set_drop_unload_ack(true);
   back_navigation1->Commit();
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
-  EXPECT_FALSE(rfh2->is_active());
+  EXPECT_TRUE(rfh2->IsPendingDeletion());
 
   // We should be able to navigate forward.
   NavigationSimulator::GoForward(contents());
-  EXPECT_TRUE(main_test_rfh()->is_active());
+  EXPECT_TRUE(main_test_rfh()->IsCurrent());
 }
 
 // Test that we create RenderFrameProxy objects for the opener chain when
@@ -1630,21 +1630,21 @@ TEST_P(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
 
   // Navigate to new site, simulating onbeforeunload approval.
   auto navigation =
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // Simulate the unload ack, unexpectedly early (before commit).  It should
   // have no effect.
   rfh1->SimulateUnloadACK();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
 
   // The new page commits.
   navigation->set_drop_unload_ack(true);
@@ -1652,8 +1652,8 @@ TEST_P(RenderFrameHostManagerTest, DeleteFrameAfterUnloadACK) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == nullptr);
-  EXPECT_TRUE(rfh2->is_active());
-  EXPECT_FALSE(rfh1->is_active());
+  EXPECT_TRUE(rfh2->IsCurrent());
+  EXPECT_TRUE(rfh1->IsPendingDeletion());
 
   // Simulate the unload ack.
   rfh1->SimulateUnloadACK();
@@ -1678,7 +1678,7 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on unload.
@@ -1689,7 +1689,7 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
@@ -1698,8 +1698,8 @@ TEST_P(RenderFrameHostManagerTest, UnloadFrameAfterUnloadACK) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == nullptr);
-  EXPECT_FALSE(rfh1->is_active());
-  EXPECT_TRUE(rfh2->is_active());
+  EXPECT_TRUE(rfh1->IsPendingDeletion());
+  EXPECT_TRUE(rfh2->IsCurrent());
 
   // Simulate the unload ack.
   rfh1->OnUnloaded();
@@ -1725,7 +1725,7 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = contents()->GetMainFrame();
   RenderFrameDeletedObserver rfh_deleted_observer(rfh1);
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
 
   // Increment the number of active frames in rfh1's SiteInstance so that the
   // SiteInstance is not deleted on unload.
@@ -1737,7 +1737,7 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
       NavigationSimulatorImpl::CreateBrowserInitiated(kUrl2, contents());
   navigation->ReadyToCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
   TestRenderFrameHost* rfh2 = contents()->GetPendingMainFrame();
 
   // The new page commits.
@@ -1746,8 +1746,8 @@ TEST_P(RenderFrameHostManagerTest, CommitNewNavigationBeforeSendingUnload) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(rfh2, contents()->GetMainFrame());
   EXPECT_TRUE(contents()->GetPendingMainFrame() == nullptr);
-  EXPECT_FALSE(rfh1->is_active());
-  EXPECT_TRUE(rfh2->is_active());
+  EXPECT_TRUE(rfh1->IsPendingDeletion());
+  EXPECT_TRUE(rfh2->IsCurrent());
 
   // Simulate the unload ack.
   rfh1->OnUnloaded();
@@ -1771,7 +1771,7 @@ TEST_P(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
-  EXPECT_TRUE(rfh1->is_active());
+  EXPECT_TRUE(rfh1->IsCurrent());
 
   // Navigate to a new site, starting a cross-site navigation.
   controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
@@ -1889,8 +1889,10 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   EXPECT_TRUE(GetPendingFrameHost(iframe2));
   EXPECT_EQ(host1, GetPendingFrameHost(iframe1));
   EXPECT_EQ(host2, GetPendingFrameHost(iframe2));
-  EXPECT_TRUE(GetPendingFrameHost(iframe1)->is_active());
-  EXPECT_TRUE(GetPendingFrameHost(iframe2)->is_active());
+  EXPECT_EQ(GetPendingFrameHost(iframe1)->lifecycle_state(),
+            RenderFrameHostImpl::LifecycleState::kActive);
+  EXPECT_EQ(GetPendingFrameHost(iframe2)->lifecycle_state(),
+            RenderFrameHostImpl::LifecycleState::kActive);
   EXPECT_NE(GetPendingFrameHost(iframe1), GetPendingFrameHost(iframe2));
   EXPECT_EQ(GetPendingFrameHost(iframe1)->GetSiteInstance(),
             GetPendingFrameHost(iframe2)->GetSiteInstance());
@@ -3229,7 +3231,7 @@ TEST_P(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
   navigation_to_kUrl2->Commit();
   EXPECT_NE(initial_rfh, main_test_rfh());
   ASSERT_FALSE(delete_observer.deleted());
-  EXPECT_FALSE(initial_rfh->is_active());
+  EXPECT_TRUE(initial_rfh->IsPendingDeletion());
 
   // The initial RFH receives a BeginNavigation IPC. The navigation should not
   // start.

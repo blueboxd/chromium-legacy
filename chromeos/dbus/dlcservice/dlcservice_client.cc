@@ -183,25 +183,6 @@ class DlcserviceClientImpl : public DlcserviceClient {
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void GetInstalled(GetInstalledCallback callback) override {
-    if (!service_available_ || task_running_) {
-      EnqueueTask(base::BindOnce(&DlcserviceClientImpl::GetInstalled,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 std::move(callback)));
-      return;
-    }
-
-    TaskStarted();
-    dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
-                                 dlcservice::kGetInstalledMethod);
-
-    VLOG(1) << "Requesting to get installed DLC(s).";
-    dlcservice_proxy_->CallMethodWithErrorResponse(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DlcserviceClientImpl::OnGetInstalled,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void GetExistingDlcs(GetExistingDlcsCallback callback) override {
     if (!service_available_ || task_running_) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::GetExistingDlcs,
@@ -240,12 +221,12 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
  private:
   // Set the indication that an operation is being performed, which consists of
-  // either |Install()|, |Uninstall()|, or |GetInstalled()|. Should always be
+  // either |Install()| or |Uninstall()|. Should always be
   // called after calling dlcservice in platform.
   void TaskStarted() { task_running_ = true; }
 
   // Clears any indication that an operation had setup while being performed,
-  // which consists of either |Install()|, |Uninstall()|, or |GetInstalled()|.
+  // which consists of either |Install()| or |Uninstall()|.
   void TaskEnded() {
     task_running_ = false;
     // |Install()|
@@ -408,21 +389,6 @@ class DlcserviceClientImpl : public DlcserviceClient {
       } else {
         std::move(purge_callback_holder_.value()).Run(err);
       }
-    }
-    CheckAndRunPendingTask();
-  }
-
-  void OnGetInstalled(GetInstalledCallback callback,
-                      dbus::Response* response,
-                      dbus::ErrorResponse* err_response) {
-    dlcservice::DlcModuleList dlc_module_list;
-    if (response && dbus::MessageReader(response).PopArrayOfBytesAsProto(
-                        &dlc_module_list)) {
-      std::move(callback).Run(dlcservice::kErrorNone, dlc_module_list);
-    } else {
-      std::move(callback).Run(
-          DlcserviceErrorResponseHandler(err_response).get_err(),
-          dlcservice::DlcModuleList());
     }
     CheckAndRunPendingTask();
   }

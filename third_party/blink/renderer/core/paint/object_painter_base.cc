@@ -111,13 +111,26 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
 
   Vector<OutlineEdgeInfo, 4> edges;
 
-  SkPath::Iter iter(path, false);
-  SkPoint points[4];
+  SkPath::RawIter iter(path);
+  SkPoint points[4], first_point, last_point;
   wtf_size_t count = 0;
   for (SkPath::Verb verb = iter.next(points); verb != SkPath::kDone_Verb;
        verb = iter.next(points)) {
+    // Keep track of the first and last point of each contour (started with
+    // kMove_Verb) so we can add the closing-line on kClose_Verb.
+    if (verb == SkPath::kMove_Verb) {
+      first_point = points[0];
+      last_point = first_point;  // this gets reset after each line, but we
+                                 // initialize it here
+    } else if (verb == SkPath::kClose_Verb) {
+      // create an artificial line to close the contour
+      verb = SkPath::kLine_Verb;
+      points[0] = last_point;
+      points[1] = first_point;
+    }
     if (verb != SkPath::kLine_Verb)
       continue;
+    last_point = points[1];
 
     edges.Grow(++count);
     OutlineEdgeInfo& edge = edges.back();

@@ -618,6 +618,8 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("hasGpuChannel", &GpuBenchmarking::HasGpuChannel)
       .SetMethod("hasGpuProcess", &GpuBenchmarking::HasGpuProcess)
       .SetMethod("crashGpuProcess", &GpuBenchmarking::CrashGpuProcess)
+      .SetMethod("terminateGpuProcessNormally",
+                 &GpuBenchmarking::TerminateGpuProcessNormally)
       .SetMethod("getGpuDriverBugWorkarounds",
                  &GpuBenchmarking::GetGpuDriverBugWorkarounds)
       .SetMethod("startProfiling", &GpuBenchmarking::StartProfiling)
@@ -1251,6 +1253,15 @@ void GpuBenchmarking::CrashGpuProcess() {
   if (!gpu_channel)
     return;
   gpu_channel->CrashGpuProcessForTesting();
+}
+
+// Terminates the GPU process with an exit code of 0.
+void GpuBenchmarking::TerminateGpuProcessNormally() {
+  gpu::GpuChannelHost* gpu_channel =
+      RenderThreadImpl::current()->GetGpuChannel();
+  if (!gpu_channel)
+    return;
+  gpu_channel->TerminateGpuProcessForTesting();
 }
 
 void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {

@@ -692,13 +692,7 @@ void WizardController::ShowMarketingOptInScreen() {
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
-  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-    SetCurrentScreen(GetScreen(ArcTermsOfServiceScreenView::kScreenId));
-    ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
-        arc::prefs::kArcTermsShownInOobe, true);
-  } else {
-    ShowAssistantOptInFlowScreen();
-  }
+  SetCurrentScreen(GetScreen(ArcTermsOfServiceScreenView::kScreenId));
 }
 
 void WizardController::ShowRecommendAppsScreen() {
@@ -1119,6 +1113,9 @@ void WizardController::OnArcTermsOfServiceScreenExit(
   switch (result) {
     case ArcTermsOfServiceScreen::Result::ACCEPTED:
       OnArcTermsOfServiceAccepted();
+      break;
+    case ArcTermsOfServiceScreen::Result::NOT_APPLICABLE:
+      ShowAssistantOptInFlowScreen();
       break;
     case ArcTermsOfServiceScreen::Result::BACK:
       DCHECK(demo_setup_controller_);

@@ -109,42 +109,6 @@ TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {
                                 ->GetCompositingState());
 }
 
-TEST_F(CompositingReasonFinderTest,
-       OnlyAnchoredStickyPositionPromotedAssumeOverlap) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(
-      blink::features::kAssumeOverlapAfterFixedOrStickyPosition, true);
-  SetBodyInnerHTML(R"HTML(
-    <style>
-    .scroller {contain: paint; width: 400px; height: 400px; overflow: auto;
-    will-change: transform;}
-    .sticky { position: sticky; width: 10px; height: 10px;}</style>
-    <div class='scroller'>
-      <div id='sticky-top' class='sticky' style='top: 0px;'></div>
-      <div id='sticky-no-anchor' class='sticky'></div>
-      <div style='height: 2000px;'></div>
-    </div>
-  )HTML");
-
-  EXPECT_EQ(kPaintsIntoOwnBacking,
-            ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-top"))
-                ->Layer()
-                ->GetCompositingState());
-  // Any scroll dependent layer, such as sticky-top, assumes that it overlaps
-  // anything which draws after it.
-  EXPECT_EQ(
-      kPaintsIntoOwnBacking,
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-no-anchor"))
-          ->Layer()
-          ->GetCompositingState());
-  EXPECT_EQ(
-      CompositingReason::kAssumedOverlap,
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-no-anchor"))
-              ->Layer()
-              ->GetCompositingReasons() &
-          CompositingReason::kAssumedOverlap);
-}
-
 TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>.scroller {width: 400px; height: 400px; overflow: auto;

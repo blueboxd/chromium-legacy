@@ -128,8 +128,8 @@ class NintendoController final : public AbstractHapticGamepad {
       std::unique_ptr<NintendoController> composite2,
       mojom::HidManager* hid_manager);
 
-  // Return true if |vendor_id| and |product_id| describe a Nintendo controller.
-  static bool IsNintendoController(uint16_t vendor_id, uint16_t product_id);
+  // Return true if |gamepad_id| describes a Nintendo controller.
+  static bool IsNintendoController(GamepadId gamepad_id);
 
   // Decompose a composite device and return a vector of its subcomponents.
   // Return an empty vector if the device is non-composite.

@@ -31,23 +31,6 @@
 namespace views {
 
 // static
-std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiButton(
-    ButtonListener* listener,
-    const base::string16& text) {
-  return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
-}
-
-// static
-std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiProminentButton(
-    ButtonListener* listener,
-    const base::string16& text) {
-  auto md_button =
-      MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
-  md_button->SetProminent(true);
-  return md_button;
-}
-
-// static
 std::unique_ptr<MdTextButton> MdTextButton::Create(ButtonListener* listener,
                                                    const base::string16& text,
                                                    int button_context) {

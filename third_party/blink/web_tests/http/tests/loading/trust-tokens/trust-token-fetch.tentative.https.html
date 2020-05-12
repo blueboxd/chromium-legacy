@@ -8,25 +8,44 @@
 <script>
   'use strict';
 
-  promise_test((t) => promise_rejects_dom(t, 'InvalidStateError',
-    fetch('https://trusttoken.test', {
-      trustToken: {
-        type: 'token-request'
-      }
-    }), 'Trust Token issuance should error.'), 'No keys for the issuer -> expect issuance to fail');
+  promise_test((t) => promise_rejects_dom(t, 'InvalidStateError', (() => {
+      t.add_cleanup(async () => {
+        if (window.testRunner)
+          await new Promise(res => window.testRunner.clearTrustTokenState(res));
+      });
+      return fetch('https://trusttoken.test', {
+        trustToken: {
+          type: 'token-request'
+        }
+      });
+    })(), 'Trust Token issuance should error.'),
+    'No keys for the issuer -> expect issuance to fail');
 
-  promise_test((t) => promise_rejects_dom(t, 'InvalidStateError',
-    fetch('https://trusttoken.test', {
-      trustToken: {
-        type: 'srr-token-redemption'
-      }
-    }), 'Trust Token redemption should error.'), 'No token for the issuer -> expect redemption to fail');
+  promise_test((t) => promise_rejects_dom(t, 'InvalidStateError', (() => {
+      t.add_cleanup(async () => {
+        if (window.testRunner)
+          await new Promise(res => window.testRunner.clearTrustTokenState(res));
+      });
+      return fetch('https://trusttoken.test', {
+        trustToken: {
+          type: 'srr-token-redemption'
+        }
+      });
+    })(), 'Trust Token redemption should error.'),
+    'No token for the issuer -> expect redemption to fail');
 
-  promise_test((t) => promise_rejects_dom(t, 'OperationError',
-    fetch('https://destination.test', {
-      trustToken: {
-        type: 'send-srr',
-        issuer: 'https://issuer.test'
-      }
-    }), 'Trust Token signing should error.'), 'No SRR for the issuer -> expect signing to fail');
+  promise_test((t) => promise_rejects_js(t, TypeError, (() => {
+      t.add_cleanup(async () => {
+        if (window.testRunner)
+          await new Promise(res => window.testRunner.clearTrustTokenState(res));
+      });
+      return fetch('https://destination.test', {
+        trustToken: {
+          type: 'send-srr',
+          issuer: 'https://issuer.test'
+        }
+      });
+    })(), 'Trust Token signing should not fail a request.'),
+    'No SRR for the issuer -> expect signing to fail, but an error while' +
+    ' signing shouldn\'t result in the request being aborted');
 </script>

@@ -305,19 +305,19 @@ bool VulkanInstance::CollectInfo() {
     // API version instead of just testing to see if
     // vkGetPhysicalDeviceFeatures2 is non-null.
     if (info.properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-      VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_converson_features =
+      VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_conversion_features =
           {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
       VkPhysicalDeviceProtectedMemoryFeatures protected_memory_feature = {
           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
       VkPhysicalDeviceFeatures2 features_2 = {
           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-      features_2.pNext = &ycbcr_converson_features;
-      ycbcr_converson_features.pNext = &protected_memory_feature;
+      features_2.pNext = &ycbcr_conversion_features;
+      ycbcr_conversion_features.pNext = &protected_memory_feature;
 
       vkGetPhysicalDeviceFeatures2(device, &features_2);
       info.features = features_2.features;
       info.feature_sampler_ycbcr_conversion =
-          ycbcr_converson_features.samplerYcbcrConversion;
+          ycbcr_conversion_features.samplerYcbcrConversion;
       info.feature_protected_memory = protected_memory_feature.protectedMemory;
     } else {
       vkGetPhysicalDeviceFeatures(device, &info.features);

@@ -124,6 +124,8 @@ class ScriptExecutor : public ActionDelegate,
       CollectUserDataOptions* collect_user_data_options) override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
+  void WriteUserModel(
+      base::OnceCallback<void(UserModel*)> write_callback) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
               bool disable_force_expand_sheet,

@@ -130,7 +130,7 @@ KeyEvent KeyEventBuilder::Build() {
   return key_event_;
 }
 
-void KeyEventBuilder::Generate(std::list<KeyEvent>* key_events) {
+void KeyEventBuilder::Generate(std::vector<KeyEvent>* key_events) {
   key_events->push_back(SetType(kRawKeyDownEventType)->Build());
   if (key_event_.modified_text.length() || key_event_.unmodified_text.length())
     key_events->push_back(SetType(kCharEventType)->Build());

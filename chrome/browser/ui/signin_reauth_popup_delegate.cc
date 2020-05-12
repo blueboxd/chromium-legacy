@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/signin_view_controller.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -27,13 +26,10 @@ const int kPopupHeight = 708;
 }  // namespace
 
 SigninReauthPopupDelegate::SigninReauthPopupDelegate(
-    SigninViewController* signin_view_controller,
     Browser* browser,
     const CoreAccountId& account_id,
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback)
-    : signin_view_controller_(signin_view_controller),
-      browser_(browser),
-      reauth_callback_(std::move(reauth_callback)) {
+    : browser_(browser), reauth_callback_(std::move(reauth_callback)) {
   const GURL& reauth_url = GaiaUrls::GetInstance()->reauth_url();
   NavigateParams nav_params(browser_, reauth_url,
                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
@@ -73,10 +69,7 @@ content::WebContents* SigninReauthPopupDelegate::GetWebContents() {
 }
 
 void SigninReauthPopupDelegate::WebContentsDestroyed() {
-  if (signin_view_controller_) {
-    signin_view_controller_->ResetModalSigninDelegate();
-    signin_view_controller_ = nullptr;
-  }
+  NotifyModalSigninClosed();
   delete this;
 }
 

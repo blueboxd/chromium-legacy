@@ -1565,20 +1565,19 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   return new_instance;
 }
 
-void RenderFrameHostManager::InitializeRenderFrameForDebugURLIfNecessary() {
+bool RenderFrameHostManager::InitializeRenderFrameForImmediateUse() {
   // TODO(jam): this copies some logic inside GetFrameHostForNavigation, which
   // also duplicates logic in Navigate. They should all use this method, but
   // that involves slight reordering.
   // http://crbug.com/794229
-  if (render_frame_host_->IsRenderFrameLive()) {
-    NOTREACHED();
-    return;
-  }
+  if (render_frame_host_->IsRenderFrameLive())
+    return true;
 
   render_frame_host_->reset_must_be_replaced();
+
   if (!ReinitializeRenderFrame(render_frame_host_.get())) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   // TODO(jam): uncomment this when the method is shared. Not adding the call
@@ -1595,6 +1594,7 @@ void RenderFrameHostManager::InitializeRenderFrameForDebugURLIfNecessary() {
     delegate_->NotifyMainFrameSwappedFromRenderManager(
         nullptr, render_frame_host_.get());
   }
+  return true;
 }
 
 void RenderFrameHostManager::PrepareForInnerDelegateAttach(
@@ -2745,10 +2745,8 @@ void RenderFrameHostManager::CommitPending(
     old_view->Hide();
   }
 
-  // Make sure the size is up to date.  (Fix for bug 1079768.)
-  delegate_->UpdateRenderViewSizeForRenderManager(is_main_frame);
-
   RenderWidgetHostView* new_view = render_frame_host_->GetView();
+
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar();
   } else if (focus_render_view && new_view) {

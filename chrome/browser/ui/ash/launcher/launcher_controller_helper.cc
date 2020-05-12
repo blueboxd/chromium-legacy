@@ -180,7 +180,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
 
   auto* extension = registry->GetExtensionById(
       app_id, extensions::ExtensionRegistry::EVERYTHING);
-  if (extension)
+  if (extension && extension->is_extension())
     return base::UTF8ToUTF16(extension->name());
 
   return base::string16();

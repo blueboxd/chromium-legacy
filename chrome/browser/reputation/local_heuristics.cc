@@ -64,8 +64,6 @@ bool ShouldTriggerSafetyTipFromLookalike(
   *safe_url = GURL(std::string(url::kHttpScheme) +
                    url::kStandardSchemeSeparator + matched_domain);
   switch (match_type) {
-    case LookalikeUrlMatchType::kTopSite:
-      return kEnableLookalikeTopSites.Get();
     case LookalikeUrlMatchType::kEditDistance:
       return kEnableLookalikeEditDistance.Get();
     case LookalikeUrlMatchType::kEditDistanceSiteEngagement:
@@ -73,12 +71,15 @@ bool ShouldTriggerSafetyTipFromLookalike(
     case LookalikeUrlMatchType::kTargetEmbedding:
       return kEnableLookalikeTargetEmbedding.Get();
     case LookalikeUrlMatchType::kSiteEngagement:
-      // We should only ever reach this case when the
-      // kLookalikeUrlNavigationSuggestionsUI feature is disabled. Otherwise, an
-      // interstitial will already be shown on the kSiteEngagement match type.
+    case LookalikeUrlMatchType::kSkeletonMatchTop500:
+      // We should only ever reach these cases when the lookalike interstitial
+      // is disabled. Now that interstitial is fully launched, this only happens
+      // in tests.
       DCHECK(!base::FeatureList::IsEnabled(
           features::kLookalikeUrlNavigationSuggestionsUI));
       return true;
+    case LookalikeUrlMatchType::kSkeletonMatchTop5k:
+      return kEnableLookalikeTopSites.Get();
     case LookalikeUrlMatchType::kNone:
       NOTREACHED();
   }

@@ -28,8 +28,6 @@ const mojo::Remote<device::mojom::XRDeviceService>& GetXRDeviceService() {
         content::ServiceProcessHost::Options()
 #if defined(OS_WIN)
             .WithSandboxType(service_manager::SandboxType::kXrCompositing)
-#else
-            .WithSandboxType(service_manager::SandboxType::kUtility)
 #endif
             .WithDisplayName("Isolated XR Device Service")
             .Pass());

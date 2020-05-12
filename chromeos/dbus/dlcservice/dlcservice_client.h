@@ -61,13 +61,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   // |dlcservice::kErrorNone| the call has failed.
   using PurgeCallback = base::OnceCallback<void(const std::string& err)>;
 
-  // The callback used for |GetInstalled()|, if the error is something other
-  // than |dlcservice::kErrorNone| the call has failed. It is a very rare case
-  // for |GetInstalled()| call to fail.
-  using GetInstalledCallback = base::OnceCallback<void(
-      const std::string& err,
-      const dlcservice::DlcModuleList& dlc_module_list)>;
-
   // The callback used for |GetExistingDlcs()|, if the error is something other
   // than |dlcservice::kErrorNone| the call has failed. It is a very rare case
   // for |GetExistingDlcs()| call to fail.
@@ -99,10 +92,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   // the DLC has been uninstalled or if there is a nonzero installed refcount.
   virtual void Purge(const std::string& dlc_id,
                      PurgeCallback purge_callback) = 0;
-
-  // DEPRECATING: Please do not use this method call.
-  // Provides the DLC(s) information such as id and root mount point.
-  virtual void GetInstalled(GetInstalledCallback callback) = 0;
 
   // Provides the DLC(s) information such as:
   // id, name, description, used_bytes_on_disk. (reference

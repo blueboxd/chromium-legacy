@@ -55,6 +55,12 @@ typedef std::unordered_map<RenderFrameProxyHostID,
 base::LazyInstance<RoutingIDFrameProxyMap>::DestructorAtExit
     g_routing_id_frame_proxy_map = LAZY_INSTANCE_INITIALIZER;
 
+using TokenFrameMap = std::unordered_map<base::UnguessableToken,
+                                         RenderFrameProxyHost*,
+                                         base::UnguessableTokenHash>;
+base::LazyInstance<TokenFrameMap>::Leaky g_token_frame_proxy_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 // static
@@ -69,7 +75,22 @@ RenderFrameProxyHost* RenderFrameProxyHost::FromID(int process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameProxyMap* frames = g_routing_id_frame_proxy_map.Pointer();
   auto it = frames->find(RenderFrameProxyHostID(process_id, routing_id));
-  return it == frames->end() ? NULL : it->second;
+  return it == frames->end() ? nullptr : it->second;
+}
+
+// static
+RenderFrameProxyHost* RenderFrameProxyHost::FromFrameToken(
+    int process_id,
+    const base::UnguessableToken& frame_token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TokenFrameMap* frames = g_token_frame_proxy_map.Pointer();
+  auto it = frames->find(frame_token);
+  // The check against |process_id| isn't strictly necessary, but represents
+  // an extra level of protection against a renderer trying to force a frame
+  // token.
+  return it != frames->end() && it->second->GetProcess()->GetID() == process_id
+             ? it->second
+             : nullptr;
 }
 
 RenderFrameProxyHost::RenderFrameProxyHost(
@@ -88,6 +109,9 @@ RenderFrameProxyHost::RenderFrameProxyHost(
           .insert(std::make_pair(
               RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_), this))
           .second);
+  CHECK(g_token_frame_proxy_map.Get()
+            .insert(std::make_pair(frame_token_, this))
+            .second);
   CHECK(render_view_host_ ||
         frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate());
 
@@ -133,6 +157,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_proxy_map.Get().erase(
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
+  g_token_frame_proxy_map.Get().erase(frame_token_);
 }
 
 void RenderFrameProxyHost::SetChildRWHView(

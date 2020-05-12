@@ -503,7 +503,7 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 }
 
 Status WebViewImpl::DispatchTouchEventsForMouseEvents(
-    const std::list<MouseEvent>& events,
+    const std::vector<MouseEvent>& events,
     const std::string& frame) {
   // Touch events are filtered by the compositor if there are no touch listeners
   // on the page. Wait two frames for the compositor to sync with the main
@@ -549,7 +549,7 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
   return Status(kOk);
 }
 
-Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
+Status WebViewImpl::DispatchMouseEvents(const std::vector<MouseEvent>& events,
                                         const std::string& frame,
                                         bool async_dispatch_events) {
   if (mobile_emulation_override_manager_->IsEmulatingTouch())
@@ -567,7 +567,8 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     params.SetInteger("clickCount", it->click_count);
     params.SetString("pointerType", GetAsString(it->pointer_type));
 
-    if (async_dispatch_events) {
+    const bool last_event = (it == events.end() - 1);
+    if (async_dispatch_events || !last_event) {
       status = client_->SendCommandAndIgnoreResponse("Input.dispatchMouseEvent",
                                                      params);
     } else {
@@ -601,10 +602,12 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
   return status;
 }
 
-Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events,
+Status WebViewImpl::DispatchTouchEvents(const std::vector<TouchEvent>& events,
                                         bool async_dispatch_events) {
   for (auto it = events.begin(); it != events.end(); ++it) {
-    Status status = DispatchTouchEvent(*it, async_dispatch_events);
+    const bool last_event = (it == events.end() - 1);
+    Status status =
+        DispatchTouchEvent(*it, async_dispatch_events || !last_event);
     if (status.IsError())
       return status;
   }
@@ -612,7 +615,7 @@ Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events,
 }
 
 Status WebViewImpl::DispatchTouchEventWithMultiPoints(
-    const std::list<TouchEvent>& events,
+    const std::vector<TouchEvent>& events,
     bool async_dispatch_events) {
   if (events.size() == 0)
     return Status(kOk);
@@ -647,7 +650,7 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
   return Status(kOk);
 }
 
-Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events,
+Status WebViewImpl::DispatchKeyEvents(const std::vector<KeyEvent>& events,
                                       bool async_dispatch_events) {
   Status status(kOk);
   for (auto it = events.begin(); it != events.end(); ++it) {
@@ -686,7 +689,8 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events,
         params.SetInteger("location", it->location);
     }
 
-    if (async_dispatch_events) {
+    const bool last_event = (it == events.end() - 1);
+    if (async_dispatch_events || !last_event) {
       status = client_->SendCommandAndIgnoreResponse("Input.dispatchKeyEvent",
                                                      params);
     } else {

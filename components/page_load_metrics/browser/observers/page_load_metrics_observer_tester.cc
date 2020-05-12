@@ -293,7 +293,8 @@ void PageLoadMetricsObserverTester::SimulateMediaPlayed() {
 
 void PageLoadMetricsObserverTester::SimulateCookieAccess(
     const content::CookieAccessDetails& details) {
-  metrics_web_contents_observer_->OnCookiesAccessed(details);
+  metrics_web_contents_observer_->OnCookiesAccessed(
+      metrics_web_contents_observer_->web_contents()->GetMainFrame(), details);
 }
 
 void PageLoadMetricsObserverTester::SimulateStorageAccess(

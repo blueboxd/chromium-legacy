@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.share;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 
 import android.app.Activity;
@@ -35,7 +35,9 @@ import org.chromium.ui.test.util.DummyUiActivity;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/** Tests {@link ShareSheetCoordinator}. */
+/**
+ * Tests {@link ShareSheetCoordinator}.
+ */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class ShareSheetCoordinatorTest {
@@ -51,8 +53,6 @@ public final class ShareSheetCoordinatorTest {
 
     @Mock
     private PrefServiceBridge mPrefServiceBridge;
-
-    private ArrayList<PropertyModel> mThirdPartyPropertyModels;
 
     @Before
     public void setUp() {
@@ -70,12 +70,10 @@ public final class ShareSheetCoordinatorTest {
                                            .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, false)
                                            .build();
 
-        mThirdPartyPropertyModels =
-                new ArrayList<PropertyModel>(Arrays.asList(testModel1, testModel2));
-        Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(any(), any()))
-                .thenReturn(mThirdPartyPropertyModels);
-        Mockito.when(mPropertyModelBuilder.createPropertyModel(any(), any(), any(), anyBoolean()))
-                .thenCallRealMethod();
+        ArrayList<PropertyModel> thirdPartyPropertyModels =
+                new ArrayList<>(Arrays.asList(testModel1, testModel2));
+        Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(any(), any(), anyLong()))
+                .thenReturn(thirdPartyPropertyModels);
         // Return true to indicate printing is enabled.
         Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
     }

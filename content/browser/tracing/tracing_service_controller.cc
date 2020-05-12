@@ -88,7 +88,6 @@ tracing::mojom::TracingService& TracingServiceController::GetService() {
       ServiceProcessHost::Launch(
           std::move(receiver),
           ServiceProcessHost::Options()
-              .WithSandboxType(service_manager::SandboxType::kUtility)
               .WithDisplayName("Tracing Service")
               .Pass());
     }

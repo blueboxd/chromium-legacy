@@ -53,4 +53,5 @@ limit.
 - System headers on Chrome OS differ between boards and are not covered by the
   commit queue. This means the token limits were not tailored to those builds,
   causing build problems downstream. To avoid this, the -Wmax-tokens warning
-  was disabled for Chrome OS (see [crbug.com/1079053](https://crbug.com/1079053).
+  was disabled for Chrome OS (see
+  [crbug.com/1079053](https://crbug.com/1079053)).

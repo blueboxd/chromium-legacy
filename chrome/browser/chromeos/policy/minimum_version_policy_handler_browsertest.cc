@@ -161,7 +161,10 @@ void MinimumVersionPolicyTest::MarkUserManaged() {
   profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
 }
 
-IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateOnLoginScreen) {
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
+                       DISABLED_CriticalUpdateOnLoginScreen) {
   EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 1);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 
@@ -185,7 +188,10 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateOnLoginScreen) {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, PRE_CriticalUpdateInSession) {
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
+                       DISABLED_PRE_CriticalUpdateInSession) {
   // Login the user into the session and mark as managed.
   Login();
   MarkUserManaged();
@@ -207,7 +213,10 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, PRE_CriticalUpdateInSession) {
   EXPECT_TRUE(chrome::IsAttemptingShutdown());
 }
 
-IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateInSession) {
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
+                       DISABLED_CriticalUpdateInSession) {
   // Check login screen is shown post chrome restart due to critical update
   // required in session.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
@@ -219,8 +228,10 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateInSession) {
   EXPECT_EQ(user_manager::UserManager::Get()->GetLoggedInUsers().size(), 0u);
 }
 
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
-                       CriticalUpdateInSessionUnmanagedUser) {
+                       DISABLED_CriticalUpdateInSessionUnmanagedUser) {
   // Login the user into the session.
   Login();
 
@@ -244,8 +255,10 @@ class MinimumVersionNoUsersLoginTest : public MinimumVersionPolicyTestBase {
   chromeos::LoginManagerMixin login_manager_{&mixin_host_};
 };
 
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
 IN_PROC_BROWSER_TEST_F(MinimumVersionNoUsersLoginTest,
-                       CriticalUpdateOnLoginScreen) {
+                       DISABLED_CriticalUpdateOnLoginScreen) {
   chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
   EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 0);
 
@@ -289,8 +302,10 @@ class MinimumVersionPolicyPresentTest : public MinimumVersionPolicyTestBase {
   }
 };
 
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyPresentTest,
-                       DeadlineReachedNoUsers) {
+                       DISABLED_DeadlineReachedNoUsers) {
   // Checks update required screen is shown at startup if there is no user in
   // the device.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
@@ -310,7 +325,10 @@ class MinimumVersionExistingUserTest : public MinimumVersionPolicyPresentTest {
   chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
 };
 
-IN_PROC_BROWSER_TEST_F(MinimumVersionExistingUserTest, DeadlineReached) {
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
+IN_PROC_BROWSER_TEST_F(MinimumVersionExistingUserTest,
+                       DISABLED_DeadlineReached) {
   // Checks update required screen is shown at startup if user is existing in
   // the device.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
@@ -335,7 +353,10 @@ class MinimumVersionBeforeLoginHost : public MinimumVersionExistingUserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MinimumVersionBeforeLoginHost, DeadlineReached) {
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
+IN_PROC_BROWSER_TEST_F(MinimumVersionBeforeLoginHost,
+                       DISABLED_DeadlineReached) {
   // Checks update required screen is shown at startup if the policy handler is
   // invoked before login display host is created.
   EXPECT_EQ(chromeos::LoginDisplayHost::default_host(), nullptr);
@@ -372,8 +393,10 @@ class MinimumVersionPublicSessionAutoLoginTest
   }
 };
 
+// TODO(https://crbug.com/1076072): Temporarily disable the test till branch
+// date to avoid unexpected policy behaviour before it's ready to use.
 IN_PROC_BROWSER_TEST_F(MinimumVersionPublicSessionAutoLoginTest,
-                       BlockAutoLogin) {
+                       DISABLED_BlockAutoLogin) {
   // Checks public session auto login is blocked if update is required on
   // reboot.
   EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),

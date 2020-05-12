@@ -332,6 +332,18 @@ void TabSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
 }
 
 void TabSpecificContentSettings::OnCookiesAccessed(
+    content::NavigationHandle* navigation,
+    const content::CookieAccessDetails& details) {
+  OnCookiesAccessedImpl(details);
+}
+
+void TabSpecificContentSettings::OnCookiesAccessed(
+    content::RenderFrameHost* rfh,
+    const content::CookieAccessDetails& details) {
+  OnCookiesAccessedImpl(details);
+}
+
+void TabSpecificContentSettings::OnCookiesAccessedImpl(
     const content::CookieAccessDetails& details) {
   if (details.cookie_list.empty())
     return;

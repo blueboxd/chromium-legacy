@@ -86,7 +86,7 @@ public class UkmTest {
                 () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
 
         // Enable a Syncing account.
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
 
         Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
@@ -128,7 +128,7 @@ public class UkmTest {
         Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
 
         // Finally, sign in and UKM is enabled.
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
     }
 
@@ -143,7 +143,7 @@ public class UkmTest {
                 () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
 
         // Enable a Syncing account.
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
         Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
 
@@ -169,7 +169,7 @@ public class UkmTest {
                 () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
 
         // Enable a Syncing account.
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
         Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
 

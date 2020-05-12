@@ -81,6 +81,7 @@ class PasswordManagerPresenter
   // across Desktop and Android.
   void RemoveSavedPassword(size_t index);
   void RemoveSavedPassword(const std::string& sort_key);
+  void RemoveSavedPasswords(const std::vector<std::string>& sort_keys);
 
   // Removes the saved exception entries at |index|, or corresponding to
   // |sort_key|, respectively.
@@ -88,6 +89,7 @@ class PasswordManagerPresenter
   // across Desktop and Android.
   void RemovePasswordException(size_t index);
   void RemovePasswordException(const std::string& sort_key);
+  void RemovePasswordExceptions(const std::vector<std::string>& sort_keys);
 
   // Undoes the last saved password or exception removal.
   void UndoRemoveSavedPasswordOrException();

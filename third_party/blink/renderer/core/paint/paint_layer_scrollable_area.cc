@@ -2379,23 +2379,20 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     // If we have fixed elements and we scroll the root layer we might
     // change compositing since the fixed elements might now overlap a
     // composited layer.
-    if (!base::FeatureList::IsEnabled(
-            features::kAssumeOverlapAfterFixedOrStickyPosition)) {
-      if (Layer()->IsRootLayer()) {
-        LocalFrame* frame = GetLayoutBox()->GetFrame();
-        if (frame && frame->View()) {
-          LocalFrameView* view = frame->View();
-          // When kMaxOverlapBoundsForFixed is enabled, the maximum possible
-          // overlap (for all possible scroll offsets) of the fixed content has
-          // been included in the overlap test, so we can skip the compositing
-          // update on scroll changes for fixed content.
-          bool requires_compositing_inputs_update =
-              !base::FeatureList::IsEnabled(features::kMaxOverlapBoundsForFixed)
-                  ? view->HasViewportConstrainedObjects()
-                  : view->HasStickyViewportConstrainedObject();
-          if (requires_compositing_inputs_update)
-            Layer()->SetNeedsCompositingInputsUpdate();
-        }
+    if (Layer()->IsRootLayer()) {
+      LocalFrame* frame = GetLayoutBox()->GetFrame();
+      if (frame && frame->View()) {
+        LocalFrameView* view = frame->View();
+        // When kMaxOverlapBoundsForFixed is enabled, the maximum possible
+        // overlap (for all possible scroll offsets) of the fixed content has
+        // been included in the overlap test, so we can skip the compositing
+        // update on scroll changes for fixed content.
+        bool requires_compositing_inputs_update =
+            !base::FeatureList::IsEnabled(features::kMaxOverlapBoundsForFixed)
+                ? view->HasViewportConstrainedObjects()
+                : view->HasStickyViewportConstrainedObject();
+        if (requires_compositing_inputs_update)
+          Layer()->SetNeedsCompositingInputsUpdate();
       }
     }
   } else {

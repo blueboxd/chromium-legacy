@@ -8771,7 +8771,12 @@ TEST_F(WebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame) {
 
 class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
  public:
-  WebFrameSwapTestClient() {}
+  explicit WebFrameSwapTestClient(WebFrameSwapTestClient* parent = nullptr) {
+    local_frame_host_ =
+        std::make_unique<TestLocalFrameHostForFrameOwnerPropertiesChanges>(
+            parent);
+    local_frame_host_->Init(GetRemoteNavigationAssociatedInterfaces());
+  }
 
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
@@ -8782,13 +8787,12 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
       const WebFrameOwnerProperties&,
       mojom::blink::FrameOwnerElementType) override {
     return CreateLocalChild(*parent, scope,
-                            std::make_unique<WebFrameSwapTestClient>());
+                            std::make_unique<WebFrameSwapTestClient>(this));
   }
 
   void DidChangeFrameOwnerProperties(
-      WebFrame* child_frame,
-      const WebFrameOwnerProperties& properties) override {
-    did_propagate_display_none_ |= properties.is_display_none;
+      mojom::blink::FrameOwnerPropertiesPtr properties) {
+    did_propagate_display_none_ |= properties->is_display_none;
   }
 
   bool DidPropagateDisplayNoneProperty() const {
@@ -8796,6 +8800,28 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
   }
 
  private:
+  class TestLocalFrameHostForFrameOwnerPropertiesChanges
+      : public FakeLocalFrameHost {
+   public:
+    explicit TestLocalFrameHostForFrameOwnerPropertiesChanges(
+        WebFrameSwapTestClient* parent)
+        : parent_(parent) {}
+    ~TestLocalFrameHostForFrameOwnerPropertiesChanges() override = default;
+
+    // FakeLocalFrameHost:
+    void DidChangeFrameOwnerProperties(
+        const base::UnguessableToken& child_frame_token,
+        mojom::blink::FrameOwnerPropertiesPtr properties) override {
+      if (parent_)
+        parent_->DidChangeFrameOwnerProperties(std::move(properties));
+    }
+
+    bool did_propagate_display_none_ = false;
+    WebFrameSwapTestClient* parent_ = nullptr;
+  };
+
+  std::unique_ptr<TestLocalFrameHostForFrameOwnerPropertiesChanges>
+      local_frame_host_;
   bool did_propagate_display_none_ = false;
 };
 

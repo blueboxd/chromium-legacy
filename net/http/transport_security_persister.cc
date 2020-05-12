@@ -210,6 +210,12 @@ bool DeserializeExpectCTState(const base::DictionaryValue* parsed,
   return true;
 }
 
+void OnWriteFinishedTask(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         base::OnceClosure callback,
+                         bool result) {
+  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback)));
+}
+
 }  // namespace
 
 TransportSecurityPersister::TransportSecurityPersister(
@@ -252,16 +258,18 @@ void TransportSecurityPersister::WriteNow(TransportSecurityState* state,
 
   writer_.RegisterOnNextWriteCallbacks(
       base::OnceClosure(),
-      base::BindOnce(&TransportSecurityPersister::OnWriteFinished,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(
+          &OnWriteFinishedTask, foreground_runner_,
+          base::BindOnce(&TransportSecurityPersister::OnWriteFinished,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
   auto data = std::make_unique<std::string>();
   SerializeData(data.get());
   writer_.WriteNow(std::move(data));
 }
 
-void TransportSecurityPersister::OnWriteFinished(base::OnceClosure callback,
-                                                 bool result) {
-  foreground_runner_->PostTask(FROM_HERE, std::move(callback));
+void TransportSecurityPersister::OnWriteFinished(base::OnceClosure callback) {
+  DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
+  std::move(callback).Run();
 }
 
 bool TransportSecurityPersister::SerializeData(std::string* output) {

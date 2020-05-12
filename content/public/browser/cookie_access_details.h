@@ -23,6 +23,9 @@ struct CONTENT_EXPORT CookieAccessDetails {
                       bool blocked_by_policy = false);
   ~CookieAccessDetails();
 
+  CookieAccessDetails(const CookieAccessDetails&);
+  CookieAccessDetails& operator=(const CookieAccessDetails&);
+
   Type type;
   GURL url;
   GURL first_party_url;

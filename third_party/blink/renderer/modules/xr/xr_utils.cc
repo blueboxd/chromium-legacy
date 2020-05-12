@@ -6,7 +6,10 @@
 
 #include <cmath>
 
+#include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -61,6 +64,15 @@ DOMPointReadOnly* makeNormalizedQuaternion(double x,
   }
   return DOMPointReadOnly::Create(x / length, y / length, z / length,
                                   w / length);
+}
+
+WebGLRenderingContextBase* webglRenderingContextBaseFromUnion(
+    const WebGLRenderingContextOrWebGL2RenderingContext& context) {
+  if (context.IsWebGL2RenderingContext()) {
+    return context.GetAsWebGL2RenderingContext();
+  } else {
+    return context.GetAsWebGLRenderingContext();
+  }
 }
 
 }  // namespace blink

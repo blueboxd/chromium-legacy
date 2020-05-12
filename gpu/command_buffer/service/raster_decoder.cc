@@ -517,6 +517,11 @@ class RasterDecoderImpl final : public RasterDecoder,
       const volatile GLuint* paint_cache_ids);
   void DoClearPaintCacheINTERNAL();
 
+  // Generates a DDL, if necessary, and compiles shaders requires to raster it.
+  // Returns false each time a shader needed to be compiled and the decoder
+  // should yield. Returns true once all shaders in the DDL have been compiled.
+  bool EnsureDDLReadyForRaster();
+
 #if defined(NDEBUG)
   void LogClientServiceMapping(const char* /* function_name */,
                                GLuint /* client_id */,
@@ -619,11 +624,14 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_shared_image_write_;
   SkSurface* sk_surface_ = nullptr;
+
   sk_sp<SkSurface> sk_surface_for_testing_;
   std::vector<GrBackendSemaphore> end_semaphores_;
   std::unique_ptr<cc::ServicePaintCache> paint_cache_;
 
   std::unique_ptr<SkDeferredDisplayListRecorder> recorder_;
+  std::unique_ptr<SkDeferredDisplayList> ddl_;
+  base::Optional<SkDeferredDisplayList::ProgramIterator> program_iterator_;
   SkCanvas* raster_canvas_ = nullptr;  // ptr into recorder_ or sk_surface_
   std::vector<SkDiscardableHandleId> locked_handles_;
 
@@ -2822,6 +2830,33 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   }
 }
 
+bool RasterDecoderImpl::EnsureDDLReadyForRaster() {
+  DCHECK(use_ddl_);
+  DCHECK_EQ(current_decoder_error_, error::kNoError);
+
+  if (!ddl_) {
+    DCHECK(recorder_);
+    DCHECK(!program_iterator_);
+
+    TRACE_EVENT0("gpu",
+                 "RasterDecoderImpl::EnsureDDLReadyForRaster::DetachDDL");
+    ddl_ = recorder_->detach();
+    program_iterator_.emplace(shared_context_state_->gr_context(), ddl_.get());
+  }
+
+  while (!program_iterator_->done()) {
+    TRACE_EVENT0("gpu",
+                 "RasterDecoderImpl::EnsureDDLReadyForRaster::MaybeCompile");
+    bool did_compile = program_iterator_->compile();
+    program_iterator_->next();
+    if (did_compile)
+      return false;
+  }
+
+  program_iterator_.reset();
+  return true;
+}
+
 void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM");
   if (!sk_surface_) {
@@ -2831,18 +2866,18 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   }
 
   shared_context_state_->set_need_context_state_reset(true);
-
   raster_canvas_ = nullptr;
 
-  // The DDL pins memory for the recorded ops so it must be kept alive until
-  // its flushed.
-  std::unique_ptr<SkDeferredDisplayList> ddl;
   if (use_ddl_) {
-    TRACE_EVENT0("gpu",
-                 "RasterDecoderImpl::DoEndRasterCHROMIUM::DetachAndDrawDDL");
-    ddl = recorder_->detach();
-    recorder_ = nullptr;
-    sk_surface_->draw(ddl.get());
+    if (!EnsureDDLReadyForRaster()) {
+      // This decoder error indicates that this command has not finished
+      // executing. The decoder will yield and re-execute this command when it
+      // resumes decoding.
+      current_decoder_error_ = error::kDeferCommandUntilLater;
+      return;
+    }
+    TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM::DrawDDL");
+    sk_surface_->draw(ddl_.get());
   }
 
   {
@@ -2863,7 +2898,10 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
                                      flush_info);
     DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
     end_semaphores_.clear();
-    ddl.reset();
+
+    // The DDL pins memory for the recorded ops so it must be kept alive until
+    // its flushed.
+    ddl_.reset();
   }
 
   shared_context_state_->UpdateSkiaOwnedMemorySize();

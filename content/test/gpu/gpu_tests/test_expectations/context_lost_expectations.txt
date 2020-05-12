@@ -50,3 +50,9 @@ crbug.com/681341 [ mac nvidia ] ContextLost_MacWebGLPreserveDBHighPowerSwitchLos
 
 # Linux Intel Flake
 crbug.com/1034008 [ linux intel ] ContextLost_WebGLContextLostInHiddenTab [ RetryOnFailure ]
+
+# These tests use base::Process::TerminateCurrentProcessImmediately(0) on the
+# GPU process and expect a normal exit code reported to the browser process.
+# On Android, this returns a process killed exit code.
+crbug.com/1078566 [ android ] GpuNormalTermination_OriginalWebGLNotBlocked [ Skip ]
+crbug.com/1078566 [ android ] GpuNormalTermination_NewWebGLNotBlocked [ Skip ]

@@ -853,7 +853,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewBeforeTranslate() {
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
-  auto accept_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto accept_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
   accept_button->SetID(BUTTON_ID_TRANSLATE);
   accept_button->SetIsDefault(true);
@@ -1010,7 +1010,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTranslating() {
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
 
-  auto revert_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto revert_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
   revert_button->SetID(BUTTON_ID_SHOW_ORIGINAL);
   revert_button->SetEnabled(false);
@@ -1046,7 +1046,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAfterTranslate() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  auto button = views::MdTextButton::CreateSecondaryUiButton(
+  auto button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
   button->SetID(BUTTON_ID_SHOW_ORIGINAL);
   layout->AddView(std::move(button));
@@ -1089,12 +1089,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewError() {
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
 
-  auto try_again_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto try_again_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
   try_again_button->SetID(BUTTON_ID_TRY_AGAIN);
   layout->AddView(std::move(try_again_button));
 
-  auto advanced_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto advanced_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
   advanced_button->SetID(BUTTON_ID_ADVANCED);
   layout->AddView(std::move(advanced_button));
@@ -1163,7 +1163,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorNoTitle(
       views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS,
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-  auto try_again_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto try_again_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
   try_again_button->SetID(BUTTON_ID_TRY_AGAIN);
   layout->AddView(std::move(try_again_button));
@@ -1274,12 +1274,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvanced() {
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);
   layout->SkipColumns(1);
 
-  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_DONE));
+  auto advanced_done_button =
+      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_DONE));
   advanced_done_button->SetID(BUTTON_ID_DONE);
   advanced_done_button->SetIsDefault(true);
-  auto advanced_cancel_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  auto advanced_cancel_button =
+      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_CANCEL));
   advanced_cancel_button->SetID(BUTTON_ID_CANCEL);
   advanced_done_button_ = layout->AddView(std::move(advanced_done_button));
   layout->AddView(std::move(advanced_cancel_button));
@@ -1324,8 +1324,8 @@ TranslateBubbleView::TabUiCreateViewAdvancedSource() {
   source_language_combobox->set_listener(this);
   source_language_combobox_ = source_language_combobox.get();
 
-  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_DONE));
+  auto advanced_done_button =
+      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_DONE));
   advanced_done_button->SetID(BUTTON_ID_DONE);
   advanced_done_button->SetIsDefault(true);
   advanced_done_button_source_ = advanced_done_button.get();
@@ -1357,8 +1357,8 @@ TranslateBubbleView::TabUiCreateViewAdvancedTarget() {
   target_language_combobox->set_listener(this);
   target_language_combobox_ = target_language_combobox.get();
 
-  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_DONE));
+  auto advanced_done_button =
+      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_DONE));
   advanced_done_button->SetID(BUTTON_ID_DONE);
   advanced_done_button->SetIsDefault(true);
   advanced_done_button_target_ = advanced_done_button.get();
@@ -1492,7 +1492,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);
   layout->SkipColumns(1);
 
-  auto advanced_reset_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto advanced_reset_button = views::MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_RESET));
   advanced_reset_button->SetID(BUTTON_ID_RESET);
   layout->AddView(std::move(advanced_reset_button));

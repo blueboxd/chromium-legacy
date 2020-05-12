@@ -47,6 +47,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   String FilenameExtension() const override { return "jpg"; }
   void OnSetData(SegmentReader* data) override;
   IntSize DecodedSize() const override { return decoded_size_; }
+  IntSize DensityCorrectedSize() const { return density_corrected_size_.IsEmpty() ? DecodedSize() : density_corrected_size_; }
   bool SetSize(unsigned width, unsigned height) override;
   IntSize DecodedYUVSize(int component) const override;
   size_t DecodedYUVWidthBytes(int component) const override;
@@ -62,6 +63,10 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
 
   void SetOrientation(ImageOrientation orientation) {
     orientation_ = orientation;
+  }
+
+  void SetDensityCorrectedSize(const IntSize& size) {
+    density_corrected_size_ = size;
   }
   void SetDecodedSize(unsigned width, unsigned height);
 

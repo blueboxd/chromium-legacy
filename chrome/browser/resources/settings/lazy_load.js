@@ -52,11 +52,11 @@ import './languages_page/edit_dictionary_page.js';
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
 export {CountryDetailManagerImpl} from './autofill_page/address_edit_dialog.js';
-export {AutofillManagerImpl} from './autofill_page/autofill_section.js';
+export {AutofillManager, AutofillManagerImpl} from './autofill_page/autofill_section.js';
 // <if expr="chromeos">
 export {BlockingRequestManager} from './autofill_page/blocking_request_manager.js';
 // </if>
-export {PaymentsManagerImpl} from './autofill_page/payments_section.js';
+export {PaymentsManager, PaymentsManagerImpl} from './autofill_page/payments_section.js';
 // <if expr="_google_chrome and is_win">
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.js';
 export {ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';

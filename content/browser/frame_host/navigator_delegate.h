@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "content/public/browser/allow_service_worker_result.h"
+#include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -135,6 +136,10 @@ class CONTENT_EXPORT NavigatorDelegate {
   virtual void OnServiceWorkerAccessed(NavigationHandle* navigation,
                                        const GURL& scope,
                                        AllowServiceWorkerResult allowed) {}
+  // Called when a network request issued by this navigation set or read a
+  // cookie.
+  virtual void OnCookiesAccessed(NavigationHandle* navigation,
+                                 const CookieAccessDetails& details) {}
 
   // Does a global walk of the session history and all committed/pending-commit
   // origins, and registers origins that match |origin| to their respective

@@ -46,8 +46,8 @@
         android:title="@string/enable_notifications_vibrate_title"
         android:summary="@string/enable_notifications_vibrate_summary"
         android:defaultValue="true" />
-    <!-- An hyperlink to explain more about Protected Media content settings. -->
-    <org.chromium.chrome.browser.settings.LearnMorePreference
+    <!-- A hyperlink to explain more about Protected Media content settings. -->
+    <org.chromium.components.browser_ui.settings.LearnMorePreference
         android:key="protected_content_learn_more" />
 
     <!-- Collapsible headers for sorting preferences. -->

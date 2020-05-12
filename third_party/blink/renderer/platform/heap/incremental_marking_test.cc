@@ -63,14 +63,6 @@ class BackingVisitor : public Visitor {
     value_trace_callback(this, value);
   }
 
-  // Unused overrides.
-  void VisitWeak(const void* object,
-                 const void* object_weak_ref,
-                 TraceDescriptor desc,
-                 WeakCallback callback) final {}
-  void RegisterWeakCallback(WeakCallback, const void*) final {}
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
-
  private:
   Vector<void*>* objects_;
 };

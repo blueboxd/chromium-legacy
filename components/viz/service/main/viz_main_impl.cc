@@ -16,7 +16,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/ui_devtools/buildflags.h"
-#include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/gpu_init.h"
@@ -265,12 +264,13 @@ scoped_refptr<gl::GLShareGroup> VizMainImpl::GetShareGroup() {
   return gpu_service_->share_group();
 }
 
-void VizMainImpl::ExitProcess(bool immediately) {
+void VizMainImpl::ExitProcess(base::Optional<ExitCode> immediate_exit_code) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!gpu_init_->gpu_info().in_process_gpu && immediately) {
+  if (!gpu_init_->gpu_info().in_process_gpu && immediate_exit_code) {
     // Atomically shut down GPU process to make it faster and simpler.
-    base::Process::TerminateCurrentProcessImmediately(/*exit_code=*/0);
+    base::Process::TerminateCurrentProcessImmediately(
+        static_cast<int>(immediate_exit_code.value()));
     return;
   }
 

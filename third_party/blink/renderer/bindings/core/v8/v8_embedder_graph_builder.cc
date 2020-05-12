@@ -190,13 +190,6 @@ class GC_PLUGIN_IGNORE(
                           WeakCallback,
                           const void*) final;
 
-  // Unused Visitor overrides.
-  void VisitWeak(const void* object,
-                 const void* object_weak_ref,
-                 TraceDescriptor desc,
-                 WeakCallback callback) final {}
-  void RegisterWeakCallback(WeakCallback, const void*) final {}
-
  private:
   class ParentScope {
     STACK_ALLOCATED();

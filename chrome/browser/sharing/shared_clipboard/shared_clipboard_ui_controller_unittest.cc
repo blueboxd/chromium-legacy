@@ -22,6 +22,7 @@
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,6 +64,7 @@ class SharedClipboardUiControllerTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
+  content::RenderViewHostTestEnabler test_render_host_factories_;
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> web_contents_;
   SharedClipboardUiController* controller_ = nullptr;

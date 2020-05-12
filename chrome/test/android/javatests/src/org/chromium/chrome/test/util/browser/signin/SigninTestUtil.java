@@ -52,7 +52,7 @@ public final class SigninTestUtil {
      * This must be called before native is loaded.
      */
     @WorkerThread
-    public static void setUpAuthForTest() {
+    public static void setUpAuthForTesting() {
         sAccountManager = new FakeAccountManagerDelegate(
                 FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -65,7 +65,7 @@ public final class SigninTestUtil {
      * Tears down the test authentication environment.
      */
     @WorkerThread
-    public static void tearDownAuthForTest() {
+    public static void tearDownAuthForTesting() {
         if (getCurrentAccount() != null) {
             signOut();
         }

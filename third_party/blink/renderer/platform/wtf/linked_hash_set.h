@@ -339,7 +339,7 @@ class LinkedHashSet {
   template <typename VisitorDispatcher>
   void Trace(VisitorDispatcher visitor) const {
     if (!NodeHashTraits::kCanTraceConcurrently) {
-      if (visitor->ConcurrentTracingBailOut(
+      if (visitor->DeferredTraceIfConcurrent(
               {this, [](blink::Visitor* visitor, const void* object) {
                  reinterpret_cast<const LinkedHashSet<ValueArg, HashFunctions,
                                                       TraitsArg, Allocator>*>(

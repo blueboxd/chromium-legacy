@@ -71,7 +71,7 @@ public class OnboardingDialogIntegrationTest {
 
     @Before
     public void setUp() {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
                     PASSWORD_MANAGER_ONBOARDING_STATE, SHOULD_SHOW);

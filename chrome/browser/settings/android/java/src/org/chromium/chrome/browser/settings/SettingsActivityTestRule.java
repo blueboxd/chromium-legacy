@@ -14,6 +14,8 @@ import androidx.fragment.app.Fragment;
 
 import org.junit.Assert;
 
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
+
 /**
  * Activity test rule that launch {@link SettingsActivity} in tests.
  *

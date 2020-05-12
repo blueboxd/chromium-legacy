@@ -427,243 +427,6 @@ BrowserContext* GetBrowserContextFromStoragePartition(
   return weak_partition_ptr ? weak_partition_ptr->browser_context() : nullptr;
 }
 
-// TODO(crbug.com/977040): Remove when no longer needed.
-
-void DeprecateSameSiteCookies(
-    int process_id,
-    int routing_id,
-    const net::CookieStatusList& cookie_list,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    blink::mojom::SameSiteCookieOperation operation,
-    const base::Optional<std::string>& devtools_request_id) {
-  // Navigation requests start in the browser, before process_id is assigned, so
-  // the id is set to network::mojom::kBrowserProcessId. In these situations,
-  // the routing_id is the frame tree node id, and can be used directly.
-  RenderFrameHostImpl* frame = nullptr;
-  if (process_id == network::mojom::kBrowserProcessId) {
-    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
-    if (ftn)
-      frame = ftn->current_frame_host();
-  } else {
-    frame = RenderFrameHostImpl::FromID(process_id, routing_id);
-  }
-
-  if (!frame)
-    return;
-
-  // Because of the nature of mojo and calling cross process, there's the
-  // possibility of calling this method after the page has already been
-  // navigated away from, which is DCHECKed against in
-  // LogWebFeatureForCurrentPage. We're replicating the DCHECK here and
-  // returning early should this be the case.
-  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
-
-  // |web_contents| will be null on interstitial pages, which means the frame
-  // has been navigated away from and the function should return early.
-  if (!web_contents)
-    return;
-
-  RenderFrameHostImpl* root_frame_host = frame;
-  while (root_frame_host->GetParent() != nullptr)
-    root_frame_host = root_frame_host->GetParent();
-
-  if (root_frame_host != web_contents->GetMainFrame())
-    return;
-
-  bool samesite_treated_as_lax_cookies = false;
-  bool samesite_none_insecure_cookies = false;
-
-  bool messages_disabled_by_cmdline =
-      base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
-          features::kCookieDeprecationMessages.name,
-          base::FeatureList::OVERRIDE_DISABLE_FEATURE);
-  bool emit_messages =
-      !messages_disabled_by_cmdline &&
-      (net::cookie_util::IsSameSiteByDefaultCookiesEnabled() ||
-       net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() ||
-       base::FeatureList::IsEnabled(features::kCookieDeprecationMessages));
-
-  bool breaking_context_downgrade = false;
-
-  for (const net::CookieWithStatus& excluded_cookie : cookie_list) {
-    std::string cookie_url =
-        net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
-                                            excluded_cookie.cookie.IsSecure())
-            .possibly_invalid_spec();
-
-    if (excluded_cookie.status.ShouldWarn()) {
-      if (excluded_cookie.status.HasWarningReason(
-              net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
-        samesite_treated_as_lax_cookies = true;
-      }
-
-      if (excluded_cookie.status.HasWarningReason(
-              net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
-        samesite_treated_as_lax_cookies = true;
-      }
-
-      if (excluded_cookie.status.HasWarningReason(
-              net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INSECURE)) {
-        samesite_none_insecure_cookies = true;
-      }
-      devtools_instrumentation::ReportSameSiteCookieIssue(
-          root_frame_host, excluded_cookie, url, site_for_cookies, operation,
-          devtools_request_id);
-    }
-    if (emit_messages) {
-      root_frame_host->AddSameSiteCookieDeprecationMessage(
-          cookie_url, excluded_cookie.status,
-          net::cookie_util::IsSameSiteByDefaultCookiesEnabled(),
-          net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled());
-    }
-
-    breaking_context_downgrade = breaking_context_downgrade ||
-                                 excluded_cookie.status.HasDowngradeWarning();
-  }
-
-  // TODO(crbug.com/990439): Do we need separate UseCounter metrics for
-  // Lax-allow-unsafe? We already have histograms in CanonicalCookie.
-  if (samesite_treated_as_lax_cookies) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        frame, blink::mojom::WebFeature::kCookieNoSameSite);
-  }
-
-  if (samesite_none_insecure_cookies) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        frame, blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
-  }
-
-  if (breaking_context_downgrade) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        frame, blink::mojom::WebFeature::kSchemefulSameSiteContextDowngrade);
-  }
-}
-
-void RecordContextDowngradeUKM(
-    WebContents* web_contents,
-    CookieAccessDetails::Type access_type,
-    const net::CanonicalCookie::CookieInclusionStatus& status,
-    const GURL& url) {
-  DCHECK(web_contents);
-
-  ukm::SourceId source_id = static_cast<WebContentsImpl*>(web_contents)
-                                ->GetMainFrame()
-                                ->GetPageUkmSourceId();
-
-  if (access_type == CookieAccessDetails::Type::kRead) {
-    ukm::builders::SchemefulSameSiteContextDowngrade(source_id)
-        .SetRequestPerCookie(status.GetBreakingDowngradeMetricsEnumValue(url))
-        .Record(ukm::UkmRecorder::Get());
-  } else {
-    DCHECK(access_type == CookieAccessDetails::Type::kChange);
-    ukm::builders::SchemefulSameSiteContextDowngrade(source_id)
-        .SetResponsePerCookie(status.GetBreakingDowngradeMetricsEnumValue(url))
-        .Record(ukm::UkmRecorder::Get());
-  }
-}
-
-void ReportCookiesAccessedOnUI(
-    CookieAccessDetails::Type access_type,
-    std::vector<GlobalFrameRoutingId> destinations,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list,
-    const base::Optional<std::string>& devtools_request_id) {
-  for (const GlobalFrameRoutingId& id : destinations) {
-    DeprecateSameSiteCookies(
-        id.child_id, id.frame_routing_id, cookie_list, url, site_for_cookies,
-        access_type == CookieAccessDetails::Type::kRead
-            ? blink::mojom::SameSiteCookieOperation::ReadCookie
-            : blink::mojom::SameSiteCookieOperation::SetCookie,
-        devtools_request_id);
-  }
-
-  net::CookieList accepted, blocked;
-  std::vector<net::CanonicalCookie::CookieInclusionStatus> accepted_status,
-      blocked_status_for_metrics;
-  for (auto& cookie_and_status : cookie_list) {
-    if (cookie_and_status.status.HasExclusionReason(
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_USER_PREFERENCES)) {
-      blocked.push_back(std::move(cookie_and_status.cookie));
-    } else if (cookie_and_status.status.IsInclude()) {
-      accepted.push_back(std::move(cookie_and_status.cookie));
-      accepted_status.push_back(std::move(cookie_and_status.status));
-    } else if (cookie_and_status.status.ShouldRecordDowngradeMetrics()) {
-      // Must run after the case for |accepted_status| because
-      // ShouldRecordDowngradeMetrics() will match on status.IsInclude() which
-      // would steal the status from |accepted_status|.
-      blocked_status_for_metrics.push_back(std::move(cookie_and_status.status));
-    }
-  }
-
-  if (!accepted.empty()) {
-    for (const GlobalFrameRoutingId& id : destinations) {
-      WebContents* web_contents =
-          GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
-      if (!web_contents)
-        continue;
-      static_cast<WebContentsImpl*>(web_contents)
-          ->OnCookiesAccessed({access_type, url,
-                               site_for_cookies.RepresentativeUrl(), accepted,
-                               /* blocked_by_policy =*/false});
-
-      for (const auto& status : accepted_status) {
-        RecordContextDowngradeUKM(web_contents, access_type, status, url);
-      }
-    }
-  }
-
-  if (!blocked.empty()) {
-    for (const GlobalFrameRoutingId& id : destinations) {
-      WebContents* web_contents =
-          GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
-      if (!web_contents)
-        continue;
-      static_cast<WebContentsImpl*>(web_contents)
-          ->OnCookiesAccessed({access_type, url,
-                               site_for_cookies.RepresentativeUrl(), blocked,
-                               /* blocked_by_policy =*/true});
-    }
-  }
-
-  for (const auto& status : blocked_status_for_metrics) {
-    for (const GlobalFrameRoutingId& id : destinations) {
-      WebContents* web_contents =
-          GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
-      if (!web_contents)
-        continue;
-
-      RecordContextDowngradeUKM(web_contents, access_type, status, url);
-    }
-  }
-}
-
-void OnServiceWorkerCookiesAccessedOnCoreThread(
-    CookieAccessDetails::Type access_type,
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list,
-    const base::Optional<std::string>& devtools_request_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  // Notify all the frames associated with this service worker of its cookie
-  // activity.
-  std::unique_ptr<std::vector<GlobalFrameRoutingId>> frame_routing_ids =
-      service_worker_context->GetWindowClientFrameRoutingIds(url.GetOrigin());
-  if (!frame_routing_ids->empty()) {
-    RunOrPostTaskOnThread(
-        FROM_HERE, BrowserThread::UI,
-        base::BindOnce(ReportCookiesAccessedOnUI, access_type,
-                       *frame_routing_ids, url, site_for_cookies, cookie_list,
-                       devtools_request_id));
-  }
-}
-
 WebContents* GetWebContents(int process_id, int routing_id) {
   if (process_id != network::mojom::kBrowserProcessId) {
     return WebContentsImpl::FromRenderFrameHostID(process_id, routing_id);
@@ -1272,6 +1035,60 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
                               perform_storage_cleanup);
 }
 
+class StoragePartitionImpl::ServiceWorkerCookieAccessObserver
+    : public network::mojom::CookieAccessObserver {
+ public:
+  explicit ServiceWorkerCookieAccessObserver(
+      StoragePartitionImpl* storage_partition)
+      : storage_partition_(storage_partition) {}
+
+ private:
+  void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
+                 observer) override {
+    storage_partition_->service_worker_cookie_observers_.Add(
+        std::make_unique<ServiceWorkerCookieAccessObserver>(storage_partition_),
+        std::move(observer));
+  }
+
+  void OnCookiesAccessed(
+      network::mojom::CookieAccessDetailsPtr details) override {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+        storage_partition_->GetServiceWorkerContext();
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread,
+                       service_worker_context, std::move(details)));
+  }
+
+  static void OnServiceWorkerCookiesAccessedOnCoreThread(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
+      network::mojom::CookieAccessDetailsPtr details) {
+    std::vector<GlobalFrameRoutingId> destinations =
+        *service_worker_context->GetWindowClientFrameRoutingIds(
+            details->url.GetOrigin());
+    if (destinations.empty())
+      return;
+    RunOrPostTaskOnThread(
+        FROM_HERE, BrowserThread::UI,
+        base::BindOnce(&ReportCookiesAccessedOnUI, std::move(destinations),
+                       std::move(details)));
+  }
+
+  static void ReportCookiesAccessedOnUI(
+      std::vector<GlobalFrameRoutingId> destinations,
+      network::mojom::CookieAccessDetailsPtr details) {
+    for (GlobalFrameRoutingId frame_id : destinations) {
+      if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(frame_id)) {
+        rfh->OnCookiesAccessed(mojo::Clone(details));
+      }
+    }
+  }
+
+  // |storage_partition_| owns this object via UniqueReceiverSet
+  // (service_worker_cookie_observers_).
+  StoragePartitionImpl* storage_partition_;
+};
+
 StoragePartitionImpl::StoragePartitionImpl(
     BrowserContext* browser_context,
     const base::FilePath& partition_path,
@@ -1608,54 +1425,6 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_.get();
 }
 
-class StoragePartitionImpl::CookieAccessObserver
-    : public network::mojom::CookieAccessObserver {
- public:
-  CookieAccessObserver(StoragePartitionImpl* partition,
-                       bool is_service_worker,
-                       int process_id,
-                       int routing_id)
-      : partition_(partition),
-        is_service_worker_(is_service_worker),
-        process_id_(process_id),
-        routing_id_(routing_id) {}
-
- private:
-  void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
-                 observer) override {
-    partition_->cookie_observers_.Add(
-        std::make_unique<CookieAccessObserver>(partition_, is_service_worker_,
-                                               process_id_, routing_id_),
-        std::move(observer));
-  }
-
-  void OnCookiesAccessed(
-      network::mojom::CookieAccessDetailsPtr details) override {
-    partition_->OnCookiesAccessed(
-        details->type, is_service_worker_, process_id_, routing_id_,
-        details->url, details->site_for_cookies, details->cookie_list,
-        details->devtools_request_id);
-  }
-
-  // |partition_| owns this via mojo::UniqueReceiverSet (cookie_observers_).
-  StoragePartitionImpl* const partition_;
-  const bool is_service_worker_;
-  const int process_id_;
-  const int routing_id_;
-};
-
-mojo::PendingRemote<network::mojom::CookieAccessObserver>
-StoragePartitionImpl::CreateCookieAccessObserver(bool is_service_worker,
-                                                 int32_t process_id,
-                                                 int32_t routing_id) {
-  mojo::PendingRemote<network::mojom::CookieAccessObserver> remote;
-  cookie_observers_.Add(std::make_unique<CookieAccessObserver>(
-                            this, is_service_worker, process_id, routing_id),
-                        remote.InitWithNewPipeAndPassReceiver());
-
-  return remote;
-}
-
 void StoragePartitionImpl::CreateRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
@@ -1664,14 +1433,15 @@ void StoragePartitionImpl::CreateRestrictedCookieManager(
     bool is_service_worker,
     int process_id,
     int routing_id,
-    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
+    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
+    mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer) {
   DCHECK(initialized_);
   if (!GetContentClient()->browser()->WillCreateRestrictedCookieManager(
           role, browser_context_, origin, site_for_cookies, top_frame_origin,
           is_service_worker, process_id, routing_id, &receiver)) {
     GetNetworkContext()->GetRestrictedCookieManager(
         std::move(receiver), role, origin, site_for_cookies, top_frame_origin,
-        CreateCookieAccessObserver(is_service_worker, process_id, routing_id));
+        std::move(cookie_observer));
   }
 }
 
@@ -2058,31 +1828,6 @@ void StoragePartitionImpl::OnClearSiteData(int32_t process_id,
   ClearSiteDataHandler::HandleHeader(browser_context_getter,
                                      web_contents_getter, url, header_value,
                                      load_flags, std::move(callback));
-}
-
-void StoragePartitionImpl::OnCookiesAccessed(
-    CookieAccessDetails::Type access_type,
-    bool is_service_worker,
-    int32_t process_id,
-    int32_t routing_id,
-    const GURL& url,
-    const net::SiteForCookies& site_for_cookies,
-    const std::vector<net::CookieWithStatus>& cookie_list,
-    const base::Optional<std::string>& devtools_request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(initialized_);
-  if (is_service_worker) {
-    RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&OnServiceWorkerCookiesAccessedOnCoreThread, access_type,
-                       service_worker_context_, url, site_for_cookies,
-                       std::move(cookie_list), devtools_request_id));
-  } else {
-    std::vector<GlobalFrameRoutingId> destination;
-    destination.emplace_back(process_id, routing_id);
-    ReportCookiesAccessedOnUI(access_type, destination, url, site_for_cookies,
-                              cookie_list, devtools_request_id);
-  }
 }
 
 #if defined(OS_ANDROID)
@@ -2717,6 +2462,15 @@ void StoragePartition::SetDefaultQuotaSettingsForTesting(
 
 bool StoragePartition::IsAppCacheEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kAppCache);
+}
+
+mojo::PendingRemote<network::mojom::CookieAccessObserver>
+StoragePartitionImpl::CreateCookieAccessObserverForServiceWorker() {
+  mojo::PendingRemote<network::mojom::CookieAccessObserver> remote;
+  service_worker_cookie_observers_.Add(
+      std::make_unique<ServiceWorkerCookieAccessObserver>(this),
+      remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 }  // namespace content

@@ -33,8 +33,8 @@ const char* const kFallbackFontAllowedArgs[] = {"font_name",
 const char* const kGetFallbackFontsAllowedArgs[] = {"script", nullptr};
 const char* const kGPUAllowedArgs[] = {nullptr};
 const char* const kInputLatencyAllowedArgs[] = {"data", nullptr};
-const char* const kMemoryDumpAllowedArgs[] = {"dumps", "top_queued_message_tag",
-                                              "count", nullptr};
+const char* const kMemoryDumpAllowedArgs[] = {
+    "count", "dumps", "function", "top_queued_message_tag", nullptr};
 const char* const kRendererHostAllowedArgs[] = {
     "class",           "line", "should_background", "has_pending_views",
     "bytes_allocated", nullptr};

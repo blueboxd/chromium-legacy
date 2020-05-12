@@ -1207,11 +1207,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
   EXPECT_TRUE(B2->GetSuddenTerminationDisablerState(
       blink::mojom::SuddenTerminationDisablerType::kUnloadHandler));
 
-  EXPECT_TRUE(B2->is_active());
+  EXPECT_TRUE(B2->IsCurrent());
   EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').remove()"));
   EXPECT_EQ(nullptr, frame_tree->GetFocusedFrame());
   EXPECT_EQ(2u, A1->child_count());
-  EXPECT_FALSE(B2->is_active());
+  EXPECT_TRUE(B2->IsPendingDeletion());
 
   // 3. C3 navigates.
   NavigateFrameToURL(C3->frame_tree_node(),

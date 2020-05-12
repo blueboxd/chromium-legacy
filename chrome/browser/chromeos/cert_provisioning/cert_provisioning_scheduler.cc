@@ -558,6 +558,7 @@ void CertProvisioningScheduler::UpdateFailedCertProfiles(
   FailedWorkerInfo info;
   info.state = worker.GetPreviousState();
   info.public_key = worker.GetPublicKey();
+  info.last_update_time = worker.GetLastUpdateTime();
 
   failed_cert_profiles_[worker.GetCertProfile().profile_id] = std::move(info);
 }

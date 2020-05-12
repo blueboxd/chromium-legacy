@@ -231,6 +231,10 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string GetEncryptedPasswordById(int id) const;
 #endif
 
+  // Returns a suffix (infix, really) to be used in histogram names to
+  // differentiate the profile store from the account store.
+  base::StringPiece GetMetricsSuffixForStore() const;
+
   void ReportNumberOfAccountsMetrics(bool custom_passphrase_sync_enabled);
   void RecordTimesPasswordUsedMetrics(bool custom_passphrase_sync_enabled);
   void ReportSyncingAccountStateMetrics(const std::string& sync_username);

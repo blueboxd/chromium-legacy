@@ -59,6 +59,7 @@ class CONTENT_EXPORT NavigationURLLoader {
           prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate,
       bool is_served_from_back_forward_cache,
+      mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors = {});
 

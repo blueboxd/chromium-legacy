@@ -16,7 +16,6 @@ mojo::PendingRemote<mojom::IppParser> LaunchIppParser() {
   content::ServiceProcessHost::Launch<mojom::IppParser>(
       remote.InitWithNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SandboxType::kUtility)
           .WithDisplayName(IDS_UTILITY_PROCESS_IPP_PARSER_SERVICE_NAME)
           .Pass());
   return remote;

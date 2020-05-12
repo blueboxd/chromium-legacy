@@ -71,8 +71,9 @@ class OmniboxResultView : public views::View,
   // Invoked when this result view has been selected or unselected.
   void OnSelectionStateChanged();
 
-  // Whether |this| matches the model's selected index.
-  bool IsSelected() const;
+  // Whether this result view should be considered 'selected'. This returns
+  // false if this line's header is selected (instead of the match itself).
+  bool IsMatchSelected() const;
 
   // Returns the visible (and keyboard-focusable) secondary button, or nullptr
   // if none exists for this suggestion.

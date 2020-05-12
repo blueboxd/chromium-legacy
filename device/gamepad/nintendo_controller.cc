@@ -771,7 +771,8 @@ GamepadBusType BusTypeFromDeviceInfo(const mojom::HidDeviceInfo* device_info) {
   // regardless of the actual connection.
   if (device_info->bus_type == mojom::HidBusType::kHIDBusTypeBluetooth)
     return GAMEPAD_BUS_BLUETOOTH;
-  auto gamepad_id = GamepadIdList::Get().GetGamepadId(device_info->vendor_id,
+  auto gamepad_id = GamepadIdList::Get().GetGamepadId(device_info->product_name,
+                                                      device_info->vendor_id,
                                                       device_info->product_id);
   switch (gamepad_id) {
     case GamepadId::kNintendoProduct2009:
@@ -821,7 +822,8 @@ NintendoController::NintendoController(int source_id,
   if (device_info_) {
     bus_type_ = BusTypeFromDeviceInfo(device_info_.get());
     output_report_size_bytes_ = device_info_->max_output_report_size;
-    gamepad_id_ = GamepadIdList::Get().GetGamepadId(device_info_->vendor_id,
+    gamepad_id_ = GamepadIdList::Get().GetGamepadId(device_info_->product_name,
+                                                    device_info_->vendor_id,
                                                     device_info_->product_id);
   } else {
     gamepad_id_ = GamepadId::kUnknownGamepad;
@@ -870,9 +872,7 @@ std::unique_ptr<NintendoController> NintendoController::CreateComposite(
 }
 
 // static
-bool NintendoController::IsNintendoController(uint16_t vendor_id,
-                                              uint16_t product_id) {
-  auto gamepad_id = GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
+bool NintendoController::IsNintendoController(GamepadId gamepad_id) {
   switch (gamepad_id) {
     case GamepadId::kNintendoProduct2006:
     case GamepadId::kNintendoProduct2007:
@@ -903,9 +903,10 @@ void NintendoController::Open(base::OnceClosure device_ready_closure) {
   if (is_composite_) {
     StartInitSequence();
   } else {
-    uint16_t vendor_id = device_info_->vendor_id;
-    uint16_t product_id = device_info_->product_id;
-    if (IsNintendoController(vendor_id, product_id)) {
+    GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+        device_info_->product_name, device_info_->vendor_id,
+        device_info_->product_id);
+    if (IsNintendoController(gamepad_id)) {
       Connect(base::BindOnce(&NintendoController::OnConnect,
                              weak_factory_.GetWeakPtr()));
     }
@@ -984,11 +985,14 @@ GamepadStandardMappingFunction NintendoController::GetMappingFunction() const {
   if (is_composite_) {
     // In composite mode, we use the same mapping as the Charging Grip.
     return GetGamepadStandardMappingFunction(
-        kVendorNintendo, kProductSwitchChargingGrip,
+        kProductNameSwitchCompositeDevice, kVendorNintendo,
+        kProductSwitchChargingGrip,
         /*hid_specification_version=*/0, /*version_number=*/0, bus_type_);
   } else {
     return GetGamepadStandardMappingFunction(
-        device_info_->vendor_id, device_info_->product_id,
+        device_info_->product_name, device_info_->vendor_id,
+        device_info_->product_id,
+
         /*hid_specification_version=*/0, /*version_number=*/0, bus_type_);
   }
 }

@@ -156,13 +156,6 @@ void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
   // Do nothing.
 }
 
-void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
-  // TODO(klobag): Do we need to do anything else?
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetSize(size);
-}
-
 void WebContentsViewAndroid::Focus() {
   auto* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)

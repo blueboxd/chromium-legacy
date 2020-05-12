@@ -7,6 +7,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_view_host.h"
@@ -44,19 +45,14 @@ void JNI_WebContentsUtils_EvaluateJavaScriptWithUserGesture(
     JNIEnv* env,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& script) {
-  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromJavaWebContents(jweb_contents));
   RenderViewHost* rvh = web_contents->GetRenderViewHost();
   DCHECK(rvh);
 
-  if (!rvh->IsRenderViewLive()) {
-    if (!static_cast<WebContentsImpl*>(web_contents)
-             ->CreateRenderViewForInitialEmptyDocument()) {
-      LOG(ERROR)
-          << "Failed to create RenderView in EvaluateJavaScriptWithUserGesture";
-      return;
-    }
-  }
-
+  if (!web_contents->GetWebContentsAndroid()
+           ->InitializeRenderFrameForJavaScript())
+    return;
   web_contents->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
       ConvertJavaStringToUTF16(env, script));
 }

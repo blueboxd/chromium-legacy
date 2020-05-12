@@ -135,16 +135,15 @@ class CONTENT_EXPORT RenderFrameHostManager
         bool* proceed_to_fire_unload) = 0;
     virtual void RenderProcessGoneFromRenderManager(
         RenderViewHost* render_view_host) = 0;
-    virtual void UpdateRenderViewSizeForRenderManager(bool is_main_frame) = 0;
     virtual void CancelModalDialogsForRenderManager() = 0;
-    virtual void NotifySwappedFromRenderManager(RenderFrameHost* old_host,
-                                                RenderFrameHost* new_host,
+    virtual void NotifySwappedFromRenderManager(RenderFrameHost* old_frame,
+                                                RenderFrameHost* new_frame,
                                                 bool is_main_frame) = 0;
     // TODO(nasko): This should be removed once extensions no longer use
     // NotificationService. See https://crbug.com/462682.
     virtual void NotifyMainFrameSwappedFromRenderManager(
-        RenderFrameHost* old_host,
-        RenderFrameHost* new_host) = 0;
+        RenderFrameHost* old_frame,
+        RenderFrameHost* new_frame) = 0;
     virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
 
     // Returns true if the location bar should be focused by default rather than
@@ -484,9 +483,10 @@ class CONTENT_EXPORT RenderFrameHostManager
       NavigationRequest* navigation_request);
 
   // Helper to initialize the current RenderFrame if it's not initialized.
-  // TODO(https://crbug.com/1006814): Remove this. For now debug URLs are an
-  // exception to replacing all crashed frames for RenderDocument.
-  void InitializeRenderFrameForDebugURLIfNecessary();
+  // TODO(https://crbug.com/1006814): Remove this. For now debug URLs and
+  // WebView JS execution are an exception to replacing all crashed frames for
+  // RenderDocument. This is a no-op if the frame is already initialized.
+  bool InitializeRenderFrameForImmediateUse();
 
   // Prepares the FrameTreeNode for attaching an inner WebContents. This step
   // may involve replacing |current_frame_host()| with a new RenderFrameHost

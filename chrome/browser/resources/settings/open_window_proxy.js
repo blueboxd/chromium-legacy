@@ -10,7 +10,7 @@
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 
 /** @interface */
-class OpenWindowProxy {
+export class OpenWindowProxy {
   /**
    * Opens the specified URL in a new tab.
    * @param {string} url

@@ -40,6 +40,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
+import org.chromium.components.embedder_support.application.FirebaseConfig;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
@@ -214,6 +215,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         }
 
         BuildInfo.setBrowserPackageInfo(packageInfo);
+        BuildInfo.setFirebaseAppId(
+                FirebaseConfig.getFirebaseAppIdForPackage(packageInfo.packageName));
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
         R.onResourcesLoaded(forceCorrectPackageId(remoteContext));

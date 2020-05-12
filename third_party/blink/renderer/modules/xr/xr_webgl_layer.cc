@@ -8,12 +8,12 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_framebuffer.h"
-#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_system.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -47,12 +47,8 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  WebGLRenderingContextBase* webgl_context;
-  if (context.IsWebGL2RenderingContext()) {
-    webgl_context = context.GetAsWebGL2RenderingContext();
-  } else {
-    webgl_context = context.GetAsWebGLRenderingContext();
-  }
+  WebGLRenderingContextBase* webgl_context =
+      webglRenderingContextBaseFromUnion(context);
 
   if (webgl_context->isContextLost()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

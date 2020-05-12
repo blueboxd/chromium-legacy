@@ -179,6 +179,7 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     return;
   }
 
+  std::string name = device->GetName();
   uint16_t vendor_id = device->GetVendorId();
   uint16_t product_id = device->GetProductId();
 
@@ -189,15 +190,17 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     return;
   }
 
-  if (NintendoController::IsNintendoController(vendor_id, product_id)) {
+  const GamepadId gamepad_id =
+      GamepadIdList::Get().GetGamepadId(name, vendor_id, product_id);
+
+  if (NintendoController::IsNintendoController(gamepad_id)) {
     // Nintendo devices are handled by the Nintendo data fetcher.
     device->CloseJoydevNode();
     RemoveDevice(device);
     return;
   }
 
-  bool is_recognized = GamepadIdList::Get().GetGamepadId(
-                           vendor_id, product_id) != GamepadId::kUnknownGamepad;
+  bool is_recognized = gamepad_id != GamepadId::kUnknownGamepad;
 
   PadState* state = GetPadState(joydev_index, is_recognized);
   if (!state) {
@@ -227,13 +230,13 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
   if (is_recognized)
     RecordUnknownGamepad(source());
   else
-    RecordConnectedGamepad(vendor_id, product_id);
+    RecordConnectedGamepad(gamepad_id);
 
   state->mapper = device->GetMappingFunction();
 
   Gamepad& pad = state->data;
-  UpdateGamepadStrings(device->GetName(), device->GetVendorId(),
-                       device->GetProductId(), state->mapper != nullptr, pad);
+  UpdateGamepadStrings(name, vendor_id, product_id, state->mapper != nullptr,
+                       pad);
 
   pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
   pad.vibration_actuator.not_null = device->SupportsVibration();

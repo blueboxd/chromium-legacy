@@ -234,7 +234,8 @@ def _check_redundant_virtual_expectations(host, port, path, expectations):
         for base_exp in expectations_by_test.get(base_test, []):
             if (base_exp.results == exp.results
                     and base_exp.is_slow_test == exp.is_slow_test
-                    and base_exp.tags.issubset(exp.tags)):
+                    and base_exp.tags.issubset(exp.tags)
+                    and base_exp.reason == exp.reason):
                 error = "{}:{} Expectation '{}' is redundant with '{}' in line {}".format(
                     host.filesystem.basename(path), exp.lineno, exp.test,
                     base_test, base_exp.lineno)

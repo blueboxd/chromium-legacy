@@ -198,7 +198,9 @@ TEST_F(TrustTokenRequestSigningHelperTest, WontSignIfNoRedemptionRecord) {
   mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kResourceExhausted);
+  // In failure cases, the signing helper should return kOk but attach an empty
+  // SRR header.
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));
 }
@@ -218,6 +220,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, MergesHeaders) {
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
+  my_record.set_body("SRR body");
   store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
 
   TrustTokenRequestSigningHelper helper(
@@ -281,7 +284,10 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kInvalidArgument);
+  // In failure cases, the signing helper should return kOk but attach an empty
+  // SRR header.
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
 }
 
@@ -316,7 +322,8 @@ TEST_F(TrustTokenRequestSigningHelperTest,
   mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kInvalidArgument);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
+  EXPECT_THAT(*my_request, Header("Sec-Signed-Redemption-Record", IsEmpty()));
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
 }
 
@@ -340,6 +347,7 @@ TEST_F(TrustTokenRequestSigningHelperTestWithMockTime, ProvidesTimeHeader) {
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
+  my_record.set_body("look at me, I'm an SRR body");
   store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
 
   TrustTokenRequestSigningHelper helper(
@@ -400,6 +408,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyMinimal) {
 
   SignedTrustTokenRedemptionRecord my_record;
   my_record.set_public_key("key");
+  my_record.set_body("look at me, I'm an SRR body");
   store->SetRedemptionRecord(params.issuer, params.toplevel, my_record);
 
   // Giving an IdentitySigner to |helper| will mean that |helper| should provide
@@ -577,7 +586,7 @@ TEST_F(TrustTokenRequestSigningHelperTest, CatchesSignatureFailure) {
   mojom::TrustTokenOperationStatus result =
       ExecuteBeginOperationAndWaitForResult(&helper, my_request.get());
 
-  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kInternalError);
+  EXPECT_EQ(result, mojom::TrustTokenOperationStatus::kOk);
   EXPECT_THAT(*my_request, Not(Header("Signed-Headers")));
   EXPECT_THAT(*my_request, Not(Header("Sec-Time")));
   EXPECT_THAT(*my_request, Not(Header("Sec-Signature")));

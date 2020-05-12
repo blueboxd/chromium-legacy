@@ -85,6 +85,7 @@ void FakeTileService::GetTile(const std::string& tile_id,
 }
 
 void FakeTileService::StartFetchForTiles(
+    bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback callback) {}
 
 }  // namespace upboarding

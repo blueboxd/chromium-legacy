@@ -88,7 +88,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
       base::Unretained(browser_)));
 
   if (!error_->GetBubbleViewDetailsButtonLabel().empty()) {
-    DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
+    DialogDelegate::SetExtraView(views::MdTextButton::Create(
         this, error_->GetBubbleViewDetailsButtonLabel()));
   }
 

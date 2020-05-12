@@ -8,8 +8,7 @@ typedef [StringContext=TrustedHTML] DOMString HTMLString;
 
 [
     Exposed=Window,
-    RuntimeEnabled=TrustedDOMTypes,
-    SecureContext
+    RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedHTML {
     stringifier;
 };

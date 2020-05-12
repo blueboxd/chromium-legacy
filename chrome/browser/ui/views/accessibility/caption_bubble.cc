@@ -412,6 +412,17 @@ void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kCaption;
 }
 
+void CaptionBubble::AddedToWidget() {
+  DCHECK(GetWidget());
+  DCHECK(GetAnchorView());
+  DCHECK(anchor_widget());
+  GetWidget()->SetFocusTraversableParent(
+      anchor_widget()->GetFocusTraversable());
+  GetWidget()->SetFocusTraversableParentView(GetAnchorView());
+  GetAnchorView()->SetProperty(views::kAnchoredDialogKey,
+                               static_cast<BubbleDialogDelegateView*>(this));
+}
+
 void CaptionBubble::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (sender == close_button_) {

@@ -39,7 +39,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean willChromeHandleIntent(Intent intent) {
+    public boolean willAppHandleIntent(Intent intent) {
         return false;
     }
 
@@ -94,7 +94,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isChromeAppInForeground() {
+    public boolean isApplicationInForeground() {
         return mTab.getBrowser().isResumed();
     }
 

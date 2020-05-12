@@ -65,16 +65,6 @@ class TestStoragePartition : public StoragePartition {
     cookie_manager_for_browser_process_ = cookie_manager_for_browser_process;
   }
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
-  void CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole role,
-      const url::Origin& origin,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
-      bool is_service_worker,
-      int process_id,
-      int routing_id,
-      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
-      override;
 
   void CreateHasTrustTokensAnswerer(
       mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,

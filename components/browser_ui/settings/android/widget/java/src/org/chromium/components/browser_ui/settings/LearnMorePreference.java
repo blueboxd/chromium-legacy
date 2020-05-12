@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.settings;
+package org.chromium.components.browser_ui.settings;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
+
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.chrome.R;
 
 /**
  * A preference with a clickable "Learn more" link.

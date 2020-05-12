@@ -611,6 +611,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // of foo() here.
   virtual void DomOperationResponse(const std::string& json_string) {}
 
+  virtual void OnCookiesAccessed(RenderFrameHostImpl* render_frame_host,
+                                 const CookieAccessDetails& details) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() = default;
 };

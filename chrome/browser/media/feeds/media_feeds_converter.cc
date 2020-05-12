@@ -1126,19 +1126,32 @@ bool GetMediaFeedItem(const EntityPtr& item,
     std::map<int, int> number_of_episodes;
     auto* season =
         GetProperty(item.get(), schema_org::property::kContainsSeason);
+
     if (season && !GetSeason(*season, &number_of_episodes))
       return false;
+
     auto episodes = GetEpisodeCandidates(item.get());
     if (!episodes.has_value())
       return false;
+
     auto main_episode = PickMainEpisode(episodes.value());
     if (main_episode.has_value() &&
         !GetEpisode(main_episode.value(), converted_item))
       return false;
+
     auto next_episode = PickPlayNextCandidate(episodes.value(), main_episode,
                                               number_of_episodes);
     if (next_episode.has_value() &&
         !GetPlayNextCandidate(next_episode.value(), converted_item)) {
+      return false;
+    }
+
+    // Attempt to set the duration of the item if there is no embedded duration
+    // in an episode.
+    if (!converted_item->tv_episode &&
+        !convert_property.Run(
+            schema_org::property::kDuration, /*is_required=*/false,
+            base::BindOnce(&GetDuration<mojom::MediaFeedItem>))) {
       return false;
     }
   }

@@ -70,6 +70,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   void OnFocus() override;
   void OnBlur() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void AddedToWidget() override;
 
   // Views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

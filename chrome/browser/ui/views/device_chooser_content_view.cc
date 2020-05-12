@@ -65,7 +65,7 @@ BluetoothStatusContainer::BluetoothStatusContainer(
           views::BoxLayout::Orientation::kHorizontal))
       ->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  auto re_scan_button = views::MdTextButton::CreateSecondaryUiButton(
+  auto re_scan_button = views::MdTextButton::Create(
       listener,
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN));
   re_scan_button->SetTooltipText(

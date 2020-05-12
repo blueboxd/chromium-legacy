@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/paint/block_flow_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -879,8 +880,15 @@ void LayoutBlockFlow::InsertForcedBreakBeforeChildIfNeeded(
     LayoutUnit pagination_strut = new_logical_top - old_logical_top;
     child.SetPaginationStrut(pagination_strut);
     if (is_named_page_break) {
-      // This was a forced break because of named pages.
+      // This was a forced break because of named pages. We now need to store
+      // the page number where this happened, so that we can apply the right
+      // descriptors (size, margins, page-orientation, etc.) when printing the
+      // page.
       layout_info.SetChildPageName(child.StyleRef().Page());
+      if (NamedPagesMapper* mapper = View()->GetNamedPagesMapper()) {
+        mapper->AddNamedPage(child.StyleRef().Page(),
+                             CurrentPageNumber(new_logical_top));
+      }
     }
   }
 }

@@ -273,7 +273,7 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
 
   // True if the display password button should be visible on the login/lock
   // screen for this user.
-  bool show_display_password_button = true;
+  bool show_display_password_button = false;
 
   // Contains the public account information if user type is PUBLIC_ACCOUNT.
   base::Optional<PublicAccountInfo> public_account_info;

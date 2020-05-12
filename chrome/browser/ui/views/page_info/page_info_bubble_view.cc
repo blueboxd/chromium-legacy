@@ -322,19 +322,17 @@ void BubbleHeaderView::AddPasswordReuseButtons(bool is_saved_password) {
             : IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON;
   }
 
-  std::unique_ptr<views::MdTextButton::LabelButton> change_password_button;
+  std::unique_ptr<views::MdTextButton> change_password_button;
   if (change_password_template) {
-    change_password_button =
-        views::MdTextButton::CreateSecondaryUiProminentButton(
-            button_listener_,
-            l10n_util::GetStringUTF16(change_password_template));
+    change_password_button = views::MdTextButton::Create(
+        button_listener_, l10n_util::GetStringUTF16(change_password_template));
+    change_password_button->SetProminent(true);
     change_password_button->SetID(
         PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
   }
-  auto whitelist_password_reuse_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          button_listener_, l10n_util::GetStringUTF16(
-                                IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON));
+  auto whitelist_password_reuse_button = views::MdTextButton::Create(
+      button_listener_,
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON));
   whitelist_password_reuse_button->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
 

@@ -203,8 +203,8 @@ class PLATFORM_EXPORT Visitor {
     T* t = key.Get();
     if (!t)
       return;
-    VisitEphemeron(TraceTrait<T>::GetTraceDescriptor(t).base_object_payload,
-                   value, value_trace_callback);
+    VisitEphemeron(TraceDescriptorFor(t).base_object_payload, value,
+                   value_trace_callback);
   }
 
   template <typename T>
@@ -227,6 +227,34 @@ class PLATFORM_EXPORT Visitor {
     RegisterMovableSlot(reinterpret_cast<const void* const*>(slot));
   }
 
+  // Cross-component tracing interface.
+  template <typename V8Type>
+  void Trace(const TraceWrapperV8Reference<V8Type>& v8reference) {
+    Visit(v8reference.template Cast<v8::Value>());
+  }
+
+  // Dynamic visitor interface.
+
+  // Registers backing store pointers so that they can be moved and properly
+  // updated.
+  virtual void RegisterBackingStoreCallback(const void* backing,
+                                            MovingObjectCallback) {}
+
+  // Adds a |callback| that is invoked with |parameter| after liveness has been
+  // computed on the whole object graph. The |callback| may use the provided
+  // |LivenessBroker| to determine whether an object is considered alive or
+  // dead.
+  //
+  // - Upon returning from the callback all references to dead objects must have
+  //   been cleared.
+  // - Any operation that extends the object graph, including allocation
+  //   or reviving objects, is prohibited.
+  // - Clearing out pointers is allowed.
+  // - Removing elements from heap collections is allowed as these collections
+  //   are aware of custom weakness and won't resize their backings.
+  virtual void RegisterWeakCallback(WeakCallback callback,
+                                    const void* parameter) {}
+
   // Registers an instance method using |RegisterWeakCallback|. See description
   // below.
   template <typename T, void (T::*method)(const LivenessBroker&)>
@@ -235,29 +263,35 @@ class PLATFORM_EXPORT Visitor {
                          obj);
   }
 
-  // Cross-component tracing interface.
+  // Returns whether the visitor is used in a concurrent setting.
+  virtual bool IsConcurrent() const { return false; }
 
-  template <typename V8Type>
-  void Trace(const TraceWrapperV8Reference<V8Type>& v8reference) {
-    Visit(v8reference.template Cast<v8::Value>());
-  }
+  // Defers invoking |desc| to the main thread when running concurrently.
+  // Returns true if |desc| has been queued for later processing and false if
+  // running in a non-concurrent setting.
+  //
+  // This can be used to defer processing data structures to the main thread
+  // when support for concurrent processing is missing.
+  virtual bool DeferredTraceIfConcurrent(TraceDescriptor desc) { return false; }
 
-  // Dynamic visitor interface.
+ protected:
+  // Visits an object through a strong reference.
+  virtual void Visit(const void*, TraceDescriptor) {}
+
+  // Visits an object through a weak reference.
+  virtual void VisitWeak(const void*,
+                         const void*,
+                         TraceDescriptor,
+                         WeakCallback) {}
+
+  // Visits cross-component references to V8.
+  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) {}
 
   virtual void VisitRoot(const void* t,
                          TraceDescriptor desc,
                          const base::Location&) {
     Visit(t, desc);
   }
-
-  // Visits an object through a strong reference.
-  virtual void Visit(const void*, TraceDescriptor) = 0;
-
-  // Visits an object through a weak reference.
-  virtual void VisitWeak(const void*,
-                         const void*,
-                         TraceDescriptor,
-                         WeakCallback) = 0;
 
   // Visits ephemeron pairs which are a combination of weak and strong keys and
   // values.
@@ -278,44 +312,10 @@ class PLATFORM_EXPORT Visitor {
                                   WeakCallback weak_callback,
                                   const void* weak_callback_parameter) {}
 
-  // Visits cross-component references to V8.
-
-  virtual void Visit(const TraceWrapperV8Reference<v8::Value>&) = 0;
-
-  // Registers backing store pointers so that they can be moved and properly
-  // updated.
-  virtual void RegisterBackingStoreCallback(const void* backing,
-                                            MovingObjectCallback) {}
-
   virtual void RegisterMovableSlot(const void* const* slot) {}
 
-  // Adds a |callback| that is invoked with |parameter| after liveness has been
-  // computed on the whole object graph. The |callback| may use the provided
-  // |LivenessBroker| to determine whether an object is considered alive or
-  // dead.
-  //
-  // - Upon returning from the callback all references to dead objects must have
-  //   been cleared.
-  // - Any operation that extends the object graph, including allocation
-  //   or reviving objects, is prohibited.
-  // - Clearing out pointers is allowed.
-  // - Removing elements from heap collections is allowed as these collections
-  //   are aware of custom weakness and won't resize their backings.
-  virtual void RegisterWeakCallback(WeakCallback callback,
-                                    const void* parameter) = 0;
-
-  virtual bool IsConcurrent() const { return false; }
-
-  // TODO(crbug/986235): ConcurrentTracingBailOut is part of a temporary
-  // bailout mechanism to avoid tracing collections on concurrent threads.
-  // This method and any usage of it will be removed as soon as making all
-  // collections cuncurrent-safe is finished.
-  // The same also applies to NotSafeToConcurrentlyTraceWorklist in heap.h.
-  virtual bool ConcurrentTracingBailOut(TraceDescriptor desc) { return false; }
-
- protected:
   template <typename T>
-  static inline TraceDescriptor TraceDescriptorFor(const T* traceable) {
+  static TraceDescriptor TraceDescriptorFor(const T* traceable) {
     return TraceTrait<T>::GetTraceDescriptor(traceable);
   }
 

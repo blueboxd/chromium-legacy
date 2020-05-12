@@ -225,11 +225,26 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
 
       assertDeepEquals(
           [
-            'Type', 'Name', 'Author', 'Date Published', 'Family Friendly',
-            'Action Status', 'Action URL', 'Action Start Time (secs)',
-            'Interaction Counters', 'Content Ratings', 'Genre', 'Live Details',
-            'TV Episode', 'Play Next Candidate', 'Identifiers', 'Shown Count',
-            'Clicked', 'Images', 'Safe Search Result'
+            'Type',
+            'Name',
+            'Author',
+            'Date Published',
+            'Family Friendly',
+            'Action Status',
+            'Action URL',
+            'Action Start Time (secs)',
+            'Interaction Counters',
+            'Content Ratings',
+            'Genre',
+            'Live Details',
+            'TV Episode',
+            'Play Next Candidate',
+            'Identifiers',
+            'Shown Count',
+            'Clicked',
+            'Images',
+            'Safe Search Result',
+            'Duration (secs)'
           ],
           feedItemsHeaders.map(x => x.textContent.trim()));
 
@@ -274,6 +289,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'All', function() {
           'https://www.example.org/image1.pngContentAttributes=Iconichttps://www.example.org/image2.png',
           feedItemsContents.childNodes[17].textContent.trim());
       assertEquals('Safe', feedItemsContents.childNodes[18].textContent.trim());
+      assertEquals('30', feedItemsContents.childNodes[19].textContent.trim());
     });
   });
 

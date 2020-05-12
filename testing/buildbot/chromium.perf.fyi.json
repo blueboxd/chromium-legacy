@@ -109,6 +109,10 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -143,6 +147,14 @@
         }
       }
     ]
+  },
+  "android-pixel2-processor-perf-fyi": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "chromeos-kevin-perf-fyi": {
     "isolated_scripts": [

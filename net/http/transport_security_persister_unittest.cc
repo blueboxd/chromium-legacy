@@ -38,8 +38,12 @@ class TransportSecurityPersisterTest : public TestWithTaskEnvironment {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::MessageLoopCurrentForIO::IsSet());
+    scoped_refptr<base::SequencedTaskRunner> background_runner(
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
     persister_ = std::make_unique<TransportSecurityPersister>(
-        &state_, temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get());
+        &state_, temp_dir_.GetPath(), std::move(background_runner));
   }
 
  protected:

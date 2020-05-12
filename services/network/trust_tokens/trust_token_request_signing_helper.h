@@ -106,7 +106,7 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
     // |additional_headers_to_sign| is a list of headers to sign, in addition to
     // those specified by the request's Signed-Headers header. If these are not
     // case-insensitive versions of headers in the |kSignableRequestHeaders|
-    // allowlist, signing will fail with error kInvalidArgument.
+    // allowlist, signing will fail.
     std::vector<std::string> additional_headers_to_sign;
 
     // If |should_add_timestamp| is true, successful signing operations will add
@@ -163,23 +163,6 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // Attempts to attach a Signed Redemption Record (SRR) corresponding
   // to |request|'s initiating top-level origin and the provided issuer origin.
   //
-  // PRECONDITIONS:
-  // (0. |request|'s destination's origin and its initiator must satisfy the
-  // same conditions as the issuer origin in |params_|. This is DCHECKed, since
-  // it is not a protocol-level precondition.)
-  //
-  // 1. If the request already contains a Sec-Signed-Redemption-Record,
-  // Sec-Time, or Sec-Signature header, returns kInvalidArgument without
-  // touching the request.
-  // 2. If the caller specified headers for signing other than those in
-  // kSignableRequestHeaders (or if the request has a malformed or otherwise
-  // invalid signed issuers list in its Signed-Headers header), returns
-  // kInvalidArgument and attaches an empty Sec-Signed-Redemption-Record header
-  // to the request.
-  // 3. If |token_store_| contains no SRR for this issuer-toplevel pair,
-  // returns kResourceExhausted and attaches an empty
-  // Sec-Signed-Redemption-Record header.
-  //
   // ATTACHING THE REDEMPTION RECORD:
   // In the case that an SRR is found and the requested headers to sign are
   // well-formed, attaches a Sec-Signed-Redemption-Record header
@@ -188,15 +171,23 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // adds a timestamp header;
   // 2. if the request is configured for signing, computes the request's
   // canonical request data and adds a signature header, following the algorithm
-  // in the explainer:
-  // https://github.com/WICG/trust-token-api#extension-trust-bound-keypair-and-request-signing
+  // in the Trust Tokens design doc's "Signing outgoing requests" section.
   //
-  // RETURNS:
-  // - On success, returns kOk.
-  // - On internal error during signing, returns kInternalError and attaches an
-  // empty SRR header, no signature header, and no timestamp header.
-  // - On precondition failure, returns an error code and possibly attaches an
-  // empty SRR header; see PRECONDITIONS section above.
+  // FAILS IF:
+  // 1. The caller specified headers for signing other than those in
+  // kSignableRequestHeaders (or if the request has a malformed or otherwise
+  // invalid signed issuers list in its Signed-Headers header); or
+  // 2. |token_store_| contains no SRR for this issuer-toplevel pair,
+  // returns kOk and attaches an empty Sec-Signed-Redemption-Record header; or
+  // 3. an internal error occurs during signing or header serialization.
+  //
+  // POSTCONDITIONS:
+  // - Always returns kOk. This is to avoid aborting a request entirely to a
+  // failure during signing; see the Trust Tokens design doc for more
+  // discussion.
+  // - On failure, the request will contain an empty
+  // Sec-Signed-Redemption-Record header and no Sec-Time, Sec-Signature, or
+  // Signed-Headers headers.
   void Begin(
       net::URLRequest* request,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
@@ -209,10 +200,10 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
 
  private:
   // Given (unencoded) bytestrings |public_key| and |signature|, returns the
-  // Trust Tokens signature header, a serialized Structured Headers Draft 13
+  // Trust Tokens signature header, a serialized Structured Headers Draft 15
   // dictionary looking roughly like (order not guaranteed):
-  //   public-key=<pk>,
-  //   sig=<signature>,
+  //   public-key=:<base64(pk)>:,
+  //   sig=:<base64(signature)>:,
   //   sign-request-data=include | headers-only
   //
   // Returns nullopt on serialization error.
@@ -229,10 +220,6 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
 
   TrustTokenStore* token_store_;
 
-  // Temporary representation of the signing-related Fetch parameters until
-  // they're implemented.
-  // TODO(crbug.com/1043118): When integrating this with URLLoader/the signing
-  // helper factory, update Params's fields, or perhaps remove the struct.
   Params params_;
 
   std::unique_ptr<Signer> signer_;

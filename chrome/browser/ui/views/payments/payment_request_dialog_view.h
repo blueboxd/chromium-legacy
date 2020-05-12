@@ -187,7 +187,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // handler window is currently showing.
   int GetActualDialogWidth() const;
 
-  ViewStack* view_stack_for_testing() { return view_stack_.get(); }
+  ViewStack* view_stack_for_testing() { return view_stack_; }
   views::View* throbber_overlay_for_testing() { return throbber_overlay_; }
 
  private:
@@ -211,7 +211,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // between the two.
   PaymentRequest* request_;
   ControllerMap controller_map_;
-  std::unique_ptr<ViewStack> view_stack_;
+  ViewStack* view_stack_;
 
   // A full dialog overlay that shows a spinner and the "processing" label. It's
   // hidden until ShowProcessingSpinner is called.

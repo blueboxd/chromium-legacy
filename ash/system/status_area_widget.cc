@@ -34,6 +34,27 @@
 
 namespace ash {
 
+////////////////////////////////////////////////////////////////////////////////
+// StatusAreaWidget::ScopedTrayBubbleCounter
+
+StatusAreaWidget::ScopedTrayBubbleCounter::ScopedTrayBubbleCounter(
+    StatusAreaWidget* status_area_widget)
+    : status_area_widget_(status_area_widget->weak_ptr_factory_.GetWeakPtr()) {
+  ++status_area_widget_->tray_bubble_count_;
+}
+
+StatusAreaWidget::ScopedTrayBubbleCounter::~ScopedTrayBubbleCounter() {
+  // ScopedTrayBubbleCounter may live longer than StatusAreaWidget.
+  if (!status_area_widget_)
+    return;
+
+  --status_area_widget_->tray_bubble_count_;
+  DCHECK_GE(status_area_widget_->tray_bubble_count_, 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// StatusAreaWidget
+
 StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
     : status_area_widget_delegate_(new StatusAreaWidgetDelegate(shelf)),
       shelf_(shelf) {
@@ -102,6 +123,11 @@ void StatusAreaWidget::Initialize() {
 
 StatusAreaWidget::~StatusAreaWidget() {
   Shell::Get()->session_controller()->RemoveObserver(this);
+}
+
+// static
+StatusAreaWidget* StatusAreaWidget::ForWindow(aura::Window* window) {
+  return Shelf::ForWindow(window)->status_area_widget();
 }
 
 void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
@@ -358,8 +384,9 @@ bool StatusAreaWidget::ShouldShowShelf() const {
   if (unified_system_tray_->IsSliderBubbleShown())
     return false;
 
-  // All other tray bubbles will force the shelf to be visible.
-  return TrayBubbleView::IsATrayBubbleOpen();
+  // All other tray bubbles on the same display with status area widget will
+  // force the shelf to be visible.
+  return tray_bubble_count_ > 0;
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {

@@ -62,7 +62,6 @@ class SVGStaticStringList final : public GarbageCollected<SVGStaticStringList>,
   ~SVGStaticStringList() override;
 
   // SVGAnimatedPropertyBase:
-  SVGPropertyBase* CurrentValueBase() override;
   const SVGPropertyBase& BaseValueBase() const override;
   bool IsAnimating() const override;
   SVGPropertyBase* CreateAnimatedValue() override;

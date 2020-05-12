@@ -330,7 +330,9 @@ class LintTest(LoggingTestCase):
             '[ mac ] test/test1.html [ Failure ]\n'
             '[ mac debug ] virtual/foo/test/test1.html [ Failure ]\n'
             '[ win ] virtual/foo/test/test1.html [ Failure ]\n'
-            '[ mac release ] virtual/foo/test/test1.html [ Pass ]\n')
+            '[ mac release ] virtual/foo/test/test1.html [ Pass ]\n'
+            'test/test2.html [ Failure ]\n'
+            'crbug.com/1234 virtual/foo/test/test2.html [ Failure ]')
         port.expectations_dict = lambda: {
             'testexpectations': test_expectations
         }
@@ -340,10 +342,9 @@ class LintTest(LoggingTestCase):
 
         failures, warnings = lint_test_expectations.lint(host, options)
         self.assertEqual(failures, [])
-        self.assertTrue(warnings)
 
         self.assertEquals(len(warnings), 1)
-        self.assertIn('redundant', warnings[0])
+        self.assertRegexpMatches(warnings[0], ':5 .*redundant with.* line 4$')
 
 
 class CheckVirtualSuiteTest(unittest.TestCase):

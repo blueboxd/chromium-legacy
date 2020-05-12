@@ -45,10 +45,9 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
           IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON));
   DialogDelegate::SetAcceptCallback(std::move(accept_callback));
   DialogDelegate::SetCancelCallback(std::move(cancel_callback));
-  auto open_now_button = views::MdTextButton::CreateSecondaryUiButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON));
-  open_now_button_ = DialogDelegate::SetExtraView(std::move(open_now_button));
+  open_now_button_ = DialogDelegate::SetExtraView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(
+                IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON)));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

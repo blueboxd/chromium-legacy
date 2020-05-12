@@ -38,6 +38,7 @@
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -337,6 +338,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+
   std::unique_ptr<content::WebContents> web_contents =
       content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
   auto* client =
@@ -352,6 +356,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
 
 TEST_F(PasswordsPrivateDelegateImplTest,
        TestShouldNotReauthForOptOutAndShouldSetPref) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+
   std::unique_ptr<content::WebContents> web_contents =
       content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
   auto* client =

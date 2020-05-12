@@ -46,7 +46,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testFlushDirectoryDoesntBreakSync() {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         final Activity activity = mSyncTestRule.getActivity();
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
@@ -63,7 +63,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testSignInAndOut() throws InterruptedException {
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
 
         // Signing out should disable sync.
         mSyncTestRule.signOut();
@@ -78,7 +78,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndClear() {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         CriteriaHelper.pollUiThread(
                 ()
                         -> IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
@@ -106,7 +106,7 @@ public class SyncTest {
     @DisabledTest(message = "crbug.com/588050,crbug.com/595893")
     public void testRename() {
         // The two accounts object that would represent the account rename.
-        final Account oldAccount = mSyncTestRule.setUpTestAccountAndSignIn();
+        final Account oldAccount = mSyncTestRule.setUpAccountAndSignInForTesting();
         final Account newAccount = SigninTestUtil.addTestAccount("test2@gmail.com");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -137,7 +137,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndStartSync() {
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
 
         mSyncTestRule.stopSync();
         Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
@@ -150,7 +150,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndStartSyncThroughAndroidChromeSync() {
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         String authority = AndroidSyncSettings.get().getContractAuthority();
 
         Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
@@ -169,7 +169,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testStopAndStartSyncThroughAndroidMasterSync() {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
 
         Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
         Assert.assertTrue(SyncTestUtil.isSyncRequested());
@@ -187,7 +187,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testReenableMasterSyncFirst() {
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         String authority = AndroidSyncSettings.get().getContractAuthority();
 
         Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
@@ -219,7 +219,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testReenableChromeSyncFirst() {
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         String authority = AndroidSyncSettings.get().getContractAuthority();
 
         Assert.assertTrue(AndroidSyncSettings.get().isSyncEnabled());
@@ -256,7 +256,7 @@ public class SyncTest {
     @LargeTest
     @Feature({"Sync"})
     public void testMasterSyncBlocksSyncStart() {
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         mSyncTestRule.stopSync();
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
 

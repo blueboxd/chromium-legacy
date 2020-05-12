@@ -356,7 +356,7 @@ Status ExecuteTouchEvent(
       session, web_view, x, y, &relative_x, &relative_y);
   if (!status.IsOk())
     return status;
-  std::list<TouchEvent> events;
+  std::vector<TouchEvent> events;
   events.push_back(
       TouchEvent(type, relative_x, relative_y));
   return web_view->DispatchTouchEvents(events, false);
@@ -885,7 +885,7 @@ Status ExecuteMouseMoveTo(Session* session,
       location.Offset(x_offset, y_offset);
   }
 
-  std::list<MouseEvent> events;
+  std::vector<MouseEvent> events;
   events.push_back(MouseEvent(kMovedMouseEventType,
                               session->pressed_mouse_button, location.x,
                               location.y, session->sticky_modifiers, 0, 0));
@@ -905,7 +905,7 @@ Status ExecuteMouseClick(Session* session,
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
     return status;
-  std::list<MouseEvent> events;
+  std::vector<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
                  session->mouse_position.y, session->sticky_modifiers, 0, 1));
@@ -927,7 +927,7 @@ Status ExecuteMouseButtonDown(Session* session,
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
     return status;
-  std::list<MouseEvent> events;
+  std::vector<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
                  session->mouse_position.y, session->sticky_modifiers, 0, 1));
@@ -945,7 +945,7 @@ Status ExecuteMouseButtonUp(Session* session,
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
     return status;
-  std::list<MouseEvent> events;
+  std::vector<MouseEvent> events;
   events.push_back(
       MouseEvent(kReleasedMouseEventType, button, session->mouse_position.x,
                  session->mouse_position.y, session->sticky_modifiers,
@@ -964,7 +964,7 @@ Status ExecuteMouseDoubleClick(Session* session,
   Status status = GetMouseButton(params, &button);
   if (status.IsError())
     return status;
-  std::list<MouseEvent> events;
+  std::vector<MouseEvent> events;
   events.push_back(
       MouseEvent(kPressedMouseEventType, button, session->mouse_position.x,
                  session->mouse_position.y, session->sticky_modifiers, 0, 1));
@@ -1334,7 +1334,7 @@ Status ExecutePerformActions(Session* session,
     // (https://w3c.github.io/webdriver/#dfn-computing-the-tick-duration).
     // This is the duration for actions in one tick.
     int tick_duration = 0;
-    std::list<TouchEvent> dispatch_touch_events;
+    std::vector<TouchEvent> dispatch_touch_events;
     for (size_t j = 0; j < actions_list.size(); j++) {
       if (actions_list[j].size() > i) {
         const base::DictionaryValue* action = actions_list[j][i].get();
@@ -1389,7 +1389,7 @@ Status ExecutePerformActions(Session* session,
 
           if (type == "key") {
             if (action_type != "pause") {
-              std::list<KeyEvent> dispatch_key_events;
+              std::vector<KeyEvent> dispatch_key_events;
               KeyEventBuilder builder;
               Status status = ConvertKeyActionToKeyEvent(
                   action, input_state, action_type == "keyDown",
@@ -1458,7 +1458,7 @@ Status ExecutePerformActions(Session* session,
 
             if (pointer_type == "mouse" || pointer_type == "pen") {
               if (action_type != "pause") {
-                std::list<MouseEvent> dispatch_mouse_events;
+                std::vector<MouseEvent> dispatch_mouse_events;
                 int click_count = 0;
                 if (action_type == "pointerDown" ||
                     action_type == "pointerUp") {

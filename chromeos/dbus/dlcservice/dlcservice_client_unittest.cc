@@ -105,52 +105,6 @@ class DlcserviceClientTest : public testing::Test {
   std::deque<std::unique_ptr<dbus::ErrorResponse>> used_err_responses_;
 };
 
-TEST_F(DlcserviceClientTest, GetInstalledSuccessTest) {
-  responses_.push_back(dbus::Response::CreateEmpty());
-  auto* response = responses_.front().get();
-  dbus::MessageWriter writer(response);
-  dlcservice::DlcModuleList dlc_module_list;
-  writer.AppendProtoAsArrayOfBytes(dlc_module_list);
-
-  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
-      .WillOnce(
-          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
-
-  DlcserviceClient::GetInstalledCallback callback = base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {
-        EXPECT_EQ(dlcservice::kErrorNone, err);
-      });
-  client_->GetInstalled(std::move(callback));
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(DlcserviceClientTest, GetInstalledFailureTest) {
-  dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
-                               dlcservice::kGetInstalledMethod);
-  method_call.SetSerial(123);
-  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
-      &method_call, DBUS_ERROR_FAILED, "some-unknown-error"));
-
-  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
-      .WillRepeatedly(
-          Invoke(this, &DlcserviceClientTest::CallMethodWithErrorResponse));
-
-  client_->GetInstalled(base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {
-        EXPECT_EQ(dlcservice::kErrorInternal, err);
-      }));
-  base::RunLoop().RunUntilIdle();
-
-  err_responses_.push_back(dbus::ErrorResponse::FromMethodCall(
-      &method_call, dlcservice::kErrorInvalidDlc, "Bad DLC ID."));
-
-  client_->GetInstalled(base::BindOnce(
-      [](const std::string& err, const dlcservice::DlcModuleList&) {
-        EXPECT_EQ(dlcservice::kErrorInvalidDlc, err);
-      }));
-  base::RunLoop().RunUntilIdle();
-}
-
 TEST_F(DlcserviceClientTest, GetExistingDlcsSuccessTest) {
   responses_.push_back(dbus::Response::CreateEmpty());
   dbus::Response* response = responses_.front().get();

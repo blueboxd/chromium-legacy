@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
+#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,9 +27,14 @@ class MockFrame : public fuchsia::web::testing::Frame_TestBase {
     LOG(FATAL) << "No mock defined for " << name;
   }
 
-  MOCK_METHOD2(ConfigureInputTypes,
-               void(fuchsia::web::InputTypes types,
-                    fuchsia::web::AllowInputState allow));
+  MOCK_METHOD(void,
+              ConfigureInputTypes,
+              (fuchsia::web::InputTypes types,
+               fuchsia::web::AllowInputState allow));
+
+  MOCK_METHOD(void,
+              GetPrivateMemorySize,
+              (GetPrivateMemorySizeCallback callback));
 };
 
 class ApplicationControllerImplTest : public chromium::cast::ApplicationContext,
@@ -91,6 +97,24 @@ TEST_F(ApplicationControllerImplTest, ConfigureInputTypes) {
   application_ptr_->SetTouchInputEnabled(true);
   application_ptr_->SetTouchInputEnabled(false);
   run_loop.Run();
+}
+
+// Verifies that SetTouchInputEnabled() calls the Frame API correctly.
+TEST_F(ApplicationControllerImplTest, GetPrivateMemorySize) {
+  constexpr uint64_t kMockSize = 12345;
+
+  EXPECT_CALL(frame_, GetPrivateMemorySize(testing::_))
+      .WillOnce(
+          [](chromium::cast::ApplicationController::GetPrivateMemorySizeCallback
+                 callback) { callback(kMockSize); });
+
+  base::RunLoop run_loop;
+  cr_fuchsia::ResultReceiver<uint64_t> result(run_loop.QuitClosure());
+  application_ptr_->GetPrivateMemorySize(
+      cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
+  run_loop.Run();
+
+  EXPECT_EQ(*result, kMockSize);
 }
 
 }  // namespace

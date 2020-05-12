@@ -752,11 +752,7 @@ GpuProcessHost::~GpuProcessHost() {
         // Don't block offscreen contexts (and force page reload for webgl)
         // if this was an intentional shutdown or the OOM killer on Android
         // killed us while Chrome was in the background.
-// TODO(crbug.com/598400): Restrict this to Android for now, since other
-// platforms might fall through here for the 'exit_on_context_lost' workaround.
-#if defined(OS_ANDROID)
         block_offscreen_contexts = false;
-#endif
         message += "exited normally. Everything is okay.";
         break;
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:

@@ -147,7 +147,7 @@ void ReauthAbortHandleImpl::SignalReauthDone() {
 }  // namespace
 
 SigninViewController::SigninViewController(Browser* browser)
-    : browser_(browser), delegate_(nullptr) {}
+    : browser_(browser) {}
 
 SigninViewController::~SigninViewController() {
   CloseModalSignin();
@@ -186,8 +186,9 @@ void SigninViewController::ShowModalSyncConfirmationDialog() {
   CloseModalSignin();
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
-  delegate_ = SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
-      this, browser_);
+  delegate_ =
+      SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_);
+  delegate_observer_.Add(delegate_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
 }
@@ -196,8 +197,8 @@ void SigninViewController::ShowModalSigninErrorDialog() {
   CloseModalSignin();
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
-  delegate_ =
-      SigninViewControllerDelegate::CreateSigninErrorDelegate(this, browser_);
+  delegate_ = SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_);
+  delegate_observer_.Add(delegate_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
 }
 
@@ -229,7 +230,8 @@ SigninViewController::ShowReauthPrompt(
     // This currently displays a fake dialog for development purposes. Should
     // not be called in production.
     delegate_ = SigninViewControllerDelegate::CreateFakeReauthDelegate(
-        this, browser_, account_id, std::move(wrapped_reauth_callback));
+        browser_, account_id, std::move(wrapped_reauth_callback));
+    delegate_observer_.Add(delegate_);
     return abort_handle;
   }
 
@@ -255,10 +257,12 @@ SigninViewController::ShowReauthPrompt(
     // Display a popup for Dasher users. Ideally it should only be shown for
     // SAML users but there is no way to distinguish them.
     delegate_ = new SigninReauthPopupDelegate(
-        this, browser_, account_id, std::move(wrapped_reauth_callback));
+        browser_, account_id, std::move(wrapped_reauth_callback));
+    delegate_observer_.Add(delegate_);
   } else {
     delegate_ = SigninViewControllerDelegate::CreateReauthDelegate(
-        this, browser_, account_id, std::move(wrapped_reauth_callback));
+        browser_, account_id, std::move(wrapped_reauth_callback));
+    delegate_observer_.Add(delegate_);
   }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
   return abort_handle;
@@ -280,7 +284,8 @@ void SigninViewController::SetModalSigninHeight(int height) {
     delegate_->ResizeNativeView(height);
 }
 
-void SigninViewController::ResetModalSigninDelegate() {
+void SigninViewController::OnModalSigninClosed() {
+  delegate_observer_.Remove(delegate_);
   delegate_ = nullptr;
 }
 
@@ -433,8 +438,9 @@ void SigninViewController::ShowModalSigninEmailConfirmationDialog(
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
   delegate_ = SigninEmailConfirmationDialog::AskForConfirmation(
-      this, active_contents, browser_->profile(), last_email, email,
+      active_contents, browser_->profile(), last_email, email,
       std::move(callback));
+  delegate_observer_.Add(delegate_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
 }

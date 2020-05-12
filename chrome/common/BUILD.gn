@@ -96,7 +96,6 @@ source_set("ini_parser") {
 static_library("common") {
   sources = [
     "all_messages.h",
-    "attrition_experiments.h",
     "auto_start_linux.cc",
     "auto_start_linux.h",
     "child_process_logging.h",

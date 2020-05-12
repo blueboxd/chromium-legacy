@@ -35,6 +35,10 @@ class CONTENT_EXPORT WebContentsAndroid {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
+  // Ensure that the render frame host etc are ready to handle JS eval
+  // (e.g. recover from a crashed state).
+  bool InitializeRenderFrameForJavaScript();
+
   // Methods called from Java
   void ClearNativeReference(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);

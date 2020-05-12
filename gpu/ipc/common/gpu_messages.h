@@ -210,6 +210,12 @@ IPC_MESSAGE_ROUTED2(
 // This is only supported in testing environments, and is otherwise ignored.
 IPC_MESSAGE_CONTROL0(GpuChannelMsg_CrashForTesting)
 
+// Terminates the GPU process with an exit code of 0. This message is handled in
+// in GpuChannelMessageFilter::OnMessageReceived and is only used in tests where
+// the GPU benchmarking extension is enabled. The purpose of this API is to test
+// scenarios where the GPU process is terminated on purpose with exit code of 0.
+IPC_MESSAGE_CONTROL0(GpuChannelMsg_TerminateForTesting)
+
 // Simple NOP message which can be used as fence to ensure all previous sent
 // messages have been received.
 IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)

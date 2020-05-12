@@ -11,7 +11,6 @@ namespace language_detection {
 mojo::Remote<mojom::LanguageDetectionService> LaunchLanguageDetectionService() {
   return content::ServiceProcessHost::Launch<mojom::LanguageDetectionService>(
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SandboxType::kUtility)
           .WithDisplayName("Translate Language Detection")
           .Pass());
 }

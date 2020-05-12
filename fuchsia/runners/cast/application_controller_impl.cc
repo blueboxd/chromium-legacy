@@ -4,6 +4,8 @@
 
 #include "fuchsia/runners/cast/application_controller_impl.h"
 
+#include <utility>
+
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 
@@ -39,4 +41,9 @@ void ApplicationControllerImpl::GetMediaPlayer(
 
 void ApplicationControllerImpl::SetBlockMediaLoading(bool blocked) {
   frame_->SetBlockMediaLoading(blocked);
+}
+
+void ApplicationControllerImpl::GetPrivateMemorySize(
+    GetPrivateMemorySizeCallback callback) {
+  frame_->GetPrivateMemorySize(std::move(callback));
 }

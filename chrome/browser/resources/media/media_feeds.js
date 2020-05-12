@@ -187,7 +187,7 @@ class MediaFeedsTableDelegate {
           td.textContent = 'Unsafe';
           break;
       }
-    } else if (key == 'startTime') {
+    } else if (key == 'startTime' || key == 'duration') {
       // Format a start time.
       td.textContent =
           timeDeltaToSeconds(/** @type {mojoBase.mojom.TimeDelta} */ (data));

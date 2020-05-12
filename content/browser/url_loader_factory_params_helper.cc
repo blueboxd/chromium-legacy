@@ -50,8 +50,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
         coep_reporter,
     bool allow_universal_access_from_file_urls,
     bool is_for_isolated_world,
-    bool is_for_service_worker,
-    int frame_routing_id) {
+    mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer) {
   DCHECK(process);
 
   // "chrome-guest://..." is never used as a main or isolated world origin.
@@ -94,11 +93,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
       process->GetBrowserContext(), origin, is_for_isolated_world,
       params.get());
 
-  params->cookie_observer =
-      static_cast<StoragePartitionImpl*>(process->GetStoragePartition())
-          ->CreateCookieAccessObserver(is_for_service_worker, process->GetID(),
-                                       frame_routing_id);
-
+  params->cookie_observer = std::move(cookie_observer);
   return params;
 }
 
@@ -126,8 +121,7 @@ URLLoaderFactoryParamsHelper::CreateForFrame(
           ->GetWebkitPreferences()
           .allow_universal_access_from_file_urls,
       false,  // is_for_isolated_world
-      false,  // is_for_service_worker
-      frame->GetRoutingID());
+      frame->CreateCookieAccessObserver());
 }
 
 // static
@@ -149,9 +143,8 @@ URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
                       frame->GetRenderViewHost()
                           ->GetWebkitPreferences()
                           .allow_universal_access_from_file_urls,
-                      true,   // is_for_isolated_world
-                      false,  // is_for_service_worker
-                      frame->GetRoutingID());
+                      true,  // is_for_isolated_world
+                      frame->CreateCookieAccessObserver());
 }
 
 network::mojom::URLLoaderFactoryParamsPtr
@@ -176,8 +169,7 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(
                           ->GetWebkitPreferences()
                           .allow_universal_access_from_file_urls,
                       false,  // is_for_isolated_world
-                      false,  // is_for_service_worker
-                      frame->GetRoutingID());
+                      frame->CreateCookieAccessObserver());
 }
 
 // static
@@ -188,19 +180,20 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
     const net::IsolationInfo& isolation_info,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
         coep_reporter) {
-  return CreateParams(process,
-                      request_initiator,  // origin
-                      request_initiator,  // request_initiator_site_lock
-                      base::nullopt,      // top_frame_origin
-                      false,              // is_trusted
-                      base::nullopt,      // top_frame_token
-                      isolation_info,
-                      nullptr,  // client_security_state
-                      std::move(coep_reporter),
-                      false,  // allow_universal_access_from_file_urls
-                      false,  // is_for_isolated_world
-                      false,  // is_for_service_worker
-                      MSG_ROUTING_NONE);
+  return CreateParams(
+      process,
+      request_initiator,  // origin
+      request_initiator,  // request_initiator_site_lock
+      base::nullopt,      // top_frame_origin
+      false,              // is_trusted
+      base::nullopt,      // top_frame_token
+      isolation_info,
+      nullptr,  // client_security_state
+      std::move(coep_reporter),
+      false,  // allow_universal_access_from_file_urls
+      false,  // is_for_isolated_world
+      static_cast<StoragePartitionImpl*>(process->GetStoragePartition())
+          ->CreateCookieAccessObserverForServiceWorker());
 }
 
 // static
@@ -236,8 +229,7 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
       mojo::NullRemote(),  // coep_reporter
       false,               // allow_universal_access_from_file_urls
       false,               // is_for_isolated_world
-      false,               // is_for_service_worker
-      MSG_ROUTING_NONE);
+      mojo::NullRemote());
 }
 
 }  // namespace content

@@ -90,7 +90,7 @@ public class CachedZeroSuggestionsManager {
                     suggestion.getPostContentType());
             prefs.writeString(KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(i),
                     suggestion.getPostData() == null
-                            ? ""
+                            ? null
                             : Base64.encodeToString(suggestion.getPostData(), Base64.DEFAULT));
             prefs.writeInt(KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(i), suggestion.getGroupId());
         }
@@ -122,35 +122,36 @@ public class CachedZeroSuggestionsManager {
             //                previously cached answers for several releases while any previous
             //                results are cycled through.
             String answerText =
-                    prefs.readString(KEY_ZERO_SUGGEST_ANSWER_TEXT_PREFIX.createKey(i), "");
+                    prefs.readString(KEY_ZERO_SUGGEST_ANSWER_TEXT_PREFIX.createKey(i), null);
             if (!TextUtils.isEmpty(answerText)) continue;
 
             GURL url = GURL.deserialize(
-                    prefs.readString(KEY_ZERO_SUGGEST_URL_PREFIX.createKey(i), ""));
+                    prefs.readString(KEY_ZERO_SUGGEST_URL_PREFIX.createKey(i), null));
             String displayText =
-                    prefs.readString(KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX.createKey(i), "");
+                    prefs.readString(KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX.createKey(i), null);
             String description =
-                    prefs.readString(KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX.createKey(i), "");
-            int nativeType = prefs.readInt(KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX.createKey(i), -1);
+                    prefs.readString(KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX.createKey(i), null);
+            int nativeType = prefs.readInt(KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX.createKey(i),
+                    OmniboxSuggestion.INVALID_TYPE);
             boolean isSearchType =
-                    prefs.readBoolean(KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX.createKey(i), true);
+                    prefs.readBoolean(KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX.createKey(i), false);
             boolean isStarred =
                     prefs.readBoolean(KEY_ZERO_SUGGEST_IS_STARRED_PREFIX.createKey(i), false);
             boolean isDeletable =
                     prefs.readBoolean(KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX.createKey(i), false);
             String postContentType =
-                    prefs.readString(KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX.createKey(i), "");
-            byte[] postData = Base64.decode(
-                    prefs.readString(KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(i), ""),
-                    Base64.DEFAULT);
+                    prefs.readString(KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX.createKey(i), null);
+            String postDataStr =
+                    prefs.readString(KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(i), null);
+            byte[] postData =
+                    postDataStr == null ? null : Base64.decode(postDataStr, Base64.DEFAULT);
             int groupId = prefs.readInt(
                     KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(i), OmniboxSuggestion.INVALID_GROUP);
 
             OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, isSearchType, 0, 0,
-                    displayText, classifications, description, classifications, null, "", url,
-                    GURL.emptyGURL(), null, isStarred, isDeletable,
-                    postContentType.isEmpty() ? null : postContentType,
-                    postData.length == 0 ? null : postData, groupId, null);
+                    displayText, classifications, description, classifications, null, null, url,
+                    GURL.emptyGURL(), null, isStarred, isDeletable, postContentType, postData,
+                    groupId, null);
             suggestions.add(suggestion);
         }
 

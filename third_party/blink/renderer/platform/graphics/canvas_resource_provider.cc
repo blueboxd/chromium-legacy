@@ -342,7 +342,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // We don't need to do copy-on-write for the resource here since writes to
     // the GMB are deferred until it needs to be dispatched to the display
     // compositor via ProduceCanvasResource.
-    if (is_accelerated_ && DoCopyOnWrite()) {
+    if (is_accelerated_ && ShouldReplaceTargetBuffer()) {
       DCHECK(!current_resource_has_write_access_)
           << "Write access must be released before sharing the resource";
 
@@ -352,21 +352,45 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       resource_ = NewOrRecycledResource();
       DCHECK(resource_);
 
-      EnsureWriteAccess();
-      if (surface_) {
-        // Take read access to the outgoing resource for the skia copy below.
-        if (!old_resource_shared_image->HasReadAccess()) {
-          old_resource_shared_image->BeginReadAccess();
+      auto* raster_interface = RasterInterface();
+      if (raster_interface) {
+        if (!use_oop_rasterization_)
+          TearDownSkSurface();
+
+        if (mode_ == SkSurface::kRetain_ContentChangeMode) {
+          auto old_mailbox = old_resource_shared_image->GetOrCreateGpuMailbox(
+              kOrderingBarrier);
+          auto mailbox = resource()->GetOrCreateGpuMailbox(kOrderingBarrier);
+
+          raster_interface->CopySubTexture(
+              old_mailbox, mailbox, GetBackingTextureTarget(), 0, 0, 0, 0,
+              Size().Width(), Size().Height(), false /* unpack_flip_y */,
+              false /* unpack_premultiply_alpha */);
         }
-        UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.ContentChangeMode",
-                              mode_ == SkSurface::kRetain_ContentChangeMode);
-        surface_->replaceBackendTexture(CreateGrTextureForResource(),
-                                        GetGrSurfaceOrigin(), mode_);
-        mode_ = SkSurface::kRetain_ContentChangeMode;
-        if (!old_resource_shared_image->HasReadAccess()) {
-          old_resource_shared_image->EndReadAccess();
+
+        // In non-OOPR mode we need to update the client side SkSurface with the
+        // copied texture. Recreating SkSurface here matches the GPU process
+        // behaviour that will happen in OOPR mode.
+        if (!use_oop_rasterization_) {
+          GetSkSurface();
+        }
+      } else {
+        EnsureWriteAccess();
+        if (surface_) {
+          // Take read access to the outgoing resource for the skia copy below.
+          if (!old_resource_shared_image->HasReadAccess()) {
+            old_resource_shared_image->BeginReadAccess();
+          }
+          surface_->replaceBackendTexture(CreateGrTextureForResource(),
+                                          GetGrSurfaceOrigin(), mode_);
+          if (!old_resource_shared_image->HasReadAccess()) {
+            old_resource_shared_image->EndReadAccess();
+          }
         }
       }
+      UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.ContentChangeMode",
+                            mode_ == SkSurface::kRetain_ContentChangeMode);
+      mode_ = SkSurface::kRetain_ContentChangeMode;
     }
 
     if (write_to_local_texture)
@@ -418,7 +442,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     ri->EndRasterCHROMIUM();
   }
 
-  bool DoCopyOnWrite() {
+  bool ShouldReplaceTargetBuffer() {
     // If the canvas is single buffered, concurrent read/writes to the resource
     // are allowed. Note that we ignore the resource lost case as well since
     // that only indicates that we did not get a sync token for read/write
@@ -526,7 +550,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       FlushGrContext();
       resource()->EndWriteAccess();
     } else {
-      if (DoCopyOnWrite())
+      if (ShouldReplaceTargetBuffer())
         resource_ = NewOrRecycledResource();
       resource()->CopyRenderingResultsToGpuMemoryBuffer(
           surface_->makeImageSnapshot());
@@ -1481,6 +1505,11 @@ void CanvasResourceProvider::RestoreBackBuffer(const cc::PaintImage& image) {
 
 bool CanvasResourceProvider::HasRecordedDrawOps() const {
   return recorder_ && recorder_->ListHasDrawOps();
+}
+
+void CanvasResourceProvider::TearDownSkSurface() {
+  skia_canvas_ = nullptr;
+  surface_ = nullptr;
 }
 
 }  // namespace blink

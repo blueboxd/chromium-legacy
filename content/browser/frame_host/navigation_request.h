@@ -83,7 +83,8 @@ class CONTENT_EXPORT NavigationRequest
     : public NavigationHandle,
       public NavigationURLLoaderDelegate,
       public NavigationThrottleRunner::Delegate,
-      private RenderProcessHostObserver {
+      private RenderProcessHostObserver,
+      private network::mojom::CookieAccessObserver {
  public:
   // Keeps track of the various stages of a NavigationRequest.
   enum NavigationState {
@@ -606,6 +607,12 @@ class CONTENT_EXPORT NavigationRequest
   void OnServiceWorkerAccessed(const GURL& scope,
                                AllowServiceWorkerResult allowed);
 
+  // Take all cookie observers associated with this navigation.
+  // Typically this is called when navigation commits to move these observers to
+  // the committed document.
+  std::vector<mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
+  TakeCookieObservers() WARN_UNUSED_RESULT;
+
  private:
   friend class NavigationRequestTest;
 
@@ -934,6 +941,15 @@ class CONTENT_EXPORT NavigationRequest
 
   // Returns the user-agent override, or an empty string if one isn't set.
   std::string GetUserAgentOverride();
+
+  mojo::PendingRemote<network::mojom::CookieAccessObserver>
+  CreateCookieAccessObserver();
+
+  // network::mojom::CookieAccessObserver:
+  void OnCookiesAccessed(
+      network::mojom::CookieAccessDetailsPtr details) override;
+  void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
+                 observer) override;
 
   // Convenience function to return the NavigationControllerImpl this
   // NavigationRequest is in.
@@ -1306,6 +1322,10 @@ class CONTENT_EXPORT NavigationRequest
   // If true, changes to the user-agent override require a reload. If false, a
   // reload is not necessary.
   bool ua_change_requires_reload_ = true;
+
+  // Observers listening to cookie access notifications for the network requests
+  // made by this navigation.
+  mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

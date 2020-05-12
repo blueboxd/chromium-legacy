@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/compositing_requirements_updater.h"
 
 #include "base/macros.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -596,10 +595,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
                               CompositingReason::kClipsCompositingDescendants);
     if ((!child_recursion_data.testing_overlap_ &&
          !is_composited_clipping_layer) ||
-        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation() ||
-        ((direct_reasons & CompositingReason::kScrollDependentPosition) &&
-         base::FeatureList::IsEnabled(
-             features::kAssumeOverlapAfterFixedOrStickyPosition)))
+        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation())
       current_recursion_data.testing_overlap_ = false;
 
     if (child_recursion_data.compositing_ancestor_ == layer)

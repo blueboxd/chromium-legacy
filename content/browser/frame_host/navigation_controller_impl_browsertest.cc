@@ -888,7 +888,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
     // Don't pay attention to pending delete RenderFrameHosts in the main frame,
     // which might happen in a race if a cross-process navigation happens
     // quickly.
-    if (!rfh->is_active()) {
+    if (rfh->IsPendingDeletion()) {
       DLOG(INFO) << "Skipping pending delete RFH: "
                  << rfh->GetSiteInstance()->GetSiteURL();
       return;
@@ -8655,7 +8655,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("\"done\"", message);
 
   // |frame| is now pending deletion.
-  EXPECT_FALSE(static_cast<RenderFrameHostImpl*>(frame)->is_active());
+  EXPECT_TRUE(static_cast<RenderFrameHostImpl*>(frame)->IsPendingDeletion());
 
   std::string error_html = "Error page";
   DidStartNavigationObserver did_start_navigation_observer(

@@ -5,7 +5,6 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_STUB_WEB_VIEW_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_STUB_WEB_VIEW_H_
 
-#include <list>
 #include <memory>
 #include <string>
 
@@ -63,17 +62,17 @@ class StubWebView : public WebView {
                             const std::string& function,
                             const base::ListValue& args,
                             std::string* out_frame) override;
-  Status DispatchMouseEvents(const std::list<MouseEvent>& events,
+  Status DispatchMouseEvents(const std::vector<MouseEvent>& events,
                              const std::string& frame,
                              bool async_dispatch_events = false) override;
   Status DispatchTouchEvent(const TouchEvent& event,
                             bool async_dispatch_events = false) override;
-  Status DispatchTouchEvents(const std::list<TouchEvent>& events,
+  Status DispatchTouchEvents(const std::vector<TouchEvent>& events,
                              bool async_dispatch_events = false) override;
   Status DispatchTouchEventWithMultiPoints(
-      const std::list<TouchEvent>& events,
+      const std::vector<TouchEvent>& events,
       bool async_dispatch_events = false) override;
-  Status DispatchKeyEvents(const std::list<KeyEvent>& events,
+  Status DispatchKeyEvents(const std::vector<KeyEvent>& events,
                            bool async_dispatch_events = false) override;
   Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
                     const std::string& current_page_url) override;

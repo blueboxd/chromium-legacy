@@ -127,7 +127,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
                 (status, response)
                         -> AuthenticatorImplJni.get().invokeMakeCredentialResponse(
                                 mNativeInternalAuthenticatorAndroid, status.intValue(),
-                                response.serialize()));
+                                response == null ? ByteBuffer.allocate(0) : response.serialize()));
     }
 
     @Override
@@ -161,7 +161,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
                 (status, response)
                         -> AuthenticatorImplJni.get().invokeGetAssertionResponse(
                                 mNativeInternalAuthenticatorAndroid, status.intValue(),
-                                response.serialize()));
+                                response == null ? ByteBuffer.allocate(0) : response.serialize()));
     }
 
     @Override
@@ -196,9 +196,19 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
      * the browser process. The origin may be overridden through |setEffectiveOrigin()|. The
      * response will be passed through
      * |invokeIsUserVerifyingPlatformAuthenticatorAvailableResponse()|.
+     * This is exclusively called by Payments Autofill, and because Payments servers only accept
+     * security keys for Android P and above, this returns false if the build version
+     * is O or below. Otherwise, the return value is determined by
+     * |isUserVerifyingPlatformAuthenticatorAvailable()|.
      */
     @CalledByNative
     public void isUserVerifyingPlatformAuthenticatorAvailableBridge() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            AuthenticatorImplJni.get().invokeIsUserVerifyingPlatformAuthenticatorAvailableResponse(
+                    mNativeInternalAuthenticatorAndroid, false);
+            return;
+        }
+
         isUserVerifyingPlatformAuthenticatorAvailable(
                 (isUVPAA)
                         -> AuthenticatorImplJni.get()

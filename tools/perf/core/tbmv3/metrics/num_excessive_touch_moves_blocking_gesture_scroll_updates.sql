@@ -141,17 +141,18 @@ CREATE VIEW TraceHasScroll AS
 -- Name the metric and output the result (recall that booleans are 1 if true so
 -- SUM(boolean) is just the number of occurrences).
 --
--- We select the sum inside a sub-query because if there is no rows SUM()
--- returns null which results in an error in the chrometto pipeline.
-
-CREATE VIEW num_excessive_touch_moves_blocking_gesture_scroll_updates_output AS
-  SELECT NumExcessiveTouchMovesBlockingGestureScrollUpdates(
-  "num_touch_moves_blocking_gesture_scrolls", sumExcessiveOverlaps)
-FROM (
-  SELECT
-    COALESCE(SUM(hasFirstExcessiveOverlap), 0) AS sumExcessiveOverlaps
-  FROM OnlyFirstExcessiveTouchAndGestureOverlap
-)
+-- We select the sum inside a separate query because the output function should
+-- be called at least once (even if we don't want the metric value to be output,
+-- we still have to call the function with the NULL value).
+-- So when the trace has a scroll, the SumExcessiveOverlaps table will
+-- contain a value (possibly 0). When the trace doesn't have a scroll,
+-- the SumExcessiveOverlaps table will be empty.
+-- The NumExcessiveTouchMovesBlockingGestureScrollUpdates function
+-- will be called either way, with either total value or NULL.
+CREATE VIEW SumExcessiveOverlaps AS
+SELECT
+  COALESCE(SUM(hasFirstExcessiveOverlap), 0) AS total
+FROM OnlyFirstExcessiveTouchAndGestureOverlap
 WHERE
   (
     SELECT
@@ -160,3 +161,9 @@ WHERE
         0 END
     FROM TraceHasScroll
   ) > 0;
+
+CREATE VIEW num_excessive_touch_moves_blocking_gesture_scroll_updates_output AS
+  SELECT NumExcessiveTouchMovesBlockingGestureScrollUpdates(
+      "num_touch_moves_blocking_gesture_scrolls",
+      (SELECT total FROM SumExcessiveOverlaps)
+  );

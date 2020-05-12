@@ -406,6 +406,16 @@ source_set("unit_tests") {
       "cloud/user_cloud_policy_store_unittest.cc",
     ]
   }
+
+  if (is_fuchsia) {
+    sources -= [
+      "cloud/cloud_policy_manager_unittest.cc",
+      "cloud/cloud_policy_validator_unittest.cc",
+      "cloud/machine_level_user_cloud_policy_store_unittest.cc",
+      "cloud/user_cloud_policy_store_unittest.cc",
+    ]
+  }
+
   if (!is_android) {
     sources += [ "async_policy_provider_unittest.cc" ]
   }

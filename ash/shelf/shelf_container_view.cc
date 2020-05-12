@@ -23,8 +23,18 @@ void ShelfContainerView::Initialize() {
   AddChildView(shelf_view_);
 }
 
+gfx::Size ShelfContainerView::CalculateIdealSize(int button_size) const {
+  const int button_strip_size =
+      ShelfView::GetSizeOfAppButtons(shelf_view_->last_visible_index() -
+                                         shelf_view_->first_visible_index() + 1,
+                                     button_size);
+  return shelf_view_->shelf()->IsHorizontalAlignment()
+             ? gfx::Size(button_strip_size, button_size)
+             : gfx::Size(button_size, button_strip_size);
+}
+
 gfx::Size ShelfContainerView::CalculatePreferredSize() const {
-  return CalculateIdealSize();
+  return CalculateIdealSize(shelf_view_->GetButtonSize());
 }
 
 void ShelfContainerView::ChildPreferredSizeChanged(views::View* child) {
@@ -50,17 +60,6 @@ void ShelfContainerView::TranslateShelfView(const gfx::Vector2dF& offset) {
   shelf_view_->SetTransform(transform_matrix);
   shelf_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
                                         true);
-}
-
-gfx::Size ShelfContainerView::CalculateIdealSize() const {
-  const int button_size = shelf_view_->GetButtonSize();
-  const int width =
-      ShelfView::GetSizeOfAppButtons(shelf_view_->last_visible_index() -
-                                         shelf_view_->first_visible_index() + 1,
-                                     button_size);
-  return shelf_view_->shelf()->IsHorizontalAlignment()
-             ? gfx::Size(width, button_size)
-             : gfx::Size(button_size, width);
 }
 
 }  // namespace ash

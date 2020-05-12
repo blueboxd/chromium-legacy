@@ -14,6 +14,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
+class WebContents;
 class WebContentsDelegate;
 }
 
@@ -72,7 +73,6 @@ class SigninViewControllerDelegateViews
   // |wait_for_size| is true, the delegate will wait for ResizeNativeView() to
   // be called by the base class before displaying the constrained window.
   SigninViewControllerDelegateViews(
-      SigninViewController* signin_view_controller,
       std::unique_ptr<views::WebView> content_view,
       Browser* browser,
       ui::ModalType dialog_modal_type,
@@ -87,15 +87,11 @@ class SigninViewControllerDelegateViews
       int dialog_height,
       base::Optional<int> dialog_width);
 
-  // Notifies the SigninViewController that this instance is being deleted.
-  void ResetSigninViewControllerDelegate();
-
   // Displays the modal dialog.
   void DisplayModal();
 
   Browser* browser() { return browser_; }
 
-  SigninViewController* signin_view_controller_;  // Not owned.
   content::WebContents* const web_contents_;      // Not owned.
   Browser* const browser_;                        // Not owned.
   views::WebView* content_view_;

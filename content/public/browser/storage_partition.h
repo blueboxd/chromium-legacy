@@ -107,21 +107,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual network::mojom::CookieManager*
   GetCookieManagerForBrowserProcess() = 0;
 
-  // See documentation for
-  // ContentBrowserClient::WillCreateRestrictedCookieManager for description of
-  // the parameters. The method here is expected pass things through that hook
-  // and then go to the NetworkContext if needed.
-  virtual void CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole role,
-      const url::Origin& origin,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
-      bool is_service_worker,
-      int process_id,
-      int routing_id,
-      mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
-          receiver) = 0;
-
   virtual void CreateHasTrustTokensAnswerer(
       mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
       const url::Origin& top_frame_origin) = 0;

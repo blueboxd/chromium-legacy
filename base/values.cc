@@ -541,16 +541,16 @@ Value* Value::SetStringKey(StringPiece key, StringPiece value) {
   return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
+Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
+  return SetKeyInternal(key, std::make_unique<Value>(value));
+}
+
 Value* Value::SetStringKey(StringPiece key, const char* value) {
   return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
 Value* Value::SetStringKey(StringPiece key, std::string&& value) {
   return SetKeyInternal(key, std::make_unique<Value>(std::move(value)));
-}
-
-Value* Value::SetStringKey(StringPiece key, StringPiece16 value) {
-  return SetKeyInternal(key, std::make_unique<Value>(value));
 }
 
 bool Value::RemoveKey(StringPiece key) {

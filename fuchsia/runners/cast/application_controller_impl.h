@@ -27,6 +27,7 @@ class ApplicationControllerImpl : public chromium::cast::ApplicationController {
       ::fidl::InterfaceRequest<fuchsia::media::sessions2::Player> request)
       final;
   void SetBlockMediaLoading(bool blocked) override;
+  void GetPrivateMemorySize(GetPrivateMemorySizeCallback callback) override;
 
  private:
   fidl::Binding<chromium::cast::ApplicationController> binding_;

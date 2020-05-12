@@ -1204,8 +1204,9 @@ void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
   oobe_dialog_visible_ = state != OobeDialogState::HIDDEN;
   extension_ui_visible_ = state == OobeDialogState::EXTENSION_LOGIN;
 
-  // Show either oobe dialog or lock screen.
-  SetVisible(!oobe_dialog_visible_);
+  // Show either oobe dialog or user pods.
+  if (main_view_)
+    main_view_->SetVisible(!oobe_dialog_visible_);
   GetWidget()->widget_delegate()->SetCanActivate(!oobe_dialog_visible_);
 
   UpdateBottomStatusIndicatorVisibility();

@@ -195,7 +195,7 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     NavigationRequestInfo* request_info,
     int frame_tree_node_id,
-    StoragePartitionImpl* storage_partition) {
+    mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer) {
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = std::make_unique<network::ResourceRequest>();
 
@@ -207,10 +207,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info->begin_params->force_ignore_site_for_cookies;
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
   new_request->trusted_params->isolation_info = request_info->isolation_info;
-  new_request->trusted_params->cookie_observer =
-      storage_partition->CreateCookieAccessObserver(
-          /*is_service_worker=*/false, network::mojom::kBrowserProcessId,
-          frame_tree_node_id);
+  new_request->trusted_params->cookie_observer = std::move(cookie_observer);
   new_request->is_main_frame = request_info->is_main_frame;
 
   net::RequestPriority net_priority = net::HIGHEST;
@@ -1332,6 +1329,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate,
+    mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors)
     : delegate_(delegate),
@@ -1353,8 +1351,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
           partition->GetPrefetchURLLoaderService()
               ->signed_exchange_prefetch_metric_recorder();
 
-  std::unique_ptr<network::ResourceRequest> new_request =
-      CreateResourceRequest(request_info.get(), frame_tree_node_id, partition);
+  std::unique_ptr<network::ResourceRequest> new_request = CreateResourceRequest(
+      request_info.get(), frame_tree_node_id, std::move(cookie_observer));
 
   std::string accept_langs = GetContentClient()->browser()->GetAcceptLangs(
       partition->browser_context());

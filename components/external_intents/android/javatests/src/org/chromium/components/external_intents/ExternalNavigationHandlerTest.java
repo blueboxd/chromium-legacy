@@ -1945,7 +1945,7 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public boolean willChromeHandleIntent(Intent intent) {
+        public boolean willAppHandleIntent(Intent intent) {
             String chromePackageName = ContextUtils.getApplicationContext().getPackageName();
             if (chromePackageName.equals(intent.getPackage())
                     || (intent.getComponent() != null
@@ -2054,7 +2054,7 @@ public class ExternalNavigationHandlerTest {
         public void maybeSetPendingIncognitoUrl(Intent intent) {}
 
         @Override
-        public boolean isChromeAppInForeground() {
+        public boolean isApplicationInForeground() {
             return mIsChromeAppInForeground;
         }
 

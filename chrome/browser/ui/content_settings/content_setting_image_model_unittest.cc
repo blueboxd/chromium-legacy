@@ -149,7 +149,8 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   ASSERT_TRUE(cookie);
   static_cast<content::WebContentsObserver*>(
       TabSpecificContentSettings::FromWebContents(web_contents()))
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie},

@@ -83,6 +83,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool HasGpuChannel();
   bool HasGpuProcess();
   void CrashGpuProcess();
+  void TerminateGpuProcessNormally();
   void GetGpuDriverBugWorkarounds(gin::Arguments* args);
 
   // Starts/stops the sampling profiler. StartProfiling takes one optional

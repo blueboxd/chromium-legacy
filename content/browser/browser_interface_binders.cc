@@ -631,7 +631,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
                           base::Unretained(host)));
 
   map->Add<media::mojom::ImageCapture>(
-      base::BindRepeating(&ImageCaptureImpl::Create));
+      base::BindRepeating(&ImageCaptureImpl::Create, base::Unretained(host)));
 
   map->Add<media::mojom::InterfaceFactory>(base::BindRepeating(
       &RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver,

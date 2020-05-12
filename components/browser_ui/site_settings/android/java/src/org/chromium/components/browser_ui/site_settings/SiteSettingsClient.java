@@ -57,6 +57,11 @@ public interface SiteSettingsClient {
     void getFaviconImageForURL(String faviconUrl, Callback<Bitmap> callback);
 
     /**
+     * @return true if the given category type should be shown in the SiteSettings Fragment.
+     */
+    boolean isCategoryVisible(@SiteSettingsCategory.Type int type);
+
+    /**
      * @return true if the QuietNotificationPrompts Feature is enabled.
      */
     boolean isQuietNotificationPromptsFeatureEnabled();

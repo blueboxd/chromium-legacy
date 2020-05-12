@@ -4,6 +4,11 @@
 
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {AutofillManager, PaymentsManager} from 'chrome://settings/lazy_load.js';
+
+import {assertEquals} from '../chai_assert.js';
+
+import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 // clang-format on
 
 /**
@@ -27,6 +32,7 @@ export function createPasswordEntry(url, username, id) {
     },
     username: username,
     id: id,
+    fromAccountStore: false,
   };
 }
 
@@ -46,6 +52,7 @@ export function createExceptionEntry(url, id) {
       link: 'http://' + url + '/login',
     },
     id: id,
+    fromAccountStore: false,
   };
 }
 
@@ -114,9 +121,9 @@ export function createCreditCardEntry() {
 
 /**
  * Creates a new compromised credential.
- * @param {string=} url
- * @param {string=} username
- * @param {string=} type
+ * @param {string} url
+ * @param {string} username
+ * @param {chrome.passwordsPrivate.CompromiseType} type
  * @param {number=} id
  * @param {number=} elapsedMinSinceCompromise
  * @return {chrome.passwordsPrivate.CompromisedCredential}
@@ -125,21 +132,24 @@ export function createCreditCardEntry() {
 export function makeCompromisedCredential(
     url, username, type, id, elapsedMinSinceCompromise) {
   return {
-    id: id,
+    id: id || 0,
     formattedOrigin: url,
     changePasswordUrl: `http://${url}/`,
     username: username,
     elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
     compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
     compromiseType: type,
+    detailedOrigin: '',
+    isAndroidCredential: false,
+    signonRealm: '',
   };
 }
 
 /**
  * Creates a new password check status.
- * @param {!chrome.passwordsPrivate.PasswordCheckState} state
- * @param {!number|undefined} checked
- * @param {!number|undefined} remaining
+ * @param {!chrome.passwordsPrivate.PasswordCheckState=} state
+ * @param {number=} checked
+ * @param {number=} remaining
  * @param {string=} lastCheck
  * @return {!chrome.passwordsPrivate.PasswordCheckStatus}
  */
@@ -188,13 +198,13 @@ export class PasswordSectionElementFactory {
 
   /**
    * Helper method used to create a password section for the given lists.
-   * @param {!PasswordManagerProxy} passwordManager
+   * @param {!TestPasswordManagerProxy} passwordManager
    * @param {!Array<!chrome.passwordsPrivate.PasswordUiEntry>} passwordList
    * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList
    * @return {!Object}
    */
   createPasswordsSection(passwordManager, passwordList, exceptionList) {
-    // Override the PasswordManagerProxy data for testing.
+    // Override the TestPasswordManagerProxy data for testing.
     passwordManager.data.passwords = passwordList;
     passwordManager.data.exceptions = exceptionList;
 
@@ -263,28 +273,6 @@ export class PasswordSectionElementFactory {
   }
 }
 
-export class PasswordManagerExpectations {
-  constructor() {
-    this.requested = {
-      passwords: 0,
-      exceptions: 0,
-      plaintextPassword: 0,
-      accountStorageOptInState: 0,
-    };
-
-    this.removed = {
-      passwords: 0,
-      exceptions: 0,
-    };
-
-    this.listening = {
-      passwords: 0,
-      exceptions: 0,
-      accountStorageOptInState: 0,
-    };
-  }
-}
-
 /** Helper class to track AutofillManager expectations. */
 export class AutofillManagerExpectations {
   constructor() {
@@ -329,6 +317,12 @@ export class TestAutofillManager {
     callback(this.data.addresses);
   }
 
+  /** @override */
+  saveAddress() {}
+
+  /** @override */
+  removeAddress() {}
+
   /**
    * Verifies expectations.
    * @param {!AutofillManagerExpectations} expected
@@ -345,6 +339,7 @@ export class PaymentsManagerExpectations {
   constructor() {
     this.requestedCreditCards = 0;
     this.listeningCreditCards = 0;
+    this.requestedUpiIds = 0;
   }
 }
 
@@ -354,6 +349,7 @@ export class PaymentsManagerExpectations {
  */
 export class TestPaymentsManager {
   constructor() {
+    /** @private {!PaymentsManagerExpectations} */
     this.actual_ = new PaymentsManagerExpectations();
 
     // Set these to have non-empty data.
@@ -390,6 +386,24 @@ export class TestPaymentsManager {
     this.actual_.requestedUpiIds++;
     callback(this.data.upiIds);
   }
+
+  /** @override */
+  clearCachedCreditCard() {}
+
+  /** @override */
+  logServerCardLinkClicked() {}
+
+  /** @override */
+  migrateCreditCards() {}
+
+  /** @override */
+  removeCreditCard() {}
+
+  /** @override */
+  saveCreditCard() {}
+
+  /** @override */
+  setCreditCardFIDOAuthEnabledState() {}
 
   /**
    * Verifies expectations.

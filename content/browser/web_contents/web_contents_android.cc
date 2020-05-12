@@ -506,6 +506,17 @@ void WebContentsAndroid::AdjustSelectionByCharacterOffset(
                                                   show_selection_menu);
 }
 
+bool WebContentsAndroid::InitializeRenderFrameForJavaScript() {
+  if (!web_contents_->GetFrameTree()
+           ->root()
+           ->render_manager()
+           ->InitializeRenderFrameForImmediateUse()) {
+    LOG(ERROR) << "Failed to initialize RenderFrame to evaluate javascript";
+    return false;
+  }
+  return true;
+}
+
 void WebContentsAndroid::EvaluateJavaScript(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -514,13 +525,8 @@ void WebContentsAndroid::EvaluateJavaScript(
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   DCHECK(rvh);
 
-  if (!rvh->IsRenderViewLive()) {
-    if (!static_cast<WebContentsImpl*>(web_contents_)->
-        CreateRenderViewForInitialEmptyDocument()) {
-      LOG(ERROR) << "Failed to create RenderView in EvaluateJavaScript";
-      return;
-    }
-  }
+  if (!InitializeRenderFrameForJavaScript())
+    return;
 
   if (!callback) {
     // No callback requested.
@@ -547,13 +553,8 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   DCHECK(rvh);
 
-  if (!rvh->IsRenderViewLive()) {
-    if (!static_cast<WebContentsImpl*>(web_contents_)->
-        CreateRenderViewForInitialEmptyDocument()) {
-      LOG(ERROR) << "Failed to create RenderView in EvaluateJavaScriptForTests";
-      return;
-    }
-  }
+  if (!InitializeRenderFrameForJavaScript())
+    return;
 
   if (!callback) {
     // No callback requested.

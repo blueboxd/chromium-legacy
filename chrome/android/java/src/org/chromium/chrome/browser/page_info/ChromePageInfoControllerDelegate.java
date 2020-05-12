@@ -61,7 +61,6 @@ import java.util.Date;
 public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate {
     private final WebContents mWebContents;
     private final Context mContext;
-    private final @PreviewPageState int mPreviewPageState;
     private String mOfflinePageCreationDate;
     private OfflinePageLoadUrlDelegate mOfflinePageLoadUrlDelegate;
     private PermissionParamsListBuilder mPermissionParamsListBuilder;

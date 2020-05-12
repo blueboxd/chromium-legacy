@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotificationManager;
-import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
@@ -36,8 +35,8 @@ public class ClickToCallMessageHandlerTest {
      */
     @Test
     @Feature({"Browser", "Sharing", "ClickToCall"})
+    @Config(sdk = Build.VERSION_CODES.Q)
     public void testHandleMessage_androidQShouldDisplayNotification() {
-        setAtLeastAndroidQ(true);
         setIsScreenOnAndUnlocked(true);
 
         ClickToCallMessageHandler.handleMessage("18004444444");
@@ -50,8 +49,8 @@ public class ClickToCallMessageHandlerTest {
      */
     @Test
     @Feature({"Browser", "Sharing", "ClickToCall"})
+    @Config(sdk = Build.VERSION_CODES.P)
     public void testHandleMessage_lockedScreenShouldDisplayNotification() {
-        setAtLeastAndroidQ(false);
         setIsScreenOnAndUnlocked(false);
 
         ClickToCallMessageHandler.handleMessage("18004444444");
@@ -65,19 +64,13 @@ public class ClickToCallMessageHandlerTest {
      */
     @Test
     @Feature({"Browser", "Sharing", "ClickToCall"})
+    @Config(sdk = Build.VERSION_CODES.P)
     public void testHandleMessage_opensDialerDirectly() {
-        setAtLeastAndroidQ(false);
         setIsScreenOnAndUnlocked(true);
 
         ClickToCallMessageHandler.handleMessage("18004444444");
 
         assertEquals(0, getShadowNotificationManager().size());
-    }
-
-    private void setAtLeastAndroidQ(boolean atLeastAndroidQ) {
-        // TODO(knollr): update to Build.VERSION_CODES.Q once available.
-        int versionCode = atLeastAndroidQ ? 29 : Build.VERSION_CODES.P;
-        ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", versionCode);
     }
 
     private void setIsScreenOnAndUnlocked(boolean isScreenOnAndUnlocked) {

@@ -66,9 +66,11 @@ void InitAwareTileService::GetTile(const std::string& tile_id,
 }
 
 void InitAwareTileService::StartFetchForTiles(
+    bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback callback) {
   if (IsReady()) {
-    tile_service_->StartFetchForTiles(std::move(callback));
+    tile_service_->StartFetchForTiles(is_from_reduced_mode,
+                                      std::move(callback));
     return;
   }
 
@@ -81,7 +83,7 @@ void InitAwareTileService::StartFetchForTiles(
 
   MaybeCacheApiCall(base::BindOnce(&InitAwareTileService::StartFetchForTiles,
                                    weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(callback)));
+                                   is_from_reduced_mode, std::move(callback)));
 }
 
 void InitAwareTileService::MaybeCacheApiCall(base::OnceClosure api_call) {

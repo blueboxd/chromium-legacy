@@ -336,6 +336,10 @@ bool BitmapImage::IsSizeAvailable() {
     if (decoder_->FilenameExtension() == "jpg") {
       BitmapImageMetrics::CountImageOrientation(
           decoder_->OrientationAtIndex(0).Orientation());
+
+      IntSize correctedSize = decoder_->DensityCorrectedSizeAtIndex(0);
+      BitmapImageMetrics::CountImageDensityCorrection(
+        !correctedSize.IsEmpty() && correctedSize != decoder_->Size());
     }
   }
 

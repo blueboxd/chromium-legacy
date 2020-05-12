@@ -108,7 +108,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean willChromeHandleIntent(Intent intent) {
+    public boolean willAppHandleIntent(Intent intent) {
         return willChromeHandleIntent(intent, false);
     }
 
@@ -251,7 +251,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isChromeAppInForeground() {
+    public boolean isApplicationInForeground() {
         return ApplicationStatus.getStateForApplication()
                 == ApplicationState.HAS_RUNNING_ACTIVITIES;
     }

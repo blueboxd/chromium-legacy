@@ -38,7 +38,7 @@ class OneGoogleBarLoader {
   virtual GURL GetLoadURLForTesting() const = 0;
 
   // Sets ogdeb value to be used as a query param.
-  virtual bool SetOgdebValue(const std::string& value) = 0;
+  virtual bool SetAdditionalQueryParams(const std::string& value) = 0;
 };
 
 #endif  // CHROME_BROWSER_SEARCH_ONE_GOOGLE_BAR_ONE_GOOGLE_BAR_LOADER_H_

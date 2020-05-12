@@ -95,10 +95,11 @@ void UntrustedSource::StartDataRequest(
   const std::string path = url.has_path() ? url.path().substr(1) : "";
   GURL url_param = GURL(url.query());
   if (path == "one-google-bar" && one_google_bar_service_) {
-    std::string ogdeb_value;
-    net::GetValueForKeyInQuery(url, "ogdebencoded", &ogdeb_value);
-    base::Base64Decode(ogdeb_value, &ogdeb_value);
-    bool wait_for_refresh = one_google_bar_service_->SetOgdebValue(ogdeb_value);
+    std::string query_params;
+    net::GetValueForKeyInQuery(url, "paramsencoded", &query_params);
+    base::Base64Decode(query_params, &query_params);
+    bool wait_for_refresh =
+        one_google_bar_service_->SetAdditionalQueryParams(query_params);
     one_google_bar_callbacks_.push_back(std::move(callback));
     if (one_google_bar_service_->one_google_bar_data().has_value() &&
         !wait_for_refresh) {

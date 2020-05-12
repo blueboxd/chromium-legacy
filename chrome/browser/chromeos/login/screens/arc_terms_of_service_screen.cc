@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -33,6 +35,8 @@ std::string ArcTermsOfServiceScreen::GetResultString(Result result) {
       return "Accepted";
     case Result::BACK:
       return "Back";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
   }
 }
 
@@ -69,10 +73,20 @@ ArcTermsOfServiceScreen::~ArcTermsOfServiceScreen() {
   }
 }
 
+bool ArcTermsOfServiceScreen::MaybeSkip() {
+  if (!arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
+  return false;
+}
+
 void ArcTermsOfServiceScreen::ShowImpl() {
   if (!view_)
     return;
 
+  ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+      arc::prefs::kArcTermsShownInOobe, true);
   // Show the screen.
   view_->Show();
 }

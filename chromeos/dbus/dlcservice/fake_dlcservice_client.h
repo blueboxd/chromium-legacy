@@ -29,7 +29,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
                  UninstallCallback callback) override;
   // Purging removes the DLC entirely from disk.
   void Purge(const std::string& dlc_id, PurgeCallback callback) override;
-  void GetInstalled(GetInstalledCallback callback) override;
   void GetExistingDlcs(GetExistingDlcsCallback callback) override;
   void OnInstallStatusForTest(dbus::Signal* signal) override;
 
@@ -39,9 +38,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   void SetInstallError(const std::string& err) { install_err_ = err; }
   void SetUninstallError(const std::string& err) { uninstall_err_ = err; }
   void SetPurgeError(const std::string& err) { purge_err_ = err; }
-  void SetGetInstalledError(const std::string& err) {
-    get_installed_err_ = err;
-  }
   void SetGetExistingDlcsError(const std::string& err) {
     get_existing_dlcs_err_ = err;
   }

@@ -80,22 +80,29 @@ void NintendoDataFetcher::OnDeviceReady(int source_id) {
 }
 
 void NintendoDataFetcher::DeviceAdded(mojom::HidDeviceInfoPtr device_info) {
-  if (NintendoController::IsNintendoController(device_info->vendor_id,
-                                               device_info->product_id)) {
+  GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+      device_info->product_name, device_info->vendor_id,
+      device_info->product_id);
+  if (NintendoController::IsNintendoController(gamepad_id)) {
     AddDevice(std::move(device_info));
   }
 }
 
 void NintendoDataFetcher::DeviceRemoved(mojom::HidDeviceInfoPtr device_info) {
-  if (NintendoController::IsNintendoController(device_info->vendor_id,
-                                               device_info->product_id)) {
+  GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+      device_info->product_name, device_info->vendor_id,
+      device_info->product_id);
+  if (NintendoController::IsNintendoController(gamepad_id)) {
     RemoveDevice(device_info->guid);
   }
 }
 
 bool NintendoDataFetcher::AddDevice(mojom::HidDeviceInfoPtr device_info) {
   DCHECK(hid_manager_);
-  RecordConnectedGamepad(device_info->vendor_id, device_info->product_id);
+  GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+      device_info->product_name, device_info->vendor_id,
+      device_info->product_id);
+  RecordConnectedGamepad(gamepad_id);
   int source_id = next_source_id_++;
   auto emplace_result = controllers_.emplace(
       source_id, NintendoController::Create(source_id, std::move(device_info),

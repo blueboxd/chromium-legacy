@@ -32,15 +32,10 @@
  * The color of the icon can be overridden using CSS variables. When using
  * iron-icon both the fill and stroke can be overridden the variables:
  * --cr-icon-button-fill-color
- * --cr-icon-button-fill-color-focus
  * --cr-icon-button-stroke-color
- * --cr-icon-button-stroke-color-focus
  *
  * When not using iron-icon (ie. specifying --cr-icon-image), the icons support
  * one color and the 'stroke' variables are ignored.
- *
- * The '-focus' variables are used for opaque ripple support. This is enabled
- * when the 'a11y-enhanced' attribute on <html> is present.
  *
  * When using iron-icon's, more than one icon can be specified by setting
  * the |ironIcon| property to a comma-delimited list of keys.

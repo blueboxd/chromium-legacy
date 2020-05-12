@@ -83,9 +83,6 @@ class UI_CHROMEOS_EXPORT CandidateWindowView
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Overridden from View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
   void SelectCandidateAt(int index_in_page);
   void UpdateVisibility();
 

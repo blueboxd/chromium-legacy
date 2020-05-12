@@ -8,14 +8,13 @@
 
 namespace performance_manager {
 
-PerformanceManagerTestHarness::PerformanceManagerTestHarness() {
-  helper_ = std::make_unique<PerformanceManagerTestHarnessHelper>();
-}
+PerformanceManagerTestHarness::PerformanceManagerTestHarness() = default;
 
 PerformanceManagerTestHarness::~PerformanceManagerTestHarness() = default;
 
 void PerformanceManagerTestHarness::SetUp() {
   Super::SetUp();
+  helper_ = std::make_unique<PerformanceManagerTestHarnessHelper>();
   helper_->SetUp();
 }
 

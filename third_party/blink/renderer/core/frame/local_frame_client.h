@@ -319,8 +319,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const ParsedFeaturePolicy& feature_policy_header,
       const DocumentPolicy::FeatureState& document_policy_header) {}
 
-  virtual void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) {}
-
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
 

@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
 import org.chromium.components.browser_ui.settings.R;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 
 /**
  * Tests of {@link ChromeImageViewPreference}.

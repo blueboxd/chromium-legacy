@@ -257,9 +257,9 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
 }
 
 std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {
-  std::unique_ptr<views::Button> button(
-      views::MdTextButton::CreateSecondaryUiProminentButton(
-          this, l10n_util::GetStringUTF16(IDS_CONFIRM)));
+  auto button =
+      views::MdTextButton::Create(this, l10n_util::GetStringUTF16(IDS_CONFIRM));
+  button->SetProminent(true);
   button->SetEnabled(false);  // Only enabled when a valid CVC is entered.
   button->SetID(static_cast<int>(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON));
   button->set_tag(static_cast<int>(Tags::CONFIRM_TAG));

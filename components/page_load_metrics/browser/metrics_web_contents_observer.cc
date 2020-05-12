@@ -365,6 +365,18 @@ void MetricsWebContentsObserver::FrameSizeChanged(
 }
 
 void MetricsWebContentsObserver::OnCookiesAccessed(
+    content::NavigationHandle* navigation,
+    const content::CookieAccessDetails& details) {
+  OnCookiesAccessedImpl(details);
+}
+
+void MetricsWebContentsObserver::OnCookiesAccessed(
+    content::RenderFrameHost* rfh,
+    const content::CookieAccessDetails& details) {
+  OnCookiesAccessedImpl(details);
+}
+
+void MetricsWebContentsObserver::OnCookiesAccessedImpl(
     const content::CookieAccessDetails& details) {
   if (!committed_load_)
     return;

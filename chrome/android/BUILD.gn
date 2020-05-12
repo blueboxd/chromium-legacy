@@ -86,6 +86,18 @@ chrome_jni_registration_header =
     "$root_build_dir/gen/chrome/browser/android/chrome_jni_registration.h"
 chrome_jni_for_test_registration_header = "$root_build_dir/gen/chrome/browser/android/chrome_jni_for_test_registration.h"
 
+# Chosen to match what CQ bots exist.
+_enable_libs_and_assets_verification =
+    !is_component_build &&
+    ((target_cpu == "arm" && android_channel == "stable") ||
+     (target_cpu == "arm64" && android_channel == "default"))
+
+# Having //clank present causes different flags because of how play services
+# is wired up.
+# The channel is required because manifest entries vary based on channel.
+_enable_manifest_verification =
+    !enable_chrome_android_internal && android_channel == "stable"
+
 jinja_template("chrome_public_android_manifest") {
   input = "java/AndroidManifest.xml"
   output = chrome_public_android_manifest
@@ -1953,18 +1965,8 @@ trichrome_library_apk_tmpl("trichrome_library_apk") {
     chrome_target = ":trichrome_chrome_bundle"
   }
 
-  if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
-    verify_native_libs_and_assets = true
-  }
-
-  # Having //clank present causes different flags because of how play services
-  # is wired up.
-  # The channel is required because manifest entries vary based on channel.
-  _verify_android_configuration =
-      !enable_chrome_android_internal && android_channel == "stable"
-  if (_verify_android_configuration) {
-    verify_manifest = true
-  }
+  verify_manifest = _enable_manifest_verification
+  verify_native_libs_and_assets = _enable_libs_and_assets_verification
 }
 
 if (android_64bit_target_cpu) {
@@ -2465,9 +2467,8 @@ chrome_bundle("chrome_modern_public_bundle") {
   min_sdk_version = 21
   module_descs = chrome_modern_module_descs
   version_code = chrome_modern_version_code
-  if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
-    verify_native_libs_and_assets = true
-  }
+
+  verify_native_libs_and_assets = _enable_libs_and_assets_verification
 }
 
 if (is_official_build) {
@@ -2597,18 +2598,10 @@ if (public_android_sdk) {
       include_64_bit_webview = true
     }
 
-    if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
-      verify_native_libs_and_assets = true
-    }
-
-    # Having //clank present causes different flags because of how play services
-    # is wired up.
-    # The channel is required because manifest entries vary based on channel.
-    _verify_android_configuration =
-        !enable_chrome_android_internal && android_channel == "stable"
-    if (_verify_android_configuration) {
-      verify_manifest = true
-      verify_proguard_flags = true
+    verify_manifest = _enable_manifest_verification
+    verify_native_libs_and_assets = _enable_libs_and_assets_verification
+    if (!is_java_debug) {
+      verify_proguard_flags = _enable_manifest_verification
     }
   }
 
@@ -2639,18 +2632,9 @@ if (public_android_sdk) {
       is_64_bit_browser = false
       include_64_bit_webview = true
     }
-    if (!is_component_build && (target_cpu == "arm" || target_cpu == "arm64")) {
-      verify_native_libs_and_assets = true
-    }
 
-    # Having //clank present causes different flags because of how play services
-    # is wired up.
-    # The channel is required because manifest entries vary based on channel.
-    _verify_android_configuration =
-        !enable_chrome_android_internal && android_channel == "stable"
-    if (_verify_android_configuration) {
-      verify_manifest = true
-    }
+    verify_manifest = _enable_manifest_verification
+    verify_native_libs_and_assets = _enable_libs_and_assets_verification
   }
 
   if (android_64bit_target_cpu) {
@@ -3016,6 +3000,7 @@ native_java_unittests_tests = [
   "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediatorUnitTest.java",
+  "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteResultUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/basic/BasicSuggestionProcessorUnitTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/clipboard/ClipboardSuggestionProcessorTest.java",
   "native_java_unittests/src/org/chromium/chrome/browser/omnibox/status/StatusMediatorUnitTest.java",
@@ -3073,6 +3058,7 @@ android_library("native_java_unittests_java") {
 
   sources = [
     "native_java_unittests/src/org/chromium/chrome/browser/UnitTestUtils.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionBuilderForTest.java",
   ]
 
   sources += native_java_unittests_tests

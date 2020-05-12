@@ -11369,9 +11369,11 @@ interface XRLightEstimate
     getter primaryLightIntensity
     getter sphericalHarmonicsCoefficients
     method constructor
-interface XRLightProbe
+interface XRLightProbe : EventTarget
     attribute @@toStringTag
+    getter onreflectionchange
     method constructor
+    setter onreflectionchange
 interface XRPlane
     attribute @@toStringTag
     getter lastChangedTime
@@ -11508,6 +11510,10 @@ interface XRViewport
     getter x
     getter y
     method constructor
+interface XRWebGLBinding
+    attribute @@toStringTag
+    method constructor
+    method getReflectionCubeMap
 interface XRWebGLLayer : XRLayer
     static method getNativeFramebufferScaleFactor
     attribute @@toStringTag

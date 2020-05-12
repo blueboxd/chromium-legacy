@@ -75,8 +75,8 @@ void OneGoogleBarService::SetLanguageCodeForTesting(
   language_code_ = language_code;
 }
 
-bool OneGoogleBarService::SetOgdebValue(const std::string& value) {
-  return loader_->SetOgdebValue(value);
+bool OneGoogleBarService::SetAdditionalQueryParams(const std::string& value) {
+  return loader_->SetAdditionalQueryParams(value);
 }
 
 void OneGoogleBarService::SigninStatusChanged() {

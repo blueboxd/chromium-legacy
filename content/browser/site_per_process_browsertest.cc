@@ -5621,7 +5621,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Since the FrameHostMsg_Unload_ACK for A->B is dropped, the first page's
   // RenderFrameHost should be pending deletion after the last navigation.
-  EXPECT_FALSE(rfh->is_active());
+  EXPECT_TRUE(rfh->IsPendingDeletion());
 
   // Without the FrameHostMsg_Unload_ACK and timer, the process A will never
   // shutdown. Simulate the process being killed now.
@@ -8552,7 +8552,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // At this point, the subframe's old RFH for b.com should be pending
   // deletion, and the subframe's proxy in a.com should've been cleared.
-  EXPECT_FALSE(child_rfh->is_active());
+  EXPECT_TRUE(child_rfh->IsPendingDeletion());
   EXPECT_FALSE(child->render_manager()->GetProxyToParent());
 
   // Simulate that the load event is dispatched from |child_rfh| just after
@@ -11328,7 +11328,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The previous RFH should still be pending deletion, as we wait for either
   // the FrameHostMsg_Unload_ACK or a timeout.
   ASSERT_TRUE(rfh->IsRenderFrameLive());
-  ASSERT_FALSE(rfh->is_active());
+  ASSERT_TRUE(rfh->IsPendingDeletion());
   ASSERT_FALSE(rfh_observer.deleted());
 
   // Check sandbox flags on old RFH -- they should be unchanged.
@@ -11959,7 +11959,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // The old RenderFrameHost is now pending deletion.
   ASSERT_TRUE(rfh->IsRenderFrameLive());
-  ASSERT_FALSE(rfh->is_active());
+  ASSERT_TRUE(rfh->IsPendingDeletion());
 
   // Kill the b.com process.
   RenderProcessHost* b_process = popup_contents->GetMainFrame()->GetProcess();
@@ -12354,7 +12354,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
 
   // The old RFH should be pending deletion.
-  EXPECT_FALSE(rfh->is_active());
+  EXPECT_TRUE(rfh->IsPendingDeletion());
   EXPECT_FALSE(rfh->IsCurrent());
   EXPECT_NE(rfh, web_contents()->GetMainFrame());
 
@@ -14079,7 +14079,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   commit_observer.WaitForCommit();
 
   // At this point, popup's original RFH is pending deletion.
-  EXPECT_FALSE(rfh->is_active());
+  EXPECT_TRUE(rfh->IsPendingDeletion());
 
   // When the opener receives a postMessage from the popup's unload handler, it
   // should start a navigation back to b.com.  Wait for it.  This navigation

@@ -41,13 +41,6 @@ void FakeDlcserviceClient::Purge(const std::string& dlc_id,
       FROM_HERE, base::BindOnce(std::move(callback), purge_err_));
 }
 
-void FakeDlcserviceClient::GetInstalled(GetInstalledCallback callback) {
-  VLOG(1) << "Requesting to get installed DLC(s).";
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), get_installed_err_,
-                                dlc_module_list_));
-}
-
 void FakeDlcserviceClient::GetExistingDlcs(GetExistingDlcsCallback callback) {
   VLOG(1) << "Requesting to get existing DLC(s).";
   base::ThreadTaskRunnerHandle::Get()->PostTask(

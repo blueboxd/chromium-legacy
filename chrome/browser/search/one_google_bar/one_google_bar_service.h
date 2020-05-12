@@ -52,7 +52,7 @@ class OneGoogleBarService : public KeyedService {
   void SetLanguageCodeForTesting(const std::string& language_code);
 
   // Sets ogdeb query parameter in loader.
-  bool SetOgdebValue(const std::string& value);
+  bool SetAdditionalQueryParams(const std::string& value);
 
  private:
   class SigninObserver;

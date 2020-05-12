@@ -306,6 +306,7 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1081788")
     public void backButtonTerminatesAutofillAssistant() {
         ChromeTabUtils.loadUrlOnUiThread(
                 mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));

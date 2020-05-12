@@ -40,8 +40,6 @@ const char kNewTabOgbApiPath[] = "/async/newtab_ogb";
 
 const char kResponsePreamble[] = ")]}'";
 
-const char kUrlOverrideCommandLineSwitch[] = "ogb-parts-test-url";
-
 // This namespace contains helpers to extract SafeHtml-wrapped strings (see
 // https://github.com/google/safe-html-types) from the response json. If there
 // is ever a C++ version of the SafeHtml types, we should consider using that
@@ -294,41 +292,40 @@ GURL OneGoogleBarLoaderImpl::GetLoadURLForTesting() const {
   return GetApiUrl();
 }
 
-bool OneGoogleBarLoaderImpl::SetOgdebValue(const std::string& value) {
-  if (ogdeb_value_ == value) {
+bool OneGoogleBarLoaderImpl::SetAdditionalQueryParams(
+    const std::string& value) {
+  if (additional_query_params_ == value) {
     return false;
   }
-  ogdeb_value_ = value;
+  additional_query_params_ = value;
   return true;
 }
 
 GURL OneGoogleBarLoaderImpl::GetApiUrl() const {
   GURL api_url;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kUrlOverrideCommandLineSwitch)) {
-    api_url = GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        kUrlOverrideCommandLineSwitch));
-  } else {
-    GURL google_base_url = google_util::CommandLineGoogleBaseURL();
-    if (!google_base_url.is_valid()) {
-      google_base_url = GURL(google_util::kGoogleHomepageURL);
-    }
-
-    api_url = google_base_url.Resolve(kNewTabOgbApiPath);
+  GURL google_base_url = google_util::CommandLineGoogleBaseURL();
+  if (!google_base_url.is_valid()) {
+    google_base_url = GURL(google_util::kGoogleHomepageURL);
   }
 
-  // Add the "hl=" parameter.
-  api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
+  api_url = google_base_url.Resolve(kNewTabOgbApiPath);
 
-  if (!ogdeb_value_.empty()) {
-    api_url = net::AppendQueryParameter(api_url, "ogdeb", ogdeb_value_);
+  // Add the "hl=" parameter.
+  if (additional_query_params_.find("&hl=") == std::string::npos) {
+    api_url = net::AppendQueryParameter(api_url, "hl", application_locale_);
   }
 
   // Add the "async=" parameter. We can't use net::AppendQueryParameter for
   // this because we need the ":" to remain unescaped.
   GURL::Replacements replacements;
   std::string query = api_url.query();
-  query += "&async=fixed:0";
+  query += additional_query_params_;
+  if (additional_query_params_.find("&async=") == std::string::npos) {
+    query += "&async=fixed:0";
+  }
+  if (query.at(0) == '&') {
+    query = query.substr(1);
+  }
   replacements.SetQueryStr(query);
   return api_url.ReplaceComponents(replacements);
 }

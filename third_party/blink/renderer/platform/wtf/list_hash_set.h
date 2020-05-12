@@ -522,7 +522,7 @@ class ListHashSetNode
   std::enable_if_t<A::kIsGarbageCollected> Trace(
       VisitorDispatcher visitor) const {
     if (!ListHashSetTraits<Value, NodeAllocator>::kCanTraceConcurrently) {
-      if (visitor->ConcurrentTracingBailOut(
+      if (visitor->DeferredTraceIfConcurrent(
               {this, [](blink::Visitor* visitor, const void* object) {
                  reinterpret_cast<
                      const ListHashSetNode<ValueArg, AllocatorArg>*>(object)
@@ -1209,7 +1209,7 @@ template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
   if (!NodeTraits::kCanTraceConcurrently) {
-    if (visitor->ConcurrentTracingBailOut(
+    if (visitor->DeferredTraceIfConcurrent(
             {this, [](blink::Visitor* visitor, const void* object) {
                reinterpret_cast<const ListHashSet<T, inlineCapacity, U, V>*>(
                    object)

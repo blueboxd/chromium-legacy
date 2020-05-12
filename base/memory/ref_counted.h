@@ -268,9 +268,11 @@ class BASE_EXPORT ScopedAllowCrossThreadRefCountAccess final {
 //     ~MyFoo();
 //   };
 //
-// You should always make your destructor non-public, to avoid any code deleting
-// the object accidently while there are references to it.
-//
+// Usage Notes:
+// 1. You should always make your destructor non-public, to avoid any code
+// deleting the object accidentally while there are references to it.
+// 2. You should always make the ref-counted base class a friend of your class,
+// so that it can access the destructor.
 //
 // The ref count manipulation to RefCounted is NOT thread safe and has DCHECKs
 // to trap unsafe cross thread usage. A subclass instance of RefCounted can be

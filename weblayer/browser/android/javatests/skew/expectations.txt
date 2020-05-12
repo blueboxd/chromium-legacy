@@ -11,6 +11,16 @@
 # Tests against older WebLayer implementations.
 # ---------------------------------------------
 
+# Cookie manager was added in M83.
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChanged [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallback [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallbackAfterProfileDestroyed [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testGetCookie [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookie [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieInvalid [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNotSet [ Skip ]
+[ impl_lte_82 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNullCallback [ Skip ]
+
 # ExternalNavigationTests are testing intent launching that changed after M83.
 [ impl_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInNewTabLaunchedOnLinkClick [ Skip ]
 [ impl_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentViaOnLoadBlocked [ Skip ]
@@ -91,7 +101,7 @@
 # Tests against older WebLayer clients.
 # -------------------------------------
 
-# https://crbug.com/1078973.
+# Intentionally changed in M84, https://crrev.com/c/2130790. See https://crbug.com/1078973.
 [ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentLaunchedViaOnLoad [ Skip ]
 [ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectLaunchesFallbackIntent [ Skip ]
 

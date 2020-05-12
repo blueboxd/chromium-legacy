@@ -5,14 +5,40 @@
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
 // clang-format off
-import {makePasswordCheckStatus, PasswordManagerExpectations} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {PasswordManagerProxy} from 'chrome://settings/settings.js';
+
+import {assertEquals} from '../chai_assert.js';
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+
+import {makePasswordCheckStatus} from './passwords_and_autofill_fake_data.js';
+
 // clang-format on
+
+export class PasswordManagerExpectations {
+  constructor() {
+    this.requested = {
+      passwords: 0,
+      exceptions: 0,
+      plaintextPassword: 0,
+      accountStorageOptInState: 0,
+    };
+
+    this.removed = {
+      passwords: 0,
+      exceptions: 0,
+    };
+
+    this.listening = {
+      passwords: 0,
+      exceptions: 0,
+      accountStorageOptInState: 0,
+    };
+  }
+}
 
 /**
  * Test implementation
  * @implements {PasswordManagerProxy}
- * @constructor
  */
 export class TestPasswordManagerProxy extends TestBrowserProxy {
   constructor() {
@@ -27,8 +53,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       'removeCompromisedCredential',
       'recordPasswordCheckInteraction',
       'recordPasswordCheckReferrer',
+      'removeSavedPassword',
+      'removeException',
     ]);
 
+    /** @private {!PasswordManagerExpectations} */
     this.actual_ = new PasswordManagerExpectations();
 
     // Set these to have non-empty data.
@@ -49,8 +78,10 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       addAccountStorageOptInStateListener: null,
     };
 
+    /** @private {string} */
     this.plaintextPassword_ = '';
 
+    /** @private {boolean} */
     this.isOptedInForAccountStorage_ = false;
   }
 
@@ -77,10 +108,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   /** @override */
   removeSavedPassword(id) {
     this.actual_.removed.passwords++;
-
-    if (this.onRemoveSavedPassword) {
-      this.onRemoveSavedPassword(id);
-    }
+    this.methodCalled('removeSavedPassword', id);
   }
 
   /** @override */
@@ -103,10 +131,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   /** @override */
   removeException(id) {
     this.actual_.removed.exceptions++;
-
-    if (this.onRemoveException) {
-      this.onRemoveException(id);
-    }
+    this.methodCalled('removeException', id);
   }
 
   /** @override */
@@ -222,7 +247,9 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       return Promise.reject('Could not obtain plaintext password');
     }
 
-    const newCredential = Object.assign({}, credential);
+    const newCredential =
+        /** @type {PasswordManagerProxy.CompromisedCredential} */ (
+            Object.assign({}, credential));
     newCredential.password = this.plaintextPassword_;
     return Promise.resolve(newCredential);
   }
@@ -247,4 +274,28 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   recordPasswordCheckReferrer(referrer) {
     this.methodCalled('recordPasswordCheckReferrer', referrer);
   }
+
+  /** override */
+  addPasswordsFileExportProgressListener() {}
+
+  /** override */
+  cancelExportPasswords() {}
+
+  /** override */
+  exportPasswords() {}
+
+  /** override */
+  importPasswords() {}
+
+  /** override */
+  optInForAccountStorage() {}
+
+  /** override */
+  removePasswordsFileExportProgressListener() {}
+
+  /** override */
+  requestExportProgressStatus() {}
+
+  /** override */
+  undoRemoveSavedPasswordOrException() {}
 }

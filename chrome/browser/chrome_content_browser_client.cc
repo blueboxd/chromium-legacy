@@ -25,6 +25,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -1094,6 +1095,71 @@ void MaybeRecordSameSiteCookieEngagementHistogram(
 
 }  // namespace
 
+// Generate a pseudo-random permutation of the following brand/version pairs:
+//   1. The base project (i.e. Chromium)
+//   2. The browser brand, if available
+//   3. A randomized string containing escaped characters to ensure proper
+//      header parsing, along with an arbitrarily low version to ensure proper
+//      version checking.
+blink::UserAgentBrandList GenerateBrandVersionList(
+    int seed,
+    base::Optional<std::string> brand,
+    std::string major_version) {
+  DCHECK_GE(seed, 0);
+  const int npermutations = 6;  // 3!
+  int permutation = seed % npermutations;
+
+  // Pick a stable permutation seeded by major version number. any values here
+  // and in order should be under three.
+  const std::vector<std::vector<int>> orders{{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
+                                             {1, 2, 0}, {2, 0, 1}, {2, 1, 0}};
+  const std::vector<int> order = orders[permutation];
+  DCHECK_EQ(6u, orders.size());
+  DCHECK_EQ(3u, order.size());
+
+  const std::vector<std::string> escaped_chars = {"\\", "\"", ";"};
+  std::string greasey_brand =
+      base::StrCat({escaped_chars[order[0]], "Not", escaped_chars[order[1]],
+                    "A", escaped_chars[order[2]], "Brand"});
+
+  blink::UserAgentBrandVersion greasey_bv = {greasey_brand, "99"};
+  blink::UserAgentBrandVersion chromium_bv = {"Chromium", major_version};
+
+  blink::UserAgentBrandList greased_brand_version_list(3);
+
+  if (brand) {
+    blink::UserAgentBrandVersion brand_bv = {brand.value(), major_version};
+
+    greased_brand_version_list[order[0]] = greasey_bv;
+    greased_brand_version_list[order[1]] = chromium_bv;
+    greased_brand_version_list[order[2]] = brand_bv;
+  } else {
+    greased_brand_version_list[seed % 2] = greasey_bv;
+    greased_brand_version_list[(seed + 1) % 2] = chromium_bv;
+
+    // If left, the last element would make a blank "" at the end of the header.
+    greased_brand_version_list.pop_back();
+  }
+
+  return greased_brand_version_list;
+}
+
+const blink::UserAgentBrandList& GetBrandVersionList() {
+  static const base::NoDestructor<blink::UserAgentBrandList>
+      greased_brand_version_list([] {
+        int major_version_number;
+        std::string major_version = version_info::GetMajorVersionNumber();
+        base::StringToInt(major_version, &major_version_number);
+        base::Optional<std::string> brand;
+#if !BUILDFLAG(CHROMIUM_BRANDING)
+        brand = version_info::GetProductName();
+#endif
+        return GenerateBrandVersionList(major_version_number, brand,
+                                        major_version);
+      }());
+  return *greased_brand_version_list;
+}
+
 std::string GetUserAgent() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUserAgent)) {
@@ -1120,14 +1186,7 @@ std::string GetUserAgent() {
 blink::UserAgentMetadata GetUserAgentMetadata() {
   blink::UserAgentMetadata metadata;
 
-  std::string major_version = version_info::GetMajorVersionNumber();
-
-  metadata.brand_version_list.push_back({"Chromium", major_version});
-#if !BUILDFLAG(CHROMIUM_BRANDING)
-  metadata.brand_version_list.push_back(
-      {version_info::GetProductName(), major_version});
-#endif
-
+  metadata.brand_version_list = GetBrandVersionList();
   metadata.full_version = version_info::GetVersionNumber();
   metadata.platform = version_info::GetOSType();
   metadata.platform_version =

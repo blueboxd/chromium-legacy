@@ -184,6 +184,8 @@ TEST_F(TabDragDropDelegateTest, DropOnEdgeEntersSplitView) {
   EXPECT_TRUE(split_view_controller->InTabletSplitViewMode());
   EXPECT_EQ(new_window.get(), split_view_controller->GetSnappedWindow(
                                   SplitViewController::SnapPosition::RIGHT));
+  EXPECT_EQ(source_window.get(), split_view_controller->GetSnappedWindow(
+                                     SplitViewController::SnapPosition::LEFT));
 }
 
 }  // namespace ash

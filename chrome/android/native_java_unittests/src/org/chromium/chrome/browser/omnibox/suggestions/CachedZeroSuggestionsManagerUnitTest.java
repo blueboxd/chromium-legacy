@@ -11,7 +11,6 @@ import org.junit.Assert;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
-import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -26,12 +25,6 @@ import java.util.List;
 public class CachedZeroSuggestionsManagerUnitTest {
     @CalledByNative
     private CachedZeroSuggestionsManagerUnitTest() {}
-
-    @CalledByNative
-    void setUp() {
-        // Clear cache explicitly, otherwise this test will be flaky until the suite is re-executed.
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
-    }
 
     /**
      * Compare two instances of CachedZeroSuggestionsManager to see if they are same, asserting if
@@ -61,42 +54,27 @@ public class CachedZeroSuggestionsManagerUnitTest {
     private List<OmniboxSuggestion> buildDummySuggestionsList(int count, boolean hasPostData) {
         List<OmniboxSuggestion> list = new ArrayList<>();
 
-        List<OmniboxSuggestion.MatchClassification> dummyClassifications = new ArrayList<>();
-        dummyClassifications.add(
-                new OmniboxSuggestion.MatchClassification(0, MatchClassificationStyle.NONE));
-
         for (int index = 0; index < count; ++index) {
-            OmniboxSuggestion suggestion = new OmniboxSuggestion(
-                    OmniboxSuggestionType.CLIPBOARD_IMAGE, false /* isSearchType */,
-                    0 /* relevance */, 0 /* transition */, "dummy text 1" + (index + 1),
-                    dummyClassifications /* displayTextClassifications */,
-                    "dummy description 1" + (index + 1) /* description */,
-                    dummyClassifications /* descriptionClassifications */, null /* answer */,
-                    null /* fillIntoEdit */, new GURL("http://dummy.com/" + (index + 1)) /* url */,
-                    GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
-                    false /* isStarred */, false /* isDeletable */,
-                    hasPostData ? "Dummy Content Type" + (index + 1) : null /* postContentType */,
-                    hasPostData ? new byte[] {4, 5, 6, (byte) (index + 1)} : null /* postData */,
-                    OmniboxSuggestion.INVALID_GROUP, null /* queryTiles */);
-            list.add(suggestion);
+            final int id = index + 1;
+            list.add(createSuggestionBuilder(id)
+                             .setPostContentType(hasPostData ? "Content Type " + id : null)
+                             .setPostData(hasPostData ? new byte[] {4, 5, 6, (byte) id} : null)
+                             .build());
         }
 
         return list;
     }
 
-    private OmniboxSuggestion buildUninitializedSuggestion() {
-        List<OmniboxSuggestion.MatchClassification> classifications = new ArrayList<>();
-        classifications.add(
-                new OmniboxSuggestion.MatchClassification(0, MatchClassificationStyle.NONE));
-
-        return new OmniboxSuggestion(-1, true /* isSearchType */, 0 /* relevance */,
-                0 /* transition */, "" /* displayText */,
-                classifications /* displayTextClassifications */, "" /* description */,
-                classifications /* descriptionClassifications */, null /* answer */,
-                "" /* fillIntoEdit */, GURL.emptyGURL() /* url */, GURL.emptyGURL() /* imageUrl */,
-                null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, OmniboxSuggestion.INVALID_GROUP,
-                null /* queryTiles */);
+    /**
+     * Create and partially initialize suggestion builder constructing dummy OmniboxSuggestions.
+     *
+     * @param id Suggestion identifier used to initialize a unique suggestion content.
+     * @return Newly constructed OmniboxSuggestion.
+     */
+    private OmniboxSuggestionBuilderForTest createSuggestionBuilder(int id) {
+        return OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.CLIPBOARD_IMAGE)
+                .setDisplayText("dummy text " + id)
+                .setDescription("dummy description " + id);
     }
 
     @CalledByNativeJavaTest
@@ -170,22 +148,8 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
     @CalledByNativeJavaTest
     public void dropSuggestions_suggestionsWithValidGroupsAssociation() {
-        List<OmniboxSuggestion.MatchClassification> dummyClassifications = new ArrayList<>();
-        dummyClassifications.add(
-                new OmniboxSuggestion.MatchClassification(0, MatchClassificationStyle.NONE));
-
         List<OmniboxSuggestion> list = buildDummySuggestionsList(2, false);
-        OmniboxSuggestion suggestionWithHeader =
-                new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST, true /* isSearchType */,
-                        0 /* relevance */, 0 /* transition */, "dummy text",
-                        dummyClassifications /* displayTextClassifications */,
-                        "dummy description" /* description */,
-                        dummyClassifications /* descriptionClassifications */, null /* answer */,
-                        null /* fillIntoEdit */, new GURL("http://dummy.url") /* url */,
-                        GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
-                        false /* isStarred */, false /* isDeletable */, null /* postContentType */,
-                        null /* postData */, 1 /* groupId */, null /* queryTiles */);
-        list.add(suggestionWithHeader);
+        list.add(createSuggestionBuilder(33).setGroupId(1).build());
         SparseArray<String> headers = new SparseArray<>();
         headers.put(1, "Valid Header");
 
@@ -199,15 +163,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
     public void dropSuggestions_suggestionsWithInvalidGroupsAssociation() {
         List<OmniboxSuggestion> listExpected = buildDummySuggestionsList(2, false);
         List<OmniboxSuggestion> listToCache = buildDummySuggestionsList(2, false);
-        OmniboxSuggestion suggestionWithHeader = new OmniboxSuggestion(
-                OmniboxSuggestionType.SEARCH_SUGGEST, true /* isSearchType */, 0 /* relevance */,
-                0 /* transition */, "dummy text", null /* displayTextClassifications */,
-                "dummy description" /* description */, null /* descriptionClassifications */,
-                null /* answer */, null /* fillIntoEdit */, new GURL("dummy url") /* url */,
-                GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
-                false /* isStarred */, false /* isDeletable */, null /* postContentType */,
-                null /* postData */, 1 /* groupId */, null /* queryTiles */);
-        listToCache.add(suggestionWithHeader);
+        listToCache.add(createSuggestionBuilder(33).setGroupId(1).build());
 
         AutocompleteResult dataExpected = new AutocompleteResult(listExpected, null);
         AutocompleteResult dataToCache = new AutocompleteResult(listToCache, null);
@@ -218,6 +174,9 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
     @CalledByNativeJavaTest
     public void malformedCache_dropsMissingSuggestions() {
+        // Clear cache explicitly, otherwise this test will be flaky until the suite is re-executed.
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
 
         // Save one valid suggestion to cache.
@@ -232,7 +191,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
         // and 1 totally empty entry.
         AutocompleteResult rawDataFromCache =
                 new AutocompleteResult(buildDummySuggestionsList(1, true), null);
-        rawDataFromCache.getSuggestionsList().add(buildUninitializedSuggestion());
+        rawDataFromCache.getSuggestionsList().add(new OmniboxSuggestionBuilderForTest().build());
 
         // readCachedSuggestionList makes full attempt to restore whatever could be scraped from the
         // cache.
@@ -248,6 +207,9 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
     @CalledByNativeJavaTest
     public void malformedCache_dropsMissingGroupHeaders() {
+        // Clear cache explicitly, otherwise this test will be flaky until the suite is re-executed.
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+
         final SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
 
         // Write 3 wrong group headers to the cache
@@ -293,40 +255,13 @@ public class CachedZeroSuggestionsManagerUnitTest {
         headersWithInvalidItems.put(OmniboxSuggestion.INVALID_GROUP, "Invalid group");
 
         List<OmniboxSuggestion> listExpected = buildDummySuggestionsList(2, false);
-        listExpected.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                true /* isSearchType */, 0 /* relevance */, 0 /* transition */, "dummy text",
-                null /* displayTextClassifications */, "dummy description" /* description */,
-                null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
-                new GURL("http://url.com") /* url */, GURL.emptyGURL() /* imageUrl */,
-                null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 12 /* groupId */,
-                null /* queryTiles */));
+        listExpected.add(createSuggestionBuilder(72).setGroupId(12).build());
 
         List<OmniboxSuggestion> listWithInvalidItems = buildDummySuggestionsList(2, false);
-        listWithInvalidItems.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                true /* isSearchType */, 0 /* relevance */, 0 /* transition */, "dummy text",
-                null /* displayTextClassifications */, "dummy description" /* description */,
-                null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
-                new GURL("http://url.com") /* url */, GURL.emptyGURL() /* imageUrl */,
-                null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 12 /* groupId */,
-                null /* queryTiles */));
-        listWithInvalidItems.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                true /* isSearchType */, 0 /* relevance */, 0 /* transition */, "dummy text",
-                null /* displayTextClassifications */, "dummy description" /* description */,
-                null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
-                new GURL("bad url") /* url */, GURL.emptyGURL() /* imageUrl */,
-                null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 12 /* groupId */,
-                null /* queryTiles */));
-        listWithInvalidItems.add(new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
-                true /* isSearchType */, 0 /* relevance */, 0 /* transition */, "dummy text",
-                null /* displayTextClassifications */, "dummy description" /* description */,
-                null /* descriptionClassifications */, null /* answer */, null /* fillIntoEdit */,
-                new GURL("http://url.com") /* url */, GURL.emptyGURL() /* imageUrl */,
-                null /* imageDominantColor */, false /* isStarred */, false /* isDeletable */,
-                null /* postContentType */, null /* postData */, 34 /* bad group */,
-                null /* queryTiles */));
+        listWithInvalidItems.add(createSuggestionBuilder(72).setGroupId(12).build());
+        listWithInvalidItems.add(
+                createSuggestionBuilder(73).setGroupId(12).setUrl(new GURL("bad URL")).build());
+        listWithInvalidItems.add(createSuggestionBuilder(74).setGroupId(34).build());
 
         AutocompleteResult dataWithInvalidItems =
                 new AutocompleteResult(listWithInvalidItems, headersWithInvalidItems);

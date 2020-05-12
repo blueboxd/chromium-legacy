@@ -414,7 +414,7 @@ void BackForwardCacheImpl::StoreEntry(
   }
 #endif
 
-  entry->render_frame_host->EnterBackForwardCache();
+  entry->render_frame_host->DidEnterBackForwardCache();
   entries_.push_front(std::move(entry));
 
   size_t size_limit = cache_size_limit_for_testing_
@@ -459,7 +459,7 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
   std::unique_ptr<Entry> entry = std::move(*matching_entry);
   entries_.erase(matching_entry);
   RequestRecordTimeToVisible(entry->render_frame_host.get(), navigation_start);
-  entry->render_frame_host->LeaveBackForwardCache();
+  entry->render_frame_host->WillLeaveBackForwardCache();
 
   RestoreBrowserControlsState(entry->render_frame_host.get());
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "components/query_tiles/internal/tile_types.h"
 #include "url/gurl.h"
 
 namespace upboarding {
@@ -28,6 +29,9 @@ extern const char kExpireDurationKey[];
 // Finch parameter key for expire duration in seconds.
 extern const char kIsUnmeteredNetworkRequiredKey[];
 
+// Finch parameter key for image prefetch mode.
+extern const char kImagePrefetchModeKey[];
+
 class TileConfig {
  public:
   // Gets the URL for the Query Tiles server.
@@ -42,6 +46,10 @@ class TileConfig {
 
   // Gets the maximum duration for holding current group's info and images.
   static base::TimeDelta GetExpireDuration();
+
+  // Gets the image prefetch mode to determine how many images will be
+  // prefetched in background task.
+  static ImagePrefetchMode GetImagePrefetchMode();
 };
 
 }  // namespace upboarding

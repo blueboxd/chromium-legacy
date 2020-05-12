@@ -70,7 +70,7 @@ Status SendKeysOnWindow(
   Status status = FlattenStringArray(key_list, &keys);
   if (status.IsError())
     return status;
-  std::list<KeyEvent> events;
+  std::vector<KeyEvent> events;
   int sticky_modifiers_tmp = *sticky_modifiers;
   status = ConvertKeysToKeyEvents(
       keys, release_modifiers, &sticky_modifiers_tmp, &events);

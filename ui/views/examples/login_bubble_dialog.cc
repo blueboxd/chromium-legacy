@@ -132,8 +132,8 @@ void LoginBubbleDialogExample::CreateExampleView(View* container) {
                         GridLayout::ColumnSize::kUsePreferred, 0, 0);
 
   layout->StartRowWithPadding(0, 0, 0, related_control_padding);
-  button_ = layout->AddView(MdTextButton::CreateSecondaryUiButton(
-      this, GetStringUTF16(IDS_LOGIN_SHOW_BUTTON_LABEL)));
+  button_ = layout->AddView(
+      MdTextButton::Create(this, GetStringUTF16(IDS_LOGIN_SHOW_BUTTON_LABEL)));
 
   layout->StartRowWithPadding(0, 0, 0, related_control_padding);
   layout->AddView(std::make_unique<Label>(

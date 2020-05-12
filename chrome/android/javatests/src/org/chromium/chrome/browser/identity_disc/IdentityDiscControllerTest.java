@@ -53,7 +53,7 @@ public class IdentityDiscControllerTest {
 
     @Before
     public void setUp() {
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
@@ -61,7 +61,7 @@ public class IdentityDiscControllerTest {
 
     @After
     public void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test

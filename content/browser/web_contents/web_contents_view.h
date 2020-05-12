@@ -43,16 +43,6 @@ class WebContentsView {
   // the tab in the screen coordinate system.
   virtual void GetContainerBounds(gfx::Rect* out) const = 0;
 
-  // TODO(brettw) this is a hack. It's used in two places at the time of this
-  // writing: (1) when render view hosts switch, we need to size the replaced
-  // one to be correct, since it wouldn't have known about sizes that happened
-  // while it was hidden; (2) in constrained windows.
-  //
-  // (1) will be fixed once interstitials are cleaned up. (2) seems like it
-  // should be cleaned up or done some other way, since this works for normal
-  // WebContents without the special code.
-  virtual void SizeContents(const gfx::Size& size) = 0;
-
   // Sets focus to the native widget for this tab.
   virtual void Focus() = 0;
 

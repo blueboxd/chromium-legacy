@@ -18,9 +18,9 @@
 
 #if defined(OS_MACOSX)
 #include "base/test/scoped_feature_list.h"
-#include "components/printing/browser/features.h"
 #include "components/printing/browser/printer_capabilities_mac.h"
 #include "printing/backend/print_backend.h"
+#include "printing/printing_features.h"
 #include "ui/gfx/geometry/size.h"
 #endif
 

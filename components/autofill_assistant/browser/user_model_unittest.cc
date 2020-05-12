@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/user_model.h"
+#include "base/guid.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill_assistant/browser/mock_user_model_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
+const char kFakeUrl[] = "https://www.example.com";
 
 using ::testing::_;
 using ::testing::Eq;
@@ -303,6 +306,49 @@ TEST_F(UserModelTest, IrregularModelIdentifiers) {
 
   // Subscript access into UTF-8 identifiers is not supported.
   EXPECT_EQ(model_.GetValue("utf_8_ü万𠜎[1]"), base::nullopt);
+}
+
+TEST_F(UserModelTest, SetCreditCards) {
+  autofill::CreditCard credit_card_a(base::GenerateGUID(), kFakeUrl);
+  autofill::test::SetCreditCardInfo(&credit_card_a, "Marion Mitchell",
+                                    "4111 1111 1111 1111", "01", "2050", "");
+  autofill::CreditCard credit_card_b(base::GenerateGUID(), kFakeUrl);
+  autofill::test::SetCreditCardInfo(&credit_card_b, "John Doe",
+                                    "4111 1111 1111 1111", "01", "2050", "");
+  auto credit_cards =
+      std::make_unique<std::vector<std::unique_ptr<autofill::CreditCard>>>();
+  credit_cards->emplace_back(
+      std::make_unique<autofill::CreditCard>(credit_card_a));
+  credit_cards->emplace_back(
+      std::make_unique<autofill::CreditCard>(credit_card_b));
+  model_.SetAutofillCreditCards(std::move(credit_cards));
+  EXPECT_THAT(
+      model_.GetCreditCard(credit_card_a.guid())->Compare(credit_card_a),
+      Eq(0));
+  EXPECT_THAT(
+      model_.GetCreditCard(credit_card_b.guid())->Compare(credit_card_b),
+      Eq(0));
+}
+
+TEST_F(UserModelTest, SetProfiles) {
+  autofill::AutofillProfile profile_a(base::GenerateGUID(), kFakeUrl);
+  autofill::test::SetProfileInfo(
+      &profile_a, "Marion", "Mitchell", "Morrison", "marion@me.xyz", "Fox",
+      "123 Zoo St.", "unit 5", "Hollywood", "CA", "91601", "US", "16505678910");
+  autofill::AutofillProfile profile_b(base::GenerateGUID(), kFakeUrl);
+  autofill::test::SetProfileInfo(&profile_b, "John", "", "Doe",
+                                 "editor@gmail.com", "", "203 Barfield Lane",
+                                 "", "Mountain View", "CA", "94043", "US",
+                                 "+12345678901");
+  auto profiles = std::make_unique<
+      std::vector<std::unique_ptr<autofill::AutofillProfile>>>();
+  profiles->emplace_back(
+      std::make_unique<autofill::AutofillProfile>(profile_a));
+  profiles->emplace_back(
+      std::make_unique<autofill::AutofillProfile>(profile_b));
+  model_.SetAutofillProfiles(std::move(profiles));
+  EXPECT_THAT(model_.GetProfile(profile_a.guid())->Compare(profile_a), Eq(0));
+  EXPECT_THAT(model_.GetProfile(profile_b.guid())->Compare(profile_b), Eq(0));
 }
 
 }  // namespace autofill_assistant

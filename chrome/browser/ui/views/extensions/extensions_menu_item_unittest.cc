@@ -48,11 +48,11 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
     controller_ = controller.get();
     controller_->SetActionName(initial_extension_name_);
     controller_->SetTooltip(initial_tooltip_);
-    menu_item_ = std::make_unique<ExtensionsMenuItemView>(
+    auto menu_item = std::make_unique<ExtensionsMenuItemView>(
         browser(), std::move(controller));
-    menu_item_->set_owned_by_client();
+    primary_button_on_menu_ = menu_item->primary_action_button_for_testing();
 
-    widget_->SetContentsView(menu_item_.get());
+    widget_->SetContentsView(menu_item.release());
   }
 
   void TearDown() override {
@@ -62,15 +62,13 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
-  ExtensionsMenuButton* primary_button() {
-    return menu_item_->primary_action_button_for_testing();
-  }
+  ExtensionsMenuButton* primary_button() { return primary_button_on_menu_; }
 
   base::test::ScopedFeatureList scoped_feature_list_;
   const base::string16 initial_extension_name_;
   const base::string16 initial_tooltip_;
   std::unique_ptr<views::Widget> widget_;
-  std::unique_ptr<ExtensionsMenuItemView> menu_item_;
+  ExtensionsMenuButton* primary_button_on_menu_ = nullptr;
   TestToolbarActionViewController* controller_ = nullptr;
 };
 

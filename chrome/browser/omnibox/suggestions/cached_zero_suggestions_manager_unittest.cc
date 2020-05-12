@@ -19,11 +19,6 @@ class CachedZeroSuggestionsManagerUnitTest : public ::testing::Test {
     return j_test_;
   }
 
-  void SetUp() override {
-    Java_CachedZeroSuggestionsManagerUnitTest_setUp(AttachCurrentThread(),
-                                                    j_test_);
-  }
-
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_test_;
 };

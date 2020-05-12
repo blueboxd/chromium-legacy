@@ -241,7 +241,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public blink::mojom::LocalFrameHost,
       public network::CSPContext,
       public blink::mojom::LocalMainFrameHost,
-      public ui::AXActionHandler {
+      public ui::AXActionHandler,
+      public network::mojom::CookieAccessObserver {
  public:
   using AXTreeSnapshotCallback =
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
@@ -1068,11 +1069,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Called when this RenderFrameHostImpl enters the BackForwardCache, the
   // document enters in a "Frozen" state where no Javascript can run.
-  void EnterBackForwardCache();
+  void DidEnterBackForwardCache();
 
   // Called when this RenderFrameHostImpl leaves the BackForwardCache. This
   // occurs immediately before a restored document is committed.
-  void LeaveBackForwardCache();
+  void WillLeaveBackForwardCache();
 
   // Take ownership over the DidCommitProvisionalLoad_Params that
   // were last used to commit this navigation.
@@ -1548,6 +1549,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::string& http_method,
       const std::string& mime_type,
       network::mojom::RequestDestination request_destination) override;
+  void DidChangeFrameOwnerProperties(
+      const base::UnguessableToken& child_frame_token,
+      blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1595,6 +1599,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHostImpl that is not a child of this node.
   RenderFrameHostImpl* FindAndVerifyChild(int32_t child_frame_routing_id,
                                           bad_message::BadMessageReason reason);
+
+  // Returns the child RenderFrameHostImpl if |child_frame_token| is an
+  // immediate child of this FrameTreeNode. |child_frame_token| is considered
+  // untrusted, so the renderer process is killed if it refers to a
+  // RenderFrameHostImpl that is not a child of this node.
+  RenderFrameHostImpl* FindAndVerifyChild(
+      const base::UnguessableToken& child_frame_token,
+      bad_message::BadMessageReason reason);
+
+  mojo::PendingRemote<network::mojom::CookieAccessObserver>
+  CreateCookieAccessObserver();
+
+  // network::mojom::CookieAccessObserver:
+  void OnCookiesAccessed(
+      network::mojom::CookieAccessDetailsPtr details) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1761,9 +1780,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
                               const blink::FramePolicy& frame_policy);
-  void OnDidChangeFrameOwnerProperties(
-      int32_t frame_routing_id,
-      const blink::mojom::FrameOwnerProperties& properties);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDidStopLoading();
@@ -1873,6 +1889,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // mojom::DomAutomationControllerHost:
   void DomOperationResponse(const std::string& json_string) override;
+
+  // network::mojom::CookieAccessObserver
+  void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
+                 observer) override;
 
   // Resets any waiting state of this RenderFrameHost that is no longer
   // relevant.
@@ -2925,6 +2945,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Embedding token for the document in this RenderFrameHost.
   base::Optional<base::UnguessableToken> embedding_token_;
+
+  // Observers listening to cookie access notifications for the current document
+  // in this RenderFrameHost.
+  // Note: at the moment this set is not cleared when a new document is created
+  // in this RenderFrameHost. This is done because the first observer is created
+  // before the navigation actually commits and because the old routing id-based
+  // behaved in the same way as well.
+  // This problem should go away with RenderDocumentHost in any case.
+  // TODO(crbug.com/936696): Remove this warning after the RDH ships.
+  mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

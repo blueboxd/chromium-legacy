@@ -239,7 +239,7 @@ void LayoutExampleBase::CreateExampleView(View* container) {
 
   int vertical_pos = kLayoutExampleVerticalSpacing;
   int horizontal_pos = kLayoutExampleLeftPadding;
-  auto add_button = MdTextButton::CreateSecondaryUiButton(
+  auto add_button = MdTextButton::Create(
       this, l10n_util::GetStringUTF16(IDS_LAYOUT_BASE_ADD_LABEL));
   add_button->SetPosition(gfx::Point(horizontal_pos, vertical_pos));
   add_button->SizeToPreferredSize();

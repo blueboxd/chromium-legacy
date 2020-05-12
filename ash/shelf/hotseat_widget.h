@@ -100,6 +100,10 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // the hidden state.
   int GetHotseatFullDragAmount() const;
 
+  // Updates the app scaling state, if needed. Returns whether the app scaling
+  // state changed.
+  bool UpdateAppScalingIfNeeded();
+
   // Returns the background blur of the |translucent_background_|, for tests.
   int GetHotseatBackgroundBlurForTest() const;
 
@@ -145,6 +149,14 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   // Collects the inputs for layout.
   LayoutInputs GetLayoutInputs() const;
+
+  // May update the hotseat widget's target in account of app scaling.
+  void MaybeAdjustTargetBoundsForAppScaling(HotseatState hotseat_target_state);
+
+  // Returns whether app scaling should be triggered if hotseat's size becomes
+  // |available_size| and the hotseat's state is |hotseat_target_state|.
+  bool ShouldTriggerAppScaling(const gfx::Size& available_size,
+                               HotseatState hotseat_target_state) const;
 
   // The set of inputs that impact this widget's layout. The assumption is that
   // this widget needs a relayout if, and only if, one or more of these has

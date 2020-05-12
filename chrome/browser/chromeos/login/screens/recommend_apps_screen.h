@@ -51,6 +51,8 @@ class RecommendAppsScreen : public BaseScreen,
   // Called when the view is destroyed so there is no dead reference to it.
   void OnViewDestroyed(RecommendAppsScreenView* view);
 
+  void SetSkipForTesting() { skip_for_testing_ = true; }
+
   // RecommendAppsFetcherDelegate:
   void OnLoadSuccess(const base::Value& app_list) override;
   void OnLoadError() override;
@@ -72,6 +74,9 @@ class RecommendAppsScreen : public BaseScreen,
   ScreenExitCallback exit_callback_;
 
   std::unique_ptr<RecommendAppsFetcher> recommend_apps_fetcher_;
+
+  // Skip the screen for testing if set to true.
+  bool skip_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsScreen);
 };

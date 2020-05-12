@@ -358,18 +358,18 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
 
     // The tab strip must be added to the view hierarchy for it to create the
     // buttons.
+    auto parent = std::make_unique<views::View>();
     views::FlexLayout* layout_manager =
-        parent_.SetLayoutManager(std::make_unique<views::FlexLayout>());
+        parent->SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
         .SetDefault(
             views::kFlexBehaviorKey,
             views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                      views::MaximumFlexSizeRule::kUnbounded));
-    parent_.AddChildView(tab_strip_);
-    parent_.set_owned_by_client();
+    parent->AddChildView(tab_strip_);
 
     widget_ = CreateTestWidget();
-    widget_->SetContentsView(&parent_);
+    widget_->SetContentsView(parent.release());
   }
 
   void TearDown() override {
@@ -395,8 +395,6 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
 
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
-  // Owns |tab_strip_|.
-  views::View parent_;
   TabStrip* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 

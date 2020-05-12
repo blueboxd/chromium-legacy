@@ -7,21 +7,17 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/widget/widget.h"
 
-class AvatarToolbarButtonTest : public TestWithBrowserView {};
+using AvatarToolbarButtonTest = TestWithBrowserView;
 
 // CrOS only shows the avatar button for incognito/guest.
 #if !defined(OS_CHROMEOS)
 
 TEST_F(AvatarToolbarButtonTest, HighlightMeetsMinimumContrast) {
-  auto parent = std::make_unique<ToolbarAccountIconContainerView>(browser());
-  auto button = std::make_unique<AvatarToolbarButton>(browser(), parent.get());
-  button->set_owned_by_client();
-
-  browser_view()->GetWidget()->GetContentsView()->AddChildView(button.get());
+  auto* button = browser_view()->GetWidget()->GetContentsView()->AddChildView(
+      std::make_unique<AvatarToolbarButton>(browser()));
 
   SkColor toolbar_color =
       ToolbarButton::GetDefaultBackgroundColor(button->GetThemeProvider());
@@ -35,6 +31,8 @@ TEST_F(AvatarToolbarButtonTest, HighlightMeetsMinimumContrast) {
       SkColorSetRGB(0xFF, 0x00, 0x00), SK_ColorBLACK, SK_ColorWHITE);
   EXPECT_GT(color_utils::GetContrastRatio(result, toolbar_color),
             color_utils::kMinimumReadableContrastRatio);
+
+  button->parent()->RemoveChildViewT(button);
 }
 
 #endif

@@ -187,7 +187,6 @@ void AssistantClientImpl::RequestAudioDecoderFactory(
   content::ServiceProcessHost::Launch(
       std::move(receiver),
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SandboxType::kUtility)
           .WithDisplayName("Assistant Audio Decoder Service")
           .Pass());
 }

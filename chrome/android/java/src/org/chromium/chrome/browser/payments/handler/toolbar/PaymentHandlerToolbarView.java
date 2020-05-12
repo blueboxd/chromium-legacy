@@ -34,7 +34,7 @@ import org.chromium.components.browser_ui.widget.FadingShadowView;
     /**
      * Construct the PaymentHandlerToolbarView.
      *
-     * @param context The context where the bottome-sheet should be shown.
+     * @param context The context where the bottom-sheet should be shown.
      * @param securityIconOnClickListener The listener to clicking the security icon.
      */
     /* package */ PaymentHandlerToolbarView(

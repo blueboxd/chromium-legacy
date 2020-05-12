@@ -305,11 +305,11 @@ class BASE_EXPORT Value {
   Value* SetIntKey(StringPiece key, int val);
   Value* SetDoubleKey(StringPiece key, double val);
   Value* SetStringKey(StringPiece key, StringPiece val);
-  // NOTE: These two overloads are provided as performance / code generation
-  // optimizations.
+  Value* SetStringKey(StringPiece key, StringPiece16 val);
+  // NOTE: The following two overloads are provided as performance / code
+  // generation optimizations.
   Value* SetStringKey(StringPiece key, const char* val);
   Value* SetStringKey(StringPiece key, std::string&& val);
-  Value* SetStringKey(StringPiece key, StringPiece16 val);
 
   // This attempts to remove the value associated with |key|. In case of
   // failure, e.g. the key does not exist, false is returned and the underlying

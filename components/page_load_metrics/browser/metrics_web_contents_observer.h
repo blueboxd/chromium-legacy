@@ -123,7 +123,10 @@ class MetricsWebContentsObserver
                                 bool is_display_none) override;
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override;
-  void OnCookiesAccessed(const content::CookieAccessDetails& details) override;
+  void OnCookiesAccessed(content::NavigationHandle* navigation,
+                         const content::CookieAccessDetails& details) override;
+  void OnCookiesAccessed(content::RenderFrameHost* rfh,
+                         const content::CookieAccessDetails& details) override;
   void OnStorageAccessed(const GURL& url,
                          const GURL& first_party_url,
                          bool blocked_by_policy,
@@ -244,6 +247,9 @@ class MetricsWebContentsObserver
   // page from back-forward cache. Returns true if the page was restored.
   bool MaybeRestorePageLoadTrackerForBackForwardCache(
       content::NavigationHandle* navigation_handle);
+
+  // Notify PageLoadTrackers about cookie read or write.
+  void OnCookiesAccessedImpl(const content::CookieAccessDetails& details);
 
   // True if the web contents is currently in the foreground.
   bool in_foreground_;

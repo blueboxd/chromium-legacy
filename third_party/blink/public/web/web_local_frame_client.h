@@ -258,12 +258,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       const ParsedFeaturePolicy& feature_policy_header,
       const DocumentPolicy::FeatureState& document_policy_header) {}
 
-  // Some frame owner properties have changed for a child frame of this frame.
-  // Frame owner properties currently include: scrolling, marginwidth and
-  // marginheight.
-  virtual void DidChangeFrameOwnerProperties(WebFrame* child_frame,
-                                             const WebFrameOwnerProperties&) {}
-
   // Called when a watched CSS selector matches or stops matching.
   virtual void DidMatchCSS(
       const WebVector<WebString>& newly_matching_selectors,

@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
@@ -94,15 +95,13 @@ public class EntitySuggestionProcessorUnitTest {
     SuggestionTestHelper createSuggestion(
             String subject, String description, String color, GURL url) {
         OmniboxSuggestion suggestion =
-                new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY,
-                        /* isSearchType */ true, /* relevance */ 0, /* transition */ 0, subject,
-                        /* displayTextClassifications */ null, /* description */ description,
-                        /* descriptionClassifications */ null,
-                        /* suggestionAnswer */ null, /* fillIntoEdit */ "",
-                        /* url */ GURL.emptyGURL(),
-                        /* imageUrl */ url, /* imageDominantColor */ color,
-                        /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
-                        /* postData */ null, OmniboxSuggestion.INVALID_GROUP, null);
+                OmniboxSuggestionBuilderForTest
+                        .searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY)
+                        .setDisplayText(subject)
+                        .setDescription(description)
+                        .setImageUrl(url)
+                        .setImageDominantColor(color)
+                        .build();
         PropertyModel model = mProcessor.createModel();
         return new SuggestionTestHelper(suggestion, model);
     }

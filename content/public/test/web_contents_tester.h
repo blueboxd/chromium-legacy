@@ -56,6 +56,10 @@ class RenderFrameHost;
 // there is a fundamental assumption in content/ that a WebContents* can be
 // downcast to a WebContentsImpl*, and this wouldn't be true for TestWebContents
 // objects.
+//
+// Tests that use a TestWebContents must also use TestRenderViewHost and
+// TestRenderFrameHost. They can do so by instantiating a
+// RenderViewHostTestEnabler.
 class WebContentsTester {
  public:
   // Retrieves a WebContentsTester to drive tests of the specified WebContents.

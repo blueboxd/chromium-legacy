@@ -2001,9 +2001,17 @@ void WebContentsImpl::SyncRendererPrefs() {
       new PageMsg_SetRendererPrefs(MSG_ROUTING_NONE, renderer_preferences));
 }
 
-void WebContentsImpl::OnCookiesAccessed(const CookieAccessDetails& details) {
+void WebContentsImpl::OnCookiesAccessed(NavigationHandle* navigation,
+                                        const CookieAccessDetails& details) {
   for (auto& observer : observers_) {
-    observer.OnCookiesAccessed(details);
+    observer.OnCookiesAccessed(navigation, details);
+  }
+}
+
+void WebContentsImpl::OnCookiesAccessed(RenderFrameHostImpl* rfh,
+                                        const CookieAccessDetails& details) {
+  for (auto& observer : observers_) {
+    observer.OnCookiesAccessed(rfh, details);
   }
 }
 
@@ -5256,17 +5264,17 @@ void WebContentsImpl::LoadingStateChanged(bool to_different_document,
       type, Source<NavigationController>(&controller_), det);
 }
 
-void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
-                                        RenderViewHost* new_host) {
-  DCHECK_NE(old_host, new_host);
+void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_view,
+                                        RenderViewHost* new_view) {
+  DCHECK_NE(old_view, new_view);
   // After sending out a swap notification, we need to send a disconnect
   // notification so that clients that pick up a pointer to |this| can NULL the
   // pointer.  See Bug 1230284.
   notify_disconnection_ = true;
   for (auto& observer : observers_)
-    observer.RenderViewHostChanged(old_host, new_host);
+    observer.RenderViewHostChanged(old_view, new_view);
 
-  view_->RenderViewHostChanged(old_host, new_host);
+  view_->RenderViewHostChanged(old_view, new_view);
 
   // If this is an inner WebContents that has swapped views, we need to reattach
   // it to its outer WebContents.
@@ -5279,21 +5287,21 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
   RemoveBrowserPluginEmbedder();
 }
 
-void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
-                                         RenderFrameHost* new_host,
+void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_frame,
+                                         RenderFrameHost* new_frame,
                                          bool is_main_frame) {
 #if defined(OS_ANDROID)
-  // Copy importance from |old_host| if |new_host| is a main frame.
-  if (old_host && !new_host->GetParent()) {
-    static_cast<RenderFrameHostImpl*>(new_host)
-        ->GetRenderWidgetHost()
-        ->SetImportance(static_cast<RenderFrameHostImpl*>(old_host)
-                            ->GetRenderWidgetHost()
-                            ->importance());
+  // Copy importance from |old_frame| if |new_frame| is a main frame.
+  if (old_frame && !new_frame->GetParent()) {
+    RenderWidgetHostImpl* old_widget =
+        static_cast<RenderFrameHostImpl*>(old_frame)->GetRenderWidgetHost();
+    RenderWidgetHostImpl* new_widget =
+        static_cast<RenderFrameHostImpl*>(new_frame)->GetRenderWidgetHost();
+    new_widget->SetImportance(old_widget->importance());
   }
 #endif
   for (auto& observer : observers_)
-    observer.RenderFrameHostChanged(old_host, new_host);
+    observer.RenderFrameHostChanged(old_frame, new_frame);
 }
 
 // TODO(avi): Remove this entire function because this notification is already
@@ -6483,17 +6491,6 @@ void WebContentsImpl::RenderProcessGoneFromRenderManager(
   RenderViewTerminated(render_view_host, crashed_status_, crashed_error_code_);
 }
 
-void WebContentsImpl::UpdateRenderViewSizeForRenderManager(bool is_main_frame) {
-  // TODO(brettw) this is a hack. See WebContentsView::SizeContents.
-  gfx::Size size = GetSizeForNewRenderView(is_main_frame);
-  // 0x0 isn't a valid window size (minimal window size is 1x1) but it may be
-  // here during container initialization and normal window size will be set
-  // later. In case of tab duplication this resizing to 0x0 prevents setting
-  // normal size later so just ignore it.
-  if (!size.IsEmpty())
-    view_->SizeContents(size);
-}
-
 void WebContentsImpl::CancelModalDialogsForRenderManager() {
   // We need to cancel modal dialogs when doing a process swap, since the load
   // deferrer would prevent us from swapping out. We also clear the state
@@ -6508,13 +6505,19 @@ void WebContentsImpl::CancelModalDialogsForRenderManager() {
   }
 }
 
-void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,
-                                                     RenderFrameHost* new_host,
+void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_frame,
+                                                     RenderFrameHost* new_frame,
                                                      bool is_main_frame) {
   if (is_main_frame) {
+    // The |new_frame| and its various compadres are already swapped into place
+    // for the WebContentsImpl when this method is called.
+    DCHECK(GetMainFrame() == new_frame);
+    DCHECK(GetRenderViewHost() == new_frame->GetRenderViewHost());
+    DCHECK(GetRenderWidgetHostView() == new_frame->GetView());
+
     RenderViewHost* old_rvh =
-        old_host ? old_host->GetRenderViewHost() : nullptr;
-    RenderViewHost* new_rvh = new_host->GetRenderViewHost();
+        old_frame ? old_frame->GetRenderViewHost() : nullptr;
+    RenderViewHost* new_rvh = new_frame->GetRenderViewHost();
     // |old_rvh| and |new_rvh| might be equal when navigating from a crashed
     // RenderFrameHost to a new same-site one. With RenderDocument, this will
     // happen for every same-site navigation.
@@ -6525,20 +6528,28 @@ void WebContentsImpl::NotifySwappedFromRenderManager(RenderFrameHost* old_host,
     if (delegate_)
       view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 
-    RenderWidgetHostViewBase* rwhv =
-        static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
-    if (rwhv)
-      rwhv->SetMainFrameAXTreeID(GetMainFrame()->GetAXTreeID());
+    auto* rwhv = static_cast<RenderWidgetHostViewBase*>(new_frame->GetView());
+    if (rwhv) {
+      rwhv->SetMainFrameAXTreeID(new_frame->GetAXTreeID());
+
+      // The RenderWidgetHostView for the speculative RenderFrameHost is not
+      // resized with the current RenderFrameHost while a navigation is
+      // pending. So when we swap in the main frame, we need to update the
+      // RenderWidgetHostView's size.
+      //
+      // Historically, this was done to fix b/1079768 for interstitials.
+      rwhv->SetSize(GetSizeForMainFrame());
+    }
   }
 
-  NotifyFrameSwapped(old_host, new_host, is_main_frame);
+  NotifyFrameSwapped(old_frame, new_frame, is_main_frame);
 }
 
 void WebContentsImpl::NotifyMainFrameSwappedFromRenderManager(
-    RenderFrameHost* old_host,
-    RenderFrameHost* new_host) {
-  NotifyViewSwapped(old_host ? old_host->GetRenderViewHost() : nullptr,
-                    new_host->GetRenderViewHost());
+    RenderFrameHost* old_frame,
+    RenderFrameHost* new_frame) {
+  NotifyViewSwapped(old_frame ? old_frame->GetRenderViewHost() : nullptr,
+                    new_frame->GetRenderViewHost());
 }
 
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
@@ -6554,7 +6565,7 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
     RenderViewHost* render_view_host) {
   RenderWidgetHostViewBase* rwh_view =
       view_->CreateViewForWidget(render_view_host->GetWidget());
-  rwh_view->SetSize(GetSizeForNewRenderView(true));
+  rwh_view->SetSize(GetSizeForMainFrame());
 }
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(
@@ -6655,14 +6666,6 @@ void WebContentsImpl::ActivateNearestFindResult(float x,
 
 void WebContentsImpl::RequestFindMatchRects(int current_version) {
   GetOrCreateFindRequestManager()->RequestFindMatchRects(current_version);
-}
-
-bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
-  return CreateRenderViewForRenderManager(
-      GetRenderViewHost(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      frame_tree_.root()->current_frame_host()->frame_token(),
-      frame_tree_.root()->devtools_frame_token(),
-      frame_tree_.root()->current_replication_state());
 }
 
 service_manager::InterfaceProvider* WebContentsImpl::GetJavaInterfaces() {
@@ -6780,15 +6783,19 @@ void WebContentsImpl::CreateBrowserPluginEmbedderIfNecessary() {
   browser_plugin_embedder_.reset(BrowserPluginEmbedder::Create(this));
 }
 
-gfx::Size WebContentsImpl::GetSizeForNewRenderView(bool is_main_frame) {
-  gfx::Size size;
-  if (is_main_frame)
-    size = device_emulation_size_;
-  if (size.IsEmpty() && delegate_)
-    size = delegate_->GetSizeForNewRenderView(this);
-  if (size.IsEmpty())
-    size = GetContainerBounds().size();
-  return size;
+gfx::Size WebContentsImpl::GetSizeForMainFrame() {
+  if (delegate_) {
+    // The delegate has a chance to specify a size independent of the UI.
+    gfx::Size delegate_size = delegate_->GetSizeForNewRenderView(this);
+    if (!delegate_size.IsEmpty())
+      return delegate_size;
+  }
+
+  // Device emulation, when enabled, can specify a size independent of the UI.
+  if (!device_emulation_size_.IsEmpty())
+    return device_emulation_size_;
+
+  return GetContainerBounds().size();
 }
 
 void WebContentsImpl::OnFrameRemoved(RenderFrameHost* render_frame_host) {

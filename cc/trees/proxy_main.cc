@@ -374,6 +374,10 @@ void ProxyMain::DidPresentCompositorFrame(
                                               feedback);
 }
 
+void ProxyMain::NotifyThroughputTrackerResults(CustomTrackerResults results) {
+  layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
+}
+
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;

@@ -49,7 +49,7 @@ public class PageInfoControllerDelegate {
     private final VrHandler mVrHandler;
     private final boolean mIsSiteSettingsAvailable;
     private final boolean mCookieControlsShown;
-    protected final @PreviewPageState int mPreviewPageState;
+    protected @PreviewPageState int mPreviewPageState;
     protected @OfflinePageState int mOfflinePageState;
     protected String mOfflinePageUrl;
 

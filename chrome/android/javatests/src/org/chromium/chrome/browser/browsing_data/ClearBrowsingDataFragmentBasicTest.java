@@ -57,14 +57,14 @@ public class ClearBrowsingDataFragmentBasicTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {

@@ -7,7 +7,7 @@
 Pass at least:
 --chrome-version-file <path to src/chrome/VERSION> or --all-chrome-versions
 --target-platform <which platform the target code will be generated for and can
-  be one of (win, mac, linux, chromeos, fuchsia, ios)>
+  be one of (win, mac, linux, chromeos, ios)>
 --policy_templates <path to the policy_templates.json input file>.'''
 
 
@@ -96,7 +96,6 @@ class PolicyDetails:
           'chrome.win',
           'chrome.linux',
           'chrome.mac',
-          'chrome.fuchsia',
           'chrome.*',
           'chrome.win7',
       ]:
@@ -119,7 +118,7 @@ class PolicyDetails:
       if platform.startswith('chrome.'):
         platform_sub = platform[7:]
         if platform_sub == '*':
-          self.platforms.extend(['win', 'mac', 'linux', 'fuchsia'])
+          self.platforms.extend(['win', 'mac', 'linux'])
         elif platform_sub == 'win7':
           self.platforms.append('win')
         else:
@@ -1024,24 +1023,25 @@ def _GenerateDefaultValue(value):
 
 def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
                                f, risk_tags):
-  f.write('#include "components/policy/policy_constants.h"\n'
-          '\n'
-          '#include <algorithm>\n'
-          '#include <climits>\n'
-          '#include <memory>\n'
-          '\n'
-          '#include "base/logging.h"\n'
-          '#include "base/stl_util.h"  // base::size()\n'
-          '#include "build/branding_buildflags.h"\n'
-          '#include "components/policy/core/common/policy_types.h"\n'
-          '#include "components/policy/core/common/schema_internal.h"\n'
-          '#include "components/policy/proto/cloud_policy.pb.h"\n'
-          '#include "components/policy/risk_tag.h"\n'
-          '\n'
-          'namespace em = enterprise_management;\n\n'
-          '\n'
-          'namespace policy {\n'
-          '\n')
+  f.write('''#include "components/policy/policy_constants.h"
+
+#include <algorithm>
+#include <climits>
+#include <memory>
+
+#include "base/logging.h"
+#include "base/stl_util.h"  // base::size()
+#include "build/branding_buildflags.h"
+#include "components/policy/core/common/policy_types.h"
+#include "components/policy/core/common/schema_internal.h"
+#include "components/policy/proto/cloud_policy.pb.h"
+#include "components/policy/risk_tag.h"
+
+namespace em = enterprise_management;
+
+namespace policy {
+
+''')
 
   # Generate the Chrome schema.
   chrome_schema = {
@@ -1065,8 +1065,12 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
   # Chrome schema, so that binary searching in the PropertyNode array gets the
   # right index on this array as well. See the implementation of
   # GetChromePolicyDetails() below.
-  f.write('const PolicyDetails kChromePolicyDetails[] = {\n'
-          '//  is_deprecated  is_device_policy  id    max_external_data_size\n')
+  # TODO(crbug.com/1074336): kChromePolicyDetails shouldn't be declare if there
+  # is no policy.
+  f.write(
+      '''const __attribute__((unused)) PolicyDetails kChromePolicyDetails[] = {
+//  is_deprecated  is_device_policy  id    max_external_data_size
+''')
   for policy in policies:
     if policy.is_supported:
       assert policy.id >= MIN_POLICY_ID and policy.id <= MAX_POLICY_ID
@@ -1094,14 +1098,17 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
   schema_generator.FindSensitiveChildren()
   schema_generator.Write(f)
 
-  f.write('\n' 'namespace {\n')
+  f.write('\n')
 
-  f.write('bool CompareKeys(const internal::PropertyNode& node,\n'
-          '                 const std::string& key) {\n'
-          '  return node.key < key;\n'
-          '}\n\n')
+  if schema_generator.property_nodes:
+    f.write('namespace {\n')
 
-  f.write('}  // namespace\n\n')
+    f.write('bool CompareKeys(const internal::PropertyNode& node,\n'
+            '                 const std::string& key) {\n'
+            '  return node.key < key;\n'
+            '}\n\n')
+
+    f.write('}  // namespace\n\n')
 
   if target_platform == 'win':
     f.write('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)\n'
@@ -1148,34 +1155,38 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
   f.write('}\n' '#endif\n\n')
 
   f.write('const PolicyDetails* GetChromePolicyDetails('
-          'const std::string& policy) {\n'
-          '  // First index in kPropertyNodes of the Chrome policies.\n'
-          '  static const int begin_index = %s;\n'
-          '  // One-past-the-end of the Chrome policies in kPropertyNodes.\n'
-          '  static const int end_index = %s;\n' %
-          (schema_generator.root_properties_begin,
-           schema_generator.root_properties_end))
-  f.write('  const internal::PropertyNode* begin =\n'
-          '      kPropertyNodes + begin_index;\n'
-          '  const internal::PropertyNode* end = kPropertyNodes + end_index;\n'
-          '  const internal::PropertyNode* it =\n'
-          '      std::lower_bound(begin, end, policy, CompareKeys);\n'
-          '  if (it == end || it->key != policy)\n'
-          '    return NULL;\n'
-          '  // This relies on kPropertyNodes from begin_index to end_index\n'
-          '  // having exactly the same policies (and in the same order) as\n'
-          '  // kChromePolicyDetails, so that binary searching on the first\n'
-          '  // gets the same results as a binary search on the second would.\n'
-          '  // However, kPropertyNodes has the policy names and\n'
-          '  // kChromePolicyDetails doesn\'t, so we obtain the index into\n'
-          '  // the second array by searching the first to avoid duplicating\n'
-          '  // the policy name pointers.\n'
-          '  // Offsetting |it| from |begin| here obtains the index we\'re\n'
-          '  // looking for.\n'
-          '  size_t index = it - begin;\n'
-          '  CHECK_LT(index, base::size(kChromePolicyDetails));\n'
-          '  return kChromePolicyDetails + index;\n'
-          '}\n\n')
+          'const std::string& policy) {\n')
+  if schema_generator.property_nodes:
+    f.write('  // First index in kPropertyNodes of the Chrome policies.\n'
+            '  static const int begin_index = %s;\n'
+            '  // One-past-the-end of the Chrome policies in kPropertyNodes.\n'
+            '  static const int end_index = %s;\n' %
+            (schema_generator.root_properties_begin,
+             schema_generator.root_properties_end))
+    f.write('''  const internal::PropertyNode* begin =
+     kPropertyNodes + begin_index;
+  const internal::PropertyNode* end = kPropertyNodes + end_index;
+  const internal::PropertyNode* it =
+      std::lower_bound(begin, end, policy, CompareKeys);
+  if (it == end || it->key != policy)
+    return nullptr;
+  // This relies on kPropertyNodes from begin_index to end_index
+  // having exactly the same policies (and in the same order) as
+  // kChromePolicyDetails, so that binary searching on the first
+  // gets the same results as a binary search on the second would.
+  // However, kPropertyNodes has the policy names and
+  // kChromePolicyDetails doesn't, so we obtain the index into
+  // the second array by searching the first to avoid duplicating
+  // the policy name pointers.
+  // Offsetting |it| from |begin| here obtains the index we're
+  // looking for.
+  size_t index = it - begin;
+  CHECK_LT(index, base::size(kChromePolicyDetails));
+  return kChromePolicyDetails + index;
+''')
+  else:
+    f.write('return nullptr;')
+  f.write('}\n\n')
 
   f.write('namespace key {\n\n')
   for policy in policies:
@@ -1313,27 +1324,27 @@ class RiskTags(object):
 
 def _WritePolicyRiskTagHeader(policies, policy_atomic_groups, target_platform,
                               f, risk_tags):
-  f.write('#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_\n'
-          '#define CHROME_COMMON_POLICY_RISK_TAG_H_\n'
-          '\n'
-          '#include <stddef.h>\n'
-          '\n'
-          'namespace policy {\n'
-          '\n' +
-          '// The tag of a policy indicates which impact a policy can have on\n'
-          '// a user\'s privacy and/or security. Ordered descending by \n'
-          '// impact.\n'
-          '// The explanation of the single tags is stated in\n'
-          '// policy_templates.json within the \'risk_tag_definitions\' tag.'
-          '\n' + risk_tags.GenerateEnum() + '\n'
-          '// This constant describes how many risk tags were used by the\n'
-          '// policy which uses the most risk tags. \n'
+  f.write('''#ifndef CHROME_COMMON_POLICY_RISK_TAG_H_
+#define CHROME_COMMON_POLICY_RISK_TAG_H_
+
+#include <stddef.h>
+
+namespace policy {
+
+// The tag of a policy indicates which impact a policy can have on
+// a user's privacy and/or security. Ordered descending by
+// impact.
+// The explanation of the single tags is stated in
+// policy_templates.json within the 'risk_tag_definitions' tag.
+''')
+  f.write(risk_tags.GenerateEnum() + '\n')
+  f.write('// This constant describes how many risk tags were used by the\n'
+          '// policy which uses the most risk tags.\n'
           'const size_t kMaxRiskTagCount = ' + risk_tags.GetMaxTags() + ';\n'
           '\n'
-          '}  // namespace policy\n'
+          '}  // namespace policy\n\n'
           '\n'
-          '#endif  // CHROME_COMMON_POLICY_RISK_TAG_H_'
-          '\n')
+          '#endif  // CHROME_COMMON_POLICY_RISK_TAG_H_')
 
 
 #------------------ policy protobufs -------------------------------#
@@ -1511,7 +1522,7 @@ def _GetSupportedChromeOSPolicies(policies, type):
 
 # Returns the set of all policy.policy_protobuf_type strings from |policies|.
 def _GetProtobufTypes(policies):
-  return set(policy.policy_protobuf_type for policy in policies)
+  return set(['Integer', 'Boolean', 'String', 'StringList'])
 
 
 # Writes the definition of an array that contains the pointers to the mutable

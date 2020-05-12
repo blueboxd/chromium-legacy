@@ -57,6 +57,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       uint32_t frame_token,
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
+  void NotifyThroughputTrackerResults(CustomTrackerResults results);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

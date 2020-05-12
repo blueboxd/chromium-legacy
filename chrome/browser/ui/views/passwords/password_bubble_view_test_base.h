@@ -13,6 +13,7 @@
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/views/widget/widget.h"
 
@@ -43,6 +44,7 @@ class PasswordBubbleViewTestBase : public ChromeViewsTestBase {
   void TearDown() override;
 
  private:
+  content::RenderViewHostTestEnabler test_render_host_factories_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;

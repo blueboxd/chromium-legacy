@@ -48,7 +48,7 @@ public final class SyncTestSigninUtils {
      * Sets up the test account and signs in.
      */
     @CalledByNative
-    private static Account setUpTestAccountAndSignIn() {
+    private static Account setUpAccountAndSignInForTesting() {
         Account account = SigninTestUtil.addTestAccount();
         signinTestAccount(account);
         return account;
@@ -58,15 +58,15 @@ public final class SyncTestSigninUtils {
      * Sets up the test authentication environment.
      */
     @CalledByNative
-    private static void setUpAuthForTest() {
-        SigninTestUtil.setUpAuthForTest();
+    private static void setUpAuthForTesting() {
+        SigninTestUtil.setUpAuthForTesting();
     }
 
     /**
      * Tears down the test authentication environment.
      */
     @CalledByNative
-    private static void tearDownAuthForTest() {
-        SigninTestUtil.tearDownAuthForTest();
+    private static void tearDownAuthForTesting() {
+        SigninTestUtil.tearDownAuthForTesting();
     }
 }

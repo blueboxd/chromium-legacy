@@ -28,6 +28,8 @@ const char kExpireDurationKey[] = "expire_duration";
 // Finch parameter key for expire duration in seconds.
 const char kIsUnmeteredNetworkRequiredKey[] = "is_unmetered_network_required";
 
+const char kImagePrefetchModeKey[] = "image_prefetch_mode";
+
 // Default expire duration.
 const int kDefaultExpireDurationInSeconds = 48 * 60 * 60;
 
@@ -65,6 +67,20 @@ base::TimeDelta TileConfig::GetExpireDuration() {
       features::kQueryTiles, kExpireDurationKey,
       kDefaultExpireDurationInSeconds);
   return base::TimeDelta::FromSeconds(time_in_seconds);
+}
+
+// static
+ImagePrefetchMode TileConfig::GetImagePrefetchMode() {
+  std::string image_prefetch_mode = base::GetFieldTrialParamValueByFeature(
+      features::kQueryTiles, kImagePrefetchModeKey);
+  if (image_prefetch_mode == "none")
+    return ImagePrefetchMode::kNone;
+  if (image_prefetch_mode == "top")
+    return ImagePrefetchMode::kTopLevel;
+  if (image_prefetch_mode == "all")
+    return ImagePrefetchMode::kAll;
+
+  return ImagePrefetchMode::kTopLevel;
 }
 
 }  // namespace upboarding

@@ -136,6 +136,10 @@ class GPU_EXPORT GpuChannelHost
   // otherwise ignored.
   void CrashGpuProcessForTesting();
 
+  // Termintes the GPU process with an exit code of 0. This only works when
+  // running tests and is otherwise ignored.
+  void TerminateGpuProcessForTesting();
+
   std::unique_ptr<ClientSharedImageInterface>
   CreateClientSharedImageInterface();
 

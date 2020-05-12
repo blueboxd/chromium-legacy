@@ -117,7 +117,7 @@ Status StubWebView::GetFrameByFunction(const std::string& frame,
   return Status(kOk);
 }
 
-Status StubWebView::DispatchMouseEvents(const std::list<MouseEvent>& events,
+Status StubWebView::DispatchMouseEvents(const std::vector<MouseEvent>& events,
                                         const std::string& frame,
                                         bool async_dispatch_events) {
   return Status(kOk);
@@ -128,18 +128,18 @@ Status StubWebView::DispatchTouchEvent(const TouchEvent& event,
   return Status(kOk);
 }
 
-Status StubWebView::DispatchTouchEvents(const std::list<TouchEvent>& events,
+Status StubWebView::DispatchTouchEvents(const std::vector<TouchEvent>& events,
                                         bool async_dispatch_events) {
   return Status(kOk);
 }
 
 Status StubWebView::DispatchTouchEventWithMultiPoints(
-    const std::list<TouchEvent>& events,
+    const std::vector<TouchEvent>& events,
     bool async_dispatch_events) {
   return Status(kOk);
 }
 
-Status StubWebView::DispatchKeyEvents(const std::list<KeyEvent>& events,
+Status StubWebView::DispatchKeyEvents(const std::vector<KeyEvent>& events,
                                       bool async_dispatch_events) {
   return Status(kOk);
 }

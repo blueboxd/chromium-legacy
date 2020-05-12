@@ -29,7 +29,7 @@ dependencies {
     compile "androidx.legacy:legacy-support-v13:${androidXSupportLibVersion}"
 
     compile "androidx.annotation:annotation:${androidXSupportLibVersion}"
-    compile "androidx.appcompat:appcompat:${androidXSupportLibVersion}"
+    compile "androidx.appcompat:appcompat:1.2.0-beta01"
     compile "androidx.asynclayoutinflater:asynclayoutinflater:${androidXSupportLibVersion}"
     compile "androidx.cardview:cardview:${androidXSupportLibVersion}"
     compile "androidx.concurrent:concurrent-futures:${androidXSupportLibVersion}"

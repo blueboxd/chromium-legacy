@@ -33,8 +33,6 @@ void SpeechRecognitionService::LaunchIfNotRunning() {
   // is enabled. Otherwise, use the utility sandbox type.
 #if BUILDFLAG(ENABLE_SODA)
           .WithSandboxType(service_manager::SandboxType::kSpeechRecognition)
-#else
-          .WithSandboxType(service_manager::SandboxType::kUtility)
 #endif  // BUILDFLAG(ENABLE_SODA)
           .Pass());
 

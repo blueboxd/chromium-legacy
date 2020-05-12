@@ -4097,15 +4097,6 @@ void RenderFrameImpl::DidSetFramePolicyHeaders(
   }
 }
 
-void RenderFrameImpl::DidChangeFrameOwnerProperties(
-    blink::WebFrame* child_frame,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
-  Send(new FrameHostMsg_DidChangeFrameOwnerProperties(
-      routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame),
-      *(blink::mojom::FrameOwnerProperties::From(frame_owner_properties)
-            .get())));
-}
-
 void RenderFrameImpl::DidMatchCSS(
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {

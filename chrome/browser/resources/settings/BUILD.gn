@@ -208,8 +208,12 @@ js_type_check("closure_compile_local_module") {
 
 js_library("settings") {
   deps = [
+    ":hats_browser_proxy",
     ":lifetime_browser_proxy.m",
+    ":metrics_browser_proxy",
+    ":open_window_proxy",
     "about_page:about_page_browser_proxy.m",
+    "autofill_page:password_manager_proxy",
     "search_engines_page:search_engines_browser_proxy.m",
     "settings_ui:settings_ui",
   ]
@@ -241,6 +245,8 @@ js_library("hats_browser_proxy") {
 
 js_library("lazy_load") {
   deps = [
+    "autofill_page:autofill_section",
+    "autofill_page:payments_section",
     "privacy_page:cookies_page",
     "site_settings:local_data_browser_proxy",
     "site_settings:protocol_handlers",

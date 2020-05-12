@@ -111,7 +111,8 @@ void OmniboxTabSwitchButton::ProvideFocusHint() {
 
 bool OmniboxTabSwitchButton::IsSelected() const {
   // Is this result selected and is button selected?
-  return result_view_->IsSelected() && popup_contents_view_->IsButtonSelected();
+  return result_view_->IsMatchSelected() &&
+         popup_contents_view_->IsButtonSelected();
 }
 
 int OmniboxTabSwitchButton::CalculateGoalWidth(int parent_width,

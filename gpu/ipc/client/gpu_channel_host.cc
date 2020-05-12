@@ -246,6 +246,10 @@ void GpuChannelHost::CrashGpuProcessForTesting() {
   Send(new GpuChannelMsg_CrashForTesting());
 }
 
+void GpuChannelHost::TerminateGpuProcessForTesting() {
+  Send(new GpuChannelMsg_TerminateForTesting());
+}
+
 std::unique_ptr<ClientSharedImageInterface>
 GpuChannelHost::CreateClientSharedImageInterface() {
   return std::make_unique<ClientSharedImageInterface>(&shared_image_interface_);

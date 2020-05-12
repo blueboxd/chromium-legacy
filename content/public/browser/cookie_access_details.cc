@@ -20,4 +20,9 @@ CookieAccessDetails::CookieAccessDetails(Type type,
       cookie_list(cookie_list),
       blocked_by_policy(blocked_by_policy) {}
 
+CookieAccessDetails::CookieAccessDetails(const CookieAccessDetails& details) =
+    default;
+CookieAccessDetails& CookieAccessDetails::operator=(
+    const CookieAccessDetails& details) = default;
+
 }  // namespace content

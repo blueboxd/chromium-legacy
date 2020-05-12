@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.ObjectsCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,5 +39,36 @@ public class AutocompleteResult {
     @NonNull
     SparseArray<String> getGroupHeaders() {
         return mGroupHeaders;
+    }
+
+    @Override
+    public boolean equals(Object otherObj) {
+        if (otherObj == this) return true;
+        if (!(otherObj instanceof AutocompleteResult)) return false;
+
+        AutocompleteResult other = (AutocompleteResult) otherObj;
+        if (!mSuggestions.equals(other.mSuggestions)) return false;
+
+        final SparseArray<String> otherHeaders = other.mGroupHeaders;
+        if (mGroupHeaders.size() != otherHeaders.size()) return false;
+        for (int index = 0; index < mGroupHeaders.size(); index++) {
+            if (mGroupHeaders.keyAt(index) != otherHeaders.keyAt(index)) return false;
+            if (!ObjectsCompat.equals(mGroupHeaders.valueAt(index), otherHeaders.valueAt(index))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int baseHash = 0;
+        for (int index = 0; index < mGroupHeaders.size(); index++) {
+            baseHash += mGroupHeaders.keyAt(index);
+            baseHash ^= mGroupHeaders.valueAt(index).hashCode();
+            baseHash = (baseHash << 10) | (baseHash >> 22);
+        }
+        return baseHash ^ mSuggestions.hashCode();
     }
 }

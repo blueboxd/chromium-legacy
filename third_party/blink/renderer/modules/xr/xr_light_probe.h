@@ -17,10 +17,11 @@
 
 namespace blink {
 
+class XRCubeMap;
 class XRLightEstimate;
 class XRSession;
 
-class XRLightProbe : public ScriptWrappable {
+class XRLightProbe : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -28,17 +29,27 @@ class XRLightProbe : public ScriptWrappable {
 
   XRSession* session() const { return session_; }
 
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reflectionchange, kReflectionchange)
+
   void ProcessLightEstimationData(
       const device::mojom::blink::XRLightEstimationData* data,
       double timestamp);
 
   XRLightEstimate* getLightEstimate() { return light_estimate_; }
+  XRCubeMap* getReflectionCubeMap() { return cube_map_.get(); }
+
+  // EventTarget overrides.
+  ExecutionContext* GetExecutionContext() const override;
+  const AtomicString& InterfaceName() const override;
 
   void Trace(Visitor* visitor) override;
 
  private:
   Member<XRSession> session_;
   Member<XRLightEstimate> light_estimate_;
+
+  double last_reflection_change_ = 0.0;
+  std::unique_ptr<XRCubeMap> cube_map_;
 };
 
 }  // namespace blink

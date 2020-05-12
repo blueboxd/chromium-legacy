@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
@@ -132,14 +133,11 @@ public class AnswerSuggestionProcessorUnitTest {
 
     /** Create Calculation Suggestion. */
     SuggestionTestHelper createCalculationSuggestion(String displayText, String userQuery) {
-        OmniboxSuggestion suggestion = new OmniboxSuggestion(OmniboxSuggestionType.CALCULATOR,
-                /* isSearchType */ true, /* relevance */ 0, /* transition */ 0, displayText,
-                /* displayTextClassifications */ null, /* description */ null,
-                /* descriptionClassifications */ null,
-                /* suggestionAnswer */ null, /* fillIntoEdit */ "", /* url */ GURL.emptyGURL(),
-                /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "",
-                /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
-                /* postData */ null, OmniboxSuggestion.INVALID_GROUP, null);
+        OmniboxSuggestion suggestion =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.CALCULATOR)
+                        .setDisplayText(displayText)
+                        .setDescription(userQuery)
+                        .build();
         PropertyModel model = mProcessor.createModel();
         return new SuggestionTestHelper(suggestion, null, model, userQuery);
     }

@@ -69,6 +69,10 @@ struct TrustTokenRequestHandler::Rep {
   // Issue at most this many tokens per issuance.
   int batch_size;
 
+  // Expect that client-side signing operations succeeded or failed according to
+  // the value of this field.
+  SigningOutcome client_signing_outcome;
+
   // Signed redemption record (SRR) signing and verification keys:
   std::vector<uint8_t> srr_signing;
   std::vector<uint8_t> srr_verification;
@@ -194,18 +198,12 @@ bool TrustTokenRequestHandler::Rep::ConfirmClientDataIntegrityAndStoreKeyHash(
   return true;
 }
 
-TrustTokenRequestHandler::TrustTokenRequestHandler(int num_keys, int batch_size)
-    : rep_(std::make_unique<Rep>()) {
-  rep_->batch_size = batch_size;
-
-  rep_->srr_signing.resize(ED25519_PRIVATE_KEY_LEN);
-  rep_->srr_verification.resize(ED25519_PUBLIC_KEY_LEN);
-  ED25519_keypair(rep_->srr_verification.data(), rep_->srr_signing.data());
-
-  for (int i = 0; i < num_keys; ++i) {
-    rep_->issuance_keys.push_back(GenerateIssuanceKeyPair(i));
-  }
+TrustTokenRequestHandler::TrustTokenRequestHandler(Options options) {
+  UpdateOptions(std::move(options));
 }
+
+TrustTokenRequestHandler::TrustTokenRequestHandler()
+    : TrustTokenRequestHandler(Options()) {}
 
 TrustTokenRequestHandler::~TrustTokenRequestHandler() = default;
 
@@ -335,32 +333,37 @@ bool TrustTokenRequestHandler::VerifySignedRequest(
 
   base::AutoLock lock(mutex_);
 
-  std::string verification_key;
-
-  if (!ReconstructSigningDataAndVerifySignature(destination, headers,
-                                                /*verifier=*/{}, error_out,
-                                                &verification_key)) {
-    return false;
-  }
-
-  if (!base::Contains(rep_->hashes_of_redemption_bound_key_pairs,
-                      crypto::SHA256HashString(verification_key))) {
-    if (error_out) {
-      *error_out =
-          "Got a request signed with a verification key whose hash was not "
-          "previously bound to a redemption request.";
-    }
-    return false;
-  }
-
   std::string sec_signed_redemption_record_header;
   if (!headers.GetHeader(kTrustTokensRequestHeaderSecSignedRedemptionRecord,
                          &sec_signed_redemption_record_header)) {
-    if (error_out)
-      *error_out = "Request missing its SRR header";
+    *error_out = "Request missing its SRR header";
 
     return false;
   }
+
+  // If there was a client-side failure, expect an empty SRR header and no other
+  // Trust Tokens headers.
+  if (rep_->client_signing_outcome == SigningOutcome::kFailure) {
+    if (!sec_signed_redemption_record_header.empty()) {
+      *error_out = "Client-side failure but nonempty SRR header: " +
+                   sec_signed_redemption_record_header;
+      return false;
+    }
+    if (headers.HasHeader(kTrustTokensRequestHeaderSecSignature)) {
+      *error_out = "Client-side failure but received Sec-Signature header";
+      return false;
+    }
+    if (headers.HasHeader(kTrustTokensRequestHeaderSecTime)) {
+      *error_out = "Client-side failure but received Sec-Time header";
+      return false;
+    }
+    if (headers.HasHeader(kTrustTokensRequestHeaderSignedHeaders)) {
+      *error_out = "Client-side failure but received Signed-Headers header";
+      return false;
+    }
+    return true;
+  }
+  DCHECK_EQ(rep_->client_signing_outcome, SigningOutcome::kSuccess);
 
   std::string srr_body;
   switch (VerifyTrustTokenSignedRedemptionRecord(
@@ -386,12 +389,47 @@ bool TrustTokenRequestHandler::VerifySignedRequest(
   if (!ConfirmSrrBodyIntegrity(srr_body, error_out))
     return false;  // On failure, |ConfirmSrrBodyIntegrity| has set the error.
 
+  std::string verification_key;
+
+  if (!ReconstructSigningDataAndVerifySignature(destination, headers,
+                                                /*verifier=*/{}, error_out,
+                                                &verification_key)) {
+    return false;
+  }
+
+  if (!base::Contains(rep_->hashes_of_redemption_bound_key_pairs,
+                      crypto::SHA256HashString(verification_key))) {
+    if (error_out) {
+      *error_out =
+          "Got a request signed with a verification key whose hash was not "
+          "previously bound to a redemption request.";
+    }
+    return false;
+  }
+
   return true;
 }
 
 base::Optional<std::string> TrustTokenRequestHandler::LastVerificationError() {
   base::AutoLock lock(mutex_);
   return rep_->last_verification_error;
+}
+
+void TrustTokenRequestHandler::UpdateOptions(Options options) {
+  base::AutoLock lock(mutex_);
+
+  rep_ = std::make_unique<Rep>();
+
+  rep_->batch_size = options.batch_size;
+  rep_->client_signing_outcome = options.client_signing_outcome;
+
+  rep_->srr_signing.resize(ED25519_PRIVATE_KEY_LEN);
+  rep_->srr_verification.resize(ED25519_PUBLIC_KEY_LEN);
+  ED25519_keypair(rep_->srr_verification.data(), rep_->srr_signing.data());
+
+  for (int i = 0; i < options.num_keys; ++i) {
+    rep_->issuance_keys.push_back(GenerateIssuanceKeyPair(i));
+  }
 }
 
 }  // namespace test

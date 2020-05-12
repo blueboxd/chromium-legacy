@@ -14,7 +14,7 @@
         android:title="@string/data_reduction_description_lite_mode"
         app:allowDividerBelow="false" />
 
-    <org.chromium.chrome.browser.settings.LearnMorePreference
+    <org.chromium.components.browser_ui.settings.LearnMorePreference
         android:key="data_reduction_learn_more"
         app:allowDividerBelow="false" />
 </PreferenceScreen>

@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
@@ -144,6 +145,7 @@ class FaviconSourceTestBase : public testing::Test {
  protected:
   const scoped_refptr<base::RefCountedBytes> kDummyIconBytes;
   content::BrowserTaskEnvironment task_environment_;
+  content::RenderViewHostTestEnabler test_render_host_factories_;
   ui::TestNativeTheme theme_;
   TestingProfile profile_;
   MockHistoryUiFaviconRequestHandler* mock_history_ui_favicon_request_handler_;

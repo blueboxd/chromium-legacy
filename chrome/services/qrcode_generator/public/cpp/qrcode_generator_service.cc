@@ -15,7 +15,6 @@ mojo::Remote<mojom::QRCodeGeneratorService> LaunchQRCodeGeneratorService() {
   // TODO: check default sandboxtype
   return content::ServiceProcessHost::Launch<mojom::QRCodeGeneratorService>(
       content::ServiceProcessHost::Options()
-          .WithSandboxType(service_manager::SandboxType::kUtility)
           .WithDisplayName(IDS_UTILITY_PROCESS_QRCODE_GENERATOR_SERVICE_NAME)
           .Pass());
 }

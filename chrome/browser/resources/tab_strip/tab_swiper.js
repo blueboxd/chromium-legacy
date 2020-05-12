@@ -133,7 +133,7 @@ export class TabSwiper {
    * @private
    */
   onPointerDown_(event) {
-    if (this.currentPointerDownEvent_) {
+    if (this.currentPointerDownEvent_ || event.pointerType !== 'touch') {
       return;
     }
 

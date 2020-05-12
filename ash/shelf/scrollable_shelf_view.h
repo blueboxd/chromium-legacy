@@ -96,6 +96,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // hotseat ends.
   gfx::Rect GetTargetScreenBoundsOfItemIcon(const ShelfID& id) const;
 
+  // Returns whether scrollable shelf should show app buttons with scrolling
+  // when the view size is |target_size| and app button size is |button_size|.
+  bool RequiresScrollingForItemSize(const gfx::Size& target_size,
+                                    int button_size) const;
+
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;
 
@@ -371,10 +376,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns the available space on the main axis for shelf icons.
   int GetSpaceForIcons() const;
 
-  // Returns whether there is available space to accommodate all shelf icons.
-  // |use_target_bounds| indicates which view bounds are used for
-  // calculation: actual view bounds or target view bounds.
-  bool CanFitAllAppsWithoutScrolling(bool use_target_bounds) const;
+  // Returns whether |available_size| is able to accommodate all shelf icons
+  // without scrolling. |icons_preferred_size| is the space required by shelf
+  // icons.
+  bool CanFitAllAppsWithoutScrolling(
+      const gfx::Size& available_size,
+      const gfx::Size& icons_preferred_size) const;
 
   // Returns whether scrolling should be handled. |is_gesture_fling| is true
   // when the scrolling is triggered by gesture fling event; when it is false,

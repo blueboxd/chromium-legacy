@@ -31,6 +31,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
         prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate,
     bool is_served_from_back_forward_cache,
+    mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors) {
   if (g_loader_factory) {
@@ -47,7 +48,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
       browser_context, storage_partition, std::move(request_info),
       std::move(navigation_ui_data), service_worker_handle, appcache_handle,
       std::move(prefetched_signed_exchange_cache), delegate,
-      std::move(initial_interceptors));
+      std::move(cookie_observer), std::move(initial_interceptors));
 }
 
 void NavigationURLLoader::SetFactoryForTesting(

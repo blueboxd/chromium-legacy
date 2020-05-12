@@ -75,6 +75,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
   using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
 
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
+  static RenderFrameProxyHost* FromFrameToken(
+      int process_id,
+      const base::UnguessableToken& frame_token);
 
   // Sets a callback to be called whenever any RenderFrameProxyHost is created.
   static void SetCreatedCallbackForTesting(

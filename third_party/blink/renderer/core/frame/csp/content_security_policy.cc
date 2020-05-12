@@ -207,13 +207,8 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
   }
 
   if (require_trusted_types_) {
-    if (delegate_->GetSecureContextMode() ==
-        SecureContextMode::kSecureContext) {
-      delegate_->SetRequireTrustedTypes();
-      Count(WebFeature::kTrustedTypesEnabled);
-    } else {
-      ReportNonsecureTrustedTypes();
-    }
+    delegate_->SetRequireTrustedTypes();
+    Count(WebFeature::kTrustedTypesEnabled);
   }
 
   delegate_->AddInsecureRequestPolicy(insecure_request_policy_);
@@ -1268,13 +1263,6 @@ void ContentSecurityPolicy::ReportValueForEmptyDirective(const String& name,
                "' should be empty, but was delivered with a value of '" +
                value +
                "'. The directive has been applied, and the value ignored.");
-}
-
-void ContentSecurityPolicy::ReportNonsecureTrustedTypes() {
-  LogToConsole(
-      "The Content Security Policy directive "
-      "'require-trusted-types-for' only has an effect in a secure "
-      "context. The directive has been ignored.");
 }
 
 void ContentSecurityPolicy::ReportMixedContentReportURI(

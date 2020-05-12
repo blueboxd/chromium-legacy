@@ -132,7 +132,8 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie1},
@@ -168,7 +169,8 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_TRUE(content_settings->IsContentBlocked(
       ContentSettingsType::MEDIASTREAM_CAMERA));
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie1},
@@ -179,7 +181,8 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       origin, "C=D", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie2},
@@ -274,7 +277,8 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie1},
@@ -288,7 +292,8 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
       origin, "C=D", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie2},
@@ -306,9 +311,10 @@ TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
   ASSERT_FALSE(
       content_settings->IsContentBlocked(ContentSettingsType::COOKIES));
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
-                           GURL("http://google.com"), GURL("http://google.com"),
-                           net::CookieList(), true});
+      ->OnCookiesAccessed(
+          web_contents()->GetMainFrame(),
+          {content::CookieAccessDetails::Type::kRead, GURL("http://google.com"),
+           GURL("http://google.com"), net::CookieList(), true});
   ASSERT_FALSE(
       content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
   ASSERT_FALSE(
@@ -327,7 +333,8 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie},
@@ -342,9 +349,10 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
 
   cookie_list.push_back(*other_cookie);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
-                           GURL("http://google.com"), GURL("http://google.com"),
-                           cookie_list, blocked_by_policy});
+      ->OnCookiesAccessed(
+          web_contents()->GetMainFrame(),
+          {content::CookieAccessDetails::Type::kRead, GURL("http://google.com"),
+           GURL("http://google.com"), cookie_list, blocked_by_policy});
   content_settings->OnFileSystemAccessed(GURL("http://google.com"),
                                          blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("http://google.com"),
@@ -363,7 +371,8 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
                                              base::Time::Now(),
                                              base::nullopt /* server_time */);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kRead,
                            GURL("http://google.com"),
                            GURL("http://google.com"),
                            {*cookie},
@@ -408,7 +417,8 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
       GURL("http://www.google.com"), "k4=v; Domain=.www.google.com",
       base::Time::Now(), base::nullopt /* server_time */);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kRead,
                            GURL("http://www.google.com"),
                            GURL("http://www.google.com"),
                            {*cookie1, *cookie2, *cookie3, *cookie4},
@@ -418,7 +428,8 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
                                               "k5=v", base::Time::Now(),
                                               base::nullopt /* server_time */);
   static_cast<content::WebContentsObserver*>(content_settings)
-      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kRead,
+      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
+                          {content::CookieAccessDetails::Type::kRead,
                            GURL("https://www.google.com"),
                            GURL("https://www.google.com"),
                            {*cookie5},

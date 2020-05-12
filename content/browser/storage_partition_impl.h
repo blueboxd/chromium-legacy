@@ -124,16 +124,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<network::PendingSharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
-  void CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole role,
-      const url::Origin& origin,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
-      bool is_service_worker,
-      int process_id,
-      int routing_id,
-      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
-      override;
   void CreateHasTrustTokensAnswerer(
       mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
       const url::Origin& top_frame_origin) override;
@@ -318,20 +308,20 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::OriginPolicyManager*
   GetOriginPolicyManagerForBrowserProcess();
 
-  mojo::PendingRemote<network::mojom::CookieAccessObserver>
-  CreateCookieAccessObserver(bool is_service_worker,
-                             int32_t process_id,
-                             int32_t routing_id);
-
-  void OnCookiesAccessed(
-      CookieAccessDetails::Type access_type,
-      bool is_service_worker,
-      int32_t process_id,
-      int32_t routing_id,
-      const GURL& url,
+  // We have to plumb |is_service_worker|, |process_id| and |routing_id| because
+  // they are plumbed to WebView via WillCreateRestrictedCookieManager, which
+  // makes some decision based on that.
+  void CreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
       const net::SiteForCookies& site_for_cookies,
-      const std::vector<net::CookieWithStatus>& cookie_list,
-      const base::Optional<std::string>& devtools_request_id);
+      const url::Origin& top_frame_origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
+      mojo::PendingRemote<network::mojom::CookieAccessObserver>
+          cookie_observer);
 
   // Override the origin policy manager for testing use only.
   void SetOriginPolicyManagerForBrowserProcessForTesting(
@@ -339,11 +329,14 @@ class CONTENT_EXPORT StoragePartitionImpl
           test_origin_policy_manager);
   void ResetOriginPolicyManagerForBrowserProcessForTesting();
 
+  mojo::PendingRemote<network::mojom::CookieAccessObserver>
+  CreateCookieAccessObserverForServiceWorker();
+
  private:
   class DataDeletionHelper;
   class QuotaManagedDataDeletionHelper;
   class URLLoaderFactoryForBrowserProcess;
-  class CookieAccessObserver;
+  class ServiceWorkerCookieAccessObserver;
 
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTestHarness;
@@ -553,17 +546,16 @@ class CONTENT_EXPORT StoragePartitionImpl
   // See comments for site_for_guest_service_worker().
   GURL site_for_guest_service_worker_;
 
-  // A set of connections to network service used to notify browser process
-  // about cookie reads and writes. Each connection corresponds to a different
-  // context (frame / navigation / service worker).
-  mojo::UniqueReceiverSet<network::mojom::CookieAccessObserver>
-      cookie_observers_;
-
   // Track number of running deletion. For test use only.
   int deletion_helpers_running_;
 
   // Called when all deletions are done. For test use only.
   base::OnceClosure on_deletion_helpers_done_callback_;
+
+  // A set of connections to the network service used to notify browser process
+  // about cookie reads and writes made by a service worker in this process.
+  mojo::UniqueReceiverSet<network::mojom::CookieAccessObserver>
+      service_worker_cookie_observers_;
 
   base::WeakPtrFactory<StoragePartitionImpl> weak_factory_{this};
 

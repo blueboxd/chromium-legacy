@@ -31,7 +31,6 @@ class ExtensionsMenuTestUtil::Wrapper {
  public:
   explicit Wrapper(Browser* browser)
       : extensions_container_(new ExtensionsToolbarContainer(browser)) {
-    container_parent_.set_owned_by_client();
     container_parent_.SetSize(gfx::Size(1000, 1000));
     container_parent_.Layout();
     container_parent_.AddChildView(extensions_container_);
@@ -66,7 +65,6 @@ ExtensionsMenuTestUtil::ExtensionsMenuTestUtil(Browser* browser,
   menu_view_ = std::make_unique<ExtensionsMenuView>(
       extensions_container_->extensions_button(), browser_,
       extensions_container_);
-  menu_view_->set_owned_by_client();
 }
 ExtensionsMenuTestUtil::~ExtensionsMenuTestUtil() = default;
 

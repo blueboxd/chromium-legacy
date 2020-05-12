@@ -35,7 +35,6 @@ namespace content {
 //   constexpr auto kFooServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
 //   auto foo_service = ServiceProcessHost::Launch<foo::mojom::FooService>(
 //       ServiceProcessHost::Options()
-//           .WithSandboxType(SandboxType::kUtility)
 //           .WithDisplayName(IDS_FOO_SERVICE_DISPLAY_NAME)
 //           .Pass());
 //   foo_service.set_idle_handler(

@@ -16,9 +16,6 @@ import './passwords_shared_css.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-/** @typedef {chrome.autofillPrivate.CreditCardEntry} */
-export let CreditCardEntry;
-
 Polymer({
   is: 'settings-credit-card-list-entry',
 
@@ -31,7 +28,7 @@ Polymer({
   properties: {
     /**
      * A saved credit card.
-     * @type {!CreditCardEntry}
+     * @type {!chrome.autofillPrivate.CreditCardEntry}
      */
     creditCard: Object,
   },

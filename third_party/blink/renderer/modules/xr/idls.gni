@@ -35,6 +35,7 @@ modules_idl_files = [
   "xr_view.idl",
   "xr_viewer_pose.idl",
   "xr_viewport.idl",
+  "xr_webgl_binding.idl",
   "xr_webgl_layer.idl",
   "xr_world_information.idl",
   "xr_world_tracking_state.idl",

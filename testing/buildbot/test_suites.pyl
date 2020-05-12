@@ -3228,6 +3228,15 @@
       'views_unittests': {},
     },
 
+    'non_android_chromium_gtests_skia_gold': {
+      'views_examples_unittests': {
+        'mixins': [
+          'chrome-gold-service-account',
+          'skia_gold_test',
+        ],
+      },
+    },
+
     'non_skia_renderer_gtests': {
       'non_skia_renderer_content_browsertests': {
         'args': [
@@ -4339,7 +4348,8 @@
     ],
 
     # Pixel tests only enabled on Win 10. So this is
-    # 'chromium_win_gtests' + 'pixel_browser_tests_gtests'.
+    # 'chromium_win_gtests' + 'pixel_browser_tests_gtests' +
+    # 'non_android_chromium_gtests_skia_gold'.
     'chromium_win10_gtests': [
       'aura_gtests',
       'chromium_gtests',
@@ -4347,6 +4357,7 @@
       'chromium_gtests_for_win_and_linux_only',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
+      'non_android_chromium_gtests_skia_gold',
       'non_skia_renderer_gtests',
       'pixel_browser_tests_gtests',
       'storage_service_gtests',
@@ -4958,40 +4969,40 @@
     'ios13_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_13_4',
           'SIM_IPHONE_X_12_4',
         ],
       },
       'ios_eg2_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPHONE_7_13_3',
-          'SIM_IPAD_6_GEN_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPHONE_7_13_4',
+          'SIM_IPAD_6_GEN_13_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_6_GEN_12_4',
         ]
       },
       'ios_eg_cq_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_PRO_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_PRO_13_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_PRO_12_4',
         ]
       },
       'ios_eg_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_AIR_3RD_GEN_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_3RD_GEN_13_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_AIR_3RD_GEN_12_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_3',
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_6S_PLUS_13_4',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_6S_PLUS_12_4',
           'SIM_IPHONE_X_12_4',
           'SIM_IPAD_AIR_2_12_4',
@@ -5051,7 +5062,7 @@
     'ios_clang_tot_sim_tests': {
       'ios_clang_tests': {
         'variants': [
-          'SIM_IPHONE_6S_13_3',
+          'SIM_IPHONE_6S_13_4',
         ]
       }
     },
@@ -5060,25 +5071,25 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_13_4',
         ],
       },
       'ios_eg2_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_13_4',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_X_13_4',
         ],
       },
     },
@@ -5087,7 +5098,7 @@
       'ios_cronet_tests': {
         'variants': [
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_3'
+          'SIM_IPHONE_X_13_4'
         ]
       }
     },
@@ -5097,16 +5108,16 @@
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_7_13_3',
-          'SIM_IPAD_AIR_2_13_3',
-          'SIM_IPHONE_X_13_3',
+          'SIM_IPHONE_7_13_4',
+          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPHONE_X_13_4',
         ]
       },
       'ios_eg_cq_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPHONE_7_13_3',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_7_13_4',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       }
     },
@@ -5114,17 +5125,17 @@
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       },
       'ios_eg2_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       }
     },
@@ -5133,21 +5144,21 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
-          'SIM_IPHONE_6S_13_3',
+          'SIM_IPHONE_6S_13_4',
         ]
       },
       'ios_eg_cq_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
-          'SIM_IPHONE_6S_13_3',
+          'SIM_IPHONE_6S_13_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_3',
-          'SIM_IPHONE_6S_13_3',
-          'SIM_IPHONE_SE_13_3',
-          'SIM_IPAD_AIR_2_13_3'
+          'SIM_IPHONE_6S_PLUS_13_4',
+          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_SE_13_4',
+          'SIM_IPAD_AIR_2_13_4'
         ]
       }
     },
@@ -5155,26 +5166,26 @@
     'ios_webkit_tot_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       },
       'ios_eg_cq_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       },
       'ios_eg_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_3',
-          'SIM_IPAD_AIR_2_13_3',
+          'SIM_IPHONE_X_13_4',
+          'SIM_IPAD_AIR_2_13_4',
         ]
       },
     },

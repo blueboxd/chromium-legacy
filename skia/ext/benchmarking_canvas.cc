@@ -290,7 +290,7 @@ std::unique_ptr<base::Value> AsValue(const SkPath& path) {
       "gPtOffsetPerVerb size mismatch");
 
   std::unique_ptr<base::ListValue> verbs_val(new base::ListValue());
-  SkPath::Iter iter(const_cast<SkPath&>(path), false);
+  SkPath::RawIter iter(const_cast<SkPath&>(path));
   SkPoint points[4];
 
   for (SkPath::Verb verb = iter.next(points); verb != SkPath::kDone_Verb;

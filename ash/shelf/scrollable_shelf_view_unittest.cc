@@ -8,6 +8,7 @@
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_app_button.h"
@@ -15,8 +16,10 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/test/overview_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -110,8 +113,9 @@ class ScrollableShelfViewTest : public AshTestBase {
 
   void AddAppShortcutsUntilOverflow() {
     while (scrollable_shelf_view_->layout_strategy_for_test() ==
-           ScrollableShelfView::kNotShowArrowButtons)
+           ScrollableShelfView::kNotShowArrowButtons) {
       AddAppShortcut();
+    }
   }
 
   void AddAppShortcutsUntilRightArrowIsShown() {
@@ -899,6 +903,111 @@ TEST_P(ScrollableShelfViewRTLTest, FeedbackForAppPinning) {
     EXPECT_EQ(ScrollableShelfView::kShowButtons,
               scrollable_shelf_view_->layout_strategy_for_test());
   }
+}
+
+class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
+ public:
+  ScrollableShelfViewWithAppScalingTest() = default;
+  ~ScrollableShelfViewWithAppScalingTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({ash::features::kShelfAppScaling},
+                                          {});
+    ScrollableShelfViewTest::SetUp();
+
+    // Display should be big enough (width and height are bigger than 600).
+    // Otherwise, shelf is in dense mode by default.
+    UpdateDisplay("800x601");
+
+    // App scaling is only used in tablet mode.
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    base::RunLoop().RunUntilIdle();
+    ASSERT_FALSE(ShelfConfig::Get()->is_dense());
+  }
+
+  void TearDown() override {
+    ScrollableShelfViewTest::TearDown();
+    scoped_feature_list_.Reset();
+  }
+
+ protected:
+  // |kAppCount| is a magic number, which satisfies the following
+  // conditions:
+  // (1) Scrollable shelf shows |kAppCount| app buttons without scrolling.
+  // (2) Scrollable shelf shows (|kAppCount| + 1) app buttons with scrolling.
+  // Addition or removal of shelf button should not change hotseat state. So
+  // Hotseat widget's width is a constant. Then |kAppCount| is in the range
+  // of [1, (hotseat width) / (shelf button + button spacing) + 1]. So we can
+  // get |kAppCount| in that range manually
+  static constexpr int kAppCount = 9;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verifies that app scaling is turned on/off when having insufficient/enough
+// space for shelf buttons of normal size without scrolling.
+TEST_F(ScrollableShelfViewWithAppScalingTest, AppScalingBasics) {
+  PopulateAppShortcut(kAppCount);
+  HotseatWidget* hotseat_widget =
+      GetPrimaryShelf()->shelf_widget()->hotseat_widget();
+  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+
+  // Pin an app icon. Verify that app scaling is turned on.
+  const ShelfID shelf_id = AddAppShortcut();
+  EXPECT_TRUE(hotseat_widget->is_forced_dense());
+
+  // Unpin an app icon.
+  ShelfModel* shelf_model = ShelfModel::Get();
+  const gfx::Rect bounds_before_unpin =
+      hotseat_widget->GetWindowBoundsInScreen();
+  const int shelf_button_size_before = shelf_view_->GetButtonSize();
+  shelf_model->RemoveItemAt(shelf_model->ItemIndexByID(shelf_id));
+  test_api_->RunMessageLoopUntilAnimationsDone();
+
+  // Verify that:
+  // (1) After unpinning the app scaling is turned off.
+  // (2) Hotseat widget's size and the shelf button size are expected.
+  const gfx::Rect bounds_after_unpin =
+      hotseat_widget->GetWindowBoundsInScreen();
+  const int shelf_button_size_after = shelf_view_->GetButtonSize();
+  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(bounds_before_unpin.width(), bounds_after_unpin.width());
+  EXPECT_LT(bounds_before_unpin.height(), bounds_after_unpin.height());
+  EXPECT_LT(shelf_button_size_before, shelf_button_size_after);
+}
+
+// Verifies that app scaling works as expected with hotseat state transition.
+TEST_F(ScrollableShelfViewWithAppScalingTest,
+       VerifyWithHotseatStateTransition) {
+  PopulateAppShortcut(kAppCount);
+  HotseatWidget* hotseat_widget =
+      GetPrimaryShelf()->shelf_widget()->hotseat_widget();
+  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+
+  // Pin an app icon then enter the overview mode. Verify that app scaling is
+  // turned on.
+  const ShelfID shelf_id = AddAppShortcut();
+  {
+    OverviewAnimationWaiter waiter;
+    Shell::Get()->overview_controller()->StartOverview();
+    waiter.Wait();
+  }
+  EXPECT_TRUE(hotseat_widget->is_forced_dense());
+
+  // Unpin an app icon. Verify that app scaling is still on.
+  ShelfModel* shelf_model = ShelfModel::Get();
+  shelf_model->RemoveItemAt(shelf_model->ItemIndexByID(shelf_id));
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(hotseat_widget->is_forced_dense());
+
+  // Exit overview mode. Verify that app scaling is off now.
+  {
+    OverviewAnimationWaiter waiter;
+    Shell::Get()->overview_controller()->EndOverview();
+    waiter.Wait();
+  }
+  EXPECT_FALSE(hotseat_widget->is_forced_dense());
 }
 
 }  // namespace ash

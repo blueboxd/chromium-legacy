@@ -60,8 +60,8 @@ class ShareSheetPropertyModelBuilder {
         mPackageManager = packageManager;
     }
 
-    protected ArrayList<PropertyModel> selectThirdPartyApps(
-            ShareSheetBottomSheetContent bottomSheet, ShareParams params) {
+    ArrayList<PropertyModel> selectThirdPartyApps(
+            ShareSheetBottomSheetContent bottomSheet, ShareParams params, long shareStartTime) {
         List<String> thirdPartyActivityNames = getThirdPartyActivityNames();
         Intent intent = ShareHelper.getShareLinkAppCompatibilityIntent();
         final ShareHelper.TargetChosenCallback callback = params.getCallback();
@@ -101,7 +101,9 @@ class ShareSheetPropertyModelBuilder {
                                 RecordHistogram.recordEnumeratedHistogram(
                                         "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex,
                                         MAX_NUM_APPS + 1);
-                                ShareSheetCoordinator.recordTimeToShare();
+                                RecordHistogram.recordMediumTimesHistogram(
+                                        "Sharing.SharingHubAndroid.TimeToShare",
+                                        System.currentTimeMillis() - shareStartTime);
                                 ActivityInfo ai = info.activityInfo;
 
                                 ComponentName component =
@@ -121,16 +123,14 @@ class ShareSheetPropertyModelBuilder {
         return models;
     }
 
-    protected PropertyModel createPropertyModel(
+    static PropertyModel createPropertyModel(
             Drawable icon, String label, OnClickListener listener, boolean isFirstParty) {
-        PropertyModel propertyModel =
-                new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
-                        .with(ShareSheetItemViewProperties.ICON, icon)
-                        .with(ShareSheetItemViewProperties.LABEL, label)
-                        .with(ShareSheetItemViewProperties.CLICK_LISTENER, listener)
-                        .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, isFirstParty)
-                        .build();
-        return propertyModel;
+        return new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
+                .with(ShareSheetItemViewProperties.ICON, icon)
+                .with(ShareSheetItemViewProperties.LABEL, label)
+                .with(ShareSheetItemViewProperties.CLICK_LISTENER, listener)
+                .with(ShareSheetItemViewProperties.IS_FIRST_PARTY, isFirstParty)
+                .build();
     }
 
     private List<String> getThirdPartyActivityNames() {

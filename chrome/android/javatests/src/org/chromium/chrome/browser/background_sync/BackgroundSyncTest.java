@@ -68,7 +68,7 @@ public final class BackgroundSyncTest {
 
         // loadNativeLibraryNoBrowserProcess will access AccountManagerFacade, so it should
         // be initialized beforehand.
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
 
         // This is necessary because our test devices don't have Google Play Services up to date,
         // and BackgroundSync requires that. Remove this once https://crbug.com/514449 has been
@@ -91,7 +91,7 @@ public final class BackgroundSyncTest {
     @After
     public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
         BackgroundSyncBackgroundTaskScheduler.getInstance().removeObserver(mSchedulerObserver);
     }
 

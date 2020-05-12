@@ -24,7 +24,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     /** The delay (four video frames - for 60Hz) after which the hide progress will be hidden. */
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = (1000 / 60) * 4;
     /**
-     * The minimum load progress that can be shown when a page is loading.  This is not 0 so that
+     * The minimum load progress that can be shown when a page is loading. This is not 0 so that
      * it's obvious to the user that something is attempting to load.
      */
     /* package */ static final float MINIMUM_LOAD_PROGRESS = 0.05f;
@@ -32,7 +32,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     private final PropertyModel mModel;
     /** The handler to delay hiding the progress bar. */
     private Handler mHideProgressBarHandler;
-    /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
+    /** Postfix with "Ref" to distinguish from mWebContent in WebContentsObserver. */
     private final WebContents mWebContentsRef;
     private final PaymentHandlerToolbarMediatorDelegate mDelegate;
 

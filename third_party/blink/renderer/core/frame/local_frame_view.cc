@@ -2236,7 +2236,8 @@ bool LocalFrameView::NotifyResizeObservers(
     resize_controller->DeliverObservations();
   } else {
     // Observation depth limit reached
-    if (resize_controller->SkippedObservations()) {
+    if (resize_controller->SkippedObservations() &&
+        !resize_controller->IsLoopLimitErrorDispatched()) {
       resize_controller->ClearObservations();
       ErrorEvent* error = ErrorEvent::Create(
           "ResizeObserver loop limit exceeded",
@@ -2248,7 +2249,7 @@ bool LocalFrameView::NotifyResizeObservers(
           error, SanitizeScriptErrors::kDoNotSanitize);
       // Ensure notifications will get delivered in next cycle.
       ScheduleAnimation();
-      DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+      resize_controller->SetLoopLimitErrorDispatched(true);
     }
     if (Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean)
       return false;
@@ -2466,6 +2467,7 @@ bool LocalFrameView::RunResizeObserverSteps(
       ResizeObserverController* resize_controller =
           ResizeObserverController::From(*frame_view.frame_->DomWindow());
       resize_controller->ClearMinDepth();
+      resize_controller->SetLoopLimitErrorDispatched(false);
     });
   }
   return re_run_lifecycles;

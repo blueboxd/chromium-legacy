@@ -73,6 +73,7 @@ class MockCertProvisioningWorker : public CertProvisioningWorker {
               GetPreviousState,
               (),
               (const override));
+  MOCK_METHOD(base::Time, GetLastUpdateTime, (), (const override));
 
   void SetExpectations(testing::Cardinality do_step_times,
                        bool is_waiting,

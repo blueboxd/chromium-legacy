@@ -315,6 +315,7 @@ class PLATFORM_EXPORT ImageDecoder {
   virtual size_t FrameBytesAtIndex(size_t) const;
 
   ImageOrientation Orientation() const { return orientation_; }
+  IntSize DensityCorrectedSize() const { return density_corrected_size_; }
 
   bool IgnoresColorSpace() const { return color_behavior_.IsIgnore(); }
   const ColorBehavior& GetColorBehavior() const { return color_behavior_; }
@@ -474,6 +475,7 @@ class PLATFORM_EXPORT ImageDecoder {
   const HighBitDepthDecodingOption high_bit_depth_decoding_option_;
   const ColorBehavior color_behavior_;
   ImageOrientation orientation_;
+  IntSize density_corrected_size_;
 
   // The maximum amount of memory a decoded image should require. Ideally,
   // image decoders should downsample large images to fit under this limit

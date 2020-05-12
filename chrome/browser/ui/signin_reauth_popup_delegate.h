@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class SigninViewController;
 class Browser;
 struct CoreAccountId;
 
@@ -22,7 +21,6 @@ class SigninReauthPopupDelegate : public SigninViewControllerDelegate,
                                   public content::WebContentsObserver {
  public:
   SigninReauthPopupDelegate(
-      SigninViewController* signin_view_controller,
       Browser* browser,
       const CoreAccountId& account_id,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
@@ -40,7 +38,6 @@ class SigninReauthPopupDelegate : public SigninViewControllerDelegate,
   void CompleteReauth(signin::ReauthResult result);
   void CloseWebContents();
 
-  SigninViewController* signin_view_controller_;
   Browser* const browser_;
   base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
   content::WebContents* web_contents_;

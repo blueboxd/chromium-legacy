@@ -477,13 +477,14 @@ constexpr struct MappingData {
 }  // namespace
 
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
+    const base::StringPiece product_name,
     const uint16_t vendor_id,
     const uint16_t product_id,
     const uint16_t hid_specification_version,
     const uint16_t version_number,
     GamepadBusType bus_type) {
   GamepadId gamepad_id =
-      GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
+      GamepadIdList::Get().GetGamepadId(product_name, vendor_id, product_id);
   const MappingData* begin = std::begin(AvailableMappings);
   const MappingData* end = std::end(AvailableMappings);
   const auto* find_it = std::find_if(begin, end, [=](const MappingData& item) {

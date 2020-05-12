@@ -73,23 +73,31 @@ class VulkanContextProvider;
 class MetalContextProvider;
 class DawnContextProvider;
 
+enum class ExitCode {
+  // Matches service_manager::ResultCode::RESULT_CODE_NORMAL_EXIT
+  RESULT_CODE_NORMAL_EXIT = 0,
+  // Matches chrome::ResultCode::RESULT_CODE_GPU_EXIT_ON_CONTEXT_LOST
+  RESULT_CODE_GPU_EXIT_ON_CONTEXT_LOST = 34,
+};
+
 // This runs in the GPU process, and communicates with the gpu host (which is
 // the window server) over the mojom APIs. This is responsible for setting up
 // the connection to clients, allocating/free'ing gpu memory etc.
 class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                                           public mojom::GpuService {
  public:
-  GpuServiceImpl(const gpu::GPUInfo& gpu_info,
-                 std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
-                 scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-                 const gpu::GpuFeatureInfo& gpu_feature_info,
-                 const gpu::GpuPreferences& gpu_preferences,
-                 const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
-                 const base::Optional<gpu::GpuFeatureInfo>&
-                     gpu_feature_info_for_hardware_gpu,
-                 const gpu::GpuExtraInfo& gpu_extra_info,
-                 gpu::VulkanImplementation* vulkan_implementation,
-                 base::OnceCallback<void(bool /*immediately*/)> exit_callback);
+  GpuServiceImpl(
+      const gpu::GPUInfo& gpu_info,
+      std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      const gpu::GpuFeatureInfo& gpu_feature_info,
+      const gpu::GpuPreferences& gpu_preferences,
+      const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
+      const base::Optional<gpu::GpuFeatureInfo>&
+          gpu_feature_info_for_hardware_gpu,
+      const gpu::GpuExtraInfo& gpu_extra_info,
+      gpu::VulkanImplementation* vulkan_implementation,
+      base::OnceCallback<void(base::Optional<ExitCode>)> exit_callback);
 
   ~GpuServiceImpl() override;
 
@@ -392,7 +400,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   base::WaitableEvent* shutdown_event_ = nullptr;
 
   // Callback that safely exits GPU process.
-  base::OnceCallback<void(bool)> exit_callback_;
+  base::OnceCallback<void(base::Optional<ExitCode>)> exit_callback_;
   base::AtomicFlag is_exiting_;
 
   // Used for performing hardware decode acceleration of images. This is shared

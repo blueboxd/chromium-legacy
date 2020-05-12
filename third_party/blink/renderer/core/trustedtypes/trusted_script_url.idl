@@ -8,8 +8,7 @@ typedef [StringContext=TrustedScriptURL] USVString ScriptURLString;
 
 [
     Exposed=Window,
-    RuntimeEnabled=TrustedDOMTypes,
-    SecureContext
+    RuntimeEnabled=TrustedDOMTypes
 ] interface TrustedScriptURL {
     stringifier;
 };

@@ -46,7 +46,6 @@ class MojoUkmRecorder;
 }
 
 namespace viz {
-class GpuServiceImpl;
 #if defined(OS_WIN)
 class InfoCollectionGpuServiceImpl;
 #endif
@@ -141,8 +140,10 @@ class VizMainImpl : public mojom::VizMain,
     return discardable_shared_memory_manager_.get();
   }
 
-  // Cleanly exits the process.
-  void ExitProcess(bool immediately);
+  // Cleanly exits the process. If |immediate_exit_code| is base::nullopt, the
+  // process exits by shutting down the GPU main thread. Otherwise, the process
+  // is terminated immediately with the specified exit code.
+  void ExitProcess(base::Optional<ExitCode> immediate_exit_code);
 
  private:
   void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);

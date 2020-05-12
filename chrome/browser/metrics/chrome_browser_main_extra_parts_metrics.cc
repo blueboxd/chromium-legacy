@@ -74,13 +74,6 @@
 
 namespace {
 
-// Feature flag to  control enabling recording of the IO jank metric. Will be
-// used to ensure recording the metric itself doesn't have adverse side-effects
-// on real performance. Assuming it doesn't, the metric will be recorded on 100%
-// of users.
-const base::Feature kRecordIOJankMetric{"RecordIOJankMetric",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 void RecordMemoryMetrics();
 
 // Records memory metrics after a delay.
@@ -620,8 +613,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PreMainMessageLoopRun() {
-  if (base::TimeTicks::IsConsistentAcrossProcesses() &&
-      base::FeatureList::IsEnabled(kRecordIOJankMetric)) {
+  if (base::TimeTicks::IsConsistentAcrossProcesses()) {
     // Enable I/O jank monitoring for the browser process.
     base::EnableIOJankMonitoringForProcess(base::BindRepeating(
         [](int janky_intervals_per_minute, int total_janks_per_minute) {

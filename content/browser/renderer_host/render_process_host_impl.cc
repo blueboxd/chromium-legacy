@@ -2063,11 +2063,14 @@ void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
     const url::Origin& origin,
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetStoragePartition()->CreateRestrictedCookieManager(
+  StoragePartitionImpl* storage_partition =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+  storage_partition->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
       net::SiteForCookies::FromOrigin(origin), origin,
       true /* is_service_worker */, GetID(), MSG_ROUTING_NONE,
-      std::move(receiver));
+      std::move(receiver),
+      storage_partition->CreateCookieAccessObserverForServiceWorker());
 }
 
 void RenderProcessHostImpl::BindVideoDecodePerfHistory(

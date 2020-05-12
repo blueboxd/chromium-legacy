@@ -75,9 +75,7 @@ PaymentRequestDialogView::PaymentRequestDialogView(
   request->spec()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  view_stack_ = std::make_unique<ViewStack>();
-  view_stack_->set_owned_by_client();
-  AddChildView(view_stack_.get());
+  view_stack_ = AddChildView(std::make_unique<ViewStack>());
 
   SetupSpinnerOverlay();
 
@@ -116,7 +114,7 @@ ui::ModalType PaymentRequestDialogView::GetModalType() const {
 }
 
 views::View* PaymentRequestDialogView::GetInitiallyFocusedView() {
-  return view_stack_.get();
+  return view_stack_;
 }
 
 void PaymentRequestDialogView::OnDialogClosed() {
@@ -132,7 +130,7 @@ void PaymentRequestDialogView::OnDialogClosed() {
   for (const auto& controller : controller_map_) {
     controller.second->Stop();
   }
-  view_stack_.reset();
+  RemoveChildViewT(view_stack_);
   controller_map_.clear();
   request_->UserCancelled();
 }

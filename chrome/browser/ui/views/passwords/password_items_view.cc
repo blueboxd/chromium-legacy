@@ -93,9 +93,8 @@ std::unique_ptr<views::ImageButton> CreateDeleteButton(
 std::unique_ptr<views::LabelButton> CreateUndoButton(
     views::ButtonListener* listener,
     const base::string16& username) {
-  std::unique_ptr<views::LabelButton> undo_button(
-      views::MdTextButton::CreateSecondaryUiButton(
-          listener, l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO)));
+  auto undo_button = views::MdTextButton::Create(
+      listener, l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
   undo_button->set_tag(kUndoButtonTag);
   undo_button->SetFocusForPlatform();
   undo_button->SetTooltipText(
@@ -105,7 +104,7 @@ std::unique_ptr<views::LabelButton> CreateUndoButton(
 
 std::unique_ptr<views::View> CreateManageButton(
     views::ButtonListener* listener) {
-  return views::MdTextButton::CreateSecondaryUiButton(
+  return views::MdTextButton::Create(
       listener,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON));
 }

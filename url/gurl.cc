@@ -519,7 +519,9 @@ bool operator!=(const GURL& x, const GURL& y) {
 }
 
 bool operator==(const GURL& x, const base::StringPiece& spec) {
-  DCHECK_EQ(GURL(spec).possibly_invalid_spec(), spec);
+  DCHECK_EQ(GURL(spec).possibly_invalid_spec(), spec)
+      << "Comparisons of GURLs and strings must ensure as a precondition that "
+         "the string is fully canonicalized.";
   return x.possibly_invalid_spec() == spec;
 }
 

@@ -49,7 +49,6 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
  public:
   virtual ~SVGAnimatedPropertyBase();
 
-  virtual SVGPropertyBase* CurrentValueBase() = 0;
   virtual const SVGPropertyBase& BaseValueBase() const = 0;
   virtual bool IsAnimating() const = 0;
 
@@ -124,8 +123,6 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
   const Property* CurrentValue() const {
     return const_cast<SVGAnimatedPropertyCommon*>(this)->CurrentValue();
   }
-
-  SVGPropertyBase* CurrentValueBase() override { return CurrentValue(); }
 
   const SVGPropertyBase& BaseValueBase() const override { return *base_value_; }
 

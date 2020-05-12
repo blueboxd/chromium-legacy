@@ -8,7 +8,7 @@
 
 void SyncSigninDelegateAndroid::SigninFake(Profile* profile,
                                            const std::string& username) {
-  sync_test_utils_android::SetUpTestAccountAndSignIn();
+  sync_test_utils_android::SetUpAccountAndSignInForTesting();
 }
 
 bool SyncSigninDelegateAndroid::SigninUI(Profile* profile,

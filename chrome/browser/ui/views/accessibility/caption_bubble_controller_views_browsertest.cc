@@ -27,6 +27,11 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/client/focus_client.h"
+#include "ui/views/widget/native_widget_aura.h"
+#endif  // USE_AURA
+
 namespace captions {
 
 namespace {
@@ -61,6 +66,10 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     return controller_ ? controller_->caption_bubble_->title_ : nullptr;
   }
 
+  views::Button* GetCloseButton() {
+    return controller_ ? controller_->caption_bubble_->close_button_ : nullptr;
+  }
+
   views::Label* GetErrorMessage() {
     return controller_ ? controller_->caption_bubble_->error_message_ : nullptr;
   }
@@ -78,14 +87,14 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
   }
 
   void ClickCloseButton() {
-    CaptionBubble* bubble = GetBubble();
-    if (!bubble)
+    views::Button* button = GetCloseButton();
+    if (!button)
       return;
     views::test::WidgetDestroyedWaiter waiter(GetCaptionWidget());
-    bubble->close_button_->OnMousePressed(
+    button->OnMousePressed(
         ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0),
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
-    bubble->close_button_->OnMouseReleased(ui::MouseEvent(
+    button->OnMouseReleased(ui::MouseEvent(
         ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
     waiter.Wait();
@@ -394,6 +403,44 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                                               false, false, false));
   EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
 #endif
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, FocusableInTabOrder) {
+  OnPartialTranscription(
+      "A narwhal's tusk is an enlarged tooth containing "
+      "millions of nerve endings");
+  // Not initially focused.
+  EXPECT_FALSE(GetBubble()->HasFocus());
+  EXPECT_FALSE(GetCloseButton()->HasFocus());
+  EXPECT_FALSE(GetBubble()->GetFocusManager()->GetFocusedView());
+
+  // Press tab until we enter the bubble.
+  while (!GetBubble()->HasFocus())
+    EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                                false, false, false));
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // Check the native widget has focus.
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(GetCaptionWidget()->GetNativeView());
+  EXPECT_TRUE(GetCaptionWidget()->GetNativeView() ==
+              focus_client->GetFocusedWindow());
+#endif
+  // Next tab should be the close button.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+  EXPECT_TRUE(GetCloseButton()->HasFocus());
+
+  // Next tab exits the bubble entirely.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // The native widget should no longer have focus.
+  EXPECT_FALSE(GetCaptionWidget()->GetNativeView() ==
+               focus_client->GetFocusedWindow());
+#endif
+  EXPECT_FALSE(GetBubble()->HasFocus());
+  EXPECT_FALSE(GetCloseButton()->HasFocus());
+  EXPECT_FALSE(GetBubble()->GetFocusManager()->GetFocusedView());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,

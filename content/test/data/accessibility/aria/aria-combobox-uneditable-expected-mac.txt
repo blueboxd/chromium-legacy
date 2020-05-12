@@ -1,7 +1,7 @@
 AXWebArea AXFocused='1'
 ++AXGroup
 ++++AXStaticText AXValue='Choose a fruit, with text content'
-++AXPopUpButton AXTitle='Choose a fruit, with text content' AXValue='Apple' AXLinkedUIElements=["AXList"]
+++AXPopUpButton AXLinkedUIElements=["AXList"] AXTitle='Choose a fruit, with text content' AXValue='Apple'
 ++++AXStaticText AXValue='Apple'
 ++AXList
 ++++AXStaticText AXValue='Apple'

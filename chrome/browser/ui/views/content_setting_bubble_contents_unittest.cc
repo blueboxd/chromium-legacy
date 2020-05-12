@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -48,6 +49,9 @@ class TestContentSettingBubbleContents : public ContentSettingBubbleContents {
 
 // Regression test for http://crbug.com/1050801 .
 TEST_F(ContentSettingBubbleContentsTest, NullDeref) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+
   std::unique_ptr<views::Widget> parent_widget = CreateTestWidget();
   parent_widget->Show();
 

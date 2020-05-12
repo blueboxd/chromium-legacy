@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <include src="../login/hd-iron-icon.js">
-// <include src="../login/oobe_types.js">
-// <include src="../login/oobe_i18n_behavior.js">
+// <include src="../login/components/hd-iron-icon.js">
+// <include src="../login/components/oobe_types.js">
+// <include src="../login/components/oobe_i18n_behavior.js">
 // <include src="../login/components/oobe_buttons.js">
-// <include src="../login/oobe_dialog_host_behavior.js">
+// <include src="../login/components/oobe_dialog_host_behavior.js">
 // <include src="../login/components/oobe_dialog.js">
 // <include src="assistant_optin_flow.js">
 

@@ -95,6 +95,11 @@ std::string GetUserAgent();
 
 blink::UserAgentMetadata GetUserAgentMetadata();
 
+blink::UserAgentBrandList GenerateBrandVersionList(
+    int seed,
+    base::Optional<std::string> brand,
+    std::string major_version);
+
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ChromeContentBrowserClient(StartupData* startup_data = nullptr);

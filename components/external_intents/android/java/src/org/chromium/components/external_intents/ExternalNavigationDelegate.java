@@ -19,8 +19,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * A delegate for the class responsible for navigating to external applications from Chrome. Used
- * by {@link ExternalNavigationHandler}.
+ * A delegate for {@link ExternalNavigationHandler}.
  */
 public interface ExternalNavigationDelegate {
     /**
@@ -30,10 +29,10 @@ public interface ExternalNavigationDelegate {
     Activity getActivityContext();
 
     /**
-     * Determine if Chrome is the default or only handler for a given intent. If true, Chrome
+     * Determine if this app is the default or only handler for a given intent. If true, this app
      * will handle the intent when started.
      */
-    boolean willChromeHandleIntent(Intent intent);
+    boolean willAppHandleIntent(Intent intent);
 
     /**
      * Returns whether to disable forwarding URL requests to external intents for the passed-in URL.
@@ -89,9 +88,9 @@ public interface ExternalNavigationDelegate {
     int maybeHandleStartActivityIfNeeded(Intent intent, boolean proxy);
 
     /**
-     * Display a dialog warning the user that they may be leaving Chrome by starting this
+     * Display a dialog warning the user that they may be leaving this app by starting this
      * intent. Give the user the opportunity to cancel the action. And if it is canceled, a
-     * navigation will happen in Chrome. Catches BadTokenExceptions caused by showing the dialog
+     * navigation will happen in this app. Catches BadTokenExceptions caused by showing the dialog
      * on certain devices. (crbug.com/782602)
      * @param intent The intent for external application that will be sent.
      * @param referrerUrl The referrer for the current navigation.
@@ -144,9 +143,9 @@ public interface ExternalNavigationDelegate {
     void maybeSetPendingIncognitoUrl(Intent intent);
 
     /**
-     * Determine if the Chrome app is in the foreground.
+     * Determine if the application of the embedder is in the foreground.
      */
-    boolean isChromeAppInForeground();
+    boolean isApplicationInForeground();
 
     /**
      * Check if the URL should be handled by an instant app, or kick off an async request for an
@@ -202,7 +201,7 @@ public interface ExternalNavigationDelegate {
 
     /**
      * @param intent The intent to launch.
-     * @return Whether the Intent points to an app that we trust and that launched Chrome.
+     * @return Whether the Intent points to an app that we trust and that launched this app.
      */
     boolean isIntentForTrustedCallingApp(Intent intent);
 

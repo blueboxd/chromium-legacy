@@ -108,7 +108,7 @@ public class ClearBrowsingDataFragmentTest {
         when(mBrowsingDataBridgeMock.getBrowsingDataDeletionTimePeriod(any(), anyInt()))
                 .thenReturn(DEFAULT_TIME_PERIOD);
 
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
 
         mActivityTestRule.startMainActivityOnBlankPage();
 
@@ -124,7 +124,7 @@ public class ClearBrowsingDataFragmentTest {
 
     @After
     public void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     /**  Waits for the progress dialog to disappear from the given CBD preference. */

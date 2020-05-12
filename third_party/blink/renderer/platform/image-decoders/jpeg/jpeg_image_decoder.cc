@@ -42,6 +42,7 @@
 
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -223,6 +224,14 @@ static unsigned ReadUint32(JOCTET* data, bool is_big_endian) {
          (GETJOCTET(data[1]) << 8) | GETJOCTET(data[0]);
 }
 
+static float ReadUnsignedRational(JOCTET* data, bool is_big_endian) {
+  unsigned nom = ReadUint32(data, is_big_endian);
+  unsigned denom = ReadUint32(data + 4, is_big_endian);
+  if (!denom)
+    return 0;
+  return float(nom) / float(denom);
+}
+
 static bool CheckExifHeader(jpeg_saved_marker_ptr marker,
                             bool& is_big_endian,
                             unsigned& ifd_offset) {
@@ -251,11 +260,118 @@ static bool CheckExifHeader(jpeg_saved_marker_ptr marker,
   return true;
 }
 
-static ImageOrientation ReadImageOrientation(jpeg_decompress_struct* info) {
+struct DecodedImageMetaData {
+  ImageOrientation orientation;
+  FloatSize resolution;
+  IntSize size;
+  unsigned resolution_unit { 0 };
+};
+
+static IntSize ExtractDensityCorrectedSize(const DecodedImageMetaData& metadata, const IntSize& physical_size) {
+  const unsigned kDefaultResolution = 72;
+  const unsigned kresolution_unitDPI = 2;
+
+  if (metadata.resolution_unit != kresolution_unitDPI || metadata.resolution.IsEmpty() || metadata.size.IsEmpty())
+    return physical_size;
+
+  CHECK(metadata.resolution.Width());
+  CHECK(metadata.resolution.Height());
+
+  // Division by zero is not possible since we check for empty resolution earlier.
+  IntSize size_from_resolution(
+    physical_size.Width() * kDefaultResolution / metadata.resolution.Width(),
+    physical_size.Height() * kDefaultResolution / metadata.resolution.Height());
+
+  if (size_from_resolution == metadata.size)
+    return metadata.size;
+
+  return physical_size;
+}
+
+static void ReadExifDirectory(JOCTET* dir_start, JOCTET* tiff_start, JOCTET* root_dir_start, JOCTET* data_end, bool is_big_endian, DecodedImageMetaData& metadata) {
+  const unsigned kUnsignedShortType = 3;
+  const unsigned kUnsignedLongType = 4;
+  const unsigned kUnsignedRationalType = 5;
+
+  enum ExifTags {
+    kOrientationTag = 0x112,
+    kResolutionXTag = 0x11a,
+    kResolutionYTag = 0x11b,
+    kresolution_unitTag = 0x128,
+    kPixelXDimensionTag = 0xa002,
+    kPixelYDimensionTag = 0xa003,
+    kExifOffsetTag = 0x8769
+  };
+
+  if (data_end - dir_start < 2)
+    return;
+
+  unsigned tag_count = ReadUint16(dir_start, is_big_endian);
+  JOCTET* ifd = dir_start + 2;  // Skip over the uint16 that was just read.
+
+  // Every ifd entry is 2 bytes of tag, 2 bytes of contents datatype,
+  // 4 bytes of number-of-elements, and 4 bytes of either offset to the
+  // tag data, or if the data is small enough, the inlined data itself.
+  const int kIfdEntrySize = 12;
+  for (unsigned i = 0; i < tag_count && data_end - ifd >= kIfdEntrySize;
+        ++i, ifd += kIfdEntrySize) {
+    unsigned tag = ReadUint16(ifd, is_big_endian);
+    unsigned type = ReadUint16(ifd + 2, is_big_endian);
+    unsigned count = ReadUint32(ifd + 4, is_big_endian);
+    JOCTET* value_ptr = ifd + 8;
+
+    // EXIF stores the value with an offset if it's bigger than 4 bytes, e.g. for rational values.
+    if (type == kUnsignedRationalType) {
+      value_ptr = tiff_start + ReadUint32(value_ptr, is_big_endian);
+      // Make sure offset points to a valid location.
+      if (value_ptr < ifd || value_ptr > data_end - 16)
+        continue;
+    }
+
+    switch (tag) {
+      case ExifTags::kOrientationTag:
+        if (type == kUnsignedShortType && count == 1)
+          metadata.orientation = ImageOrientation::FromEXIFValue(ReadUint16(value_ptr, is_big_endian));
+        break;
+
+      case ExifTags::kresolution_unitTag:
+        if (type == kUnsignedShortType && count == 1)
+          metadata.resolution_unit = ReadUint16(value_ptr, is_big_endian);
+        break;
+
+      case ExifTags::kResolutionXTag:
+        if (type == kUnsignedRationalType && count == 1)
+          metadata.resolution.SetWidth(ReadUnsignedRational(value_ptr, is_big_endian));
+        break;
+
+      case ExifTags::kResolutionYTag:
+        if (type == kUnsignedRationalType && count == 1)
+          metadata.resolution.SetHeight(ReadUnsignedRational(value_ptr, is_big_endian));
+        break;
+
+      case ExifTags::kPixelXDimensionTag:
+        if (type == kUnsignedShortType && count == 1)
+          metadata.size.SetWidth(ReadUint16(value_ptr, is_big_endian));
+        break;
+
+      case ExifTags::kPixelYDimensionTag:
+        if (type == kUnsignedShortType && count == 1)
+          metadata.size.SetHeight(ReadUint16(value_ptr, is_big_endian));
+        break;
+
+      case ExifTags::kExifOffsetTag:
+        if (type == kUnsignedLongType && count == 1) {
+          auto subdir_offset = ReadUint32(value_ptr, is_big_endian);
+          ReadExifDirectory(root_dir_start + subdir_offset, tiff_start, root_dir_start, data_end, is_big_endian, metadata);
+        }
+        break;
+    }
+  }
+}
+
+static void ReadImageMetaData(jpeg_decompress_struct* info, DecodedImageMetaData& metadata) {
   // The JPEG decoder looks at EXIF metadata.
   // FIXME: Possibly implement XMP and IPTC support.
-  const unsigned kOrientationTag = 0x112;
-  const unsigned kShortType = 3;
   for (jpeg_saved_marker_ptr marker = info->marker_list; marker;
        marker = marker->next) {
     bool is_big_endian;
@@ -267,36 +383,19 @@ static ImageOrientation ReadImageOrientation(jpeg_decompress_struct* info) {
     if (marker->data_length < kOffsetToTiffData ||
         ifd_offset >= marker->data_length - kOffsetToTiffData)
       continue;
-    ifd_offset += kOffsetToTiffData;
 
     // The jpeg exif container format contains a tiff block for metadata.
     // A tiff image file directory (ifd) consists of a uint16_t describing
     // the number of ifd entries, followed by that many entries.
     // When touching this code, it's useful to look at the tiff spec:
     // http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
-    JOCTET* ifd = marker->data + ifd_offset;
-    JOCTET* end = marker->data + marker->data_length;
-    if (end - ifd < 2)
-      continue;
-    unsigned tag_count = ReadUint16(ifd, is_big_endian);
-    ifd += 2;  // Skip over the uint16 that was just read.
+    JOCTET* data_end = marker->data + marker->data_length;
+    JOCTET* root_start = marker->data + kOffsetToTiffData;
+    JOCTET* tiff_start = marker->data + ifd_offset;
+    JOCTET* ifd0 = root_start + ifd_offset;
 
-    // Every ifd entry is 2 bytes of tag, 2 bytes of contents datatype,
-    // 4 bytes of number-of-elements, and 4 bytes of either offset to the
-    // tag data, or if the data is small enough, the inlined data itself.
-    const int kIfdEntrySize = 12;
-    for (unsigned i = 0; i < tag_count && end - ifd >= kIfdEntrySize;
-         ++i, ifd += kIfdEntrySize) {
-      unsigned tag = ReadUint16(ifd, is_big_endian);
-      unsigned type = ReadUint16(ifd + 2, is_big_endian);
-      unsigned count = ReadUint32(ifd + 4, is_big_endian);
-      if (tag == kOrientationTag && type == kShortType && count == 1)
-        return ImageOrientation::FromEXIFValue(
-            ReadUint16(ifd + 8, is_big_endian));
-    }
+    ReadExifDirectory(ifd0, tiff_start, root_start, data_end, is_big_endian, metadata);
   }
-
-  return ImageOrientation();
 }
 
 static IntSize ComputeYUVSize(const jpeg_decompress_struct* info,
@@ -565,7 +664,10 @@ class JPEGImageReader final {
         jpeg_calc_output_dimensions(&info_);
         decoder_->SetDecodedSize(info_.output_width, info_.output_height);
 
-        decoder_->SetOrientation(ReadImageOrientation(Info()));
+        DecodedImageMetaData metadata;
+        ReadImageMetaData(Info(), metadata);
+        decoder_->SetOrientation(metadata.orientation);
+        decoder_->SetDensityCorrectedSize(ExtractDensityCorrectedSize(metadata, IntSize(info_.output_width, info_.output_height)));
 
         // Allow color management of the decoded RGBA pixels if possible.
         if (!decoder_->IgnoresColorSpace()) {

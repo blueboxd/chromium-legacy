@@ -27,9 +27,6 @@ class GuestHost {
   virtual int LoadURLWithParams(
       const NavigationController::LoadURLParams& load_params) = 0;
 
-  // Sets the size of the guest WebContents.
-  virtual void SizeContents(const gfx::Size& new_size) = 0;
-
   // Called when the GuestHost is about to be destroyed.
   virtual void WillDestroy() = 0;
 };

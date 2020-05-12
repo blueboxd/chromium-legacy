@@ -2,44 +2,61 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
+
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/session/arc_service_launcher.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/test/webview_content_extractor.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/arc_util.h"
 #include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/prefs/pref_service.h"
+#include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace em = enterprise_management;
 
 using consent_auditor::FakeConsentAuditor;
 using sync_pb::UserConsentTypes;
@@ -56,6 +73,9 @@ using net::test_server::HttpResponse;
 namespace chromeos {
 
 namespace {
+
+const char kAccountId[] = "dla@example.com";
+const char kDisplayName[] = "display name";
 
 constexpr char kTosPath[] = "/about/play-terms.html";
 constexpr char kTosContent[] = "Arc TOS for test.";
@@ -155,6 +175,12 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
         &ArcTermsOfServiceScreenTest::HandleRequest, base::Unretained(this)));
   }
 
+  void SetUpOnMainThread() override {
+    // Enable ARC for testing.
+    arc::ArcServiceLauncher::Get()->ResetForTesting();
+    OobeBaseTest::SetUpOnMainThread();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
@@ -164,20 +190,41 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
     OobeBaseTest::SetUpCommandLine(command_line);
   }
 
-  void TriggerArcTosScreen() {
+  void SetUpExitCallback() {
     ArcTermsOfServiceScreen* terms_of_service_screen =
         static_cast<ArcTermsOfServiceScreen*>(
             WizardController::default_controller()->screen_manager()->GetScreen(
                 ArcTermsOfServiceScreenView::kScreenId));
+    original_callback_ =
+        terms_of_service_screen->get_exit_callback_for_testing();
     terms_of_service_screen->set_exit_callback_for_testing(
         base::BindRepeating(&ArcTermsOfServiceScreenTest::ScreenExitCallback,
                             base::Unretained(this)));
-    // Enable ARC for testing.
-    arc::ArcServiceLauncher::Get()->ResetForTesting();
+    // Skip RecommendAppsScreen because it is shown right after the ArcToS
+    // screen and doesn't work correctly in the test environment. (More precise,
+    // it requires display with some particular height/width which is not set.)
+    RecommendAppsScreen* recommend_apps_screen =
+        static_cast<RecommendAppsScreen*>(
+            WizardController::default_controller()->screen_manager()->GetScreen(
+                RecommendAppsScreenView::kScreenId));
+    recommend_apps_screen->SetSkipForTesting();
+  }
+
+  void LoginAsRegularUser() {
+    SetUpExitCallback();
     login_manager_mixin_.LoginAsNewReguarUser();
     OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  }
+
+  void ShowArcTosScreen() {
+    ASSERT_FALSE(screen_exit_result_.has_value());
     LoginDisplayHost::default_host()->StartWizard(
         ArcTermsOfServiceScreenView::kScreenId);
+  }
+
+  void TriggerArcTosScreen() {
+    LoginAsRegularUser();
+    ShowArcTosScreen();
   }
 
  protected:
@@ -197,6 +244,7 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
   }
 
   void WaitForTermsOfServiceWebViewToLoad() {
+    OobeScreenWaiter(ArcTermsOfServiceScreenView::kScreenId).Wait();
     test::OobeJS()
         .CreateHasClassWaiter(true, "arc-tos-loaded",
                               {"arc-tos-root", "arcTosDialog"})
@@ -212,11 +260,15 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
     run_loop.Run();
   }
 
+  base::HistogramTester histogram_tester_;
+
  private:
   void ScreenExitCallback(ArcTermsOfServiceScreen::Result result) {
     ASSERT_FALSE(screen_exit_result_.has_value());
     screen_exit_result_ = result;
-    std::move(on_screen_exit_called_).Run();
+    original_callback_.Run(result);
+    if (on_screen_exit_called_)
+      std::move(on_screen_exit_called_).Run();
   }
 
   // Returns the base URL of the embedded test server.
@@ -267,7 +319,7 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
   bool serve_tos_with_privacy_policy_footer_ = false;
 
   base::Optional<ArcTermsOfServiceScreen::Result> screen_exit_result_;
-
+  ArcTermsOfServiceScreen::ScreenExitCallback original_callback_;
   base::OnceClosure on_screen_exit_called_ = base::DoNothing();
 
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
@@ -341,7 +393,6 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
 IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
   TriggerArcTosScreen();
   ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
-
   Profile* profile = ProfileManager::GetActiveUserProfile();
   EXPECT_FALSE(
       profile->GetPrefs()->GetBoolean(prefs::kShowArcSettingsOnSessionStart));
@@ -352,9 +403,15 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
 
   EXPECT_TRUE(
       profile->GetPrefs()->GetBoolean(prefs::kShowArcSettingsOnSessionStart));
-
   WaitForScreenExitResult();
   EXPECT_EQ(screen_exit_result(), ArcTermsOfServiceScreen::Result::ACCEPTED);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Accepted", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Skipped", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Back", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Arc_tos", 1);
 }
 
 // Test whether google privacy policy can be loaded.
@@ -372,6 +429,29 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, PrivacyPolicy) {
             kPrivacyPolicyContent);
 
   EXPECT_FALSE(screen_exit_result().has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, BackButtonClicked) {
+  // Back button is shown only in demo mode.
+  WizardController::default_controller()->SimulateDemoModeSetupForTesting();
+  // Accept EULA cause it is expected in case of back button pressed by
+  // WizardController::OnArcTermsOfServiceScreenExit.
+  g_browser_process->local_state()->SetBoolean(prefs::kEulaAccepted, true);
+
+  TriggerArcTosScreen();
+  WaitForTermsOfServiceWebViewToLoad();
+
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosBackButton"});
+
+  WaitForScreenExitResult();
+  EXPECT_EQ(screen_exit_result(), ArcTermsOfServiceScreen::Result::BACK);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Accepted", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Skipped", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Back", 1);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Arc_tos", 1);
 }
 
 // There are two checkboxes for enabling/disabling arc backup restore and
@@ -401,6 +481,7 @@ class ParameterizedArcTermsOfServiceScreenTest
       ArcBackupAndRestoreConsent backup_and_restore_consent,
       ArcGoogleLocationServiceConsent location_service_consent) {
     ASSERT_NO_FATAL_FAILURE(WaitForTermsOfServiceWebViewToLoad());
+
     test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosNextButton"});
 
     // Wait for checkboxes to become visible.
@@ -462,10 +543,129 @@ IN_PROC_BROWSER_TEST_P(ParameterizedArcTermsOfServiceScreenTest, ClickAccept) {
 
   WaitForScreenExitResult();
   EXPECT_EQ(screen_exit_result(), ArcTermsOfServiceScreen::Result::ACCEPTED);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Accepted", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Skipped", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Back", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Arc_tos", 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ParameterizedArcTermsOfServiceScreenTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
+
+class PublicAccountArcTermsOfServiceScreenTest
+    : public ArcTermsOfServiceScreenTest {
+ public:
+  PublicAccountArcTermsOfServiceScreenTest() = default;
+  ~PublicAccountArcTermsOfServiceScreenTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ArcTermsOfServiceScreenTest::SetUpInProcessBrowserTestFixture();
+    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    InitializePolicy();
+  }
+
+  void InitializePolicy() {
+    device_policy()->policy_data().set_public_key_version(1);
+    policy::DeviceLocalAccountTestHelper::SetupDeviceLocalAccount(
+        &device_local_account_policy_, kAccountId, kDisplayName);
+    UploadDeviceLocalAccountPolicy();
+  }
+
+  void BuildDeviceLocalAccountPolicy() {
+    device_local_account_policy_.SetDefaultSigningKey();
+    device_local_account_policy_.Build();
+  }
+
+  void UploadDeviceLocalAccountPolicy() {
+    BuildDeviceLocalAccountPolicy();
+    ASSERT_TRUE(local_policy_mixin_.server()->UpdatePolicy(
+        policy::dm_protocol::kChromePublicAccountPolicyType, kAccountId,
+        device_local_account_policy_.payload().SerializeAsString()));
+  }
+
+  void UploadAndInstallDeviceLocalAccountPolicy() {
+    UploadDeviceLocalAccountPolicy();
+    session_manager_client()->set_device_local_account_policy(
+        kAccountId, device_local_account_policy_.GetBlob());
+  }
+
+  void AddPublicSessionToDevicePolicy() {
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+    policy::DeviceLocalAccountTestHelper::AddPublicSession(&proto, kAccountId);
+    RefreshDevicePolicy();
+    ASSERT_TRUE(local_policy_mixin_.UpdateDevicePolicy(proto));
+  }
+
+  void WaitForDisplayName() {
+    policy::DictionaryLocalStateValueWaiter("UserDisplayName", kDisplayName,
+                                            account_id_.GetUserEmail())
+        .Wait();
+  }
+
+  void WaitForPolicy() {
+    // Wait for the display name becoming available as that indicates
+    // device-local account policy is fully loaded, which is a prerequisite for
+    // successful login.
+    WaitForDisplayName();
+  }
+
+  void StartLogin() {
+    ASSERT_TRUE(ash::LoginScreenTestApi::ExpandPublicSessionPod(account_id_));
+    ash::LoginScreenTestApi::ClickPublicExpandedSubmitButton();
+  }
+
+  void StartPublicSession() {
+    UploadAndInstallDeviceLocalAccountPolicy();
+    AddPublicSessionToDevicePolicy();
+    WaitForPolicy();
+    StartLogin();
+  }
+
+ private:
+  chromeos::FakeSessionManagerClient* session_manager_client() {
+    return chromeos::FakeSessionManagerClient::Get();
+  }
+
+  void RefreshDevicePolicy() { policy_helper()->RefreshDevicePolicy(); }
+
+  policy::DevicePolicyBuilder* device_policy() {
+    return policy_helper()->device_policy();
+  }
+
+  policy::DevicePolicyCrosTestHelper* policy_helper() {
+    return &policy_helper_;
+  }
+
+  const AccountId account_id_ =
+      AccountId::FromUserEmail(GenerateDeviceLocalAccountUserId(
+          kAccountId,
+          policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
+  policy::DevicePolicyCrosTestHelper policy_helper_;
+  policy::UserPolicyBuilder device_local_account_policy_;
+  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+  DISALLOW_COPY_AND_ASSIGN(PublicAccountArcTermsOfServiceScreenTest);
+};
+
+IN_PROC_BROWSER_TEST_F(PublicAccountArcTermsOfServiceScreenTest,
+                       SkippedForPublicAccount) {
+  StartPublicSession();
+  ShowArcTosScreen();
+
+  chromeos::test::WaitForPrimaryUserSessionStart();
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Accepted", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Skipped", 0);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Arc-tos.Back", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Arc_tos", 0);
+}
 
 }  // namespace chromeos

@@ -686,9 +686,6 @@ class CONTENT_EXPORT RenderFrameImpl
       network::mojom::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& fp_header,
       const blink::DocumentPolicy::FeatureState& dp_header) override;
-  void DidChangeFrameOwnerProperties(
-      blink::WebFrame* child_frame,
-      const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void DidMatchCSS(
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)

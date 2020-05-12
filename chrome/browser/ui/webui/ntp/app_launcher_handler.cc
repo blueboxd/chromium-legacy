@@ -129,6 +129,22 @@ const char kPackagedAppKey[] = "packagedApp";
 const int kWebAppIconLargeNonDefault = 128;
 const int kWebAppIconSmallNonDefault = 16;
 
+// The Youtube app is incorrectly harded to be a 'bookmark app'. However, it is
+// a platform app. This helper method special cases that, and should be used
+// instead of extension->from_bookmark().
+// TODO(crbug.com/1065748): Remove this hack once the youtube app is fixed.
+bool FromBookmark(const extensions::Extension* extension) {
+  return extension->from_bookmark() &&
+         extension->id() != extension_misc::kYoutubeAppId;
+}
+
+// The Youtube app is incorrectly harded to be a 'bookmark app'. However, it is
+// a platform app.
+// TODO(crbug.com/1065748): Remove this hack once the youtube app is fixed.
+bool IsYoutubeExtension(const std::string& extension_id) {
+  return extension_id == extension_misc::kYoutubeAppId;
+}
+
 void GetWebAppBasicInfo(const web_app::AppId& app_id,
                         const web_app::AppRegistrar& app_registrar,
                         base::DictionaryValue* info) {
@@ -262,7 +278,7 @@ void AppLauncherHandler::CreateWebAppInfo(const web_app::AppId& app_id,
 
 void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
                                              base::DictionaryValue* value) {
-  DCHECK(!extension->from_bookmark());
+  DCHECK(!FromBookmark(extension));
   // The items which are to be written into |value| are also described in
   // chrome/browser/resources/ntp4/page_list_view.js in @typedef for AppInfo.
   // Please update it whenever you add or remove any keys here.
@@ -480,8 +496,7 @@ void AppLauncherHandler::OnExtensionLoaded(
     const Extension* extension) {
   if (!ShouldShow(extension))
     return;
-
-  if (extension->from_bookmark())
+  if (FromBookmark(extension))
     return;
 
   std::unique_ptr<base::DictionaryValue> app_info(GetExtensionInfo(extension));
@@ -508,7 +523,7 @@ void AppLauncherHandler::OnExtensionUninstalled(
     const Extension* extension,
     extensions::UninstallReason reason) {
   // Exclude events from bookmarks apps if BMO is turned on.
-  if (extension->from_bookmark())
+  if (FromBookmark(extension))
     return;
   ExtensionRemoved(extension, /*is_uninstall=*/true);
 }
@@ -557,6 +572,11 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   std::set<web_app::AppId> web_app_ids;
   web_app::AppRegistrar& registrar = web_app_provider_->registrar();
   for (const web_app::AppId& web_app_id : registrar.GetAppIds()) {
+    // The Youtube app is harded to be a 'bookmark app', however it is not, it
+    // is a platform app.
+    // TODO(crbug.com/1065748): Remove this hack once the youtube app is fixed.
+    if (IsYoutubeExtension(web_app_id))
+      continue;
     installed_extensions->Append(GetWebAppInfo(web_app_id));
     web_app_ids.insert(web_app_id);
   }
@@ -569,7 +589,7 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
     const Extension* extension = registry->GetInstalledExtension(*it);
     if (extension &&
         extensions::ui_util::ShouldDisplayInNewTabPage(extension, profile)) {
-      DCHECK(!extension->from_bookmark());
+      DCHECK(!FromBookmark(extension));
       installed_extensions->Append(GetExtensionInfo(extension));
     }
   }
@@ -625,7 +645,7 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     const ExtensionSet& enabled_set = registry->enabled_extensions();
     for (extensions::ExtensionSet::const_iterator it = enabled_set.begin();
          it != enabled_set.end(); ++it) {
-      if ((*it)->from_bookmark())
+      if (FromBookmark(it->get()))
         continue;
       visible_apps_.insert((*it)->id());
     }
@@ -633,7 +653,7 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     const ExtensionSet& disabled_set = registry->disabled_extensions();
     for (ExtensionSet::const_iterator it = disabled_set.begin();
          it != disabled_set.end(); ++it) {
-      if ((*it)->from_bookmark())
+      if (FromBookmark(it->get()))
         continue;
       visible_apps_.insert((*it)->id());
     }
@@ -641,7 +661,7 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     const ExtensionSet& terminated_set = registry->terminated_extensions();
     for (ExtensionSet::const_iterator it = terminated_set.begin();
          it != terminated_set.end(); ++it) {
-      if ((*it)->from_bookmark())
+      if (FromBookmark(it->get()))
         continue;
       visible_apps_.insert((*it)->id());
     }
@@ -693,7 +713,8 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
   apps::mojom::LaunchContainer launch_container;
 
   web_app::AppRegistrar& registrar = web_app_provider_->registrar();
-  if (registrar.IsInstalled(extension_id)) {
+  if (registrar.IsInstalled(extension_id) &&
+      !IsYoutubeExtension(extension_id)) {
     type = extensions::Manifest::Type::TYPE_HOSTED_APP;
     full_launch_url = registrar.GetAppLaunchURL(extension_id);
     launch_container = web_app::ConvertDisplayModeToAppLaunchContainer(
@@ -708,7 +729,7 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
       PromptToEnableApp(extension_id);
       return;
     }
-    DCHECK(!extension->from_bookmark());
+    DCHECK(!FromBookmark(extension));
     type = extension->GetType();
     full_launch_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
     launch_container =
@@ -819,7 +840,7 @@ void AppLauncherHandler::HandleSetLaunchType(const base::ListValue* args) {
                                  extensions::ExtensionRegistry::TERMINATED);
   if (!extension)
     return;
-  DCHECK(!extension->from_bookmark());
+  DCHECK(!FromBookmark(extension));
 
   // Don't update the page; it already knows about the launch type change.
   base::AutoReset<bool> auto_reset(&ignore_changes_, true);
@@ -830,7 +851,8 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
 
-  if (web_app_provider_->registrar().IsInstalled(extension_id)) {
+  if (web_app_provider_->registrar().IsInstalled(extension_id) &&
+      !IsYoutubeExtension(extension_id)) {
     if (!extension_id_prompting_.empty())
       return;  // Only one prompt at a time.
     if (!web_app_provider_->install_finalizer().CanUserUninstallExternalApp(
@@ -872,7 +894,7 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
           ->GetInstalledExtension(extension_id);
   if (!extension)
     return;
-  DCHECK(!extension->from_bookmark());
+  DCHECK(!FromBookmark(extension));
 
   if (!extensions::ExtensionSystem::Get(extension_service_->profile())
            ->management_policy()
@@ -905,7 +927,8 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
   std::string app_id;
   CHECK(args->GetString(0, &app_id));
 
-  if (web_app_provider_->registrar().IsInstalled(app_id)) {
+  if (web_app_provider_->registrar().IsInstalled(app_id) &&
+      !IsYoutubeExtension(app_id)) {
     Browser* browser =
         chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
     chrome::ShowCreateChromeAppShortcutsDialog(
@@ -925,7 +948,7 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
                                  extensions::ExtensionRegistry::TERMINATED);
   if (!extension)
     return;
-  DCHECK(!extension->from_bookmark());
+  DCHECK(!FromBookmark(extension));
 
   Browser* browser = chrome::FindBrowserWithWebContents(
         web_ui()->GetWebContents());
@@ -966,7 +989,8 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
 
-  if (web_app_provider_->registrar().IsInstalled(extension_id)) {
+  if (web_app_provider_->registrar().IsInstalled(extension_id) &&
+      !IsYoutubeExtension(extension_id)) {
     chrome::ShowSiteSettings(
         chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()),
         web_app_provider_->registrar().GetAppLaunchURL(extension_id));
@@ -981,7 +1005,7 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
                                  extensions::ExtensionRegistry::TERMINATED);
   if (!extension)
     return;
-  DCHECK(!extension->from_bookmark());
+  DCHECK(!FromBookmark(extension));
 
   UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                             AppInfoLaunchSource::FROM_APPS_PAGE,
@@ -1241,7 +1265,7 @@ AppLauncherHandler::CreateExtensionUninstallDialog() {
 
 void AppLauncherHandler::ExtensionRemoved(const Extension* extension,
                                           bool is_uninstall) {
-  DCHECK(!extension->from_bookmark());
+  DCHECK(!FromBookmark(extension));
   if (!ShouldShow(extension))
     return;
 

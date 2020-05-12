@@ -2245,6 +2245,7 @@ static_library("ui") {
       "signin_reauth_popup_delegate.h",
       "signin_view_controller.cc",
       "signin_view_controller.h",
+      "signin_view_controller_delegate.cc",
       "signin_view_controller_delegate.h",
       "tab_contents/chrome_web_contents_view_handle_drop.cc",
       "tab_contents/chrome_web_contents_view_handle_drop.h",

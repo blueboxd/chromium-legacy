@@ -101,6 +101,10 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
               'webgl-domain-blocking-page1.html'),
              ('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
               'webgl-domain-unblocking.html'),
+             ('GpuNormalTermination_OriginalWebGLNotBlocked',
+              'webgl-domain-not-blocked.html'),
+             ('GpuNormalTermination_NewWebGLNotBlocked',
+              'webgl-domain-not-blocked.html'),
              ('ContextLost_WorkerRAFAfterGPUCrash',
               'worker-raf-after-gpu-crash.html'),
              ('ContextLost_WorkerRAFAfterGPUCrash_OOPD',
@@ -323,6 +327,32 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
       self.fail(
           'WebGL should have been unblocked after a user-initiated navigation')
+    self._RestartBrowser('must restart after tests that kill the GPU process')
+
+  def _GpuNormalTermination_OriginalWebGLNotBlocked(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
+    self._NavigateAndWaitForLoad(test_path)
+    tab = self.tab
+
+    tab.EvaluateJavaScript(
+        'chrome.gpuBenchmarking.terminateGpuProcessNormally()')
+
+    # The webglcontextrestored event on the original canvas should trigger and
+    # report success or failure.
+    self._WaitForTabAndCheckCompletion()
+    self._RestartBrowser('must restart after tests that kill the GPU process')
+
+  def _GpuNormalTermination_NewWebGLNotBlocked(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
+    self._NavigateAndWaitForLoad(test_path)
+    tab = self.tab
+
+    tab.EvaluateJavaScript(
+        'chrome.gpuBenchmarking.terminateGpuProcessNormally()')
+    tab.WaitForJavaScriptCondition('window.contextLost', timeout=wait_timeout)
+    tab.EvaluateJavaScript('window.testNewWebGLContext()')
+
+    self._WaitForTabAndCheckCompletion()
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
   def _ContextLost_WorkerRAFAfterGPUCrash(self, test_path):

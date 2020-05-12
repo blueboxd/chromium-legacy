@@ -1136,8 +1136,7 @@ views::LabelButton* LockDebugView::AddButton(const std::string& text,
                                              views::View* container) {
   // Creates a button with |text| that cannot be focused.
   std::unique_ptr<views::LabelButton> button =
-      views::MdTextButton::CreateSecondaryUiButton(this,
-                                                   base::ASCIIToUTF16(text));
+      views::MdTextButton::Create(this, base::ASCIIToUTF16(text));
   button->SetID(id);
   button->SetFocusBehavior(views::View::FocusBehavior::NEVER);
 

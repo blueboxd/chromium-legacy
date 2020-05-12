@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -26,7 +27,8 @@ import org.chromium.ui.modelutil.PropertyModel;
  * backend (the coordinator).
  */
 /* package */ class PaymentHandlerMediator extends WebContentsObserver
-        implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener {
+        implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener,
+                   PaymentHandlerView.PaymentHandlerViewObserver {
     // The value is picked in order to allow users to see the tab behind this UI.
     /* package */ static final float FULL_HEIGHT_RATIO = 0.9f;
     /* package */ static final float HALF_HEIGHT_RATIO = 0.5f;
@@ -56,8 +58,8 @@ import org.chromium.ui.modelutil.PropertyModel;
      * @param webContents The web-contents that loads the payment app.
      * @param observer The {@link PaymentHandlerUiObserver} that observes this Payment Handler UI.
      * @param tabView The view of the main tab.
-     * @param toolbarView The height of the PaymentHandler toolbar view.
-     * @param containerTopPaddingPx The padding top of bottom_sheet_toolbar_container.
+     * @param toolbarViewHeightPx The height of the toolbar view in px.
+     * @param containerTopPaddingPx The padding top of bottom_sheet_toolbar_container in px
      */
     /* package */ PaymentHandlerMediator(PropertyModel model, Runnable hider,
             WebContents webContents, PaymentHandlerUiObserver observer, View tabView,
@@ -101,12 +103,6 @@ import org.chromium.ui.modelutil.PropertyModel;
         }
     }
 
-    private static int getYLocationOnScreen(View view) {
-        int[] point = new int[2];
-        view.getLocationOnScreen(point);
-        return point[1];
-    }
-
     /** @return The height of visible area of the bottom sheet's content part. */
     private int contentVisibleHeight() {
         return (int) (mTabView.getHeight() * FULL_HEIGHT_RATIO) - mToolbarViewHeightPx
@@ -114,8 +110,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     }
 
     @Override
-    public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-    }
+    public void onSheetOffsetChanged(float heightFraction, float offsetPx) {}
 
     @Override
     public void onSheetOpened(@StateChangeReason int reason) {
@@ -179,5 +174,11 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void onToolbarCloseButtonClicked() {
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
         mHandler.post(mHider);
+    }
+
+    @Override
+    public void onSystemBackButtonClicked() {
+        NavigationController navigation = mWebContentsRef.getNavigationController();
+        if (navigation.canGoBack()) navigation.goBack();
     }
 }

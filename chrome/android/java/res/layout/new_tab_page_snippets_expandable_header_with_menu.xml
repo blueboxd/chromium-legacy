@@ -24,10 +24,10 @@
 
     <org.chromium.components.browser_ui.widget.listmenu.ListMenuButton
         android:id="@+id/header_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:paddingStart="@dimen/default_list_row_padding"
-        android:paddingEnd="@dimen/default_list_row_padding"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:scaleType="fitXY"
+        android:padding="15dp"
         android:background="@null"
         android:src="@drawable/ic_more_vert_24dp"
         app:tint="@color/default_icon_color_tint_list"

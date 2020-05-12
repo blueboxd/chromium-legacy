@@ -5,8 +5,8 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_UI_EVENTS_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_UI_EVENTS_H_
 
-#include <list>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -139,7 +139,7 @@ class KeyEventBuilder {
   KeyEventBuilder* SetCode(const std::string& key);
   KeyEventBuilder* SetIsFromAction();
   KeyEvent Build();
-  void Generate(std::list<KeyEvent>* key_events);
+  void Generate(std::vector<KeyEvent>* key_events);
 
  private:
   void UpdateKeyString();

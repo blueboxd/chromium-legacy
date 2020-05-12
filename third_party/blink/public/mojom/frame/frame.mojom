@@ -362,6 +362,14 @@ interface LocalFrameHost {
   DidLoadResourceFromMemoryCache(
       url.mojom.Url url, string http_method,
       string mime_type, network.mojom.RequestDestination request_destination);
+
+  // Notifies the browser that frame owner properties have changed.
+  //
+  // Frame owner properties currently include: name, scrollbar_mode,
+  // margin_width and margin_height, among others.
+  DidChangeFrameOwnerProperties(
+    mojo_base.mojom.UnguessableToken child_frame_token,
+    blink.mojom.FrameOwnerProperties frame_owner_properties);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

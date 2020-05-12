@@ -39,6 +39,8 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
@@ -87,7 +89,9 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/pointer/touch_ui_controller.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -1234,6 +1238,26 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
   browser_view_->GetWidget()->Deactivate();
   EXPECT_FALSE(test.size_button()->paint_as_active());
   EXPECT_FALSE(GetPaintingAsActive());
+}
+
+IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, PopupHasNoToolbar) {
+  SetUpWebApp();
+  {
+    NavigateParams navigate_params(app_browser_, GetAppURL(),
+                                   ui::PAGE_TRANSITION_LINK);
+    navigate_params.disposition = WindowOpenDisposition::NEW_POPUP;
+
+    content::TestNavigationObserver navigation_observer(GetAppURL());
+    navigation_observer.StartWatchingNewWebContents();
+    Navigate(&navigate_params);
+    navigation_observer.WaitForNavigationFinished();
+  }
+
+  Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(popup_browser);
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
+  EXPECT_FALSE(frame_view->web_app_frame_toolbar_for_testing());
 }
 
 namespace {

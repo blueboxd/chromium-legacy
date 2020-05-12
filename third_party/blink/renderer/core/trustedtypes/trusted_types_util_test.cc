@@ -17,18 +17,11 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
 void TrustedTypesCheckForHTMLThrows(const String& string) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  KURL url("https://example.site");
-  dummy_page_holder->GetFrame().Loader().CommitNavigation(
-      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
-      nullptr /* extra_data */);
-  blink::test::RunPendingTasks();
-
   LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
@@ -49,12 +42,6 @@ void TrustedTypesCheckForHTMLThrows(const String& string) {
 
 void TrustedTypesCheckForScriptThrows(const String& string) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  KURL url("https://example.site");
-  dummy_page_holder->GetFrame().Loader().CommitNavigation(
-      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
-      nullptr /* extra_data */);
-  blink::test::RunPendingTasks();
-
   LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;
@@ -75,12 +62,6 @@ void TrustedTypesCheckForScriptThrows(const String& string) {
 
 void TrustedTypesCheckForScriptURLThrows(const String& string) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-  KURL url("https://example.site");
-  dummy_page_holder->GetFrame().Loader().CommitNavigation(
-      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
-      nullptr /* extra_data */);
-  blink::test::RunPendingTasks();
-
   LocalDOMWindow* window = dummy_page_holder->GetFrame().DomWindow();
   V8TestingScope scope;
   DummyExceptionStateForTesting exception_state;

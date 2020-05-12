@@ -284,10 +284,18 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const GlobalRequestID& request_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info) {}
 
-  // This method is invoked when a document or resource reads or sets a cookie.
-  // Note that this isn't tied to any particular navigation (e.g., it may be
-  // called after a subsequent navigation commits).
-  virtual void OnCookiesAccessed(const CookieAccessDetails& details) {}
+  // Called when document reads or sets a cookie (either via document.cookie or
+  // issuing a network request).
+  // Cookie reads/writes for a dedicated worker are attributed to the
+  // RenderFrameHost which created it.
+  virtual void OnCookiesAccessed(RenderFrameHost* render_frame_host,
+                                 const CookieAccessDetails& details) {}
+
+  // Called when a network request issued by the navigation reads or sets a
+  // cookie. If a notification is received after the navigation has committed,
+  // it will be attributed to the RenderFrameHost created by the navigation.
+  virtual void OnCookiesAccessed(NavigationHandle* navigation_handle,
+                                 const CookieAccessDetails& details) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created

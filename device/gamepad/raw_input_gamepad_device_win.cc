@@ -5,6 +5,7 @@
 #include "raw_input_gamepad_device_win.h"
 
 #include "base/stl_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_blocklist.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -71,15 +72,17 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
     is_valid_ = QueryDeviceInfo();
 
   if (is_valid_) {
-    if (Dualshock4Controller::IsDualshock4(vendor_id_, product_id_)) {
+    const std::string product_name = base::SysWideToUTF8(product_string_);
+    const GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+        product_name, vendor_id_, product_id_);
+    if (Dualshock4Controller::IsDualshock4(gamepad_id)) {
       // Dualshock4 has different behavior over USB and Bluetooth, but the
       // RawInput API does not indicate which transport is in use. Detect the
       // transport type by inspecting the version number reported by the device.
       GamepadBusType bus_type =
           Dualshock4Controller::BusTypeFromVersionNumber(version_number_);
       dualshock4_ = std::make_unique<Dualshock4Controller>(
-          vendor_id_, product_id_, bus_type,
-          std::make_unique<HidWriterWin>(handle_));
+          gamepad_id, bus_type, std::make_unique<HidWriterWin>(handle_));
     } else if (HidHapticGamepad::IsHidHaptic(vendor_id_, product_id_)) {
       hid_haptics_ = HidHapticGamepad::Create(
           vendor_id_, product_id_, std::make_unique<HidWriterWin>(handle_));

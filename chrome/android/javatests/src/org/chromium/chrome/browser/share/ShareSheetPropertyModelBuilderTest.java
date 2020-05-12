@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-/** Tests {@link ShareSheetPropertyModelBuilder}. */
+/**
+ * Tests {@link ShareSheetPropertyModelBuilder}.
+ */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class ShareSheetPropertyModelBuilderTest {
@@ -105,7 +107,8 @@ public final class ShareSheetPropertyModelBuilderTest {
         ShareSheetPropertyModelBuilder builder =
                 new ShareSheetPropertyModelBuilder(null, mPackageManager);
 
-        ArrayList<PropertyModel> propertyModels = builder.selectThirdPartyApps(null, mParams);
+        ArrayList<PropertyModel> propertyModels =
+                builder.selectThirdPartyApps(null, mParams, /*shareStartTime=*/0);
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         Assert.assertEquals("First property model isn't testModel3", "testModel3",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));

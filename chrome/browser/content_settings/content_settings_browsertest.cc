@@ -105,7 +105,13 @@ class CookieChangeObserver : public content::WebContentsObserver {
 
   void Wait() { run_loop_.Run(); }
 
-  void OnCookiesAccessed(const content::CookieAccessDetails& details) override {
+  void OnCookiesAccessed(content::RenderFrameHost* render_frame_host,
+                         const content::CookieAccessDetails& details) override {
+    run_loop_.Quit();
+  }
+
+  void OnCookiesAccessed(content::NavigationHandle* navigation,
+                         const content::CookieAccessDetails& details) override {
     run_loop_.Quit();
   }
 

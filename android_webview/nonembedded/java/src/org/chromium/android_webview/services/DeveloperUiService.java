@@ -247,7 +247,15 @@ public final class DeveloperUiService extends Service {
         synchronized (sLock) {
             if (mDeveloperModeEnabled) return;
             // Keep this service alive as long as we're in developer mode.
-            startService(new Intent(this, DeveloperUiService.class));
+            Intent intent = new Intent(this, DeveloperUiService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Android O doesn't allow bound Services to request foreground status unless the
+                // app is running in the foreground already or we already started the service with
+                // Context#startForegroundService.
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
             markAsForegroundService();
 
             ComponentName developerModeState =

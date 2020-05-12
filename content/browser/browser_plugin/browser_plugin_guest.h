@@ -198,7 +198,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // GuestHost implementation.
   int LoadURLWithParams(
       const NavigationController::LoadURLParams& load_params) override;
-  void SizeContents(const gfx::Size& new_size) override;
   void WillDestroy() override;
 
   // Exposes the protected web_contents() from WebContentsObserver.

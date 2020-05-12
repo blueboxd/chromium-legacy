@@ -688,7 +688,7 @@ std::enable_if_t<A::kIsGarbageCollected>
 Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
   // Bail out for concurrent marking.
   if (!VectorTraits<T>::kCanTraceConcurrently) {
-    if (visitor->ConcurrentTracingBailOut(
+    if (visitor->DeferredTraceIfConcurrent(
             {this, [](blink::Visitor* visitor, const void* object) {
                reinterpret_cast<const Deque<T, inlineCapacity, Allocator>*>(
                    object)

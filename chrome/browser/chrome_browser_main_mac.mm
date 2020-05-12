@@ -14,11 +14,14 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/browser_process.h"
@@ -29,6 +32,7 @@
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -36,6 +40,7 @@
 #include "components/crash/core/app/crashpad.h"
 #include "components/metrics/metrics_service.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/version_info/channel.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -66,6 +71,180 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&EnsureMetadataNeverIndexFileOnFileThread, user_data_dir));
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+// These values are persisted to logs as OSXOtherChromeInstancesResult.
+// Entries should not be renumbered and numeric values should never be reused.
+enum class OtherInstancesResult {
+  kFailureDontKnowWhenOtherChromeUsed,
+  kFailureToReadPlist,
+  kNoOtherChrome,
+  kOneOtherChromeAndLastUsedWithinWeek,
+  kOneOtherChromeAndLastUsedWithinMonth,
+  kOneOtherChromeAndLastUsedMoreThanAMonthAgo,
+  kMoreThanOneOtherChromeAndLastUsedWithinWeek,
+  kMoreThanOneOtherChromeAndLastUsedWithinMonth,
+  kMoreThanOneOtherChromeAndLastUsedMoreThanAMonthAgo,
+  kMaxValue = kMoreThanOneOtherChromeAndLastUsedMoreThanAMonthAgo,
+};
+
+struct WhenLastUsed {
+  int within_last_week = 0;
+  int within_last_month = 0;
+  int before_last_month = 0;
+};
+
+OtherInstancesResult OtherInstancesResultForWhenLastUsed(
+    const WhenLastUsed& used) {
+  if (used.within_last_week + used.within_last_month + used.before_last_month ==
+      0) {
+    return OtherInstancesResult::kNoOtherChrome;
+  }
+
+  if (used.within_last_week + used.within_last_month + used.before_last_month ==
+      1) {
+    if (used.within_last_week)
+      return OtherInstancesResult::kOneOtherChromeAndLastUsedWithinWeek;
+
+    if (used.within_last_month)
+      return OtherInstancesResult::kOneOtherChromeAndLastUsedWithinMonth;
+
+    return OtherInstancesResult::kOneOtherChromeAndLastUsedMoreThanAMonthAgo;
+  }
+
+  if (used.within_last_week)
+    return OtherInstancesResult::kMoreThanOneOtherChromeAndLastUsedWithinWeek;
+
+  if (used.within_last_month)
+    return OtherInstancesResult::kMoreThanOneOtherChromeAndLastUsedWithinMonth;
+
+  return OtherInstancesResult::
+      kMoreThanOneOtherChromeAndLastUsedMoreThanAMonthAgo;
+}
+
+void RecordChromeQueryResults(NSMetadataQuery* query) {
+  __block bool other_chrome_last_used_unknown = false;
+  __block bool failed_to_read_plist = false;
+  __block WhenLastUsed same_channel;
+  __block WhenLastUsed different_channel;
+
+  NSURL* this_url = NSBundle.mainBundle.bundleURL;
+  std::string this_channel = chrome::GetChannelName();
+  NSDate* about_a_week_ago =
+      [[NSDate date] dateByAddingTimeInterval:-7 * 24 * 60 * 60];
+  NSDate* about_a_month_ago =
+      [[NSDate date] dateByAddingTimeInterval:-30 * 24 * 60 * 60];
+
+  [query enumerateResultsUsingBlock:^(id result, NSUInteger idx, BOOL* stop) {
+    // Skip this copy of Chrome. Note that NSMetadataItemURLKey is not used as
+    // it always returns nil while NSMetadataItemPathKey returns a legit path.
+    // Filed as FB7689234.
+    NSString* app_path = base::mac::ObjCCast<NSString>(
+        [result valueForAttribute:NSMetadataItemPathKey]);
+    NSURL* app_url = [NSURL fileURLWithPath:app_path isDirectory:YES];
+    if ([app_url isEqual:this_url])
+      return;
+
+    NSURL* plist_url = [[app_url URLByAppendingPathComponent:@"Contents"
+                                                 isDirectory:YES]
+        URLByAppendingPathComponent:@"Info.plist"
+                        isDirectory:NO];
+    NSDictionary* plist = [NSDictionary dictionaryWithContentsOfURL:plist_url];
+    if (!plist) {
+      failed_to_read_plist = true;
+      *stop = YES;
+      return;
+    }
+
+    // Skip any SxS-capable copies of Chrome.
+    if (plist[@"CrProductDirName"])
+      return;
+
+    WhenLastUsed* when_last_used = &different_channel;
+    if (this_channel == base::SysNSStringToUTF8(plist[@"KSChannelID"]))
+      when_last_used = &same_channel;
+
+    NSDate* last_used = base::mac::ObjCCast<NSDate>(
+        [result valueForAttribute:NSMetadataItemLastUsedDateKey]);
+    if (!last_used) {
+      other_chrome_last_used_unknown = true;
+      *stop = YES;
+      return;
+    }
+
+    if ([last_used compare:about_a_week_ago] == NSOrderedDescending)
+      ++when_last_used->within_last_week;
+    else if ([last_used compare:about_a_month_ago] == NSOrderedDescending)
+      ++when_last_used->within_last_month;
+    else
+      ++when_last_used->before_last_month;
+  }];
+
+  if (other_chrome_last_used_unknown) {
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.SameChannel",
+        OtherInstancesResult::kFailureDontKnowWhenOtherChromeUsed);
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.DifferentChannel",
+        OtherInstancesResult::kFailureDontKnowWhenOtherChromeUsed);
+    return;
+  }
+
+  if (failed_to_read_plist) {
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.SameChannel",
+        OtherInstancesResult::kFailureToReadPlist);
+    base::UmaHistogramEnumeration(
+        "OSX.Installation.OtherChromeInstances.DifferentChannel",
+        OtherInstancesResult::kFailureToReadPlist);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(
+      "OSX.Installation.OtherChromeInstances.SameChannel",
+      OtherInstancesResultForWhenLastUsed(same_channel));
+  base::UmaHistogramEnumeration(
+      "OSX.Installation.OtherChromeInstances.DifferentChannel",
+      OtherInstancesResultForWhenLastUsed(different_channel));
+}
+
+void ExecuteChromeQuery() {
+  __block NSMetadataQuery* query = [[NSMetadataQuery alloc] init];
+
+  __block id token = [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSMetadataQueryDidFinishGatheringNotification
+                  object:query
+                   queue:[NSOperationQueue mainQueue]
+              usingBlock:^(NSNotification* note) {
+                [query stopQuery];
+                RecordChromeQueryResults(query);
+                [query release];
+                [[NSNotificationCenter defaultCenter] removeObserver:token];
+              }];
+
+  query.predicate =
+      [NSPredicate predicateWithFormat:
+                       @"kMDItemContentType == 'com.apple.application-bundle'"
+                       @"AND kMDItemCFBundleIdentifier == 'com.google.Chrome'"];
+
+  [query startQuery];
+}
+
+// Records statistics about this install of Chromium if it is a Google Chrome
+// Beta or Google Chrome Dev instance. This is to allow for decisions to be made
+// about the migration of user data directories.
+void RecordBetaAndDevStats() {
+  version_info::Channel channel = chrome::GetChannel();
+  if (channel != version_info::Channel::BETA &&
+      channel != version_info::Channel::DEV) {
+    return;
+  }
+
+  ExecuteChromeQuery();
+}
+
+#endif  // GOOGLE_CHROME_BRANDING
 
 }  // namespace
 
@@ -153,6 +332,10 @@ void ChromeBrowserMainPartsMac::PostMainMessageLoopStart() {
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::POST_MAIN_MESSAGE_LOOP_START);
   ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  RecordBetaAndDevStats();
+#endif  // GOOGLE_CHROME_BRANDING
 }
 
 void ChromeBrowserMainPartsMac::PreProfileInit() {

@@ -72,11 +72,15 @@ class UserModel {
     return values;
   }
 
-  // Adds |credit_card| to the set of available cards.
-  void AddCreditCard(std::unique_ptr<autofill::CreditCard> credit_card);
+  // Replaces the set of available autofill credit cards.
+  void SetAutofillCreditCards(
+      std::unique_ptr<std::vector<std::unique_ptr<autofill::CreditCard>>>
+          credit_cards);
 
-  // Adds |profile| to the set of available cards.
-  void AddProfile(std::unique_ptr<autofill::AutofillProfile> profile);
+  // Replaces the set of available autofill profiles.
+  void SetAutofillProfiles(
+      std::unique_ptr<std::vector<std::unique_ptr<autofill::AutofillProfile>>>
+          profiles);
 
   // Returns the credit card with |guid| or nullptr if there is no such card.
   const autofill::CreditCard* GetCreditCard(const std::string& guid) const;

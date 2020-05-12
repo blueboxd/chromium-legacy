@@ -132,7 +132,7 @@ class CORE_EXPORT PrintContext : public GarbageCollected<PrintContext> {
   bool linked_destinations_valid_;
 };
 
-class ScopedPrintContext {
+class CORE_EXPORT ScopedPrintContext {
   STACK_ALLOCATED();
 
  public:

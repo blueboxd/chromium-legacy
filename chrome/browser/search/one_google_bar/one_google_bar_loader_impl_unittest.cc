@@ -128,6 +128,21 @@ TEST_F(OneGoogleBarLoaderImplTest, RequestUrlContainsLanguage) {
   EXPECT_EQ(expected_query, last_request_url().query());
 }
 
+TEST_F(OneGoogleBarLoaderImplTest, RequestUrlWithAdditionalQueryParams) {
+  one_google_bar_loader()->SetAdditionalQueryParams("&test&hl=&async=");
+  EXPECT_EQ("test&hl=&async=",
+            one_google_bar_loader()->GetLoadURLForTesting().query());
+  one_google_bar_loader()->SetAdditionalQueryParams("&test&hl=");
+  EXPECT_EQ("test&hl=&async=fixed:0",
+            one_google_bar_loader()->GetLoadURLForTesting().query());
+  one_google_bar_loader()->SetAdditionalQueryParams("&test&async=");
+  EXPECT_EQ(base::StringPrintf("hl=%s&test&async=", kApplicationLocale),
+            one_google_bar_loader()->GetLoadURLForTesting().query());
+  one_google_bar_loader()->SetAdditionalQueryParams("&test");
+  EXPECT_EQ(base::StringPrintf("hl=%s&test&async=fixed:0", kApplicationLocale),
+            one_google_bar_loader()->GetLoadURLForTesting().query());
+}
+
 TEST_F(OneGoogleBarLoaderImplTest, RequestReturns) {
   SetUpResponseWithData(kMinimalValidResponse);
 

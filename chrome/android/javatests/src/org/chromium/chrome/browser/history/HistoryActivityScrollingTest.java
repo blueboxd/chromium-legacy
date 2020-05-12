@@ -126,7 +126,6 @@ public class HistoryActivityScrollingTest {
         // The clear browsing data header, one date view, and two history item views
         // should be shown, but the info header should not. We enforce a defaultx
         // state because the number of headers shown depends on the signed-in state.
-
         mHistoryProvider = new StubbedHistoryProvider();
         mHistoryProvider.setPaging(mPaging);
 

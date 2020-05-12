@@ -207,15 +207,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
 
-#if defined(OS_ANDROID)
-  // In Android WebView, the RenderView needs created even there is no
-  // navigation entry, this allows Android WebViews to use
-  // javascript: URLs that load into the DOMWindow before the first page
-  // load. This is not safe to do in any context that a web page could get a
-  // reference to the DOMWindow before the first page load.
-  bool CreateRenderViewForInitialEmptyDocument();
-#endif
-
   // Expose the render manager for testing.
   // TODO(creis): Remove this now that we can get to it via FrameTreeNode.
   RenderFrameHostManager* GetRenderManagerForTesting();
@@ -695,6 +686,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* render_frame_host,
       const GlobalRequestID& request_id,
       blink::mojom::ResourceLoadInfoPtr resource_load_information) override;
+  void OnCookiesAccessed(RenderFrameHostImpl*,
+                         const CookieAccessDetails& details) override;
 
   // Called when WebAudio starts or stops playing audible audio in an
   // AudioContext.
@@ -854,6 +847,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnServiceWorkerAccessed(NavigationHandle* navigation,
                                const GURL& scope,
                                AllowServiceWorkerResult allowed) override;
+  void OnCookiesAccessed(NavigationHandle*,
+                         const CookieAccessDetails& details) override;
   void RegisterExistingOriginToPreventOptInIsolation(
       const url::Origin& origin,
       NavigationRequest* navigation_request_to_exclude) override;
@@ -963,14 +958,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       bool* proceed_to_fire_unload) override;
   void RenderProcessGoneFromRenderManager(
       RenderViewHost* render_view_host) override;
-  void UpdateRenderViewSizeForRenderManager(bool is_main_frame) override;
   void CancelModalDialogsForRenderManager() override;
-  void NotifySwappedFromRenderManager(RenderFrameHost* old_host,
-                                      RenderFrameHost* new_host,
+  void NotifySwappedFromRenderManager(RenderFrameHost* old_frame,
+                                      RenderFrameHost* new_frame,
                                       bool is_main_frame) override;
   void NotifyMainFrameSwappedFromRenderManager(
-      RenderFrameHost* old_host,
-      RenderFrameHost* new_host) override;
+      RenderFrameHost* old_frame,
+      RenderFrameHost* new_frame) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar() override;
@@ -1207,8 +1201,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Returns the focused frame's input handler.
   mojom::FrameInputHandler* GetFocusedFrameInputHandler();
-
-  void OnCookiesAccessed(const CookieAccessDetails& details);
 
  private:
   friend class WebContentsObserver;
@@ -1566,9 +1558,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                         int history_length);
 
   // Helper functions for sending notifications.
-  void NotifyViewSwapped(RenderViewHost* old_host, RenderViewHost* new_host);
-  void NotifyFrameSwapped(RenderFrameHost* old_host,
-                          RenderFrameHost* new_host,
+  void NotifyViewSwapped(RenderViewHost* old_view, RenderViewHost* new_view);
+  void NotifyFrameSwapped(RenderFrameHost* old_frame,
+                          RenderFrameHost* new_frame,
                           bool is_main_frame);
   void NotifyDisconnected();
 
@@ -1579,8 +1571,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
-  // Helper function to invoke WebContentsDelegate::GetSizeForNewRenderView().
-  gfx::Size GetSizeForNewRenderView(bool is_main_frame);
+  // Returns the size that the main frame should be sized to.
+  gfx::Size GetSizeForMainFrame();
 
   void OnFrameRemoved(RenderFrameHost* render_frame_host);
 

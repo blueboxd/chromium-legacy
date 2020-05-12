@@ -310,7 +310,7 @@ public class AutocompleteMediatorUnitTest {
         final List<OmniboxSuggestion> list = new ArrayList<>();
         final SparseArray<String> giveHeaders = buildDummyGroupHeaders(3, 1, "Header");
         mMediator.setNewSuggestions(new AutocompleteResult(list, giveHeaders));
-        final SparseArray<String> haveHeaders = mMediator.getGroupHeaders();
+        final SparseArray<String> haveHeaders = mMediator.getAutocompleteResult().getGroupHeaders();
 
         Assert.assertEquals(giveHeaders.size(), haveHeaders.size());
         for (int index = 0; index < giveHeaders.size(); index++) {
@@ -327,7 +327,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.setNewSuggestions(new AutocompleteResult(list, oldHeaders));
         mMediator.setNewSuggestions(new AutocompleteResult(list, newHeaders));
 
-        final SparseArray<String> haveHeaders = mMediator.getGroupHeaders();
+        final SparseArray<String> haveHeaders = mMediator.getAutocompleteResult().getGroupHeaders();
 
         Assert.assertEquals(newHeaders.size(), haveHeaders.size());
         for (int index = 0; index < newHeaders.size(); index++) {

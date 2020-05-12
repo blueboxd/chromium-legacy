@@ -87,6 +87,7 @@ component("web_engine_core") {
     "//fuchsia/base:legacymetrics",
     "//fuchsia/base:message_port",
     "//fuchsia/base:modular",
+    "//fuchsia/cast_streaming",
     "//gpu/command_buffer/service",
     "//media",
     "//media/fuchsia/cdm/service",

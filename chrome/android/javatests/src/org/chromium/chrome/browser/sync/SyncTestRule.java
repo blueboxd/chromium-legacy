@@ -143,7 +143,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     private void ruleSetUp() {
         // This must be called before super.setUp() in order for test authentication to work.
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
     }
 
     private void ruleTearDown() {
@@ -151,7 +151,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             mProfileSyncService.requestStop();
             FakeServerHelper.deleteFakeServer();
         });
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     public SyncTestRule() {
@@ -192,7 +192,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * this. For most purposes this function should be used as this emulates the basic sign in flow.
      * @return the test account that is signed in.
      */
-    public Account setUpTestAccountAndSignIn() {
+    public Account setUpAccountAndSignInForTesting() {
         Account account = setUpTestAccount();
         signinAndEnableSync(account);
         return account;

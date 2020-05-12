@@ -37,7 +37,8 @@ class TileService : public KeyedService, public base::SupportsUserData {
   virtual void GetTile(const std::string& tile_id, TileCallback callback) = 0;
 
   // Start fetch query tiles from server.
-  virtual void StartFetchForTiles(BackgroundTaskFinishedCallback callback) = 0;
+  virtual void StartFetchForTiles(bool is_from_reduced_mode,
+                                  BackgroundTaskFinishedCallback callback) = 0;
 
   TileService() = default;
   ~TileService() override = default;

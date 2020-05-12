@@ -48,6 +48,13 @@ class CORE_EXPORT ResizeObserverController final
 
   void ClearMinDepth() { min_depth_ = 0; }
 
+  bool IsLoopLimitErrorDispatched() const {
+    return loop_limit_error_dispatched;
+  }
+  void SetLoopLimitErrorDispatched(bool is_dispatched) {
+    loop_limit_error_dispatched = is_dispatched;
+  }
+
   void Trace(Visitor*) override;
 
   // For testing only.
@@ -60,6 +67,9 @@ class CORE_EXPORT ResizeObserverController final
   HeapLinkedHashSet<WeakMember<ResizeObserver>> observers_;
   // Minimum depth for observations to be active
   size_t min_depth_ = 0;
+  // Used to prevent loop limit errors from being dispatched twice for the
+  // same lifecycle update
+  bool loop_limit_error_dispatched = false;
 };
 
 }  // namespace blink

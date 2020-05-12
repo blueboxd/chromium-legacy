@@ -41,18 +41,6 @@ TestStoragePartition::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_;
 }
 
-void TestStoragePartition::CreateRestrictedCookieManager(
-    network::mojom::RestrictedCookieManagerRole role,
-    const url::Origin& origin,
-    const net::SiteForCookies& site_for_cookies,
-    const url::Origin& top_frame_origin,
-    bool is_service_worker,
-    int process_id,
-    int routing_id,
-    mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
-  NOTREACHED();
-}
-
 void TestStoragePartition::CreateHasTrustTokensAnswerer(
     mojo::PendingReceiver<network::mojom::HasTrustTokensAnswerer> receiver,
     const url::Origin& top_frame_origin) {

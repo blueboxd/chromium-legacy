@@ -2546,3 +2546,24 @@ TEST_F('ChromeVoxBackgroundTest', 'SetAccessibilityFocus', function() {
     node.focus();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'MenuItemRadio', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <ul role="menu" tabindex="0" autofocus>
+      <li role="menuitemradio" aria-checked="true">Small</li>
+      <li role="menuitemradio" aria-checked="false">Medium</li>
+      <li role="menuitemradio" aria-checked="false">Large</li>
+    </ul>
+  `,
+      function(root) {
+        mockFeedback.expectSpeech('Menu', 'with 3 items')
+            .call(doCmd('nextObject'))
+            .expectSpeech('Small, menu item radio button selected', ' 1 of 3 ')
+            .call(doCmd('nextObject'))
+            .expectSpeech(
+                'Medium, menu item radio button unselected', ' 2 of 3 ')
+            .replay();
+      });
+});

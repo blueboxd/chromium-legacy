@@ -274,7 +274,8 @@ bool IsMovablePartialScreenshotEnabled() {
 }
 
 bool IsAppScalingEnabled() {
-  return base::FeatureList::IsEnabled(kShelfAppScaling);
+  return base::FeatureList::IsEnabled(kShelfAppScaling) &&
+         chromeos::switches::ShouldShowShelfHotseat();
 }
 
 namespace {

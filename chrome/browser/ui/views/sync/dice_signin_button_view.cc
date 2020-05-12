@@ -69,10 +69,11 @@ DiceSigninButtonView::DiceSigninButtonView(
   // Add a stretching column for the sign in button.
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::TRAILING, 1.0,
                      views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  signin_button_ = grid_layout->AddView(
-      views::MdTextButton::CreateSecondaryUiProminentButton(
-          button_listener,
-          l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON)));
+  auto signin_button = views::MdTextButton::Create(
+      button_listener,
+      l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON));
+  signin_button->SetProminent(true);
+  signin_button_ = grid_layout->AddView(std::move(signin_button));
 }
 
 DiceSigninButtonView::~DiceSigninButtonView() = default;

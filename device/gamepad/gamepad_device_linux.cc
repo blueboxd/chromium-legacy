@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -121,6 +122,7 @@ size_t CheckSpecialKeys(const base::ScopedFD& fd,
 
 bool GetHidrawDevinfo(const base::ScopedFD& fd,
                       GamepadBusType* bus_type,
+                      std::string* product_name,
                       uint16_t* vendor_id,
                       uint16_t* product_id) {
   struct hidraw_devinfo info;
@@ -138,6 +140,15 @@ bool GetHidrawDevinfo(const base::ScopedFD& fd,
     *vendor_id = static_cast<uint16_t>(info.vendor);
   if (product_id)
     *product_id = static_cast<uint16_t>(info.product);
+
+  constexpr size_t kStringDescriptorMax = 256;
+  if (product_name &&
+      HANDLE_EINTR(ioctl(fd.get(), HIDIOCGRAWNAME(kStringDescriptorMax),
+                         base::WriteInto(product_name, kStringDescriptorMax))) <
+          0) {
+    product_name->clear();
+  }
+
   return true;
 }
 
@@ -361,7 +372,7 @@ bool GamepadDeviceLinux::ReadEvdevSpecialKeys(Gamepad* pad) {
 }
 
 GamepadStandardMappingFunction GamepadDeviceLinux::GetMappingFunction() const {
-  return GetGamepadStandardMappingFunction(vendor_id_, product_id_,
+  return GetGamepadStandardMappingFunction(name_, vendor_id_, product_id_,
                                            hid_specification_version_,
                                            version_number_, bus_type_);
 }
@@ -438,7 +449,8 @@ bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
   hid_specification_version_ = hid_version_int;
   version_number_ = version_number_int;
   name_ = name_string;
-  gamepad_id_ = GamepadIdList::Get().GetGamepadId(vendor_id_, product_id_);
+  gamepad_id_ =
+      GamepadIdList::Get().GetGamepadId(name_, vendor_id_, product_id_);
 
   return true;
 }
@@ -542,22 +554,26 @@ void GamepadDeviceLinux::InitializeHidraw(base::ScopedFD fd) {
   DCHECK(fd.is_valid());
   hidraw_fd_ = std::move(fd);
 
+  std::string product_name;
   uint16_t vendor_id;
   uint16_t product_id;
+  GamepadId gamepad_id;
   bool is_dualshock4 = false;
   bool is_xbox_hid = false;
   bool is_hid_haptic = false;
-  if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &vendor_id, &product_id)) {
-    is_dualshock4 = Dualshock4Controller::IsDualshock4(vendor_id, product_id);
-    is_xbox_hid = XboxHidController::IsXboxHid(vendor_id, product_id);
+  if (GetHidrawDevinfo(hidraw_fd_, &bus_type_, &product_name, &vendor_id,
+                       &product_id)) {
+    gamepad_id =
+        GamepadIdList::Get().GetGamepadId(product_name, vendor_id, product_id);
+    is_dualshock4 = Dualshock4Controller::IsDualshock4(gamepad_id);
+    is_xbox_hid = XboxHidController::IsXboxHid(gamepad_id);
     is_hid_haptic = HidHapticGamepad::IsHidHaptic(vendor_id, product_id);
     DCHECK_LE(is_dualshock4 + is_xbox_hid + is_hid_haptic, 1);
   }
 
   if (is_dualshock4 && !dualshock4_) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
-        vendor_id, product_id, bus_type_,
-        std::make_unique<HidWriterLinux>(hidraw_fd_));
+        gamepad_id, bus_type_, std::make_unique<HidWriterLinux>(hidraw_fd_));
   }
 
   if (is_xbox_hid && !xbox_hid_) {

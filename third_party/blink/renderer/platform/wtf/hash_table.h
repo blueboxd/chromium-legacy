@@ -2151,7 +2151,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     Trace(VisitorDispatcher visitor) const {
   // bail out for concurrent marking
   if (!Traits::kCanTraceConcurrently) {
-    if (visitor->ConcurrentTracingBailOut(
+    if (visitor->DeferredTraceIfConcurrent(
             {this, [](blink::Visitor* visitor, const void* object) {
                reinterpret_cast<
                    const HashTable<Key, Value, Extractor, HashFunctions, Traits,

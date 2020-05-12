@@ -414,8 +414,11 @@ TEST_F(BasicInteractionsTest, ComputeValueCreateCreditCardResponse) {
                                    "https://www.example.com");
   autofill::test::SetCreditCardInfo(&credit_card, "Marion Mitchell",
                                     "4111 1111 1111 1111", "01", "2050", "");
-  user_model_.AddCreditCard(
+  auto credit_cards =
+      std::make_unique<std::vector<std::unique_ptr<autofill::CreditCard>>>();
+  credit_cards->emplace_back(
       std::make_unique<autofill::CreditCard>(credit_card));
+  user_model_.SetAutofillCreditCards(std::move(credit_cards));
 
   ValueProto value_wrong_guid;
   value_wrong_guid.mutable_credit_cards()->add_values()->set_guid("wrong");

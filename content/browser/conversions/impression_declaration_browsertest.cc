@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(
   WebContents* initial_web_contents = web_contents();
 
   ShellAddedObserver new_shell_observer;
-  GURL remote_url = https_server()->GetURL("c.test", "/title.html");
+  GURL remote_url = https_server()->GetURL("c.test", "/title1.html");
   EXPECT_TRUE(ExecJs(web_contents(),
                      JsReplace("window.open($1, 'target');", remote_url)));
 

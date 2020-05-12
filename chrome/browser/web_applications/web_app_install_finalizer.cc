@@ -346,6 +346,7 @@ void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   /*uninstalled=*/false));
+    return;
   }
 
   if (app->HasOnlySource(source)) {

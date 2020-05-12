@@ -231,6 +231,26 @@ void TrustTokenRequestSigningHelper::Begin(
   DCHECK(!request->initiator() ||
          IsOriginPotentiallyTrustworthy(*request->initiator()))
       << *request->initiator();
+#if DCHECK_IS_ON()
+  // Add some postcondition checking on return.
+  done = base::BindOnce(
+      [](net::URLRequest* request,
+         base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
+         mojom::TrustTokenOperationStatus result) {
+        const auto& headers = request->extra_request_headers();
+
+        std::string srr_header;
+        DCHECK(headers.GetHeader(
+            kTrustTokensRequestHeaderSecSignedRedemptionRecord, &srr_header));
+        if (srr_header.empty()) {
+          DCHECK(!headers.HasHeader(kTrustTokensRequestHeaderSecTime));
+          DCHECK(!headers.HasHeader(kTrustTokensRequestHeaderSecSignature));
+          DCHECK(!headers.HasHeader(kTrustTokensRequestHeaderSignedHeaders));
+        }
+        std::move(done).Run(result);
+      },
+      request, std::move(done));
+#endif  // DCHECK_IS_ON()
 
   // This class is responsible for adding these headers; callers should not add
   // them.
@@ -244,6 +264,9 @@ void TrustTokenRequestSigningHelper::Begin(
   net_log_.BeginEvent(
       net::NetLogEventType::TRUST_TOKEN_OPERATION_BEGIN_SIGNING);
 
+  // The comments below are the steps in the "Redemption record attachment and
+  // request signing" pseudocode in https://bit.ly/trust-token-dd
+
   base::Optional<SignedTrustTokenRedemptionRecord> maybe_redemption_record =
       token_store_->RetrieveNonstaleRedemptionRecord(params_.issuer,
                                                      params_.toplevel);
@@ -252,7 +275,7 @@ void TrustTokenRequestSigningHelper::Begin(
     AttachSignedRedemptionRecordHeader(request, std::string());
 
     LogOutcome(net_log_, "No SRR for this (issuer, top-level context) pair");
-    std::move(done).Run(mojom::TrustTokenOperationStatus::kResourceExhausted);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
   }
 
@@ -266,7 +289,7 @@ void TrustTokenRequestSigningHelper::Begin(
     LogOutcome(net_log_,
                "Unsignable header specified in Signed-Headers "
                "header or additionalSignedHeaders arg");
-    std::move(done).Run(mojom::TrustTokenOperationStatus::kInvalidArgument);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
   }
 
@@ -293,7 +316,7 @@ void TrustTokenRequestSigningHelper::Begin(
     request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSignedHeaders);
 
     LogOutcome(net_log_, "Internal error generating signature");
-    std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
   }
 
@@ -304,8 +327,12 @@ void TrustTokenRequestSigningHelper::Begin(
 
   // Error serializing the header. Not expected.
   if (!maybe_signature_header) {
+    AttachSignedRedemptionRecordHeader(request, std::string());
+    request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSecTime);
+    request->RemoveRequestHeaderByName(kTrustTokensRequestHeaderSignedHeaders);
+
     LogOutcome(net_log_, "Internal error serializing signature header");
-    std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
+    std::move(done).Run(mojom::TrustTokenOperationStatus::kOk);
     return;
   }
 

@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
@@ -306,10 +307,14 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
 }
 
 void LayoutView::UpdateLayout() {
-  if (!GetDocument().Printing())
+  if (!GetDocument().Printing()) {
     SetPageLogicalHeight(LayoutUnit());
+    named_pages_mapper_ = nullptr;
+  }
 
   if (PageLogicalHeight() && ShouldUsePrintingLayout()) {
+    if (RuntimeEnabledFeatures::NamedPagesEnabled())
+      named_pages_mapper_ = std::make_unique<NamedPagesMapper>();
     intrinsic_logical_widths_ = LogicalWidth();
     if (!fragmentation_context_) {
       fragmentation_context_ =

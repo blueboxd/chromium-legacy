@@ -123,6 +123,7 @@ struct DeferredFrameData {
       : orientation_(kDefaultImageOrientation), is_received_(false) {}
 
   ImageOrientation orientation_;
+  IntSize density_corrected_size_;
   base::TimeDelta duration_;
   bool is_received_;
 
@@ -363,6 +364,15 @@ ImageOrientation DeferredImageDecoder::OrientationAtIndex(size_t index) const {
   return kDefaultImageOrientation;
 }
 
+IntSize DeferredImageDecoder::DensityCorrectedSizeAtIndex(size_t index) const {
+  if (metadata_decoder_)
+    return metadata_decoder_->DensityCorrectedSize();
+  if (index < frame_data_.size())
+    return frame_data_[index].density_corrected_size_;
+  return Size();
+}
+
+
 size_t DeferredImageDecoder::ByteSize() const {
   return rw_buffer_ ? rw_buffer_->size() : 0u;
 }
@@ -427,6 +437,7 @@ void DeferredImageDecoder::PrepareLazyDecodedFrames() {
   for (size_t i = previous_size; i < frame_data_.size(); ++i) {
     frame_data_[i].duration_ = metadata_decoder_->FrameDurationAtIndex(i);
     frame_data_[i].orientation_ = metadata_decoder_->Orientation();
+    frame_data_[i].density_corrected_size_ = metadata_decoder_->DensityCorrectedSize();
     frame_data_[i].is_received_ = metadata_decoder_->FrameIsReceivedAtIndex(i);
   }
 

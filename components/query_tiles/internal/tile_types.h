@@ -31,6 +31,17 @@ enum class TileGroupStatus {
   kMaxValue = kInvalidGroup,
 };
 
+// Config to control how tile images are prefetched in background task.
+enum class ImagePrefetchMode {
+  // No images will be prefetched.
+  kNone = 0,
+  // Only the top level images are prefetched.
+  kTopLevel = 1,
+  // All tile images are prefetched.
+  kAll = 2,
+  kMaxValue = kAll
+};
+
 using SuccessCallback = base::OnceCallback<void(bool)>;
 
 #endif  // COMPONENTS_QUERY_TILES_INTERNAL_TILE_TYPES_H_

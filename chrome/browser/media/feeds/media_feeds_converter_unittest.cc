@@ -874,6 +874,22 @@ TEST_F(MediaFeedsConverterTest, FailsItemWithInvalidIdentifier) {
   EXPECT_TRUE(result.value().empty());
 }
 
+TEST_F(MediaFeedsConverterTest, SucceedsTVSeriesWithNoEpisode) {
+  EntityPtr item = ValidMediaFeedItem();
+  item->type = schema_org::entity::kTVSeries;
+
+  EntityPtr entity = AddItemToFeed(ValidMediaFeed(), std::move(item));
+
+  mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
+  expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+
+  auto result = GetResults(std::move(entity));
+
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result.value().size(), 1u);
+  EXPECT_EQ(expected_item, result.value()[0]);
+}
+
 // Successfully converts a TV episode with embedded watch action and optional
 // identifiers.
 TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVEpisode) {
@@ -978,7 +994,6 @@ TEST_F(MediaFeedsConverterTest, SucceedsItemWithTVSeason) {
 
   mojom::MediaFeedItemPtr expected_item = ExpectedFeedItem();
   expected_item->type = mojom::MediaFeedItemType::kTVSeries;
-  expected_item->duration = base::nullopt;
 
   auto result = GetResults(std::move(entity));
 

@@ -7,10 +7,10 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {AutofillManagerImpl, PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
 import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
 import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
-import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PasswordManagerExpectations, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
+import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {makeCompromisedCredential} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
-import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import { PasswordManagerExpectations,TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
 import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.js';
 
 // clang-format on

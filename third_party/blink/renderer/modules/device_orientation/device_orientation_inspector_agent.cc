@@ -33,9 +33,9 @@ void DeviceOrientationInspectorAgent::Trace(Visitor* visitor) {
   InspectorBaseAgent::Trace(visitor);
 }
 
-DeviceOrientationController* DeviceOrientationInspectorAgent::Controller() {
-  LocalDOMWindow* window = inspected_frames_->Root()->DomWindow();
-  return window ? &DeviceOrientationController::From(*window) : nullptr;
+DeviceOrientationController& DeviceOrientationInspectorAgent::Controller() {
+  return DeviceOrientationController::From(
+      *inspected_frames_->Root()->DomWindow());
 }
 
 Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
@@ -46,10 +46,8 @@ Response DeviceOrientationInspectorAgent::setDeviceOrientationOverride(
   alpha_.Set(alpha);
   beta_.Set(beta);
   gamma_.Set(gamma);
-  if (Controller()) {
-    Controller()->SetOverride(
-        DeviceOrientationData::Create(alpha, beta, gamma, false));
-  }
+  Controller().SetOverride(
+      DeviceOrientationData::Create(alpha, beta, gamma, false));
   sensor_agent_->SetOrientationSensorOverride(alpha, beta, gamma);
   return Response::Success();
 }
@@ -60,16 +58,16 @@ Response DeviceOrientationInspectorAgent::clearDeviceOrientationOverride() {
 
 Response DeviceOrientationInspectorAgent::disable() {
   agent_state_.ClearAllFields();
-  if (Controller())
-    Controller()->ClearOverride();
+  if (!inspected_frames_->Root()->DomWindow()->IsContextDestroyed())
+    Controller().ClearOverride();
   sensor_agent_->Disable();
   return Response::Success();
 }
 
 void DeviceOrientationInspectorAgent::Restore() {
-  if (!Controller() || !enabled_.Get())
+  if (!enabled_.Get())
     return;
-  Controller()->SetOverride(DeviceOrientationData::Create(
+  Controller().SetOverride(DeviceOrientationData::Create(
       alpha_.Get(), beta_.Get(), gamma_.Get(), false));
   sensor_agent_->SetOrientationSensorOverride(alpha_.Get(), beta_.Get(),
                                               gamma_.Get());

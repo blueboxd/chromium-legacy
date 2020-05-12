@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import androidx.preference.Preference;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
@@ -19,11 +20,14 @@ import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
+import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsHelpClient;
 import org.chromium.components.browser_ui.site_settings.WebappSettingsClient;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
+import org.chromium.content_public.browser.ContentFeatureList;
+import org.chromium.content_public.common.ContentSwitches;
 
 /**
  * A SiteSettingsClient instance that contains Chrome-specific Site Settings logic.
@@ -139,6 +143,26 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
                 image = faviconGenerator.generateIconForUrl(iconUrl);
             }
             mCallback.onResult(image);
+        }
+    }
+
+    @Override
+    public boolean isCategoryVisible(@SiteSettingsCategory.Type int type) {
+        switch (type) {
+            // TODO(csharrison): Remove this condition once the experimental UI lands. It is not
+            // great to dynamically remove the preference in this way.
+            case SiteSettingsCategory.Type.ADS:
+                return SiteSettingsCategory.adsCategoryEnabled();
+            case SiteSettingsCategory.Type.BLUETOOTH_SCANNING:
+                return CommandLine.getInstance().hasSwitch(
+                        ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES);
+            case SiteSettingsCategory.Type.NFC:
+                return ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC);
+            case SiteSettingsCategory.Type.AUGMENTED_REALITY: // Fall-through
+            case SiteSettingsCategory.Type.VIRTUAL_REALITY:
+                return ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API);
+            default:
+                return true;
         }
     }
 

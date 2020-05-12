@@ -390,7 +390,7 @@ void ScrollableShelfContainerView::Layout() {
   // CalculateIdealSize. Because ShelfView::CalculatePreferredSize relies on the
   // bounds of app icon. Meanwhile, the icon's bounds may be updated by
   // animation.
-  const gfx::Rect ideal_bounds = gfx::Rect(CalculateIdealSize());
+  const gfx::Rect ideal_bounds = gfx::Rect(CalculatePreferredSize());
 
   const gfx::Rect local_bounds = GetLocalBounds();
   gfx::Rect shelf_view_bounds =
@@ -677,6 +677,14 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
   return icon_bounds;
 }
 
+bool ScrollableShelfView::RequiresScrollingForItemSize(
+    const gfx::Size& target_size,
+    int button_size) const {
+  const gfx::Size icons_preferred_size =
+      shelf_container_view_->CalculateIdealSize(button_size);
+  return !CanFitAllAppsWithoutScrolling(target_size, icons_preferred_size);
+}
+
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
@@ -765,8 +773,11 @@ ScrollableShelfView::LayoutStrategy
 ScrollableShelfView::CalculateLayoutStrategy(float scroll_distance_on_main_axis,
                                              int space_for_icons,
                                              bool use_target_bounds) const {
-  if (CanFitAllAppsWithoutScrolling(use_target_bounds))
+  if (CanFitAllAppsWithoutScrolling(
+          GetAvailableLocalBounds(use_target_bounds).size(),
+          CalculatePreferredSize())) {
     return kNotShowArrowButtons;
+  }
 
   if (scroll_distance_on_main_axis == 0.f) {
     // No invisible shelf buttons at the left side. So hide the left button.
@@ -970,6 +981,12 @@ void ScrollableShelfView::ViewHierarchyChanged(
     return;
 
   shelf_view_->UpdateVisibleIndices();
+
+  // When app scaling state needs update, hotseat bounds should change. Then
+  // it is not meaningful to do further work in the current view bounds. So
+  // returns early.
+  if (GetShelf()->hotseat_widget()->UpdateAppScalingIfNeeded())
+    return;
 
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;
 
@@ -1382,7 +1399,8 @@ gfx::Insets ScrollableShelfView::CalculateExtraEdgePadding(
                                    available_local_bounds.height()) -
       2 * base_padding_;
 
-  int gap = CanFitAllAppsWithoutScrolling(use_target_bounds)
+  int gap = CanFitAllAppsWithoutScrolling(available_local_bounds.size(),
+                                          CalculatePreferredSize())
                 ? available_size_for_app_icons - icons_size
                 : 0;  // overflow
 
@@ -1971,17 +1989,16 @@ int ScrollableShelfView::GetSpaceForIcons() const {
 }
 
 bool ScrollableShelfView::CanFitAllAppsWithoutScrolling(
-    bool use_target_bounds) const {
-  const gfx::Rect available_rect = GetAvailableLocalBounds(use_target_bounds);
+    const gfx::Size& available_size,
+    const gfx::Size& icons_preferred_size) const {
   const int available_length =
-      (GetShelf()->IsHorizontalAlignment() ? available_rect.width()
-                                           : available_rect.height()) -
+      (GetShelf()->IsHorizontalAlignment() ? available_size.width()
+                                           : available_size.height()) -
       2 * ShelfConfig::Get()->app_icon_group_margin();
 
-  gfx::Size preferred_size = GetPreferredSize();
   int preferred_length = GetShelf()->IsHorizontalAlignment()
-                             ? preferred_size.width()
-                             : preferred_size.height();
+                             ? icons_preferred_size.width()
+                             : icons_preferred_size.height();
   preferred_length += 2 * ShelfConfig::Get()->GetAppIconEndPadding();
 
   return available_length >= preferred_length;

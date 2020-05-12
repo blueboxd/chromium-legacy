@@ -364,7 +364,10 @@ class TabSpecificContentSettings
       content::NavigationHandle* navigation_handle) override;
   void AppCacheAccessed(const GURL& manifest_url,
                         bool blocked_by_policy) override;
-  void OnCookiesAccessed(const content::CookieAccessDetails& details) override;
+  void OnCookiesAccessed(content::NavigationHandle* navigation,
+                         const content::CookieAccessDetails& details) override;
+  void OnCookiesAccessed(content::RenderFrameHost* rfh,
+                         const content::CookieAccessDetails& details) override;
   // Called when a specific Service Worker scope was accessed.
   // If access was blocked due to the user's content settings,
   // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie| should be
@@ -396,6 +399,9 @@ class TabSpecificContentSettings
 
   // Updates MIDI settings on navigation.
   void MidiDidNavigate(content::NavigationHandle* navigation_handle);
+
+  // Updates the list of allowed and blocked cookies.
+  void OnCookiesAccessedImpl(const content::CookieAccessDetails& details);
 
   std::unique_ptr<Delegate> delegate_;
 

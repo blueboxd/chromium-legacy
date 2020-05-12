@@ -93,7 +93,7 @@ class TEST_TYPES(object):
 # This is an opt-in list for tester which will skip the perf data handling.
 # The perf data will be handled on a separated 'processor' VM.
 # This list will be removed or replace by an opt-out list.
-LIGHTWEIGHT_TESTERS = ['linux-perf-fyi']
+LIGHTWEIGHT_TESTERS = ['linux-perf-fyi', 'android-pixel2-perf-fyi']
 
 FYI_BUILDERS = {
     'android-nexus5x-perf-fyi': {
@@ -206,6 +206,10 @@ FYI_BUILDERS = {
         },
     },
     'linux-processor-perf-fyi': {
+        'platform': 'linux',
+        'perf_processor': True,
+    },
+    'android-pixel2-processor-perf-fyi': {
         'platform': 'linux',
         'perf_processor': True,
     },
@@ -1085,6 +1089,7 @@ def generate_builder_config(condensed_config, builder_name):
   if 'additional_compile_targets' in condensed_config:
     config['additional_compile_targets'] = (
         condensed_config['additional_compile_targets'])
+  # TODO(crbug.com/1078675): remove this setting
   if 'perf_processor' in condensed_config:
     config['merge'] = {
         'script': '//tools/perf/process_perf_results.py',

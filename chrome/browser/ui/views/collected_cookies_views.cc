@@ -547,16 +547,11 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
     views::GridLayout* layout =
         allowed->SetLayoutManager(std::make_unique<views::GridLayout>());
 
-    std::unique_ptr<views::LabelButton> block_allowed_button =
-        views::MdTextButton::CreateSecondaryUiButton(
-            this,
-            l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
-    std::unique_ptr<views::LabelButton> delete_allowed_button =
-        views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
     StartNewButtonColumnSet(layout, 0);
-    block_allowed_button_ = layout->AddView(std::move(block_allowed_button));
-    delete_allowed_button_ = layout->AddView(std::move(delete_allowed_button));
+    block_allowed_button_ = layout->AddView(views::MdTextButton::Create(
+        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON)));
+    delete_allowed_button_ = layout->AddView(views::MdTextButton::Create(
+        this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL)));
 
     allowed_buttons_pane_ = view->AddChildView(std::move(allowed));
   }
@@ -567,18 +562,12 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
         blocked->SetLayoutManager(std::make_unique<views::GridLayout>());
     blocked->SetVisible(false);
 
-    std::unique_ptr<views::LabelButton> allow_blocked_button =
-        views::MdTextButton::CreateSecondaryUiButton(
-            this,
-            l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
-    std::unique_ptr<views::LabelButton> for_session_blocked_button =
-        views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(
-                      IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
     StartNewButtonColumnSet(layout, 0);
-    allow_blocked_button_ = layout->AddView(std::move(allow_blocked_button));
-    for_session_blocked_button_ =
-        layout->AddView(std::move(for_session_blocked_button));
+    allow_blocked_button_ = layout->AddView(views::MdTextButton::Create(
+        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON)));
+    for_session_blocked_button_ = layout->AddView(views::MdTextButton::Create(
+        this,
+        l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON)));
 
     blocked_buttons_pane_ = view->AddChildView(std::move(blocked));
   }

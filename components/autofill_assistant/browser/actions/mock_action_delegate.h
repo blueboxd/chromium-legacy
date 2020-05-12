@@ -135,6 +135,7 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(
       WriteUserData,
       void(base::OnceCallback<void(UserData*, UserData::FieldChange*)>));
+  MOCK_METHOD1(WriteUserModel, void(base::OnceCallback<void(UserModel*)>));
 
   MOCK_METHOD1(OnGetFullCard,
                void(base::OnceCallback<void(const autofill::CreditCard& card,

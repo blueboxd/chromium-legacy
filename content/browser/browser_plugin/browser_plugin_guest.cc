@@ -89,11 +89,6 @@ int BrowserPluginGuest::LoadURLWithParams(
   return MSG_ROUTING_NONE;
 }
 
-void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
-  // TODO(wjmaclean): Verify whether this is used via WebContentsViewChildFrame.
-  GetWebContents()->GetView()->SizeContents(new_size);
-}
-
 void BrowserPluginGuest::WillDestroy() {
   is_in_destruction_ = true;
 

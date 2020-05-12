@@ -788,22 +788,6 @@
       },
     },
   },
-  'xcode_11c29': {
-    '$mixin_append': {
-      'args': [
-        '--xcode-build-version',
-        '11c29'
-      ],
-    },
-    'swarming': {
-      'named_caches': [
-        {
-          'name': 'xcode_ios_11c29',
-          'path': 'Xcode.app',
-        },
-      ],
-    },
-  },
   'xcode_11e146': {
     '$mixin_append': {
       'args': [

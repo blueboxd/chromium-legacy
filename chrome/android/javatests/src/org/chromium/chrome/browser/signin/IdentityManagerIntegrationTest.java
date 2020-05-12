@@ -49,7 +49,7 @@ public class IdentityManagerIntegrationTest {
 
     @Before
     public void setUp() {
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
 
         mTestAccount1 = createCoreAccountInfoFromEmail(TEST_ACCOUNT1);
         mTestAccount2 = createCoreAccountInfoFromEmail(TEST_ACCOUNT2);
@@ -77,7 +77,7 @@ public class IdentityManagerIntegrationTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null); });
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
 
         // TODO(https://crbug.com/1046412): Remove this.
         ChromeSigninController.get().setSignedInAccountName(null);

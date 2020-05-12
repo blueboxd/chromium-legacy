@@ -219,6 +219,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
         std::move(request_info), nullptr /* navigation_ui_data */,
         nullptr /* service_worker_handle */, nullptr /* appcache_handle */,
         nullptr /* prefetched_signed_exchange_cache */, delegate,
+        mojo::NullRemote() /* cookie_access_obsever */,
         std::move(interceptors));
   }
 

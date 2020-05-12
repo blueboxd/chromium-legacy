@@ -397,9 +397,17 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
   // Update the cursor indexes in the model.
   candidate_window_.set_cursor_position(cursor_absolute_index);
   // Set position data.
-  candidate_views_[index_in_page]->SetPositionData(
-      candidate_window_.current_candidate_index(),
-      candidate_window_.total_candidates());
+  int position_index = candidate_window_.current_candidate_index();
+  int total_candidates = candidate_window_.total_candidates();
+  if (position_index < 0 || total_candidates < 1 ||
+      position_index >= total_candidates) {
+    // Sometimes we don't get valid data from |candidate_window_|. In this case,
+    // make a best guess about the position and total candidates.
+    position_index = index_in_page;
+    total_candidates = candidate_window_.candidates().size();
+  }
+  candidate_views_[index_in_page]->SetPositionData(position_index,
+                                                   total_candidates);
 }
 
 const char* CandidateWindowView::GetClassName() const {
@@ -415,10 +423,6 @@ void CandidateWindowView::ButtonPressed(views::Button* sender,
       return;
     }
   }
-}
-
-void CandidateWindowView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kMenu;
 }
 
 }  // namespace ime

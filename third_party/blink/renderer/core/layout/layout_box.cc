@@ -6476,6 +6476,11 @@ LayoutUnit LayoutBox::PageRemainingLogicalHeightForOffset(
   return remaining_height - footer_height;
 }
 
+int LayoutBox::CurrentPageNumber(LayoutUnit child_logical_top) const {
+  LayoutUnit offset = OffsetFromLogicalTopOfFirstPage() + child_logical_top;
+  return (offset / View()->PageLogicalHeight()).Floor();
+}
+
 bool LayoutBox::CrossesPageBoundary(LayoutUnit offset,
                                     LayoutUnit logical_height) const {
   if (!IsPageLogicalHeightKnown())

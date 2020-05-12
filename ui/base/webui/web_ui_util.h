@@ -88,7 +88,6 @@ UI_BASE_EXPORT std::string GetWebUiCssTextDefaultsMd();
 // inline stylesheet.
 UI_BASE_EXPORT void AppendWebUiCssTextDefaults(std::string* html);
 
-UI_BASE_EXPORT std::string GetA11yEnhanced();
 // Get some common font styles for all of WebUI.
 UI_BASE_EXPORT std::string GetFontFamily();
 UI_BASE_EXPORT std::string GetFontSize();

@@ -32,6 +32,7 @@
 #include "content/browser/client_hints/client_hints.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/frame_host/cookie_utils.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -2551,7 +2552,8 @@ void NavigationRequest::OnStartChecksComplete(
           std::move(cors_exempt_headers)),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
-      this, IsServedFromBackForwardCache(), std::move(interceptor));
+      this, IsServedFromBackForwardCache(), CreateCookieAccessObserver(),
+      std::move(interceptor));
 
   DCHECK(!render_frame_host_);
 }
@@ -4346,6 +4348,40 @@ std::string NavigationRequest::GetUserAgentOverride() {
 NavigationControllerImpl* NavigationRequest::GetNavigationController() {
   return static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
+}
+
+mojo::PendingRemote<network::mojom::CookieAccessObserver>
+NavigationRequest::CreateCookieAccessObserver() {
+  mojo::PendingRemote<network::mojom::CookieAccessObserver> remote;
+  cookie_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
+void NavigationRequest::OnCookiesAccessed(
+    network::mojom::CookieAccessDetailsPtr details) {
+  // TODO(721329): We should not send information to the current frame about
+  // (potentially unrelated) ongoing navigation, but at the moment we don't
+  // have another way to add messages to DevTools console.
+  EmitSameSiteCookiesDeprecationWarning(frame_tree_node()->current_frame_host(),
+                                        details);
+
+  CookieAccessDetails allowed;
+  CookieAccessDetails blocked;
+  SplitCookiesIntoAllowedAndBlocked(details, &allowed, &blocked);
+  if (!allowed.cookie_list.empty())
+    GetDelegate()->OnCookiesAccessed(this, allowed);
+  if (!blocked.cookie_list.empty())
+    GetDelegate()->OnCookiesAccessed(this, blocked);
+}
+
+void NavigationRequest::Clone(
+    mojo::PendingReceiver<network::mojom::CookieAccessObserver> observer) {
+  cookie_observers_.Add(this, std::move(observer));
+}
+
+std::vector<mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
+NavigationRequest::TakeCookieObservers() {
+  return cookie_observers_.TakeReceivers();
 }
 
 }  // namespace content

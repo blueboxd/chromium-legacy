@@ -338,6 +338,15 @@ void PasswordManagerPresenter::RemoveSavedPassword(
   }
 }
 
+void PasswordManagerPresenter::RemoveSavedPasswords(
+    const std::vector<std::string>& sort_keys) {
+  undo_manager_.StartGroupingActions();
+  for (const std::string& sort_key : sort_keys) {
+    RemoveSavedPassword(sort_key);
+  }
+  undo_manager_.EndGroupingActions();
+}
+
 void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   if (TryRemovePasswordEntries(&exception_map_, index)) {
     base::RecordAction(
@@ -351,6 +360,15 @@ void PasswordManagerPresenter::RemovePasswordException(
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_RemovePasswordException"));
   }
+}
+
+void PasswordManagerPresenter::RemovePasswordExceptions(
+    const std::vector<std::string>& sort_keys) {
+  undo_manager_.StartGroupingActions();
+  for (const std::string& sort_key : sort_keys) {
+    RemovePasswordException(sort_key);
+  }
+  undo_manager_.EndGroupingActions();
 }
 
 void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {

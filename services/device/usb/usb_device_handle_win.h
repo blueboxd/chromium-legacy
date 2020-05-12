@@ -99,12 +99,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
     Interface();
     ~Interface();
 
-    uint8_t interface_number;
-
-    // If this interface is part of a function then this will be the interface
-    // number of the first interface in that function. Otherwise it will be
-    // equal to |interface_number|.
-    uint8_t first_interface;
+    const mojom::UsbInterfaceInfo* info;
 
     // In a composite device each function has its own driver and path to open.
     base::string16 function_driver;
@@ -113,6 +108,9 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
 
     ScopedWinUsbHandle handle;
     bool claimed = false;
+
+    // The currently selected alternative interface setting. This is assumed to
+    // be the first alternate when the device is opened.
     uint8_t alternate_setting = 0;
 
     // The count of outstanding requests, including associated interfaces
@@ -138,8 +136,14 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                               OpenInterfaceCallback callback,
                               Interface* first_interface);
   void OnInterfaceClaimed(ResultCallback callback, Interface* interface);
-  void RegisterEndpoints(const CombinedInterfaceInfo& interface);
-  void UnregisterEndpoints(const CombinedInterfaceInfo& interface);
+  void OnSetAlternateInterfaceSetting(int interface_number,
+                                      int alternate_setting,
+                                      ResultCallback callback,
+                                      bool result);
+  void RegisterEndpoints(const mojom::UsbInterfaceInfo* interface,
+                         const mojom::UsbAlternateInterfaceInfo& alternate);
+  void UnregisterEndpoints(const mojom::UsbAlternateInterfaceInfo& alternate);
+  void OnClearHalt(int interface_number, ResultCallback callback, bool result);
   void OpenInterfaceForControlTransfer(
       mojom::UsbControlTransferRecipient recipient,
       uint16_t index,

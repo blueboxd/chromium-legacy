@@ -979,6 +979,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/xr/xr_view.idl",
           "//third_party/blink/renderer/modules/xr/xr_viewer_pose.idl",
           "//third_party/blink/renderer/modules/xr/xr_viewport.idl",
+          "//third_party/blink/renderer/modules/xr/xr_webgl_binding.idl",
           "//third_party/blink/renderer/modules/xr/xr_webgl_layer.idl",
           "//third_party/blink/renderer/modules/xr/xr_webgl_layer_init.idl",
           "//third_party/blink/renderer/modules/xr/xr_world_information.idl",

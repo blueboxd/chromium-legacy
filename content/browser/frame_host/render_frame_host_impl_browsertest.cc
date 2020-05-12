@@ -787,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   // navigation, so it swapped RenderFrameHosts. |main_frame| should now be
   // pending deletion and waiting for unload ACK, but it should not be waiting
   // for the beforeunload completion callback.
-  EXPECT_FALSE(main_frame->is_active());
+  EXPECT_TRUE(main_frame->IsPendingDeletion());
   EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_completion());
   EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
   EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
@@ -3673,10 +3673,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // The old RFH should be pending deletion, but its site_for_cookies should
   // be unchanged.
-  EXPECT_FALSE(child_rfh->is_active());
+  EXPECT_TRUE(child_rfh->IsPendingDeletion());
   EXPECT_EQ(kid_url, child_rfh->GetLastCommittedURL());
   EXPECT_EQ(url, main_frame->GetLastCommittedURL());
-  EXPECT_FALSE(main_frame->is_active());
+  EXPECT_TRUE(main_frame->IsPendingDeletion());
   EXPECT_FALSE(main_frame->IsCurrent());
   net::SiteForCookies computed_for_child = child_rfh->ComputeSiteForCookies();
   EXPECT_TRUE(

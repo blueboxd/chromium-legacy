@@ -16,7 +16,7 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     private void setUp() {
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
         loadNativeLibraryAndInitBrowserProcess();
     }
 
@@ -41,6 +41,6 @@ public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     }
 
     private void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 }

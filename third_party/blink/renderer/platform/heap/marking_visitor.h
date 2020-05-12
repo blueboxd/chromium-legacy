@@ -111,16 +111,12 @@ ALWAYS_INLINE bool MarkingVisitorCommon::MarkHeaderNoTracing(
 // Base visitor used to mark Oilpan objects on any thread.
 template <class Specialized>
 class PLATFORM_EXPORT MarkingVisitorBase : public MarkingVisitorCommon {
- public:
-  void Visit(const void* object, TraceDescriptor desc) final;
-
-  // Unused cross-component visit methods.
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
-
  protected:
   MarkingVisitorBase(ThreadState* state, MarkingMode marking_mode, int task_id)
       : MarkingVisitorCommon(state, marking_mode, task_id) {}
   ~MarkingVisitorBase() override = default;
+
+  void Visit(const void* object, TraceDescriptor desc) final;
 
   // Marks an object and adds a tracing callback for processing of the object.
   void MarkHeader(HeapObjectHeader*, const TraceDescriptor&);
@@ -273,7 +269,7 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor
 
   bool IsConcurrent() const override { return true; }
 
-  bool ConcurrentTracingBailOut(TraceDescriptor desc) override {
+  bool DeferredTraceIfConcurrent(TraceDescriptor desc) override {
     not_safe_to_concurrently_trace_worklist_.Push(desc);
     return true;
   }

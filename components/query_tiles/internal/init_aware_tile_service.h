@@ -29,7 +29,8 @@ class InitAwareTileService : public TileService {
   // TileService implementation.
   void GetQueryTiles(GetTilesCallback callback) override;
   void GetTile(const std::string& tile_id, TileCallback callback) override;
-  void StartFetchForTiles(BackgroundTaskFinishedCallback callback) override;
+  void StartFetchForTiles(bool is_from_reduced_mode,
+                          BackgroundTaskFinishedCallback callback) override;
 
   void OnTileServiceInitialized(bool success);
   void MaybeCacheApiCall(base::OnceClosure api_call);

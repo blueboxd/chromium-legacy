@@ -19,6 +19,7 @@ import android.view.autofill.AutofillValue;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -42,6 +43,7 @@ import org.chromium.ui.display.DisplayAndroid;
 @DoNotInline
 @TargetApi(Build.VERSION_CODES.O)
 public class AutofillProviderImpl extends AutofillProvider {
+    private static final String TAG = "AutofillProviderImpl";
     private static class FocusField {
         public final short fieldIndex;
         public final Rect absBound;
@@ -138,20 +140,26 @@ public class AutofillProviderImpl extends AutofillProvider {
                 if (index < 0 || index >= mFormData.mFields.size()) return false;
                 FormFieldData field = mFormData.mFields.get(index);
                 if (field == null) return false;
-                switch (field.getControlType()) {
-                    case FormFieldData.ControlType.LIST:
-                        int j = value.getListValue();
-                        if (j < 0 && j >= field.mOptionValues.length) continue;
-                        field.setAutofillValue(field.mOptionValues[j]);
-                        break;
-                    case FormFieldData.ControlType.TOGGLE:
-                        field.setChecked(value.getToggleValue());
-                        break;
-                    case FormFieldData.ControlType.TEXT:
-                        field.setAutofillValue((String) value.getTextValue());
-                        break;
-                    default:
-                        break;
+                try {
+                    switch (field.getControlType()) {
+                        case FormFieldData.ControlType.LIST:
+                            int j = value.getListValue();
+                            if (j < 0 && j >= field.mOptionValues.length) continue;
+                            field.setAutofillValue(field.mOptionValues[j]);
+                            break;
+                        case FormFieldData.ControlType.TOGGLE:
+                            field.setChecked(value.getToggleValue());
+                            break;
+                        case FormFieldData.ControlType.TEXT:
+                            field.setAutofillValue((String) value.getTextValue());
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (IllegalStateException e) {
+                    // Refer to crbug.com/1080580 .
+                    Log.e(TAG, "The given AutofillValue wasn't expected, abort autofill.", e);
+                    return false;
                 }
             }
             return true;

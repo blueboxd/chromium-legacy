@@ -710,13 +710,6 @@ WebContentsViewAura::~WebContentsViewAura() {
   window_.reset();
 }
 
-void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
-  RenderWidgetHostView* rwhv =
-      web_contents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetSize(size);
-}
-
 void WebContentsViewAura::EndDrag(
     base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
     blink::WebDragOperationsMask ops) {
@@ -815,18 +808,6 @@ gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
 
 void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {
   *out = GetNativeView()->GetBoundsInScreen();
-}
-
-void WebContentsViewAura::SizeContents(const gfx::Size& size) {
-  gfx::Rect bounds = window_->bounds();
-  if (bounds.size() != size) {
-    bounds.set_size(size);
-    window_->SetBounds(bounds);
-  } else {
-    // Our size matches what we want but the renderers size may not match.
-    // Pretend we were resized so that the renderers size is updated too.
-    SizeChangedCommon(size);
-  }
 }
 
 void WebContentsViewAura::Focus() {
@@ -1137,7 +1118,9 @@ gfx::Size WebContentsViewAura::GetMaximumSize() const {
 
 void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                           const gfx::Rect& new_bounds) {
-  SizeChangedCommon(new_bounds.size());
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(new_bounds.size());
 
   // Constrained web dialogs, need to be kept centered over our content area.
   for (size_t i = 0; i < window_->children().size(); i++) {

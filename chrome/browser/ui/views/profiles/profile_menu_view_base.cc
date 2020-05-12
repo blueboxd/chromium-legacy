@@ -491,11 +491,11 @@ void ProfileMenuViewBase::SetSyncInfo(
   label->SetMultiLine(true);
   label->SetHandlesTooltips(false);
 
-  // Add blue button at the bottom.
-  views::Button* button = sync_info_container_->AddChildView(
-      views::MdTextButton::CreateSecondaryUiProminentButton(this,
-                                                            clickable_text));
-  RegisterClickAction(button, std::move(action));
+  // Add the prominent button at the bottom.
+  auto button = views::MdTextButton::Create(this, clickable_text);
+  button->SetProminent(true);
+  RegisterClickAction(sync_info_container_->AddChildView(std::move(button)),
+                      std::move(action));
 }
 
 void ProfileMenuViewBase::AddShortcutFeatureButton(

@@ -59,6 +59,10 @@ MATCHER(IsNotBlacklisted, "") {
   return !arg->blacklisted_by_user;
 }
 
+MATCHER_P(HasOrigin, origin, "") {
+  return arg->origin == origin;
+}
+
 std::vector<std::pair<std::string, std::string>> GetUsernamesAndPasswords(
     const std::vector<autofill::PasswordForm>& forms) {
   std::vector<std::pair<std::string, std::string>> result;
@@ -105,11 +109,12 @@ class PasswordManagerPresenterTest : public testing::Test {
     return form;
   }
 
-  void AddPasswordException(const GURL& origin) {
+  autofill::PasswordForm AddPasswordException(const GURL& origin) {
     autofill::PasswordForm form;
     form.origin = origin;
     form.blacklisted_by_user = true;
     store_->AddLogin(form);
+    return form;
   }
 
   void ChangeSavedPasswordBySortKey(
@@ -427,5 +432,96 @@ TEST_F(PasswordManagerPresenterTest, TestRequestPlaintextPasswordEdit) {
       1);
 }
 #endif
+
+TEST_F(PasswordManagerPresenterTest, TestPasswordRemovalAndUndo) {
+  autofill::PasswordForm password1 =
+      AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  autofill::PasswordForm password2 =
+      AddPasswordEntry(GURL(kExampleCom), kUsername2, kPassword2);
+  UpdatePasswordLists();
+  ASSERT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword2)));
+
+  GetUIController().GetPasswordManagerPresenter()->RemoveSavedPassword(
+      password_manager::CreateSortKey(password1));
+  UpdatePasswordLists();
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername2, kPassword2)));
+
+  GetUIController()
+      .GetPasswordManagerPresenter()
+      ->UndoRemoveSavedPasswordOrException();
+  UpdatePasswordLists();
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword2)));
+}
+
+TEST_F(PasswordManagerPresenterTest, TestExceptionRemovalAndUndo) {
+  autofill::PasswordForm exception1 = AddPasswordException(GURL(kExampleCom));
+  autofill::PasswordForm exception2 = AddPasswordException(GURL(kExampleOrg));
+  UpdatePasswordLists();
+
+  GetUIController().GetPasswordManagerPresenter()->RemovePasswordException(
+      password_manager::CreateSortKey(exception1));
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(UnorderedElementsAre(
+                                     HasOrigin(exception2.origin))));
+  UpdatePasswordLists();
+
+  GetUIController()
+      .GetPasswordManagerPresenter()
+      ->UndoRemoveSavedPasswordOrException();
+  EXPECT_CALL(GetUIController(),
+              SetPasswordExceptionList(UnorderedElementsAre(
+                  HasOrigin(exception1.origin), HasOrigin(exception2.origin))));
+  UpdatePasswordLists();
+}
+
+TEST_F(PasswordManagerPresenterTest, TestPasswordBatchRemovalAndUndo) {
+  autofill::PasswordForm password1 =
+      AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  autofill::PasswordForm password2 =
+      AddPasswordEntry(GURL(kExampleCom), kUsername2, kPassword2);
+  UpdatePasswordLists();
+  ASSERT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword2)));
+
+  GetUIController().GetPasswordManagerPresenter()->RemoveSavedPasswords(
+      {password_manager::CreateSortKey(password1),
+       password_manager::CreateSortKey(password2)});
+  UpdatePasswordLists();
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              IsEmpty());
+
+  GetUIController()
+      .GetPasswordManagerPresenter()
+      ->UndoRemoveSavedPasswordOrException();
+  UpdatePasswordLists();
+  EXPECT_THAT(GetUsernamesAndPasswords(GetStoredPasswordsForRealm(kExampleCom)),
+              UnorderedElementsAre(Pair(kUsername, kPassword),
+                                   Pair(kUsername2, kPassword2)));
+}
+
+TEST_F(PasswordManagerPresenterTest, TestExceptionBatchRemovalAndUndo) {
+  autofill::PasswordForm exception1 = AddPasswordException(GURL(kExampleCom));
+  autofill::PasswordForm exception2 = AddPasswordException(GURL(kExampleOrg));
+  UpdatePasswordLists();
+
+  GetUIController().GetPasswordManagerPresenter()->RemovePasswordExceptions(
+      {password_manager::CreateSortKey(exception1),
+       password_manager::CreateSortKey(exception2)});
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(IsEmpty()));
+  UpdatePasswordLists();
+
+  GetUIController()
+      .GetPasswordManagerPresenter()
+      ->UndoRemoveSavedPasswordOrException();
+  EXPECT_CALL(GetUIController(),
+              SetPasswordExceptionList(UnorderedElementsAre(
+                  HasOrigin(exception1.origin), HasOrigin(exception2.origin))));
+  UpdatePasswordLists();
+}
 
 }  // namespace

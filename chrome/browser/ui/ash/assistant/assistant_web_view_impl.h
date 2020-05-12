@@ -85,7 +85,7 @@ class AssistantWebViewImpl : public ash::AssistantWebView,
   const InitParams params_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<views::WebView> web_view_;
+  views::WebView* web_view_ = nullptr;
 
   // Whether or not the embedded |web_contents_| can go back.
   bool can_go_back_ = false;

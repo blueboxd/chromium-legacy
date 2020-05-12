@@ -257,10 +257,9 @@ void QRCodeGeneratorBubble::Init() {
   tooltip_icon_ = layout->AddView(std::move(tooltip_icon));
 
   // Download button.
-  std::unique_ptr<views::LabelButton> download_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(
-                    IDS_BROWSER_SHARING_QR_CODE_DIALOG_DOWNLOAD_BUTTON_LABEL));
+  auto download_button = views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(
+                IDS_BROWSER_SHARING_QR_CODE_DIALOG_DOWNLOAD_BUTTON_LABEL));
   download_button->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   download_button_ = layout->AddView(std::move(download_button));
   // End controls row

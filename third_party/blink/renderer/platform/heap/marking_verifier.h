@@ -32,10 +32,6 @@ class MarkingVerifier final : public Visitor {
                           WeakCallback,
                           const void*) final;
 
-  // Unused overrides.
-  void RegisterWeakCallback(WeakCallback, const void*) final {}
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
-
  private:
   void VerifyChild(const void* object, const void* base_object_payload);
 

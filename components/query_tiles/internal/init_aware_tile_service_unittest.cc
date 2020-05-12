@@ -40,7 +40,7 @@ class MockInitializableTileService : public InitializableTileService {
   MOCK_METHOD(void, GetTile, (const std::string&, TileCallback), (override));
   MOCK_METHOD(void,
               StartFetchForTiles,
-              (BackgroundTaskFinishedCallback),
+              (bool, BackgroundTaskFinishedCallback),
               (override));
 
   // Callback stubs.
@@ -73,10 +73,11 @@ class InitAwareTileServiceTest : public testing::Test {
         .WillByDefault(Invoke([](const std::string&, TileCallback callback) {
           std::move(callback).Run(Tile());
         }));
-    ON_CALL(*mock_service_, StartFetchForTiles(_))
-        .WillByDefault(Invoke([](BackgroundTaskFinishedCallback callback) {
-          std::move(callback).Run(true);
-        }));
+    ON_CALL(*mock_service_, StartFetchForTiles(_, _))
+        .WillByDefault(
+            Invoke([](bool, BackgroundTaskFinishedCallback callback) {
+              std::move(callback).Run(true);
+            }));
   }
 
  protected:
@@ -112,7 +113,8 @@ class InitAwareTileServiceTest : public testing::Test {
     auto callback = base::BindOnce(
         &MockInitializableTileService::BackgroundTaskFinishedCallbackStub,
         base::Unretained(mock_service_));
-    init_aware_service()->StartFetchForTiles(std::move(callback));
+    init_aware_service()->StartFetchForTiles(false /*is_from_reduced_mode*/,
+                                             std::move(callback));
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -130,7 +132,7 @@ TEST_F(InitAwareTileServiceTest, AfterInitSuccessPassThrough) {
     InSequence sequence;
     EXPECT_CALL(*mock_service(), GetQueryTiles(_));
     EXPECT_CALL(*mock_service(), GetTile(_, _));
-    EXPECT_CALL(*mock_service(), StartFetchForTiles(_));
+    EXPECT_CALL(*mock_service(), StartFetchForTiles(false, _));
   }
 
   EXPECT_CALL(*mock_service(), GetTilesCallbackStub(TileList({Tile()})));
@@ -150,7 +152,7 @@ TEST_F(InitAwareTileServiceTest, AfterInitFailureNotPassThrough) {
     InSequence sequence;
     EXPECT_CALL(*mock_service(), GetQueryTiles(_)).Times(0);
     EXPECT_CALL(*mock_service(), GetTile(_, _)).Times(0);
-    EXPECT_CALL(*mock_service(), StartFetchForTiles(_)).Times(0);
+    EXPECT_CALL(*mock_service(), StartFetchForTiles(_, _)).Times(0);
   }
 
   EXPECT_CALL(*mock_service(), GetTilesCallbackStub(TileList()));
@@ -169,7 +171,7 @@ TEST_F(InitAwareTileServiceTest, BeforeInitSuccessFlushedThrough) {
     InSequence sequence;
     EXPECT_CALL(*mock_service(), GetQueryTiles(_));
     EXPECT_CALL(*mock_service(), GetTile(_, _));
-    EXPECT_CALL(*mock_service(), StartFetchForTiles(_));
+    EXPECT_CALL(*mock_service(), StartFetchForTiles(false, _));
   }
 
   EXPECT_CALL(*mock_service(), GetTilesCallbackStub(TileList({Tile()})));
@@ -189,7 +191,7 @@ TEST_F(InitAwareTileServiceTest, BeforeInitFailureNotFlushedThrough) {
     InSequence sequence;
     EXPECT_CALL(*mock_service(), GetQueryTiles(_)).Times(0);
     EXPECT_CALL(*mock_service(), GetTile(_, _)).Times(0);
-    EXPECT_CALL(*mock_service(), StartFetchForTiles(_)).Times(0);
+    EXPECT_CALL(*mock_service(), StartFetchForTiles(_, _)).Times(0);
   }
 
   EXPECT_CALL(*mock_service(), GetTilesCallbackStub(TileList()));

@@ -26,7 +26,8 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 
-import {CreditCardEntry} from './credit_card_list_entry.js';
+/** @typedef {chrome.autofillPrivate.CreditCardEntry} */
+let CreditCardEntry;
 
 /**
  * Interface for all callbacks to the autofill API.

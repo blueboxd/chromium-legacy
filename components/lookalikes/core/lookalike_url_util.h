@@ -25,15 +25,18 @@ using LookalikeTargetAllowlistChecker =
 // Used for UKM. There is only a single LookalikeUrlMatchType per navigation.
 enum class LookalikeUrlMatchType {
   kNone = 0,
-  kTopSite = 1,
+  // DEPRECATED: Use kSkeletonMatchTop500 or kSkeletonMatchTop5k.
+  // kTopSite = 1,
   kSiteEngagement = 2,
   kEditDistance = 3,
   kEditDistanceSiteEngagement = 4,
   kTargetEmbedding = 5,
+  kSkeletonMatchTop500 = 6,
+  kSkeletonMatchTop5k = 7,
 
   // Append new items to the end of the list above; do not modify or replace
   // existing values. Comment out obsolete items.
-  kMaxValue = kTargetEmbedding,
+  kMaxValue = kSkeletonMatchTop5k,
 };
 
 // Used for UKM. There is only a single LookalikeUrlBlockingPageUserAction per
@@ -55,15 +58,18 @@ enum class NavigationSuggestionEvent {
   // Interstitial results recorded using security_interstitials::MetricsHelper
   // kInfobarShown = 1,
   // kLinkClicked = 2,
-  kMatchTopSite = 3,
+  // DEPRECATED: Use kMatchSkeletonTop500 or kMatchSkeletonTop5k.
+  // kMatchTopSite = 3,
   kMatchSiteEngagement = 4,
   kMatchEditDistance = 5,
   kMatchEditDistanceSiteEngagement = 6,
   kMatchTargetEmbedding = 7,
+  kMatchSkeletonTop500 = 8,
+  kMatchSkeletonTop5k = 9,
 
   // Append new items to the end of the list above; do not modify or
   // replace existing values. Comment out obsolete items.
-  kMaxValue = kMatchTargetEmbedding,
+  kMaxValue = kMatchSkeletonTop5k,
 };
 
 struct DomainInfo {

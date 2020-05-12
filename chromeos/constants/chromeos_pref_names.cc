@@ -69,7 +69,7 @@ const char kSamlPasswordExpirationTime[] = "saml.password_expiration_time";
 const char kSamlPasswordChangeUrl[] = "saml.password_change_url";
 
 // Boolean pref indicating whether a user has enabled the display password
-// button on the login/lock screen. This can be set to false by policy.
+// button on the login/lock screen.
 const char kLoginDisplayPasswordButtonEnabled[] =
     "login_display_password_button_enabled";
 

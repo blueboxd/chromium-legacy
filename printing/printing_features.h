@@ -21,6 +21,7 @@ PRINTING_EXPORT extern const base::Feature kAdvancedPpdAttributes;
 
 #if defined(OS_MACOSX)
 PRINTING_EXPORT extern const base::Feature kCupsIppPrintingBackend;
+PRINTING_EXPORT extern const base::Feature kEnableCustomMacPaperSizes;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)

@@ -18,13 +18,34 @@ static_assert(sizeof(CheckedPtr<int>) == sizeof(int*),
 static_assert(sizeof(CheckedPtr<std::string>) == sizeof(std::string*),
               "CheckedPtr shouldn't add memory overhead");
 
-// This helps when copying arrays/vectors of pointers.
+// |is_trivially_copyable| assertion means that arrays/vectors of CheckedPtr can
+// be copied by memcpy.
 static_assert(std::is_trivially_copyable<CheckedPtr<void>>::value,
               "CheckedPtr should be trivially copyable");
 static_assert(std::is_trivially_copyable<CheckedPtr<int>>::value,
               "CheckedPtr should be trivially copyable");
 static_assert(std::is_trivially_copyable<CheckedPtr<std::string>>::value,
               "CheckedPtr should be trivially copyable");
+
+// |is_trivially_default_constructible| assertion helps retain implicit default
+// constructors when CheckedPtr is used as a union field.  Example of an error
+// if this assertion didn't hold:
+//
+//     ../../base/trace_event/trace_arguments.h:249:16: error: call to
+//     implicitly-deleted default constructor of 'base::trace_event::TraceValue'
+//         TraceValue ret;
+//                    ^
+//     ../../base/trace_event/trace_arguments.h:211:26: note: default
+//     constructor of 'TraceValue' is implicitly deleted because variant field
+//     'as_pointer' has a non-trivial default constructor
+//       CheckedPtr<const void> as_pointer;
+static_assert(std::is_trivially_default_constructible<CheckedPtr<void>>::value,
+              "CheckedPtr should be trivially default constructible");
+static_assert(std::is_trivially_default_constructible<CheckedPtr<int>>::value,
+              "CheckedPtr should be trivially default constructible");
+static_assert(
+    std::is_trivially_default_constructible<CheckedPtr<std::string>>::value,
+    "CheckedPtr should be trivially default constructible");
 
 namespace {
 
@@ -48,17 +69,17 @@ struct Derived : Base1, Base2 {
 };
 
 TEST(CheckedPtr, NullStarDereference) {
-  CheckedPtr<int> ptr;
+  CheckedPtr<int> ptr = nullptr;
   EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 42) return, "");
 }
 
 TEST(CheckedPtr, NullArrowDereference) {
-  CheckedPtr<MyStruct> ptr;
+  CheckedPtr<MyStruct> ptr = nullptr;
   EXPECT_DEATH_IF_SUPPORTED(if (ptr->x == 42) return, "");
 }
 
 TEST(CheckedPtr, NullExtractNoDereference) {
-  CheckedPtr<int> ptr;
+  CheckedPtr<int> ptr = nullptr;
   int* raw = ptr;
   std::ignore = raw;
 }
@@ -89,10 +110,10 @@ TEST(CheckedPtr, VoidPtr) {
 
 TEST(CheckedPtr, OperatorEQ) {
   int foo;
-  CheckedPtr<int> ptr1;
+  CheckedPtr<int> ptr1 = nullptr;
   EXPECT_TRUE(ptr1 == ptr1);
 
-  CheckedPtr<int> ptr2;
+  CheckedPtr<int> ptr2 = nullptr;
   EXPECT_TRUE(ptr1 == ptr2);
 
   CheckedPtr<int> ptr3 = &foo;
@@ -107,10 +128,10 @@ TEST(CheckedPtr, OperatorEQ) {
 
 TEST(CheckedPtr, OperatorNE) {
   int foo;
-  CheckedPtr<int> ptr1;
+  CheckedPtr<int> ptr1 = nullptr;
   EXPECT_FALSE(ptr1 != ptr1);
 
-  CheckedPtr<int> ptr2;
+  CheckedPtr<int> ptr2 = nullptr;
   EXPECT_FALSE(ptr1 != ptr2);
 
   CheckedPtr<int> ptr3 = &foo;

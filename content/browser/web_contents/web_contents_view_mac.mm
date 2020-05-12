@@ -167,13 +167,6 @@ void WebContentsViewMac::StartDragging(
   }
 }
 
-void WebContentsViewMac::SizeContents(const gfx::Size& size) {
-  // TODO(brettw | japhet) This is a hack and should be removed.
-  // See web_contents_view.h.
-  // Note(erikchen): This method has /never/ worked correctly. I've removed the
-  // previous implementation.
-}
-
 void WebContentsViewMac::Focus() {
   if (delegate())
     delegate()->ResetStoredFocus();

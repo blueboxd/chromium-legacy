@@ -9,7 +9,7 @@ import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
 // clang-format off
 
   /** @interface */
-  class HatsBrowserProxy {
+  export class HatsBrowserProxy {
     /**
      * Helper function that initiates the launching of HaTS (Happiness Tracking
      * Surveys) through sending a request to HatsService, which is the entity

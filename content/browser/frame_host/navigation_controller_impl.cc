@@ -2988,8 +2988,7 @@ void NavigationControllerImpl::HandleRendererDebugURL(
       DiscardNonCommittedEntries();
       return;
     }
-    frame_tree_node->render_manager()
-        ->InitializeRenderFrameForDebugURLIfNecessary();
+    frame_tree_node->render_manager()->InitializeRenderFrameForImmediateUse();
   }
   frame_tree_node->current_frame_host()->HandleRendererDebugURL(url);
 }

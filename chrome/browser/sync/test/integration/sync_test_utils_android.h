@@ -9,27 +9,25 @@
 
 namespace sync_test_utils_android {
 
-// TODO(crbug/1078923): Make use of the ForTesting suffix.
 // Sets up the test account and signs in synchronously.
-void SetUpTestAccountAndSignIn();
+void SetUpAccountAndSignInForTesting();
 
 // Sets up the test authentication environment synchronously using a worker
 // thread.
 //
-// We recommend to call this function from the SetUp() method of the test
+// We recommend calling this function from the SetUp() method of the test
 // fixture (e.g., CustomFixture::SetUp()) before calling the other SetUp()
 // function down the stack (e.g., PlatformBrowserTest::SetUp()).
-// TODO(crbug/1078923): Make use of the ForTesting suffix.
-void SetUpAuthForTest();
+void SetUpAuthForTesting();
 
 // Tears down the test authentication environment synchronously using a worker
 // thread.
 //
-// We recommend to call this function from the PostRunTestOnMainThread() method
-// of the test fixture which allows multiple threads, see example
+// We recommend calling this function from the PostRunTestOnMainThread() method
+// of the test fixture, which allows multiple threads. See the following file
+// for an example:
 // chrome/browser/metrics/metrics_service_user_demographics_browsertest.cc.
-// TODO(crbug/1078923): Make use of the ForTesting suffix.
-void TearDownAuthForTest();
+void TearDownAuthForTesting();
 
 // Sets up AndroidSyncSettings with a mock SyncContentResolver and with
 // Android's master sync setting enabled.

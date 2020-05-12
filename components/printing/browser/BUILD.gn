@@ -32,8 +32,6 @@ if (is_chromeos) {
 
 static_library("browser") {
   sources = [
-    "features.cc",
-    "features.h",
     "print_composite_client.cc",
     "print_composite_client.h",
     "print_manager.cc",

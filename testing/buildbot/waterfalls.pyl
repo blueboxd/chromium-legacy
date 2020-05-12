@@ -1216,7 +1216,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29',
+          'xcode_11e146',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_clang_tot_sim_tests'
@@ -1246,7 +1246,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29',
+          'xcode_11e146',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_clang_tot_device_tests'
@@ -1927,7 +1927,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29'
+          'xcode_11e146'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_code_coverage_tests',
@@ -1938,7 +1938,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29'
+          'xcode_11e146'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_cronet_tests',
@@ -1949,7 +1949,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29'
+          'xcode_11e146'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_multi_window_tests',
@@ -1961,7 +1961,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29'
+          'xcode_11e146'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_webkit_tot_tests',
@@ -1975,7 +1975,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29',
+          'xcode_11e146',
         ],
         'test_suites': {
           'isolated_scripts': 'ios13_beta_simulator_tests'
@@ -4243,7 +4243,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29',
+          'xcode_11e146',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_tests',
@@ -4257,7 +4257,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11c29',
+          'xcode_11e146',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_full_configs_test'

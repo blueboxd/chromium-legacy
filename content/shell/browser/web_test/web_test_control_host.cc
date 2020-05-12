@@ -523,22 +523,18 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
                          ->GetRenderViewHost()
                          ->GetWebkitPreferences();
   } else {
-#if defined(OS_MACOSX)
-    // Shell::SizeTo is not implemented on all platforms.
-    main_window_->SizeTo(initial_size_);
-#endif
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
     RenderWidgetHost* render_widget_host = render_view_host->GetWidget();
+
     // Set a different size first to reset the possibly inconsistent state
     // caused by the previous test using unfortunate synchronous resize mode.
     // This forces SetSize() not to early return which would otherwise happen
     // when we set the size to initial_size_ which is the same as its current
     // size. See http://crbug.com/1011191 for more details.
     render_widget_host->GetView()->SetSize(
-        gfx::Size(initial_size_.width() / 2, initial_size_.height()));
+        gfx::ScaleToCeiledSize(initial_size_, 0.5, 1));
     render_widget_host->GetView()->SetSize(initial_size_);
-    render_widget_host->SynchronizeVisualProperties();
 
     render_view_host->UpdateWebkitPreferences(default_prefs_);
   }

@@ -22,8 +22,8 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_MACOSX)
-#include "components/printing/browser/features.h"
 #include "components/printing/browser/printer_capabilities_mac.h"
+#include "printing/printing_features.h"
 #endif
 
 #if defined(OS_WIN)

@@ -77,6 +77,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   bool FrameIsReceivedAtIndex(size_t index) const;
   base::TimeDelta FrameDurationAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
+  IntSize DensityCorrectedSizeAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
   SkAlphaType AlphaType() const;
 

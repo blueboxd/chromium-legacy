@@ -8,16 +8,10 @@ import android.os.Bundle;
 
 import androidx.preference.Preference;
 
-import org.chromium.base.CommandLine;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory.Type;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
-import org.chromium.content_public.browser.ContentFeatureList;
-import org.chromium.content_public.common.ContentSwitches;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The main Site Settings screen, which shows all the site settings categories: All sites, Location,
@@ -50,65 +44,27 @@ public class SiteSettings
     }
 
     private void configurePreferences() {
-        // TODO(csharrison): Remove this condition once the experimental UI lands. It is not
-        // great to dynamically remove the preference in this way.
-        if (!SiteSettingsCategory.adsCategoryEnabled()) {
-            getPreferenceScreen().removePreference(findPreference(Type.ADS));
-        }
-        CommandLine commandLine = CommandLine.getInstance();
-        if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
-            getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
-        }
-        if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
-            getPreferenceScreen().removePreference(findPreference(Type.NFC));
-        }
-        if (!ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
-            getPreferenceScreen().removePreference(findPreference(Type.AUGMENTED_REALITY));
-            getPreferenceScreen().removePreference(findPreference(Type.VIRTUAL_REALITY));
+        // Remove unsupported settings categories.
+        for (@SiteSettingsCategory.Type int type = 0; type < SiteSettingsCategory.Type.NUM_ENTRIES;
+                type++) {
+            if (!getSiteSettingsClient().isCategoryVisible(type)) {
+                getPreferenceScreen().removePreference(findPreference(type));
+            }
         }
     }
 
     private void updatePreferenceStates() {
-        // Preferences that navigate to Website Settings.
-        List<Integer> websitePrefs = new ArrayList<Integer>();
-        if (SiteSettingsCategory.adsCategoryEnabled()) {
-            websitePrefs.add(Type.ADS);
-        }
-        if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
-            websitePrefs.add(Type.AUGMENTED_REALITY);
-        }
-        websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
-        websitePrefs.add(Type.BACKGROUND_SYNC);
-        CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
-            websitePrefs.add(Type.BLUETOOTH_SCANNING);
-        }
-        websitePrefs.add(Type.CAMERA);
-        websitePrefs.add(Type.CLIPBOARD);
-        websitePrefs.add(Type.COOKIES);
-        websitePrefs.add(Type.JAVASCRIPT);
-        websitePrefs.add(Type.DEVICE_LOCATION);
-        websitePrefs.add(Type.MICROPHONE);
-        if (ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
-            websitePrefs.add(Type.NFC);
-        }
-        websitePrefs.add(Type.NOTIFICATIONS);
-        websitePrefs.add(Type.POPUPS);
-        websitePrefs.add(Type.SENSORS);
-        websitePrefs.add(Type.PROTECTED_MEDIA);
-        websitePrefs.add(Type.SOUND);
-        websitePrefs.add(Type.USB);
-        if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
-            websitePrefs.add(Type.VIRTUAL_REALITY);
-        }
-
         // Initialize the summary and icon for all preferences that have an
         // associated content settings entry.
         BrowserContextHandle browserContextHandle =
                 getSiteSettingsClient().getBrowserContextHandle();
-        for (@Type int prefCategory : websitePrefs) {
+        for (@Type int prefCategory = 0; prefCategory < Type.NUM_ENTRIES; prefCategory++) {
             Preference p = findPreference(prefCategory);
             int contentType = SiteSettingsCategory.contentSettingsType(prefCategory);
+            // p can be null if the Preference was removed in configurePreferences.
+            if (p == null || contentType < 0) {
+                continue;
+            }
             boolean requiresTriStateSetting =
                     WebsitePreferenceBridge.requiresTriStateContentSetting(contentType);
 

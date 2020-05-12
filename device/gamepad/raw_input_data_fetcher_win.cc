@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/gamepad_uma.h"
@@ -182,22 +183,23 @@ void RawInputDataFetcher::EnumerateDevices() {
         const int vendor_int = new_device->GetVendorId();
         const int product_int = new_device->GetProductId();
         const int version_number = new_device->GetVersionNumber();
-        const std::wstring product_string = new_device->GetProductString();
+        const std::wstring product_wstring = new_device->GetProductString();
+        const std::string product_string = base::SysWideToUTF8(product_wstring);
+        const GamepadId gamepad_id = GamepadIdList::Get().GetGamepadId(
+            product_string, vendor_int, product_int);
 
-        if (NintendoController::IsNintendoController(vendor_int, product_int)) {
+        if (NintendoController::IsNintendoController(gamepad_id)) {
           // Nintendo devices are handled by the Nintendo data fetcher.
           new_device->Shutdown();
           continue;
         }
 
-        bool is_recognized =
-            GamepadId::kUnknownGamepad !=
-            GamepadIdList::Get().GetGamepadId(vendor_int, product_int);
+        bool is_recognized = GamepadId::kUnknownGamepad != gamepad_id;
 
         // Record gamepad metrics before excluding XInput devices. This allows
         // us to recognize XInput devices even though the XInput API masks
         // the vendor and product IDs.
-        RecordConnectedGamepad(vendor_int, product_int);
+        RecordConnectedGamepad(gamepad_id);
 
         // The presence of "IG_" in the device name indicates that this is an
         // XInput Gamepad. Skip enumerating these devices and let the XInput
@@ -226,19 +228,14 @@ void RawInputDataFetcher::EnumerateDevices() {
         pad.vibration_actuator.not_null = device->SupportsVibration();
 
         state->mapper = GetGamepadStandardMappingFunction(
-            vendor_int, product_int, /*hid_specification_version=*/0,
-            version_number, GAMEPAD_BUS_UNKNOWN);
+            product_string, vendor_int, product_int,
+            /*hid_specification_version=*/0, version_number,
+            GAMEPAD_BUS_UNKNOWN);
         state->axis_mask = 0;
         state->button_mask = 0;
 
-        pad.SetID(base::StringPrintf(L"%ls (%lsVendor: %04x Product: %04x)",
-                                     product_string.c_str(),
-                                     state->mapper ? L"STANDARD GAMEPAD " : L"",
-                                     vendor_int, product_int));
-
-        // The mapping is standard if there is a standard mapping function.
-        pad.mapping =
-            state->mapper ? GamepadMapping::kStandard : GamepadMapping::kNone;
+        UpdateGamepadStrings(product_string, vendor_int, product_int,
+                             state->mapper != nullptr, pad);
       }
 
       enumerated_device_handles.insert(device_handle);

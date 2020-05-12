@@ -24,11 +24,11 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitorBase {
  public:
   virtual ~UnifiedHeapMarkingVisitorBase() = default;
 
-  // Visitation methods that announce reachable wrappers to V8.
-  void VisitImpl(const TraceWrapperV8Reference<v8::Value>&);
-
  protected:
   UnifiedHeapMarkingVisitorBase(ThreadState*, v8::Isolate*, int);
+
+  // Visitation methods that announce reachable wrappers to V8.
+  void VisitImpl(const TraceWrapperV8Reference<v8::Value>&);
 
   v8::Isolate* const isolate_;
   v8::EmbedderHeapTracer* const controller_;
@@ -54,6 +54,8 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitor
   UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
   ~UnifiedHeapMarkingVisitor() override = default;
 
+ protected:
+  using Visitor::Visit;
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
  private:
@@ -72,9 +74,12 @@ class PLATFORM_EXPORT ConcurrentUnifiedHeapMarkingVisitor
                                       int task_id);
   ~ConcurrentUnifiedHeapMarkingVisitor() override = default;
 
-  void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
   void FlushWorklists() override;
+
+ protected:
+  using Visitor::Visit;
+  void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConcurrentUnifiedHeapMarkingVisitor);

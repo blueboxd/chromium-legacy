@@ -139,11 +139,8 @@ CREATE VIEW JoinedScrollBeginsAndEnds AS
 -- and can't reasonably determine what it should be. We have separate tracking
 -- to ensure this only happens at the end of the trace.
 --
--- TODO(nuskos): Currently removing updates with dur < 1.5e+7 (15 ms i.e. less
---               then a vsync interval at 60 fps) is a hack to work around the
---               fact we don't have typed async events yet. Once we can tell if
---               an update is coalesced or not we should remove this and instead
---               check that directly.
+-- TODO(nuskos): Replace 1.6e.7 with a sub query that computes the vsync
+--               interval for this scrol
 
 DROP TABLE IF EXISTS GestureScrollUpdates;
 
@@ -167,13 +164,10 @@ CREATE TABLE GestureScrollUpdates AS
     dur,
     track_id,
     traceId,
-    isCoalesced,
     dur/1.6e+7 AS scrollFramesExact
   FROM JoinedScrollBeginsAndEnds beginAndEnd JOIN (
     SELECT
       EXTRACT_ARG(arg_set_id, "chrome_latency_info.trace_id") AS traceId,
-      EXTRACT_ARG(arg_set_id, "chrome_latency_info.is_coalesced")
-        AS isCoalesced,
       EXTRACT_ARG(arg_set_id, 'chrome_latency_info.gesture_scroll_id')
         AS scrollGestureScrollId,
       *
@@ -182,7 +176,7 @@ CREATE TABLE GestureScrollUpdates AS
     WHERE
       slice.name = 'InputLatency::GestureScrollUpdate' AND
       slice.dur != -1 AND
-      slice.dur >= 1.5e+7
+      NOT EXTRACT_ARG(arg_set_id, "chrome_latency_info.is_coalesced")
   ) scrollUpdate ON
   scrollUpdate.ts <= beginAndEnd.scrollEndTs AND
   scrollUpdate.ts >= beginAndEnd.scrollBegin AND

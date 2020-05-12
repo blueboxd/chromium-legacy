@@ -259,8 +259,8 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            willChromeHandleIntent |= ExternalNavigationDelegateImpl
-                    .willChromeHandleIntent(intent, true);
+            willChromeHandleIntent |=
+                    ExternalNavigationDelegateImpl.willChromeHandleIntent(intent, true);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

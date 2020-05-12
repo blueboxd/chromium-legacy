@@ -125,7 +125,6 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_frame_state) override;
-  void UpdateRenderViewSizeForRenderManager(bool is_main_frame) override {}
 
   // Returns a clone of this TestWebContents. The returned object is also a
   // TestWebContents. The caller owns the returned object.

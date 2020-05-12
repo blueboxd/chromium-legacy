@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -65,7 +66,7 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
             return;
         }
 
-        mModalDialogManager = windowAndroid.getModalDialogManager();
+        mModalDialogManager = ((ModalDialogManagerHolder) activity).getModalDialogManager();
         mContext = activity;
         mTotalBytes = totalBytes;
         mDialogType = dialogType;

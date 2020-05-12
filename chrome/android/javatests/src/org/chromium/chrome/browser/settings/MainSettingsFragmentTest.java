@@ -190,7 +190,7 @@ public class MainSettingsFragmentTest {
     @Test
     @SmallTest
     public void testAccountSignIn() throws InterruptedException {
-        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Account account = mSyncTestRule.setUpAccountAndSignInForTesting();
         mSyncTestRule.signOut();
 
         launchSettingsActivity();

@@ -63,7 +63,7 @@ import java.util.List;
 
 /**
  * Logic related to the URL overriding/intercepting functionality.
- * This feature allows Chrome to convert certain navigations to Android Intents allowing
+ * This feature supports conversion of certain navigations to Android Intents allowing
  * applications like Youtube to direct users clicking on a http(s) link to their native app.
  */
 public class ExternalNavigationHandler {
@@ -300,11 +300,11 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * http://crbug.com/441284 : Disallow firing external intent while Chrome is in the background.
+     * http://crbug.com/441284 : Disallow firing external intent while the app is in the background.
      */
     private boolean blockExternalNavWhileBackgrounded(ExternalNavigationParams params) {
-        if (params.isApplicationMustBeInForeground() && !mDelegate.isChromeAppInForeground()) {
-            if (DEBUG) Log.i(TAG, "Chrome is not in foreground");
+        if (params.isApplicationMustBeInForeground() && !mDelegate.isApplicationInForeground()) {
+            if (DEBUG) Log.i(TAG, "App is not in foreground");
             return true;
         }
         return false;
@@ -331,11 +331,11 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    /** http://crbug.com/605302 : Allow Chrome to handle all pdf file downloads. */
+    /** http://crbug.com/605302 : Allow embedders to handle all pdf file downloads. */
     private boolean isInternalPdfDownload(
             boolean isExternalProtocol, ExternalNavigationParams params) {
         if (!isExternalProtocol && isPdfDownload(params.getUrl())) {
-            if (DEBUG) Log.i(TAG, "PDF downloads are now handled by Chrome");
+            if (DEBUG) Log.i(TAG, "PDF downloads are now handled internally");
             return true;
         }
         return false;
@@ -343,7 +343,7 @@ public class ExternalNavigationHandler {
 
     /**
      * If accessing a file URL, ensure that the user has granted the necessary file access
-     * to Chrome.
+     * to the app.
      */
     private boolean startFileIntentIfNecessary(
             ExternalNavigationParams params, Intent targetIntent) {
@@ -512,7 +512,7 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    private boolean redirectShouldStayInChrome(
+    private boolean redirectShouldStayInApp(
             ExternalNavigationParams params, boolean isExternalProtocol, Intent targetIntent) {
         RedirectHandler handler = params.getRedirectHandler();
         if (handler == null) return false;
@@ -554,7 +554,7 @@ public class ExternalNavigationHandler {
         }
         // http://crbug.com/839751: Require user gestures for form submits to external
         //                          protocols.
-        // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
+        // TODO(tedchoc): Turn this on by default once we verify this change does
         //                not break the world.
         if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
                 && blockExternalFormRedirectsWithoutGesture()) {
@@ -753,10 +753,10 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * This is the catch-all path for any intent that Chrome can handle that doesn't have a
+     * This is the catch-all path for any intent that the app can handle that doesn't have a
      * specialized external app handling it.
      */
-    private @OverrideUrlLoadingResult int fallBackToHandlingInChrome() {
+    private @OverrideUrlLoadingResult int fallBackToHandlingInApp() {
         if (DEBUG) Log.i(TAG, "No specialized handler for URL");
         return OverrideUrlLoadingResult.NO_OVERRIDE;
     }
@@ -826,9 +826,9 @@ public class ExternalNavigationHandler {
      */
     private void prepareExternalIntent(Intent targetIntent, ExternalNavigationParams params,
             List<ResolveInfo> resolvingInfos, boolean shouldProxyForInstantApps) {
-        // Set the Browser application ID to us in case the user chooses Chrome
+        // Set the Browser application ID to us in case the user chooses this app
         // as the app.  This will make sure the link is opened in the same tab
-        // instead of making a new one.
+        // instead of making a new one in the case of Chrome.
         targetIntent.putExtra(Browser.EXTRA_APPLICATION_ID,
                 ContextUtils.getApplicationContext().getPackageName());
         if (params.isOpenInNewTab()) targetIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
@@ -857,8 +857,8 @@ public class ExternalNavigationHandler {
     private @OverrideUrlLoadingResult int handleExternalIncognitoIntent(Intent targetIntent,
             ExternalNavigationParams params, String browserFallbackUrl,
             boolean shouldProxyForInstantApps) {
-        // This intent may leave Chrome. Warn the user that incognito does not carry over
-        // to apps out side of Chrome.
+        // This intent may leave this app. Warn the user that incognito does not carry over
+        // to external apps.
         if (mDelegate.startIncognitoIntent(targetIntent, params.getReferrerUrl(),
                     browserFallbackUrl,
                     params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(),
@@ -871,13 +871,13 @@ public class ExternalNavigationHandler {
     }
 
     /**
-     * If some third-party app launched Chrome with an intent, and the URL got redirected, and the
-     * user explicitly chose Chrome over other intent handlers, stay in Chrome unless there was a
-     * new intent handler after redirection or Chrome cannot handle it any more.
+     * If some third-party app launched this app with an intent, and the URL got redirected, and the
+     * user explicitly chose this app over other intent handlers, stay in the app unless there was a
+     * new intent handler after redirection or the app cannot handle it internally any more.
      * Custom tabs are an exception to this rule, since at no point, the user sees an intent picker
-     * and "picking Chrome" is handled inside the support library.
+     * and "picking the Chrome app" is handled inside the support library.
      */
-    private boolean shouldKeepIntentRedirectInChrome(ExternalNavigationParams params,
+    private boolean shouldKeepIntentRedirectInApp(ExternalNavigationParams params,
             boolean incomingIntentRedirect, List<ResolveInfo> resolvingInfos,
             boolean isExternalProtocol) {
         if (params.getRedirectHandler() != null && incomingIntentRedirect && !isExternalProtocol
@@ -989,7 +989,7 @@ public class ExternalNavigationHandler {
 
         if (handleCCTRedirectsToInstantApps(params, isExternalProtocol, incomingIntentRedirect)) {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-        } else if (redirectShouldStayInChrome(params, isExternalProtocol, targetIntent)) {
+        } else if (redirectShouldStayInApp(params, isExternalProtocol, targetIntent)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -1040,11 +1040,11 @@ public class ExternalNavigationHandler {
                         params, incomingIntentRedirect, linkNotFromIntent)) {
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
             }
-            return fallBackToHandlingInChrome();
+            return fallBackToHandlingInApp();
         }
 
-        // From this point on we should only have intents Chrome can't handle, or intents for apps
-        // with specialized handlers.
+        // From this point on we should only have intents that this app can't handle, or intents for
+        // apps with specialized handlers.
 
         if (shouldStayWithinHost(
                     params, isLink, isFormSubmit, resolvingInfos, isExternalProtocol)) {
@@ -1064,22 +1064,22 @@ public class ExternalNavigationHandler {
         assert intentResolutionMatches(debugIntent, targetIntent);
 
         if (params.isIncognito()) {
-            boolean intentTargetedToChrome = mDelegate.willChromeHandleIntent(targetIntent);
+            boolean intentTargetedToApp = mDelegate.willAppHandleIntent(targetIntent);
 
-            // The user is about to potentially leave Chrome, so we should ask whether they want to
+            // The user is about to potentially leave the app, so we should ask whether they want to
             // leave incognito or not.
-            if (!intentTargetedToChrome) {
+            if (!intentTargetedToApp) {
                 return handleExternalIncognitoIntent(
                         targetIntent, params, browserFallbackUrl, shouldProxyForInstantApps);
             }
 
-            // The intent is staying in Chrome, so we can simply navigate to the intent's URL, while
-            // staying in incognito.
+            // The intent is staying in the app, so we can simply navigate to the intent's URL,
+            // while staying in incognito.
             return mDelegate.handleIncognitoIntentTargetingSelf(
                     targetIntent, params.getReferrerUrl(), browserFallbackUrl);
         }
 
-        if (shouldKeepIntentRedirectInChrome(
+        if (shouldKeepIntentRedirectInApp(
                     params, incomingIntentRedirect, resolvingInfos, isExternalProtocol)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
@@ -1183,7 +1183,7 @@ public class ExternalNavigationHandler {
         // NOTE: any further redirection from fall-back URL should not override URL loading.
         // Otherwise, it can be used in chain for fingerprinting multiple app installation
         // status in one shot. In order to prevent this scenario, we notify redirection
-        // handler that redirection from the current navigation should stay in Chrome.
+        // handler that redirection from the current navigation should stay in this app.
         if (params.getRedirectHandler() != null) {
             params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
         }

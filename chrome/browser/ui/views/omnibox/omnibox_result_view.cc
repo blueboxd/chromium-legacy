@@ -80,7 +80,7 @@ OmniboxResultView::OmniboxResultView(
   remove_suggestion_focus_ring_ =
       views::FocusRing::Install(remove_suggestion_button_);
   remove_suggestion_focus_ring_->SetHasFocusPredicate([&](View* view) {
-    return view->GetVisible() && IsSelected() &&
+    return view->GetVisible() && IsMatchSelected() &&
            popup_contents_view_->IsButtonSelected();
   });
 
@@ -219,7 +219,7 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
 
 void OmniboxResultView::OnSelectionStateChanged() {
   UpdateRemoveSuggestionVisibility();
-  if (IsSelected()) {
+  if (IsMatchSelected()) {
     // Immediately before notifying screen readers that the selected item has
     // changed, we want to update the name of the newly-selected item so that
     // any cached values get updated prior to the selection change.
@@ -243,8 +243,11 @@ void OmniboxResultView::OnSelectionStateChanged() {
   ApplyThemeAndRefreshIcons();
 }
 
-bool OmniboxResultView::IsSelected() const {
-  return popup_contents_view_->IsSelectedIndex(model_index_);
+bool OmniboxResultView::IsMatchSelected() const {
+  // The header button being focused means the match itself is NOT focused.
+  return popup_contents_view_->IsSelectedIndex(model_index_) &&
+         popup_contents_view_->model()->selected_line_state() !=
+             OmniboxPopupModel::HEADER_BUTTON_FOCUSED;
 }
 
 views::Button* OmniboxResultView::GetSecondaryButton() {
@@ -272,9 +275,9 @@ base::string16 OmniboxResultView::ToAccessibilityLabelWithSecondaryButton(
     int* label_prefix_length) {
   int additional_message_id = 0;
   views::Button* secondary_button = GetSecondaryButton();
-  bool button_focused =
-      IsSelected() && popup_contents_view_->model()->selected_line_state() ==
-                          OmniboxPopupModel::BUTTON_FOCUSED;
+  bool button_focused = IsMatchSelected() &&
+                        popup_contents_view_->model()->selected_line_state() ==
+                            OmniboxPopupModel::BUTTON_FOCUSED;
 
   // If there's a button focused, we don't want the "n of m" message announced.
   if (button_focused)
@@ -303,7 +306,7 @@ base::string16 OmniboxResultView::ToAccessibilityLabelWithSecondaryButton(
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {
-  if (IsSelected())
+  if (IsMatchSelected())
     return OmniboxPartState::SELECTED;
 
   // If we don't highlight the whole row when the user has the mouse over the
@@ -445,7 +448,7 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     // When the drag enters or remains within the bounds of this view, either
     // set the state to be selected or hovered, depending on the mouse button.
     if (event.IsOnlyLeftMouseButton()) {
-      if (!IsSelected())
+      if (!IsMatchSelected())
         popup_contents_view_->SetSelectedLine(model_index_);
       if (suggestion_tab_switch_button_) {
         gfx::Point point_in_child_coords(event.location());
@@ -509,7 +512,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                              popup_contents_view_->model()->result().size());
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                              IsSelected());
+                              IsMatchSelected());
   if (IsMouseHovered())
     node_data->AddState(ax::mojom::State::kHovered);
 }
@@ -594,7 +597,7 @@ void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
                         !match_.ShouldShowTabMatchButton() &&
                         base::FeatureList::IsEnabled(
                             omnibox::kOmniboxSuggestionTransparencyOptions) &&
-                        (IsSelected() || IsMouseHovered());
+                        (IsMatchSelected() || IsMouseHovered());
 
   remove_suggestion_button_->SetVisible(new_visibility);
 

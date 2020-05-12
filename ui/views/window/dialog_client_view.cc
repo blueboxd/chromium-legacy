@@ -266,10 +266,8 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
     return;
   }
 
-  std::unique_ptr<LabelButton> button =
-      is_default ? MdTextButton::CreateSecondaryUiProminentButton(this, title)
-                 : MdTextButton::CreateSecondaryUiButton(this, title);
-
+  auto button = MdTextButton::Create(this, title);
+  button->SetProminent(is_default);
   button->SetIsDefault(is_default);
   button->SetEnabled(delegate->IsDialogButtonEnabled(type));
 

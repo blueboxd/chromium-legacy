@@ -52,7 +52,7 @@ void TileBackgroundTask::StartFetchTask(SimpleFactoryKey* key,
   auto* tile_service =
       upboarding::TileServiceFactory::GetInstance()->GetForKey(key);
   DCHECK(tile_service);
-  tile_service->StartFetchForTiles(std::move(callback));
+  tile_service->StartFetchForTiles(is_from_reduced_mode, std::move(callback));
 }
 
 }  // namespace upboarding

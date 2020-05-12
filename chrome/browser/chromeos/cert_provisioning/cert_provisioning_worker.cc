@@ -199,6 +199,7 @@ void CertProvisioningWorkerImpl::DoStep() {
 
   CancelScheduledTasks();
   is_waiting_ = false;
+  last_update_time_ = base::Time::NowFromSystemTime();
 
   switch (state_) {
     case CertProvisioningWorkerState::kInitState:
@@ -250,6 +251,7 @@ void CertProvisioningWorkerImpl::UpdateState(
 
   prev_state_ = state_;
   state_ = new_state;
+  last_update_time_ = base::Time::NowFromSystemTime();
 
   if (is_continued_without_invalidation_for_uma_) {
     RecordEvent(
@@ -570,6 +572,10 @@ CertProvisioningWorkerState CertProvisioningWorkerImpl::GetPreviousState()
   return prev_state_;
 }
 
+base::Time CertProvisioningWorkerImpl::GetLastUpdateTime() const {
+  return last_update_time_;
+}
+
 CertProvisioningWorkerState CertProvisioningWorkerImpl::GetState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_;
@@ -632,6 +638,7 @@ void CertProvisioningWorkerImpl::ScheduleNextStep(base::TimeDelta delay) {
       delay);
 
   is_waiting_ = true;
+  last_update_time_ = base::Time::NowFromSystemTime();
   VLOG(0) << "Next step scheduled in " << delay;
 }
 

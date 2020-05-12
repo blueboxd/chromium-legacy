@@ -63,7 +63,7 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CANCEL));
 
   if (prompt_for_new_profile) {
-    DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
+    DialogDelegate::SetExtraView(views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
   }
 

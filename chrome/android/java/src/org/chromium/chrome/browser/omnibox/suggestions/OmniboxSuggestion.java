@@ -24,6 +24,7 @@ import java.util.List;
 @VisibleForTesting
 public class OmniboxSuggestion {
     public static final int INVALID_GROUP = -1;
+    public static final int INVALID_TYPE = -1;
 
     /**
      * Specifies the style of portions of the suggestion text.

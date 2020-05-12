@@ -14601,7 +14601,7 @@
     {
       'name': 'MinimumChromeVersionEnforced',
       'owners': ['snijhara@google.com'],
-      'supported_on': ['chrome_os:84-'],
+      'supported_on': ['chrome_os:85-'],
       'future': True,
       'device_only': True,
       'type': 'dict',

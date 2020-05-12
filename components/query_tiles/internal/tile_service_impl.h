@@ -46,7 +46,8 @@ class TileServiceImpl : public InitializableTileService {
   void Initialize(SuccessCallback callback) override;
   void GetQueryTiles(GetTilesCallback callback) override;
   void GetTile(const std::string& tile_id, TileCallback callback) override;
-  void StartFetchForTiles(BackgroundTaskFinishedCallback callback) override;
+  void StartFetchForTiles(bool is_from_reduced_mode,
+                          BackgroundTaskFinishedCallback callback) override;
 
   // Called when tile manager is initialized.
   void OnTileManagerInitialized(SuccessCallback callback,

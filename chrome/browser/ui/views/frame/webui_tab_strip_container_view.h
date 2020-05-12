@@ -26,10 +26,6 @@
 #error
 #endif
 
-namespace feature_engagement {
-class Tracker;
-}  // namespace feature_engagement
-
 namespace ui {
 class MenuModel;
 }  // namespace ui
@@ -41,14 +37,12 @@ class WebView;
 }  // namespace views
 
 class Browser;
-class FeaturePromoBubbleView;
 
 class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public gfx::AnimationDelegate,
                                    public views::AccessiblePaneView,
                                    public views::ButtonListener,
-                                   public views::ViewObserver,
-                                   public views::WidgetObserver {
+                                   public views::ViewObserver {
  public:
   WebUITabStripContainerView(Browser* browser,
                              views::View* tab_contents_container,
@@ -67,11 +61,8 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
 
   views::NativeViewHost* GetNativeViewHost();
 
-  // Control buttons. Each must only be called once.
-  std::unique_ptr<ToolbarButton> CreateNewTabButton();
+  // Control button. Must only be called once.
   std::unique_ptr<views::View> CreateTabCounter();
-
-  void UpdateButtons();
 
   // Should be called on BrowserView re-layout. If IPH is showing,
   // updates the promo for the new tab counter location.
@@ -83,12 +74,12 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // the container's preferred size will change.
   void SetVisibleForTesting(bool visible);
   views::WebView* web_view_for_testing() const { return web_view_; }
-  ToolbarButton* new_tab_button_for_testing() const { return new_tab_button_; }
   views::View* tab_counter_for_testing() const { return tab_counter_; }
 
  private:
   class AutoCloser;
   class DragToOpenHandler;
+  class IPHController;
 
   // Called as we are dragged open.
   void UpdateHeightForDragToOpen(float height_delta);
@@ -142,17 +133,12 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void OnViewBoundsChanged(View* observed_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
-
   // views::AccessiblePaneView
   bool SetPaneFocusAndFocusDefault() override;
 
   Browser* const browser_;
   views::WebView* const web_view_;
   views::View* tab_contents_container_;
-  // TODO(1045669): Remove this, or run an experiment on bringing it back.
-  ToolbarButton* new_tab_button_ = nullptr;
   views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
@@ -162,19 +148,16 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // long the tab strip is kept open.
   base::Optional<base::TimeTicks> time_at_open_;
 
-  feature_engagement::Tracker* const iph_tracker_;
-  FeaturePromoBubbleView* tab_counter_promo_ = nullptr;
-
   gfx::SlideAnimation animation_{this};
 
   std::unique_ptr<AutoCloser> auto_closer_;
   std::unique_ptr<DragToOpenHandler> drag_to_open_handler_;
+  std::unique_ptr<IPHController> iph_controller_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
   std::unique_ptr<ui::MenuModel> context_menu_model_;
 
   ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

@@ -3424,10 +3424,7 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   if (RenderFrameHostImpl* rfh =
           RenderFrameHostImpl::FromID(process_id, render_frame_id)) {
     url_loader_factory_params->cookie_observer =
-        static_cast<StoragePartitionImpl*>(
-            rfh->GetProcess()->GetStoragePartition())
-            ->CreateCookieAccessObserver(
-                /* is_service_worker=*/false, process_id, render_frame_id);
+        rfh->CreateCookieAccessObserver();
   }
   url::Origin origin = url::Origin::Create(url);
   url_loader_factory_params->isolation_info =

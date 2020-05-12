@@ -10,6 +10,18 @@
 
 namespace upboarding {
 
+namespace {
+
+void TestImagePrefetchMode(std::map<std::string, std::string> params,
+                           ImagePrefetchMode expected) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(features::kQueryTiles,
+                                                  params);
+  EXPECT_EQ(TileConfig::GetImagePrefetchMode(), expected);
+}
+
+}  // namespace
+
 // Test to verify Finch parameters for enabled experiment group is read
 // correctly.
 TEST(TileConfigTest, FinchConfigEnabled) {
@@ -39,6 +51,21 @@ TEST(TileConfigTest, FinchConfigDefaultParameter) {
   EXPECT_TRUE(TileConfig::GetExperimentTag().empty());
   EXPECT_EQ(TileConfig::GetExpireDuration(),
             base::TimeDelta::FromSeconds(48 * 60 * 60));
+}
+
+// Test to verify ImagePrefetchMode can be parsed correctly from Finch
+// parameters.
+TEST(TileConfigTest, GetImagePrefetchMode) {
+  TestImagePrefetchMode({{kImagePrefetchModeKey, "none"}},
+                        ImagePrefetchMode::kNone);
+  TestImagePrefetchMode(std::map<std::string, std::string>(),
+                        ImagePrefetchMode::kTopLevel);
+  TestImagePrefetchMode({{kImagePrefetchModeKey, ""}},
+                        ImagePrefetchMode::kTopLevel);
+  TestImagePrefetchMode({{kImagePrefetchModeKey, "top"}},
+                        ImagePrefetchMode::kTopLevel);
+  TestImagePrefetchMode({{kImagePrefetchModeKey, "all"}},
+                        ImagePrefetchMode::kAll);
 }
 
 }  // namespace upboarding

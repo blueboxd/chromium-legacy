@@ -272,7 +272,7 @@ suite('PasswordsSection', function() {
 
   // Test verifies that pressing the 'remove' button will trigger a remove
   // event. Does not actually remove any passwords.
-  test('verifyPasswordItemRemoveButton', function(done) {
+  test('verifyPasswordItemRemoveButton', function() {
     const passwordList = [
       createPasswordEntry('one', 'six'),
       createPasswordEntry('two', 'five'),
@@ -289,22 +289,17 @@ suite('PasswordsSection', function() {
     assertTrue(!!firstNode);
     const firstPassword = passwordList[0];
 
-    passwordManager.onRemoveSavedPassword = function(id) {
-      // Verify that the event matches the expected value.
-      assertEquals(firstPassword.id, id);
-
-      // Clean up after self.
-      passwordManager.onRemoveSavedPassword = null;
-
-      done();
-    };
-
     // Click the remove button on the first password.
     firstNode.$$('#passwordMenu').click();
     passwordsSection.$.menuRemovePassword.click();
-    assertEquals(
-        passwordsSection.i18n('passwordDeleted'),
-        getToastManager().$.content.textContent);
+
+    return passwordManager.whenCalled('removeSavedPassword').then(id => {
+      // Verify that the expected value was passed to the proxy.
+      assertEquals(firstPassword.id, id);
+      assertEquals(
+          passwordsSection.i18n('passwordDeleted'),
+          getToastManager().$.content.textContent);
+    });
   });
 
   // Test verifies that 'Copy password' button is hidden for Federated
@@ -490,7 +485,7 @@ suite('PasswordsSection', function() {
 
   // Test verifies that pressing the 'remove' button will trigger a remove
   // event. Does not actually remove any exceptions.
-  test('verifyPasswordExceptionRemoveButton', function(done) {
+  test('verifyPasswordExceptionRemoveButton', function() {
     const exceptionList = [
       createExceptionEntry('docs.google.com'),
       createExceptionEntry('mail.com'),
@@ -513,23 +508,25 @@ suite('PasswordsSection', function() {
       exceptions[item].querySelector('#removeExceptionButton').click();
     };
 
-    passwordManager.onRemoveException = function(id) {
-      // Verify that the event matches the expected value.
-      assertTrue(item < exceptionList.length);
-      assertEquals(id, exceptionList[item].id);
+    // Removes the next exception item, verifies that the expected method was
+    // called on |passwordManager| and continues recursively until no more items
+    // exist.
+    function removeNextRecursive() {
+      passwordManager.resetResolver('removeException');
+      clickRemoveButton();
+      return passwordManager.whenCalled('removeException').then(id => {
+        // Verify that the event matches the expected value.
+        assertTrue(item < exceptionList.length);
+        assertEquals(id, exceptionList[item].id);
 
-      if (++item < exceptionList.length) {
-        clickRemoveButton();  // Click 'remove' on all passwords, one by one.
-      } else {
-        // Clean up after self.
-        passwordManager.onRemoveException = null;
+        if (++item < exceptionList.length) {
+          return removeNextRecursive();
+        }
+      });
+    }
 
-        done();
-      }
-    };
-
-    // Start removing.
-    clickRemoveButton();
+    // Click 'remove' on all passwords, one by one.
+    return removeNextRecursive();
   });
 
   test('verifyFederatedPassword', function() {

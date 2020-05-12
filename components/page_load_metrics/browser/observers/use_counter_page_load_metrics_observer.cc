@@ -30,17 +30,6 @@ void RecordUkmFeatures(const UkmFeatureList& features,
     if (ukm_features_recorded->find(static_cast<size_t>(feature)) !=
         ukm_features_recorded->end())
       continue;
-    // TODO(kochi): https://crbug.com/806671 https://843080
-    // as ElementCreateShadowRoot is ~8% and
-    // DocumentRegisterElement is ~5% as of May, 2018, to meet UKM's data
-    // volume expectation, reduce the data size by sampling. Revisit and
-    // remove this code once Shadow DOM V0 and Custom Elements V0 are removed.
-    const int kSamplingFactor = 10;
-    if ((feature == WebFeature::kElementCreateShadowRoot ||
-         feature == WebFeature::kDocumentRegisterElement) &&
-        base::RandGenerator(kSamplingFactor) != 0)
-      continue;
-
     ukm::builders::Blink_UseCounter(source_id)
         .SetFeature(static_cast<size_t>(feature))
         .SetIsMainFrameFeature(

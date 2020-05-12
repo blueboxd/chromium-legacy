@@ -267,7 +267,7 @@ SyncTest::~SyncTest() = default;
 
 void SyncTest::SetUp() {
 #if defined(OS_ANDROID)
-  sync_test_utils_android::SetUpAuthForTest();
+  sync_test_utils_android::SetUpAuthForTesting();
   sync_test_utils_android::SetUpAndroidSyncSettingsForTesting();
 #endif
 
@@ -315,7 +315,7 @@ void SyncTest::PostRunTestOnMainThread() {
   PlatformBrowserTest::PostRunTestOnMainThread();
 
 #if defined(OS_ANDROID)
-  sync_test_utils_android::TearDownAuthForTest();
+  sync_test_utils_android::TearDownAuthForTesting();
 #endif
 }
 

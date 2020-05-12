@@ -3871,6 +3871,7 @@ test("unit_tests") {
       "../browser/omnibox/status/status_mediator_unittest.cc",
       "../browser/omnibox/suggestions/answer/answer_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/autocomplete_mediator_unittest.cc",
+      "../browser/omnibox/suggestions/autocomplete_result_unittest.cc",
       "../browser/omnibox/suggestions/base/base_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/basic/basic_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/cached_zero_suggestions_manager_unittest.cc",

@@ -535,11 +535,10 @@ void BrowserActionsContainerOverflowTest::SetUpOnMainThread() {
   main_bar_ = BrowserView::GetBrowserViewForBrowser(browser())
                   ->toolbar()->browser_actions();
   overflow_parent_ = std::make_unique<views::ResizeAwareParentView>();
-  overflow_parent_->set_owned_by_client();
-  overflow_bar_ = new BrowserActionsContainer(
-      browser(), main_bar_,
-      BrowserView::GetBrowserViewForBrowser(browser())->toolbar(), true);
-  overflow_parent_->AddChildView(overflow_bar_);
+  overflow_bar_ =
+      overflow_parent_->AddChildView(std::make_unique<BrowserActionsContainer>(
+          browser(), main_bar_,
+          BrowserView::GetBrowserViewForBrowser(browser())->toolbar(), true));
 }
 
 void BrowserActionsContainerOverflowTest::TearDownOnMainThread() {

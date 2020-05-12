@@ -5,15 +5,21 @@
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #include <utility>
 
+#include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/test/mock_tracker.h"
 #include "content/public/common/drop_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 
 class WebUITabStripContainerViewTest : public TestWithBrowserView {
@@ -142,6 +148,64 @@ TEST_F(WebUITabStripDevToolsTest, DevToolsWindowHasNoTabStrip) {
   ui::TouchUiController::TouchUiScoperForTesting disable_touch_mode(false);
   ui::TouchUiController::TouchUiScoperForTesting reenable_touch_mode(true);
   EXPECT_EQ(nullptr, browser_view()->webui_tab_strip());
+}
+
+class WebUITabStripIPHTest : public WebUITabStripContainerViewTest {
+ public:
+  void SetUp() override {
+    WebUITabStripContainerViewTest::SetUp();
+
+    mock_tracker_ = static_cast<MockTracker*>(
+        feature_engagement::TrackerFactory::GetForBrowserContext(
+            browser()->profile()));
+  }
+
+ protected:
+  using MockTracker =
+      ::testing::NiceMock<feature_engagement::test::MockTracker>;
+
+  TestingProfile::TestingFactories GetTestingFactories() override {
+    auto factories = WebUITabStripContainerViewTest::GetTestingFactories();
+    factories.emplace_back(feature_engagement::TrackerFactory::GetInstance(),
+                           base::Bind(MakeMockTracker));
+    return factories;
+  }
+
+  MockTracker* mock_tracker_;
+
+ private:
+  static std::unique_ptr<KeyedService> MakeMockTracker(
+      content::BrowserContext* _context) {
+    using ::testing::_;
+    using ::testing::AnyNumber;
+    using ::testing::Return;
+
+    auto mock_tracker = std::make_unique<MockTracker>();
+
+    // By default, allow calls to ShouldTriggerHelpUI. Other features
+    // may query this. We will set WebUI tab strip-specific expectations
+    // later.
+    EXPECT_CALL(*mock_tracker, ShouldTriggerHelpUI(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    return mock_tracker;
+  }
+};
+
+TEST_F(WebUITabStripIPHTest, OpeningNewTabAttemptsIPH) {
+  using ::testing::Eq;
+  using ::testing::Field;
+  using ::testing::Return;
+
+  // Ensure the IPH attempts to show upon opening a new tab.
+  EXPECT_CALL(*mock_tracker_,
+              ShouldTriggerHelpUI(
+                  Field(&base::Feature::name,
+                        Eq(feature_engagement::kIPHWebUITabStripFeature.name))))
+      .Times(1)
+      .WillOnce(Return(false));
+
+  chrome::NewTab(browser());
 }
 
 // TODO(crbug.com/1066624): add coverage of open and close gestures.

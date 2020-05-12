@@ -476,8 +476,7 @@ id<GREYMatcher> SearchCopiedTextButton() {
 
 // TODO(crbug.com/1046787): Test is failing for EG1.
 #if defined(CHROME_EARL_GREY_1)
-  if (![ChromeEarlGrey isIPadIdiom] &&
-      base::ios::IsRunningOnOrLater(13, 3, 0)) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
   }
 #endif

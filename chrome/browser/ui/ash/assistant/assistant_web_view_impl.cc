@@ -39,7 +39,7 @@ gfx::NativeView AssistantWebViewImpl::GetNativeView() {
 }
 
 void AssistantWebViewImpl::ChildPreferredSizeChanged(views::View* child) {
-  DCHECK_EQ(web_view_.get(), child);
+  DCHECK_EQ(web_view_, child);
   SetPreferredSize(web_view_->GetPreferredSize());
 }
 
@@ -189,11 +189,8 @@ void AssistantWebViewImpl::InitWebContents(Profile* profile) {
 }
 
 void AssistantWebViewImpl::InitLayout(Profile* profile) {
-  // Web view.
-  web_view_ = std::make_unique<views::WebView>(profile);
-  web_view_->set_owned_by_client();
+  web_view_ = AddChildView(std::make_unique<views::WebView>(profile));
   web_view_->SetWebContents(web_contents_.get());
-  AddChildView(web_view_.get());
 }
 
 void AssistantWebViewImpl::NotifyDidSuppressNavigation(

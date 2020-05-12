@@ -71,6 +71,7 @@ void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
         FROM_HERE,
         base::BindOnce(&TileServiceImpl::StartFetchForTiles,
                        weak_ptr_factory_.GetWeakPtr(),
+                       false /*is_from_reduced_mode*/,
                        base::BindOnce(&OnInstantFetchComplete)),
         base::TimeDelta::FromSeconds(2));
   }
@@ -106,6 +107,7 @@ void TileServiceImpl::ScheduleDailyTask() {
 }
 
 void TileServiceImpl::StartFetchForTiles(
+    bool is_from_reduced_mode,
     BackgroundTaskFinishedCallback task_finished_callback) {
   DCHECK(tile_fetcher_);
   tile_fetcher_->StartFetchForTiles(base::BindOnce(

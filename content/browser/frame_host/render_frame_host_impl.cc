@@ -52,6 +52,7 @@
 #include "content/browser/file_system/file_system_manager_impl.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
+#include "content/browser/frame_host/cookie_utils.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/file_chooser_impl.h"
@@ -193,6 +194,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -441,6 +443,24 @@ RenderFrameHostOrProxy LookupRenderFrameHostOrProxy(int process_id,
   RenderFrameProxyHost* proxy = nullptr;
   if (!rfh)
     proxy = RenderFrameProxyHost::FromID(process_id, routing_id);
+  return RenderFrameHostOrProxy(rfh, proxy);
+}
+
+RenderFrameHostOrProxy LookupRenderFrameHostOrProxy(
+    int process_id,
+    const base::UnguessableToken& frame_token) {
+  auto it = g_token_frame_map.Get().find(frame_token);
+  RenderFrameHostImpl* rfh = nullptr;
+  RenderFrameProxyHost* proxy = nullptr;
+  if (it != g_token_frame_map.Get().end()) {
+    // The check against |process_id| isn't strictly necessary, but represents
+    // an extra level of protection against a renderer trying to force a frame
+    // token.
+    rfh =
+        process_id == it->second->GetProcess()->GetID() ? it->second : nullptr;
+  } else {
+    proxy = RenderFrameProxyHost::FromFrameToken(process_id, frame_token);
+  }
   return RenderFrameHostOrProxy(rfh, proxy);
 }
 
@@ -1075,7 +1095,7 @@ void RenderFrameHostImpl::AudioContextPlaybackStopped(int audio_context_id) {
 }
 
 // The current frame went into the BackForwardCache.
-void RenderFrameHostImpl::EnterBackForwardCache() {
+void RenderFrameHostImpl::DidEnterBackForwardCache() {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::EnterBackForwardCache");
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(lifecycle_state_, LifecycleState::kActive);
@@ -1085,7 +1105,7 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
   if (!GetParent())
     StartBackForwardCacheEvictionTimer();
   for (auto& child : children_)
-    child->current_frame_host()->EnterBackForwardCache();
+    child->current_frame_host()->DidEnterBackForwardCache();
 
   if (service_worker_container_hosts_.empty())
     return;
@@ -1105,15 +1125,14 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
 }
 
 // The frame as been restored from the BackForwardCache.
-void RenderFrameHostImpl::LeaveBackForwardCache() {
+void RenderFrameHostImpl::WillLeaveBackForwardCache() {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::LeaveBackForwardCache");
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(lifecycle_state_, LifecycleState::kInBackForwardCache);
-  SetLifecycleState(LifecycleState::kActive);
   if (back_forward_cache_eviction_timer_.IsRunning())
     back_forward_cache_eviction_timer_.Stop();
   for (auto& child : children_)
-    child->current_frame_host()->LeaveBackForwardCache();
+    child->current_frame_host()->WillLeaveBackForwardCache();
 
   if (service_worker_container_hosts_.empty())
     return;
@@ -1626,8 +1645,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
                         OnDidChangeFramePolicy)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
-                        OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
@@ -3641,6 +3658,8 @@ void RenderFrameHostImpl::EnforceInsecureNavigationsSet(
   frame_tree_node()->SetInsecureNavigationsSet(set);
 }
 
+// TODO(https://crbug.com/1058038): Share the common code between the two
+// overloads below.
 RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
     int32_t child_frame_routing_id,
     bad_message::BadMessageReason reason) {
@@ -3660,6 +3679,36 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
     // TODO(altimin, lfg): Reconsider what the correct behaviour here should be.
     return nullptr;
   }
+  if (child_frame_or_proxy.GetFrameTreeNode()->parent() != this) {
+    bad_message::ReceivedBadMessage(GetProcess(), reason);
+    return nullptr;
+  }
+  return child_frame_or_proxy.proxy
+             ? child_frame_or_proxy.proxy->frame_tree_node()
+                   ->current_frame_host()
+             : child_frame_or_proxy.frame;
+}
+
+RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChild(
+    const base::UnguessableToken& child_frame_token,
+    bad_message::BadMessageReason reason) {
+  auto child_frame_or_proxy =
+      LookupRenderFrameHostOrProxy(GetProcess()->GetID(), child_frame_token);
+  // A race can result in |child| to be nullptr. Avoid killing the renderer in
+  // that case.
+  if (!child_frame_or_proxy)
+    return nullptr;
+
+  if (child_frame_or_proxy.GetFrameTreeNode()->frame_tree() !=
+      frame_tree_node()->frame_tree()) {
+    // Ignore the cases when the child lives in a different frame tree.
+    // This is possible when we create a proxy for inner WebContents (e.g.
+    // for portals) so the |child_frame_or_proxy| points to the root frame
+    // of the nested WebContents, which is in a different tree.
+    // TODO(altimin, lfg): Reconsider what the correct behaviour here should be.
+    return nullptr;
+  }
+
   if (child_frame_or_proxy.GetFrameTreeNode()->parent() != this) {
     bad_message::ReceivedBadMessage(GetProcess(), reason);
     return nullptr;
@@ -3691,28 +3740,6 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
   // navigates and the new policies take effect.
   if (child->GetSiteInstance() != GetSiteInstance()) {
     child->GetAssociatedLocalFrame()->DidUpdateFramePolicy(frame_policy);
-  }
-}
-
-void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
-    int32_t frame_routing_id,
-    const blink::mojom::FrameOwnerProperties& properties) {
-  RenderFrameHostImpl* child =
-      FindAndVerifyChild(frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
-  if (!child)
-    return;
-
-  bool has_display_none_property_changed =
-      properties.is_display_none !=
-      child->frame_tree_node()->frame_owner_properties().is_display_none;
-
-  child->frame_tree_node()->set_frame_owner_properties(properties);
-
-  child->frame_tree_node()->render_manager()->OnDidUpdateFrameOwnerProperties(
-      properties);
-  if (has_display_none_property_changed) {
-    delegate_->DidChangeDisplayState(
-        child, properties.is_display_none /* is_display_none */);
   }
 }
 
@@ -4371,6 +4398,28 @@ void RenderFrameHostImpl::DidLoadResourceFromMemoryCache(
     network::mojom::RequestDestination request_destination) {
   delegate_->DidLoadResourceFromMemoryCache(this, url, http_method, mime_type,
                                             request_destination);
+}
+
+void RenderFrameHostImpl::DidChangeFrameOwnerProperties(
+    const base::UnguessableToken& child_frame_token,
+    blink::mojom::FrameOwnerPropertiesPtr properties) {
+  auto* child =
+      FindAndVerifyChild(child_frame_token, bad_message::RFH_OWNER_PROPERTY);
+  if (!child)
+    return;
+
+  bool has_display_none_property_changed =
+      properties->is_display_none !=
+      child->frame_tree_node()->frame_owner_properties().is_display_none;
+
+  child->frame_tree_node()->set_frame_owner_properties(*properties);
+
+  child->frame_tree_node()->render_manager()->OnDidUpdateFrameOwnerProperties(
+      *properties);
+  if (has_display_none_property_changed) {
+    delegate_->DidChangeDisplayState(
+        child, properties->is_display_none /* is_display_none */);
+  }
 }
 
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(
@@ -7138,12 +7187,13 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
 
 void RenderFrameHostImpl::BindRestrictedCookieManager(
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
-  GetProcess()->GetStoragePartition()->CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole::SCRIPT,
-      GetLastCommittedOrigin(), isolation_info_.site_for_cookies(),
-      ComputeTopFrameOrigin(GetLastCommittedOrigin()),
-      /* is_service_worker = */ false, GetProcess()->GetID(), routing_id(),
-      std::move(receiver));
+  static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
+      ->CreateRestrictedCookieManager(
+          network::mojom::RestrictedCookieManagerRole::SCRIPT,
+          GetLastCommittedOrigin(), isolation_info_.site_for_cookies(),
+          ComputeTopFrameOrigin(GetLastCommittedOrigin()),
+          /* is_service_worker = */ false, GetProcess()->GetID(), routing_id(),
+          std::move(receiver), CreateCookieAccessObserver());
 }
 
 void RenderFrameHostImpl::BindHasTrustTokensAnswerer(
@@ -7758,14 +7808,18 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
     last_committed_cross_document_navigation_id_ =
         navigation_request->GetNavigationId();
-  }
 
-  // Clear all the user data associated with the non speculative RenderFrameHost
-  // when the navigation is a cross-document navigation not served from the
-  // back-forward cache.
-  if (!is_same_document_navigation &&
-      !navigation_request->IsServedFromBackForwardCache() && IsCurrent()) {
-    document_associated_data_.ClearAllUserData();
+    if (IsCurrent()) {
+      // Clear all the user data associated with the non speculative
+      // RenderFrameHost when the navigation is a cross-document navigation not
+      // served from the back-forward cache.
+      document_associated_data_.ClearAllUserData();
+    }
+
+    // Continue observing the events for the committed navigation.
+    for (auto& receiver : navigation_request->TakeCookieObservers()) {
+      cookie_observers_.Add(this, std::move(receiver));
+    }
   }
 
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
@@ -8720,6 +8774,17 @@ bool RenderFrameHostImpl::IsPendingDeletion() {
 }
 
 void RenderFrameHostImpl::SetLifecycleStateToActive() {
+  // If the RenderFrameHost is restored from BackForwardCache, update states of
+  // all the children to kActive. This is called from
+  // RenderFrameHostManager::SetRenderFrameHost which happens after commit.
+  if (IsInBackForwardCache()) {
+    for (auto& child : children_) {
+      DCHECK_EQ(child->current_frame_host()->lifecycle_state_,
+                LifecycleState::kInBackForwardCache);
+      child->current_frame_host()->SetLifecycleStateToActive();
+    }
+  }
+
   SetLifecycleState(LifecycleState::kActive);
 }
 
@@ -8755,6 +8820,31 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
 void RenderFrameHostImpl::BindReportingObserver(
     mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) {
   GetAssociatedLocalFrame()->BindReportingObserver(std::move(receiver));
+}
+
+mojo::PendingRemote<network::mojom::CookieAccessObserver>
+RenderFrameHostImpl::CreateCookieAccessObserver() {
+  mojo::PendingRemote<network::mojom::CookieAccessObserver> remote;
+  cookie_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
+void RenderFrameHostImpl::Clone(
+    mojo::PendingReceiver<network::mojom::CookieAccessObserver> observer) {
+  cookie_observers_.Add(this, std::move(observer));
+}
+
+void RenderFrameHostImpl::OnCookiesAccessed(
+    network::mojom::CookieAccessDetailsPtr details) {
+  EmitSameSiteCookiesDeprecationWarning(this, details);
+
+  CookieAccessDetails allowed;
+  CookieAccessDetails blocked;
+  SplitCookiesIntoAllowedAndBlocked(details, &allowed, &blocked);
+  if (!allowed.cookie_list.empty())
+    delegate_->OnCookiesAccessed(this, allowed);
+  if (!blocked.cookie_list.empty())
+    delegate_->OnCookiesAccessed(this, blocked);
 }
 
 }  // namespace content

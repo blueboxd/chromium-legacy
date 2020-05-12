@@ -404,9 +404,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestMetricsRecordedAndMaybeInterstitialShown(
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchTopSite);
+      NavigationSuggestionEvent::kMatchSkeletonTop500);
 
-  CheckUkm({kNavigatedUrl}, "MatchType", LookalikeUrlMatchType::kTopSite);
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kSkeletonMatchTop500);
 }
 
 // Embedding a top domain should show an interstitial when enabled. If disabled
@@ -463,8 +464,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
   histograms.ExpectBucketCount(lookalikes::kHistogramName,
-                               NavigationSuggestionEvent::kMatchTopSite, 1);
-  CheckUkm({kNavigatedUrl}, "MatchType", LookalikeUrlMatchType::kTopSite);
+                               NavigationSuggestionEvent::kMatchSkeletonTop5k,
+                               1);
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kSkeletonMatchTop5k);
 }
 
 // Same as Idn_TopDomain_Match, but this time the domain contains characters
@@ -481,9 +484,10 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestMetricsRecordedAndMaybeInterstitialShown(
       browser(), kNavigatedUrl, kExpectedSuggestedUrl,
-      NavigationSuggestionEvent::kMatchTopSite);
+      NavigationSuggestionEvent::kMatchSkeletonTop500);
 
-  CheckUkm({kNavigatedUrl}, "MatchType", LookalikeUrlMatchType::kTopSite);
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kSkeletonMatchTop500);
 }
 
 // The navigated domain will fall back to punycode because it fails spoof checks

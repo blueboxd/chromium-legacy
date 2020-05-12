@@ -22,6 +22,7 @@ class GtkUiDelegate;
 #endif
 
 namespace content {
+class ShellPlatformDelegate;
 
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
@@ -48,6 +49,9 @@ class ShellBrowserMainParts : public BrowserMainParts {
  protected:
   virtual void InitializeBrowserContexts();
   virtual void InitializeMessageLoopContext();
+  // Gets the ShellPlatformDelegate to be used. May be a subclass of
+  // ShellPlatformDelegate to change behaviour based on platform or for tests.
+  virtual std::unique_ptr<ShellPlatformDelegate> CreateShellPlatformDelegate();
 
   void set_browser_context(ShellBrowserContext* context) {
     browser_context_.reset(context);

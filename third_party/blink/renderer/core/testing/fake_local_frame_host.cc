@@ -179,6 +179,10 @@ void FakeLocalFrameHost::DidLoadResourceFromMemoryCache(
     const WTF::String& mime_type,
     network::mojom::blink::RequestDestination request_destination) {}
 
+void FakeLocalFrameHost::DidChangeFrameOwnerProperties(
+    const base::UnguessableToken& child_frame_token,
+    mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

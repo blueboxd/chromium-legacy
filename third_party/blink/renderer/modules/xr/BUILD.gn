@@ -92,6 +92,8 @@ blink_modules_sources("xr") {
     "xr_viewer_pose.cc",
     "xr_viewer_pose.h",
     "xr_viewport.h",
+    "xr_webgl_binding.cc",
+    "xr_webgl_binding.h",
     "xr_webgl_layer.cc",
     "xr_webgl_layer.h",
     "xr_world_information.cc",

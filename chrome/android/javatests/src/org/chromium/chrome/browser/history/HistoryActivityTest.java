@@ -95,7 +95,7 @@ public class HistoryActivityTest {
         // Account not signed in by default. The clear browsing data header, one date view, and two
         // history item views should be shown, but the info header should not. We enforce a default
         // state because the number of headers shown depends on the signed-in state.
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
 
         mHistoryProvider = new StubbedHistoryProvider();
 
@@ -116,7 +116,7 @@ public class HistoryActivityTest {
 
     @After
     public void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     private void launchHistoryActivity() {

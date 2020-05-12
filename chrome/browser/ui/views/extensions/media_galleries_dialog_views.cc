@@ -65,9 +65,7 @@ void ScrollableView::Layout() {
 std::unique_ptr<views::LabelButton> CreateAuxiliaryButton(
     views::ButtonListener* listener,
     const base::string16& label) {
-  return label.empty()
-             ? nullptr
-             : views::MdTextButton::CreateSecondaryUiButton(listener, label);
+  return label.empty() ? nullptr : views::MdTextButton::Create(listener, label);
 }
 
 }  // namespace

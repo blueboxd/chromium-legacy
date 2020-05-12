@@ -53,9 +53,10 @@ class AppElement extends PolymerElement {
       oneGoogleBarIframePath_: {
         type: String,
         value: () => {
-          const fromSearch = new URLSearchParams(window.location.search);
           const params = new URLSearchParams();
-          params.set('ogdebencoded', btoa(fromSearch.get('ogdeb') || ''));
+          params.set(
+              'paramsencoded',
+              btoa(window.location.search.replace(/^[?]/, '&')));
           return `one-google-bar?${params}`;
         },
       },
@@ -288,7 +289,7 @@ class AppElement extends PolymerElement {
 
     const {parts} =
         await BrowserProxy.getInstance().handler.getOneGoogleBarParts(
-            (new URLSearchParams(window.location.search)).get('ogdeb') || '');
+            window.location.search.replace(/^[?]/, '&'));
     if (!parts) {
       return;
     }

@@ -19,4 +19,7 @@ protocol ApplicationController {
 
   /// Connects to the application's media control & observation API.
   GetMediaPlayer(request<fuchsia.media.sessions2.Player> request);
+
+  /// Gets the private memory footprint of the application's main frame.
+  GetPrivateMemorySize() -> (uint64 size_bytes);
 };

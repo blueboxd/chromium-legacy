@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
@@ -39,7 +40,6 @@ import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 
 /**
  * Tests for {@link BasicSuggestionProcessor}.
@@ -123,14 +123,13 @@ public class BasicSuggestionProcessorUnitTest {
      */
     private void createSuggestion(int type, boolean isSearch, boolean isBookmark, String title,
             String description, GURL url) {
-        mSuggestion = new OmniboxSuggestion(type,
-                /* isSearchType */ isSearch, /* relevance */ 0, /* transition */ 0, title,
-                /* displayTextClassifications */ new ArrayList<>(), description,
-                /* descriptionClassifications */ new ArrayList<>(),
-                /* suggestionAnswer */ null, /* fillIntoEdit */ null, url,
-                /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", isBookmark,
-                /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
-                OmniboxSuggestion.INVALID_GROUP, null);
+        mSuggestion = OmniboxSuggestionBuilderForTest.searchWithType(type)
+                              .setDisplayText(title)
+                              .setDescription(description)
+                              .setUrl(url)
+                              .setIsSearch(isSearch)
+                              .setIsStarred(isBookmark)
+                              .build();
         mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
     }

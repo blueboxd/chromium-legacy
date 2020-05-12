@@ -19,14 +19,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
   METADATA_HEADER(MdTextButton);
 
-  // As above, but only creates an MdTextButton if MD is enabled in the
-  // secondary UI (as opposed to just "top chrome"/"primary" UI).
-  static std::unique_ptr<LabelButton> CreateSecondaryUiButton(
-      ButtonListener* listener,
-      const base::string16& text);
-  static std::unique_ptr<LabelButton> CreateSecondaryUiProminentButton(
-      ButtonListener* listener,
-      const base::string16& text);
   static std::unique_ptr<MdTextButton> Create(
       ButtonListener* listener,
       const base::string16& text,

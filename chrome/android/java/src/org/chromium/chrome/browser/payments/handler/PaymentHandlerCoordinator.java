@@ -64,7 +64,7 @@ public class PaymentHandlerCoordinator {
     /**
      * Shows the payment-handler UI.
      *
-     * @param chromeActivity The activity where the UI should be shown.
+     * @param activity The activity where the UI should be shown.
      * @param url The url of the payment handler app, i.e., that of
      *         "PaymentRequestEvent.openWindow(url)".
      * @param isIncognito Whether the tab is in incognito mode.
@@ -104,8 +104,8 @@ public class PaymentHandlerCoordinator {
         ThinWebView thinWebView = ThinWebViewFactory.create(activity, new ThinWebViewConstraints());
         assert webContentView.getParent() == null;
         thinWebView.attachWebContents(mWebContents, webContentView, null);
-        PaymentHandlerView view = new PaymentHandlerView(
-                activity, mWebContents, mToolbarCoordinator.getView(), thinWebView.getView());
+        PaymentHandlerView view = new PaymentHandlerView(activity, mWebContents,
+                mToolbarCoordinator.getView(), thinWebView.getView(), mediator);
         assert mToolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);

@@ -76,7 +76,7 @@ public final class PeriodicBackgroundSyncTest {
     public void setUp() throws InterruptedException, TimeoutException {
         // loadNativeLibraryNoBrowserProcess will access AccountManagerFacade, so it should
         // be initialized beforehand.
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
 
         // This is necessary because our test devices don't have Google Play Services up to date,
         // and Periodic Background Sync requires that. Remove this once https://crbug.com/514449 has
@@ -102,7 +102,7 @@ public final class PeriodicBackgroundSyncTest {
     @After
     public void tearDown() throws TimeoutException {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
         BackgroundSyncBackgroundTaskScheduler.getInstance().removeObserver(mSchedulerObserver);
     }
 

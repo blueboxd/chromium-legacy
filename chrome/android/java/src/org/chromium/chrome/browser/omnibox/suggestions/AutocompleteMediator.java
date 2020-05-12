@@ -10,7 +10,6 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -140,8 +139,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
     private final TileSuggestionProcessor mTileSuggestionProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
+    private AutocompleteResult mAutocompleteResult;
     private final List<SuggestionViewInfo> mAvailableSuggestions;
-    private SparseArray<String> mGroupHeaders;
 
     private ToolbarDataProvider mDataProvider;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -216,7 +215,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 new TileSuggestionProcessor(mContext, queryTileSuggestionCallback);
         mSuggestionProcessors = new ArrayList<>();
         mAvailableSuggestions = new ArrayList<>();
-        mGroupHeaders = new SparseArray<>();
+        mAutocompleteResult = new AutocompleteResult(null, null);
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
@@ -1036,34 +1035,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     boolean setNewSuggestions(AutocompleteResult autocompleteResult) {
-        final List<OmniboxSuggestion> newSuggestions = autocompleteResult.getSuggestionsList();
-        boolean sameSuggestions = false;
+        if (mAutocompleteResult.equals(autocompleteResult)) return false;
+        mAutocompleteResult = autocompleteResult;
+
+        final List<OmniboxSuggestion> newSuggestions = mAutocompleteResult.getSuggestionsList();
         final int newSuggestionsCount = newSuggestions.size();
-        if (mAvailableSuggestions.size() == newSuggestionsCount) {
-            sameSuggestions = true;
-            for (int i = 0; i < newSuggestionsCount; i++) {
-                OmniboxSuggestion existingSuggestion = mAvailableSuggestions.get(i).suggestion;
-                if (!existingSuggestion.equals(newSuggestions.get(i))) {
-                    sameSuggestions = false;
-                    break;
-                }
-            }
-        }
-
-        final SparseArray<String> newGroupHeaders = autocompleteResult.getGroupHeaders();
-        final int newHeadersCount = newGroupHeaders.size();
-        sameSuggestions &= newHeadersCount == mGroupHeaders.size();
-        if (sameSuggestions) {
-            for (int i = 0; i < mGroupHeaders.size(); i++) {
-                final int key = mGroupHeaders.keyAt(i);
-                if (!TextUtils.equals(newGroupHeaders.get(key), mGroupHeaders.get(key))) {
-                    sameSuggestions = false;
-                    break;
-                }
-            }
-        }
-
-        if (sameSuggestions) return false;
 
         mAvailableSuggestions.clear();
         for (int index = 0; index < newSuggestionsCount; index++) {
@@ -1073,13 +1049,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion));
         }
 
-        mGroupHeaders = newGroupHeaders;
         return true;
     }
 
     @NonNull
-    SparseArray<String> getGroupHeaders() {
-        return mGroupHeaders;
+    AutocompleteResult getAutocompleteResult() {
+        return mAutocompleteResult;
     }
 
     /**

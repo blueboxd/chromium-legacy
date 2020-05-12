@@ -13,14 +13,23 @@ namespace performance_manager {
 // A test harness that initializes PerformanceManagerImpl, plus the entire
 // RenderViewHost harness. Allows for creating full WebContents, and their
 // accompanying structures in the graph. The task environment is accessed
-// via content::RenderViewHostTestHarness::test_bundle(). RenderFrameHosts and
-// such are not created, so this is suitable for unittests but not browsertests.
+// via content::RenderViewHostTestHarness::task_environment(). RenderFrameHosts
+// and such are not created, so this is suitable for unittests but not
+// browsertests.
 class PerformanceManagerTestHarness
     : public content::RenderViewHostTestHarness {
  public:
   using Super = content::RenderViewHostTestHarness;
 
   PerformanceManagerTestHarness();
+
+  // Constructs a PerformanceManagerTestHarness which uses |traits| to
+  // initialize its BrowserTaskEnvironment.
+  template <typename... TaskEnvironmentTraits>
+  explicit PerformanceManagerTestHarness(TaskEnvironmentTraits&&... traits)
+      : RenderViewHostTestHarness(
+            std::forward<TaskEnvironmentTraits>(traits)...) {}
+
   PerformanceManagerTestHarness(const PerformanceManagerTestHarness&) = delete;
   PerformanceManagerTestHarness& operator=(
       const PerformanceManagerTestHarness&) = delete;

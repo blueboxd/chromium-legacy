@@ -513,6 +513,10 @@ void HotseatWidget::CalculateTargetBounds() {
   }
   target_bounds_ =
       gfx::Rect(hotseat_origin, gfx::Size(hotseat_width, hotseat_height));
+
+  // Check whether |target_bounds_| will change the state of app scaling. If
+  // so, update |target_bounds_| here to avoid re-layout later.
+  MaybeAdjustTargetBoundsForAppScaling(hotseat_target_state);
 }
 
 gfx::Rect HotseatWidget::GetTargetBounds() const {
@@ -586,6 +590,16 @@ int HotseatWidget::GetHotseatFullDragAmount() const {
          GetHotseatSize();
 }
 
+bool HotseatWidget::UpdateAppScalingIfNeeded() {
+  if (ShouldTriggerAppScaling(target_bounds_.size(), state_) ==
+      is_forced_dense_) {
+    return false;
+  }
+
+  shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/true);
+  return true;
+}
+
 int HotseatWidget::GetHotseatBackgroundBlurForTest() const {
   return delegate_view_->background_blur();
 }
@@ -628,6 +642,49 @@ HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
   const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
   return {target_bounds_, CalculateOpacity(),
           layout_manager->is_active_session_state()};
+}
+
+void HotseatWidget::MaybeAdjustTargetBoundsForAppScaling(
+    HotseatState hotseat_target_state) {
+  // Return early if app scaling state does not change.
+  const bool should_trigger_app_scaling =
+      ShouldTriggerAppScaling(target_bounds_.size(), hotseat_target_state);
+  if (should_trigger_app_scaling == is_forced_dense_)
+    return;
+
+  is_forced_dense_ = should_trigger_app_scaling;
+
+  // Update app icons of shelf view.
+  scrollable_shelf_view_->shelf_view()->OnShelfConfigUpdated();
+
+  const gfx::Point adjusted_hotseat_origin = gfx::Point(
+      target_bounds_.x(), CalculateHotseatYInScreen(hotseat_target_state));
+  target_bounds_ =
+      gfx::Rect(adjusted_hotseat_origin,
+                gfx::Size(target_bounds_.width(), GetHotseatSize()));
+}
+
+bool HotseatWidget::ShouldTriggerAppScaling(
+    const gfx::Size& available_size,
+    HotseatState hotseat_target_state) const {
+  if (!ash::features::IsAppScalingEnabled())
+    return false;
+
+  // Do not trigger app scaling if shelf is in dense mode.
+  if (ShelfConfig::Get()->is_dense())
+    return false;
+
+  // Currently we only update app scaling in home launcher due to performance
+  // concerns in hotseat animation transition between home launcher state
+  // and extended state.
+  // TODO(crbug.com/1081476).
+  if (hotseat_target_state != HotseatState::kShownHomeLauncher)
+    return is_forced_dense_;
+
+  const int normal_button_size =
+      ShelfConfig::Get()->GetShelfButtonSize(/*force_dense=*/false);
+  return scrollable_shelf_view_->RequiresScrollingForItemSize(
+      available_size, normal_button_size);
 }
 
 }  // namespace ash

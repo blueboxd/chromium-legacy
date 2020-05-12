@@ -47,6 +47,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate,
+      mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors);
   ~NavigationURLLoaderImpl() override;

@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
 
@@ -24,7 +26,6 @@
 #endif
 
 class Browser;
-class SigninViewControllerDelegate;
 struct CoreAccountId;
 
 namespace content {
@@ -51,7 +52,7 @@ enum class ReauthResult;
 // error dialog, reauth prompt). Sync confirmation is used on
 // Win/Mac/Linux/Chrome OS. Sign-in is only used on Win/Mac/Linux because
 // Chrome OS has its own sign-in flow and doesn't use DICE.
-class SigninViewController {
+class SigninViewController : public SigninViewControllerDelegate::Observer {
  public:
   // Handle that will stop ongoing reauths upon destruction.
   class ReauthAbortHandle {
@@ -60,7 +61,7 @@ class SigninViewController {
   };
 
   explicit SigninViewController(Browser* browser);
-  virtual ~SigninViewController();
+  ~SigninViewController() override;
 
   // Returns true if the signin flow should be shown for |mode|.
   static bool ShouldShowSigninForMode(profiles::BubbleViewMode mode);
@@ -134,8 +135,8 @@ class SigninViewController {
   // Sets the height of the modal signin dialog.
   void SetModalSigninHeight(int height);
 
-  // Notifies this object that it's |delegate_| member has become invalid.
-  void ResetModalSigninDelegate();
+  // SigninViewControllerDelegate::Observer:
+  void OnModalSigninClosed() override;
 
  private:
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
@@ -156,7 +157,10 @@ class SigninViewController {
   // Browser owning this controller.
   Browser* browser_;
 
-  SigninViewControllerDelegate* delegate_;
+  SigninViewControllerDelegate* delegate_ = nullptr;
+  ScopedObserver<SigninViewControllerDelegate,
+                 SigninViewControllerDelegate::Observer>
+      delegate_observer_{this};
 
   base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
 

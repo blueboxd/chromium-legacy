@@ -1766,6 +1766,36 @@ public class AwAutofillTest {
         waitForCallbackAndVerifyTypes(cnt, expectedValues.toArray(new Integer[0]));
     }
 
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testMismatchedAutofillValueWontCauseCrash() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(1, viewStructure.getChildCount());
+        TestViewStructure child0 = viewStructure.getChild(0);
+
+        // Autofill form and verify filled values.
+        SparseArray<AutofillValue> values = new SparseArray<AutofillValue>();
+        // Append wrong autofill value.
+        values.append(child0.getId(), AutofillValue.forToggle(false));
+        // If the test fail, the exception shall be thrown in below.
+        invokeAutofill(values);
+    }
+
     private void scrollToBottom() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mTestContainerView.scrollTo(0, mTestContainerView.getHeight()); });

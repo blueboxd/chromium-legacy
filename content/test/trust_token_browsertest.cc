@@ -30,6 +30,10 @@
 
 namespace content {
 
+namespace {
+
+using network::test::TrustTokenRequestHandler;
+
 // TrustTokenBrowsertest is a fixture containing boilerplate for initializing an
 // HTTPS test server and passing requests through to an embedded instance of
 // network::test::TrustTokenRequestHandler, which contains the guts of the
@@ -61,10 +65,12 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
   base::test::ScopedFeatureList features_;
 
   // TODO(davidvc): Extend this to support more than one key set.
-  network::test::TrustTokenRequestHandler request_handler_{/*num_keys=*/1};
+  TrustTokenRequestHandler request_handler_;
 
   net::EmbeddedTestServer server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEnd) {
   base::RunLoop run_loop;
@@ -223,6 +229,32 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, HasTrustTokenAfterIssuance) {
   // Note: EvalJs's EXPECT_EQ type-conversion magic only supports the
   // "Yoda-style" EXPECT_EQ(expected, actual).
   EXPECT_EQ(true, EvalJs(shell(), cmd));
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest,
+                       SigningWithNoRedemptionRecordDoesntCancelRequest) {
+  TrustTokenRequestHandler::Options options;
+  options.client_signing_outcome =
+      TrustTokenRequestHandler::SigningOutcome::kFailure;
+  request_handler_.UpdateOptions(std::move(options));
+
+  GURL start_url(server_.GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  // This sign operation will fail, because we don't have a signed redemption
+  // record in storage, a prerequisite. However, the failure shouldn't be fatal.
+  std::string cmd =
+      JsReplace(R"((async () => {
+      await fetch("/sign", {trustToken: {type: 'send-srr',
+                                         signRequestData: 'include',
+                                         issuer: $1}}); }
+                                         )(); )",
+                url::Origin::Create(server_.base_url()).Serialize());
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ(EvalJs(shell(), cmd).error, "");
+  EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
 }
 
 }  // namespace content

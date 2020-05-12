@@ -19,8 +19,7 @@ XboxHidController::XboxHidController(std::unique_ptr<HidWriter> writer)
 XboxHidController::~XboxHidController() = default;
 
 // static
-bool XboxHidController::IsXboxHid(uint16_t vendor_id, uint16_t product_id) {
-  auto gamepad_id = GamepadIdList::Get().GetGamepadId(vendor_id, product_id);
+bool XboxHidController::IsXboxHid(GamepadId gamepad_id) {
   return gamepad_id == GamepadId::kMicrosoftProduct02e0 ||
          gamepad_id == GamepadId::kMicrosoftProduct02fd ||
          gamepad_id == GamepadId::kMicrosoftProduct0b05;

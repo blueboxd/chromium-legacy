@@ -31,13 +31,15 @@ import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 
 import {AutofillManager} from './autofill_section.js';
-import {CreditCardEntry} from './credit_card_list_entry.js';
+
+/** @typedef {chrome.autofillPrivate.CreditCardEntry} */
+let CreditCardEntry;
 
 /**
  * Interface for all callbacks to the payments autofill API.
  * @interface
  */
-class PaymentsManager {
+export class PaymentsManager {
   /**
    * Add an observer to the list of personal data.
    * @param {function(!Array<!AutofillManager.AddressEntry>,

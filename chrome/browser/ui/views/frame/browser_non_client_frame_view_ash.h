@@ -187,9 +187,6 @@ class BrowserNonClientFrameViewAsh
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
-  // Creates views and does other setup for a web app.
-  void SetUpForWebApp();
-
   // Triggers the web-app origin and icon animations, assumes the web-app UI
   // elements exist.
   void StartWebAppAnimation();

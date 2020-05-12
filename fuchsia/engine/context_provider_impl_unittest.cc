@@ -35,6 +35,7 @@
 #include "base/test/test_timeouts.h"
 #include "fuchsia/engine/context_provider_impl.h"
 #include "fuchsia/engine/fake_context.h"
+#include "fuchsia/engine/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -502,6 +503,38 @@ TEST(ContextProviderImplConfigTest, WithConfigWithWronglyTypedCommandLineArgs) {
     loop.Quit();
   });
   context_provider.Create(BuildCreateContextParams(), context.NewRequest());
+
+  loop.Run();
+}
+
+// Tests setting the custom Cast Streaming Receiver feature flag properly adds
+// the Cast Streaming Receiver switch.
+TEST(ContextProviderImplReceiverTest, CastStreamingReceiverFeatureFlag) {
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  constexpr auto kCastStreamingFeatureFlag =
+      static_cast<fuchsia::web::ContextFeatureFlags>(1ULL << 63);
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.SetLaunchCallbackForTest(
+      base::BindLambdaForTesting([&](const base::CommandLine& command,
+                                     const base::LaunchOptions& options) {
+        EXPECT_TRUE(command.HasSwitch(switches::kEnableCastStreamingReceiver));
+        loop.Quit();
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    ADD_FAILURE();
+    loop.Quit();
+  });
+
+  fuchsia::web::CreateContextParams params = BuildCreateContextParams();
+  params.set_features(kCastStreamingFeatureFlag);
+  context_provider.Create(std::move(params), context.NewRequest());
 
   loop.Run();
 }

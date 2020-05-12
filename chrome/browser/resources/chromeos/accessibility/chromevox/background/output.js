@@ -2511,8 +2511,8 @@ Output.RULES = {
     },
     menuItemRadio: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
-          $if($checked, @describe_radio_selected($name),
-          @describe_radio_unselected($name)) $state $roleDescription
+          $if($checked, @describe_menu_item_radio_selected($name),
+          @describe_menu_item_radio_unselected($name)) $state $roleDescription
           $restriction $description
           @describe_index($posInSet, $setSize)`
     },

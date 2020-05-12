@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_invalidator.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
@@ -41,6 +42,7 @@ using WorkerMap =
 struct FailedWorkerInfo {
   CertProvisioningWorkerState state = CertProvisioningWorkerState::kInitState;
   std::string public_key;
+  base::Time last_update_time;
 };
 
 // This class is a part of certificate provisioning feature. It tracks updates

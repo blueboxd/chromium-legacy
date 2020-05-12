@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/hid_haptic_gamepad.h"
 #include "device/gamepad/hid_writer_mac.h"
 #include "device/gamepad/xbox_hid_controller.h"
@@ -89,6 +90,7 @@ GamepadBusType QueryBusType(IOHIDDeviceRef device) {
 
 GamepadDeviceMac::GamepadDeviceMac(int location_id,
                                    IOHIDDeviceRef device_ref,
+                                   base::StringPiece product_name,
                                    int vendor_id,
                                    int product_id)
     : location_id_(location_id),
@@ -96,14 +98,16 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id,
       bus_type_(QueryBusType(device_ref_)),
       ff_device_ref_(nullptr),
       ff_effect_ref_(nullptr) {
-  if (Dualshock4Controller::IsDualshock4(vendor_id, product_id)) {
+  auto gamepad_id =
+      GamepadIdList::Get().GetGamepadId(product_name, vendor_id, product_id);
+
+  if (Dualshock4Controller::IsDualshock4(gamepad_id)) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
-        vendor_id, product_id, bus_type_,
-        std::make_unique<HidWriterMac>(device_ref));
+        gamepad_id, bus_type_, std::make_unique<HidWriterMac>(device_ref));
     return;
   }
 
-  if (XboxHidController::IsXboxHid(vendor_id, product_id)) {
+  if (XboxHidController::IsXboxHid(gamepad_id)) {
     xbox_hid_ = std::make_unique<XboxHidController>(
         std::make_unique<HidWriterMac>(device_ref));
     return;

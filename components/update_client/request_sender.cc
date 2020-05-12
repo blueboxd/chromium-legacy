@@ -140,6 +140,7 @@ void RequestSender::SendInternalComplete(int error,
     return;
   }
 
+  VLOG(2) << "Omaha send error: " << response_body;
   HandleSendError(error, retry_after_sec);
 }
 

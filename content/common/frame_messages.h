@@ -578,13 +578,6 @@ IPC_MESSAGE_ROUTED2(
     int32_t /* subframe_routing_id */,
     blink::FramePolicy /* updated sandbox flags and container policy */)
 
-// Notifies the browser that frame owner properties have changed for a subframe
-// of this frame.
-IPC_MESSAGE_ROUTED2(
-    FrameHostMsg_DidChangeFrameOwnerProperties,
-    int32_t /* subframe_routing_id */,
-    blink::mojom::FrameOwnerProperties /* frame_owner_properties */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin
 // instance is created in the DOM.

@@ -56,7 +56,7 @@ public final class ShareButtonControllerTest {
 
     @Before
     public void setUp() {
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
 
         int minimumWidthDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
@@ -70,7 +70,7 @@ public final class ShareButtonControllerTest {
 
     @After
     public void tearDown() {
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test

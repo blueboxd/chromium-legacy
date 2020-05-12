@@ -12,6 +12,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "ipc/ipc_message.h"
 #include "media/base/android/media_url_interceptor.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/auth.h"
@@ -42,8 +44,7 @@ GetRestrictedCookieManagerForContext(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& top_frame_origin,
-    int render_process_id,
-    int render_frame_id) {
+    RenderFrameHostImpl* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   url::Origin origin = url::Origin::Create(url);
@@ -51,11 +52,16 @@ GetRestrictedCookieManagerForContext(
       BrowserContext::GetDefaultStoragePartition(browser_context);
 
   mojo::PendingRemote<network::mojom::RestrictedCookieManager> pipe;
-  storage_partition->CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole::NETWORK, origin,
-      site_for_cookies, top_frame_origin,
-      /* is_service_worker = */ false, render_process_id, render_frame_id,
-      pipe.InitWithNewPipeAndPassReceiver());
+  static_cast<StoragePartitionImpl*>(storage_partition)
+      ->CreateRestrictedCookieManager(
+          network::mojom::RestrictedCookieManagerRole::NETWORK, origin,
+          site_for_cookies, top_frame_origin,
+          /* is_service_worker = */ false,
+          render_frame_host ? render_frame_host->GetProcess()->GetID() : -1,
+          render_frame_host ? render_frame_host->GetRoutingID()
+                            : MSG_ROUTING_NONE,
+          pipe.InitWithNewPipeAndPassReceiver(),
+          render_frame_host->CreateCookieAccessObserver());
   return pipe;
 }
 
@@ -163,7 +169,7 @@ void MediaResourceGetterImpl::GetCookies(const GURL& url,
   mojo::Remote<network::mojom::RestrictedCookieManager> cookie_manager(
       GetRestrictedCookieManagerForContext(
           browser_context_, url, site_for_cookies, top_frame_origin,
-          render_process_id_, render_frame_id_));
+          RenderFrameHostImpl::FromID(render_process_id_, render_frame_id_)));
   network::mojom::RestrictedCookieManager* cookie_manager_ptr =
       cookie_manager.get();
   cookie_manager_ptr->GetCookiesString(

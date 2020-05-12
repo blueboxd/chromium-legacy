@@ -12,7 +12,6 @@
         "url": "https://www.youtube.com/user/ChromeDevelopers"
       },
       "datePublished": "2019-05-09",
-      "description": "You'll learn about the insights that led to our redesigned native media controls in Chrome and what it took to convert these into a customizable UI library that now ships as part of Shaka player.",
       "duration": "PT34M41S",
       "genre": "Factual",
       "interactionStatistic": [
@@ -60,7 +59,6 @@
         "url": "https://www.youtube.com/user/ChromeDevelopers"
       },
       "datePublished": "2018-11-12",
-      "description": "Learn about how the latest media-related capabilities on the web platform can be used to build efficient and delightful web media experiences.",
       "duration": "PT21M24S",
       "genre": "Factual",
       "identifier": {
@@ -362,7 +360,6 @@
         "ratingValue": "G"
       },
       "datePublished": "2008-01-01",
-      "description": "A large and lovable rabbit deals with three tiny bullies, led by a flying squirrel, who are determined to squelch his happiness.",
       "duration": "PT12M",
       "genre": "Comedy",
       "isFamilyFriendly": "https://schema.org/False",
@@ -426,7 +423,7 @@
       "additionalProperty": {
         "@type": "PropertyValue",
         "name": "contentAttributes",
-        "value": ["hasTitle", "centered"]
+        "value": ["forLightBackground", "hasTitle", "centered"]
       }
     }]
   },

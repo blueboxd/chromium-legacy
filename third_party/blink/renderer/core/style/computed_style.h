@@ -733,7 +733,11 @@ class ComputedStyle : public ComputedStyleBase,
   void SetOutlineWidth(float v) { SetOutlineWidthInternal(LayoutUnit(v)); }
   // TODO(rego): This is a temporal method that will be removed once we start
   // using the float OutlineWidth() in the painting code.
-  uint16_t OutlineWidthInt() const { return OutlineWidth(); }
+  uint16_t OutlineWidthInt() const {
+    if (OutlineStyle() == EBorderStyle::kNone)
+      return 0;
+    return OutlineWidthInternal().ToUnsigned();
+  }
 
   // -webkit-perspective-origin-x
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }

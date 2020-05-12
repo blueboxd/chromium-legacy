@@ -65,10 +65,6 @@ void WebContentsViewChildFrame::GetContainerBounds(gfx::Rect* out) const {
     *out = gfx::Rect();
 }
 
-void WebContentsViewChildFrame::SizeContents(const gfx::Size& size) {
-  // The RenderWidgetHostViewChildFrame is responsible for sizing the contents.
-}
-
 void WebContentsViewChildFrame::SetInitialFocus() {
   NOTREACHED();
 }

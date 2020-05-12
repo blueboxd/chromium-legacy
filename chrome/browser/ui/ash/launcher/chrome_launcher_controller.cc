@@ -648,6 +648,8 @@ void ChromeLauncherController::ActiveUserChanged(const AccountId& account_id) {
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
+  AddAppUpdaterAndIconLoader(profile);
+
   // Switch the running applications to the new user.
   for (auto& controller : app_window_controllers_)
     controller->AdditionalUserAddedToSession(profile);
@@ -785,11 +787,12 @@ void ChromeLauncherController::SetAppIconLoadersForTest(
     std::vector<std::unique_ptr<AppIconLoader>>& loaders) {
   app_icon_loaders_.clear();
   for (auto& loader : loaders)
-    app_icon_loaders_.push_back(std::move(loader));
+    app_icon_loaders_[profile_].push_back(std::move(loader));
 }
 
 void ChromeLauncherController::SetProfileForTest(Profile* profile) {
   profile_ = profile;
+  latest_active_profile_ = profile;
 }
 
 void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
@@ -845,7 +848,8 @@ int ChromeLauncherController::PinnedItemIndexByAppID(
 
 AppIconLoader* ChromeLauncherController::GetAppIconLoaderForApp(
     const std::string& app_id) {
-  for (const auto& app_icon_loader : app_icon_loaders_) {
+  for (const auto& app_icon_loader :
+       app_icon_loaders_[latest_active_profile_]) {
     if (app_icon_loader->CanLoadImageForApp(app_id))
       return app_icon_loader.get();
   }
@@ -889,25 +893,23 @@ void ChromeLauncherController::DoShowAppInfoFlow(Profile* profile,
 void ChromeLauncherController::OnAppInstalled(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
-  if (IsAppPinned(app_id)) {
-    // Clear and re-fetch to ensure icon is up-to-date.
-    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
-    if (app_icon_loader) {
-      app_icon_loader->ClearImage(app_id);
-      app_icon_loader->FetchImage(app_id);
-    }
-  }
-
   // When the app is pinned to the shelf, or added to the shelf, the app
-  // probably isn't ready in AppService, so set the title again on
-  // callback when the app is ready in AppService.
+  // probably isn't ready in AppService, so set the title, and load the icon
+  // again on callback when the app is ready in AppService.
   int index = model_->ItemIndexByAppID(app_id);
   if (index != kInvalidIndex) {
     ash::ShelfItem item = model_->items()[index];
-    if ((item.type == ash::TYPE_APP || item.type == ash::TYPE_PINNED_APP) &&
-        item.title.empty()) {
-      item.title = LauncherControllerHelper::GetAppTitle(profile(), app_id);
-      model_->Set(index, item);
+    if (item.type == ash::TYPE_APP || item.type == ash::TYPE_PINNED_APP) {
+      AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+      if (app_icon_loader) {
+        app_icon_loader->ClearImage(app_id);
+        app_icon_loader->FetchImage(app_id);
+      }
+      if (item.title.empty()) {
+        item.title = LauncherControllerHelper::GetAppTitle(
+            latest_active_profile_, app_id);
+        model_->Set(index, item);
+      }
     }
   }
 
@@ -921,10 +923,14 @@ void ChromeLauncherController::OnAppUpdated(
   // is needed when updating chrome launcher controller after user change in
   // multi-profile sessions, as icon loaders get reset when clearing the state
   // from the previous profile.
-  if (IsAppPinned(app_id)) {
-    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
-    if (app_icon_loader)
-      app_icon_loader->FetchImage(app_id);
+  int index = model_->ItemIndexByAppID(app_id);
+  if (index != kInvalidIndex) {
+    ash::ShelfItem item = model_->items()[index];
+    if (item.type == ash::TYPE_APP || item.type == ash::TYPE_PINNED_APP) {
+      AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+      if (app_icon_loader)
+        app_icon_loader->FetchImage(app_id);
+    }
   }
 }
 
@@ -1254,32 +1260,58 @@ void ChromeLauncherController::CloseWindowedAppsFromRemovedExtension(
   }
 }
 
-void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
-  profile_ = profile_to_attach;
+void ChromeLauncherController::AddAppUpdaterAndIconLoader(Profile* profile) {
+  latest_active_profile_ = profile;
+
   // Either add the profile to the list of known profiles and make it the active
   // one for some functions of LauncherControllerHelper or create a new one.
   if (!launcher_controller_helper_.get()) {
     launcher_controller_helper_ =
-        std::make_unique<LauncherControllerHelper>(profile_);
+        std::make_unique<LauncherControllerHelper>(profile);
   } else {
-    launcher_controller_helper_->set_profile(profile_);
+    launcher_controller_helper_->set_profile(profile);
   }
 
-  std::unique_ptr<AppIconLoader> app_service_app_icon_loader =
-      std::make_unique<AppServiceAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_MEDIUM, this);
-  app_icon_loaders_.push_back(std::move(app_service_app_icon_loader));
+  if (!base::Contains(app_updaters_, profile)) {
+    std::unique_ptr<LauncherAppUpdater> app_service_app_updater(
+        new LauncherAppServiceAppUpdater(this, profile));
+    app_updaters_[profile].push_back(std::move(app_service_app_updater));
 
-  // Some special extensions open new windows, and on Chrome OS, those windows
-  // should show the extension icon in the shelf. Extensions are not present
-  // in the App Service, so try loading extensions icon using
-  // ChromeAppIconLoader.
-  std::unique_ptr<extensions::ChromeAppIconLoader> chrome_app_icon_loader =
-      std::make_unique<extensions::ChromeAppIconLoader>(
-          profile_, extension_misc::EXTENSION_ICON_MEDIUM,
-          base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd), this);
-  chrome_app_icon_loader->SetExtensionsOnly();
-  app_icon_loaders_.push_back(std::move(chrome_app_icon_loader));
+    // Some special extensions open new windows, and on Chrome OS, those windows
+    // should show the extension icon in the shelf. Extensions are not present
+    // in the App Service, so use LauncherExtensionAppUpdater to handle
+    // extensions life-cycle events.
+    std::unique_ptr<LauncherExtensionAppUpdater> extension_app_updater(
+        new LauncherExtensionAppUpdater(this, profile,
+                                        true /* extensions_only */));
+    app_updaters_[profile].push_back(std::move(extension_app_updater));
+  }
+
+  if (!base::Contains(app_icon_loaders_, profile)) {
+    std::unique_ptr<AppIconLoader> app_service_app_icon_loader =
+        std::make_unique<AppServiceAppIconLoader>(
+            profile, extension_misc::EXTENSION_ICON_MEDIUM, this);
+    app_icon_loaders_[profile].push_back(
+        std::move(app_service_app_icon_loader));
+
+    // Some special extensions open new windows, and on Chrome OS, those windows
+    // should show the extension icon in the shelf. Extensions are not present
+    // in the App Service, so try loading extensions icon using
+    // ChromeAppIconLoader.
+    std::unique_ptr<extensions::ChromeAppIconLoader> chrome_app_icon_loader =
+        std::make_unique<extensions::ChromeAppIconLoader>(
+            profile, extension_misc::EXTENSION_ICON_MEDIUM,
+            base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd), this);
+    chrome_app_icon_loader->SetExtensionsOnly();
+    app_icon_loaders_[profile].push_back(std::move(chrome_app_icon_loader));
+  }
+}
+
+void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
+  profile_ = profile_to_attach;
+  latest_active_profile_ = profile_to_attach;
+
+  AddAppUpdaterAndIconLoader(profile_to_attach);
 
   pref_change_registrar_.Init(profile()->GetPrefs());
   pref_change_registrar_.Add(
@@ -1294,19 +1326,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
       base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromSync,
                  base::Unretained(this)));
 
-  std::unique_ptr<LauncherAppUpdater> app_service_app_updater(
-      new LauncherAppServiceAppUpdater(this, profile()));
-  app_updaters_.push_back(std::move(app_service_app_updater));
-
-  // Some special extensions open new windows, and on Chrome OS, those windows
-  // should show the extension icon in the shelf. Extensions are not present
-  // in the App Service, so use LauncherExtensionAppUpdater to handle
-  // extensions life-cycle events.
-  std::unique_ptr<LauncherExtensionAppUpdater> extension_app_updater(
-      new LauncherExtensionAppUpdater(this, profile(),
-                                      true /* extensions_only */));
-  app_updaters_.push_back(std::move(extension_app_updater));
-
   app_list::AppListSyncableService* app_list_syncable_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile());
   if (app_list_syncable_service)
@@ -1316,9 +1335,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
 }
 
 void ChromeLauncherController::ReleaseProfile() {
-  app_updaters_.clear();
-  app_icon_loaders_.clear();
-
   pref_change_registrar_.RemoveAll();
 
   app_list::AppListSyncableService* app_list_syncable_service =
@@ -1354,7 +1370,8 @@ void ChromeLauncherController::ShelfItemAdded(int index) {
     bool needs_update = false;
     if (item.title.empty()) {
       needs_update = true;
-      item.title = LauncherControllerHelper::GetAppTitle(profile(), id.app_id);
+      item.title = LauncherControllerHelper::GetAppTitle(latest_active_profile_,
+                                                         id.app_id);
     }
     ash::ShelfItemStatus status = GetAppState(id.app_id);
     if (status != item.status && status != ash::STATUS_CLOSED) {

@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <cmath>
-#include <list>
 #include <vector>
 
 #include "base/callback.h"
@@ -198,7 +197,7 @@ Status ExecuteClickElement(Session* session,
     if (status.IsError())
       return status;
 
-    std::list<MouseEvent> events;
+    std::vector<MouseEvent> events;
     events.push_back(MouseEvent(kMovedMouseEventType, kNoneMouseButton,
                                 location.x, location.y,
                                 session->sticky_modifiers, 0, 0));
@@ -228,7 +227,7 @@ Status ExecuteTouchSingleTap(Session* session,
     return status;
   if (!session->chrome->HasTouchScreen()) {
     // TODO(samuong): remove this once we stop supporting M44.
-    std::list<TouchEvent> events;
+    std::vector<TouchEvent> events;
     events.push_back(
         TouchEvent(kTouchStart, location.x, location.y));
     events.push_back(

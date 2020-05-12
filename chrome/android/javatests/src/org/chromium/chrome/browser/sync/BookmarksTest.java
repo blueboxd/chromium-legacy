@@ -81,7 +81,7 @@ public class BookmarksTest {
             // Without this call to fake that knowledge for testing, it crashes.
             mBookmarkBridge.loadEmptyPartnerBookmarkShimForTesting();
         });
-        mSyncTestRule.setUpTestAccountAndSignIn();
+        mSyncTestRule.setUpAccountAndSignInForTesting();
         // Make sure initial state is clean.
         assertClientBookmarkCount(0);
         assertServerBookmarkCountWithName(0, TITLE);

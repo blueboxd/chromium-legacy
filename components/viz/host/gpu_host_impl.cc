@@ -476,16 +476,7 @@ void GpuHostImpl::DidLoseContext(bool offscreen,
   TRACE_EVENT2("gpu", "GpuHostImpl::DidLoseContext", "reason", reason, "url",
                active_url.possibly_invalid_spec());
 
-  if (!offscreen || active_url.is_empty()) {
-    // Assume that the loss of the compositor's or accelerated canvas'
-    // context is a serious event and blame the loss on all live
-    // offscreen contexts. This more robustly handles situations where
-    // the GPU process may not actually detect the context loss in the
-    // offscreen context. However, situations have been seen where the
-    // compositor's context can be lost due to driver bugs (as of this
-    // writing, on Android), so allow that possibility.
-    if (!dont_disable_webgl_when_compositor_context_lost_)
-      BlockLiveOffscreenContexts();
+  if (active_url.is_empty()) {
     return;
   }
 

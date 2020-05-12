@@ -61,10 +61,9 @@ ChromeCleanerDialog::ChromeCleanerDialog(
   DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_PROMPT_REMOVE_BUTTON_LABEL));
-  details_button_ =
-      DialogDelegate::SetExtraView(views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(
-                    IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
+  details_button_ = DialogDelegate::SetExtraView(views::MdTextButton::Create(
+      this, l10n_util::GetStringUTF16(
+                IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL)));
 
   DialogDelegate::SetAcceptCallback(
       base::BindOnce(&ChromeCleanerDialog::HandleDialogInteraction,

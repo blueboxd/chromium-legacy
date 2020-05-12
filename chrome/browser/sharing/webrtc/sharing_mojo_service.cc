@@ -14,9 +14,7 @@ mojo::PendingRemote<mojom::Sharing> LaunchSharing() {
   content::ServiceProcessHost::Launch<mojom::Sharing>(
       remote.InitWithNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
-#if defined(OS_MACOSX)
-          .WithSandboxType(service_manager::SandboxType::kUtility)
-#else
+#if !defined(OS_MACOSX)
           .WithSandboxType(service_manager::SandboxType::kSharingService)
 #endif
           .WithDisplayName("Sharing Service")

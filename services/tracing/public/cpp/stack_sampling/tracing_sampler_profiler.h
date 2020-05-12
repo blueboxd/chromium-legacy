@@ -52,6 +52,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
             base::RepeatingClosure());
     ~TracingProfileBuilder() override;
 
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+    void EnableLoaderLockSampling() { should_sample_loader_lock_ = true; }
+
+    void SampleLoaderLock();
+#endif
+
     // base::ProfileBuilder
     base::ModuleCache* GetModuleCache() override;
     void OnSampleCompleted(std::vector<base::Frame> frames,
@@ -104,6 +110,11 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     base::TimeTicks last_timestamp_;
     const bool should_enable_filtering_;
     base::RepeatingClosure sample_callback_for_testing_;
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+    bool should_sample_loader_lock_ = false;
+    bool loader_lock_is_held_ = false;
+#endif
   };
 
 #if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
@@ -119,6 +130,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // The name of a trace event that will be recorded when the loader lock is
   // held.
   static const char kLoaderLockHeldEventName[];
+
+  // Registers a mock LoaderLockSampler to be called during tests. |sampler| is
+  // owned by the caller. It must be reset to |nullptr| at the end of the test.
+  static void SetLoaderLockSamplerForTesting(LoaderLockSampler* sampler);
+
+  void EnableLoaderLockSampling() { should_sample_loader_lock_ = true; }
 #endif
 
   // Creates sampling profiler on main thread. The profiler *must* be
@@ -139,12 +156,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   static void StartTracingForTesting(tracing::PerfettoProducer* producer);
   static void StopTracingForTesting();
   static void MangleModuleIDIfNeeded(std::string* module_id);
-
-#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-  // Registers a mock LoaderLockSampler to be called during tests. |sampler| is
-  // owned by the caller. It must be reset to |nullptr| at the end of the test.
-  static void SetLoaderLockSamplerForTesting(LoaderLockSampler* sampler);
-#endif
 
   // Returns whether of not the sampler profiling is able to unwind the stack
   // on this platform.
@@ -178,6 +189,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|
   TracingProfileBuilder* profile_builder_ = nullptr;
   base::RepeatingClosure sample_callback_for_testing_;
+
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+  bool should_sample_loader_lock_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TracingSamplerProfiler);
 };

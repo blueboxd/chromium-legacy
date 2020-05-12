@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/xr/xr_cube_map.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -14,11 +14,6 @@ namespace {
 bool IsPowerOfTwo(uint32_t value) {
   return value && (value & (value - 1)) == 0;
 }
-
-static constexpr char const* kErrorNonCubemapTexture =
-    "Cannot pass non-cubemap texture";
-static constexpr char const* kErrorContextMismatch = "Context mismatch";
-
 }  // namespace
 
 namespace blink {
@@ -51,20 +46,14 @@ XRCubeMap::XRCubeMap(const device::mojom::blink::XRCubeMap& cube_map) {
 }
 
 WebGLTexture* XRCubeMap::updateWebGLEnvironmentCube(
-    WebGL2RenderingContextBase* context,
-    WebGLTexture* texture,
-    ExceptionState& exception_state) const {
-  // If they haven't supplied us with a texture, Create a new one.
-  if (!texture) {
-    texture = MakeGarbageCollected<WebGLTexture>(context);
-  } else if (texture->HasEverBeenBound() &&
-             texture->GetTarget() != GL_TEXTURE_CUBE_MAP) {
-    exception_state.ThrowTypeError(kErrorNonCubemapTexture);
-    return nullptr;
-  } else if (texture->ContextGroup() != context->ContextGroup()) {
-    exception_state.ThrowTypeError(kErrorContextMismatch);
-    return nullptr;
-  }
+    WebGLRenderingContextBase* context,
+    WebGLTexture* texture) const {
+  // Ensure a texture was supplied from the passed context and with an
+  // appropriate bound target.
+  DCHECK(texture);
+  DCHECK(!texture->HasEverBeenBound() ||
+         texture->GetTarget() == GL_TEXTURE_CUBE_MAP);
+  DCHECK(texture->ContextGroup() == context->ContextGroup());
 
   auto* gl = context->ContextGL();
   texture->SetTarget(GL_TEXTURE_CUBE_MAP);
@@ -94,6 +83,7 @@ WebGLTexture* XRCubeMap::updateWebGLEnvironmentCube(
                    0, GL_RGBA, GL_HALF_FLOAT, image);
   }
 
+  // TODO(https://crbug.com/1079007): Restore the texture binding
   gl->BindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
   // Debug check for success

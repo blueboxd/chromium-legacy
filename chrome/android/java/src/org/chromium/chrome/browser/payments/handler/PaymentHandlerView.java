@@ -29,6 +29,13 @@ import org.chromium.content_public.browser.WebContents;
     private final View mThinWebView;
     private final WebContents mWebContents;
     private final int mToolbarHeightPx;
+    private final PaymentHandlerViewObserver mObserver;
+
+    /** The observer of PaymentHandlerView. */
+    interface PaymentHandlerViewObserver {
+        /** A callback that is invoked when the system back button is clicked. */
+        void onSystemBackButtonClicked();
+    }
 
     /**
      * Construct the PaymentHandlerView.
@@ -37,9 +44,11 @@ import org.chromium.content_public.browser.WebContents;
      * @param webContents The web-content of the payment-handler web-app.
      * @param toolbarView The view of the Payment Handler toolbar.
      * @param thinWebView The view that shows the WebContents of the payment app.
+     * @param observer The observer of this view.
      */
-    /* package */ PaymentHandlerView(
-            Context context, WebContents webContents, View toolbarView, View thinWebView) {
+    /* package */ PaymentHandlerView(Context context, WebContents webContents, View toolbarView,
+            View thinWebView, PaymentHandlerViewObserver observer) {
+        mObserver = observer;
         mWebContents = webContents;
         mToolbarView = toolbarView;
         mThinWebView = thinWebView;
@@ -115,6 +124,12 @@ import org.chromium.content_public.browser.WebContents;
     @Override
     public int getPeekHeight() {
         return BottomSheetContent.HeightMode.DISABLED;
+    }
+
+    @Override
+    public boolean handleBackPress() {
+        mObserver.onSystemBackButtonClicked();
+        return true; // Prevent further handling of the back press.
     }
 
     @Override

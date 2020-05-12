@@ -483,15 +483,25 @@ TEST_F(TracingSampleProfilerTest, SampleLoaderLockOnChildThread) {
   EXPECT_EQ(event_analyzer.CountEvents(), 0U);
 }
 
+TEST_F(TracingSampleProfilerTest, SampleLoaderLockWithoutMock) {
+  // Use the real loader lock sampler. This tests that it is initialized
+  // correctly in TracingSamplerProfiler.
+  TracingSamplerProfiler::SetLoaderLockSamplerForTesting(nullptr);
+
+  auto profiler = TracingSamplerProfiler::CreateOnMainThread();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+
+  // The loader lock may or may not be held during the test, so there's no
+  // output to test. The test passes if it reaches the end without crashing.
+}
+
 #endif  // BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
 
-// Crashes on Windows.  https://crbug.com/1076768
-#if defined(OS_WIN)
-#define MAYBE_ValidModule DISABLED_ValidModule
-#else
-#define MAYBE_ValidModule ValidModule
-#endif
-TEST(TracingProfileBuilderTest, MAYBE_ValidModule) {
+TEST(TracingProfileBuilderTest, ValidModule) {
   TestModule module;
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       base::PlatformThreadId(),
@@ -500,13 +510,7 @@ TEST(TracingProfileBuilderTest, MAYBE_ValidModule) {
                                     base::TimeTicks());
 }
 
-// Crashes on Win7 only.  http://crbug.com/1076768
-#if defined(OS_WIN)
-#define MAYBE_InvalidModule DISABLED_InvalidModule
-#else
-#define MAYBE_InvalidModule InvalidModule
-#endif
-TEST(TracingProfileBuilderTest, MAYBE_InvalidModule) {
+TEST(TracingProfileBuilderTest, InvalidModule) {
   TracingSamplerProfiler::TracingProfileBuilder profile_builder(
       base::PlatformThreadId(),
       std::make_unique<MockTraceWriter>(base::DoNothing()), false);

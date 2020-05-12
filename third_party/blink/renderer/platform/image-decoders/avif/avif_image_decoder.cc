@@ -450,7 +450,9 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
       return false;
     auto size = gfx::Size(image->width, image->height);
     if (image->alphaPlane) {
-      if (pixel_format == media::PIXEL_FORMAT_I420) {
+      if (pixel_format == media::PIXEL_FORMAT_I420 && image->yuvPlanes[1] &&
+          image->yuvPlanes[2]) {
+        // Genuine YUV 4:2:0, not monochrome 4:0:0.
         pixel_format = media::PIXEL_FORMAT_I420A;
       } else {
         NOTIMPLEMENTED();
@@ -467,9 +469,10 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
           image->yuvRowBytes[1], image->yuvRowBytes[2], image->yuvPlanes[0],
           image->yuvPlanes[1], image->yuvPlanes[2], base::TimeDelta());
     }
+    frame->set_color_space(frame_cs);
 
-    // Really only handles 709, 601, JPEG 8-bit conversions and uses libyuv
-    // under the hood, so is much faster than our manual path.
+    // Really only handles 709, 601, 2020, JPEG 8-bit conversions and uses
+    // libyuv under the hood, so is much faster than our manual path.
     //
     // Technically has support for 10-bit 4:2:0 and 4:2:2, but not to
     // half-float and only has support for 4:4:4 and 12-bit by down-shifted

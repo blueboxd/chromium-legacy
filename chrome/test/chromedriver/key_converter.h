@@ -5,8 +5,8 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_KEY_CONVERTER_H_
 #define CHROME_TEST_CHROMEDRIVER_KEY_CONVERTER_H_
 
-#include <list>
 #include <string>
+#include <vector>
 
 #include "base/strings/string16.h"
 #include "base/values.h"
@@ -23,11 +23,11 @@ class Status;
 Status ConvertKeysToKeyEvents(const base::string16& keys,
                               bool release_modifiers,
                               int* modifiers,
-                              std::list<KeyEvent>* key_events);
+                              std::vector<KeyEvent>* key_events);
 
 Status ConvertKeyActionToKeyEvent(const base::DictionaryValue* action_object,
                                   base::DictionaryValue* input_state,
                                   bool is_key_down,
-                                  std::list<KeyEvent>* client_key_events);
+                                  std::vector<KeyEvent>* client_key_events);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_KEY_CONVERTER_H_

@@ -206,7 +206,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       network::mojom::blink::WebSandboxFlags,
       const ParsedFeaturePolicy& fp_header,
       const blink::DocumentPolicy::FeatureState& dp_header) override;
-  void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) override;
 
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;

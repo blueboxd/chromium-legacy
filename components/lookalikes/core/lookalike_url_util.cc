@@ -332,8 +332,7 @@ bool ShouldBlockLookalikeUrlNavigation(LookalikeUrlMatchType match_type,
           lookalikes::features::kDetectTargetEmbeddingLookalikes)) {
     return true;
   }
-  return match_type == LookalikeUrlMatchType::kTopSite &&
-         navigated_domain.idn_result.matching_top_domain.is_top_500;
+  return match_type == LookalikeUrlMatchType::kSkeletonMatchTop500;
 }
 
 bool GetMatchingDomain(
@@ -367,7 +366,9 @@ bool GetMatchingDomain(
       DCHECK_NE(navigated_domain.domain_and_registry,
                 navigated_domain.idn_result.matching_top_domain.domain);
       *matched_domain = navigated_domain.idn_result.matching_top_domain.domain;
-      *match_type = LookalikeUrlMatchType::kTopSite;
+      *match_type = navigated_domain.idn_result.matching_top_domain.is_top_500
+                        ? LookalikeUrlMatchType::kSkeletonMatchTop500
+                        : LookalikeUrlMatchType::kSkeletonMatchTop5k;
       return true;
     }
   }
@@ -407,9 +408,6 @@ bool GetMatchingDomain(
 
 void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
   switch (match_type) {
-    case LookalikeUrlMatchType::kTopSite:
-      RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
-      break;
     case LookalikeUrlMatchType::kSiteEngagement:
       RecordEvent(NavigationSuggestionEvent::kMatchSiteEngagement);
       break;
@@ -421,6 +419,12 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
       break;
     case LookalikeUrlMatchType::kTargetEmbedding:
       RecordEvent(NavigationSuggestionEvent::kMatchTargetEmbedding);
+      break;
+    case LookalikeUrlMatchType::kSkeletonMatchTop500:
+      RecordEvent(NavigationSuggestionEvent::kMatchSkeletonTop500);
+      break;
+    case LookalikeUrlMatchType::kSkeletonMatchTop5k:
+      RecordEvent(NavigationSuggestionEvent::kMatchSkeletonTop5k);
       break;
     case LookalikeUrlMatchType::kNone:
       break;

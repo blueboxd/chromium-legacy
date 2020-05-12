@@ -72,6 +72,7 @@ class PLATFORM_EXPORT BitmapImageMetrics {
 
   static void CountDecodedImageType(const String& type);
   static void CountImageOrientation(const ImageOrientationEnum);
+  static void CountImageDensityCorrection(bool densityCorrectionPresent);
   // Report the JPEG compression density in 0.01 bits per pixel for an image
   // with a smallest side (width or length) of |image_min_side| and total size
   // in bytes |image_size_bytes|.

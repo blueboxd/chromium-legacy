@@ -6800,12 +6800,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
   // UIA provides multiple "views": raw, content and control. We only want to
   // populate the content and control views with items that make sense to
   // traverse over.
-
   if (GetDelegate()->IsWebContent()) {
-    // Invisible or ignored elements should not show up in control view at all.
-    if (IsInvisibleOrIgnored())
-      return false;
-
     if (IsTextOnlyObject()) {
       // A text leaf can be a UIAControl, but text inside of a heading, link,
       // button, etc. where the role allows the name to be generated from the
@@ -6845,8 +6840,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
         }
         parent = FromNativeViewAccessible(parent->GetParent());
       }
-    }  // end of text only case.
-
+    }
     const AXNodeData& data = GetData();
     // https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-treeoverview#control-view
     // The control view also includes noninteractive UI items that contribute
@@ -6898,10 +6892,9 @@ bool AXPlatformNodeWin::IsUIAControl() const {
         !data.HasState(ax::mojom::State::kFocusable) && !data.IsClickable()) {
       return false;
     }
-
     return true;
-  }  // end of web-content only case.
-
+  }
+  // non web-content case.
   const AXNodeData& data = GetData();
   return !((IsReadOnlySupported(data.role) && data.IsReadOnlyOrDisabled()) ||
            data.HasState(ax::mojom::State::kInvisible) ||

@@ -129,7 +129,23 @@ void TabDragDropDelegate::Drop(const gfx::Point& location_in_screen,
   if (snap_position == SplitViewController::SnapPosition::NONE)
     return;
 
-  SplitViewController::Get(new_window)->SnapWindow(new_window, snap_position);
+  SplitViewController* const split_view_controller =
+      SplitViewController::Get(new_window);
+  split_view_controller->SnapWindow(new_window, snap_position);
+
+  // The tab drag source window is the last window the user was
+  // interacting with. When dropping into split view, it makes the most
+  // sense to snap this window to the opposite side. Do this.
+  SplitViewController::SnapPosition opposite_position =
+      (snap_position == SplitViewController::SnapPosition::LEFT)
+          ? SplitViewController::SnapPosition::RIGHT
+          : SplitViewController::SnapPosition::LEFT;
+
+  // |source_window_| is itself a child window of the browser since it
+  // hosts web content (specifically, the tab strip WebUI). Snap its
+  // toplevel window which is the browser window.
+  split_view_controller->SnapWindow(source_window_->GetToplevelWindow(),
+                                    opposite_position);
 }
 
 }  // namespace ash

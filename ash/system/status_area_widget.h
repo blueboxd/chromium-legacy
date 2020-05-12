@@ -11,6 +11,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf_component.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/widget/widget.h"
 
 namespace aura {
@@ -43,8 +44,20 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   // applicable in in-app tablet mode. Otherwise the state is NOT_COLLAPSIBLE.
   enum class CollapseState { NOT_COLLAPSIBLE, COLLAPSED, EXPANDED };
 
+  class ScopedTrayBubbleCounter {
+   public:
+    explicit ScopedTrayBubbleCounter(StatusAreaWidget* status_area_widget);
+    ~ScopedTrayBubbleCounter();
+
+   private:
+    base::WeakPtr<StatusAreaWidget> status_area_widget_;
+  };
+
   StatusAreaWidget(aura::Window* status_container, Shelf* shelf);
   ~StatusAreaWidget() override;
+
+  // Returns the status area widget for the display that |window| is on.
+  static StatusAreaWidget* ForWindow(aura::Window* window);
 
   // Creates the child tray views, initializes them, and shows the widget. Not
   // part of the constructor because some child views call back into this object
@@ -199,6 +212,12 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   Shelf* shelf_;
 
   bool initialized_ = false;
+
+  // Number of active tray bubbles on the display where status area widget
+  // lives.
+  int tray_bubble_count_ = 0;
+
+  base::WeakPtrFactory<StatusAreaWidget> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

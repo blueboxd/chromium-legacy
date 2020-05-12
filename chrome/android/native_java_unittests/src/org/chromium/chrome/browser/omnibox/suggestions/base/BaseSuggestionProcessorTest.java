@@ -23,14 +23,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
-
-import java.util.ArrayList;
 
 /**
  * Tests for {@link BaseSuggestionViewProcessor}.
@@ -100,14 +99,7 @@ public class BaseSuggestionProcessorTest {
      * Create Suggestion for test.
      */
     private void createSuggestion(int type, GURL url) {
-        mSuggestion = new OmniboxSuggestion(type,
-                /* isSearchType */ false, /* relevance */ 0, /* transition */ 0, "title",
-                /* displayTextClassifications */ new ArrayList<>(), "description",
-                /* descriptionClassifications */ new ArrayList<>(),
-                /* suggestionAnswer */ null, /* fillIntoEdit */ null, url,
-                /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", false,
-                /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
-                OmniboxSuggestion.INVALID_GROUP, null);
+        mSuggestion = OmniboxSuggestionBuilderForTest.searchWithType(type).setUrl(url).build();
         mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
     }

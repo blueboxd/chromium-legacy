@@ -239,7 +239,7 @@ SVGPropertyBase* SVGAnimateElement::CreatePropertyForAttributeAnimation(
   // http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
   DCHECK_NE(type_, kAnimatedTransformList);
   DCHECK(target_property_);
-  return target_property_->CurrentValueBase()->CloneForAnimation(value);
+  return target_property_->BaseValueBase().CloneForAnimation(value);
 }
 
 SVGPropertyBase* SVGAnimateElement::CreatePropertyForCSSAnimation(

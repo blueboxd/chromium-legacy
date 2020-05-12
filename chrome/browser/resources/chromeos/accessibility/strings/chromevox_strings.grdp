@@ -430,6 +430,12 @@
   <message desc="Describes a HTML radio button named 'name' in the unselected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_UNSELECTED">
     <ph name="name">$1</ph>, radio button unselected
   </message>
+  <message desc="Describes a HTML menu item radio button named 'name' in the selected state." name="IDS_CHROMEVOX_DESCRIBE_MENU_ITEM_RADIO_SELECTED">
+    <ph name="name">$1</ph>, menu item radio button selected
+  </message>
+  <message desc="Describes a HTML menu item radio button named 'name' in the unselected state." name="IDS_CHROMEVOX_DESCRIBE_MENU_ITEM_RADIO_UNSELECTED">
+    <ph name="name">$1</ph>, menu item radio button unselected
+  </message>
   <message desc="Describes a window named 'name'." name="IDS_CHROMEVOX_DESCRIBE_WINDOW">
     <ph name="name">$1</ph>, window
   </message>

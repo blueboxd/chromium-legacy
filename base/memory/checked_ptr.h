@@ -94,11 +94,18 @@ class CheckedPtr {
   using Impl = internal::CheckedPtrNoOpImpl;
 
  public:
+  // CheckedPtr can be trivially default constructed (leaving |wrapped_ptr_|
+  // uninitialized).  This is needed for compatibility with raw pointers.
+  //
+  // TODO(lukasza): Always initialize |wrapped_ptr_|.  Fix resulting build
+  // errors.  Analyze performance impact.
   constexpr CheckedPtr() noexcept = default;
+
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
   constexpr ALWAYS_INLINE CheckedPtr(std::nullptr_t) noexcept
       : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
+
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
   ALWAYS_INLINE CheckedPtr(T* p) noexcept : wrapped_ptr_(Impl::WrapRawPtr(p)) {}
@@ -203,7 +210,7 @@ class CheckedPtr {
 
   // Store the pointer as |uintptr_t|, because depending on implementation, its
   // unused bits may be re-purposed to store extra information.
-  uintptr_t wrapped_ptr_ = Impl::GetWrappedNullPtr();
+  uintptr_t wrapped_ptr_;
 };
 
 template <typename T>

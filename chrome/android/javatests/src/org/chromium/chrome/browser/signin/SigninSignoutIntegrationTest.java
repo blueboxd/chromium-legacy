@@ -85,7 +85,7 @@ public class SigninSignoutIntegrationTest {
     public void setUp() {
         initMocks(this);
         mocker.mock(SigninUtilsJni.TEST_HOOKS, mSigninUtilsNativeMock);
-        SigninTestUtil.setUpAuthForTest();
+        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mSigninManager = IdentityServicesProvider.get().getSigninManager(); });
@@ -95,7 +95,7 @@ public class SigninSignoutIntegrationTest {
     @After
     public void tearDown() {
         mSigninManager.removeSignInStateObserver(mSignInStateObserverMock);
-        SigninTestUtil.tearDownAuthForTest();
+        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test

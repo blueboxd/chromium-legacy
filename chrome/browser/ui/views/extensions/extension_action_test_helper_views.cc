@@ -35,7 +35,6 @@ class ExtensionActionTestHelperViews::TestToolbarActionsBarHelper
                               BrowserActionsContainer* main_bar)
       : browser_actions_container_(
             new BrowserActionsContainer(browser, main_bar, this, true)) {
-    container_parent_.set_owned_by_client();
     container_parent_.SetSize(gfx::Size(1000, 1000));
     container_parent_.Layout();
     container_parent_.AddChildView(browser_actions_container_);

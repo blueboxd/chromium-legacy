@@ -486,7 +486,8 @@ TEST_F(HangWatcherPeriodicMonitoringTest, PeriodicCallsTakePlace) {
 
 // If the HangWatcher detects it slept for longer than expected it will not
 // monitor.
-TEST_F(HangWatcherPeriodicMonitoringTest, NoMonitorOnOverSleep) {
+// TODO(crbug.com/1081654): Test flaky on ChromeOS.
+TEST_F(HangWatcherPeriodicMonitoringTest, DISABLED_NoMonitorOnOverSleep) {
   RunLoop run_loop;
 
   // If a call to HangWatcher::Monitor() takes place the test will instantly

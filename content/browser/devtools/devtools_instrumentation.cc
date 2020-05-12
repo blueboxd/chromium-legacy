@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 #include "content/browser/devtools/devtools_instrumentation.h"
 
+#include "base/strings/stringprintf.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/fetch_handler.h"
+#include "content/browser/devtools/protocol/log_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/protocol/security_handler.h"
@@ -727,6 +729,22 @@ void ReportSameSiteCookieIssue(
       blink::mojom::InspectorIssueInfo::New(
           blink::mojom::InspectorIssueCode::kSameSiteCookieIssue,
           std::move(details)));
+}
+
+void OnQuicTransportHandshakeFailed(RenderFrameHostImpl* frame,
+                                    const GURL& url) {
+  FrameTreeNode* ftn = frame->frame_tree_node();
+  if (!ftn)
+    return;
+  std::string text = base::StringPrintf(
+      "Failed to establish a connection to %s.", url.spec().c_str());
+  auto entry = protocol::Log::LogEntry::Create()
+                   .SetSource(protocol::Log::LogEntry::SourceEnum::Network)
+                   .SetLevel(protocol::Log::LogEntry::LevelEnum::Error)
+                   .SetText(text)
+                   .SetTimestamp(base::Time::Now().ToDoubleT() * 1000.0)
+                   .Build();
+  DispatchToAgents(ftn, &protocol::LogHandler::EntryAdded, std::move(entry));
 }
 
 }  // namespace devtools_instrumentation

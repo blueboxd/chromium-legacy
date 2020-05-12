@@ -168,6 +168,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public Runnable siteSettingsButtonClickCallback;
         public Runnable openOnlineButtonClickCallback;
         public Runnable previewShowOriginalClickCallback;
+        public Runnable onUiClosingCallback;
 
         public CharSequence url;
         public CharSequence previewLoadOriginalMessage;
@@ -198,77 +199,73 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public Runnable clickCallback;
     }
 
-    private static final int FADE_DURATION_MS = 200;
-    private static final int FADE_IN_BASE_DELAY_MS = 150;
-    private static final int FADE_IN_DELAY_OFFSET_MS = 20;
+    protected static final int FADE_DURATION_MS = 200;
+    protected static final int FADE_IN_BASE_DELAY_MS = 150;
+    protected static final int FADE_IN_DELAY_OFFSET_MS = 20;
 
-    private final ElidedUrlTextView mUrlTitle;
-    private final TextView mConnectionSummary;
-    private final TextView mConnectionMessage;
-    private final TextView mPerformanceSummary;
-    private final TextView mPerformanceMessage;
-    private final TextView mPreviewMessage;
-    private final TextView mPreviewStaleTimestamp;
-    private final TextView mPreviewLoadOriginal;
-    private final TextView mPermissionsTitle;
-    private final View mPermissionsSeparator;
-    private final LinearLayout mPermissionsList;
-    private final View mCookieControlsSeparator;
-    private final CookieControlsView mCookieControlsView;
-    private final View mPreviewSeparator;
-    private final Button mInstantAppButton;
-    private final Button mSiteSettingsButton;
-    private final Button mOpenOnlineButton;
-    private final Runnable mUrlTitleLongClickCallback;
+    // Shared UI components between PageInfoView and PageInfoViewV2. This list should shrink as
+    // these components are replaced with different UI and eventually this class will be replaced
+    // completely.
+    protected ElidedUrlTextView mUrlTitle;
+    protected TextView mPreviewMessage;
+    protected TextView mPreviewStaleTimestamp;
+    protected TextView mPreviewLoadOriginal;
+    protected View mPreviewSeparator;
+    protected Button mInstantAppButton;
+    protected Button mSiteSettingsButton;
+    protected Button mOpenOnlineButton;
+    protected Runnable mUrlTitleLongClickCallback;
+    protected Runnable mOnUiClosingCallback;
+
+    // Components specific to this PageInfoView
+    private TextView mConnectionSummary;
+    private TextView mConnectionMessage;
+    private TextView mPerformanceSummary;
+    private TextView mPerformanceMessage;
+    private TextView mPermissionsTitle;
+    private View mPermissionsSeparator;
+    private LinearLayout mPermissionsList;
+    private View mCookieControlsSeparator;
+    private CookieControlsView mCookieControlsView;
+
+    public PageInfoView(Context context) {
+        super(context);
+    }
 
     public PageInfoView(Context context, PageInfoViewParams params) {
         super(context);
-
-        // Find the container and all it's important subviews.
         LayoutInflater.from(context).inflate(R.layout.page_info, this, true);
-        mUrlTitle = findViewById(R.id.page_info_url);
-        mConnectionSummary = findViewById(R.id.page_info_connection_summary);
-        mConnectionMessage = findViewById(R.id.page_info_connection_message);
-        mPerformanceSummary = findViewById(R.id.page_info_performance_summary);
-        mPerformanceMessage = findViewById(R.id.page_info_performance_message);
-        mPreviewMessage = findViewById(R.id.page_info_preview_message);
-        mPreviewStaleTimestamp = findViewById(R.id.page_info_stale_preview_timestamp);
-        mPreviewLoadOriginal = findViewById(R.id.page_info_preview_load_original);
-        mPermissionsTitle = findViewById(R.id.page_info_permissions_list_title);
-        mPermissionsSeparator = findViewById(R.id.page_info_permissions_separator);
-        mPermissionsList = findViewById(R.id.page_info_permissions_list);
-        mCookieControlsSeparator = findViewById(R.id.page_info_cookie_controls_separator);
-        mCookieControlsView = findViewById(R.id.page_info_cookie_controls_view);
-        mPreviewSeparator = findViewById(R.id.page_info_preview_separator);
-        mInstantAppButton = findViewById(R.id.page_info_instant_app_button);
-        mSiteSettingsButton = findViewById(R.id.page_info_site_settings_button);
-        mOpenOnlineButton = findViewById(R.id.page_info_open_online_button);
+        init(params);
+    }
 
+    protected void init(PageInfoViewParams params) {
+        initUrlTitle(params);
+        initPreview(params);
+        initConnection(params);
+        initPerformance(params);
+        initPermissions(params);
+        initCookies(params);
+        initInstantApp(params);
+        initSiteSettings(params);
+        initOpenOnline(params);
+    }
+
+    protected void initUrlTitle(PageInfoViewParams params) {
+        mUrlTitle = findViewById(R.id.page_info_url);
         mUrlTitle.setUrl(params.url, params.urlOriginLength);
         mUrlTitleLongClickCallback = params.urlTitleLongClickCallback;
         if (params.urlTitleLongClickCallback != null) {
             mUrlTitle.setOnLongClickListener(this);
         }
-
         initializePageInfoViewChild(
                 mUrlTitle, params.urlTitleShown, 0f, params.urlTitleClickCallback);
-        // Hide the connection summary until its text is set.
-        initializePageInfoViewChild(mConnectionSummary, false, 0f, null);
-        initializePageInfoViewChild(mConnectionMessage, params.connectionMessageShown, 0f, null);
-        initializePageInfoViewChild(mPerformanceSummary, false, 0f, null);
-        initializePageInfoViewChild(mPerformanceMessage, false, 0f, null);
-        // Hide the permissions list for sites with no permissions.
-        initializePageInfoViewChild(mPermissionsTitle, false, 0f, null);
-        initializePageInfoViewChild(mPermissionsSeparator, false, 0f, null);
-        initializePageInfoViewChild(mPermissionsList, false, 1f, null);
-        initializePageInfoViewChild(mInstantAppButton, params.instantAppButtonShown, 0f,
-                params.instantAppButtonClickCallback);
-        initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown, 0f,
-                params.siteSettingsButtonClickCallback);
-        // The open online button should not fade in.
-        initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown, 1f,
-                params.openOnlineButtonClickCallback);
-        // Previews UI initialization.
+    }
+
+    protected void initPreview(PageInfoViewParams params) {
+        mPreviewMessage = findViewById(R.id.page_info_preview_message);
+        mPreviewStaleTimestamp = findViewById(R.id.page_info_stale_preview_timestamp);
+        mPreviewLoadOriginal = findViewById(R.id.page_info_preview_load_original);
+        mPreviewSeparator = findViewById(R.id.page_info_preview_separator);
         initializePageInfoViewChild(mPreviewMessage, params.previewUIShown, 0f, null);
         initializePageInfoViewChild(mPreviewLoadOriginal, params.previewUIShown, 0f,
                 params.previewShowOriginalClickCallback);
@@ -280,12 +277,69 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         if (!TextUtils.isEmpty(params.previewStaleTimestamp)) {
             mPreviewStaleTimestamp.setText(params.previewStaleTimestamp);
         }
+    }
+
+    protected void initConnection(PageInfoViewParams params) {
+        mConnectionSummary = findViewById(R.id.page_info_connection_summary);
+        mConnectionMessage = findViewById(R.id.page_info_connection_message);
+        // Hide the connection summary until its text is set.
+        initializePageInfoViewChild(mConnectionSummary, false, 0f, null);
+        initializePageInfoViewChild(mConnectionMessage, params.connectionMessageShown, 0f, null);
+    }
+
+    protected void initPerformance(PageInfoViewParams params) {
+        mPerformanceSummary = findViewById(R.id.page_info_performance_summary);
+        mPerformanceMessage = findViewById(R.id.page_info_performance_message);
+        initializePageInfoViewChild(mPerformanceSummary, false, 0f, null);
+        initializePageInfoViewChild(mPerformanceMessage, false, 0f, null);
+    }
+
+    protected void initPermissions(PageInfoViewParams params) {
+        mPermissionsTitle = findViewById(R.id.page_info_permissions_list_title);
+        mPermissionsSeparator = findViewById(R.id.page_info_permissions_separator);
+        mPermissionsList = findViewById(R.id.page_info_permissions_list);
+        // Hide the permissions list for sites with no permissions.
+        initializePageInfoViewChild(mPermissionsTitle, false, 0f, null);
+        initializePageInfoViewChild(mPermissionsSeparator, false, 0f, null);
+        initializePageInfoViewChild(mPermissionsList, false, 1f, null);
+    }
+
+    protected void initCookies(PageInfoViewParams params) {
+        mCookieControlsSeparator = findViewById(R.id.page_info_cookie_controls_separator);
+        mCookieControlsView = findViewById(R.id.page_info_cookie_controls_view);
         initializePageInfoViewChild(mCookieControlsSeparator, params.cookieControlsShown, 0f, null);
         initializePageInfoViewChild(mCookieControlsView, params.cookieControlsShown, 0f, null);
+        mOnUiClosingCallback = params.onUiClosingCallback;
+    }
+
+    protected void initInstantApp(PageInfoViewParams params) {
+        mInstantAppButton = findViewById(R.id.page_info_instant_app_button);
+        initializePageInfoViewChild(mInstantAppButton, params.instantAppButtonShown, 0f,
+                params.instantAppButtonClickCallback);
+    }
+
+    protected void initSiteSettings(PageInfoViewParams params) {
+        mSiteSettingsButton = findViewById(R.id.page_info_site_settings_button);
+        initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown, 0f,
+                params.siteSettingsButtonClickCallback);
+    }
+
+    protected void initOpenOnline(PageInfoViewParams params) {
+        mOpenOnlineButton = findViewById(R.id.page_info_open_online_button);
+        // The open online button should not fade in.
+        initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown, 1f,
+                params.openOnlineButtonClickCallback);
     }
 
     public CookieControlsView getCookieControlsView() {
         return mCookieControlsView;
+    }
+
+    // FrameLayout:
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mOnUiClosingCallback.run();
     }
 
     public void setPermissions(PermissionParams params) {
@@ -354,7 +408,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         return true;
     }
 
-    private void initializePageInfoViewChild(
+    protected void initializePageInfoViewChild(
             View child, boolean shown, float alpha, Runnable clickCallback) {
         // Make all subviews transparent until the page info view is faded in.
         child.setAlpha(alpha);
@@ -401,7 +455,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     /**
      * Create a list of all the views which we want to individually fade in.
      */
-    private List<View> collectAnimatableViews() {
+    protected List<View> collectAnimatableViews() {
         List<View> animatableViews = new ArrayList<>();
         animatableViews.add(mUrlTitle);
         animatableViews.add(mConnectionSummary);
@@ -428,7 +482,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     /**
      * Create an animator to fade an individual dialog element.
      */
-    private Animator createInnerFadeAnimation(final View view, int position, boolean isEnter) {
+    protected Animator createInnerFadeAnimation(final View view, int position, boolean isEnter) {
         ObjectAnimator alphaAnim;
 
         if (isEnter) {
@@ -446,7 +500,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     /**
      * Create animations for fading the view in/out.
      */
-    private Animator createFadeAnimations(boolean isEnter) {
+    protected Animator createFadeAnimations(boolean isEnter) {
         AnimatorSet animation = new AnimatorSet();
         AnimatorSet.Builder builder = animation.play(new AnimatorSet());
 

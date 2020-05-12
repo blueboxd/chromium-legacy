@@ -33,3 +33,13 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_update_check_helper.cc",
+    "test_update_check_helper.h",
+  ]
+
+  deps = [ ":safety_check" ]
+}

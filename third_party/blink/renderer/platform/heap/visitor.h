@@ -155,45 +155,6 @@ class PLATFORM_EXPORT Visitor {
     Visit(t, TraceDescriptorFor(t));
   }
 
-  template <typename T>
-  void TraceBackingStoreStrongly(const T* backing_store,
-                                 const T* const* backing_store_slot) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-
-    VisitBackingStoreStrongly(
-        backing_store, reinterpret_cast<const void* const*>(backing_store_slot),
-        TraceDescriptorFor(backing_store));
-  }
-
-  template <typename HashTable, typename T>
-  void TraceBackingStoreWeakly(const T* backing_store,
-                               const T* const* backing_store_slot,
-                               WeakCallback weak_callback,
-                               const void* weak_callback_parameter) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-
-    VisitBackingStoreWeakly(
-        backing_store, reinterpret_cast<const void* const*>(backing_store_slot),
-        TraceDescriptorFor(backing_store),
-        WeakTraceDescriptorFor(backing_store), weak_callback,
-        weak_callback_parameter);
-  }
-
-  template <typename T>
-  void TraceBackingStoreOnly(const T* backing_store,
-                             const T* const* backing_store_slot) {
-    static_assert(sizeof(T), "T must be fully defined");
-    static_assert(IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-
-    VisitBackingStoreOnly(backing_store, reinterpret_cast<const void* const*>(
-                                             backing_store_slot));
-  }
-
   // WeakMember version of the templated trace method. It doesn't keep
   // the traced thing alive, but will write null to the WeakMember later
   // if the pointed-to object is dead. It's lying for this to be const,
@@ -246,6 +207,26 @@ class PLATFORM_EXPORT Visitor {
                    value, value_trace_callback);
   }
 
+  template <typename T>
+  void TraceWeakContainer(const T* object,
+                          const T* const* slot,
+                          TraceDescriptor strong_desc,
+                          TraceDescriptor weak_dec,
+                          WeakCallback weak_callback,
+                          const void* weak_callback_parameter) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+    VisitWeakContainer(reinterpret_cast<const void*>(object),
+                       reinterpret_cast<const void* const*>(slot), strong_desc,
+                       weak_dec, weak_callback, weak_callback_parameter);
+  }
+
+  template <typename T>
+  void TraceMovablePointer(const T* const* slot) {
+    RegisterMovableSlot(reinterpret_cast<const void* const*>(slot));
+  }
+
   // Registers an instance method using |RegisterWeakCallback|. See description
   // below.
   template <typename T, void (T::*method)(const LivenessBroker&)>
@@ -278,21 +259,24 @@ class PLATFORM_EXPORT Visitor {
                          TraceDescriptor,
                          WeakCallback) = 0;
 
-  // Visitors for collection backing stores.
-  virtual void VisitBackingStoreStrongly(const void*,
-                                         const void* const*,
-                                         TraceDescriptor) = 0;
-  virtual void VisitBackingStoreWeakly(const void*,
-                                       const void* const*,
-                                       TraceDescriptor,
-                                       TraceDescriptor,
-                                       WeakCallback,
-                                       const void*) = 0;
-  virtual void VisitBackingStoreOnly(const void*, const void* const*) = 0;
-
   // Visits ephemeron pairs which are a combination of weak and strong keys and
   // values.
   virtual void VisitEphemeron(const void*, const void*, TraceCallback) {}
+
+  // Visits a container |object| holding ephemeron pairs held from |slot|.  The
+  // descriptor |strong_desc| can be used to enforce strong treatment of
+  // |object|. The |weak_desc| descriptor is invoked repeatedly until no
+  // more new objects are found. It is expected that |weak_desc| processing
+  // ultimately yields in a call to VisitEphemeron. After marking all reachable
+  // objects, |weak_callback| is invoked with |weak_callback_parameter|. It is
+  // expected that this callback is used to reset non-live entries in the
+  // ephemeron container.
+  virtual void VisitWeakContainer(const void* object,
+                                  const void* const* slot,
+                                  TraceDescriptor strong_desc,
+                                  TraceDescriptor weak_desc,
+                                  WeakCallback weak_callback,
+                                  const void* weak_callback_parameter) {}
 
   // Visits cross-component references to V8.
 
@@ -301,7 +285,9 @@ class PLATFORM_EXPORT Visitor {
   // Registers backing store pointers so that they can be moved and properly
   // updated.
   virtual void RegisterBackingStoreCallback(const void* backing,
-                                            MovingObjectCallback) = 0;
+                                            MovingObjectCallback) {}
+
+  virtual void RegisterMovableSlot(const void* const* slot) {}
 
   // Adds a |callback| that is invoked with |parameter| after liveness has been
   // computed on the whole object graph. The |callback| may use the provided
@@ -331,11 +317,6 @@ class PLATFORM_EXPORT Visitor {
   template <typename T>
   static inline TraceDescriptor TraceDescriptorFor(const T* traceable) {
     return TraceTrait<T>::GetTraceDescriptor(traceable);
-  }
-
-  template <typename T>
-  static inline TraceDescriptor WeakTraceDescriptorFor(const T* traceable) {
-    return TraceTrait<T>::GetWeakTraceDescriptor(traceable);
   }
 
  private:

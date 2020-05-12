@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 527 tests; 399 PASS, 128 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 527 tests; 402 PASS, 125 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar>
@@ -450,7 +450,7 @@ PASS Parsing: <pix/submit.gif> against <file:///C:/Users/Domenic/Dropbox/GitHub/
 PASS Parsing: <..> against <file:///C:/>
 PASS Parsing: <..> against <file:///>
 PASS Parsing: </> against <file:///C:/a/b>
-FAIL Parsing: <//d:> against <file:///C:/a/b> assert_equals: href expected "file:///d:" but got "file:///D:/"
+FAIL Parsing: <//d:> against <file:///C:/a/b> assert_equals: href expected "file:///d:" but got "file:///D:"
 FAIL Parsing: <//d:/..> against <file:///C:/a/b> assert_equals: href expected "file:///d:/" but got "file:///D:/"
 PASS Parsing: <..> against <file:///ab:/>
 PASS Parsing: <..> against <file:///1:/>
@@ -477,9 +477,9 @@ FAIL Parsing: </..//localhost//pig> against <file://lion/> assert_equals: href e
 PASS Parsing: <file://> against <file://ape/>
 PASS Parsing: </rooibos> against <file://tea/>
 PASS Parsing: </?chai> against <file://tea/>
-FAIL Parsing: <C|> against <file://host/dir/file> assert_equals: href expected "file:///C:" but got "file:///C:/"
-FAIL Parsing: <C|#> against <file://host/dir/file> assert_equals: href expected "file:///C:#" but got "file:///C:/#"
-FAIL Parsing: <C|?> against <file://host/dir/file> assert_equals: href expected "file:///C:?" but got "file:///C:/?"
+PASS Parsing: <C|> against <file://host/dir/file>
+PASS Parsing: <C|#> against <file://host/dir/file>
+PASS Parsing: <C|?> against <file://host/dir/file>
 PASS Parsing: <C|/> against <file://host/dir/file>
 PASS Parsing: <C|
 /> against <file://host/dir/file>

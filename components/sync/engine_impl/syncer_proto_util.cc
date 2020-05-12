@@ -130,10 +130,18 @@ SyncProtocolErrorType PBErrorTypeToSyncProtocolErrorType(
       return CLIENT_DATA_OBSOLETE;
     case sync_pb::SyncEnums::UNKNOWN:
       return UNKNOWN_ERROR;
-    default:
-      NOTREACHED();
+    case sync_pb::SyncEnums::ENCRYPTION_OBSOLETE:
+      return ENCRYPTION_OBSOLETE;
+    case sync_pb::SyncEnums::DEPRECATED_ACCESS_DENIED:
+    case sync_pb::SyncEnums::DEPRECATED_AUTH_EXPIRED:
+    case sync_pb::SyncEnums::DEPRECATED_AUTH_INVALID:
+    case sync_pb::SyncEnums::DEPRECATED_USER_NOT_ACTIVATED:
+    case sync_pb::SyncEnums::DEPRECATED_USER_ROLLBACK:
       return UNKNOWN_ERROR;
   }
+
+  NOTREACHED();
+  return UNKNOWN_ERROR;
 }
 
 ClientAction PBActionToClientAction(const sync_pb::SyncEnums::Action& action) {
@@ -146,10 +154,10 @@ ClientAction PBActionToClientAction(const sync_pb::SyncEnums::Action& action) {
     case sync_pb::SyncEnums::DEPRECATED_DISABLE_SYNC_ON_CLIENT:
     case sync_pb::SyncEnums::UNKNOWN_ACTION:
       return UNKNOWN_ACTION;
-    default:
-      NOTREACHED();
-      return UNKNOWN_ACTION;
   }
+
+  NOTREACHED();
+  return UNKNOWN_ACTION;
 }
 
 // Returns true iff |message| is an initial GetUpdates request.
@@ -181,7 +189,8 @@ SyncProtocolError ErrorCodeToSyncProtocolError(
   SyncProtocolError error;
   error.error_type = PBErrorTypeToSyncProtocolErrorType(error_type);
   if (error_type == sync_pb::SyncEnums::CLEAR_PENDING ||
-      error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY) {
+      error_type == sync_pb::SyncEnums::NOT_MY_BIRTHDAY ||
+      error_type == sync_pb::SyncEnums::ENCRYPTION_OBSOLETE) {
     error.action = DISABLE_SYNC_ON_CLIENT;
   } else if (error_type == sync_pb::SyncEnums::CLIENT_DATA_OBSOLETE) {
     error.action = RESET_LOCAL_SYNC_DATA;
@@ -308,6 +317,13 @@ SyncProtocolError SyncerProtoUtil::GetProtocolErrorFromResponse(
     // Legacy server implementation. Compute the error based on |error_code|.
     sync_protocol_error = ErrorCodeToSyncProtocolError(response.error_code());
   }
+
+  // Trivially inferred actions.
+  if (sync_protocol_error.action == UNKNOWN_ACTION &&
+      sync_protocol_error.error_type == ENCRYPTION_OBSOLETE) {
+    sync_protocol_error.action = DISABLE_SYNC_ON_CLIENT;
+  }
+
   return sync_protocol_error;
 }
 
@@ -556,10 +572,12 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       return SyncerError(SyncerError::SYNCER_OK);
     case CLIENT_DATA_OBSOLETE:
       return SyncerError(SyncerError::SERVER_RETURN_CLIENT_DATA_OBSOLETE);
-    default:
-      NOTREACHED();
-      return SyncerError();
+    case ENCRYPTION_OBSOLETE:
+      return SyncerError(SyncerError::SERVER_RETURN_ENCRYPTION_OBSOLETE);
   }
+
+  NOTREACHED();
+  return SyncerError();
 }
 
 // static

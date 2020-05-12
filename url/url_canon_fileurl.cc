@@ -76,8 +76,8 @@ bool DoFileCanonicalizePath(const CHAR* spec,
     Component sub_path = MakeRange(after_drive, path.end());
     Component fake_output_path;
     success = CanonicalizePath(spec, sub_path, output, &fake_output_path);
-  } else {
-    // No input path, canonicalize to a slash.
+  } else if (after_drive == path.begin) {
+    // No input path and no drive spec, canonicalize to a slash.
     output->push_back('/');
   }
 

@@ -29,6 +29,7 @@
 #include "content/browser/devtools/protocol/input_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
+#include "content/browser/devtools/protocol/log_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/overlay_handler.h"
@@ -106,8 +107,8 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
 }  // namespace
 
 // static
-scoped_refptr<DevToolsAgentHost>
-DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
+scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetOrCreateFor(
+    WebContents* web_contents) {
   FrameTreeNode* node =
       static_cast<WebContentsImpl*>(web_contents)->GetFrameTree()->root();
   // TODO(dgozman): this check should not be necessary. See
@@ -340,6 +341,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     session->AddHandler(std::make_unique<protocol::TracingHandler>(
         frame_tree_node_, GetIOContext()));
   }
+  session->AddHandler(std::make_unique<protocol::LogHandler>());
 #if !defined(OS_ANDROID)
   session->AddHandler(std::make_unique<protocol::WebAuthnHandler>());
 #endif  // !defined(OS_ANDROID)

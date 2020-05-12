@@ -217,7 +217,8 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
     AppCachePolicy* policy = service()->appcache_policy();
     if (policy && !policy->CanCreateAppCache(
-                      manifest_url, site_for_cookies_.RepresentativeUrl())) {
+                      manifest_url, site_for_cookies_.RepresentativeUrl(),
+                      top_frame_origin_)) {
       FinishCacheSelection(nullptr, nullptr, mojo::ReportBadMessageCallback());
       frontend()->EventRaised(
           blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
@@ -406,6 +407,7 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
     // for checking whether the creation of the appcache is allowed.
     site_for_cookies_ = request->GetSiteForCookies();
     site_for_cookies_initialized_ = true;
+    top_frame_origin_ = request->GetTopFrameOrigin();
     return base::WrapUnique(new AppCacheRequestHandler(
         this, resource_type, should_reset_appcache, std::move(request)));
   }

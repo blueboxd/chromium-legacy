@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_storage.h"
@@ -229,6 +230,10 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
     site_for_cookies_initialized_ = true;
   }
 
+  const base::Optional<url::Origin>& top_frame_origin() const {
+    return top_frame_origin_;
+  }
+
   void set_origin_for_url_loader_factory(const url::Origin& origin) {
     origin_for_url_loader_factory_ = origin;
   }
@@ -413,6 +418,7 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   // To be used in policy checks.
   net::SiteForCookies site_for_cookies_;
   bool site_for_cookies_initialized_ = false;
+  base::Optional<url::Origin> top_frame_origin_;
 
   bool is_origin_trial_required_ = false;
 

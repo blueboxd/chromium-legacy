@@ -242,7 +242,7 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
 
   // Emulate callback from the worker.
   scheduler.OnProfileFinished(cert_profile,
-                              CertProvisioningWorkerState::kSucceed);
+                              CertProvisioningWorkerState::kSucceeded);
 
   // Finished worker should be deleted.
   EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
@@ -392,7 +392,7 @@ TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
   ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // Emulate callback from the worker.
-  scheduler.OnProfileFinished(profile, CertProvisioningWorkerState::kSucceed);
+  scheduler.OnProfileFinished(profile, CertProvisioningWorkerState::kSucceeded);
 
   ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
   EXPECT_TRUE(scheduler.GetFailedCertProfileIds().empty());
@@ -471,7 +471,7 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
 
   // worker0 successfully finished. Should be just deleted.
   scheduler.OnProfileFinished(cert_profile0,
-                              CertProvisioningWorkerState::kSucceed);
+                              CertProvisioningWorkerState::kSucceeded);
 
   // worker1 is waiting. Should be continued.
   worker1->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/true,
@@ -605,7 +605,6 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
   const char kCertProfileId[] = "cert_profile_id_1";
   const char kCertProfileVersion1[] = "cert_profile_version_1";
   const char kCertProfileVersion2[] = "cert_profile_version_2";
-  const char kCertProfileVersion3[] = "cert_profile_version_3";
 
   CertProvisioningScheduler scheduler(
       cert_scope, GetProfile(), &pref_service_,
@@ -689,12 +688,6 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
   scheduler.UpdateCerts();
   EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
-  // Add a new worker to the factory.
-  CertProfile cert_profile_v3{kCertProfileId, kCertProfileVersion3};
-  worker = mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile_v3);
-  worker->SetExpectations(/*do_step_times=*/AtLeast(1), /*is_waiting=*/false,
-                          cert_profile_v3);
-
   // On policy update if existing profile has changed its policy_version,
   // scheduler should recreate the worker for it.
   config = ParseJson(
@@ -703,8 +696,20 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
            "policy_version":"cert_profile_version_3",
            "key_algorithm":"rsa",
            "renewal_period_seconds": 365000}])");
+
+  // On policy change scheduler should detect mismatch in policy versions and
+  // stop the worker.
+  EXPECT_CALL(*worker,
+              Stop(CertProvisioningWorkerState::kInconsistentDataError));
+
   pref_service_.Set(prefs::kRequiredClientCertificateForDevice, config);
-  EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
+  // EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
+
+  // Emulate that after some time the worker reports back to scheduler.
+  FastForwardBy(base::TimeDelta::FromSeconds(10));
+  scheduler.OnProfileFinished(
+      cert_profile_v1, CertProvisioningWorkerState::kInconsistentDataError);
+  EXPECT_EQ(scheduler.GetWorkers().size(), 0U);
 }
 
 TEST_F(CertProvisioningSchedulerTest, RetryAfterNoInternetConnection) {
@@ -791,10 +796,15 @@ TEST_F(CertProvisioningSchedulerTest, DeleteWorkerWithoutPolicy) {
   FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
-  EXPECT_CALL(*worker, Cancel);
+  EXPECT_CALL(*worker, Stop(CertProvisioningWorkerState::kCanceled));
 
   config = ParseJson("[]");
   pref_service_.Set(prefs::kRequiredClientCertificateForDevice, config);
+
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  // Emulate callback from the worker.
+  scheduler.OnProfileFinished(cert_profile,
+                              CertProvisioningWorkerState::kCanceled);
 
   ASSERT_EQ(scheduler.GetWorkers().size(), 0U);
 }

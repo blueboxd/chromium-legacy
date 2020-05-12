@@ -40,15 +40,6 @@ void MarkingVisitorCommon::RegisterWeakCallback(WeakCallback callback,
   weak_callback_worklist_.Push({callback, object});
 }
 
-void MarkingVisitorCommon::RegisterBackingStoreReference(
-    const void* const* slot) {
-  if (marking_mode_ != kGlobalMarkingWithCompaction)
-    return;
-  if (Heap().ShouldRegisterMovingAddress()) {
-    movable_reference_worklist_.Push(slot);
-  }
-}
-
 void MarkingVisitorCommon::RegisterBackingStoreCallback(
     const void* backing,
     MovingObjectCallback callback) {
@@ -56,6 +47,14 @@ void MarkingVisitorCommon::RegisterBackingStoreCallback(
     return;
   if (Heap().ShouldRegisterMovingAddress()) {
     backing_store_callback_worklist_.Push({backing, callback});
+  }
+}
+
+void MarkingVisitorCommon::RegisterMovableSlot(const void* const* slot) {
+  if (marking_mode_ != kGlobalMarkingWithCompaction)
+    return;
+  if (Heap().ShouldRegisterMovingAddress()) {
+    movable_reference_worklist_.Push(slot);
   }
 }
 
@@ -73,39 +72,6 @@ void MarkingVisitorCommon::VisitWeak(const void* object,
   RegisterWeakCallback(callback, object_weak_ref);
 }
 
-void MarkingVisitorCommon::VisitBackingStoreStrongly(
-    const void* object,
-    const void* const* object_slot,
-    TraceDescriptor desc) {
-  RegisterBackingStoreReference(object_slot);
-  if (!object)
-    return;
-  Visit(object, desc);
-}
-
-// All work is registered through RegisterWeakCallback.
-void MarkingVisitorCommon::VisitBackingStoreWeakly(
-    const void* object,
-    const void* const* object_slot,
-    TraceDescriptor strong_desc,
-    TraceDescriptor weak_desc,
-    WeakCallback weak_callback,
-    const void* weak_callback_parameter) {
-  RegisterBackingStoreReference(object_slot);
-
-  // In case there's no object present, weakness processing is omitted. The GC
-  // relies on the fact that in such cases touching the weak data structure will
-  // strongify its references.
-  if (!object)
-    return;
-
-  // Register final weak processing of the backing store.
-  RegisterWeakCallback(weak_callback, weak_callback_parameter);
-  // Register ephemeron callbacks if necessary.
-  if (weak_desc.callback)
-    weak_table_worklist_.Push(weak_desc);
-}
-
 void MarkingVisitorCommon::VisitEphemeron(const void* key,
                                           const void* value,
                                           TraceCallback value_trace_callback) {
@@ -115,15 +81,37 @@ void MarkingVisitorCommon::VisitEphemeron(const void* key,
   value_trace_callback(this, value);
 }
 
-void MarkingVisitorCommon::VisitBackingStoreOnly(
+void MarkingVisitorCommon::VisitWeakContainer(
     const void* object,
-    const void* const* object_slot) {
-  RegisterBackingStoreReference(object_slot);
+    const void* const*,
+    TraceDescriptor,
+    TraceDescriptor weak_desc,
+    WeakCallback weak_callback,
+    const void* weak_callback_parameter) {
+  // In case there's no object present, weakness processing is omitted. The GC
+  // relies on the fact that in such cases touching the weak data structure will
+  // strongify its references.
   if (!object)
     return;
+
+  // Only trace the container initially. Its buckets will be processed after
+  // marking. The interesting cases  are:
+  // - The backing of the container is dropped using clear(): The backing can
+  //   still be compacted but empty/deleted buckets will only be destroyed once
+  //   the backing is reclaimed by the garbage collector on the next cycle.
+  // - The container expands/shrinks: Buckets are moved to the new backing
+  //   store and strongified, resulting in all buckets being alive. The old
+  //   backing store is marked but only contains empty/deleted buckets as all
+  //   non-empty/deleted buckets have been moved to the new backing store.
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
   MarkHeaderNoTracing(header);
   AccountMarkedBytes(header);
+
+  // Register final weak processing of the backing store.
+  RegisterWeakCallback(weak_callback, weak_callback_parameter);
+  // Register ephemeron callbacks if necessary.
+  if (weak_desc.callback)
+    weak_table_worklist_.Push(weak_desc);
 }
 
 // static

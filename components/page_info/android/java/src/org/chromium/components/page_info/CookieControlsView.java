@@ -29,8 +29,6 @@ public class CookieControlsView
 
     /**  Parameters to configure the cookie controls view. */
     public static class CookieControlsParams {
-        // Called when the cookie controls UI is closed.
-        public Runnable onUiClosingCallback;
         // Called when the toggle controlling third-party cookie blocking changes.
         public Callback<Boolean> onCheckedChangedCallback;
     }
@@ -48,13 +46,6 @@ public class CookieControlsView
 
     public void setParams(CookieControlsParams params) {
         mParams = params;
-    }
-
-    // FrameLayout:
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        mParams.onUiClosingCallback.run();
     }
 
     public void setCookieBlockingStatus(@CookieControlsStatus int status, boolean isEnforced) {

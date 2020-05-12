@@ -97,12 +97,12 @@ public class ExternalNavigationHandler {
     // An extra that may be specified on an intent:// URL that contains an encoded value for the
     // referrer field passed to the market:// URL in the case where the app is not present.
     @VisibleForTesting
-    public static final String EXTRA_MARKET_REFERRER = "market_referrer";
+    static final String EXTRA_MARKET_REFERRER = "market_referrer";
 
     // A mask of flags that are safe for untrusted content to use when starting an Activity.
     // This list is not exhaustive and flags not listed here are not necessarily unsafe.
     @VisibleForTesting
-    public static final int ALLOWED_INTENT_FLAGS = Intent.FLAG_EXCLUDE_STOPPED_PACKAGES
+    static final int ALLOWED_INTENT_FLAGS = Intent.FLAG_EXCLUDE_STOPPED_PACKAGES
             | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP
             | Intent.FLAG_ACTIVITY_MATCH_EXTERNAL | Intent.FLAG_ACTIVITY_NEW_TASK
             | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT
@@ -111,7 +111,7 @@ public class ExternalNavigationHandler {
     // These values are persisted in histograms. Please do not renumber. Append only.
     @IntDef({AiaIntent.FALLBACK_USED, AiaIntent.SERP, AiaIntent.OTHER})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface AiaIntent {
+    private @interface AiaIntent {
         int FALLBACK_USED = 0;
         int SERP = 1;
         int OTHER = 2;
@@ -131,7 +131,7 @@ public class ExternalNavigationHandler {
             StandardActions.WEB_SEARCH, StandardActions.FACTORY_TEST, StandardActions.OTHER})
     @Retention(RetentionPolicy.SOURCE)
     @VisibleForTesting
-    public @interface StandardActions {
+    @interface StandardActions {
         int MAIN = 0;
         int VIEW = 1;
         int ATTACH_DATA = 2;
@@ -158,8 +158,7 @@ public class ExternalNavigationHandler {
     }
 
     @VisibleForTesting
-    public static final String INTENT_ACTION_HISTOGRAM =
-            "Android.Intent.OverrideUrlLoadingIntentAction";
+    static final String INTENT_ACTION_HISTOGRAM = "Android.Intent.OverrideUrlLoadingIntentAction";
 
     private final ExternalNavigationDelegate mDelegate;
 
@@ -366,6 +365,7 @@ public class ExternalNavigationHandler {
      * @param referrerUrl The HTTP referrer URL.
      * @param needsToCloseTab Whether this action should close the current tab.
      */
+    @VisibleForTesting
     protected void startFileIntent(
             final Intent intent, final String referrerUrl, final boolean needsToCloseTab) {
         PermissionCallback permissionCallback = new PermissionCallback() {
@@ -399,6 +399,7 @@ public class ExternalNavigationHandler {
      * @return OverrideUrlLoadingResult (if the tab has been clobbered, or we're launching an
      *         intent.)
      */
+    @VisibleForTesting
     protected @OverrideUrlLoadingResult int clobberCurrentTab(String url, String referrerUrl) {
         int transitionType = PageTransition.LINK;
         final LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
@@ -526,7 +527,7 @@ public class ExternalNavigationHandler {
 
     /** Wrapper of check against the feature to support overriding for testing. */
     @VisibleForTesting
-    public boolean blockExternalFormRedirectsWithoutGesture() {
+    boolean blockExternalFormRedirectsWithoutGesture() {
         return ExternalIntentsFeatureList.isEnabled(
                 ExternalIntentsFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE);
     }
@@ -1208,7 +1209,8 @@ public class ExternalNavigationHandler {
     /**
      * @return Whether the |url| could be handled by an external application on the system.
      */
-    public boolean canExternalAppHandleUrl(String url) {
+    @VisibleForTesting
+    boolean canExternalAppHandleUrl(String url) {
         if (url.startsWith(WTAI_MC_URL_PREFIX)) return true;
         Intent intent;
         try {
@@ -1291,7 +1293,7 @@ public class ExternalNavigationHandler {
      * @return Whether the URL is a file download.
      */
     @VisibleForTesting
-    public boolean isPdfDownload(String url) {
+    boolean isPdfDownload(String url) {
         String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url);
         if (TextUtils.isEmpty(fileExtension)) return false;
 
@@ -1308,7 +1310,7 @@ public class ExternalNavigationHandler {
     /**
      * Records the dispatching of an external intent.
      */
-    static void recordExternalNavigationDispatched(Intent intent) {
+    private static void recordExternalNavigationDispatched(Intent intent) {
         ArrayList<String> specializedHandlers =
                 intent.getStringArrayListExtra(EXTRA_EXTERNAL_NAV_PACKAGES);
         if (specializedHandlers != null && specializedHandlers.size() > 0) {
@@ -1323,7 +1325,7 @@ public class ExternalNavigationHandler {
      *
      * @param intent Intent to open.
      */
-    static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
+    private static void forcePdfViewerAsIntentHandlerIfNeeded(Intent intent) {
         if (intent == null || !isPdfIntent(intent)) return;
         resolveIntent(intent, true /* allowSelfOpen (ignored) */);
     }
@@ -1481,7 +1483,7 @@ public class ExternalNavigationHandler {
      * Returns the number of specialized intent handlers in {@params infos}. Specialized intent
      * handlers are intent handlers which handle only a few URLs (e.g. google maps or youtube).
      */
-    int countSpecializedHandlers(List<ResolveInfo> infos) {
+    private int countSpecializedHandlers(List<ResolveInfo> infos) {
         return getSpecializedHandlersWithFilter(
                 infos, null, mDelegate.handlesInstantAppLaunchingInternally())
                 .size();
@@ -1490,12 +1492,13 @@ public class ExternalNavigationHandler {
     /**
      * Returns the subset of {@params infos} that are specialized intent handlers.
      */
-    ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
+    private ArrayList<String> getSpecializedHandlers(List<ResolveInfo> infos) {
         return getSpecializedHandlersWithFilter(
                 infos, null, mDelegate.handlesInstantAppLaunchingInternally());
     }
 
-    static boolean matchResolveInfoExceptWildCardHost(ResolveInfo info, String filterPackageName) {
+    private static boolean matchResolveInfoExceptWildCardHost(
+            ResolveInfo info, String filterPackageName) {
         IntentFilter intentFilter = info.filter;
         if (intentFilter == null) {
             // Error on the side of classifying ResolveInfo as generic.
@@ -1525,7 +1528,6 @@ public class ExternalNavigationHandler {
         return true;
     }
 
-    @VisibleForTesting
     public static ArrayList<String> getSpecializedHandlersWithFilter(List<ResolveInfo> infos,
             String filterPackageName, boolean handlesInstantAppLaunchingInternally) {
         ArrayList<String> result = new ArrayList<>();
@@ -1590,6 +1592,7 @@ public class ExternalNavigationHandler {
      * @param url The requested url.
      * @return Whether we should block the navigation and request file access before proceeding.
      */
+    @VisibleForTesting
     protected boolean shouldRequestFileAccess(String url) {
         // If the tab is null, then do not attempt to prompt for access.
         if (!mDelegate.hasValidTab()) return false;
@@ -1624,6 +1627,7 @@ public class ExternalNavigationHandler {
     /**
      * @return whether this navigation is from the search results page.
      */
+    @VisibleForTesting
     protected boolean isSerpReferrer() {
         String referrerUrl = getReferrerUrl();
         if (referrerUrl == null) return false;

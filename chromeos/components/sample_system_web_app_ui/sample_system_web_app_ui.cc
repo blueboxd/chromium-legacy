@@ -15,7 +15,7 @@
 #include "content/public/common/url_constants.h"
 
 namespace chromeos {
-
+namespace {
 content::WebUIDataSource* CreateUntrustedSampleSystemWebAppDataSource() {
   content::WebUIDataSource* untrusted_source =
       content::WebUIDataSource::Create(kChromeUIUntrustedSampleSystemWebAppURL);
@@ -26,6 +26,7 @@ content::WebUIDataSource* CreateUntrustedSampleSystemWebAppDataSource() {
   untrusted_source->AddFrameAncestor(GURL(kChromeUISampleSystemWebAppURL));
   return untrusted_source;
 }
+}  // namespace
 
 SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {

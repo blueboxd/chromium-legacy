@@ -39,6 +39,10 @@
                 "exclude": ["resolveBlob"]
             },
             {
+                "domain": "Log",
+                "include": ["LogEntry", "entryAdded", "enable", "disable"]
+            },
+            {
                 "domain": "Memory",
                 "include": ["getBrowserSamplingProfile", "setPressureNotificationsSuppressed", "simulatePressureNotification", "prepareForLeakDetection"],
                 "async": ["prepareForLeakDetection"]

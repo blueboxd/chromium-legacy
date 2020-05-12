@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 
 class PrefService;
@@ -265,6 +266,10 @@ void FillUploadField(AutofillUploadContents::Field* field,
 // value of a const char* parameter is NULL, the corresponding attribute won't
 // be set at all, as opposed to being set to empty string.
 void FillQueryField(AutofillQueryContents::Form::Field* field,
+                    unsigned signature,
+                    const char* name,
+                    const char* control_type);
+void FillQueryField(AutofillPageQueryRequest_Form_Field* field,
                     unsigned signature,
                     const char* name,
                     const char* control_type);

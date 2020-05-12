@@ -385,10 +385,11 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
     // will soon be terminated too, so abort the connection.
     return;
   }
-  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
-                                  worker_process_host_->GetID(), worker_origin_,
-                                  isolation_info_.network_isolation_key()),
-                              std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<QuicTransportConnectorImpl>(
+          worker_process_host_->GetID(), /*frame=*/nullptr, worker_origin_,
+          isolation_info_.network_isolation_key()),
+      std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateWakeLockService(

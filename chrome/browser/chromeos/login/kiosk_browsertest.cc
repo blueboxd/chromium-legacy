@@ -1399,6 +1399,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, SettingsWindow) {
     content::TestNavigationObserver settings_navigation_observer(web_contents,
                                                                  1);
     NavigateParams params(profile, page2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    params.disposition = WindowOpenDisposition::NEW_POPUP;
     Navigate(&params);
     // Wait for browser to be handled.
     base::RunLoop waiter;

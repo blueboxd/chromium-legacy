@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/safety_check/safety_check.h"
+#include "components/safety_check/update_check_helper.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 
@@ -105,11 +106,13 @@ class SafetyCheckHandler
                                        base::Time system_time);
 
  protected:
-  SafetyCheckHandler(std::unique_ptr<VersionUpdater> version_updater,
-                     password_manager::BulkLeakCheckService* leak_service,
-                     extensions::PasswordsPrivateDelegate* passwords_delegate,
-                     extensions::ExtensionPrefs* extension_prefs,
-                     extensions::ExtensionServiceInterface* extension_service);
+  SafetyCheckHandler(
+      std::unique_ptr<safety_check::UpdateCheckHelper> update_helper,
+      std::unique_ptr<VersionUpdater> version_updater,
+      password_manager::BulkLeakCheckService* leak_service,
+      extensions::PasswordsPrivateDelegate* passwords_delegate,
+      extensions::ExtensionPrefs* extension_prefs,
+      extensions::ExtensionServiceInterface* extension_service);
 
   void SetVersionUpdaterForTesting(
       std::unique_ptr<VersionUpdater> version_updater) {
@@ -147,12 +150,7 @@ class SafetyCheckHandler
   void CheckExtensions();
 
   // Callbacks that get triggered when each check completes.
-  void OnUpdateCheckResult(VersionUpdater::Status status,
-                           int progress,
-                           bool rollback,
-                           const std::string& version,
-                           int64_t update_size,
-                           const base::string16& message);
+  void OnUpdateCheckResult(UpdateStatus status);
   void OnPasswordsCheckResult(PasswordsStatus status,
                               Compromised compromised,
                               Done done,
@@ -176,6 +174,10 @@ class SafetyCheckHandler
                                         ReenabledUser reenabled_user,
                                         ReenabledAdmin reenabled_admin);
 
+  // A generic error state often includes the offline state. This method is used
+  // as a callback for |UpdateCheckHelper| to check connectivity.
+  void DetermineIfOfflineOrError(bool connected);
+
   // Since the password check API does not distinguish between the cases of
   // having no compromised passwords and not having any passwords at all, it is
   // necessary to use this method as a callback for
@@ -184,6 +186,15 @@ class SafetyCheckHandler
   void DetermineIfNoPasswordsOrSafe(
       const std::vector<extensions::api::passwords_private::PasswordUiEntry>&
           passwords);
+
+  // A callback passed to |VersionUpdater::CheckForUpdate| to receive the update
+  // state.
+  void OnVersionUpdaterResult(VersionUpdater::Status status,
+                              int progress,
+                              bool rollback,
+                              const std::string& version,
+                              int64_t update_size,
+                              const base::string16& message);
 
   // SafetyCheck::SafetyCheckHandlerInterface implementation.
   void OnSafeBrowsingCheckResult(SafeBrowsingStatus status) override;
@@ -221,6 +232,7 @@ class SafetyCheckHandler
   base::Time safety_check_completion_time_;
 
   std::unique_ptr<safety_check::SafetyCheck> safety_check_;
+  std::unique_ptr<safety_check::UpdateCheckHelper> update_helper_;
 
   std::unique_ptr<VersionUpdater> version_updater_;
   password_manager::BulkLeakCheckService* leak_service_ = nullptr;

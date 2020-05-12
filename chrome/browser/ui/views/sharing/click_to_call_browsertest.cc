@@ -285,7 +285,6 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   base::HistogramTester::CountsMap expected_counts = {
       {HistogramName("DevicesToShow"), 1},
       {HistogramName("DevicesToShow.ContextMenu"), 1},
-      {HistogramName("ContextMenuPhoneNumberParsingDelay"), 1},
   };
 
   EXPECT_THAT(GetTotalHistogramCounts(histograms),

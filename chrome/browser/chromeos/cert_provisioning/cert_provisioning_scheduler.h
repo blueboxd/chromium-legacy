@@ -46,6 +46,9 @@ struct FailedWorkerInfo {
 // This class is a part of certificate provisioning feature. It tracks updates
 // of |RequiredClientCertificateForUser|, |RequiredClientCertificateForDevice|
 // policies and creates one CertProvisioningWorker for every policy entry.
+// Should work on the UI thread because it interacts with PlatformKeysService
+// and some methods are called from the UI to populate certificate manager
+// settings page.
 class CertProvisioningScheduler : public NetworkStateHandlerObserver {
  public:
   static std::unique_ptr<CertProvisioningScheduler>
@@ -68,7 +71,8 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   CertProvisioningScheduler(const CertProvisioningScheduler&) = delete;
   CertProvisioningScheduler& operator=(const CertProvisioningScheduler&) =
       delete;
-
+  // Intended to be called when a user press a button in certificate manager UI.
+  // Retries provisioning of a specific certificate.
   void UpdateOneCert(const std::string& cert_profile_id);
   void UpdateCerts();
   void OnProfileFinished(const CertProfile& profile,
@@ -87,7 +91,7 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   void InitialUpdateCerts();
   void DeleteCertsWithoutPolicy();
   void OnDeleteCertsWithoutPolicyDone(const std::string& error_message);
-  void DeleteWorkersWithoutPolicy(const std::vector<CertProfile>& profiles);
+  void CancelWorkersWithoutPolicy(const std::vector<CertProfile>& profiles);
   void CleanVaKeysIfIdle();
   void OnCleanVaKeysIfIdleDone(base::Optional<bool> delete_result);
   void RegisterForPrefsChanges();
@@ -144,7 +148,6 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   std::unique_ptr<CertProvisioningCertDeleter> cert_deleter_;
   std::unique_ptr<CertProvisioningInvalidatorFactory> invalidator_factory_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CertProvisioningScheduler> weak_factory_{this};
 };
 

@@ -2002,8 +2002,8 @@ void NavigationRequest::OnResponseStarted(
   if (base::FeatureList::IsEnabled(
           network::features::kCrossOriginOpenerPolicy)) {
     // The Cross-Origin-Opener-Policy header should be ignored if delivered in
-    // insecure contexts.
-    if (!IsOriginSecure(common_params_->url)) {
+    // insecure contexts, and non-top level documents.
+    if (!IsOriginSecure(common_params_->url) || !IsInMainFrame()) {
       response_head_->parsed_headers->cross_origin_opener_policy =
           network::CrossOriginOpenerPolicy();
     }

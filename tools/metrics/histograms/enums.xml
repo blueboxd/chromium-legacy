@@ -8397,6 +8397,32 @@ histogram as enum -->
   <int value="6" label="FAILED_INCLUSION_PROOF_SERVER"/>
 </enum>
 
+<enum name="CertProvisioningEvent">
+  <int value="0" label="kRegisteredToInvalidationTopic"/>
+  <int value="1" label="kInvalidationReceived"/>
+  <int value="2" label="kWorkerRetryWithoutInvalidation"/>
+  <int value="3" label="kWorkerRetrySucceededWithoutInvalidation"/>
+  <int value="4" label="kProfileRetriedManually"/>
+  <int value="5" label="kWorkerCreated"/>
+  <int value="6" label="kWorkerDeserialized"/>
+  <int value="7" label="kWorkerDeserializationFailed"/>
+</enum>
+
+<enum name="CertProvisioningWorkerState">
+  <int value="0" label="kInitState"/>
+  <int value="1" label="kKeypairGenerated"/>
+  <int value="2" label="kStartCsrResponseReceived"/>
+  <int value="3" label="kVaChallengeFinished"/>
+  <int value="4" label="kKeyRegistered"/>
+  <int value="5" label="kKeypairMarked"/>
+  <int value="6" label="kSignCsrFinished"/>
+  <int value="7" label="kFinishCsrResponseReceived"/>
+  <int value="8" label="kSucceeded"/>
+  <int value="9" label="kInconsistentDataError"/>
+  <int value="10" label="kFailed"/>
+  <int value="11" label="kCanceled"/>
+</enum>
+
 <enum name="CertVerifierTrialComparisonResult">
   <int value="0" label="Invalid"/>
   <int value="1" label="Equal"/>
@@ -38337,6 +38363,7 @@ from previous Chrome versions.
   <int value="-1899409297"
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
+  <int value="-1896871201" label="CrossOriginOpenerPolicyReporting:enabled"/>
   <int value="-1896394207" label="PasswordChange:disabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
@@ -38864,6 +38891,7 @@ from previous Chrome versions.
   <int value="-1322882747" label="disable-datasaver-prompt"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
+  <int value="-1316769004" label="CrossOriginOpenerPolicyReporting:disabled"/>
   <int value="-1314603238" label="ChromeHomePullToRefreshIphAtTop:enabled"/>
   <int value="-1313810940" label="StrictOriginIsolation:disabled"/>
   <int value="-1311575452"
@@ -39836,6 +39864,7 @@ from previous Chrome versions.
   <int value="-203968600" label="SyncSupportSecondaryAccount:disabled"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
   <int value="-200805659" label="ContextualSuggestionsButton:enabled"/>
+  <int value="-199690952" label="PageInfoV2:enabled"/>
   <int value="-196110497" label="force-text-direction"/>
   <int value="-195029497" label="MediaRemoting:disabled"/>
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
@@ -40208,6 +40237,7 @@ from previous Chrome versions.
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
   <int value="229877058" label="ShelfScrollable:disabled"/>
   <int value="233721248" label="DownloadRename:disabled"/>
+  <int value="237066116" label="PageInfoV2:disabled"/>
   <int value="237570976" label="CommandLineOnNonRooted:disabled"/>
   <int value="237964589"
       label="enable-manual-fallback-for-password-saving:disabled"/>
@@ -40999,6 +41029,7 @@ from previous Chrome versions.
       label="AutofillCreditCardLastUsedDateDisplay:disabled"/>
   <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
+  <int value="1158333871" label="QueryTilesEnableQueryEditing:enabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1164377197" label="SwipingFromLeftEdgeToGoBack:enabled"/>
   <int value="1164460660" label="AutofillEnableVirtualCard:enabled"/>
@@ -41559,6 +41590,7 @@ from previous Chrome versions.
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
+  <int value="1802874714" label="QueryTilesEnableQueryEditing:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
   <int value="1803914892" label="TemporaryUnexpireFlagsM76:enabled"/>
@@ -61055,6 +61087,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   </int>
 </enum>
 
+<!--
+  SharingActionSource must be kept in sync with ValidSharingActionSource defined
+  in //ui/file_manager/file_manager/foreground/js/file_manager_commands.js.
+-->
+
+<enum name="SharingActionSource">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Context Menu"/>
+  <int value="2" label="Share Button"/>
+</enum>
+
 <enum name="SharingClickToCallEntryPoint">
   <int value="0" label="Left click on a phone link"/>
   <int value="1" label="Right click on a phone link"/>
@@ -65281,7 +65324,8 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Turned off and setup not completed"/>
   <int value="4" label="Must confirm sync settings"/>
   <int value="5" label="Disallowed by enterprise policy"/>
-  <int value="6" label="Disallowed by the platform"/>
+  <int value="6"
+      label="Disallowed by the platform (obsolete, was never recorded)"/>
 </enum>
 
 <enum name="SyncKeystoreDecryptionFailure">

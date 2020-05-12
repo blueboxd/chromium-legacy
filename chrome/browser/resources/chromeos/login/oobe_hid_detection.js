@@ -20,7 +20,7 @@ const CONNECTION = {
 };
 
 Polymer({
-  is: 'oobe-hid-detection',
+  is: 'hid-detection',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 

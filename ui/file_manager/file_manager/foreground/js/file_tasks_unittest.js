@@ -611,3 +611,21 @@ function testToOpenTiniFileOpensImportCrostiniImageDialog(callback) {
 
   reportPromise(showImportCrostiniImageDialogIsCalled([mockEntry]), callback);
 }
+
+/**
+ * Checks that the function that returns a file type for file entry handles
+ * correctly identifies files with known and unknown extensions.
+ */
+function testGetViewFileType() {
+  const mockFileSystem = new MockFileSystem('volumeId');
+  const testData = [
+    {extension: 'log', expected: '.log'},
+    {extension: '__unknown_extension__', expected: 'other'},
+  ];
+  for (const data of testData) {
+    const mockEntry =
+        MockFileEntry.create(mockFileSystem, `/report.${data.extension}`);
+    const type = FileTasks.getViewFileType(mockEntry);
+    assertEquals(data.expected, type);
+  }
+}

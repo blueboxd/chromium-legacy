@@ -59,6 +59,7 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     case CLIENT_DATA_OBSOLETE:
     case CLEAR_PENDING:
     case DISABLED_BY_ADMIN:
+    case ENCRYPTION_OBSOLETE:
       // If we send terminate sync early then |sync_cycle_ended| notification
       // would not be sent. If there were no actions then |ACTIONABLE_ERROR|
       // notification wouldnt be sent either. Then the UI layer would be left
@@ -68,6 +69,8 @@ bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
     // Make UNKNOWN_ERROR a NOTREACHED. All the other error should be explicitly
     // handled.
     case UNKNOWN_ERROR:
+      // TODO(crbug.com/1081266): This NOTREACHED is questionable because the
+      // sync server can cause it.
       NOTREACHED();
       return false;
   }

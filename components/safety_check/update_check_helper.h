@@ -6,8 +6,12 @@
 #define COMPONENTS_SAFETY_CHECK_UPDATE_CHECK_HELPER_H_
 
 #include "base/callback_forward.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
+#include "net/http/http_response_headers.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace safety_check {
 
@@ -17,7 +21,7 @@ class UpdateCheckHelper {
  public:
   explicit UpdateCheckHelper(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~UpdateCheckHelper();
+  virtual ~UpdateCheckHelper();
 
   using ConnectivityCheckCallback = base::OnceCallback<void(bool connected)>;
 
@@ -25,7 +29,12 @@ class UpdateCheckHelper {
   // callback with the result. Has a request timeout of 5 seconds. Anything
   // other than the intended HTTP 204 response is considered as no connectivity
   // (user behind proxy, etc).
-  void CheckConnectivity(ConnectivityCheckCallback connection_check_callback);
+  virtual void CheckConnectivity(
+      ConnectivityCheckCallback connection_check_callback);
+
+ protected:
+  // Test-only constructor.
+  UpdateCheckHelper();
 
  private:
   void OnURLLoadComplete(scoped_refptr<net::HttpResponseHeaders> headers);

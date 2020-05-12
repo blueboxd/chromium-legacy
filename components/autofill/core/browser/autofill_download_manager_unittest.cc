@@ -579,10 +579,11 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
     // This is the URL we expect to query the API. The sub-path right after
     // "/page" corresponds to the serialized AutofillPageQueryRequest proto
     // (that we filled forms in) encoded in base64. The Autofill
-    // https://clients1.google.com/ domain URL corresponds to the default domain
-    // used by the download manager, which is invalid, but good for testing.
+    // https://content-autofill.googleapis.com/ domain URL corresponds to the
+    // default domain used by the download manager, which is invalid, but good
+    // for testing.
     const std::string expected_url =
-        R"(https://clients1.google.com/v1/pages/(.+)\?alt=proto)";
+        R"(https://content-autofill.googleapis.com/v1/pages/(.+)\?alt=proto)";
     std::string encoded_request;
     ASSERT_TRUE(re2::RE2::FullMatch(request->request.url.spec(), expected_url,
                                     &encoded_request));
@@ -676,7 +677,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITestWhenTooLongUrl) {
       test_url_loader_factory_.GetPendingRequest(0);
   // Verify that the POST URL is used when request data too large.
   const std::string expected_url = {
-      "https://clients1.google.com/v1/pages:get?alt=proto"};
+      "https://content-autofill.googleapis.com/v1/pages:get?alt=proto"};
   // Verify API key header.
   EXPECT_EQ(request->request.url, expected_url);
   {
@@ -775,11 +776,11 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
       test_url_loader_factory_.GetPendingRequest(0);
 
   // This is the URL we expect to upload votes to the API. The Autofill
-  // https://clients1.google.com/ domain URL corresponds to the
+  // https://content-autofill.googleapis.com/ domain URL corresponds to the
   // default one used by the download manager. Request upload data is in the
   // payload when uploading.
   const std::string expected_url =
-      "https://clients1.google.com/v1/forms:vote?alt=proto";
+      "https://content-autofill.googleapis.com/v1/forms:vote?alt=proto";
   EXPECT_EQ(request->request.url, expected_url);
   std::string api_key_header_value;
   EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
@@ -1349,7 +1350,7 @@ class AutofillServerCommunicationTest
                             base::Unretained(this)));
     ASSERT_TRUE(server_.Start());
 
-    GURL autofill_server_url(server_.base_url().Resolve("/tbproxy/af/"));
+    GURL autofill_server_url(server_.base_url());
     ASSERT_TRUE(autofill_server_url.is_valid());
 
     // Intialize the autofill driver.
@@ -1410,22 +1411,17 @@ class AutofillServerCommunicationTest
     run_loop_->QuitWhenIdle();
   }
 
-  // Helper to extract the value of a query param. Returns "*** not found ***"
-  // if the requested query param is not in the query string.
-  std::string GetQueryParam(const std::string& query_str,
-                            const std::string& param_name) {
-    url::Component query(0, query_str.length());
-    url::Component key, value;
-    while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
-      base::StringPiece key_string(query_str.c_str() + key.begin, key.len);
-      base::StringPiece param_text(query_str.c_str() + value.begin, value.len);
-      std::string param_value;
-      if (key_string == param_name &&
-          base::Base64UrlDecode(param_text,
-                                base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                                &param_value)) {
-        return param_value;
-      }
+  // Helper to extract the value passed to a lookup in the URL. Returns "*** not
+  // found ***" if the the data cannot be decoded.
+  std::string GetLookupContent(const std::string& query_path) {
+    if (query_path.find("/v1/pages/") == std::string::npos)
+      return "*** not found ***";
+    std::string payload = query_path.substr(strlen("/v1/pages/"));
+    std::string decoded_payload;
+    if (base::Base64UrlDecode(payload,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &decoded_payload)) {
+      return decoded_payload;
     }
     return "*** not found ***";
   }
@@ -1434,12 +1430,15 @@ class AutofillServerCommunicationTest
     GURL absolute_url = server_.GetURL(request.relative_url);
     ++call_count_;
 
-    if (absolute_url.path() == "/tbproxy/af/query") {
+    if (absolute_url.path().find("/v1/pages") == 0) {
       payloads_.push_back(!request.content.empty()
                               ? request.content
-                              : GetQueryParam(absolute_url.query(), "q"));
-      AutofillQueryResponseContents proto;
-      proto.add_field()->set_overall_type_prediction(NAME_FIRST);
+                              : GetLookupContent(absolute_url.path()));
+      AutofillQueryResponse proto;
+      proto.add_form_suggestions()
+          ->add_field_suggestions()
+          ->add_predictions()
+          ->set_type(NAME_FIRST);
 
       auto response = std::make_unique<BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
@@ -1454,7 +1453,7 @@ class AutofillServerCommunicationTest
       return response;
     }
 
-    if (absolute_url.path() == "/tbproxy/af/upload") {
+    if (absolute_url.path() == "/v1/forms:vote") {
       payloads_.push_back(request.content);
       auto response = std::make_unique<BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
@@ -1657,8 +1656,9 @@ TEST_P(AutofillQueryTest, SendsExperiment) {
     histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
 
     ASSERT_EQ(1u, payloads_.size());
-    AutofillQueryContents query_contents;
+    AutofillPageQueryRequest query_contents;
     ASSERT_TRUE(query_contents.ParseFromString(payloads_[0]));
+
     ASSERT_EQ(2, query_contents.experiments_size());
     EXPECT_EQ(3312923, query_contents.experiments(0));
     EXPECT_EQ(3314883, query_contents.experiments(1));
@@ -1789,30 +1789,30 @@ TEST_P(AutofillQueryTest, RichMetadata_Enabled) {
 
   // We should have intercepted exactly on query request. Parse it.
   ASSERT_EQ(1u, payloads_.size());
-  AutofillQueryContents query;
+  AutofillPageQueryRequest query;
   ASSERT_TRUE(query.ParseFromString(payloads_.front()));
 
   // Validate that we have one form in the query.
-  ASSERT_EQ(query.form_size(), 1);
-  const auto& query_form = query.form(0);
+  ASSERT_EQ(query.forms_size(), 1);
+  const auto& query_form = query.forms(0);
 
   // The form should have metadata, and the metadata value should be equal
   // those initialized above.
-  ASSERT_TRUE(query_form.has_form_metadata());
-  EXPECT_EQ(UTF8ToUTF16(query_form.form_metadata().id().encoded_bits()),
+  ASSERT_TRUE(query_form.has_metadata());
+  EXPECT_EQ(UTF8ToUTF16(query_form.metadata().id().encoded_bits()),
             form.id_attribute);
-  EXPECT_EQ(UTF8ToUTF16(query_form.form_metadata().name().encoded_bits()),
+  EXPECT_EQ(UTF8ToUTF16(query_form.metadata().name().encoded_bits()),
             form.name_attribute);
 
   // The form should have 3 fields, and their metadata value should be equal
   // those initialized above.
-  ASSERT_EQ(3, query_form.field_size());
-  ASSERT_EQ(static_cast<int>(form.fields.size()), query_form.field_size());
-  for (int i = 0; i < query_form.field_size(); ++i) {
-    const auto& query_field = query_form.field(i);
+  ASSERT_EQ(3, query_form.fields_size());
+  ASSERT_EQ(static_cast<int>(form.fields.size()), query_form.fields_size());
+  for (int i = 0; i < query_form.fields_size(); ++i) {
+    const auto& query_field = query_form.fields(i);
     const auto& form_field = form.fields[i];
-    ASSERT_TRUE(query_field.has_field_metadata());
-    const auto& meta = query_field.field_metadata();
+    ASSERT_TRUE(query_field.has_metadata());
+    const auto& meta = query_field.metadata();
     EXPECT_EQ(UTF8ToUTF16(meta.id().encoded_bits()), form_field.id_attribute);
     EXPECT_EQ(UTF8ToUTF16(meta.name().encoded_bits()),
               form_field.name_attribute);
@@ -1889,22 +1889,22 @@ TEST_P(AutofillQueryTest, RichMetadata_Disabled) {
 
   // We should have intercepted exactly on query request. Parse it.
   ASSERT_EQ(1u, payloads_.size());
-  AutofillQueryContents query;
+  AutofillPageQueryRequest query;
   ASSERT_TRUE(query.ParseFromString(payloads_.front()));
 
   // Validate that we have one form in the query.
-  ASSERT_EQ(query.form_size(), 1);
-  const auto& query_form = query.form(0);
+  ASSERT_EQ(query.forms_size(), 1);
+  const auto& query_form = query.forms(0);
 
   // There should be no encoded metadata for the form.
-  EXPECT_FALSE(query_form.has_form_metadata());
+  EXPECT_FALSE(query_form.has_metadata());
 
   // There should be three fields, none of which have encoded metadata.
-  ASSERT_EQ(3, query_form.field_size());
-  ASSERT_EQ(static_cast<int>(form.fields.size()), query_form.field_size());
-  for (int i = 0; i < query_form.field_size(); ++i) {
-    const auto& query_field = query_form.field(i);
-    EXPECT_FALSE(query_field.has_field_metadata());
+  ASSERT_EQ(3, query_form.fields_size());
+  ASSERT_EQ(static_cast<int>(form.fields.size()), query_form.fields_size());
+  for (int i = 0; i < query_form.fields_size(); ++i) {
+    const auto& query_field = query_form.fields(i);
+    EXPECT_FALSE(query_field.has_metadata());
   }
 }
 
@@ -1994,8 +1994,10 @@ TEST_P(AutofillUploadTest, RichMetadata) {
                                         true, 1);
 
     ASSERT_EQ(1u, payloads_.size());
-    AutofillUploadContents upload;
-    ASSERT_TRUE(upload.ParseFromString(payloads_.front()));
+    AutofillUploadRequest request;
+    ASSERT_TRUE(request.ParseFromString(payloads_.front()));
+    ASSERT_TRUE(request.has_upload());
+    const AutofillUploadContents& upload = request.upload();
     EXPECT_EQ(upload.language(), form_structure.page_language());
     ASSERT_TRUE(upload.has_randomized_form_metadata());
     EXPECT_TRUE(upload.randomized_form_metadata().has_id());
@@ -2138,8 +2140,10 @@ TEST_P(AutofillUploadTest, ThrottlingDisabled) {
     // The last middle two uploads were marked as throttle-able.
     ASSERT_EQ(4u, payloads_.size());
     for (size_t i = 0; i < payloads_.size(); ++i) {
-      AutofillUploadContents upload_contents;
-      ASSERT_TRUE(upload_contents.ParseFromString(payloads_[i]));
+      AutofillUploadRequest request;
+      ASSERT_TRUE(request.ParseFromString(payloads_[i]));
+      ASSERT_TRUE(request.has_upload());
+      const AutofillUploadContents& upload_contents = request.upload();
       EXPECT_EQ(upload_contents.was_throttleable(), (i == 1 || i == 2))
           << "Wrong was_throttleable value for upload " << i;
       EXPECT_FALSE(upload_contents.has_randomized_form_metadata());

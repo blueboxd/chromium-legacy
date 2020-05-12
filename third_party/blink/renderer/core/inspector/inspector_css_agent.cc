@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -860,6 +861,19 @@ void InspectorCSSAgent::ForcePseudoState(Element* element,
   if (!node_id)
     return;
 
+  // First check whether focus-within was set because focus or focus-within was
+  // forced for a child node.
+  NodeIdToNumberFocusedChildren::iterator focused_it =
+      node_id_to_number_focused_children_.find(node_id);
+  unsigned focused_count =
+      focused_it == node_id_to_number_focused_children_.end()
+          ? 0
+          : focused_it->value;
+  if (pseudo_type == CSSSelector::kPseudoFocusWithin && focused_count > 0) {
+    *result = true;
+    return;
+  }
+
   NodeIdToForcedPseudoState::iterator it =
       node_id_to_forced_pseudo_state_.find(node_id);
   if (it == node_id_to_forced_pseudo_state_.end())
@@ -867,6 +881,7 @@ void InspectorCSSAgent::ForcePseudoState(Element* element,
 
   bool force = false;
   unsigned forced_pseudo_state = it->value;
+
   switch (pseudo_type) {
     case CSSSelector::kPseudoActive:
       force = forced_pseudo_state & kPseudoActive;
@@ -1637,9 +1652,63 @@ Response InspectorCSSAgent::forcePseudoState(
     node_id_to_forced_pseudo_state_.Set(node_id, forced_pseudo_state);
   else
     node_id_to_forced_pseudo_state_.erase(node_id);
+
+  // When adding focus or focus-within, we force focus-within for ancestor
+  // nodes to emulate real focus for user convenience.
+
+  // Flips from no forced focus to the forced focus (:focus or :focus-within).
+  if (((forced_pseudo_state & kPseudoFocus) == kPseudoFocus &&
+       (current_forced_pseudo_state & kPseudoFocus) == 0) ||
+      ((forced_pseudo_state & kPseudoFocusWithin) == kPseudoFocusWithin &&
+       (current_forced_pseudo_state & kPseudoFocusWithin) == 0)) {
+    IncrementFocusedCountForAncestors(element);
+  }
+
+  // Flips from the forced focus (:focus or :focus-within) to no focus.
+  if (((forced_pseudo_state & kPseudoFocus) == 0 &&
+       (current_forced_pseudo_state & kPseudoFocus) == kPseudoFocus) ||
+      ((forced_pseudo_state & kPseudoFocusWithin) == 0 &&
+       (current_forced_pseudo_state & kPseudoFocusWithin) ==
+           kPseudoFocusWithin)) {
+    DecrementFocusedCountForAncestors(element);
+  }
+
   element->ownerDocument()->GetStyleEngine().MarkAllElementsForStyleRecalc(
       StyleChangeReasonForTracing::Create(style_change_reason::kInspector));
   return Response::Success();
+}
+
+void InspectorCSSAgent::IncrementFocusedCountForAncestors(Element* element) {
+  for (Node& ancestor : FlatTreeTraversal::AncestorsOf(*element)) {
+    int node_id = dom_agent_->BoundNodeId(&ancestor);
+    if (!node_id)
+      continue;
+    NodeIdToNumberFocusedChildren::iterator it =
+        node_id_to_number_focused_children_.find(node_id);
+    unsigned count =
+        it == node_id_to_number_focused_children_.end() ? 0 : it->value;
+    node_id_to_number_focused_children_.Set(node_id, count + 1);
+  }
+}
+
+void InspectorCSSAgent::DecrementFocusedCountForAncestors(Element* element) {
+  for (Node& ancestor : FlatTreeTraversal::AncestorsOf(*element)) {
+    int node_id = dom_agent_->BoundNodeId(&ancestor);
+    if (!node_id)
+      continue;
+    NodeIdToNumberFocusedChildren::iterator it =
+        node_id_to_number_focused_children_.find(node_id);
+    unsigned count =
+        it == node_id_to_number_focused_children_.end() ? 1 : it->value;
+    if (count <= 1) {
+      // If `count - 1` is zero or overflows, erase the node_id
+      // from the map to save memory. If there is zero focused child
+      // elements, :focus-within should not be forced.
+      node_id_to_number_focused_children_.erase(node_id);
+    } else {
+      node_id_to_number_focused_children_.Set(node_id, count - 1);
+    }
+  }
 }
 
 std::unique_ptr<protocol::CSS::CSSMedia> InspectorCSSAgent::BuildMediaObject(
@@ -2154,7 +2223,14 @@ void InspectorCSSAgent::ResetPseudoStates() {
       documents_to_change.insert(element->ownerDocument());
   }
 
+  for (auto& count : node_id_to_number_focused_children_) {
+    auto* element = To<Element>(dom_agent_->NodeForId(count.key));
+    if (element && element->ownerDocument())
+      documents_to_change.insert(element->ownerDocument());
+  }
+
   node_id_to_forced_pseudo_state_.clear();
+  node_id_to_number_focused_children_.clear();
   for (auto& document : documents_to_change) {
     document->GetStyleEngine().MarkAllElementsForStyleRecalc(
         StyleChangeReasonForTracing::Create(style_change_reason::kInspector));

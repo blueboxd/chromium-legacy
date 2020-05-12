@@ -3206,57 +3206,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, JavascriptBlacklistable) {
   EXPECT_EQ(JSIncrementerFetch(contents), 3);
 }
 
-#if defined(OS_WIN)
-
-class ForceNetworkInProcessTest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<
-          /*policy::key::kForceNetworkInProcess=*/bool> {
- public:
-  // InProcessBrowserTest implementation:
-  void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    policy::PolicyMap values;
-    values.Set(policy::key::kForceNetworkInProcess,
-               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(GetParam()), nullptr);
-    policy_provider_.UpdateChromePolicy(values);
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
-        &policy_provider_);
-
-    InProcessBrowserTest::SetUp();
-  }
-
- private:
-  policy::MockConfigurationPolicyProvider policy_provider_;
-};
-
-IN_PROC_BROWSER_TEST_P(ForceNetworkInProcessTest, IsRespected) {
-  bool expected_in_process = GetParam();
-
-  // When run with --enable-features=NetworkServiceInProcess, the Network
-  // Service will always be in process. This configuration is used on some
-  // bots - see https://crbug.com/1002752.
-  expected_in_process |=
-      base::FeatureList::IsEnabled(features::kNetworkServiceInProcess);
-
-  ASSERT_EQ(expected_in_process, content::IsInProcessNetworkService());
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    Enabled,
-    ForceNetworkInProcessTest,
-    ::testing::Values(/*policy::key::kForceNetworkInProcess=*/true));
-
-INSTANTIATE_TEST_SUITE_P(
-    Disabled,
-    ForceNetworkInProcessTest,
-    ::testing::Values(/*policy::key::kForceNetworkInProcess=*/false));
-
-#endif  // defined(OS_WIN)
-
 #if !defined(OS_ANDROID)
 
 // The possibilities for a boolean policy.

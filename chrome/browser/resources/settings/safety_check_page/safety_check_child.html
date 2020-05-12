@@ -1,0 +1,53 @@
+<style include="cr-shared-style settings-shared iron-flex">
+  iron-icon {
+    display: flex;
+    flex-shrink: 0;
+    padding-inline-end: var(--cr-icon-button-margin-start);
+    width: var(--cr-link-row-icon-width, var(--cr-icon-size));
+  }
+
+  .icon-blue {
+    fill: var(--google-blue-600);
+  }
+
+  .icon-red {
+    fill: var(--google-red-600);
+  }
+
+  /* dark mode */
+  @media (prefers-color-scheme: dark) {
+    .icon-blue {
+      fill: var(--google-blue-refresh-300);
+    }
+
+    .icon-red {
+      fill: var(--google-red-refresh-300);
+    }
+  }
+</style>
+<div class="cr-row">
+  <iron-icon id="statusIcon"
+      icon="[[getStatusIcon_(iconStatus)]]"
+      src="[[getStatusIconSrc_(iconStatus)]]"
+      class$="[[getStatusIconClass_(iconStatus)]]"
+      role="img"
+      aria-label="[[getStatusIconAriaLabel_(iconStatus)]]">
+  </iron-icon>
+  <div class="flex cr-padded-text">
+    <div id="label">[[label]]</div>
+    <div id="subLabel" class="secondary" no-search
+        inner-h-t-m-l="[[subLabel]]">
+    </div>
+  </div>
+  <template is="dom-if" if="[[showButton_(buttonLabel)]]" restamp>
+    <div class="separator"></div>
+    <cr-button id="button" class$="[[buttonClass]]" on-click="onButtonClick_"
+        aria-label="[[buttonAriaLabel]]" no-search>
+      [[buttonLabel]]
+    </cr-button>
+  </template>
+  <template is="dom-if" if="[[showManagedIcon_(managedIcon)]]" restamp>
+    <iron-icon id="managedIcon" icon="[[managedIcon]]" aria-hidden="true">
+    </iron-icon>
+  </template>
+</div>

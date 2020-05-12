@@ -36,8 +36,11 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoControllerDelegate.OfflinePageState;
 import org.chromium.components.page_info.PageInfoControllerDelegate.PreviewPageState;
+import org.chromium.components.page_info.PageInfoFeatureList;
+import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
+import org.chromium.components.page_info.PageInfoViewV2;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -301,7 +304,17 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
     @Override
     public void updatePermissionDisplay(PageInfoView view) {
         assert (mPermissionParamsListBuilder != null);
-        view.setPermissions(mPermissionParamsListBuilder.build());
+        PageInfoView.PermissionParams params = mPermissionParamsListBuilder.build();
+        if (PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2)) {
+            PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
+            rowParams.visible = true;
+            rowParams.title = mContext.getString(R.string.page_info_permissions_title);
+            // TODO(crbug.com/1077766): Create a permissions subtitle string that represents
+            // the state, potentially using R.plurals.
+            ((PageInfoViewV2) view).getPermissionsRowView().setParams(rowParams);
+        } else {
+            view.setPermissions(params);
+        }
     }
 
     @VisibleForTesting

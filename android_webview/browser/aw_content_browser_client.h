@@ -78,7 +78,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   gfx::ImageSkia GetDefaultFavicon() override;
   bool AllowAppCache(const GURL& manifest_url,
-                     const GURL& first_party,
+                     const GURL& site_for_cookies,
+                     const base::Optional<url::Origin>& top_frame_origin,
                      content::BrowserContext* context) override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;

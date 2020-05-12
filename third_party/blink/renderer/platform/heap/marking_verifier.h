@@ -25,20 +25,14 @@ class MarkingVerifier final : public Visitor {
                  TraceDescriptor desc,
                  WeakCallback callback) final;
 
-  void VisitBackingStoreStrongly(const void*,
-                                 const void* const*,
-                                 TraceDescriptor) final;
-
-  void VisitBackingStoreWeakly(const void*,
-                               const void* const*,
-                               TraceDescriptor,
-                               TraceDescriptor,
-                               WeakCallback,
-                               const void*) final;
+  void VisitWeakContainer(const void*,
+                          const void* const*,
+                          TraceDescriptor,
+                          TraceDescriptor,
+                          WeakCallback,
+                          const void*) final;
 
   // Unused overrides.
-  void VisitBackingStoreOnly(const void*, const void* const*) final {}
-  void RegisterBackingStoreCallback(const void*, MovingObjectCallback) final {}
   void RegisterWeakCallback(WeakCallback, const void*) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 

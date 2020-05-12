@@ -46,10 +46,10 @@ void CreateQuicTransportConnectorImpl(
   if (!process)
     return;
 
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<QuicTransportConnectorImpl>(
-          process_id, origin, net::NetworkIsolationKey(origin, origin)),
-      std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
+                                  process_id, /*frame=*/nullptr, origin,
+                                  net::NetworkIsolationKey(origin, origin)),
+                              std::move(receiver));
 }
 
 }  // anonymous namespace

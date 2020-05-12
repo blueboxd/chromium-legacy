@@ -8,11 +8,13 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/mock_tpm_challenge_key_subtle.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key_subtle.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
+#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_metrics.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_test_helpers.h"
 #include "chrome/browser/chromeos/cert_provisioning/mock_cert_provisioning_invalidator.h"
 #include "chrome/browser/chromeos/platform_keys/mock_platform_keys_service.h"
@@ -378,6 +380,8 @@ class CertProvisioningWorkerTest : public ::testing::Test {
 // Checks that the worker makes all necessary requests to other modules during
 // success scenario.
 TEST_F(CertProvisioningWorkerTest, Success) {
+  base::HistogramTester histogram_tester;
+
   CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
@@ -432,11 +436,23 @@ TEST_F(CertProvisioningWorkerTest, Success) {
     EXPECT_CALL(*mock_invalidator, Unregister()).Times(1);
 
     EXPECT_CALL(callback_observer_,
-                Callback(cert_profile, CertProvisioningWorkerState::kSucceed))
+                Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
         .Times(1);
   }
 
   worker.DoStep();
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.CertProvisioning.Result.User",
+                                      CertProvisioningWorkerState::kSucceeded,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "ChromeOS.CertProvisioning.Event.User",
+      CertProvisioningEvent::kRegisteredToInvalidationTopic, 1);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.CertProvisioning.KeypairGenerationTime.User", 1);
+  histogram_tester.ExpectTotalCount("ChromeOS.CertProvisioning.VaTime.User", 1);
+  histogram_tester.ExpectTotalCount(
+      "ChromeOS.CertProvisioning.CsrSignTime.User", 1);
 }
 
 // Checks that the worker makes all necessary requests to other modules during
@@ -487,7 +503,7 @@ TEST_F(CertProvisioningWorkerTest, NoVaSuccess) {
         platform_keys::kTokenIdUser, /*certificate=*/_, /*callback=*/_));
 
     EXPECT_CALL(callback_observer_,
-                Callback(cert_profile, CertProvisioningWorkerState::kSucceed))
+                Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
         .Times(1);
   }
 
@@ -586,11 +602,11 @@ TEST_F(CertProvisioningWorkerTest, TryLaterManualRetry) {
         platform_keys::kTokenIdSystem, /*certificate=*/_, /*callback=*/_));
 
     EXPECT_CALL(callback_observer_,
-                Callback(cert_profile, CertProvisioningWorkerState::kSucceed))
+                Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
         .Times(1);
 
     worker.DoStep();
-    EXPECT_EQ(worker.GetState(), CertProvisioningWorkerState::kSucceed);
+    EXPECT_EQ(worker.GetState(), CertProvisioningWorkerState::kSucceeded);
   }
 }
 
@@ -697,10 +713,10 @@ TEST_F(CertProvisioningWorkerTest, TryLaterWait) {
               CertProvisioningWorkerState::kFinishCsrResponseReceived);
 
     EXPECT_CALL(callback_observer_,
-                Callback(cert_profile, CertProvisioningWorkerState::kSucceed))
+                Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
         .Times(1);
     FastForwardBy(download_cert_real_delay + small_delay);
-    EXPECT_EQ(worker.GetState(), CertProvisioningWorkerState::kSucceed);
+    EXPECT_EQ(worker.GetState(), CertProvisioningWorkerState::kSucceeded);
   }
 }
 
@@ -746,6 +762,8 @@ TEST_F(CertProvisioningWorkerTest, StatusErrorHandling) {
 // Checks that when the server returns response error, the worker will enter an
 // error state and stop the provisioning. Also check factory.
 TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
+  base::HistogramTester histogram_tester;
+
   CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
 
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
@@ -778,6 +796,13 @@ TEST_F(CertProvisioningWorkerTest, ResponseErrorHandling) {
 
   worker->DoStep();
   FastForwardBy(TimeDelta::FromSeconds(1));
+
+  histogram_tester.ExpectBucketCount("ChromeOS.CertProvisioning.Result.User",
+                                     CertProvisioningWorkerState::kFailed, 1);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.CertProvisioning.Result.User",
+      CertProvisioningWorkerState::kKeypairGenerated, 1);
+  histogram_tester.ExpectTotalCount("ChromeOS.CertProvisioning.Result.User", 2);
 }
 
 TEST_F(CertProvisioningWorkerTest, InconsistentDataErrorHandling) {
@@ -879,6 +904,8 @@ TEST_F(CertProvisioningWorkerTest, BackoffStrategy) {
 // Checks that the worker removes a key when an error occurs after the key was
 // registered.
 TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
+  base::HistogramTester histogram_tester;
+
   CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
   MockTpmChallengeKeySubtle* mock_tpm_challenge_key = PrepareTpmChallengeKey();
   MockCertProvisioningInvalidator* mock_invalidator = nullptr;
@@ -929,6 +956,13 @@ TEST_F(CertProvisioningWorkerTest, RemoveRegisteredKey) {
 
   worker.DoStep();
   FastForwardBy(TimeDelta::FromSeconds(1));
+
+  histogram_tester.ExpectBucketCount("ChromeOS.CertProvisioning.Result.User",
+                                     CertProvisioningWorkerState::kFailed, 1);
+  histogram_tester.ExpectBucketCount(
+      "ChromeOS.CertProvisioning.Result.User",
+      CertProvisioningWorkerState::kKeyRegistered, 1);
+  histogram_tester.ExpectTotalCount("ChromeOS.CertProvisioning.Result.User", 2);
 }
 
 class PrefServiceObserver {
@@ -1116,7 +1150,7 @@ TEST_F(CertProvisioningWorkerTest, SerializationSuccess) {
     EXPECT_CALL(*mock_invalidator, Unregister()).Times(1);
 
     EXPECT_CALL(callback_observer_,
-                Callback(cert_profile, CertProvisioningWorkerState::kSucceed))
+                Callback(cert_profile, CertProvisioningWorkerState::kSucceeded))
         .Times(1);
     worker->DoStep();
   }
@@ -1230,6 +1264,8 @@ TEST_F(CertProvisioningWorkerTest, InformationalGetters) {
 }
 
 TEST_F(CertProvisioningWorkerTest, CancelDeviceWorker) {
+  base::HistogramTester histogram_tester;
+
   CertScope cert_scope = CertScope::kDevice;
   CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
 
@@ -1284,8 +1320,17 @@ TEST_F(CertProvisioningWorkerTest, CancelDeviceWorker) {
     pref_val = ParseJson("{}");
     EXPECT_CALL(pref_observer, OnPrefValueUpdated(IsJson(pref_val))).Times(1);
 
-    worker->Cancel();
+    worker->Stop(CertProvisioningWorkerState::kCanceled);
+
+    EXPECT_CALL(callback_observer_,
+                Callback(cert_profile, CertProvisioningWorkerState::kCanceled))
+        .Times(1);
+    FastForwardBy(TimeDelta::FromSeconds(1));
   }
+
+  histogram_tester.ExpectUniqueSample("ChromeOS.CertProvisioning.Result.Device",
+                                      CertProvisioningWorkerState::kCanceled,
+                                      1);
 }
 
 }  // namespace

@@ -37,24 +37,12 @@ void MarkingVerifier::VisitWeak(const void* object,
   VerifyChild(object, desc.base_object_payload);
 }
 
-void MarkingVerifier::VisitBackingStoreStrongly(const void* object,
-                                                const void* const*,
-                                                TraceDescriptor desc) {
-  if (!object)
-    return;
-
-  // Contents of backing stores are verified through page iteration. The
-  // verification here only makes sure that the backing itself is properly
-  // marked.
-  VerifyChild(object, desc.base_object_payload);
-}
-
-void MarkingVerifier::VisitBackingStoreWeakly(const void* object,
-                                              const void* const*,
-                                              TraceDescriptor strong_desc,
-                                              TraceDescriptor weak_desc,
-                                              WeakCallback,
-                                              const void*) {
+void MarkingVerifier::VisitWeakContainer(const void* object,
+                                         const void* const*,
+                                         TraceDescriptor,
+                                         TraceDescriptor weak_desc,
+                                         WeakCallback,
+                                         const void*) {
   if (!object)
     return;
 

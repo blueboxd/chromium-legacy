@@ -2348,12 +2348,13 @@ void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
 
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
-    const GURL& first_party,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     content::BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return CookieSettingsFactory::GetForProfile(
              Profile::FromBrowserContext(context))
-      ->IsCookieAccessAllowed(manifest_url, first_party);
+      ->IsCookieAccessAllowed(manifest_url, site_for_cookies, top_frame_origin);
 }
 
 content::AllowServiceWorkerResult
@@ -2489,7 +2490,7 @@ void ChromeContentBrowserClient::AllowWorkerFileSystem(
     base::OnceCallback<void(bool)> callback) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
+  bool allow = cookie_settings->IsCookieAccessAllowed(url, url, base::nullopt);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   GuestPermissionRequestHelper(url, render_frames, std::move(callback), allow);
@@ -2555,7 +2556,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
 
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
+  bool allow = cookie_settings->IsCookieAccessAllowed(url, url, base::nullopt);
 
   // Record access to IndexedDB for potential display in UI.
   for (const auto& it : render_frames) {
@@ -2572,7 +2573,7 @@ bool ChromeContentBrowserClient::AllowWorkerCacheStorage(
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
+  bool allow = cookie_settings->IsCookieAccessAllowed(url, url, base::nullopt);
 
   // Record access to CacheStorage for potential display in UI.
   for (const auto& it : render_frames) {
@@ -2589,7 +2590,7 @@ bool ChromeContentBrowserClient::AllowWorkerWebLocks(
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
-  return cookie_settings->IsCookieAccessAllowed(url, url);
+  return cookie_settings->IsCookieAccessAllowed(url, url, base::nullopt);
 }
 
 ChromeContentBrowserClient::AllowWebBluetoothResult
@@ -3698,16 +3699,6 @@ void ChromeContentBrowserClient::WillStartServiceManager() {
             ->GetPolicyService()
             ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                                   std::string()));
-
-#if defined(OS_WIN)
-    const base::Value* force_network_in_process_value =
-        policies.GetValue(policy::key::kForceNetworkInProcess);
-    bool force_network_in_process = false;
-    if (force_network_in_process_value)
-      force_network_in_process_value->GetAsBoolean(&force_network_in_process);
-    if (force_network_in_process)
-      content::ForceInProcessNetworkService(true);
-#endif
 
     service_manager::EnableAudioSandbox(ShouldEnableAudioSandbox(policies));
   }

@@ -197,7 +197,7 @@ const base::Feature kAutofillUploadThrottling{"AutofillUploadThrottling",
 
 // Controls whether to use the API or use the legacy server.
 const base::Feature kAutofillUseApi{"AutofillUseApi",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether suggestions' labels use the improved label disambiguation
 // format.

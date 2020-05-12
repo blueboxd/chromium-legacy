@@ -171,6 +171,67 @@ TEST_F(ValueUtilTest, UserActionComparison) {
   EXPECT_FALSE(value_a == value_b);
 }
 
+TEST_F(ValueUtilTest, CreditCardComparison) {
+  ValueProto value_a;
+  value_a.mutable_credit_cards()->add_values()->set_guid("GUID");
+  ValueProto value_b = value_a;
+  EXPECT_TRUE(value_a == value_b);
+
+  value_b.mutable_credit_cards()->mutable_values(0)->set_guid("wrong");
+  EXPECT_FALSE(value_a == value_b);
+}
+
+TEST_F(ValueUtilTest, ProfileComparison) {
+  ValueProto value_a;
+  value_a.mutable_profiles()->add_values()->set_guid("GUID");
+  ValueProto value_b = value_a;
+  EXPECT_TRUE(value_a == value_b);
+
+  value_b.mutable_profiles()->mutable_values(0)->set_guid("wrong");
+  EXPECT_FALSE(value_a == value_b);
+}
+
+TEST_F(ValueUtilTest, LoginOptionComparison) {
+  ValueProto value_a;
+  auto* option_a = value_a.mutable_login_options()->add_values();
+  option_a->set_label("label");
+  option_a->set_sublabel("sublabel");
+  option_a->set_payload("payload");
+  ValueProto value_b = value_a;
+  EXPECT_TRUE(value_a == value_b);
+
+  option_a->set_label("different");
+  EXPECT_FALSE(value_a == value_b);
+
+  option_a->set_label("label");
+  option_a->set_sublabel("different");
+  EXPECT_FALSE(value_a == value_b);
+
+  option_a->set_sublabel("sublabel");
+  option_a->set_payload("different");
+  EXPECT_FALSE(value_a == value_b);
+}
+
+TEST_F(ValueUtilTest, CreditCardResponseComparison) {
+  ValueProto value_a;
+  value_a.mutable_credit_card_response()->set_network("network");
+  ValueProto value_b = value_a;
+  EXPECT_TRUE(value_a == value_b);
+
+  value_b.mutable_credit_card_response()->set_network("different");
+  EXPECT_FALSE(value_a == value_b);
+}
+
+TEST_F(ValueUtilTest, LoginOptionResponseComparison) {
+  ValueProto value_a;
+  value_a.mutable_login_option_response()->set_payload("payload");
+  ValueProto value_b = value_a;
+  EXPECT_TRUE(value_a == value_b);
+
+  value_b.mutable_login_option_response()->set_payload("different");
+  EXPECT_FALSE(value_a == value_b);
+}
+
 TEST_F(ValueUtilTest, AreAllValuesOfType) {
   ValueProto value_a;
   ValueProto value_b;

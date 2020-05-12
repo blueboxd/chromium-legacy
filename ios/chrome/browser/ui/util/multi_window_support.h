@@ -11,4 +11,9 @@
 // supportsMultipleScenes] instead.
 bool IsMultiwindowSupported();
 
+// Returns true if the iOS13 UIScene-based startup flow is supported, regardless
+// of whether multiple windows are permitted. This always returns true if
+// IsMultiwindowSupported() returns true.
+bool IsSceneStartupSupported();
+
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_MULTI_WINDOW_SUPPORT_H_

@@ -206,7 +206,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     // should be created right away.
     // When multiwindow is supported, the window is created by SceneDelegate,
     // and fetched by SceneState from UIScene's windows.
-    if (!IsMultiwindowSupported() && !self.sceneState.window) {
+    if (!IsSceneStartupSupported() && !self.sceneState.window) {
       self.sceneState.window = [[ChromeOverlayWindow alloc]
           initWithFrame:[[UIScreen mainScreen] bounds]];
     }
@@ -287,9 +287,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   }
 
   DCHECK(self.mainController);
-  if (IsMultiwindowSupported()) {
+  if (IsSceneStartupSupported()) {
     // TODO(crbug.com/1012697): This should probably be the only code path for
-    // multiwindow and non-multiwindow cases.
+    // UIScene and non-UIScene cases.
     [self startUpChromeUIPostCrash:NO needRestoration:NO];
   }
 

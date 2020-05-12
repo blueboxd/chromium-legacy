@@ -736,6 +736,17 @@ void FillQueryField(AutofillQueryContents::Form::Field* field,
     field->set_type(control_type);
 }
 
+void FillQueryField(AutofillPageQueryRequest_Form_Field* field,
+                    unsigned signature,
+                    const char* name,
+                    const char* control_type) {
+  field->set_signature(signature);
+  if (name)
+    field->set_name(name);
+  if (control_type)
+    field->set_control_type(control_type);
+}
+
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate) {
   int query_id = 1;

@@ -120,6 +120,10 @@ message ComputeValueProto {
     ValueComparisonProto comparison = 6;
     // Computes the sum of two single integers.
     IntegerSumProto integer_sum = 7;
+    // Writes safe-to-transmit parts of the input credit card to the result.
+    CreateCreditCardResponseProto create_credit_card_response = 8;
+    // Writes safe-to-transmit parts of the input login option to the result.
+    CreateLoginOptionResponseProto create_login_option_response = 9;
   }
 
   // The model identifier to write the result to.
@@ -192,6 +196,18 @@ message IntegerSumProto {
   repeated ValueReferenceProto values = 3;
 
   reserved 1, 2;
+}
+
+// Creates a safe-to-transmit CreditCardResponseProto for the input |value|.
+message CreateCreditCardResponseProto {
+  // The input CreditCardProto.
+  optional ValueReferenceProto value = 1;
+}
+
+// Creates a safe-to-transmit LoginOptionResponseProto for the input |value|.
+message CreateLoginOptionResponseProto {
+  // The input LoginOptionProto.
+  optional ValueReferenceProto value = 1;
 }
 
 // Displays a standard info popup.

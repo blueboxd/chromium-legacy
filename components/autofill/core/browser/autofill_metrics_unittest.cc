@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
@@ -2623,24 +2624,31 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
                             std::move(form_structure))
                   .second);
 
-  AutofillQueryResponseContents response;
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
   // Server response will match with autocomplete.
-  response.add_field()->set_overall_type_prediction(NAME_LAST);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_LAST);
   // Server response will NOT match with autocomplete.
-  response.add_field()->set_overall_type_prediction(NAME_FIRST);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_FIRST);
   // Server response will have no data.
-  response.add_field()->set_overall_type_prediction(NO_SERVER_DATA);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NO_SERVER_DATA);
   // Not logged.
-  response.add_field()->set_overall_type_prediction(NAME_MIDDLE);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      NAME_MIDDLE);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
+  std::string encoded_response_string;
+  base::Base64Encode(response_string, &encoded_response_string);
 
   std::vector<std::string> signatures;
   signatures.push_back(form_structure_ptr->FormSignatureAsStr());
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
+  autofill_manager_->OnLoadedServerPredictionsForTest(encoded_response_string,
                                                       signatures);
 
   // Verify that FormStructure::ParseQueryResponse was called (here and below).

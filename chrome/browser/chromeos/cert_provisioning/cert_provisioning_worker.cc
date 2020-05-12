@@ -8,9 +8,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/no_destructor.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/tpm_challenge_key_result.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_invalidator.h"
+#include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_metrics.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_serializer.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
@@ -94,7 +96,7 @@ int GetStateOrderedIndex(CertProvisioningWorkerState state) {
     case CertProvisioningWorkerState::kFinishCsrResponseReceived:
       res -= 1;
       FALLTHROUGH;
-    case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kSucceeded:
     case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
     case CertProvisioningWorkerState::kCanceled:
@@ -128,6 +130,7 @@ std::unique_ptr<CertProvisioningWorker> CertProvisioningWorkerFactory::Create(
     policy::CloudPolicyClient* cloud_policy_client,
     std::unique_ptr<CertProvisioningInvalidator> invalidator,
     CertProvisioningWorkerCallback callback) {
+  RecordEvent(cert_scope, CertProvisioningEvent::kWorkerCreated);
   return std::make_unique<CertProvisioningWorkerImpl>(
       cert_scope, profile, pref_service, cert_profile, cloud_policy_client,
       std::move(invalidator), std::move(callback));
@@ -147,8 +150,11 @@ CertProvisioningWorkerFactory::Deserialize(
       std::move(invalidator), std::move(callback));
   if (!CertProvisioningSerializer::DeserializeWorker(saved_worker,
                                                      worker.get())) {
+    RecordEvent(cert_scope,
+                CertProvisioningEvent::kWorkerDeserializationFailed);
     return {};
   }
+  RecordEvent(cert_scope, CertProvisioningEvent::kWorkerDeserialized);
   return worker;
 }
 
@@ -219,7 +225,7 @@ void CertProvisioningWorkerImpl::DoStep() {
     case CertProvisioningWorkerState::kFinishCsrResponseReceived:
       DownloadCert();
       return;
-    case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kSucceeded:
     case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
     case CertProvisioningWorkerState::kCanceled:
@@ -229,9 +235,12 @@ void CertProvisioningWorkerImpl::DoStep() {
   NOTREACHED() << " " << static_cast<uint>(state_);
 }
 
-void CertProvisioningWorkerImpl::Cancel() {
+void CertProvisioningWorkerImpl::Stop(CertProvisioningWorkerState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UpdateState(CertProvisioningWorkerState::kCanceled);
+  DCHECK(IsFinalState(state));
+
+  CancelScheduledTasks();
+  UpdateState(state);
 }
 
 void CertProvisioningWorkerImpl::UpdateState(
@@ -242,10 +251,17 @@ void CertProvisioningWorkerImpl::UpdateState(
   prev_state_ = state_;
   state_ = new_state;
 
+  if (is_continued_without_invalidation_for_uma_) {
+    RecordEvent(
+        cert_scope_,
+        CertProvisioningEvent::kWorkerRetrySucceededWithoutInvalidation);
+    is_continued_without_invalidation_for_uma_ = false;
+  }
+
   HandleSerialization();
 
-  if (IsFinished()) {
-    CleanUpAndMaybeRunCallback();
+  if (IsFinalState(state_)) {
+    CleanUpAndRunCallback();
   }
 }
 
@@ -259,12 +275,15 @@ void CertProvisioningWorkerImpl::GenerateKey() {
       GetVaKeyName(cert_scope_, cert_profile_.profile_id), profile_,
       GetVaKeyNameForSpkac(cert_scope_, cert_profile_.profile_id),
       base::BindOnce(&CertProvisioningWorkerImpl::OnGenerateKeyDone,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void CertProvisioningWorkerImpl::OnGenerateKeyDone(
+    base::TimeTicks start_time,
     const attestation::TpmChallengeKeyResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  RecordKeypairGenerationTime(cert_scope_, base::TimeTicks::Now() - start_time);
 
   if (result.result_code ==
       attestation::TpmChallengeKeyResultCode::kGetCertificateFailedError) {
@@ -339,12 +358,15 @@ void CertProvisioningWorkerImpl::BuildVaChallengeResponse() {
       va_challenge_, /*include_signed_public_key=*/true,
       base::BindOnce(
           &CertProvisioningWorkerImpl::OnBuildVaChallengeResponseDone,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void CertProvisioningWorkerImpl::OnBuildVaChallengeResponseDone(
+    base::TimeTicks start_time,
     const attestation::TpmChallengeKeyResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  RecordVerifiedAccessTime(cert_scope_, base::TimeTicks::Now() - start_time);
 
   if (!result.IsSuccess()) {
     LOG(ERROR) << "Failed to build challenge response: "
@@ -425,13 +447,16 @@ void CertProvisioningWorkerImpl::SignCsr() {
       GetPlatformKeysTokenId(cert_scope_), csr_, public_key_,
       hashing_algorithm_.value(),
       base::BindRepeating(&CertProvisioningWorkerImpl::OnSignCsrDone,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
 void CertProvisioningWorkerImpl::OnSignCsrDone(
+    base::TimeTicks start_time,
     const std::string& signature,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  RecordCsrSignTime(cert_scope_, base::TimeTicks::Now() - start_time);
 
   if (!error_message.empty()) {
     LOG(ERROR) << "Failed to sign CSR: " << error_message;
@@ -521,21 +546,7 @@ void CertProvisioningWorkerImpl::OnImportCertDone(
     return;
   }
 
-  UpdateState(CertProvisioningWorkerState::kSucceed);
-}
-
-bool CertProvisioningWorkerImpl::IsFinished() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  switch (state_) {
-    case CertProvisioningWorkerState::kSucceed:
-    case CertProvisioningWorkerState::kInconsistentDataError:
-    case CertProvisioningWorkerState::kFailed:
-    case CertProvisioningWorkerState::kCanceled:
-      return true;
-    default:
-      return false;
-  }
+  UpdateState(CertProvisioningWorkerState::kSucceeded);
 }
 
 bool CertProvisioningWorkerImpl::IsWaiting() const {
@@ -617,18 +628,31 @@ void CertProvisioningWorkerImpl::ScheduleNextStep(base::TimeDelta delay) {
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CertProvisioningWorkerImpl::OnShouldContinue,
-                     weak_factory_.GetWeakPtr()),
+                     weak_factory_.GetWeakPtr(), ContinueReason::kTimeout),
       delay);
 
   is_waiting_ = true;
   VLOG(0) << "Next step scheduled in " << delay;
 }
 
-void CertProvisioningWorkerImpl::OnShouldContinue() {
+void CertProvisioningWorkerImpl::OnShouldContinue(ContinueReason reason) {
+  switch (reason) {
+    case ContinueReason::kInvalidation:
+      RecordEvent(cert_scope_, CertProvisioningEvent::kInvalidationReceived);
+      break;
+    case ContinueReason::kTimeout:
+      RecordEvent(cert_scope_,
+                  CertProvisioningEvent::kWorkerRetryWithoutInvalidation);
+      break;
+  }
+
   // Worker is already doing something.
   if (!IsWaiting()) {
     return;
   }
+
+  is_continued_without_invalidation_for_uma_ =
+      (reason == ContinueReason::kTimeout);
 
   DoStep();
 }
@@ -638,13 +662,13 @@ void CertProvisioningWorkerImpl::CancelScheduledTasks() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void CertProvisioningWorkerImpl::CleanUpAndMaybeRunCallback() {
+void CertProvisioningWorkerImpl::CleanUpAndRunCallback() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   UnregisterFromInvalidationTopic();
 
   // Keep conditions mutually exclusive.
-  if (state_ == CertProvisioningWorkerState::kSucceed) {
+  if (state_ == CertProvisioningWorkerState::kSucceeded) {
     // No extra clean up is necessary.
     OnCleanUpDone();
     return;
@@ -695,15 +719,13 @@ void CertProvisioningWorkerImpl::OnRemoveKeyDone(
   if (!error_message.empty()) {
     LOG(ERROR) << "Failed to delete a key: " << error_message;
   }
+
   OnCleanUpDone();
 }
 
 void CertProvisioningWorkerImpl::OnCleanUpDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (state_ == CertProvisioningWorkerState::kCanceled) {
-    return;
-  }
+  RecordResult(cert_scope_, state_, prev_state_);
   std::move(callback_).Run(cert_profile_, state_);
 }
 
@@ -728,7 +750,7 @@ void CertProvisioningWorkerImpl::HandleSerialization() {
     case CertProvisioningWorkerState::kFinishCsrResponseReceived:
       CertProvisioningSerializer::SerializeWorkerToPrefs(pref_service_, *this);
       break;
-    case CertProvisioningWorkerState::kSucceed:
+    case CertProvisioningWorkerState::kSucceeded:
     case CertProvisioningWorkerState::kInconsistentDataError:
     case CertProvisioningWorkerState::kFailed:
     case CertProvisioningWorkerState::kCanceled:
@@ -762,7 +784,11 @@ void CertProvisioningWorkerImpl::RegisterForInvalidationTopic() {
   invalidator_->Register(
       invalidation_topic_,
       base::BindRepeating(&CertProvisioningWorkerImpl::OnShouldContinue,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr(),
+                          ContinueReason::kInvalidation));
+
+  RecordEvent(cert_scope_,
+              CertProvisioningEvent::kRegisteredToInvalidationTopic);
 }
 
 void CertProvisioningWorkerImpl::UnregisterFromInvalidationTopic() {

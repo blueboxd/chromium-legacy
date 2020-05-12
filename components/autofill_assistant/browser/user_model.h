@@ -13,9 +13,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/model.pb.h"
 #include "components/autofill_assistant/browser/value_util.h"
-
 namespace autofill_assistant {
 
 // Manages a map of |ValueProto| instances and notifies observers of changes.
@@ -71,6 +72,18 @@ class UserModel {
     return values;
   }
 
+  // Adds |credit_card| to the set of available cards.
+  void AddCreditCard(std::unique_ptr<autofill::CreditCard> credit_card);
+
+  // Adds |profile| to the set of available cards.
+  void AddProfile(std::unique_ptr<autofill::AutofillProfile> profile);
+
+  // Returns the credit card with |guid| or nullptr if there is no such card.
+  const autofill::CreditCard* GetCreditCard(const std::string& guid) const;
+
+  // Returns the profile with |guid| or nullptr if there is no such profile.
+  const autofill::AutofillProfile* GetProfile(const std::string& guid) const;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -88,6 +101,8 @@ class UserModel {
   friend class UserModelTest;
 
   std::map<std::string, ValueProto> values_;
+  std::map<std::string, std::unique_ptr<autofill::CreditCard>> credit_cards_;
+  std::map<std::string, std::unique_ptr<autofill::AutofillProfile>> profiles_;
   base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<UserModel> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(UserModel);

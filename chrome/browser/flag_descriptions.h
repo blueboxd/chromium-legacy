@@ -437,6 +437,9 @@ extern const char kCorsForContentScriptsDescription[];
 extern const char kCrossOriginOpenerPolicyName[];
 extern const char kCrossOriginOpenerPolicyDescription[];
 
+extern const char kCrossOriginOpenerPolicyReportingName[];
+extern const char kCrossOriginOpenerPolicyReportingDescription[];
+
 extern const char kDisableKeepaliveFetchName[];
 extern const char kDisableKeepaliveFetchDescription[];
 
@@ -1512,6 +1515,9 @@ extern const char kOffliningRecentPagesDescription[];
 extern const char kPageInfoPerformanceHintsName[];
 extern const char kPageInfoPerformanceHintsDescription[];
 
+extern const char kPageInfoV2Name[];
+extern const char kPageInfoV2Description[];
+
 extern const char kPasswordManagerOnboardingAndroidName[];
 extern const char kPasswordManagerOnboardingAndroidDescription[];
 
@@ -1528,6 +1534,8 @@ extern const char kQueryTilesName[];
 extern const char kQueryTilesDescription[];
 extern const char kQueryTilesOmniboxName[];
 extern const char kQueryTilesOmniboxDescription[];
+extern const char kQueryTilesEnableQueryEditingName[];
+extern const char kQueryTilesEnableQueryEditingDescription[];
 extern const char kQueryTilesCountryCode[];
 extern const char kQueryTilesCountryCodeDescription[];
 extern const char kQueryTilesCountryCodeUS[];

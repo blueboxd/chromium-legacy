@@ -223,7 +223,59 @@ bool DeepScanningDialogViews::ShouldShowCloseButton() const {
 }
 
 views::View* DeepScanningDialogViews::GetContentsView() {
-  return contents_view_.get();
+  if (!contents_view_) {
+    contents_view_ = new views::View();  // Owned by caller.
+
+    // Create layout
+    views::GridLayout* layout =
+        contents_view_->SetLayoutManager(std::make_unique<views::GridLayout>());
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    columns->AddColumn(
+        /*h_align=*/views::GridLayout::FILL,
+        /*v_align=*/views::GridLayout::FILL,
+        /*resize_percent=*/1.0,
+        /*size_type=*/views::GridLayout::ColumnSize::kUsePreferred,
+        /*fixed_width=*/0,
+        /*min_width=*/0);
+
+    // Add the top image.
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
+    image_ = layout->AddView(std::make_unique<DeepScanningTopImageView>(this));
+
+    // Add padding to distance the top image from the icon and message.
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
+
+    // Add the side icon and message row.
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
+    auto icon_and_message_row = std::make_unique<views::View>();
+    auto* row_layout = icon_and_message_row->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal,
+            kMessageAndIconRowInsets, kSideIconBetweenChildSpacing));
+    row_layout->set_main_axis_alignment(
+        views::BoxLayout::MainAxisAlignment::kStart);
+    row_layout->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kCenter);
+
+    // Add the side icon.
+    icon_and_message_row->AddChildView(CreateSideIcon());
+
+    // Add the message.
+    auto label = std::make_unique<DeepScanningMessageView>(this);
+    label->SetText(GetDialogMessage());
+    label->SetLineHeight(kLineHeight);
+    label->SetMultiLine(true);
+    label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    message_ = icon_and_message_row->AddChildView(std::move(label));
+
+    layout->AddView(std::move(icon_and_message_row));
+
+    // Add padding to distance the message from the button(s).
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, 10);
+  }
+
+  return contents_view_;
 }
 
 views::Widget* DeepScanningDialogViews::GetWidget() {
@@ -355,7 +407,7 @@ void DeepScanningDialogViews::Resize(int height_to_add) {
   if (is_success()) {
     DCHECK(contents_view_->parent());
     DCHECK_EQ(contents_view_->parent()->children().size(), 2ul);
-    DCHECK_EQ(contents_view_->parent()->children()[0], contents_view_.get());
+    DCHECK_EQ(contents_view_->parent()->children()[0], contents_view_);
 
     views::View* button_row_view = contents_view_->parent()->children()[1];
     new_height -= button_row_view->GetContentsBounds().height();
@@ -472,57 +524,6 @@ void DeepScanningDialogViews::Show() {
   first_shown_timestamp_ = base::TimeTicks::Now();
 
   SetupButtons();
-
-  contents_view_ = std::make_unique<views::View>();
-  contents_view_->set_owned_by_client();
-
-  // Create layout
-  views::GridLayout* layout =
-      contents_view_->SetLayoutManager(std::make_unique<views::GridLayout>());
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(
-      /*h_align=*/views::GridLayout::FILL,
-      /*v_align=*/views::GridLayout::FILL,
-      /*resize_percent=*/1.0,
-      /*size_type=*/views::GridLayout::ColumnSize::kUsePreferred,
-      /*fixed_width=*/0,
-      /*min_width=*/0);
-
-  // Add the top image.
-  layout->StartRow(views::GridLayout::kFixedSize, 0);
-  image_ = layout->AddView(std::make_unique<DeepScanningTopImageView>(this));
-
-  // Add padding to distance the top image from the icon and message.
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
-
-  // Add the side icon and message row.
-  layout->StartRow(views::GridLayout::kFixedSize, 0);
-  auto icon_and_message_row = std::make_unique<views::View>();
-  auto* row_layout =
-      icon_and_message_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, kMessageAndIconRowInsets,
-          kSideIconBetweenChildSpacing));
-  row_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kStart);
-  row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
-
-  // Add the side icon.
-  icon_and_message_row->AddChildView(CreateSideIcon());
-
-  // Add the message.
-  auto label = std::make_unique<DeepScanningMessageView>(this);
-  label->SetText(GetDialogMessage());
-  label->SetLineHeight(kLineHeight);
-  label->SetMultiLine(true);
-  label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message_ = icon_and_message_row->AddChildView(std::move(label));
-
-  layout->AddView(std::move(icon_and_message_row));
-
-  // Add padding to distance the message from the button(s).
-  layout->AddPaddingRow(views::GridLayout::kFixedSize, 10);
 
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 

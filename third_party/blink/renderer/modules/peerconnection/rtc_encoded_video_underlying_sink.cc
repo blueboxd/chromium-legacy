@@ -53,7 +53,14 @@ ScriptPromise RTCEncodedVideoUnderlyingSink::write(
     return ScriptPromise();
   }
 
-  transformer_callback_.Run()->SendFrameToSink(std::move(webrtc_frame));
+  RTCEncodedVideoStreamTransformer* transformer = transformer_callback_.Run();
+  if (!transformer) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "No underlying sink");
+    return ScriptPromise();
+  }
+
+  transformer->SendFrameToSink(std::move(webrtc_frame));
   return ScriptPromise::CastUndefined(script_state);
 }
 

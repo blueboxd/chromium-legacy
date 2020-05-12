@@ -42,6 +42,18 @@ base::Optional<AccountId> GetAccountId(CertScope scope, Profile* profile) {
 }
 }  // namespace
 
+bool IsFinalState(CertProvisioningWorkerState state) {
+  switch (state) {
+    case CertProvisioningWorkerState::kSucceeded:
+    case CertProvisioningWorkerState::kInconsistentDataError:
+    case CertProvisioningWorkerState::kFailed:
+    case CertProvisioningWorkerState::kCanceled:
+      return true;
+    default:
+      return false;
+  }
+}
+
 //===================== CertProfile ============================================
 
 base::Optional<CertProfile> CertProfile::MakeFromValue(

@@ -92,14 +92,6 @@ class CORE_EXPORT WritableStream : public ScriptWrappable {
 
   // Inherited methods used internally.
 
-  // https://streams.spec.whatwg.org/#is-writable-stream-locked
-  // TODO(ricea): Delete this variant once the V8 extras implementation is
-  // removed.
-  base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const {
-    return IsLocked(this);
-  }
-
-  // This version can't fail.
   static bool IsLocked(const WritableStream* stream) { return stream->writer_; }
 
   void Serialize(ScriptState*, MessagePort*, ExceptionState&);

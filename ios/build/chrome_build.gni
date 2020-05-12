@@ -21,7 +21,12 @@ declare_args() {
   # Overridden when using the Google-internal repository to build Chrome on iOS.
   ios_account_verification_provider_target = "//ios/chrome/common/credential_provider:account_verification_provider_implementation"
 
-  # Enable multi-window configuration in Info.plist
+  # Enable use of SceneDelegate-driven startup flow in
+  # Info.plist.
+  ios_enable_scene_startup = false
+
+  # Enable multi-window configuration in Info.plist. Includes all the effects of
+  # setting |ios_enable_scene_startup| to |true|.
   ios_enable_multi_window = false
 
   # Value of the encryption export compliance code. See "Cryptography and

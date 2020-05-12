@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -1232,14 +1233,14 @@ TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
   GetDocument().GetFrame()->StartPrinting(initial_page_size, initial_page_size);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
 
-  DoubleSize page_size;
-  int margin[4];
-  GetDocument().PageSizeAndMarginsInPixels(0, page_size, margin[0], margin[1],
-                                           margin[2], margin[3]);
+  WebPrintPageDescription description;
+  GetDocument().GetPageDescription(0, &description);
 
-  for (int side_margin : margin)
-    EXPECT_EQ(50, side_margin);
-  EXPECT_EQ(DoubleSize(400, 960), page_size);
+  EXPECT_EQ(50, description.margin_top);
+  EXPECT_EQ(50, description.margin_right);
+  EXPECT_EQ(50, description.margin_bottom);
+  EXPECT_EQ(50, description.margin_left);
+  EXPECT_EQ(WebDoubleSize(400, 960), description.size);
 }
 
 TEST(Document, HandlesDisconnectDuringHasTrustToken) {

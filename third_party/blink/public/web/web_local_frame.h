@@ -54,7 +54,6 @@ class WebAutofillClient;
 class WebContentCaptureClient;
 class WebContentSettingsClient;
 class WebDocument;
-class WebDoubleSize;
 class WebDOMMessageEvent;
 class WebLocalFrameClient;
 class WebFrameWidget;
@@ -73,6 +72,7 @@ struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebIsolatedWorldInfo;
+struct WebPrintPageDescription;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
@@ -278,16 +278,11 @@ class WebLocalFrame : public WebFrame {
   // Returns the type of @page size styling for the given page.
   virtual PageSizeType GetPageSizeType(int page_index) = 0;
 
-  // Returns the preferred page size and margins in pixels, assuming 96
-  // pixels per inch. pageSize, marginTop, marginRight, marginBottom,
-  // marginLeft must be initialized to the default values that are used if
-  // auto is specified.
-  virtual void PageSizeAndMarginsInPixels(int page_index,
-                                          WebDoubleSize& page_size,
-                                          int& margin_top,
-                                          int& margin_right,
-                                          int& margin_bottom,
-                                          int& margin_left) = 0;
+  // Gets the description for the specified page. This includes preferred page
+  // size and margins in pixels, assuming 96 pixels per inch. The size and
+  // margins must be initialized to the default values that are used if auto is
+  // specified.
+  virtual void GetPageDescription(int page_index, WebPrintPageDescription*) = 0;
 
   // Scripting --------------------------------------------------------------
 

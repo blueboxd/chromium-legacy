@@ -37,7 +37,8 @@ using CertProvisioningResponseError =
 // Numeric values are used in serialization and should not be remapped.
 enum class CertScope { kUser = 0, kDevice = 1, kMaxValue = kDevice };
 
-// These values are used in serialization and should be changed carefully.
+// These values are used in serialization and should be changed carefully. Also
+// enums.xml should be updated.
 enum class CertProvisioningWorkerState {
   kInitState = 0,
   kKeypairGenerated = 1,
@@ -47,12 +48,16 @@ enum class CertProvisioningWorkerState {
   kKeypairMarked = 5,
   kSignCsrFinished = 6,
   kFinishCsrResponseReceived = 7,
-  kSucceed = 8,
+  kSucceeded = 8,
   kInconsistentDataError = 9,
   kFailed = 10,
   kCanceled = 11,
   kMaxValue = kCanceled,
 };
+
+// Returns true if the |state| is one of final states, i. e. worker should
+// finish its task in one of them.
+bool IsFinalState(CertProvisioningWorkerState state);
 
 using CertProfileId = std::string;
 

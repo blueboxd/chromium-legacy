@@ -182,24 +182,19 @@ class GC_PLUGIN_IGNORE(
   void VisitRoot(const void*, TraceDescriptor, const base::Location&) final;
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
   void Visit(const void*, TraceDescriptor) final;
-  void VisitBackingStoreStrongly(const void*,
-                                 const void* const*,
-                                 TraceDescriptor) final;
-  void VisitBackingStoreWeakly(const void*,
-                               const void* const*,
-                               TraceDescriptor,
-                               TraceDescriptor,
-                               WeakCallback,
-                               const void*) final;
   void VisitEphemeron(const void*, const void*, TraceCallback) final;
+  void VisitWeakContainer(const void*,
+                          const void* const*,
+                          TraceDescriptor,
+                          TraceDescriptor,
+                          WeakCallback,
+                          const void*) final;
 
   // Unused Visitor overrides.
   void VisitWeak(const void* object,
                  const void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreOnly(const void*, const void* const*) final {}
-  void RegisterBackingStoreCallback(const void*, MovingObjectCallback) final {}
   void RegisterWeakCallback(WeakCallback, const void*) final {}
 
  private:
@@ -685,27 +680,20 @@ void V8EmbedderGraphBuilder::AddEdge(State* parent, State* current) {
   graph_->AddEdge(parent_node, current_node);
 }
 
-void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(
+void V8EmbedderGraphBuilder::VisitWeakContainer(
     const void* object,
-    const void* const* object_slot,
-    TraceDescriptor desc) {
-  if (!object)
-    return;
-  desc.callback(this, desc.base_object_payload);
-}
-
-void V8EmbedderGraphBuilder::VisitBackingStoreWeakly(
-    const void* object,
-    const void* const* object_slot,
+    const void* const* slot,
     TraceDescriptor strong_desc,
-    TraceDescriptor weak_desc,
-    WeakCallback,
-    const void*) {
+    TraceDescriptor ephemeron_iteration,
+    WeakCallback weak_callback,
+    const void* weak_callback_parameter) {
   // Only ephemerons have weak callbacks.
-  if (weak_desc.callback) {
+  if (ephemeron_iteration.callback) {
     // Heap snapshot is always run after a GC so we know there are no dead
     // entries in the backing store, thus it safe to trace it strongly.
-    VisitBackingStoreStrongly(object, object_slot, strong_desc);
+    if (object) {
+      Visit(object, strong_desc);
+    }
   }
 }
 

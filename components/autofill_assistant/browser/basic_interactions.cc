@@ -8,6 +8,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -144,6 +145,14 @@ bool ValueToString(UserModel* user_model,
           time, proto.date_format().date_format().c_str()));
       break;
     }
+    case ValueProto::kCreditCards:
+    case ValueProto::kProfiles:
+    case ValueProto::kLoginOptions:
+    case ValueProto::kCreditCardResponse:
+    case ValueProto::kLoginOptionResponse:
+      DVLOG(2) << "Error evaluating " << __func__ << ": kind not supported for "
+               << *value;
+      return false;
     case ValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error evaluating " << __func__ << ": kind not set";
       return false;
@@ -259,6 +268,61 @@ bool IntegerSum(UserModel* user_model,
   return true;
 }
 
+bool CreateCreditCardResponse(UserModel* user_model,
+                              const std::string& result_model_identifier,
+                              const CreateCreditCardResponseProto& proto) {
+  auto value = user_model->GetValue(proto.value());
+  if (!value.has_value()) {
+    DVLOG(2) << "Failed to find value in user model";
+    return false;
+  }
+
+  if (value->credit_cards().values().size() != 1) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected single CreditCardProto, but got " << *value;
+    return false;
+  }
+
+  auto* credit_card =
+      user_model->GetCreditCard(value->credit_cards().values(0).guid());
+  if (!credit_card) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": card not found for guid "
+             << value->credit_cards().values(0).guid();
+    return false;
+  }
+
+  // The result is intentionally not client_side_only, irrespective of input.
+  ValueProto result;
+  result.mutable_credit_card_response()->set_network(
+      autofill::data_util::GetPaymentRequestData(credit_card->network())
+          .basic_card_issuer_network);
+  user_model->SetValue(result_model_identifier, result);
+  return true;
+}
+
+bool CreateLoginOptionResponse(UserModel* user_model,
+                               const std::string& result_model_identifier,
+                               const CreateLoginOptionResponseProto& proto) {
+  auto value = user_model->GetValue(proto.value());
+  if (!value.has_value()) {
+    DVLOG(2) << "Failed to find value in user model";
+    return false;
+  }
+
+  if (value->login_options().values().size() != 1) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected single LoginOptionProto, but got " << *value;
+    return false;
+  }
+
+  // The result is intentionally not client_side_only, irrespective of input.
+  ValueProto result;
+  result.mutable_login_option_response()->set_payload(
+      value->login_options().values(0).payload());
+  user_model->SetValue(result_model_identifier, result);
+  return true;
+}
+
 }  // namespace
 
 base::WeakPtr<BasicInteractions> BasicInteractions::GetWeakPtr() {
@@ -334,6 +398,25 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
       }
       return IntegerSum(delegate_->GetUserModel(),
                         proto.result_model_identifier(), proto.integer_sum());
+    case ComputeValueProto::kCreateCreditCardResponse:
+      if (!proto.create_credit_card_response().has_value()) {
+        DVLOG(2) << "Error computing ComputeValue::CreateCreditCardResponse: "
+                    "no value specified";
+        return false;
+      }
+      return CreateCreditCardResponse(delegate_->GetUserModel(),
+                                      proto.result_model_identifier(),
+                                      proto.create_credit_card_response());
+    case ComputeValueProto::kCreateLoginOptionResponse:
+      if (!proto.create_login_option_response().has_value()) {
+        DVLOG(2) << "Error computing ComputeValue::CreateLoginOptionResponse: "
+                    "no value specified";
+        return false;
+      }
+      return CreateLoginOptionResponse(delegate_->GetUserModel(),
+                                       proto.result_model_identifier(),
+                                       proto.create_login_option_response());
+      break;
     case ComputeValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error computing value: kind not set";
       return false;

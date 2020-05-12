@@ -25,6 +25,7 @@
 
 namespace media {
 
+#if defined(OS_CHROMEOS)
 namespace {
 // UMA errors that the VaapiImageProcessorBackend class reports.
 enum class VaIPFailure {
@@ -67,6 +68,7 @@ bool IsSupported(uint32_t input_va_fourcc,
 }
 
 }  // namespace
+#endif
 
 // static
 std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
@@ -78,8 +80,7 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
 // VaapiImageProcessorBackend supports ChromeOS only.
 #if !defined(OS_CHROMEOS)
   return nullptr;
-#endif
-
+#else
   auto input_vafourcc = input_config.fourcc.ToVAFourCC();
   if (!input_vafourcc) {
     VLOGF(2) << "Input fourcc " << input_config.fourcc.ToString()
@@ -146,6 +147,7 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
   return base::WrapUnique<ImageProcessorBackend>(new VaapiImageProcessorBackend(
       std::move(vaapi_wrapper), input_config, output_config, OutputMode::IMPORT,
       std::move(error_cb), std::move(backend_task_runner)));
+#endif
 }
 
 VaapiImageProcessorBackend::VaapiImageProcessorBackend(

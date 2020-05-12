@@ -102,6 +102,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/page_info/android/features.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -2849,6 +2850,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"query-tiles-omnibox", flag_descriptions::kQueryTilesOmniboxName,
      flag_descriptions::kQueryTilesOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(upboarding::features::kQueryTilesInOmnibox)},
+    {"query-tiles-enable-query-editing",
+     flag_descriptions::kQueryTilesEnableQueryEditingName,
+     flag_descriptions::kQueryTilesEnableQueryEditingDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(upboarding::features::kQueryTilesEnableQueryEditing)},
     {"query-tiles-country-code", flag_descriptions::kQueryTilesCountryCode,
      flag_descriptions::kQueryTilesCountryCodeDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kQueryTilesCountryChoices)},
@@ -3549,6 +3554,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrossOriginOpenerPolicyName,
      flag_descriptions::kCrossOriginOpenerPolicyDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kCrossOriginOpenerPolicy)},
+
+    {"cross-origin-opener-policy-reporting",
+     flag_descriptions::kCrossOriginOpenerPolicyReportingName,
+     flag_descriptions::kCrossOriginOpenerPolicyReportingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kCrossOriginOpenerPolicyReporting)},
 
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
@@ -5387,6 +5397,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPageInfoPerformanceHintsName,
      flag_descriptions::kPageInfoPerformanceHintsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kPageInfoPerformanceHints)},
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"page-info-version-2", flag_descriptions::kPageInfoV2Name,
+     flag_descriptions::kPageInfoV2Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoV2)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

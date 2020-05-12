@@ -68,18 +68,6 @@ class BackingVisitor : public Visitor {
                  const void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {}
-  void VisitBackingStoreStrongly(const void* object,
-                                 const void* const* object_slot,
-                                 TraceDescriptor desc) final {}
-  void VisitBackingStoreWeakly(const void*,
-                               const void* const*,
-                               TraceDescriptor,
-                               TraceDescriptor,
-                               WeakCallback,
-                               const void*) final {}
-  void VisitBackingStoreOnly(const void*, const void* const*) final {}
-  void RegisterBackingStoreCallback(const void* slot,
-                                    MovingObjectCallback) final {}
   void RegisterWeakCallback(WeakCallback, const void*) final {}
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
@@ -1541,7 +1529,7 @@ TEST_F(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
   driver.FinishGC();
 
   // Weak callback should register the slot.
-  EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 2u);
+  EXPECT_EQ(1u, driver.GetHeapCompactLastFixupCount());
 }
 
 TEST_F(IncrementalMarkingTest, ConservativeGCWhileCompactionScheduled) {

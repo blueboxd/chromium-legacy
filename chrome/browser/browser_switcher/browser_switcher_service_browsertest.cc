@@ -102,7 +102,6 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-    BrowserSwitcherService::SetFetchDelayForTesting(base::TimeDelta());
     BrowserSwitcherService::SetRefreshDelayForTesting(base::TimeDelta());
   }
 

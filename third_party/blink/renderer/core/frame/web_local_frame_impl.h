@@ -140,12 +140,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;
   PageSizeType GetPageSizeType(int page_index) override;
-  void PageSizeAndMarginsInPixels(int page_index,
-                                  WebDoubleSize& page_size,
-                                  int& margin_top,
-                                  int& margin_right,
-                                  int& margin_bottom,
-                                  int& margin_left) override;
+  void GetPageDescription(int page_index, WebPrintPageDescription*) override;
   void ExecuteScript(const WebScriptSource&) override;
   void ExecuteScriptInIsolatedWorld(int32_t world_id,
                                     const WebScriptSource&) override;

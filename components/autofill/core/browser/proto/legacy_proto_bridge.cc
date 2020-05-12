@@ -14,7 +14,8 @@ AutofillPageQueryRequest::Form::Field CreateLegacyFieldFromApiField(
   api_field.set_signature(legacy_field.signature());
   api_field.set_name(legacy_field.name());
   api_field.set_control_type(legacy_field.type());
-  *api_field.mutable_metadata() = legacy_field.field_metadata();
+  if (legacy_field.has_field_metadata())
+    *api_field.mutable_metadata() = legacy_field.field_metadata();
   return api_field;
 }
 
@@ -22,7 +23,8 @@ AutofillPageQueryRequest::Form CreateApiFormFromLegacyForm(
     const AutofillQueryContents::Form& legacy_form) {
   AutofillPageQueryRequest::Form api_form;
   api_form.set_signature(legacy_form.signature());
-  *api_form.mutable_metadata() = legacy_form.form_metadata();
+  if (legacy_form.has_form_metadata())
+    *api_form.mutable_metadata() = legacy_form.form_metadata();
   for (const auto& legacy_field : legacy_form.field()) {
     *api_form.add_fields() = CreateLegacyFieldFromApiField(legacy_field);
   }

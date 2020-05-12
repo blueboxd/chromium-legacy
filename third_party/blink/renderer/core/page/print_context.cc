@@ -22,6 +22,7 @@
 
 #include <utility>
 
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -286,15 +287,20 @@ String PrintContext::PageSizeAndMarginsInPixels(LocalFrame* frame,
                                                 int margin_right,
                                                 int margin_bottom,
                                                 int margin_left) {
-  DoubleSize page_size(width, height);
-  frame->GetDocument()->PageSizeAndMarginsInPixels(page_number, page_size,
-                                                   margin_top, margin_right,
-                                                   margin_bottom, margin_left);
+  WebPrintPageDescription description;
+  description.size = WebDoubleSize(width, height);
+  description.margin_top = margin_top;
+  description.margin_right = margin_right;
+  description.margin_bottom = margin_bottom;
+  description.margin_left = margin_left;
+  frame->GetDocument()->GetPageDescription(page_number, &description);
 
-  return "(" + String::Number(floor(page_size.Width())) + ", " +
-         String::Number(floor(page_size.Height())) + ") " +
-         String::Number(margin_top) + ' ' + String::Number(margin_right) + ' ' +
-         String::Number(margin_bottom) + ' ' + String::Number(margin_left);
+  return "(" + String::Number(floor(description.size.Width())) + ", " +
+         String::Number(floor(description.size.Height())) + ") " +
+         String::Number(description.margin_top) + ' ' +
+         String::Number(description.margin_right) + ' ' +
+         String::Number(description.margin_bottom) + ' ' +
+         String::Number(description.margin_left);
 }
 
 // static

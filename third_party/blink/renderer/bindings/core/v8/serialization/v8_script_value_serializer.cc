@@ -555,9 +555,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                         "because it was not transferred.");
       return false;
     }
-    if (stream->IsLocked(script_state_, exception_state).value_or(true)) {
-      if (exception_state.HadException())
-        return false;
+    if (stream->locked()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,
           "A WritableStream could not be cloned because it was locked");
@@ -587,9 +585,7 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     if (stream->Readable()
             ->IsLocked(script_state_, exception_state)
             .value_or(true) ||
-        stream->Writable()
-            ->IsLocked(script_state_, exception_state)
-            .value_or(true)) {
+        stream->Writable()->locked()) {
       if (exception_state.HadException())
         return false;
       exception_state.ThrowDOMException(

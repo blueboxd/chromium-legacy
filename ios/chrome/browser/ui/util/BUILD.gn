@@ -8,7 +8,10 @@ import("//ios/build/chrome_build.gni")
 buildflag_header("ios_multi_window_buildflags") {
   header = "multi_window_buildflags.h"
   header_dir = "ios/chrome/browser/ui/util"
-  flags = [ "IOS_MULTIWINDOW_ENABLED=$ios_enable_multi_window" ]
+  flags = [
+    "IOS_MULTIWINDOW_ENABLED=$ios_enable_multi_window",
+    "IOS_SCENE_STARTUP_ENABLED=$ios_enable_scene_startup",
+  ]
 }
 
 source_set("multiwindow_util") {

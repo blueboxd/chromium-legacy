@@ -37,6 +37,7 @@ import java.util.HashSet;
 public class UploadableActionsRequestBuilderTest {
     private static final String CONTENT_ID = "contentId";
     private static final int TIME = 100;
+    private static final long DURATION = 20;
     private static final byte[] SEMANTIC_PROPERTIES_BYTES = new byte[] {0x1, 0xf};
     private static final SemanticProperties SEMANTIC_PROPERTIES =
             SemanticProperties.newBuilder()
@@ -68,6 +69,7 @@ public class UploadableActionsRequestBuilderTest {
                                .setFeatureContentId(CONTENT_ID)
                                .setPayload(mPayload)
                                .setTimestampSeconds(TIME)
+                               .setDurationMs(DURATION)
                                .build());
         mRequestBuilder = ActionRequest.newBuilder().setRequestVersion(
                 ActionRequest.RequestVersion.FEED_UPLOAD_ACTION);
@@ -81,6 +83,7 @@ public class UploadableActionsRequestBuilderTest {
                                         .setActionPayload(mPayload)
                                         .setClientData(FeedAction.ClientData.newBuilder()
                                                                .setTimestampSeconds(TIME)
+                                                               .setDurationMs(DURATION)
                                                                .build())
                                         .build();
         mFeedActionRequestBuilder.addFeedAction(feedAction);
@@ -111,6 +114,7 @@ public class UploadableActionsRequestBuilderTest {
                                         .setActionPayload(mPayload)
                                         .setClientData(FeedAction.ClientData.newBuilder()
                                                                .setTimestampSeconds(TIME)
+                                                               .setDurationMs(DURATION)
                                                                .build())
                                         .build();
         mFeedActionRequestBuilder.addFeedAction(feedAction);

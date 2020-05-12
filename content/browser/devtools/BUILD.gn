@@ -82,6 +82,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/inspector.h",
     "protocol/io.cc",
     "protocol/io.h",
+    "protocol/log.cc",
+    "protocol/log.h",
     "protocol/memory.cc",
     "protocol/memory.h",
     "protocol/network.cc",

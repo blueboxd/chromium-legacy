@@ -245,6 +245,7 @@ class CORE_EXPORT InspectorCSSAgent final
       NodeToInspectorStyleSheet;  // bogus "stylesheets" with elements' inline
                                   // styles
   typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
+  typedef HashMap<int, unsigned> NodeIdToNumberFocusedChildren;
 
   void ResourceContentLoaded(std::unique_ptr<EnableCallback>);
   void CompleteEnabled();
@@ -303,6 +304,9 @@ class CORE_EXPORT InspectorCSSAgent final
 
   void ResetPseudoStates();
 
+  void IncrementFocusedCountForAncestors(Element*);
+  void DecrementFocusedCountForAncestors(Element*);
+
   Member<InspectorDOMAgent> dom_agent_;
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorNetworkAgent> network_agent_;
@@ -322,6 +326,7 @@ class CORE_EXPORT InspectorCSSAgent final
 
   NodeToInspectorStyleSheet node_to_inspector_style_sheet_;
   NodeIdToForcedPseudoState node_id_to_forced_pseudo_state_;
+  NodeIdToNumberFocusedChildren node_id_to_number_focused_children_;
 
   Member<StyleRuleUsageTracker> tracker_;
 

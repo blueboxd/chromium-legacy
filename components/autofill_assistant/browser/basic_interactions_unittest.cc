@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/basic_interactions.h"
+#include "base/guid.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/mock_callback.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -393,6 +395,84 @@ TEST_F(BasicInteractionsTest, ComputeValueCompare) {
                        SimpleValue(1, /* is_client_side_only = */ true));
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
   EXPECT_EQ(user_model_.GetValue("result"), SimpleValue(true, true));
+}
+
+TEST_F(BasicInteractionsTest, ComputeValueCreateCreditCardResponse) {
+  ComputeValueProto proto;
+  proto.mutable_create_credit_card_response();
+
+  // Missing fields.
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.mutable_create_credit_card_response()
+      ->mutable_value()
+      ->set_model_identifier("value");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.set_result_model_identifier("result");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  autofill::CreditCard credit_card(base::GenerateGUID(),
+                                   "https://www.example.com");
+  autofill::test::SetCreditCardInfo(&credit_card, "Marion Mitchell",
+                                    "4111 1111 1111 1111", "01", "2050", "");
+  user_model_.AddCreditCard(
+      std::make_unique<autofill::CreditCard>(credit_card));
+
+  ValueProto value_wrong_guid;
+  value_wrong_guid.mutable_credit_cards()->add_values()->set_guid("wrong");
+  user_model_.SetValue("value", value_wrong_guid);
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  ValueProto value_correct_guid;
+  value_correct_guid.mutable_credit_cards()->add_values()->set_guid(
+      credit_card.guid());
+  user_model_.SetValue("value", value_correct_guid);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  ValueProto expected_response_value;
+  expected_response_value.mutable_credit_card_response()->set_network("visa");
+  expected_response_value.set_is_client_side_only(false);
+  EXPECT_EQ(user_model_.GetValue("result"), expected_response_value);
+
+  // CreateCreditCardResponse is allowed to extract the card network from
+  // client-only values.
+  value_correct_guid.set_is_client_side_only(true);
+  user_model_.SetValue("value", value_correct_guid);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+  EXPECT_EQ(user_model_.GetValue("result"), expected_response_value);
+
+  // Size != 1.
+  ValueProto value;
+  value.mutable_credit_cards()->add_values()->set_guid(credit_card.guid());
+  value.mutable_credit_cards()->add_values()->set_guid(credit_card.guid());
+  user_model_.SetValue("value", value);
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+}
+
+TEST_F(BasicInteractionsTest, ComputeValueCreateLoginOptionResponse) {
+  ComputeValueProto proto;
+  proto.mutable_create_login_option_response();
+
+  // Missing fields.
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.mutable_create_login_option_response()
+      ->mutable_value()
+      ->set_model_identifier("value");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+  proto.set_result_model_identifier("result");
+  EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
+
+  ValueProto value;
+  value.mutable_login_options()->add_values()->set_payload("payload");
+  value.set_is_client_side_only(true);
+  user_model_.SetValue("value", value);
+  EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
+
+  // LoginOptionResponseProto is allowed to extract the payload from
+  // client-only values.
+  ValueProto expected_response_value;
+  expected_response_value.mutable_login_option_response()->set_payload(
+      "payload");
+  expected_response_value.set_is_client_side_only(false);
+  EXPECT_EQ(user_model_.GetValue("result"), expected_response_value);
 }
 
 TEST_F(BasicInteractionsTest, ToggleUserAction) {

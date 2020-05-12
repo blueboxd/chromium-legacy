@@ -41,14 +41,10 @@ TEST(WritableStreamTest, GetWriter) {
   ASSERT_TRUE(stream);
 
   EXPECT_FALSE(stream->locked());
-  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(false));
 
   stream->getWriter(script_state, ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(stream->locked());
-  EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
-            base::make_optional(true));
 }
 
 TEST(WritableStreamTest, Serialize) {

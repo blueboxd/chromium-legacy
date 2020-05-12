@@ -1,2 +1,5 @@
 rogerta@chromium.org
 domfc@chromium.org
+
+per-file service_providers.*=file://components/component_updater/OWNERS
+

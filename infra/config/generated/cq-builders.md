@@ -339,6 +339,16 @@ as required builders.
 * [fuchsia-compile-x64-dbg](https://ci.chromium.org/p/chromium/builders/try/fuchsia-compile-x64-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia-compile-x64-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia-compile-x64-dbg))
   * Experiment percentage: 50
 
+* [linux-perfetto-rel](https://ci.chromium.org/p/chromium/builders/try/linux-perfetto-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-perfetto-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-perfetto-rel))
+  * Experiment percentage: 100
+
+  Path regular expressions:
+  * [`//base/trace_event/.+`](https://cs.chromium.org/chromium/src/base/trace_event/)
+  * [`//base/tracing/.+`](https://cs.chromium.org/chromium/src/base/tracing/)
+  * [`//components/tracing/.+`](https://cs.chromium.org/chromium/src/components/tracing/)
+  * [`//content/browser/tracing/.+`](https://cs.chromium.org/chromium/src/content/browser/tracing/)
+  * [`//services/tracing/.+`](https://cs.chromium.org/chromium/src/services/tracing/)
+
 * [mac-coverage-rel](https://ci.chromium.org/p/chromium/builders/try/mac-coverage-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+mac-coverage-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+mac-coverage-rel))
   * Experiment percentage: 3
 

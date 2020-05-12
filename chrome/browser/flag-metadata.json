@@ -641,6 +641,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "cross-origin-opener-policy-reporting",
+    "owners": [ "ahemery", "clamy", "pmeuleman" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "crostini-disk-resizing",
     "owners": [ "davidmunro", "nverne" ],
     "expiry_milestone": 86
@@ -3384,6 +3389,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "page-info-version-2",
+    "owners": [ "eokoyomon", "dullweber" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "paint-preview-demo",
     "owners": [ "ckitagawa", "fredmello", "mahmoudi" ],
     "expiry_milestone": 88
@@ -3542,6 +3552,11 @@
   {
     "name": "query-tiles-country-code",
     "owners": [ "shaktisahu", "qinmin"],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "query-tiles-enable-query-editing",
+    "owners": [ "shaktisahu"],
     "expiry_milestone": 88
   },
   {

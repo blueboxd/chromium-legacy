@@ -1517,6 +1517,10 @@ TEST(URLCanonTest, ReplaceFileURL) {
     {"file:///C:/gaba?query#ref", NULL, NULL, NULL, "filer", NULL, "/foo", "b", "c", "file://filer/foo?b#c"},
       // Replace nothing
     {"file:///C:/gaba?query#ref", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "file:///C:/gaba?query#ref"},
+    {"file:///Y:", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "file:///Y:"},
+    {"file:///Y:/", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "file:///Y:/"},
+    {"file:///./Y", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "file:///Y"},
+    {"file:///./Y:", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "file:///Y:"},
       // Clear non-path components (common)
     {"file:///C:/gaba?query#ref", NULL, NULL, NULL, NULL, NULL, NULL, kDeleteComp, kDeleteComp, "file:///C:/gaba"},
       // Replace path with something that doesn't begin with a slash and make
@@ -1532,6 +1536,7 @@ TEST(URLCanonTest, ReplaceFileURL) {
 
   for (size_t i = 0; i < base::size(replace_cases); i++) {
     const ReplaceCase& cur = replace_cases[i];
+    SCOPED_TRACE(cur.base);
     int base_len = static_cast<int>(strlen(cur.base));
     Parsed parsed;
     ParseFileURL(cur.base, base_len, &parsed);

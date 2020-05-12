@@ -240,6 +240,19 @@ class FileTasks {
   }
 
   /**
+   * Returns ViewFileType enum or 'other' for the given entry.
+   * @param {!Entry} entry The entry for which ViewFileType is computed.
+   * @return {string} A ViewFileType enum or 'other'.
+   */
+  static getViewFileType(entry) {
+    let extension = FileType.getExtension(entry).toLowerCase();
+    if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
+      extension = 'other';
+    }
+    return extension;
+  }
+
+  /**
    * Records trial of opening file grouped by extensions.
    *
    * @param {!VolumeManager} volumeManager
@@ -248,13 +261,9 @@ class FileTasks {
    */
   static recordViewingFileTypeUMA_(volumeManager, entries) {
     for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
-      let extension = FileType.getExtension(entry).toLowerCase();
-      if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
-        extension = 'other';
-      }
       FileTasks.recordEnumWithOnlineAndOffline_(
-          volumeManager, 'ViewingFileType', extension,
+          volumeManager, 'ViewingFileType',
+          FileTasks.getViewFileType(entries[i]),
           FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
     }
   }
@@ -1215,7 +1224,7 @@ FileTasks.TaskPickerType = {
  *
  * The list must also match the FileBrowser ViewFileType entry in enums.xml.
  *
- * @const {Array<string>}
+ * @const {!Array<string>}
  */
 FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   'other',     '.3ga',         '.3gp',

@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
+#include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -130,6 +131,14 @@ void CommonAppsNavigationThrottle::OnIntentPickerClosed(
         url, launch_source, display::kDefaultDisplayId);
     CloseOrGoBack(web_contents);
   }
+
+  apps::AppsNavigationThrottle::PickerAction action =
+      apps::AppsNavigationThrottle::GetPickerAction(entry_type, close_reason,
+                                                    should_persist);
+  apps::AppsNavigationThrottle::Platform platform =
+      apps::AppsNavigationThrottle::GetDestinationPlatform(launch_name, action);
+  apps::IntentHandlingMetrics::RecordIntentPickerMetrics(
+      apps::Source::kHttpOrHttps, should_persist, action, platform);
 }
 
 // static

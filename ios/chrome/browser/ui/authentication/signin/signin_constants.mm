@@ -11,6 +11,11 @@
 NSString* const kUserSigninAttemptedNotification = @"kUserSigninAttempted";
 NSString* const kSkipSigninAccessibilityIdentifier =
     @"kSkipSigninAccessibilityIdentifier";
+NSString* const kAddAccountAccessibilityIdentifier =
+    @"kAddAccountAccessibilityIdentifier";
+NSString* const kConfirmationAccessibilityIdentifier =
+    @"kConfirmationAccessibilityIdentifier";
+NSString* const kMoreAccessibilityIdentifier = @"kMoreAccessibilityIdentifier";
 
 @implementation SigninCompletionInfo
 

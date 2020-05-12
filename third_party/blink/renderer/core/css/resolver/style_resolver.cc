@@ -205,6 +205,26 @@ static CSSPropertyValueSet* RightToLeftDeclaration() {
   return right_to_left_decl;
 }
 
+static CSSPropertyValueSet* MarkerUserAgentDeclarations() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, marker_ua_decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLQuirksMode)));
+  if (marker_ua_decl->IsEmpty()) {
+    // Set 'unicode-bidi: isolate'
+    marker_ua_decl->SetProperty(
+        CSSPropertyID::kUnicodeBidi,
+        *CSSIdentifierValue::Create(CSSValueID::kIsolate));
+
+    // Set 'font-variant-numeric: tabular-nums'
+    CSSValueList* variant_numeric = CSSValueList::CreateSpaceSeparated();
+    variant_numeric->Append(
+        *CSSIdentifierValue::Create(CSSValueID::kTabularNums));
+    marker_ua_decl->SetProperty(CSSPropertyID::kFontVariantNumeric,
+                                *variant_numeric);
+  }
+  return marker_ua_decl;
+}
+
 static void CollectScopedResolversForHostedShadowTrees(
     const Element& element,
     HeapVector<Member<ScopedStyleResolver>, 8>& resolvers) {
@@ -1110,20 +1130,8 @@ bool StyleResolver::PseudoStyleForElementInternal(
     // but that would use a slow universal element selector. So instead we apply
     // the styles here as an optimization.
     if (pseudo_style_request.pseudo_id == kPseudoIdMarker) {
-      auto* set = MakeGarbageCollected<MutableCSSPropertyValueSet>(
-          state.GetParserMode());
-
-      // Set 'unicode-bidi: isolate'
-      set->SetProperty(CSSPropertyID::kUnicodeBidi,
-                       *CSSIdentifierValue::Create(CSSValueID::kIsolate));
-
-      // Set 'font-variant-numeric: tabular-nums'
-      CSSValueList* variant_numeric = CSSValueList::CreateSpaceSeparated();
-      variant_numeric->Append(
-          *CSSIdentifierValue::Create(CSSValueID::kTabularNums));
-      set->SetProperty(CSSPropertyID::kFontVariantNumeric, *variant_numeric);
-
-      cascade.MutableMatchResult().AddMatchedProperties(set);
+      cascade.MutableMatchResult().AddMatchedProperties(
+          MarkerUserAgentDeclarations());
     }
 
     // TODO(obrufau): support styling nested pseudo-elements

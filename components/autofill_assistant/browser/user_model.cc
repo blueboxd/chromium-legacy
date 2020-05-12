@@ -143,4 +143,37 @@ void UserModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void UserModel::AddCreditCard(
+    std::unique_ptr<autofill::CreditCard> credit_card) {
+  if (!credit_card) {
+    return;
+  }
+  credit_cards_[credit_card->guid()] = std::move(credit_card);
+}
+
+void UserModel::AddProfile(std::unique_ptr<autofill::AutofillProfile> profile) {
+  if (!profile) {
+    return;
+  }
+  profiles_[profile->guid()] = std::move(profile);
+}
+
+const autofill::CreditCard* UserModel::GetCreditCard(
+    const std::string& guid) const {
+  auto it = credit_cards_.find(guid);
+  if (it == credit_cards_.end()) {
+    return nullptr;
+  }
+  return it->second.get();
+}
+
+const autofill::AutofillProfile* UserModel::GetProfile(
+    const std::string& guid) const {
+  auto it = profiles_.find(guid);
+  if (it == profiles_.end()) {
+    return nullptr;
+  }
+  return it->second.get();
+}
+
 }  // namespace autofill_assistant

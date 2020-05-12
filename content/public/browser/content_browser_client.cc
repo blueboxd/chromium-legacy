@@ -305,9 +305,11 @@ base::FilePath ContentBrowserClient::GetLoggingFileName(
   return base::FilePath();
 }
 
-bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
-                                         const GURL& first_party,
-                                         BrowserContext* context) {
+bool ContentBrowserClient::AllowAppCache(
+    const GURL& manifest_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
+    BrowserContext* context) {
   return true;
 }
 

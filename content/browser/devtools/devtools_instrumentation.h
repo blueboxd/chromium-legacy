@@ -178,6 +178,10 @@ void ReportSameSiteCookieIssue(
     const net::SiteForCookies& site_for_cookies,
     blink::mojom::SameSiteCookieOperation operation,
     const base::Optional<std::string>& devtools_request_id);
+
+void OnQuicTransportHandshakeFailed(RenderFrameHostImpl* frame_host,
+                                    const GURL& url);
+
 }  // namespace devtools_instrumentation
 
 }  // namespace content

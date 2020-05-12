@@ -237,4 +237,61 @@ public class AutofillAssistantKeyboardIntegrationTest {
         tapElement(mTestRule, "profile_name");
         waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ true);
     }
+
+    @Test
+    @MediumTest
+    public void keyboardDoesNotShowOnElementClickInIFrame() throws Exception {
+        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
+                                                .addSelectors("#iframe")
+                                                .addSelectors("#name")
+                                                .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setClick(ClickProto.newBuilder()
+                                           .setClickType(ClickType.CLICK)
+                                           .setElementToClick(element))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Clicked").addChoices(
+                                 Choice.newBuilder().setChip(
+                                         ChipProto.newBuilder()
+                                                 .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                 .setText("Continue"))))
+                         .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(element)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         element))))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Highlighted")
+                                            .addChoices(Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+
+        runAutofillAssistant(script);
+
+        // Autofill Assistant clicking an <input> element does not show the keyboard.
+        waitUntilViewMatchesCondition(withText("Clicked"), isCompletelyDisplayed());
+        assertThat(isKeyboardVisible(), is(false));
+
+        // A user's click on an <input> element does show the keyboard.
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Highlighted"), isCompletelyDisplayed());
+        tapElement(mTestRule, "iframe", "name");
+        waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ true);
+    }
 }

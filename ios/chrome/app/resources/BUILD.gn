@@ -122,12 +122,11 @@ group("launchscreen_assets") {
   ]
 }
 
-if (ios_enable_multi_window) {
-  # Multi window requires both additional plist entries (handled in ../BUILD.gn) and
-  # an additional storyboard file.
-  bundle_data_ib_file("base_scene_storyboard") {
-    source = "BaseScene.storyboard"
-  }
+# The scene startup flow (which is needed for multi-window) requires both
+# additional plist entries (handled in ../BUILD.gn) and an additional storyboard
+# file.
+bundle_data_ib_file("base_scene_storyboard") {
+  source = "BaseScene.storyboard"
 }
 
 bundle_data_ib_file("launchscreen_xib") {

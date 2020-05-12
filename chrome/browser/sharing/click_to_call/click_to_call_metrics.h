@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_METRICS_H_
 #define CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_METRICS_H_
 
-#include "base/timer/elapsed_timer.h"
-
 namespace content {
 class WebContents;
 }  // namespace content
@@ -31,21 +29,6 @@ enum class SharingClickToCallSelection {
   kDevice = 1,
   kApp = 2,
   kMaxValue = kApp,
-};
-
-// TODO(himanshujaju): Make it generic and move to base/metrics/histogram_base.h
-// Used to Log delay in parsing phone number in highlighted text to UMA.
-class ScopedUmaHistogramMicrosecondsTimer {
- public:
-  ScopedUmaHistogramMicrosecondsTimer();
-  ScopedUmaHistogramMicrosecondsTimer(
-      const ScopedUmaHistogramMicrosecondsTimer&) = delete;
-  ScopedUmaHistogramMicrosecondsTimer& operator=(
-      const ScopedUmaHistogramMicrosecondsTimer&) = delete;
-  ~ScopedUmaHistogramMicrosecondsTimer();
-
- private:
-  const base::ElapsedTimer timer_;
 };
 
 // Records a Click to Call selection to UKM. This is logged after a completed

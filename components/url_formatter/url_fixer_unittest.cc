@@ -515,7 +515,7 @@ TEST(URLFixerTest, FixupFile) {
 
     // Much of the work here comes from GURL's canonicalization stage.
     {"file://C:/foo/bar", "file:///C:/foo/bar"},
-    {"file:c:", "file:///C:/"},
+    {"file:c:", "file:///C:"},
     {"file:c:WINDOWS", "file:///C:/WINDOWS"},
     {"file:c|Program Files", "file:///C:/Program%20Files"},
     {"file:/file", "file://file/"},

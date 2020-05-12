@@ -67,15 +67,15 @@ namespace {
 // decryption, or the version of Chrome being too old. This enum is used to
 // back a UMA histogram, and should therefore be treated as append-only.
 enum SyncInitialState {
-  CAN_START,                // Sync can attempt to start up.
-  NOT_SIGNED_IN,            // There is no signed in user.
-  NOT_REQUESTED,            // The user turned off sync.
-  NOT_REQUESTED_NOT_SETUP,  // The user turned off sync and setup completed
-                            // is false. Might indicate a stop-and-clear.
-  NEEDS_CONFIRMATION,       // The user must confirm sync settings.
-  NOT_ALLOWED_BY_POLICY,    // Sync is disallowed by enterprise policy.
-  NOT_ALLOWED_BY_PLATFORM,  // Sync is disallowed by the platform.
-  SYNC_INITIAL_STATE_LIMIT
+  CAN_START = 0,                // Sync can attempt to start up.
+  NOT_SIGNED_IN = 1,            // There is no signed in user.
+  NOT_REQUESTED = 2,            // The user turned off sync.
+  NOT_REQUESTED_NOT_SETUP = 3,  // The user turned off sync and setup completed
+                                // is false. Might indicate a stop-and-clear.
+  NEEDS_CONFIRMATION = 4,       // The user must confirm sync settings.
+  NOT_ALLOWED_BY_POLICY = 5,    // Sync is disallowed by enterprise policy.
+  OBSOLETE_NOT_ALLOWED_BY_PLATFORM = 6,
+  kMaxValue = OBSOLETE_NOT_ALLOWED_BY_PLATFORM
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -102,12 +102,6 @@ void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
                  ProfileSyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     sync_state = NOT_ALLOWED_BY_POLICY;
   } else if (disable_reasons.Has(
-                 ProfileSyncService::DISABLE_REASON_PLATFORM_OVERRIDE)) {
-    // This case means Android's "MasterSync" toggle. However, that is not
-    // plumbed into ProfileSyncService until after this method, so we never get
-    // here. See http://crbug.com/568771.
-    sync_state = NOT_ALLOWED_BY_PLATFORM;
-  } else if (disable_reasons.Has(
                  ProfileSyncService::DISABLE_REASON_USER_CHOICE)) {
     if (first_setup_complete) {
       sync_state = NOT_REQUESTED;
@@ -117,8 +111,7 @@ void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
   } else if (!first_setup_complete) {
     sync_state = NEEDS_CONFIRMATION;
   }
-  UMA_HISTOGRAM_ENUMERATION("Sync.InitialState", sync_state,
-                            SYNC_INITIAL_STATE_LIMIT);
+  base::UmaHistogramEnumeration("Sync.InitialState", sync_state);
 }
 
 constexpr char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";

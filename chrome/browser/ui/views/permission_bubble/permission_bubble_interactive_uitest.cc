@@ -22,6 +22,11 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
  public:
   PermissionBubbleInteractiveUITest() = default;
 
+  PermissionBubbleInteractiveUITest(const PermissionBubbleInteractiveUITest&) =
+      delete;
+  PermissionBubbleInteractiveUITest& operator=(
+      const PermissionBubbleInteractiveUITest&) = delete;
+
   void EnsureWindowActive(ui::BaseWindow* window, const char* message) {
     EnsureWindowActive(
         views::Widget::GetWidgetForNativeWindow(window->GetNativeWindow()),
@@ -37,7 +42,7 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
   }
 
   // Send Ctrl/Cmd+keycode in the key window to the browser.
-  void SendAccelerator(ui::KeyboardCode keycode, bool shift, bool alt) {
+  void SendAcceleratorSync(ui::KeyboardCode keycode, bool shift, bool alt) {
 #if defined(OS_MACOSX)
     bool control = false;
     bool command = true;
@@ -45,8 +50,9 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
     bool control = true;
     bool command = false;
 #endif
-    ui_controls::SendKeyPress(browser()->window()->GetNativeWindow(), keycode,
-                              control, shift, alt, command);
+
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), keycode, control,
+                                                shift, alt, command));
   }
 
   void SetUpOnMainThread() override {
@@ -66,16 +72,48 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
     EnsureWindowActive(test_api_->GetPromptWindow(), "show permission bubble");
   }
 
+  void JumpToNextOpenTab() {
+#if defined(OS_MACOSX)
+    SendAcceleratorSync(ui::VKEY_RIGHT, false, true);
+#else
+    SendAcceleratorSync(ui::VKEY_TAB, false, false);
+#endif
+  }
+
+  void JumpToPreviousOpenTab() {
+#if defined(OS_MACOSX)
+    SendAcceleratorSync(ui::VKEY_LEFT, false, true);
+#else
+    SendAcceleratorSync(ui::VKEY_TAB, true, false);
+#endif
+  }
+
+  void TestSwitchingTabsWithCurlyBraces() {
+    // Also test switching tabs with curly braces. "VKEY_OEM_4" is
+    // LeftBracket/Brace on a US keyboard, which ui::MacKeyCodeForWindowsKeyCode
+    // will map to '{' when shift is passed. Also note there are only two tabs
+    // so it doesn't matter which direction is taken (it wraps).
+    chrome::FocusLocationBar(browser());
+    SendAcceleratorSync(ui::VKEY_OEM_4, true, false);
+    EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+    EnsureWindowActive(test_api_->GetPromptWindow(),
+                       "switch to permission tab with curly brace");
+    EXPECT_TRUE(test_api_->GetPromptWindow());
+
+    SendAcceleratorSync(ui::VKEY_OEM_4, true, false);
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+    browser()->window()->Activate();
+    EnsureWindowActive(browser()->window(), "switch away with curly brace");
+    EXPECT_FALSE(test_api_->GetPromptWindow());
+  }
+
  protected:
   std::unique_ptr<test::PermissionRequestManagerTestApi> test_api_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PermissionBubbleInteractiveUITest);
 };
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// TODO(https://crbug.com/866878): Accelerators are broken when this bubble is
-// showing on non-Mac.
+#if defined(OS_CHROMEOS)
+// TODO(crbug.com/1072425): views::test::WidgetTest::GetAllWidgets() crashes
+// on Chrome OS, need to investigate\fix that.
 #define MAYBE_CmdWClosesWindow DISABLED_CmdWClosesWindow
 #else
 #define MAYBE_CmdWClosesWindow CmdWClosesWindow
@@ -87,27 +125,16 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest,
                        MAYBE_CmdWClosesWindow) {
   EXPECT_TRUE(browser()->window()->IsVisible());
 
-  SendAccelerator(ui::VKEY_W, false, false);
+  SendAcceleratorSync(ui::VKEY_W, false, false);
 
-  // The actual window close happens via a posted task.
-  EXPECT_TRUE(browser()->window()->IsVisible());
-  ui_test_utils::WaitForBrowserToClose(browser());
-  // The window has been destroyed at this point, so there should be no widgets
-  // hanging around.
+  // The window has been destroyed so there should be no widgets hanging around.
   EXPECT_EQ(0u, views::test::WidgetTest::GetAllWidgets().size());
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-// TODO(https://crbug.com/866878): Accelerators are broken when this bubble is
-// showing on non-Mac.
-#define MAYBE_SwitchTabs DISABLED_SwitchTabs
-#else
-#define MAYBE_SwitchTabs SwitchTabs
-#endif
-
-// Add a tab, ensure we can switch away and back using Ctrl/Cmd+Alt+Left/Right
-// and curly braces.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, MAYBE_SwitchTabs) {
+// Add a tab, ensure we can switch away and back using Ctrl+Tab and
+// Ctrl+Shift+Tab at aura and using Cmd+Alt+Left/Right and curly braces at
+// MacOS.
+IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   EXPECT_TRUE(test_api_->GetPromptWindow());
 
@@ -115,12 +142,14 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, MAYBE_SwitchTabs) {
   AddBlankTabAndShow(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
+#if defined(OS_MACOSX)
   // The bubble should hide and give focus back to the browser. However, the
   // test environment can't guarantee that macOS decides that the Browser window
   // is actually the "best" window to activate upon closing the current key
   // window. So activate it manually.
   browser()->window()->Activate();
   EnsureWindowActive(browser()->window(), "tab added");
+#endif
 
   // Prompt is hidden while its tab is not active.
   EXPECT_FALSE(test_api_->GetPromptWindow());
@@ -129,37 +158,27 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, MAYBE_SwitchTabs) {
   // accelerator before sending it back unhandled to the browser via IPC. That's
   // all a bit much to handle in a test, so activate the location bar.
   chrome::FocusLocationBar(browser());
-  SendAccelerator(ui::VKEY_LEFT, false, true);
+
+  JumpToPreviousOpenTab();
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
 
-  // Note we don't need to makeKeyAndOrderFront: the permission window will take
-  // focus when it is shown again.
-  EnsureWindowActive(test_api_->GetPromptWindow(),
-                     "switched to permission tab with arrow");
+  // Note we don't need to makeKeyAndOrderFront for mac os: the permission
+  // window will take focus when it is shown again.
+  EnsureWindowActive(
+      test_api_->GetPromptWindow(),
+      "switched to permission tab with ctrl+shift+tab or arrow at mac os");
   EXPECT_TRUE(test_api_->GetPromptWindow());
 
   // Ensure we can switch away with the bubble active.
-  SendAccelerator(ui::VKEY_RIGHT, false, true);
+  JumpToNextOpenTab();
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
   browser()->window()->Activate();
-  EnsureWindowActive(browser()->window(), "switch away with arrow");
+  EnsureWindowActive(browser()->window(),
+                     "switch away with ctrl+tab or arrow at mac os");
   EXPECT_FALSE(test_api_->GetPromptWindow());
 
-  // Also test switching tabs with curly braces. "VKEY_OEM_4" is
-  // LeftBracket/Brace on a US keyboard, which ui::MacKeyCodeForWindowsKeyCode
-  // will map to '{' when shift is passed. Also note there are only two tabs so
-  // it doesn't matter which direction is taken (it wraps).
-  chrome::FocusLocationBar(browser());
-  SendAccelerator(ui::VKEY_OEM_4, true, false);
-  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
-  EnsureWindowActive(test_api_->GetPromptWindow(),
-                     "switch to permission tab with curly brace");
-  EXPECT_TRUE(test_api_->GetPromptWindow());
-
-  SendAccelerator(ui::VKEY_OEM_4, true, false);
-  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-  browser()->window()->Activate();
-  EnsureWindowActive(browser()->window(), "switch away with curly brace");
-  EXPECT_FALSE(test_api_->GetPromptWindow());
+#if defined(OS_MACOSX)
+  TestSwitchingTabsWithCurlyBraces();
+#endif
 }

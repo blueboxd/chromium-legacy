@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBTRANSPORT_QUIC_TRANSPORT_CONNECTOR_IMPL_H_
 #define CONTENT_BROWSER_WEBTRANSPORT_QUIC_TRANSPORT_CONNECTOR_IMPL_H_
 
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -14,13 +15,20 @@
 
 namespace content {
 
+class RenderFrameHostImpl;
+
 class QuicTransportConnectorImpl final
     : public blink::mojom::QuicTransportConnector {
  public:
+  // |frame| is needed for devtools - sometimes (e.g., the connector is for
+  // workers) there is not appropriate frame to associate, and in that case
+  // nullptr is provided.
   QuicTransportConnectorImpl(
       int process_id,
+      base::WeakPtr<RenderFrameHostImpl> frame,
       const url::Origin& origin,
       const net::NetworkIsolationKey& network_isolation_key);
+  ~QuicTransportConnectorImpl() override;
 
   void Connect(const GURL& url,
                mojo::PendingRemote<network::mojom::QuicTransportHandshakeClient>
@@ -28,6 +36,7 @@ class QuicTransportConnectorImpl final
 
  private:
   const int process_id_;
+  const base::WeakPtr<RenderFrameHostImpl> frame_;
   const url::Origin origin_;
   const net::NetworkIsolationKey network_isolation_key_;
 };

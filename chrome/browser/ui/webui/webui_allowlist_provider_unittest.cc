@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/webui/webui_allowlist_provider.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "ui/webui/webui_allowlist.h"
 
 #include <map>
@@ -126,6 +127,21 @@ TEST_F(WebUIAllowlistProviderTest, MAYBE_UnsupportedSchemes) {
   }
 }
 
+#if DCHECK_IS_ON()
+#define MAYBE_InvalidContentSetting InvalidContentSetting
+#else
+#define MAYBE_InvalidContentSetting DISABLED_InvalidContentSetting
+#endif
+TEST_F(WebUIAllowlistProviderTest, MAYBE_InvalidContentSetting) {
+  auto* allowlist = WebUIAllowlist::GetOrCreate(profile());
+
+  EXPECT_DEATH_IF_SUPPORTED(
+      allowlist->RegisterAutoGrantedPermission(
+          url::Origin::Create(GURL("chrome://test/")),
+          ContentSettingsType::BLUETOOTH_GUARD, CONTENT_SETTING_DEFAULT),
+      std::string());
+}
+
 TEST_F(WebUIAllowlistProviderTest, AutoGrantPermissionIsPerProfile) {
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());
@@ -153,4 +169,58 @@ TEST_F(WebUIAllowlistProviderTest, AutoGrantPermissionIsPerProfile) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             map2->GetContentSetting(url, url, ContentSettingsType::GEOLOCATION,
                                     std::string()));
+}
+
+class ContentSettingsChangeObserver : public content_settings::Observer {
+ public:
+  ContentSettingsChangeObserver() = default;
+  ContentSettingsChangeObserver(const ContentSettingsChangeObserver&) = delete;
+  void operator=(const ContentSettingsChangeObserver&) = delete;
+  ~ContentSettingsChangeObserver() override = default;
+
+  size_t change_counter() { return change_counter_; }
+
+  // content_settings::Observer:
+  void OnContentSettingChanged(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) override {
+    change_counter_++;
+  }
+
+ private:
+  size_t change_counter_ = 0;
+};
+
+TEST_F(WebUIAllowlistProviderTest, OnlyNotifyOnChange) {
+  auto* map = GetHostContentSettingsMap(profile());
+  map->SetDefaultContentSetting(ContentSettingsType::BLUETOOTH_GUARD,
+                                CONTENT_SETTING_BLOCK);
+
+  ContentSettingsChangeObserver change_observer;
+  map->AddObserver(&change_observer);
+
+  const url::Origin origin1 = url::Origin::Create(GURL("chrome://test"));
+
+  auto* allowlist = WebUIAllowlist::GetOrCreate(profile());
+  allowlist->RegisterAutoGrantedPermission(
+      origin1, ContentSettingsType::BLUETOOTH_GUARD);
+  EXPECT_EQ(1U, change_observer.change_counter());
+
+  // Registering the same permission should not trigger OnContentSettingChanged.
+  allowlist->RegisterAutoGrantedPermission(
+      origin1, ContentSettingsType::BLUETOOTH_GUARD);
+  EXPECT_EQ(1U, change_observer.change_counter());
+
+  // Registering a different permission should trigger OnContentSettingChanged.
+  allowlist->RegisterAutoGrantedPermission(origin1,
+                                           ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(2U, change_observer.change_counter());
+
+  // Registering a different origin should trigger OnContentSettingChanged.
+  const url::Origin origin2 = url::Origin::Create(GURL("chrome://test2"));
+  allowlist->RegisterAutoGrantedPermission(origin2,
+                                           ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(3U, change_observer.change_counter());
 }

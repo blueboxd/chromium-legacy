@@ -63,6 +63,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_document.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -151,32 +152,31 @@ PrintMsg_Print_Params GetCssPrintParams(
   PrintMsg_Print_Params page_css_params = page_params;
   int dpi = GetDPI(page_params);
 
-  blink::WebDoubleSize page_size_in_pixels(
+  blink::WebPrintPageDescription description;
+  description.size = blink::WebDoubleSize(
       ConvertUnitDouble(page_params.page_size.width(), dpi, kPixelsPerInch),
       ConvertUnitDouble(page_params.page_size.height(), dpi, kPixelsPerInch));
-  int margin_top_in_pixels =
+  description.margin_top =
       ConvertUnit(page_params.margin_top, dpi, kPixelsPerInch);
-  int margin_right_in_pixels = ConvertUnit(
-      page_params.page_size.width() - page_params.content_size.width() -
-          page_params.margin_left,
-      dpi, kPixelsPerInch);
-  int margin_bottom_in_pixels = ConvertUnit(
+  description.margin_right = ConvertUnit(page_params.page_size.width() -
+                                             page_params.content_size.width() -
+                                             page_params.margin_left,
+                                         dpi, kPixelsPerInch);
+  description.margin_bottom = ConvertUnit(
       page_params.page_size.height() - page_params.content_size.height() -
           page_params.margin_top,
       dpi, kPixelsPerInch);
-  int margin_left_in_pixels =
+  description.margin_left =
       ConvertUnit(page_params.margin_left, dpi, kPixelsPerInch);
 
-  if (frame) {
-    frame->PageSizeAndMarginsInPixels(
-        page_index, page_size_in_pixels, margin_top_in_pixels,
-        margin_right_in_pixels, margin_bottom_in_pixels, margin_left_in_pixels);
-  }
+  if (frame)
+    frame->GetPageDescription(page_index, &description);
 
-  double new_content_width = page_size_in_pixels.Width() -
-                             margin_left_in_pixels - margin_right_in_pixels;
-  double new_content_height = page_size_in_pixels.Height() -
-                              margin_top_in_pixels - margin_bottom_in_pixels;
+  double new_content_width = description.size.Width() -
+                             description.margin_left - description.margin_right;
+  double new_content_height = description.size.Height() -
+                              description.margin_top -
+                              description.margin_bottom;
 
   // Invalid page size and/or margins. We just use the default setting.
   if (new_content_width < 1 || new_content_height < 1) {
@@ -186,16 +186,16 @@ PrintMsg_Print_Params GetCssPrintParams(
   }
 
   page_css_params.page_size =
-      gfx::Size(ConvertUnit(page_size_in_pixels.Width(), kPixelsPerInch, dpi),
-                ConvertUnit(page_size_in_pixels.Height(), kPixelsPerInch, dpi));
+      gfx::Size(ConvertUnit(description.size.Width(), kPixelsPerInch, dpi),
+                ConvertUnit(description.size.Height(), kPixelsPerInch, dpi));
   page_css_params.content_size =
       gfx::Size(ConvertUnit(new_content_width, kPixelsPerInch, dpi),
                 ConvertUnit(new_content_height, kPixelsPerInch, dpi));
 
   page_css_params.margin_top =
-      ConvertUnit(margin_top_in_pixels, kPixelsPerInch, dpi);
+      ConvertUnit(description.margin_top, kPixelsPerInch, dpi);
   page_css_params.margin_left =
-      ConvertUnit(margin_left_in_pixels, kPixelsPerInch, dpi);
+      ConvertUnit(description.margin_left, kPixelsPerInch, dpi);
   return page_css_params;
 }
 

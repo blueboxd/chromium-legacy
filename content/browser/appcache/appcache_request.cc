@@ -5,9 +5,11 @@
 #include "content/browser/appcache/appcache_request.h"
 
 #include "content/common/appcache_interfaces.h"
+#include "net/base/isolation_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -28,6 +30,12 @@ int AppCacheRequest::GetResponseCode() const {
   if (response_ && response_->headers)
     return response_->headers->response_code();
   return 0;
+}
+
+base::Optional<url::Origin> AppCacheRequest::GetTopFrameOrigin() const {
+  return request_.trusted_params
+             ? request_.trusted_params->isolation_info.top_frame_origin()
+             : base::nullopt;
 }
 
 std::string AppCacheRequest::GetResponseHeaderByName(

@@ -234,19 +234,17 @@ class PLATFORM_EXPORT HeapAllocator {
   static void TraceVectorBacking(Visitor* visitor,
                                  const T* backing,
                                  const T* const* backing_slot) {
-    visitor->TraceBackingStoreStrongly(
-        reinterpret_cast<const HeapVectorBacking<T>*>(backing),
-        reinterpret_cast<const HeapVectorBacking<T>* const*>(backing_slot));
+    visitor->TraceMovablePointer(backing_slot);
+    visitor->Trace(reinterpret_cast<const HeapVectorBacking<T>*>(backing));
   }
 
   template <typename T, typename HashTable>
   static void TraceHashTableBackingStrongly(Visitor* visitor,
                                             const T* backing,
                                             const T* const* backing_slot) {
-    visitor->TraceBackingStoreStrongly(
-        reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing),
-        reinterpret_cast<const HeapHashTableBacking<HashTable>* const*>(
-            backing_slot));
+    visitor->TraceMovablePointer(backing_slot);
+    visitor->Trace(
+        reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing));
   }
 
   template <typename T, typename HashTable>
@@ -255,21 +253,16 @@ class PLATFORM_EXPORT HeapAllocator {
                                           const T* const* backing_slot,
                                           WeakCallback callback,
                                           const void* parameter) {
-    visitor->TraceBackingStoreWeakly<HashTable>(
+    visitor->TraceMovablePointer(backing_slot);
+    visitor->TraceWeakContainer(
         reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing),
         reinterpret_cast<const HeapHashTableBacking<HashTable>* const*>(
             backing_slot),
+        TraceTrait<HeapHashTableBacking<HashTable>>::GetTraceDescriptor(
+            backing),
+        TraceTrait<HeapHashTableBacking<HashTable>>::GetWeakTraceDescriptor(
+            backing),
         callback, parameter);
-  }
-
-  template <typename T, typename HashTable>
-  static void TraceHashTableBackingOnly(Visitor* visitor,
-                                        const T* backing,
-                                        const T* const* backing_slot) {
-    visitor->TraceBackingStoreOnly(
-        reinterpret_cast<const HeapHashTableBacking<HashTable>*>(backing),
-        reinterpret_cast<const HeapHashTableBacking<HashTable>* const*>(
-            backing_slot));
   }
 
  private:

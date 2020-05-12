@@ -18270,24 +18270,17 @@
       'owners': ['services/network/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.win:72-'],
+      'supported_on': ['chrome.win:72-83'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': False,
       'id': 521,
       'caption': '''Force networking code to run in the browser process''',
       'tags': [],
-      'desc': '''This policy forces networking code to run in the browser process.
-
-      This policy is disabled by default, and if enabled, leaves users open to the security issues once the networking process is sandboxed.
-
-      This policy is intended to give enterprises a chance to migrate to 3rd party software that does not depend on hooking the networking APIs. Proxy servers are recommended over LSPs and Win32 API patching.
-
-      If this policy is not set, networking code will run out of the browser process by default.
-
-      This policy will be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 84.''',
+      'desc': '''This policy is deprecated.''',
     },
     {
       'name': 'VoiceInteractionContextEnabled',

@@ -159,7 +159,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     _mainApplicationDelegate = applicationDelegate;
 
     if (@available(iOS 13, *)) {
-      if (IsMultiwindowSupported()) {
+      if (IsSceneStartupSupported()) {
         // Subscribe for scene activation notifications.
         [[NSNotificationCenter defaultCenter]
             addObserver:self
@@ -515,9 +515,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 }
 
 - (NSArray<SceneState*>*)connectedScenes {
-  if (IsMultiwindowSupported()) {
-    NSMutableArray* sceneStates = [[NSMutableArray alloc] init];
+  if (IsSceneStartupSupported()) {
     if (@available(iOS 13, *)) {
+      NSMutableArray* sceneStates = [[NSMutableArray alloc] init];
       NSSet* connectedScenes =
           [UIApplication sharedApplication].connectedScenes;
       for (UIWindowScene* scene in connectedScenes) {
@@ -530,8 +530,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
             base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
         [sceneStates addObject:sceneDelegate.sceneState];
       }
+      return sceneStates;
     }
-    return sceneStates;
+    NOTREACHED();
+    return @[];
   } else {
     return @[ self.mainSceneState ];
   }
@@ -593,7 +595,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 // Handler for UISceneDidActivateNotification.
 - (void)sceneDidActivate:(NSNotification*)notification {
-  DCHECK(IsMultiwindowSupported());
+  DCHECK(IsSceneStartupSupported());
   if (@available(iOS 13, *)) {
     if (!self.firstSceneHasActivated) {
       self.firstSceneHasActivated = YES;

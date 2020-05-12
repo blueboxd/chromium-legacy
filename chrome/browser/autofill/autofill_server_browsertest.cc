@@ -75,22 +75,17 @@ class WindowedNetworkObserver {
   }
 
  private:
-  // Helper to extract the value of a query param. Returns "*** not found ***"
-  // if the requested query param is not in the query string.
-  std::string GetQueryParam(const std::string& query_str,
-                            const std::string& param_name) {
-    url::Component query(0, query_str.length());
-    url::Component key, value;
-    while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
-      std::string key_string(query_str.substr(key.begin, key.len));
-      std::string param_text(query_str.substr(value.begin, value.len));
-      std::string param_value;
-      if (key_string == param_name &&
-          base::Base64UrlDecode(param_text,
-                                base::Base64UrlDecodePolicy::REQUIRE_PADDING,
-                                &param_value)) {
-        return param_value;
-      }
+  // Helper to extract the value passed to a lookup in the URL. Returns "*** not
+  // found ***" if the the data cannot be decoded.
+  std::string GetLookupContent(const std::string& query_path) {
+    if (query_path.find("/v1/pages/") == std::string::npos)
+      return "*** not found ***";
+    std::string payload = query_path.substr(strlen("/v1/pages/"));
+    std::string decoded_payload;
+    if (base::Base64UrlDecode(payload,
+                              base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+                              &decoded_payload)) {
+      return decoded_payload;
     }
     return "*** not found ***";
   }
@@ -99,7 +94,7 @@ class WindowedNetworkObserver {
     // NOTE: This constant matches the one defined in
     // components/autofill/core/browser/autofill_download_manager.cc
     static const char kDefaultAutofillServerURL[] =
-        "https://clients1.google.com/tbproxy/af/";
+        "https://content-autofill.googleapis.com/";
     DCHECK(params);
     network::ResourceRequest resource_request = params->url_request;
     if (resource_request.url.spec().find(kDefaultAutofillServerURL) ==
@@ -109,7 +104,7 @@ class WindowedNetworkObserver {
 
     const std::string& data =
         (resource_request.method == "GET")
-            ? GetQueryParam(resource_request.url.query(), "q")
+            ? GetLookupContent(resource_request.url.path())
             : network::GetUploadData(resource_request);
     EXPECT_EQ(data, expected_upload_data_);
 
@@ -185,15 +180,15 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       "  };"
       "</script>";
 
-  AutofillQueryContents query;
+  AutofillPageQueryRequest query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
-  AutofillQueryContents::Form* query_form = query.add_form();
+  auto* query_form = query.add_forms();
   query_form->set_signature(15916856893790176210U);
 
-  test::FillQueryField(query_form->add_field(), 2594484045U, "one", "text");
-  test::FillQueryField(query_form->add_field(), 2750915947U, "two", "text");
-  test::FillQueryField(query_form->add_field(), 3494787134U, "three", "text");
-  test::FillQueryField(query_form->add_field(), 1236501728U, "four", "text");
+  test::FillQueryField(query_form->add_fields(), 2594484045U, "one", "text");
+  test::FillQueryField(query_form->add_fields(), 2750915947U, "two", "text");
+  test::FillQueryField(query_form->add_fields(), 3494787134U, "three", "text");
+  test::FillQueryField(query_form->add_fields(), 1236501728U, "four", "text");
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -207,30 +202,31 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   // Submit the form, using a simulated mouse click because form submissions not
   // triggered by user gestures are ignored. Expect an upload request upon form
   // submission, with form fields matching those from the query request.
-  AutofillUploadContents upload;
-  upload.set_submission(true);
-  upload.set_client_version("6.1.1715.1442/en (GGLL)");
-  upload.set_form_signature(15916856893790176210U);
-  upload.set_autofill_used(false);
-  upload.set_data_present("1f7e0003780000080004");
-  upload.set_action_signature(15724779818122431245U);
-  upload.set_form_name("test_form");
-  upload.set_passwords_revealed(false);
-  upload.set_submission_event(
+  AutofillUploadRequest request;
+  AutofillUploadContents* upload = request.mutable_upload();
+  upload->set_submission(true);
+  upload->set_client_version("6.1.1715.1442/en (GGLL)");
+  upload->set_form_signature(15916856893790176210U);
+  upload->set_autofill_used(false);
+  upload->set_data_present("1f7e0003780000080004");
+  upload->set_action_signature(15724779818122431245U);
+  upload->set_form_name("test_form");
+  upload->set_passwords_revealed(false);
+  upload->set_submission_event(
       AutofillUploadContents_SubmissionIndicatorEvent_HTML_FORM_SUBMISSION);
-  upload.set_has_form_tag(true);
+  upload->set_has_form_tag(true);
 
-  test::FillUploadField(upload.add_field(), 2594484045U, "one", "text", nullptr,
-                        2U);
-  test::FillUploadField(upload.add_field(), 2750915947U, "two", "text", "off",
-                        2U);
-  test::FillUploadField(upload.add_field(), 3494787134U, "three", "text",
+  test::FillUploadField(upload->add_field(), 2594484045U, "one", "text",
                         nullptr, 2U);
-  test::FillUploadField(upload.add_field(), 1236501728U, "four", "text", "off",
+  test::FillUploadField(upload->add_field(), 2750915947U, "two", "text", "off",
+                        2U);
+  test::FillUploadField(upload->add_field(), 3494787134U, "three", "text",
+                        nullptr, 2U);
+  test::FillUploadField(upload->add_field(), 1236501728U, "four", "text", "off",
                         2U);
 
   std::string expected_upload_string;
-  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  ASSERT_TRUE(request.SerializeToString(&expected_upload_string));
 
   WindowedNetworkObserver upload_network_observer(expected_upload_string);
   content::WebContents* web_contents =
@@ -254,14 +250,14 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
       "  <input type='submit'>"
       "</form>";
 
-  AutofillQueryContents query;
+  AutofillPageQueryRequest query;
   query.set_client_version("6.1.1715.1442/en (GGLL)");
-  AutofillQueryContents::Form* query_form = query.add_form();
+  auto* query_form = query.add_forms();
   query_form->set_signature(8900697631820480876U);
 
-  test::FillQueryField(query_form->add_field(), 2594484045U, "one", "text");
-  test::FillQueryField(query_form->add_field(), 2750915947U, "two", "text");
-  test::FillQueryField(query_form->add_field(), 116843943U, "three",
+  test::FillQueryField(query_form->add_fields(), 2594484045U, "one", "text");
+  test::FillQueryField(query_form->add_fields(), 2750915947U, "two", "text");
+  test::FillQueryField(query_form->add_fields(), 116843943U, "three",
                        "password");
 
   std::string expected_query_string;

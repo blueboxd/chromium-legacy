@@ -23,6 +23,8 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_id.h"
@@ -125,6 +127,13 @@ void SafetyCheckHandler::PerformSafetyCheck() {
     version_updater_.reset(VersionUpdater::Create(web_ui()->GetWebContents()));
   }
   DCHECK(version_updater_);
+  if (!update_helper_) {
+    update_helper_.reset(new safety_check::UpdateCheckHelper(
+        content::BrowserContext::GetDefaultStoragePartition(
+            Profile::FromWebUI(web_ui()))
+            ->GetURLLoaderFactoryForBrowserProcess()));
+  }
+  DCHECK(update_helper_);
   CheckUpdates();
 
   if (!leak_service_) {
@@ -155,12 +164,14 @@ void SafetyCheckHandler::PerformSafetyCheck() {
 }
 
 SafetyCheckHandler::SafetyCheckHandler(
+    std::unique_ptr<safety_check::UpdateCheckHelper> update_helper,
     std::unique_ptr<VersionUpdater> version_updater,
     password_manager::BulkLeakCheckService* leak_service,
     extensions::PasswordsPrivateDelegate* passwords_delegate,
     extensions::ExtensionPrefs* extension_prefs,
     extensions::ExtensionServiceInterface* extension_service)
-    : version_updater_(std::move(version_updater)),
+    : update_helper_(std::move(update_helper)),
+      version_updater_(std::move(version_updater)),
       leak_service_(leak_service),
       passwords_delegate_(passwords_delegate),
       extension_prefs_(extension_prefs),
@@ -192,7 +203,7 @@ void SafetyCheckHandler::HandleGetParentRanDisplayString(
 void SafetyCheckHandler::CheckUpdates() {
   // Usage of base::Unretained(this) is safe, because we own `version_updater_`.
   version_updater_->CheckForUpdate(
-      base::Bind(&SafetyCheckHandler::OnUpdateCheckResult,
+      base::Bind(&SafetyCheckHandler::OnVersionUpdaterResult,
                  base::Unretained(this)),
       VersionUpdater::PromoteCallback());
 }
@@ -262,13 +273,8 @@ void SafetyCheckHandler::CheckExtensions() {
   }
 }
 
-void SafetyCheckHandler::OnUpdateCheckResult(VersionUpdater::Status status,
-                                             int progress,
-                                             bool rollback,
-                                             const std::string& version,
-                                             int64_t update_size,
-                                             const base::string16& message) {
-  update_status_ = ConvertToUpdateStatus(status);
+void SafetyCheckHandler::OnUpdateCheckResult(UpdateStatus status) {
+  update_status_ = status;
   if (update_status_ != UpdateStatus::kChecking) {
     base::UmaHistogramEnumeration("Settings.SafetyCheck.UpdatesResult",
                                   update_status_);
@@ -544,12 +550,32 @@ base::string16 SafetyCheckHandler::GetStringForParentRan(
   }
 }
 
+void SafetyCheckHandler::DetermineIfOfflineOrError(bool connected) {
+  OnUpdateCheckResult(connected ? UpdateStatus::kFailed
+                                : UpdateStatus::kFailedOffline);
+}
+
 void SafetyCheckHandler::DetermineIfNoPasswordsOrSafe(
     const std::vector<extensions::api::passwords_private::PasswordUiEntry>&
         passwords) {
   OnPasswordsCheckResult(passwords.empty() ? PasswordsStatus::kNoPasswords
                                            : PasswordsStatus::kSafe,
                          Compromised(0), Done(0), Total(0));
+}
+
+void SafetyCheckHandler::OnVersionUpdaterResult(VersionUpdater::Status status,
+                                                int progress,
+                                                bool rollback,
+                                                const std::string& version,
+                                                int64_t update_size,
+                                                const base::string16& message) {
+  if (status == VersionUpdater::FAILED) {
+    update_helper_->CheckConnectivity(
+        base::BindOnce(&SafetyCheckHandler::DetermineIfOfflineOrError,
+                       base::Unretained(this)));
+    return;
+  }
+  OnUpdateCheckResult(ConvertToUpdateStatus(status));
 }
 
 void SafetyCheckHandler::OnSafeBrowsingCheckResult(

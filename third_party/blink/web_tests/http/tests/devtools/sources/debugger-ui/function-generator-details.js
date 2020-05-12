@@ -86,7 +86,7 @@
   ];
 
   function createTestSuiteFunction(expression) {
-    var functionName = 'test' + expression.toTitleCase();
+    var functionName = 'test' + expression;
     return eval(
         'function ' + functionName + '(next)\n' +
         '{\n' +

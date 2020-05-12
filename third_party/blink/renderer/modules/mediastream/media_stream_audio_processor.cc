@@ -603,6 +603,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     blink::EnableTypingDetection(&apm_config, typing_detector_.get());
   }
 
+  apm_config.residual_echo_detector.enabled = false;
   audio_processing_->ApplyConfig(apm_config);
 }
 

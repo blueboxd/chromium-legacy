@@ -122,11 +122,15 @@ base::android::ScopedJavaLocalRef<jobject> ToJavaValue(
           env, base::android::ToJavaIntArray(env, ints.get(),
                                              proto.ints().values_size()));
     }
-    case ValueProto::kUserActions: {
+    case ValueProto::kCreditCards:
+    case ValueProto::kProfiles:
+    case ValueProto::kLoginOptions:
+    case ValueProto::kCreditCardResponse:
+    case ValueProto::kLoginOptionResponse:
+    case ValueProto::kUserActions:
       // Unused.
       NOTREACHED();
       return nullptr;
-    }
     case ValueProto::kDates: {
       auto jlist = Java_AssistantValue_createDateTimeList(env);
       for (const auto& value : proto.dates().values()) {

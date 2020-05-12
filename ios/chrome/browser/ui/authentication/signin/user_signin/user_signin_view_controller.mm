@@ -122,17 +122,23 @@ enum AuthenticationButtonType {
                              forState:UIControlStateNormal];
     [self setConfirmationStylingWithButton:self.confirmationButton];
     self.confirmationButton.tag = AuthenticationButtonTypeAddAccount;
+    self.confirmationButton.accessibilityIdentifier =
+        kAddAccountAccessibilityIdentifier;
   } else if (!self.hasUnifiedConsentScreenReachedBottom) {
     // User has not scrolled to the bottom of the user consent screen.
     // Display 'more' button.
     [self updateButtonAsMoreButton:self.confirmationButton];
     self.confirmationButton.tag = AuthenticationButtonTypeMore;
+    self.confirmationButton.accessibilityIdentifier =
+        kMoreAccessibilityIdentifier;
   } else {
     // By default display 'Yes I'm in' button.
     [self.confirmationButton setTitle:self.confirmationButtonTitle
                              forState:UIControlStateNormal];
     [self setConfirmationStylingWithButton:self.confirmationButton];
     self.confirmationButton.tag = AuthenticationButtonTypeConfirmation;
+    self.confirmationButton.accessibilityIdentifier =
+        kConfirmationAccessibilityIdentifier;
   }
   [self.confirmationButton addTarget:self
                               action:@selector(onConfirmationButtonPressed:)

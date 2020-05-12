@@ -108,7 +108,7 @@ class SearchBox extends cr.EventTarget {
     element.parentNode.appendChild(this.autocompleteList);
   }
 
-  /** @private {boolean} */
+  /** @return {boolean} */
   get collapsed() {
     return this.searchWrapper.hasAttribute('collapsed');
   }

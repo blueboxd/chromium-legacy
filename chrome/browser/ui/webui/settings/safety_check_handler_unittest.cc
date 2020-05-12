@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/safety_check/test_update_check_helper.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/test_web_ui.h"
@@ -61,12 +62,14 @@ class TestingSafetyCheckHandler : public SafetyCheckHandler {
   using SafetyCheckHandler::SetVersionUpdaterForTesting;
 
   TestingSafetyCheckHandler(
+      std::unique_ptr<safety_check::UpdateCheckHelper> update_helper,
       std::unique_ptr<VersionUpdater> version_updater,
       password_manager::BulkLeakCheckService* leak_service,
       extensions::PasswordsPrivateDelegate* passwords_delegate,
       extensions::ExtensionPrefs* extension_prefs,
       extensions::ExtensionServiceInterface* extension_service)
-      : SafetyCheckHandler(std::move(version_updater),
+      : SafetyCheckHandler(std::move(update_helper),
+                           std::move(version_updater),
                            leak_service,
                            passwords_delegate,
                            extension_prefs,
@@ -195,6 +198,7 @@ class SafetyCheckHandlerTest : public ChromeRenderViewHostTestHarness {
                            const std::string& expected);
 
  protected:
+  safety_check::TestUpdateCheckHelper* update_helper_ = nullptr;
   TestVersionUpdater* version_updater_ = nullptr;
   std::unique_ptr<password_manager::BulkLeakCheckService> test_leak_service_;
   TestPasswordsDelegate test_passwords_delegate_;
@@ -217,17 +221,19 @@ void SafetyCheckHandlerTest::SetUp() {
   // The unique pointer to a TestVersionUpdater gets moved to
   // SafetyCheckHandler, but a raw pointer is retained here to change its
   // state.
+  auto update_helper = std::make_unique<safety_check::TestUpdateCheckHelper>();
+  update_helper_ = update_helper.get();
   auto version_updater = std::make_unique<TestVersionUpdater>();
+  version_updater_ = version_updater.get();
   test_leak_service_ = std::make_unique<password_manager::BulkLeakCheckService>(
       nullptr, nullptr);
   test_passwords_delegate_.SetBulkLeakCheckService(test_leak_service_.get());
-  version_updater_ = version_updater.get();
   test_web_ui_.set_web_contents(web_contents());
   test_extension_prefs_ = extensions::ExtensionPrefs::Get(profile());
   safety_check_ = std::make_unique<TestingSafetyCheckHandler>(
-      std::move(version_updater), test_leak_service_.get(),
-      &test_passwords_delegate_, test_extension_prefs_,
-      &test_extension_service_);
+      std::move(update_helper), std::move(version_updater),
+      test_leak_service_.get(), &test_passwords_delegate_,
+      test_extension_prefs_, &test_extension_service_);
   test_web_ui_.ClearTrackedCalls();
   safety_check_->set_web_ui(&test_web_ui_);
   safety_check_->AllowJavascript();
@@ -425,7 +431,8 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_FailedOffline) {
       SafetyCheckHandler::UpdateStatus::kFailedOffline, 1);
 }
 
-TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
+TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed_ConnectivityOnline) {
+  update_helper_->SetConnectivity(true);
   version_updater_->SetReturnedStatus(VersionUpdater::Status::FAILED);
   safety_check_->PerformSafetyCheck();
   const base::DictionaryValue* event =
@@ -441,6 +448,23 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed) {
   histogram_tester_.ExpectBucketCount("Settings.SafetyCheck.UpdatesResult",
                                       SafetyCheckHandler::UpdateStatus::kFailed,
                                       1);
+}
+
+TEST_F(SafetyCheckHandlerTest, CheckUpdates_Failed_ConnectivityOffline) {
+  update_helper_->SetConnectivity(false);
+  version_updater_->SetReturnedStatus(VersionUpdater::Status::FAILED);
+  safety_check_->PerformSafetyCheck();
+  const base::DictionaryValue* event =
+      GetSafetyCheckStatusChangedWithDataIfExists(
+          kUpdates,
+          static_cast<int>(SafetyCheckHandler::UpdateStatus::kFailedOffline));
+  ASSERT_TRUE(event);
+  VerifyDisplayString(event,
+                      "Browser can't check for updates. Try checking your "
+                      "internet connection.");
+  histogram_tester_.ExpectBucketCount(
+      "Settings.SafetyCheck.UpdatesResult",
+      SafetyCheckHandler::UpdateStatus::kFailedOffline, 1);
 }
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_DestroyedOnJavascriptDisallowed) {

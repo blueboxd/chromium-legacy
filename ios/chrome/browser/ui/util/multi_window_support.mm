@@ -18,3 +18,13 @@ bool IsMultiwindowSupported() {
   return false;
 #endif
 }
+
+bool IsSceneStartupSupported() {
+  if (IsMultiwindowSupported())
+    return true;
+#if BUILDFLAG(IOS_SCENE_STARTUP_ENABLED)
+  return base::ios::IsRunningOnIOS13OrLater();
+#else
+  return false;
+#endif
+}

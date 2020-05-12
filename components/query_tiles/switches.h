@@ -16,6 +16,11 @@ extern const base::Feature kQueryTiles;
 // Feature flag to determine whether query tiles should be shown on omnibox.
 extern const base::Feature kQueryTilesInOmnibox;
 
+// Feature flag to determine whether the user will have a chance to edit the
+// query before in the omnibox sumbitting the search. In this mode only one
+// level of tiles will be displayed.
+extern const base::Feature kQueryTilesEnableQueryEditing;
+
 }  // namespace features
 
 namespace switches {

@@ -205,12 +205,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
       forSectionWithIdentifier:SectionIdentifierAccounts];
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browser->GetBrowserState());
+
+  NSString* authenticatedEmail = [authenticatedIdentity userEmail];
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
                                    ->GetChromeIdentityService()
                                    ->GetIdentityWithGaiaID(account.gaia);
+    // TODO(crbug.com/1081274): This re-ordering will be redundant once we
+    // apply ordering changes to the account reconciler.
     TableViewItem* item = [self accountItem:identity];
-    [model addItem:item toSectionWithIdentifier:SectionIdentifierAccounts];
+    if ([identity.userEmail isEqual:authenticatedEmail]) {
+      [model insertItem:item
+          inSectionWithIdentifier:SectionIdentifierAccounts
+                          atIndex:0];
+    } else {
+      [model addItem:item toSectionWithIdentifier:SectionIdentifierAccounts];
+    }
 
     [mutableIdentityMap setObject:item forKey:identity.gaiaID];
   }

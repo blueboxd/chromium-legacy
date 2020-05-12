@@ -256,6 +256,9 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   void AddFocusChangeListener(FocusChangeListener* listener);
   void RemoveFocusChangeListener(FocusChangeListener* listener);
 
+  // Whether the given |accelerator| is registered.
+  bool IsAcceleratorRegistered(const ui::Accelerator& accelerator) const;
+
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const ui::Accelerator& accelerator) const;
 
@@ -327,6 +330,14 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
 
   // ViewObserver:
   void OnViewIsDeleting(View* view) override;
+
+  // Try to redirect the accelerator to bubble's anchor widget to process it if
+  // the bubble didn't.
+  bool RedirectAcceleratorToBubbleAnchorWidget(
+      const ui::Accelerator& accelerator);
+
+  // Returns bubble's anchor widget.
+  Widget* GetBubbleAnchorWidget();
 
   // Whether arrow key traversal is enabled globally.
   static bool arrow_key_traversal_enabled_;

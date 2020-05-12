@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"

@@ -34,6 +34,14 @@ typedef NS_ENUM(NSUInteger, SigninCoordinatorInterruptAction) {
 extern NSString* const kUserSigninAttemptedNotification;
 // Name of accessibility identifier for the skip sign-in button.
 extern NSString* const kSkipSigninAccessibilityIdentifier;
+// Name of accessibility identifier for the add account button in the sign-in
+// flow.
+extern NSString* const kAddAccountAccessibilityIdentifier;
+// Name of accessibility identifier for the confirmation "Yes I'm In" sign-in
+// button.
+extern NSString* const kConfirmationAccessibilityIdentifier;
+// Name of accessibility identifier for the more button in the sign-in flow.
+extern NSString* const kMoreAccessibilityIdentifier;
 
 // Action that is required to do to complete the sign-in. This action is in
 // charge of the SigninCoordinator's owner.

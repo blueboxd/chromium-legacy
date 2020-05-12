@@ -5,7 +5,6 @@
 package org.chromium.weblayer_private;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.ContextUtils;
@@ -26,6 +25,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     private boolean mTabDestroyed;
 
     public ExternalNavigationDelegateImpl(TabImpl tab) {
+        assert tab != null;
         mTab = tab;
     }
 
@@ -36,10 +36,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public Activity getActivityContext() {
         return ContextUtils.activityFromContext(mTab.getBrowser().getContext());
-    }
-
-    private Context getAvailableContext() {
-        return ExternalNavigationHandler.getAvailableContext(this);
     }
 
     @Override
@@ -163,13 +159,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public WindowAndroid getWindowAndroid() {
-        if (mTab == null) return null;
         return mTab.getBrowser().getWindowAndroid();
     }
 
     @Override
     public WebContents getWebContents() {
-        if (mTab == null) return null;
         return mTab.getWebContents();
     }
 

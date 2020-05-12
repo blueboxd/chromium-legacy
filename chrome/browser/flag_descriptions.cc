@@ -762,6 +762,11 @@ const char kCrossOriginOpenerPolicyName[] = "Cross Origin Opener Policy";
 const char kCrossOriginOpenerPolicyDescription[] =
     "Enables Cross Origin Opener Policy.";
 
+const char kCrossOriginOpenerPolicyReportingName[] =
+    "Cross Origin Opener Policy reporting";
+const char kCrossOriginOpenerPolicyReportingDescription[] =
+    "Enables Cross Origin Opener Policy reporting.";
+
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
     "Disable fetch with keepalive set "
@@ -2597,6 +2602,10 @@ const char kPageInfoPerformanceHintsName[] = "Page info performance hints";
 const char kPageInfoPerformanceHintsDescription[] =
     "Show site performance information in the page info menu.";
 
+const char kPageInfoV2Name[] = "Page info version two";
+const char kPageInfoV2Description[] =
+    "Enable the second version of the page info menu.";
+
 const char kPasswordManagerOnboardingAndroidName[] =
     "Password manager onboarding experience";
 const char kPasswordManagerOnboardingAndroidDescription[] =
@@ -2632,6 +2641,11 @@ const char kQueryTilesName[] = "Show query tiles";
 const char kQueryTilesDescription[] = "Shows query tiles in Chrome";
 const char kQueryTilesOmniboxName[] = "Show query tiles in omnibox";
 const char kQueryTilesOmniboxDescription[] = "Shows query tiles in omnibox";
+const char kQueryTilesEnableQueryEditingName[] =
+    "Query Tiles - Enable query edit mode";
+const char kQueryTilesEnableQueryEditingDescription[] =
+    "When a query tile is tapped, the query text will be shown in the omnibox "
+    "and user will have a chance to edit the text before submitting";
 const char kQueryTilesCountryCode[] = "Country code for getting tiles";
 const char kQueryTilesCountryCodeDescription[] =
     "When query tiles are enabled, this value determines tiles for which "

@@ -339,10 +339,11 @@ void SharedWorkerHost::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const url::Origin origin = url::Origin::Create(instance().url());
-  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
-                                  worker_process_host_->GetID(), origin,
-                                  net::NetworkIsolationKey(origin, origin)),
-                              std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<QuicTransportConnectorImpl>(
+          worker_process_host_->GetID(), /*frame=*/nullptr, origin,
+          net::NetworkIsolationKey(origin, origin)),
+      std::move(receiver));
 }
 
 void SharedWorkerHost::BindCacheStorage(

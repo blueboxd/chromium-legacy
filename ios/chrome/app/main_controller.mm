@@ -386,7 +386,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [ProviderRegistration registerProviders];
 
   if (@available(iOS 13, *)) {
-    if (IsMultiwindowSupported()) {
+    if (IsSceneStartupSupported()) {
       // Subscribe for scene connection and disconnection notifications.
       [[NSNotificationCenter defaultCenter]
           addObserver:self
@@ -557,7 +557,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                 postCrashLaunch];
 
   if (@available(iOS 13, *)) {
-    if (IsMultiwindowSupported()) {
+    if (IsSceneStartupSupported()) {
       // The rest of the startup sequence is handled by the Scenes and in
       // response to notifications.
       return;
@@ -622,7 +622,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 // Handler for UISceneWillConnectNotification.
 - (void)sceneWillConnect:(NSNotification*)notification {
-  DCHECK(IsMultiwindowSupported());
+  DCHECK(IsSceneStartupSupported());
   if (@available(iOS 13, *)) {
     UIWindowScene* scene =
         base::mac::ObjCCastStrict<UIWindowScene>(notification.object);

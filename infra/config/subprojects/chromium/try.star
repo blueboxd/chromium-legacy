@@ -377,6 +377,16 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = 'linux-perfetto-rel',
+    tryjob = try_.job(
+        experiment_percentage = 100,
+        location_regexp = [
+            '.+/[+]/base/trace_event/.+',
+            '.+/[+]/base/tracing/.+',
+            '.+/[+]/components/tracing/.+',
+            '.+/[+]/content/browser/tracing/.+',
+            '.+/[+]/services/tracing/.+',
+        ],
+    ),
 )
 
 try_.chromium_linux_builder(

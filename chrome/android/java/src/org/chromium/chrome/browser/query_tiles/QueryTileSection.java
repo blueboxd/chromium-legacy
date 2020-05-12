@@ -65,7 +65,7 @@ public class QueryTileSection {
         mQueryTileSectionView = queryTileSectionView;
         mSearchBoxCoordinator = searchBoxCoordinator;
         mSubmitQueryCallback = performSearchQueryCallback;
-        if (!isFeatureEnabled()) return;
+        if (!QueryTileUtils.isFeatureEnabled()) return;
 
         mTileProvider = TileProviderFactory.getForProfile(profile);
         TileConfig tileConfig = new TileConfig.Builder().setUmaPrefix(UMA_PREFIX).build();
@@ -83,9 +83,14 @@ public class QueryTileSection {
     private void onTileClicked(ImageTile tile) {
         QueryTile queryTile = (QueryTile) tile;
         mTileUmaLogger.recordTileClicked(queryTile);
+
         boolean isLastLevelTile = queryTile.children.isEmpty();
         if (isLastLevelTile) {
-            mSubmitQueryCallback.onResult(queryTile.queryText);
+            if (QueryTileUtils.isQueryEditingEnabled()) {
+                mSearchBoxCoordinator.setSearchText(queryTile.queryText);
+            } else {
+                mSubmitQueryCallback.onResult(queryTile.queryText);
+            }
             return;
         }
 
@@ -158,7 +163,7 @@ public class QueryTileSection {
      *         tiles section on NTP is shortened so that feed is still visible above the fold.
      */
     public Integer getMaxRowsForMostVisitedTiles() {
-        if (!isFeatureEnabled()) return null;
+        if (!QueryTileUtils.isFeatureEnabled()) return null;
 
         DisplayAndroid display =
                 DisplayAndroid.getNonMultiDisplay(mQueryTileSectionView.getContext());

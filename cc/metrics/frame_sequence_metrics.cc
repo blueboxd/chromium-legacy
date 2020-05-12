@@ -177,7 +177,7 @@ void FrameSequenceMetrics::ComputeAggregatedThroughput() {
   // throughput.
   aggregated_throughput_.frames_expected = impl_throughput_.frames_expected;
   DCHECK_LE(aggregated_throughput_.frames_produced,
-            aggregated_throughput_.frames_produced);
+            aggregated_throughput_.frames_expected);
 }
 
 void FrameSequenceMetrics::ReportMetrics() {
@@ -281,12 +281,12 @@ void FrameSequenceMetrics::ReportMetrics() {
   }
 
   // Reset the metrics that reach reporting threshold.
-  if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric)
+  if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric) {
     impl_throughput_ = {};
+    aggregated_throughput_ = {};
+  }
   if (main_throughput_.frames_expected >= kMinFramesForThroughputMetric)
     main_throughput_ = {};
-  if (aggregated_throughput_percent.has_value())
-    aggregated_throughput_ = {};
 }
 
 base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(

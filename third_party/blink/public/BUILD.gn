@@ -377,6 +377,7 @@ source_set("blink_headers") {
     "web/web_plugin_script_forbidden_scope.h",
     "web/web_popup_menu_info.h",
     "web/web_prerenderer_client.h",
+    "web/web_print_page_description.h",
     "web/web_print_params.h",
     "web/web_print_preset_options.h",
     "web/web_print_scaling_option.h",

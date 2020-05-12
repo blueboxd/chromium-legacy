@@ -52,7 +52,13 @@ class WebEngineDebugIntegrationTest : public testing::Test {
     web_context_provider_.set_error_handler(
         [](zx_status_t status) { ADD_FAILURE(); });
 
-    WaitForWebEngine();
+    // Wait for the OnDirectoryReady event, which indicates that the component's
+    // outgoing directory is available, including the "/debug" contents accessed
+    // via the Hub.
+    base::RunLoop directory_loop;
+    web_engine_controller_.events().OnDirectoryReady =
+        [quit_loop = directory_loop.QuitClosure()]() { quit_loop.Run(); };
+    directory_loop.Run();
 
     // Enumerate all entries in /hub/c/context_provider.cmx to find WebEngine
     // instance with |test_arg|.
@@ -96,36 +102,6 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   }
 
  protected:
-  void WaitForWebEngine() {
-    // Create a throwaway web context to ensure the WebEngine process is
-    // initialized and a Debug instance can be created. This is necessary
-    // because the Debug service is not available on the debug directory until
-    // after the WebEngine is fully initialized.
-    fuchsia::web::CreateContextParams create_params;
-    auto directory = base::fuchsia::OpenDirectory(
-        base::FilePath(base::fuchsia::kServiceDirectoryPath));
-    ASSERT_TRUE(directory.is_valid());
-    create_params.set_service_directory(std::move(directory));
-
-    fuchsia::web::ContextPtr web_context;
-    web_context_provider_->Create(std::move(create_params),
-                                  web_context.NewRequest());
-    web_context.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
-
-    base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<
-        fuchsia::web::Context_GetRemoteDebuggingPort_Result>
-        port_receiver(run_loop.QuitClosure());
-    web_context->GetRemoteDebuggingPort(
-        cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
-    run_loop.Run();
-
-    // Sanity check.
-    ASSERT_TRUE(port_receiver->is_err());
-    ASSERT_EQ(port_receiver->err(),
-              fuchsia::web::ContextError::REMOTE_DEBUGGING_PORT_NOT_OPENED);
-  }
-
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
@@ -133,8 +109,7 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;
   std::unique_ptr<sys::ServiceDirectory> debug_dir_;
   fuchsia::web::ContextProviderPtr web_context_provider_;
-  fidl::InterfaceHandle<fuchsia::sys::ComponentController>
-      web_engine_controller_;
+  fuchsia::sys::ComponentControllerPtr web_engine_controller_;
   fuchsia::web::DebugSyncPtr debug_;
 
   base::OnceClosure on_url_fetch_complete_ack_;

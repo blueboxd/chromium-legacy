@@ -6,24 +6,11 @@
 
 #include <cctype>
 
-#include "base/metrics/histogram_functions.h"
-#include "base/time/time.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-
-ScopedUmaHistogramMicrosecondsTimer::ScopedUmaHistogramMicrosecondsTimer() =
-    default;
-
-ScopedUmaHistogramMicrosecondsTimer::~ScopedUmaHistogramMicrosecondsTimer() {
-  base::UmaHistogramCustomMicrosecondsTimes(
-      "Sharing.ClickToCallContextMenuPhoneNumberParsingDelay", timer_.Elapsed(),
-      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(1),
-      /*buckets=*/50);
-}
 
 void LogClickToCallUKM(content::WebContents* web_contents,
                        SharingClickToCallEntryPoint entry_point,

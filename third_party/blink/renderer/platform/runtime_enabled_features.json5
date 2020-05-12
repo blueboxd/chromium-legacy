@@ -349,9 +349,7 @@
     },
     {
       name: "ContactsManagerExtraProperties",
-      origin_trial_feature_name: "ContactsManagerExtraProperties",
-      origin_trial_os: ["android"],
-      status: {"Android": "experimental", "default": "test"},
+      status:  {"Android": "stable", "default": "test"},
     },
     {
       name: "ContentIndex",

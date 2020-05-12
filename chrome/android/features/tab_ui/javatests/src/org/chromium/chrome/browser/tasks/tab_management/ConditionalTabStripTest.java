@@ -42,6 +42,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabsTest.SimulateClickOnMainThread;
@@ -403,6 +404,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1081697")
     public void testStrip_UndoDismiss() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         for (int i = 0; i < 3; i++) {

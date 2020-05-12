@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_audio_frame.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
@@ -46,6 +47,17 @@ class FakeAudioFrame : public webrtc::TransformableFrameInterface {
   uint32_t GetSsrc() const override { return 0; }
 };
 
+bool IsDOMException(ScriptState* script_state,
+                    ScriptValue value,
+                    DOMExceptionCode code) {
+  auto* dom_exception = V8DOMException::ToImplWithTypeCheck(
+      script_state->GetIsolate(), value.V8Value());
+  if (!dom_exception)
+    return false;
+
+  return dom_exception->code() == static_cast<uint16_t>(code);
+}
+
 }  // namespace
 
 class RTCEncodedAudioUnderlyingSinkTest : public testing::Test {
@@ -74,6 +86,14 @@ class RTCEncodedAudioUnderlyingSinkTest : public testing::Test {
         script_state,
         WTF::BindRepeating(&RTCEncodedAudioUnderlyingSinkTest::GetTransformer,
                            WTF::Unretained(this)));
+  }
+
+  RTCEncodedAudioUnderlyingSink* CreateNullCallbackSink(
+      ScriptState* script_state) {
+    return MakeGarbageCollected<RTCEncodedAudioUnderlyingSink>(
+        script_state,
+        WTF::BindRepeating(
+            []() -> RTCEncodedAudioStreamTransformer* { return nullptr; }));
   }
 
   RTCEncodedAudioStreamTransformer* GetTransformer() { return &transformer_; }
@@ -136,6 +156,27 @@ TEST_F(RTCEncodedAudioUnderlyingSinkTest, WriteInvalidDataFails) {
   DummyExceptionStateForTesting dummy_exception_state;
   sink->write(script_state, v8_integer, nullptr, dummy_exception_state);
   EXPECT_TRUE(dummy_exception_state.HadException());
+}
+
+TEST_F(RTCEncodedAudioUnderlyingSinkTest, WriteToNullCallbackSinkFails) {
+  V8TestingScope v8_scope;
+  ScriptState* script_state = v8_scope.GetScriptState();
+  auto* sink = CreateNullCallbackSink(script_state);
+  auto* stream =
+      WritableStream::CreateWithCountQueueingStrategy(script_state, sink, 1u);
+
+  NonThrowableExceptionState exception_state;
+  auto* writer = stream->getWriter(script_state, exception_state);
+
+  EXPECT_CALL(*webrtc_callback_, OnTransformedFrame(_)).Times(0);
+  ScriptPromiseTester write_tester(
+      script_state,
+      writer->write(script_state, CreateEncodedAudioFrameChunk(script_state),
+                    exception_state));
+  write_tester.WaitUntilSettled();
+  EXPECT_TRUE(write_tester.IsRejected());
+  EXPECT_TRUE(IsDOMException(script_state, write_tester.Value(),
+                             DOMExceptionCode::kInvalidStateError));
 }
 
 }  // namespace blink

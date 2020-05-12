@@ -369,6 +369,7 @@ public class FeedActionManagerImpl implements ActionManager {
                     actions.add(StreamUploadableAction.newBuilder()
                                         .setFeatureContentId(contentId)
                                         .setPayload(viewActionData.actionPayload)
+                                        .setDurationMs(viewActionData.durationMs)
                                         .setTimestampSeconds(currentTimeS)
                                         .build());
                     // Stop tracking this particular content as we're already uploading a view

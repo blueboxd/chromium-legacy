@@ -98,7 +98,7 @@ const net::BackoffEntry::Policy kAutofillBackoffPolicy = {
 };
 
 const char kDefaultAutofillServerURL[] =
-    "https://clients1.google.com/tbproxy/af/";
+    "https://content-autofill.googleapis.com/";
 
 // The default number of days after which to reset the registry of autofill
 // events for which an upload has been sent.
@@ -810,7 +810,8 @@ AutofillDownloadManager::GetRequestURLAndMethodForApi(
   std::string method = "POST";
 
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-    if (GetPayloadLength(request_data.payload) <= kMaxAPIQueryGetSize) {
+    if (GetPayloadLength(request_data.payload) <= kMaxAPIQueryGetSize &&
+        base::FeatureList::IsEnabled(features::kAutofillCacheQueryResponses)) {
       resource_id = request_data.payload;
       method = "GET";
       UMA_HISTOGRAM_BOOLEAN("Autofill.Query.ApiUrlIsTooLong", false);

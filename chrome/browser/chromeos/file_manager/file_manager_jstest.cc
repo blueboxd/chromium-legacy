@@ -112,6 +112,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, TaskController) {
   RunTestURL("foreground/js/task_controller_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileManagerCommandsTest) {
+  RunTestURL("foreground/js/file_manager_commands_unittest_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTasks) {
   RunTestURL("foreground/js/file_tasks_unittest_gen.html");
 }

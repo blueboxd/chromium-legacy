@@ -4671,7 +4671,18 @@ TEST_F(AutofillManagerTest, Destructor_DeletedAutocomplete_Works) {
 
 // Test that OnLoadedServerPredictions can obtain the FormStructure with the
 // signature of the queried form and apply type predictions.
-TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
+TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromLegacyServer) {
+  // Set features.
+  // This entire test can be deleted because we have
+  // OnLoadedServerPredictionsAPI.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // Enabled
+      {},
+      // Disabled
+      // We want to query the legacy server rather than the API server.
+      {features::kAutofillUseApi});
+
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -4868,17 +4879,21 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   autofill_manager_->AddSeenFormStructure(
       std::unique_ptr<TestFormStructure>(form_structure));
 
-  AutofillQueryResponseContents response;
-  response.add_field()->set_overall_type_prediction(3);
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(3);
   for (int i = 0; i < 7; ++i) {
-    response.add_field()->set_overall_type_prediction(0);
+    form_suggestion->add_field_suggestions()->set_primary_type_prediction(0);
   }
-  response.add_field()->set_overall_type_prediction(3);
-  response.add_field()->set_overall_type_prediction(2);
-  response.add_field()->set_overall_type_prediction(61);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(3);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(2);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(61);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  std::string response_string_base64;
+  base::Base64Encode(response_string, &response_string_base64);
 
   std::vector<std::string> signatures;
   signatures.push_back(form_structure->FormSignatureAsStr());
@@ -4887,7 +4902,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   autofill_manager_->Reset();
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
+  autofill_manager_->OnLoadedServerPredictionsForTest(response_string_base64,
                                                       signatures);
 
   // Verify that FormStructure::ParseQueryResponse was NOT called.
@@ -4924,22 +4939,30 @@ TEST_F(AutofillManagerTest, DetermineHeuristicsWithOverallPrediction) {
   autofill_manager_->AddSeenFormStructure(
       std::unique_ptr<TestFormStructure>(form_structure));
 
-  AutofillQueryResponseContents response;
-  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_FIRST);
-  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NAME_LAST);
-  response.add_field()->set_overall_type_prediction(CREDIT_CARD_NUMBER);
-  response.add_field()->set_overall_type_prediction(CREDIT_CARD_EXP_MONTH);
-  response.add_field()->set_overall_type_prediction(
+  AutofillQueryResponse response;
+  auto* form_suggestion = response.add_form_suggestions();
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      CREDIT_CARD_NAME_FIRST);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      CREDIT_CARD_NAME_LAST);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      CREDIT_CARD_NUMBER);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
+      CREDIT_CARD_EXP_MONTH);
+  form_suggestion->add_field_suggestions()->set_primary_type_prediction(
       CREDIT_CARD_EXP_4_DIGIT_YEAR);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
+  std::string response_string_base64;
+  base::Base64Encode(response_string, &response_string_base64);
+
   std::vector<std::string> signatures;
   signatures.push_back(form_structure->FormSignatureAsStr());
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
+  autofill_manager_->OnLoadedServerPredictionsForTest(response_string_base64,
                                                       signatures);
   // Verify that FormStructure::ParseQueryResponse was called (here and below).
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",

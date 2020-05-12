@@ -141,7 +141,7 @@ source_set("main") {
     "//net",
   ]
 
-  if (ios_enable_multi_window) {
+  if (ios_enable_multi_window || ios_enable_scene_startup) {
     deps += [ "//ios/chrome/app/resources:base_scene_storyboard" ]
   }
 

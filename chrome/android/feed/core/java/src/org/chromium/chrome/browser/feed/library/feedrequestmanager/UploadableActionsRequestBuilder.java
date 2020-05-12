@@ -68,6 +68,7 @@ final class UploadableActionsRequestBuilder {
                         FeedAction.newBuilder().setActionPayload(payload).setClientData(
                                 FeedAction.ClientData.newBuilder()
                                         .setTimestampSeconds(action.getTimestampSeconds())
+                                        .setDurationMs(action.getDurationMs())
                                         .build());
                 if (mSemanticPropertiesMap.containsKey(contentId)) {
                     feedAction.setSemanticProperties(

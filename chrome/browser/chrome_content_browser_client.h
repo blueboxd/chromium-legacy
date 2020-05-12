@@ -220,7 +220,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       blink::mojom::RendererPreferences* out_prefs) override;
   bool AllowAppCache(const GURL& manifest_url,
-                     const GURL& first_party,
+
+                     const GURL& site_for_cookies,
+                     const base::Optional<url::Origin>& top_frame_origin,
                      content::BrowserContext* context) override;
   content::AllowServiceWorkerResult AllowServiceWorkerOnIO(
       const GURL& scope,

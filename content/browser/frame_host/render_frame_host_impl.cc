@@ -6970,10 +6970,11 @@ void RenderFrameHostImpl::CreateWebSocketConnector(
 
 void RenderFrameHostImpl::CreateQuicTransportConnector(
     mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<QuicTransportConnectorImpl>(
-                                  GetProcess()->GetID(), last_committed_origin_,
-                                  isolation_info_.network_isolation_key()),
-                              std::move(receiver));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<QuicTransportConnectorImpl>(
+          GetProcess()->GetID(), weak_ptr_factory_.GetWeakPtr(),
+          last_committed_origin_, isolation_info_.network_isolation_key()),
+      std::move(receiver));
 }
 
 void RenderFrameHostImpl::CreateNotificationService(

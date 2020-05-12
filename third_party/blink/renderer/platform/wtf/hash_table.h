@@ -2174,17 +2174,6 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
-    // Only trace the backing store. Its buckets will be processed after
-    // marking. The interesting cases for marking are:
-    // - The backing is dropped using clear(): The backing can still be
-    //   compacted but empty/deleted buckets will only be destroyed once the
-    //   backing is reclaimed by the garbage collector on the next cycle.
-    // - The hash table expands/shrinks: Buckets are moved to the new backing
-    //   store and strongified, resulting in all buckets being alive. The old
-    //   backing store is marked but only contains empty/deleted buckets as all
-    //   non-empty/deleted buckets have been moved to the new backing store.
-    Allocator::template TraceHashTableBackingOnly<ValueType, HashTable>(
-        visitor, table, &table_);
     // Trace the table weakly. For marking this will result in delaying the
     // processing until the end of the atomic pause. It is safe to trace
     // weakly multiple times.

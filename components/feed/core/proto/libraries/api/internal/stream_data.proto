@@ -229,6 +229,10 @@ message StreamUploadableAction {
 
   optional feedwire1.ActionPayload payload = 6;
 
+  // The duration for the action in milliseconds. In case of view actions this
+  // is the duration for which the content is considered "viewed".
+  optional int64 duration_ms = 7;
+
   reserved 1, 5;  // deprecated fields
 }
 

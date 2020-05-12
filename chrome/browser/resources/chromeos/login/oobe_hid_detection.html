@@ -46,7 +46,7 @@
   </svg>
 </iron-iconset-svg>
 
-<dom-module id="oobe-hid-detection">
+<dom-module id="hid-detection">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_hid_detection.css">
@@ -89,6 +89,7 @@
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onHIDContinueTap_"
             text-key="hidDetectionContinue"
+            id="hid-continue-button"
             disabled="[[!continueButtonEnabled]]"></oobe-text-button>
       </div>
     </oobe-dialog>

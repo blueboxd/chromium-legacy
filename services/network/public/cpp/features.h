@@ -39,6 +39,8 @@ extern const base::Feature kProactivelyThrottleLowPriorityRequests;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginOpenerPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kCrossOriginOpenerPolicyReporting;
+COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kCrossOriginEmbedderPolicy;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kBlockNonSecureExternalRequests;

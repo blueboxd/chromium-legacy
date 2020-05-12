@@ -281,7 +281,7 @@ public class FeedActionManagerImplTest {
                 // View covers >50% (FeedActionManagerImpl.VIEWPORT_COVERAGE_THRESHOLD) of viewport,
                 // but <50% (FeedActionManagerImpl.VIEW_EXPOSURE_THRESHOLD) of the view is visible.
                 new Rect(0, -1000, 100, 51), CONTENT_ID_STRING, LONG_DURATION_MS);
-        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S, LONG_DURATION_MS);
     }
 
     @Test
@@ -291,7 +291,7 @@ public class FeedActionManagerImplTest {
                 // it covers <50% (FeedActionManagerImpl.VIEWPORT_COVERAGE_THRESHOLD) of the
                 // viewport.
                 new Rect(0, -48, 100, 49), CONTENT_ID_STRING, LONG_DURATION_MS);
-        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S, LONG_DURATION_MS);
     }
 
     @Test
@@ -351,12 +351,14 @@ public class FeedActionManagerImplTest {
                                       .setFeatureContentId(CONTENT_ID_STRING)
                                       .setPayload(ACTION_PAYLOAD)
                                       .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                                      .setDurationMs(LONG_DURATION_MS)
                                       .build(),
                 StreamUploadableAction.newBuilder()
                         .setFeatureContentId(CONTENT_ID_STRING)
                         .setPayload(ACTION_PAYLOAD)
                         .setTimestampSeconds(
                                 DEFAULT_TIME_SECONDS + LONG_DURATION_S + 1 + LONG_DURATION_S)
+                        .setDurationMs(LONG_DURATION_MS)
                         .build());
     }
 
@@ -411,11 +413,13 @@ public class FeedActionManagerImplTest {
                                       .setFeatureContentId("contentId1")
                                       .setPayload(ACTION_PAYLOAD)
                                       .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                                      .setDurationMs(LONG_DURATION_MS)
                                       .build(),
                 StreamUploadableAction.newBuilder()
                         .setFeatureContentId("contentId3")
                         .setPayload(ACTION_PAYLOAD)
                         .setTimestampSeconds(DEFAULT_TIME_SECONDS + LONG_DURATION_S)
+                        .setDurationMs(LONG_DURATION_MS)
                         .build());
     }
 
@@ -442,7 +446,8 @@ public class FeedActionManagerImplTest {
         mActionManager.onScrollEnd();
         mFakeClock.advance(1000);
         mActionManager.onHide();
-        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S + 1);
+        verifyActionUpserted(
+                ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S + 1, LONG_DURATION_MS);
     }
 
     @Test
@@ -471,7 +476,7 @@ public class FeedActionManagerImplTest {
         mActionManager.onAnimationFinished();
         mFakeClock.advance(LONG_DURATION_MS);
         mActionManager.onHide();
-        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S, LONG_DURATION_MS);
     }
 
     @Test
@@ -500,7 +505,8 @@ public class FeedActionManagerImplTest {
         mActionManager.onLayoutChange();
         mFakeClock.advance(1000);
         mActionManager.onHide();
-        verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S + 1);
+        verifyActionUpserted(
+                ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S + 1, LONG_DURATION_MS);
     }
 
     @Test
@@ -528,7 +534,8 @@ public class FeedActionManagerImplTest {
         mActionManager.onLayoutChange();
         verifyNoActionUpserted();
         mActionManager.storeViewActions(() -> {
-            verifyActionUpserted(ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S);
+            verifyActionUpserted(
+                    ACTION_PAYLOAD, CONTENT_ID_STRING, LONG_DURATION_S, LONG_DURATION_MS);
             mStoreViewActionsRunnable.run();
         });
         verify(mStoreViewActionsRunnable).run();
@@ -543,11 +550,13 @@ public class FeedActionManagerImplTest {
         verify(mStoreViewActionsRunnable, times(1)).run();
     }
 
-    private void verifyActionUpserted(ActionPayload payload, String contentId, long durationS) {
+    private void verifyActionUpserted(
+            ActionPayload payload, String contentId, long elapsedTimeS, long durationMs) {
         verifyActionsUpserted(StreamUploadableAction.newBuilder()
                                       .setFeatureContentId(contentId)
                                       .setPayload(payload)
-                                      .setTimestampSeconds(DEFAULT_TIME_SECONDS + durationS)
+                                      .setTimestampSeconds(DEFAULT_TIME_SECONDS + elapsedTimeS)
+                                      .setDurationMs(durationMs)
                                       .build());
     }
 

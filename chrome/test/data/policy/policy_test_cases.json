@@ -6044,7 +6044,7 @@
   },
 
   "ForceNetworkInProcess": {
-    "note": "This policy is used directly through the policy service instead of through a pref."
+    "note": "This policy is deprecated."
   },
 
   "DeviceWilcoDtcAllowed": {

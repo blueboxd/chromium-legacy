@@ -206,6 +206,17 @@ TEST_F(SyncerProtoUtilTest, VerifyDisabledByAdmin) {
   EXPECT_EQ(STOP_SYNC_FOR_DISABLED_ACCOUNT, sync_protocol_error.action);
 }
 
+TEST_F(SyncerProtoUtilTest, VerifyEncryptionObsolete) {
+  sync_pb::ClientToServerResponse response;
+  response.set_error_code(sync_pb::SyncEnums::ENCRYPTION_OBSOLETE);
+  response.set_store_birthday("flan");
+
+  SyncProtocolError sync_protocol_error =
+      CallGetProtocolErrorFromResponse(response, context());
+  EXPECT_EQ(ENCRYPTION_OBSOLETE, sync_protocol_error.error_type);
+  EXPECT_EQ(DISABLE_SYNC_ON_CLIENT, sync_protocol_error.action);
+}
+
 class DummyConnectionManager : public ServerConnectionManager {
  public:
   DummyConnectionManager() : send_error_(false) {}

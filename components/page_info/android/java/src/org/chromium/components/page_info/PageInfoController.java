@@ -112,6 +112,9 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // Reference to last created PageInfoController for testing.
     private static WeakReference<PageInfoController> sLastPageInfoControllerForTesting;
 
+    // Whether Version 2 of the PageInfoView is enabled.
+    private boolean mIsV2Enabled;
+
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -123,10 +126,11 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public PageInfoController(WebContents webContents, int securityLevel, String publisher,
-            PageInfoControllerDelegate delegate) {
+            PageInfoControllerDelegate delegate, boolean isV2Enabled) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
         mDelegate = delegate;
+        mIsV2Enabled = isV2Enabled;
         mRunAfterDismissConsumer = new Consumer<Runnable>() {
             @Override
             public void accept(Runnable r) {
@@ -204,6 +208,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             viewParams.siteSettingsButtonShown = false;
             viewParams.cookieControlsShown = false;
         }
+        viewParams.onUiClosingCallback = mDelegate::onUiClosing;
 
         mDelegate.initPreviewUiParams(viewParams, mRunAfterDismissConsumer);
         mDelegate.initOfflinePageUiParams(viewParams, mRunAfterDismissConsumer);
@@ -224,7 +229,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             viewParams.instantAppButtonShown = false;
         }
 
-        mView = new PageInfoView(mContext, viewParams);
+        mView = mIsV2Enabled ? new PageInfoViewV2(mContext, viewParams)
+                             : new PageInfoView(mContext, viewParams);
         if (isSheet(mContext)) mView.setBackgroundColor(Color.WHITE);
         // TODO(crbug.com/1040091): Remove when cookie controls are launched.
         boolean showTitle = viewParams.cookieControlsShown;
@@ -232,18 +238,35 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
 
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
+        if (mIsV2Enabled) {
+            PageInfoRowView.ViewParams cookieControlsParams = new PageInfoRowView.ViewParams();
+            cookieControlsParams.visible = viewParams.cookieControlsShown;
+            cookieControlsParams.title =
+                    mView.getContext().getResources().getString(R.string.cookies_title);
+            ((PageInfoViewV2) mView).getCookiesRowView().setParams(cookieControlsParams);
+        } else {
+            CookieControlsView.CookieControlsParams cookieControlsParams =
+                    new CookieControlsView.CookieControlsParams();
+            cookieControlsParams.onCheckedChangedCallback = (Boolean blockCookies) -> {
+                recordAction(blockCookies ? PageInfoAction.PAGE_INFO_COOKIE_BLOCKED_FOR_SITE
+                                          : PageInfoAction.PAGE_INFO_COOKIE_ALLOWED_FOR_SITE);
+                mDelegate.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
+            };
+            mView.getCookieControlsView().setParams(cookieControlsParams);
+        }
         mDelegate.createCookieControlsBridge(this);
-        CookieControlsView.CookieControlsParams cookieControlsParams =
-                new CookieControlsView.CookieControlsParams();
-        cookieControlsParams.onUiClosingCallback = mDelegate::onUiClosing;
-        cookieControlsParams.onCheckedChangedCallback = (Boolean blockCookies) -> {
-            recordAction(blockCookies ? PageInfoAction.PAGE_INFO_COOKIE_BLOCKED_FOR_SITE
-                                      : PageInfoAction.PAGE_INFO_COOKIE_ALLOWED_FOR_SITE);
-            mDelegate.setThirdPartyCookieBlockingEnabledForSite(blockCookies);
-        };
-        mView.getCookieControlsView().setParams(cookieControlsParams);
 
-        mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
+        if (mIsV2Enabled) {
+            PageInfoRowView.ViewParams performanceParams = new PageInfoRowView.ViewParams();
+            performanceParams.visible = mDelegate.shouldShowPerformanceBadge(mFullUrl);
+            performanceParams.title = mView.getContext().getResources().getString(
+                    R.string.page_info_fast_site_summary);
+            performanceParams.subtitle = mView.getContext().getResources().getString(
+                    R.string.page_info_fast_site_message);
+            ((PageInfoViewV2) mView).getPerformanceRowView().setParams(performanceParams);
+        } else {
+            mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
+        }
 
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
@@ -357,7 +380,21 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 });
             };
         }
-        mView.setConnectionInfo(connectionInfoParams);
+
+        if (mIsV2Enabled) {
+            PageInfoRowView.ViewParams connectionRowParams = new PageInfoRowView.ViewParams();
+            connectionRowParams.title = connectionInfoParams.summary != null
+                    ? connectionInfoParams.summary.toString()
+                    : null;
+            connectionRowParams.subtitle = connectionInfoParams.message != null
+                    ? connectionInfoParams.message.toString()
+                    : null;
+            connectionRowParams.visible =
+                    connectionRowParams.title != null || connectionRowParams.subtitle != null;
+            ((PageInfoViewV2) mView).getConnectionRowView().setParams(connectionRowParams);
+        } else {
+            mView.setConnectionInfo(connectionInfoParams);
+        }
     }
 
     @Override
@@ -448,7 +485,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         sLastPageInfoControllerForTesting = new WeakReference<>(new PageInfoController(webContents,
                 SecurityStateModel.getSecurityLevelForWebContents(webContents), contentPublisher,
-                delegate));
+                delegate, PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2)));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
@@ -460,13 +497,21 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @Override
     public void onCookieBlockingStatusChanged(
             @CookieControlsStatus int status, @CookieControlsEnforcement int enforcement) {
-        mView.getCookieControlsView().setCookieBlockingStatus(
-                status, enforcement != CookieControlsEnforcement.NO_ENFORCEMENT);
+        if (!mIsV2Enabled) {
+            mView.getCookieControlsView().setCookieBlockingStatus(
+                    status, enforcement != CookieControlsEnforcement.NO_ENFORCEMENT);
+        }
     }
 
     @Override
     public void onBlockedCookiesCountChanged(int blockedCookies) {
-        mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
+        if (mIsV2Enabled) {
+            String subtitle = mContext.getResources().getQuantityString(
+                    R.plurals.cookie_controls_blocked_cookies, blockedCookies, blockedCookies);
+            ((PageInfoViewV2) mView).getCookiesRowView().updateSubtitle(subtitle);
+        } else {
+            mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
+        }
     }
 
     @NativeMethods

@@ -175,8 +175,13 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
         browser->tab_strip_model()->GetActiveWebContents();
     std::string url_string =
         active_tab ? active_tab->GetURL().spec() : std::string();
+    bool app_browser = browser->is_type_app() || browser->is_type_app_popup() ||
+                       browser->is_type_popup();
 
-    if (KioskSettingsNavigationThrottle::IsSettingsPage(url_string)) {
+    // The browser has to be of type TYPE_APP, TYPE_POPUP or TYPE_APP_POPUP,
+    // since they do not have visible tab strip.
+    if (app_browser &&
+        KioskSettingsNavigationThrottle::IsSettingsPage(url_string)) {
       if (app_session_->settings_browser_ &&
           browser != app_session_->settings_browser_) {
         // Navigate to this page in the old browser, the current one will be

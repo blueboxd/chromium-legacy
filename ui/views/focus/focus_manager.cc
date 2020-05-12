@@ -17,6 +17,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/focus/widget_focus_manager.h"
@@ -522,7 +523,14 @@ void FocusManager::UnregisterAccelerators(ui::AcceleratorTarget* target) {
 bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   if (accelerator_manager_.Process(accelerator))
     return true;
-  return delegate_ && delegate_->ProcessAccelerator(accelerator);
+  if (delegate_ && delegate_->ProcessAccelerator(accelerator))
+    return true;
+  return RedirectAcceleratorToBubbleAnchorWidget(accelerator);
+}
+
+bool FocusManager::IsAcceleratorRegistered(
+    const ui::Accelerator& accelerator) const {
+  return accelerator_manager_.IsRegistered(accelerator);
 }
 
 bool FocusManager::HasPriorityHandler(
@@ -589,6 +597,27 @@ void FocusManager::OnViewIsDeleting(View* view) {
   // such that ViewRemoved() is never called.
   CHECK_EQ(view, focused_view_);
   SetFocusedView(nullptr);
+}
+
+bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
+    const ui::Accelerator& accelerator) {
+  Widget* anchor_widget = GetBubbleAnchorWidget();
+  if (!anchor_widget)
+    return false;
+
+  FocusManager* focus_manager = anchor_widget->GetFocusManager();
+  if (!focus_manager->IsAcceleratorRegistered(accelerator))
+    return false;
+
+  // The parent view must be focused for it to process events.
+  focus_manager->SetFocusedView(anchor_widget->GetRootView());
+  return focus_manager->ProcessAccelerator(accelerator);
+}
+
+Widget* FocusManager::GetBubbleAnchorWidget() {
+  BubbleDialogDelegateView* widget_delegate =
+      widget_->widget_delegate()->AsBubbleDialogDelegate();
+  return widget_delegate ? widget_delegate->anchor_widget() : nullptr;
 }
 
 }  // namespace views

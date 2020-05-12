@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProces
 import org.chromium.chrome.browser.omnibox.suggestions.tiles.TileSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -666,8 +667,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     /** Called when a query tile is selected by the user. */
     void onQueryTileSelected(QueryTile queryTile) {
-        // For last level tile, start a search query.
-        if (queryTile.children.isEmpty()) {
+        // For last level tile, start a search query, unless we want to let user have a chance to
+        // edit the query.
+        if (queryTile.children.isEmpty() && !QueryTileUtils.isQueryEditingEnabled()) {
             String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(queryTile.queryText);
             mDelegate.loadUrl(url, PageTransition.LINK, mLastActionUpTimestamp);
             mDelegate.setKeyboardVisibility(false);

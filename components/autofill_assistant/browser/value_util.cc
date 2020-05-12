@@ -54,6 +54,17 @@ bool operator==(const ValueProto& value_a, const ValueProto& value_b) {
       return value_a.user_actions().values() == value_b.user_actions().values();
     case ValueProto::kDates:
       return value_a.dates().values() == value_b.dates().values();
+    case ValueProto::kCreditCards:
+      return value_a.credit_cards().values() == value_b.credit_cards().values();
+    case ValueProto::kProfiles:
+      return value_a.profiles().values() == value_b.profiles().values();
+    case ValueProto::kLoginOptions:
+      return value_a.login_options().values() ==
+             value_b.login_options().values();
+    case ValueProto::kCreditCardResponse:
+      return value_a.credit_card_response() == value_b.credit_card_response();
+    case ValueProto::kLoginOptionResponse:
+      return value_a.login_option_response() == value_b.login_option_response();
     case ValueProto::KIND_NOT_SET:
       return true;
   }
@@ -83,6 +94,11 @@ bool operator<(const ValueProto& value_a, const ValueProto& value_b) {
       return value_a.dates().values(0) < value_b.dates().values(0);
     case ValueProto::kUserActions:
     case ValueProto::kBooleans:
+    case ValueProto::kCreditCards:
+    case ValueProto::kProfiles:
+    case ValueProto::kLoginOptions:
+    case ValueProto::kCreditCardResponse:
+    case ValueProto::kLoginOptionResponse:
     case ValueProto::KIND_NOT_SET:
       NOTREACHED();
       return false;
@@ -143,6 +159,33 @@ bool operator<(const DateProto& value_a, const DateProto& value_b) {
   return tuple_a < tuple_b;
 }
 
+bool operator==(const AutofillCreditCardProto& value_a,
+                const AutofillCreditCardProto& value_b) {
+  return value_a.guid() == value_b.guid();
+}
+
+bool operator==(const AutofillProfileProto& value_a,
+                const AutofillProfileProto& value_b) {
+  return value_a.guid() == value_b.guid();
+}
+
+bool operator==(const LoginOptionProto& value_a,
+                const LoginOptionProto& value_b) {
+  return value_a.label() == value_b.label() &&
+         value_a.sublabel() == value_b.sublabel() &&
+         value_a.payload() == value_b.payload();
+}
+
+bool operator==(const CreditCardResponseProto& value_a,
+                const CreditCardResponseProto& value_b) {
+  return value_a.network() == value_b.network();
+}
+
+bool operator==(const LoginOptionResponseProto& value_a,
+                const LoginOptionResponseProto& value_b) {
+  return value_a.payload() == value_b.payload();
+}
+
 // Intended for debugging. Writes a string representation of |values| to |out|.
 template <typename T>
 std::ostream& WriteRepeatedField(std::ostream& out, const T& values) {
@@ -170,15 +213,41 @@ std::ostream& operator<<(std::ostream& out,
   return WriteRepeatedField(out, values);
 }
 
-// Intended for debugging. '<<' operator specialization for UserActionProto.
 std::ostream& operator<<(std::ostream& out, const UserActionProto& value) {
   out << value.identifier();
   return out;
 }
 
-// Intended for debugging. '<<' operator specialization for DateProto.
 std::ostream& operator<<(std::ostream& out, const DateProto& value) {
   out << value.year() << "-" << value.month() << "-" << value.day();
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AutofillCreditCardProto& value) {
+  out << value.guid();
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const AutofillProfileProto& value) {
+  out << value.guid();
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const LoginOptionProto& value) {
+  out << value.label() << ", " << value.sublabel() << ", " << value.payload();
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const CreditCardResponseProto& value) {
+  out << value.network();
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const LoginOptionResponseProto& value) {
+  out << value.payload();
   return out;
 }
 
@@ -199,6 +268,22 @@ std::ostream& operator<<(std::ostream& out, const ValueProto& value) {
       break;
     case ValueProto::kDates:
       out << value.dates().values();
+      break;
+    case ValueProto::kCreditCards:
+      out << value.credit_cards().values();
+      break;
+    case ValueProto::kProfiles:
+      out << value.profiles().values();
+      break;
+    case ValueProto::kLoginOptions:
+      out << value.login_options().values();
+      break;
+    case ValueProto::kCreditCardResponse:
+      out << value.credit_card_response();
+      break;
+    case ValueProto::kLoginOptionResponse:
+      out << value.login_option_response();
+      ;
       break;
     case ValueProto::KIND_NOT_SET:
       break;
@@ -310,15 +395,25 @@ bool ContainsClientOnlyValue(const std::vector<ValueProto>& values) {
 int GetValueSize(const ValueProto& value) {
   switch (value.kind_case()) {
     case ValueProto::kStrings:
-      return value.strings().values_size();
+      return value.strings().values().size();
     case ValueProto::kBooleans:
-      return value.booleans().values_size();
+      return value.booleans().values().size();
     case ValueProto::kInts:
-      return value.ints().values_size();
+      return value.ints().values().size();
     case ValueProto::kUserActions:
-      return value.user_actions().values_size();
+      return value.user_actions().values().size();
     case ValueProto::kDates:
-      return value.dates().values_size();
+      return value.dates().values().size();
+    case ValueProto::kCreditCards:
+      return value.credit_cards().values().size();
+    case ValueProto::kProfiles:
+      return value.profiles().values().size();
+    case ValueProto::kLoginOptions:
+      return value.login_options().values().size();
+    case ValueProto::kCreditCardResponse:
+      return 1;
+    case ValueProto::kLoginOptionResponse:
+      return 1;
     case ValueProto::KIND_NOT_SET:
       return 0;
   }
@@ -353,6 +448,26 @@ base::Optional<ValueProto> GetNthValue(const ValueProto& value, int index) {
     case ValueProto::kDates:
       *nth_value.mutable_dates()->add_values() =
           value.dates().values().at(index);
+      return nth_value;
+    case ValueProto::kCreditCards:
+      *nth_value.mutable_credit_cards()->add_values() =
+          value.credit_cards().values().at(index);
+      return nth_value;
+    case ValueProto::kProfiles:
+      *nth_value.mutable_profiles()->add_values() =
+          value.profiles().values().at(index);
+      return nth_value;
+    case ValueProto::kLoginOptions:
+      *nth_value.mutable_login_options()->add_values() =
+          value.login_options().values().at(index);
+      return nth_value;
+    case ValueProto::kCreditCardResponse:
+      DCHECK(index == 0);
+      nth_value = value;
+      return nth_value;
+    case ValueProto::kLoginOptionResponse:
+      DCHECK(index == 0);
+      nth_value = value;
       return nth_value;
     case ValueProto::KIND_NOT_SET:
       return base::nullopt;

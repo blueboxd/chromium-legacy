@@ -257,6 +257,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &upboarding::features::kQueryTiles,
     &upboarding::features::kQueryTilesInOmnibox,
+    &upboarding::features::kQueryTilesEnableQueryEditing,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {

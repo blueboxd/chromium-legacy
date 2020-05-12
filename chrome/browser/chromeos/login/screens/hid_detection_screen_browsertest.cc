@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -95,6 +96,15 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
     std::string id = is_mouse ? "mouse" : "keyboard";
     fake_input_service_manager_->RemoveDevice(std::move(id));
     base::RunLoop().RunUntilIdle();
+  }
+
+  void ContinueToWelcomeScreen() {
+    // Simulate the user's click on "Continue" button.
+    test::OobeJS()
+        .CreateVisibilityWaiter(true, {"hid-detection", "hid-continue-button"})
+        ->Wait();
+    test::OobeJS().TapOnPath({"hid-detection", "hid-continue-button"});
+    OobeScreenWaiter(WelcomeView::kScreenId).Wait();
   }
 
  private:
@@ -188,9 +198,7 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, BluetoothDeviceConnected) {
   AddDeviceToService(DeviceType::kKeyboard,
                      device::mojom::InputDeviceType::TYPE_BLUETOOTH);
 
-  // Simulate the user's click on "Continue" button.
-  hid_detection_screen()->OnContinueButtonClicked();
-  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  ContinueToWelcomeScreen();
 
   // The adapter should not be powered off at this moment.
   EXPECT_TRUE(adapter()->IsPowered());
@@ -207,12 +215,34 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, NoBluetoothDeviceConnected) {
   AddDeviceToService(DeviceType::kKeyboard,
                      device::mojom::InputDeviceType::TYPE_USB);
 
-  // Simulate the user's click on "Continue" button.
-  hid_detection_screen()->OnContinueButtonClicked();
-  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  ContinueToWelcomeScreen();
 
   // The adapter should be powered off at this moment.
   EXPECT_FALSE(adapter()->IsPowered());
+}
+
+// Tests that the connected 'ticks' are shown when the devices are connected.
+IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, TestTicks) {
+  OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(false, {"hid-detection", "mouse-tick"})
+      ->Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(false, {"hid-detection", "keyboard-tick"})
+      ->Wait();
+
+  AddDeviceToService(DeviceType::kMouse,
+                     device::mojom::InputDeviceType::TYPE_USB);
+  AddDeviceToService(DeviceType::kKeyboard,
+                     device::mojom::InputDeviceType::TYPE_USB);
+
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"hid-detection", "mouse-tick"})
+      ->Wait();
+  test::OobeJS()
+      .CreateVisibilityWaiter(true, {"hid-detection", "keyboard-tick"})
+      ->Wait();
+  ContinueToWelcomeScreen();
 }
 
 }  // namespace chromeos

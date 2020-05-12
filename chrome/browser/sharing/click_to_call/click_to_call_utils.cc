@@ -7,14 +7,10 @@
 #include <algorithm>
 #include <cctype>
 
-#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -78,7 +74,6 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
 
 base::Optional<std::string> ExtractPhoneNumber(
     const std::string& selection_text) {
-  ScopedUmaHistogramMicrosecondsTimer scoped_uma_timer;
   std::string parsed_number;
 
   const re2::RE2& regex = GetPhoneNumberRegex();

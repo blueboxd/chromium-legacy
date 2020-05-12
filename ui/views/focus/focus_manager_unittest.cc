@@ -54,6 +54,9 @@ class SimpleTestView : public View {
     SetID(view_id);
   }
 
+  SimpleTestView(const SimpleTestView&) = delete;
+  SimpleTestView& operator=(const SimpleTestView&) = delete;
+
   void OnFocus() override {
     event_list_->push_back({
         ON_FOCUS,
@@ -72,8 +75,6 @@ class SimpleTestView : public View {
 
  private:
   std::vector<FocusTestEvent>* event_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleTestView);
 };
 
 // Tests that the appropriate Focus related methods are called when a View
@@ -379,6 +380,11 @@ class SelfUnregisteringAcceleratorTarget : public ui::TestAcceleratorTarget {
                                      FocusManager* focus_manager)
       : accelerator_(accelerator), focus_manager_(focus_manager) {}
 
+  SelfUnregisteringAcceleratorTarget(
+      const SelfUnregisteringAcceleratorTarget&) = delete;
+  SelfUnregisteringAcceleratorTarget& operator=(
+      const SelfUnregisteringAcceleratorTarget&) = delete;
+
   // ui::TestAcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     focus_manager_->UnregisterAccelerator(accelerator, this);
@@ -388,8 +394,6 @@ class SelfUnregisteringAcceleratorTarget : public ui::TestAcceleratorTarget {
  private:
   ui::Accelerator accelerator_;
   FocusManager* focus_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelfUnregisteringAcceleratorTarget);
 };
 
 TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
@@ -438,20 +442,22 @@ class FocusManagerDtorTest : public FocusManagerTest {
         : FocusManager(widget, nullptr /* delegate */),
           dtor_tracker_(dtor_tracker) {}
 
+    FocusManagerDtorTracked(const FocusManagerDtorTracked&) = delete;
+    FocusManagerDtorTracked& operator=(const FocusManagerDtorTracked&) = delete;
+
     ~FocusManagerDtorTracked() override {
       dtor_tracker_->push_back("FocusManagerDtorTracked");
     }
 
     DtorTrackVector* dtor_tracker_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(FocusManagerDtorTracked);
   };
 
   class TestFocusManagerFactory : public FocusManagerFactory {
    public:
     explicit TestFocusManagerFactory(DtorTrackVector* dtor_tracker)
         : dtor_tracker_(dtor_tracker) {}
+    TestFocusManagerFactory(const TestFocusManagerFactory&) = delete;
+    TestFocusManagerFactory& operator=(const TestFocusManagerFactory&) = delete;
     ~TestFocusManagerFactory() override = default;
 
     std::unique_ptr<FocusManager> CreateFocusManager(Widget* widget) override {
@@ -460,8 +466,6 @@ class FocusManagerDtorTest : public FocusManagerTest {
 
    private:
     DtorTrackVector* dtor_tracker_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestFocusManagerFactory);
   };
 
   class WindowDtorTracked : public Widget {
@@ -506,6 +510,11 @@ class FocusInAboutToRequestFocusFromTabTraversalView : public View {
  public:
   FocusInAboutToRequestFocusFromTabTraversalView() = default;
 
+  FocusInAboutToRequestFocusFromTabTraversalView(
+      const FocusInAboutToRequestFocusFromTabTraversalView&) = delete;
+  FocusInAboutToRequestFocusFromTabTraversalView& operator=(
+      const FocusInAboutToRequestFocusFromTabTraversalView&) = delete;
+
   void set_view_to_focus(View* view) { view_to_focus_ = view; }
 
   void AboutToRequestFocusFromTabTraversal(bool reverse) override {
@@ -514,8 +523,6 @@ class FocusInAboutToRequestFocusFromTabTraversalView : public View {
 
  private:
   views::View* view_to_focus_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusInAboutToRequestFocusFromTabTraversalView);
 };
 }  // namespace
 
@@ -643,6 +650,10 @@ class FocusManagerArrowKeyTraversalTest
       public testing::WithParamInterface<bool> {
  public:
   FocusManagerArrowKeyTraversalTest() = default;
+  FocusManagerArrowKeyTraversalTest(const FocusManagerArrowKeyTraversalTest&) =
+      delete;
+  FocusManagerArrowKeyTraversalTest& operator=(
+      const FocusManagerArrowKeyTraversalTest&) = delete;
   ~FocusManagerArrowKeyTraversalTest() override = default;
 
   // FocusManagerTest overrides:
@@ -671,8 +682,6 @@ class FocusManagerArrowKeyTraversalTest
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
 
   bool previous_arrow_key_traversal_enabled_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusManagerArrowKeyTraversalTest);
 };
 
 // Instantiate the Boolean which is used to toggle RTL in
@@ -852,6 +861,9 @@ namespace {
 class AdvanceFocusWidgetDelegate : public WidgetDelegate {
  public:
   explicit AdvanceFocusWidgetDelegate(Widget* widget) : widget_(widget) {}
+  AdvanceFocusWidgetDelegate(const AdvanceFocusWidgetDelegate&) = delete;
+  AdvanceFocusWidgetDelegate& operator=(const AdvanceFocusWidgetDelegate&) =
+      delete;
   ~AdvanceFocusWidgetDelegate() override = default;
 
   // WidgetDelegate:
@@ -860,8 +872,6 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
 
  private:
   Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdvanceFocusWidgetDelegate);
 };
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
@@ -870,7 +880,22 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
       : BubbleDialogDelegateView(anchor, BubbleBorder::NONE) {
     DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   }
+  TestBubbleDialogDelegateView(const TestBubbleDialogDelegateView&) = delete;
+  TestBubbleDialogDelegateView& operator=(const TestBubbleDialogDelegateView&) =
+      delete;
   ~TestBubbleDialogDelegateView() override = default;
+
+  static TestBubbleDialogDelegateView* CreateAndShowBubble(View* anchor) {
+    TestBubbleDialogDelegateView* bubble =
+        new TestBubbleDialogDelegateView(anchor);
+    Widget* bubble_widget = BubbleDialogDelegateView::CreateBubble(bubble);
+    bubble_widget->SetFocusTraversableParent(
+        bubble->anchor_widget()->GetFocusTraversable());
+    bubble_widget->SetFocusTraversableParentView(anchor);
+    bubble->set_close_on_deactivate(false);
+    bubble_widget->Show();
+    return bubble;
+  }
 
   // If this is called, the bubble will be forced to use a NativeWidgetAura.
   // If not set, it might get a DesktopNativeWidgetAura depending on the
@@ -890,8 +915,6 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
  private:
   bool use_native_widget_aura_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
 
 }  // namespace
@@ -975,21 +998,15 @@ TEST_F(FocusManagerTest, NavigateIntoAnchoredDialog) {
   parent3->AddChildView(new View());
 
   BubbleDialogDelegateView* bubble_delegate =
-      new TestBubbleDialogDelegateView(parent3);
-  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      BubbleDialogDelegateView::CreateBubble(bubble_delegate));
-  bubble_widget->SetFocusTraversableParent(
-      bubble_delegate->anchor_widget()->GetFocusTraversable());
+      TestBubbleDialogDelegateView::CreateAndShowBubble(parent3);
+  Widget* bubble_widget = bubble_delegate->GetWidget();
 
-  bubble_widget->SetFocusTraversableParentView(parent3);
   View* child1 = new View();
   View* child2 = new View();
   child1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   child2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   bubble_widget->GetRootView()->AddChildView(child1);
   bubble_widget->GetRootView()->AddChildView(child2);
-  bubble_delegate->set_close_on_deactivate(false);
-  bubble_widget->Show();
 
   parent1->RequestFocus();
 
@@ -1039,20 +1056,15 @@ TEST_F(FocusManagerTest, AnchoredDialogOnContainerView) {
   GetWidget()->GetRootView()->AddChildView(parent4);
 
   BubbleDialogDelegateView* bubble_delegate =
-      new TestBubbleDialogDelegateView(parent_group);
-  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      BubbleDialogDelegateView::CreateBubble(bubble_delegate));
-  bubble_widget->SetFocusTraversableParent(
-      bubble_delegate->anchor_widget()->GetFocusTraversable());
-  bubble_widget->SetFocusTraversableParentView(parent_group);
+      TestBubbleDialogDelegateView::CreateAndShowBubble(parent3);
+  Widget* bubble_widget = bubble_delegate->GetWidget();
+
   View* child1 = new View();
   View* child2 = new View();
   child1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   child2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   bubble_widget->GetRootView()->AddChildView(child1);
   bubble_widget->GetRootView()->AddChildView(child2);
-  bubble_delegate->set_close_on_deactivate(false);
-  bubble_widget->Show();
 
   parent1->RequestFocus();
 
@@ -1088,14 +1100,8 @@ TEST_F(FocusManagerTest, AnchoredDialogInPane) {
   View* anchor = pane->AddChildView(std::make_unique<View>());
   anchor->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
-  BubbleDialogDelegateView* bubble = new TestBubbleDialogDelegateView(anchor);
-  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      BubbleDialogDelegateView::CreateBubble(bubble));
-  bubble_widget->SetFocusTraversableParent(
-      bubble->anchor_widget()->GetFocusTraversable());
-  bubble_widget->SetFocusTraversableParentView(anchor);
-  bubble->set_close_on_deactivate(false);
-  bubble_widget->Show();
+  BubbleDialogDelegateView* bubble =
+      TestBubbleDialogDelegateView::CreateAndShowBubble(anchor);
 
   // We need a focusable view inside our bubble to check that focus traverses
   // in.
@@ -1118,6 +1124,9 @@ TEST_F(FocusManagerTest, AnchoredDialogInPane) {
 class DesktopWidgetFocusManagerTest : public FocusManagerTest {
  public:
   DesktopWidgetFocusManagerTest() = default;
+  DesktopWidgetFocusManagerTest(const DesktopWidgetFocusManagerTest&) = delete;
+  DesktopWidgetFocusManagerTest& operator=(
+      const DesktopWidgetFocusManagerTest&) = delete;
   ~DesktopWidgetFocusManagerTest() override = default;
 
   // FocusManagerTest:
@@ -1125,9 +1134,6 @@ class DesktopWidgetFocusManagerTest : public FocusManagerTest {
     set_native_widget_type(NativeWidgetType::kDesktop);
     FocusManagerTest::SetUp();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DesktopWidgetFocusManagerTest);
 };
 
 TEST_F(DesktopWidgetFocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
@@ -1149,18 +1155,13 @@ TEST_F(DesktopWidgetFocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
   widget.GetRootView()->AddChildView(parent2);
 
   TestBubbleDialogDelegateView* bubble_delegate =
-      new TestBubbleDialogDelegateView(parent2);
+      TestBubbleDialogDelegateView::CreateAndShowBubble(parent2);
+  Widget* bubble_widget = bubble_delegate->GetWidget();
   bubble_delegate->UseNativeWidgetAura();
-  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
-      BubbleDialogDelegateView::CreateBubble(bubble_delegate));
-  bubble_widget->SetFocusTraversableParent(
-      bubble_delegate->anchor_widget()->GetFocusTraversable());
-  bubble_widget->SetFocusTraversableParentView(parent2);
+
   View* child = new View();
   child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   bubble_widget->GetRootView()->AddChildView(child);
-  bubble_delegate->set_close_on_deactivate(false);
-  bubble_widget->Show();
 
   widget.Activate();
   parent1->RequestFocus();
@@ -1224,5 +1225,84 @@ TEST_F(FocusManagerTest, HandlesFocusCycles) {
   // found, AdvanceFocus() doesn't clear focus.
   EXPECT_FALSE(left->HasFocus());
 }
+
+#if defined(USE_AURA)
+class RedirectToParentFocusManagerTest : public FocusManagerTest {
+ public:
+  RedirectToParentFocusManagerTest() = default;
+  RedirectToParentFocusManagerTest(const RedirectToParentFocusManagerTest&) =
+      delete;
+  RedirectToParentFocusManagerTest& operator=(
+      const RedirectToParentFocusManagerTest&) = delete;
+  ~RedirectToParentFocusManagerTest() override = default;
+
+  // FocusManagerTest:
+  void SetUp() override {
+    FocusManagerTest::SetUp();
+
+    View* anchor =
+        GetWidget()->GetRootView()->AddChildView(std::make_unique<View>());
+    anchor->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+    BubbleDialogDelegateView* bubble_delegate =
+        TestBubbleDialogDelegateView::CreateAndShowBubble(anchor);
+    Widget* bubble_widget = bubble_delegate->GetWidget();
+
+    parent_focus_manager_ = anchor->GetFocusManager();
+    bubble_focus_manager_ = bubble_widget->GetFocusManager();
+  }
+
+  void TearDown() override {
+    FocusManagerFactory::Install(nullptr);
+    FocusManagerTest::TearDown();
+  }
+
+ protected:
+  FocusManager* parent_focus_manager_;
+  FocusManager* bubble_focus_manager_;
+};
+
+// Test that when an accelerator is sent to a bubble that isn't registered,
+// the bubble's parent handles it instead.
+TEST_F(RedirectToParentFocusManagerTest, ParentHandlesAcceleratorFromBubble) {
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
+  ui::TestAcceleratorTarget parent_return_target(true);
+
+  EXPECT_EQ(0, parent_return_target.accelerator_count());
+  parent_focus_manager_->RegisterAccelerator(
+      return_accelerator, ui::AcceleratorManager::kNormalPriority,
+      &parent_return_target);
+
+  EXPECT_TRUE(
+      !bubble_focus_manager_->IsAcceleratorRegistered(return_accelerator));
+  // Accelerator was proccesed by the parent.
+  EXPECT_TRUE(bubble_focus_manager_->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(parent_return_target.accelerator_count(), 1);
+}
+
+// Test that when an accelerator is sent to a bubble that is registered on both
+// it and its parent, the bubble handles it.
+TEST_F(RedirectToParentFocusManagerTest, BubbleHandlesRegisteredAccelerators) {
+  ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
+  ui::TestAcceleratorTarget parent_return_target(true);
+  ui::TestAcceleratorTarget bubble_return_target(true);
+
+  EXPECT_EQ(0, bubble_return_target.accelerator_count());
+  EXPECT_EQ(0, parent_return_target.accelerator_count());
+
+  bubble_focus_manager_->RegisterAccelerator(
+      return_accelerator, ui::AcceleratorManager::kNormalPriority,
+      &bubble_return_target);
+  parent_focus_manager_->RegisterAccelerator(
+      return_accelerator, ui::AcceleratorManager::kNormalPriority,
+      &parent_return_target);
+
+  // Accelerator was proccesed by the bubble and not by the parent.
+  EXPECT_TRUE(bubble_focus_manager_->ProcessAccelerator(return_accelerator));
+  EXPECT_EQ(1, bubble_return_target.accelerator_count());
+  EXPECT_EQ(0, parent_return_target.accelerator_count());
+}
+
+#endif
 
 }  // namespace views

@@ -15,6 +15,7 @@ message ModelProto {
     optional string identifier = 1;
     optional ValueProto value = 2;
   }
+
   // Maps model identifiers to their values.
   repeated ModelValue values = 1;
 }
@@ -28,6 +29,11 @@ message ValueProto {
     IntList ints = 3;
     UserActionList user_actions = 4;
     DateList dates = 5;
+    CreditCardList credit_cards = 7;
+    ProfileList profiles = 8;
+    LoginOptionList login_options = 9;
+    CreditCardResponseProto credit_card_response = 10;
+    LoginOptionResponseProto login_option_response = 11;
   }
   // If set to true, this value will not be sent to the backend. This flag is
   // mostly used internally, to prevent certain values from leaving the device.
@@ -61,6 +67,18 @@ message UserActionList {
 
 message DateList {
   repeated DateProto values = 1;
+}
+
+message CreditCardList {
+  repeated AutofillCreditCardProto values = 1;
+}
+
+message ProfileList {
+  repeated AutofillProfileProto values = 1;
+}
+
+message LoginOptionList {
+  repeated LoginOptionProto values = 1;
 }
 
 // Next: 25
@@ -298,4 +316,28 @@ message TimeProto {
 message DateTimeProto {
   optional DateProto date = 1;
   optional TimeProto time = 2;
+}
+
+message AutofillCreditCardProto {
+  // The GUID of the card.
+  optional string guid = 1;
+}
+
+message CreditCardResponseProto {
+  optional string network = 1;
+}
+
+message AutofillProfileProto {
+  // The GUID of the profile.
+  optional string guid = 1;
+}
+
+message LoginOptionProto {
+  optional string label = 1;
+  optional string sublabel = 2;
+  optional bytes payload = 3;
+}
+
+message LoginOptionResponseProto {
+  optional bytes payload = 1;
 }

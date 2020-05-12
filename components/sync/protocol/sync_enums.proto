@@ -87,35 +87,42 @@ message SyncEnums {
   enum ErrorType {
     SUCCESS = 0;
     DEPRECATED_ACCESS_DENIED = 1;
-    NOT_MY_BIRTHDAY = 2;  // Returned when the server and client disagree
-                          // on the store birthday.
-    THROTTLED = 3;        // Returned when the store has exceeded the
-                          // allowed bandwidth utilization.
+    // Returned when the server and client disagree on the store birthday.
+    NOT_MY_BIRTHDAY = 2;
+    // Returned when the store has exceeded the allowed bandwidth utilization.
+    THROTTLED = 3;
     DEPRECATED_AUTH_EXPIRED = 4;
     DEPRECATED_USER_NOT_ACTIVATED = 5;
     DEPRECATED_AUTH_INVALID = 6;
-    CLEAR_PENDING = 7;       // A clear of the user data is pending (e.g.
-                             // initiated by privacy request).  Client should
-                             // come back later.
-    TRANSIENT_ERROR = 8;     // A transient error occured (eg. backend
-                             // timeout). Client should try again later.
-    MIGRATION_DONE = 9;      // Migration has finished for one or more data
-                             // types.  Client should clear the cache for
-                             // these data types only and then re-sync with
-                             // a server.
-    DISABLED_BY_ADMIN = 10;  // An administrator disabled sync for this
-                             // domain.
-    DEPRECATED_USER_ROLLBACK = 11;  // Deprecated in M50.
-    PARTIAL_FAILURE = 12;           // Return when client want to update several
-                                    // data types, but some of them failed(e.g.
-                                    // throttled).
-    CLIENT_DATA_OBSOLETE = 13;      // Returned when server detects that this
-                                    // client's data is obsolete. Client should
-                                    // reset local data and restart syncing.
-    UNKNOWN = 100;                  // Unknown value. This should never be
-    // explicitly used; it is the default value when
-    // an out-of-date client parses a value it
-    // doesn't recognize.
+    // A clear of the user data is pending (e.g. initiated by privacy request).
+    // The client should come back later.
+    CLEAR_PENDING = 7;
+    // A transient error occurred (e.g. a backend timeout). The client should
+    // try again later.
+    TRANSIENT_ERROR = 8;
+    // A server-side migration has taken place for one or more data types. The
+    // client should clear the cache for these data types only and then re-sync
+    // with a server.
+    MIGRATION_DONE = 9;
+    // An administrator disabled sync for this domain.
+    DISABLED_BY_ADMIN = 10;
+    // Deprecated in M50.
+    DEPRECATED_USER_ROLLBACK = 11;
+    // Returned when the client wants to update several data types, but some of
+    // them failed (e.g. throttled).
+    PARTIAL_FAILURE = 12;
+    // Returned when the server detects that this client's sync metadata is
+    // obsolete. The client should reset local sync metadata and restart
+    // syncing.
+    CLIENT_DATA_OBSOLETE = 13;
+    // Returned when the server detects that the encryption state (Nigori,
+    // keystore keys) has been reset/overridden, which means the local
+    // Nigori-related state is obsolete and should be cleared.
+    // Introduced in M84.
+    ENCRYPTION_OBSOLETE = 14;
+    // Unknown value. This should never be explicitly used; it is the default
+    // value when an out-of-date client parses a value it doesn't recognize.
+    UNKNOWN = 100;
   }
 
   enum Action {

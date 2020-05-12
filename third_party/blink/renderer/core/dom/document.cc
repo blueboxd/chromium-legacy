@@ -61,6 +61,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -3033,16 +3034,12 @@ bool Document::IsPageBoxVisible(int page_index) {
          EVisibility::kHidden;  // display property doesn't apply to @page.
 }
 
-void Document::PageSizeAndMarginsInPixels(int page_index,
-                                          DoubleSize& page_size,
-                                          int& margin_top,
-                                          int& margin_right,
-                                          int& margin_bottom,
-                                          int& margin_left) {
+void Document::GetPageDescription(int page_index,
+                                  WebPrintPageDescription* description) {
   scoped_refptr<const ComputedStyle> style = StyleForPage(page_index);
 
-  double width = page_size.Width();
-  double height = page_size.Height();
+  double width = description->size.Width();
+  double height = description->size.Height();
   switch (style->GetPageSizeType()) {
     case PageSizeType::kAuto:
       break;
@@ -3063,23 +3060,21 @@ void Document::PageSizeAndMarginsInPixels(int page_index,
     default:
       NOTREACHED();
   }
-  page_size = DoubleSize(width, height);
+  description->size = WebDoubleSize(width, height);
 
   // The percentage is calculated with respect to the width even for margin top
   // and bottom.
   // http://www.w3.org/TR/CSS2/box.html#margin-properties
-  margin_top = style->MarginTop().IsAuto()
-                   ? margin_top
-                   : IntValueForLength(style->MarginTop(), width);
-  margin_right = style->MarginRight().IsAuto()
-                     ? margin_right
-                     : IntValueForLength(style->MarginRight(), width);
-  margin_bottom = style->MarginBottom().IsAuto()
-                      ? margin_bottom
-                      : IntValueForLength(style->MarginBottom(), width);
-  margin_left = style->MarginLeft().IsAuto()
-                    ? margin_left
-                    : IntValueForLength(style->MarginLeft(), width);
+  if (!style->MarginTop().IsAuto())
+    description->margin_top = IntValueForLength(style->MarginTop(), width);
+  if (!style->MarginRight().IsAuto())
+    description->margin_right = IntValueForLength(style->MarginRight(), width);
+  if (!style->MarginBottom().IsAuto()) {
+    description->margin_bottom =
+        IntValueForLength(style->MarginBottom(), width);
+  }
+  if (!style->MarginLeft().IsAuto())
+    description->margin_left = IntValueForLength(style->MarginLeft(), width);
 }
 
 void Document::SetIsViewSource(bool is_view_source) {

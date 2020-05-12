@@ -129,7 +129,6 @@ class DocumentAnimations;
 class DocumentTimeline;
 class DocumentType;
 class DOMFeaturePolicy;
-class DoubleSize;
 class Element;
 class ElementDataCache;
 class ElementRegistrationOptions;
@@ -217,6 +216,7 @@ struct AnnotatedRegionValue;
 struct FocusParams;
 struct IconURL;
 struct PhysicalOffset;
+struct WebPrintPageDescription;
 
 using MouseEventWithHitTestResults = EventWithHitTestResults<WebMouseEvent>;
 
@@ -644,16 +644,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // Returns true if page box (margin boxes and page borders) is visible.
   bool IsPageBoxVisible(int page_index);
 
-  // Returns the preferred page size and margins in pixels, assuming 96
-  // pixels per inch. pageSize, marginTop, marginRight, marginBottom,
-  // marginLeft must be initialized to the default values that are used if
-  // auto is specified.
-  void PageSizeAndMarginsInPixels(int page_index,
-                                  DoubleSize& page_size,
-                                  int& margin_top,
-                                  int& margin_right,
-                                  int& margin_bottom,
-                                  int& margin_left);
+  // Gets the description for the specified page. This includes preferred page
+  // size and margins in pixels, assuming 96 pixels per inch. The size and
+  // margins must be initialized to the default values that are used if auto is
+  // specified.
+  void GetPageDescription(int page_index, WebPrintPageDescription*);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 

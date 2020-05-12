@@ -64,10 +64,14 @@ class CONTENT_EXPORT ChromeAppCacheService
   void Shutdown();
 
   // AppCachePolicy overrides
-  bool CanLoadAppCache(const GURL& manifest_url,
-                       const GURL& first_party) override;
-  bool CanCreateAppCache(const GURL& manifest_url,
-                         const GURL& first_party) override;
+  bool CanLoadAppCache(
+      const GURL& manifest_url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) override;
+  bool CanCreateAppCache(
+      const GURL& manifest_url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) override;
   bool IsOriginTrialRequiredForAppCache() override;
 
  protected:

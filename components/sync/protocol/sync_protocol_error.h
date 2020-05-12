@@ -42,6 +42,11 @@ enum SyncProtocolErrorType {
   // should reset local data and restart syncing.
   CLIENT_DATA_OBSOLETE,
 
+  // Returned when the server detects that the encryption state (Nigori,
+  // keystore keys) has been reset/overridden, which means the local
+  // Nigori-related state is obsolete and should be cleared.
+  ENCRYPTION_OBSOLETE,
+
   // The default value.
   UNKNOWN_ERROR
 };

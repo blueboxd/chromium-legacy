@@ -344,9 +344,9 @@ void PermissionUmaUtil::PermissionPromptResolved(
                            web_contents->GetBrowserContext());
 
     std::string priorDismissPrefix =
-        "Permissions.Prompt." + action_string + ".PriorDismissCount.";
+        "Permissions.Prompt." + action_string + ".PriorDismissCount2.";
     std::string priorIgnorePrefix =
-        "Permissions.Prompt." + action_string + ".PriorIgnoreCount.";
+        "Permissions.Prompt." + action_string + ".PriorIgnoreCount2.";
     RecordPermissionPromptPriorCount(
         permission, priorDismissPrefix,
         autoblocker->GetDismissCount(requesting_origin, permission));

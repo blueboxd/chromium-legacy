@@ -19,6 +19,9 @@ class {{decl}};
 class {{exported}}{{cpp_class}} : public {{parent_cpp_class}} {
  public:
   static {{cpp_class}}* Create() { return MakeGarbageCollected<{{cpp_class}}>(); }
+  static {{cpp_class}}* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<{{cpp_class}}>();
+  }
 
   {{cpp_class}}();
   virtual ~{{cpp_class}}();

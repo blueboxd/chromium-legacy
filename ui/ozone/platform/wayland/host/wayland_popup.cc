@@ -165,37 +165,6 @@ gfx::Rect WaylandPopup::AdjustPopupWindowPosition() {
   gfx::Rect new_bounds_dip = wl::TranslateBoundsToParentCoordinates(
       gfx::ScaleToRoundedRect(GetBounds(), 1.0 / ui_scale()),
       parent_bounds_dip);
-
-  // Chromium may decide to position nested menu windows on the left side
-  // instead of the right side of parent menu windows when the size of the
-  // window becomes larger than the display it is shown on. It's correct when
-  // the window is located on one display and occupies the whole work area, but
-  // as soon as it's moved and there is space on the right side, Chromium
-  // continues positioning the nested menus on the left side relative to the
-  // parent menu (Wayland does not provide clients with global coordinates).
-  // Instead, reposition that window to be on the right side of the parent menu
-  // window and let the compositor decide how to position it if it does not fit
-  // a single display. However, there is one exception - if the window is
-  // maximized, let Chromium position it on the left side as long as the Wayland
-  // compositor may decide to position the nested window on the right side of
-  // the parent menu window, which results in showing it on a second display if
-  // more than one display is used.
-  if (wl::IsMenuType(parent_window()->type()) &&
-      parent_window()->parent_window() &&
-      (parent_window()->parent_window()->GetPlatformWindowState() !=
-       PlatformWindowState::kMaximized)) {
-    auto* top_level_window = parent_window()->parent_window();
-    DCHECK(top_level_window && !wl::IsMenuType(top_level_window->type()));
-    if (new_bounds_dip.x() <= 0 && top_level_window->GetPlatformWindowState() !=
-                                       PlatformWindowState::kMaximized) {
-      // Position the child menu window on the right side of the parent window
-      // and let the Wayland compositor decide how to do constraint
-      // adjustments.
-      int new_x = parent_bounds_dip.width() -
-                  (new_bounds_dip.width() + new_bounds_dip.x());
-      new_bounds_dip.set_x(new_x);
-    }
-  }
   return gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale() / buffer_scale());
 }
 

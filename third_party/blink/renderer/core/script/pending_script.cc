@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/script/pending_script.h"
 
+#include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -214,8 +215,9 @@ void PendingScript::ExecuteScriptBlockInternal(
     // <spec step="3">If the script is from an external file, or the script's
     // type is "module", ...</spec>
     const bool needs_increment =
-        is_external || script->GetScriptType() == mojom::ScriptType::kModule ||
-        is_imported_script;
+        is_external || is_imported_script ||
+        script->GetScriptType() == mojom::blink::ScriptType::kModule;
+
     // <spec step="3">... then increment the ignore-destructive-writes counter
     // of the script element's node document. Let neutralized doc be that
     // Document.</spec>

@@ -136,6 +136,7 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
         };
 
         mMenuView.setDelegate(delegate);
+        mMenuView.tryToFitLargestItem(true);
         mMenuView.showMenu();
     }
 }

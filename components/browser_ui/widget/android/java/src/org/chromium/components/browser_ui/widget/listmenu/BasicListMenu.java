@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import org.chromium.components.browser_ui.widget.R;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -145,6 +146,11 @@ public class BasicListMenu implements ListMenu, OnItemClickListener {
         for (Runnable r : mClickRunnables) {
             r.run();
         }
+    }
+
+    @Override
+    public int getMaxItemWidth() {
+        return UiUtils.computeMaxWidthOfListAdapterItems(mAdapter, mListView);
     }
 
     private void registerListItemTypes() {

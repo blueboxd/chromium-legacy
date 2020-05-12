@@ -147,9 +147,7 @@ public class FourStateCookieSettingsPreference
         if (!params.allowCookies) {
             return CookieSettingsState.BLOCK;
         } else if (params.blockThirdPartyCookies
-                || params.cookieControlsMode == CookieControlsMode.ON) {
-            // Having CookieControlsMode.ON is equivalent to having the BLOCK_THIRD_PARTY_COOKIES
-            // pref set to enabled, because it means third party cookie blocking is always on.
+                || params.cookieControlsMode == CookieControlsMode.BLOCK_THIRD_PARTY) {
             return CookieSettingsState.BLOCK_THIRD_PARTY;
         } else if (params.cookieControlsMode == CookieControlsMode.INCOGNITO_ONLY) {
             return CookieSettingsState.BLOCK_THIRD_PARTY_INCOGNITO;

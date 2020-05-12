@@ -40,6 +40,7 @@ class PLATFORM_EXPORT DictionaryBase : public GarbageCollected<DictionaryBase> {
 
  protected:
   DictionaryBase() = default;
+  explicit DictionaryBase(v8::Isolate* isolate) {}
 
   DictionaryBase(const DictionaryBase&) = delete;
   DictionaryBase(const DictionaryBase&&) = delete;

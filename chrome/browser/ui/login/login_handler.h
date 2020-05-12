@@ -51,13 +51,9 @@ class LoginHandler : public content::LoginDelegate,
     const autofill::PasswordForm& form;
   };
 
-  LoginHandler(const net::AuthChallengeInfo& auth_info,
-               content::WebContents* web_contents,
-               LoginAuthRequiredCallback auth_required_callback);
   ~LoginHandler() override;
 
-  // Builds the platform specific LoginHandler. Used from within
-  // CreateLoginPrompt() which creates tasks. The resulting handler calls
+  // Builds the platform specific LoginHandler. The resulting handler calls
   // auth_required_callback when credentials are available. If destroyed before
   // them, the login request is aborted and the callback will not be called. The
   // callback must remain valid until one of those two events occurs.
@@ -66,14 +62,28 @@ class LoginHandler : public content::LoginDelegate,
       content::WebContents* web_contents,
       LoginAuthRequiredCallback auth_required_callback);
 
-  // The main entry point when an auth challenge is received. This method may
-  // show a login prompt, or may cancel the request to show a blank error
-  // page. ShowLoginPromptAfterCommit() can be called to show a login prompt
-  // atop the blank page once it commits.
-  void Start(const content::GlobalRequestID& request_id,
-             bool is_main_frame,
-             const GURL& request_url,
-             scoped_refptr<net::HttpResponseHeaders> response_headers);
+  // The main entry point for an auth request for a main-frame request. This
+  // method allows extensions to handle the auth request, and otherwise cancels
+  // the request to show a blank error page. ShowLoginPromptAfterCommit() can be
+  // called to show a login prompt atop the blank page once it commits.
+  // |extension_cancellation_callback| will be called if an extension chooses to
+  // cancel the auth request; the callback will be called immediately before the
+  // auth request is actually cancelled.
+  void StartMainFrame(
+      const content::GlobalRequestID& request_id,
+      const GURL& request_url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      base::OnceCallback<void(const content::GlobalRequestID& request_id)>
+          extension_cancellation_callback);
+
+  // The main entry point for an auth request for a subresource (include
+  // subframe main resources). This method allows extensions to handle the auth
+  // request, and may show an auth prompt to the user if extensions do not
+  // handle the request.
+  void StartSubresource(
+      const content::GlobalRequestID& request_id,
+      const GURL& request_url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers);
 
   void ShowLoginPromptAfterCommit(const GURL& request_url);
 
@@ -97,6 +107,10 @@ class LoginHandler : public content::LoginDelegate,
   const net::AuthChallengeInfo& auth_info() const { return auth_info_; }
 
  protected:
+  LoginHandler(const net::AuthChallengeInfo& auth_info,
+               content::WebContents* web_contents,
+               LoginAuthRequiredCallback auth_required_callback);
+
   // Implement this to initialize the underlying platform specific view. If
   // |login_model_data| is not null, the contained LoginModel and PasswordForm
   // should be used to register the view with the password manager.
@@ -109,6 +123,11 @@ class LoginHandler : public content::LoginDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
+
+  void StartInternal(const content::GlobalRequestID& request_id,
+                     bool is_main_frame,
+                     const GURL& request_url,
+                     scoped_refptr<net::HttpResponseHeaders> response_headers);
 
   // Notify observers that authentication is needed.
   void NotifyAuthNeeded();
@@ -189,6 +208,11 @@ class LoginHandler : public content::LoginDelegate,
 
   LoginAuthRequiredCallback auth_required_callback_;
 
+  // This callback is called if an extension cancels an auth request for a main
+  // frame main resource.
+  base::OnceCallback<void(const content::GlobalRequestID& request_id)>
+      extension_main_frame_cancellation_callback_;
+
   // True if the extensions logic has run and the prompt logic has started.
   bool prompt_started_;
   base::WeakPtrFactory<LoginHandler> weak_factory_{this};
@@ -233,17 +257,5 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 
   DISALLOW_COPY_AND_ASSIGN(AuthSuppliedLoginNotificationDetails);
 };
-
-// Prompts the user for their username and password. The caller may cancel the
-// request by destroying the returned LoginDelegate. It must do this before
-// invalidating the callback.
-std::unique_ptr<content::LoginDelegate> CreateLoginHandler(
-    const net::AuthChallengeInfo& auth_info,
-    content::WebContents* web_contents,
-    const content::GlobalRequestID& request_id,
-    bool is_main_frame,
-    const GURL& url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    LoginAuthRequiredCallback auth_required_callback);
 
 #endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_

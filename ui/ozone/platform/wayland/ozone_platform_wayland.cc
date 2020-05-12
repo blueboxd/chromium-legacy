@@ -75,6 +75,13 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT,
 
     /*supports_vulkan_swap_chain=*/false,
+
+    // Wayland doesn't provide clients with global screen coordinates. Instead,
+    // it forces clients to position windows relative to their top level windows
+    // if the have child-parent relationship. In case of toplevel windows,
+    // clients simply don't know their position on screens and always assume
+    // they are located at some arbitrary position.
+    /*ignore_screen_bounds_for_menus=*/true,
 };
 
 class OzonePlatformWayland : public OzonePlatform {

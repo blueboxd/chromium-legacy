@@ -268,6 +268,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void RenderProcessExited(RenderProcessHost* host,
                            const ChildProcessTerminationInfo& info) override;
 
+  // blink::mojom::WidgetHost implementation.
+  void SetToolTipText(const base::string16& tooltip_text,
+                      base::i18n::TextDirection text_direction_hint) override;
+
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
 
@@ -901,8 +905,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
-  void OnSetTooltipText(const base::string16& tooltip_text,
-                        base::i18n::TextDirection text_direction_hint);
   void OnAutoscrollStart(const gfx::PointF& position);
   void OnAutoscrollFling(const gfx::Vector2dF& velocity);
   void OnAutoscrollEnd();

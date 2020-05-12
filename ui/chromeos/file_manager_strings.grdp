@@ -1381,7 +1381,7 @@
     More...
   </message>
 <message name="IDS_FILE_BROWSER_READONLY_INDICATOR_TOOLTIP" desc="Tooltip for the readonly indicator in the Files app.">
-    Files in this folders are read only. Some activities are not supported.
+    Files in this folder are read only. Some activities are not supported.
   </message>
   <message name="IDS_FILE_BROWSER_SELECTION_MENU_BUTTON_TOOLTIP" desc="Tooltip for the button to open the context menu of currently selected items in the Files app.">
     More...

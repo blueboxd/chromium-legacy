@@ -1195,6 +1195,10 @@ void URLLoader::ContinueOnResponseStarted(net::URLRequest* url_request,
   // If necessary, retrieve the associated origin policy, before sending the
   // response to the client.
   if (origin_policy_manager_ && url_request_->response_headers()) {
+    // The request should have been rejected in IsolationInfo if this were
+    // empty.
+    DCHECK(!url_request_->isolation_info().IsEmpty());
+
     base::Optional<std::string> origin_policy_header;
     std::string origin_policy_header_value;
     if (url_request_->response_headers()->GetNormalizedHeader(
@@ -1206,9 +1210,17 @@ void URLLoader::ContinueOnResponseStarted(net::URLRequest* url_request,
         origin_policy_manager_done =
             base::BindOnce(&URLLoader::OnOriginPolicyManagerRetrieveDone,
                            weak_ptr_factory_.GetWeakPtr());
+
+    // Create IsolationInfo as if this were an uncredentialed subresource
+    // request of the original URL.
+    net::IsolationInfo isolation_info = net::IsolationInfo::Create(
+        net::IsolationInfo::RedirectMode::kUpdateNothing,
+        url_request->isolation_info().top_frame_origin().value(),
+        url_request->isolation_info().frame_origin().value(),
+        net::SiteForCookies());
     origin_policy_manager_->RetrieveOriginPolicy(
-        url::Origin::Create(url_request_->url()), origin_policy_header,
-        std::move(origin_policy_manager_done));
+        url::Origin::Create(url_request_->url()), isolation_info,
+        origin_policy_header, std::move(origin_policy_manager_done));
 
     // The callback will continue by calling
     // `StartReading()` after retrieving the origin

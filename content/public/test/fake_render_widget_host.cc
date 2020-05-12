@@ -46,4 +46,8 @@ void FakeRenderWidgetHost::IntrinsicSizingInfoChanged(
 
 void FakeRenderWidgetHost::SetCursor(const ui::Cursor& cursor) {}
 
+void FakeRenderWidgetHost::SetToolTipText(
+    const base::string16& tooltip_text,
+    base::i18n::TextDirection text_direction_hint) {}
+
 }  // namespace content

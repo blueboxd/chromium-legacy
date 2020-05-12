@@ -337,8 +337,6 @@ class CONTENT_EXPORT RenderWidget
   blink::WebScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
-  void SetToolTipText(const blink::WebString& text,
-                      base::i18n::TextDirection hint) override;
   void SetWindowRect(const blink::WebRect&) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;

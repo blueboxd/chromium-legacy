@@ -20,6 +20,9 @@ namespace blink {
 class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
  public:
   static TestPermissiveDictionary* Create() { return MakeGarbageCollected<TestPermissiveDictionary>(); }
+  static TestPermissiveDictionary* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<TestPermissiveDictionary>();
+  }
 
   TestPermissiveDictionary();
   virtual ~TestPermissiveDictionary();

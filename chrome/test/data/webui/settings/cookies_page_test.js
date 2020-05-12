@@ -106,7 +106,7 @@ suite('CrSettingsCookiesPageTest', function() {
         element: blockAll,
         updates: {
           contentSetting: ContentSetting.BLOCK,
-          cookieControlsMode: CookieControlsMode.ENABLED,
+          cookieControlsMode: CookieControlsMode.BLOCK_THIRD_PARTY,
           blockThirdParty: true,
           clearOnExitForcedOff: true,
         },
@@ -115,7 +115,7 @@ suite('CrSettingsCookiesPageTest', function() {
         element: blockThirdParty,
         updates: {
           contentSetting: ContentSetting.ALLOW,
-          cookieControlsMode: CookieControlsMode.ENABLED,
+          cookieControlsMode: CookieControlsMode.BLOCK_THIRD_PARTY,
           blockThirdParty: true,
           clearOnExitForcedOff: false,
         },
@@ -133,7 +133,7 @@ suite('CrSettingsCookiesPageTest', function() {
         element: allowAll,
         updates: {
           contentSetting: ContentSetting.ALLOW,
-          cookieControlsMode: CookieControlsMode.DISABLED,
+          cookieControlsMode: CookieControlsMode.OFF,
           blockThirdParty: false,
           clearOnExitForcedOff: false,
         },

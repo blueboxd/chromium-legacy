@@ -13,31 +13,26 @@ group("resources") {
     ":info_icon",
     ":password_hide_icon",
     ":password_reveal_icon",
-    ":stale_credentials_illustration",
   ]
 }
 
 imageset("consent_illustration") {
   sources = [
     "consent_illustration.imageset/Contents.json",
-    "consent_illustration.imageset/illustration_dark.png",
-    "consent_illustration.imageset/illustration_light.png",
+    "consent_illustration.imageset/illustration_dark@2x.png",
+    "consent_illustration.imageset/illustration_dark@3x.png",
+    "consent_illustration.imageset/illustration_light@2x.png",
+    "consent_illustration.imageset/illustration_light@3x.png",
   ]
 }
 
 imageset("empty_credentials_illustration") {
   sources = [
     "empty_credentials_illustration.imageset/Contents.json",
-    "empty_credentials_illustration.imageset/illustration_dark.png",
-    "empty_credentials_illustration.imageset/illustration_light.png",
-  ]
-}
-
-imageset("stale_credentials_illustration") {
-  sources = [
-    "stale_credentials_illustration.imageset/Contents.json",
-    "stale_credentials_illustration.imageset/illustration_dark.png",
-    "stale_credentials_illustration.imageset/illustration_light.png",
+    "empty_credentials_illustration.imageset/illustration_dark@2x.png",
+    "empty_credentials_illustration.imageset/illustration_dark@3x.png",
+    "empty_credentials_illustration.imageset/illustration_light@2x.png",
+    "empty_credentials_illustration.imageset/illustration_light@3x.png",
   ]
 }
 

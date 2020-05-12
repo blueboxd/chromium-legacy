@@ -558,10 +558,6 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->ClearanceOffset() : LayoutUnit::Min();
   }
 
-  bool ForceTruncateAtLineClamp() const {
-    return HasRareData() ? rare_data_->ForceTruncateAtLineClamp() : true;
-  }
-
   base::Optional<int> LinesUntilClamp() const {
     return HasRareData() ? rare_data_->LinesUntilClamp() : base::nullopt;
   }
@@ -835,16 +831,6 @@ class CORE_EXPORT NGConstraintSpace final {
       EnsureBlockData()->lines_until_clamp = value;
     }
 
-    int ForceTruncateAtLineClamp() const {
-      return data_union_type == kBlockData
-                 ? block_data_.force_truncate_at_line_clamp
-                 : true;
-    }
-
-    void SetForceTruncateAtLineClamp(bool value) {
-      EnsureBlockData()->force_truncate_at_line_clamp = value;
-    }
-
     NGBoxStrut TableCellBorders() const {
       return data_union_type == kTableCellData
                  ? table_cell_data_.table_cell_borders
@@ -934,13 +920,11 @@ class CORE_EXPORT NGConstraintSpace final {
    private:
     struct BlockData {
       bool MaySkipLayout(const BlockData& other) const {
-        return lines_until_clamp == other.lines_until_clamp &&
-               force_truncate_at_line_clamp ==
-                   other.force_truncate_at_line_clamp;
+        return lines_until_clamp == other.lines_until_clamp;
       }
 
       bool IsInitialForMaySkipLayout() const {
-        return !lines_until_clamp.has_value() && force_truncate_at_line_clamp;
+        return !lines_until_clamp.has_value();
       }
 
       NGMarginStrut margin_strut;
@@ -948,9 +932,6 @@ class CORE_EXPORT NGConstraintSpace final {
       base::Optional<LayoutUnit> forced_bfc_block_offset;
       LayoutUnit clearance_offset = LayoutUnit::Min();
       base::Optional<int> lines_until_clamp;
-      // If true and |lines_until_clamp| == 1, then the line should be truncated
-      // regardless of whether there is more text that follows on the line.
-      bool force_truncate_at_line_clamp = true;
     };
 
     struct TableCellData {

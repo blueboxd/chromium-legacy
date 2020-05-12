@@ -145,6 +145,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_navigation_throttle.h"
+#include "chrome/browser/ui/login/login_tab_helper.h"
 #include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -4783,9 +4784,21 @@ ChromeContentBrowserClient::CreateLoginDelegate(
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {
-  return CreateLoginHandler(
-      auth_info, web_contents, request_id, is_request_for_main_frame, url,
-      std::move(response_headers), std::move(auth_required_callback));
+  // For subresources, create a LoginHandler directly, which may show a login
+  // prompt to the user. Main frame resources go through LoginTabHelper, which
+  // manages a more complicated flow to avoid confusion about which website is
+  // showing the prompt.
+  if (is_request_for_main_frame) {
+    LoginTabHelper::CreateForWebContents(web_contents);
+    return LoginTabHelper::FromWebContents(web_contents)
+        ->CreateAndStartMainFrameLoginDelegate(
+            auth_info, web_contents, request_id, url, response_headers,
+            std::move(auth_required_callback));
+  }
+  std::unique_ptr<LoginHandler> login_handler = LoginHandler::Create(
+      auth_info, web_contents, std::move(auth_required_callback));
+  login_handler->StartSubresource(request_id, url, response_headers);
+  return login_handler;
 }
 
 bool ChromeContentBrowserClient::HandleExternalProtocol(

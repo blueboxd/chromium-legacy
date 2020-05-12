@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.ConditionalTabStripUtils.UNDO_DISMISS_SNACKBAR_DURATION;
+
+import android.content.Context;
 import android.os.Handler;
 import android.view.View;
 
@@ -35,6 +38,8 @@ import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObse
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -46,7 +51,7 @@ import java.util.List;
 /**
  * A mediator for the TabGroupUi. Responsible for managing the internal state of the component.
  */
-public class TabGroupUiMediator {
+public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
     /**
      * An interface to control the TabGroupUi component.
      */
@@ -102,18 +107,21 @@ public class TabGroupUiMediator {
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+    private final SnackbarManager.SnackbarManageable mSnackbarManageable;
+    private final Snackbar mUndoClosureSnackBar;
     private TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
     private PauseResumeWithNativeObserver mPauseResumeWithNativeObserver;
     private boolean mIsTabGroupUiVisible;
     private boolean mIsShowingOverViewMode;
 
-    TabGroupUiMediator(
+    TabGroupUiMediator(Context context,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
             ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
             TabCreatorManager tabCreatorManager, OverviewModeBehavior overviewModeBehavior,
             ThemeColorProvider themeColorProvider,
             @Nullable TabGridDialogMediator.DialogController dialogController,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            SnackbarManager.SnackbarManageable snackbarManageable) {
         mResetHandler = resetHandler;
         mModel = model;
         mTabModelSelector = tabModelSelector;
@@ -123,6 +131,13 @@ public class TabGroupUiMediator {
         mThemeColorProvider = themeColorProvider;
         mTabGridDialogController = dialogController;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
+        mSnackbarManageable = snackbarManageable;
+        mUndoClosureSnackBar =
+                Snackbar.make(context.getString(R.string.undo_tab_strip_closure_message), this,
+                                Snackbar.TYPE_ACTION,
+                                Snackbar.UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO)
+                        .setAction(context.getString(R.string.undo), null)
+                        .setDuration(UNDO_DISMISS_SNACKBAR_DURATION);
 
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -131,6 +146,11 @@ public class TabGroupUiMediator {
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 if (type == TabSelectionType.FROM_NEW) {
                     mAddedTabId = tab.getId();
+                }
+                if (lastId != tab.getId() && mSnackbarManageable.getSnackbarManager().isShowing()) {
+                    // Dismiss undo snackbar when there is a selection of different tab.
+                    mSnackbarManageable.getSnackbarManager().dismissSnackbars(
+                            TabGroupUiMediator.this);
                 }
                 // Maybe activate conditional tab strip for selection from toolbar swipe, but skip
                 // the same tab selection that is probably due to partial toolbar swipe. Also, when
@@ -238,6 +258,7 @@ public class TabGroupUiMediator {
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                mSnackbarManageable.getSnackbarManager().dismissSnackbars(TabGroupUiMediator.this);
                 if (newModel.isIncognito() && newModel.getCount() == 1) {
                     resetTabStripWithRelatedTabsForId(newModel.getTabAt(0).getId());
                 }
@@ -320,6 +341,7 @@ public class TabGroupUiMediator {
             leftButtonOnClickListener = view -> {
                 resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
                 ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.FORBIDDEN);
+                mSnackbarManageable.getSnackbarManager().showSnackbar(mUndoClosureSnackBar);
             };
             mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, R.drawable.btn_close);
         }
@@ -436,6 +458,13 @@ public class TabGroupUiMediator {
                 && TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
             ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);
         }
+    }
+
+    // SnackbarManager.SnackbarController implementation.
+    @Override
+    public void onAction(Object actionData) {
+        ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);
+        resetTabStripWithRelatedTabsForId(mTabModelSelector.getCurrentTabId());
     }
 
     @VisibleForTesting

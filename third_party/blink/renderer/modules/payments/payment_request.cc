@@ -1186,7 +1186,8 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
       GetPendingAcceptPromiseResolver()->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  PaymentMethodChangeEventInit* init = PaymentMethodChangeEventInit::Create();
+  PaymentMethodChangeEventInit* init =
+      PaymentMethodChangeEventInit::Create(script_state->GetIsolate());
   init->setMethodName(method_name);
 
   if (!stringified_details.IsEmpty()) {

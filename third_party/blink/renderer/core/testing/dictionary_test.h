@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -32,13 +33,13 @@ class DictionaryTest : public ScriptWrappable {
   // Stores all members into corresponding fields
   void set(const InternalDictionary*);
   // Sets each member of the given TestDictionary from fields
-  InternalDictionary* get();
+  InternalDictionary* get(v8::Isolate* isolate);
 
   void setDerived(const InternalDictionaryDerived*);
-  InternalDictionaryDerived* getDerived();
+  InternalDictionaryDerived* getDerived(v8::Isolate* isolate);
 
   void setDerivedDerived(const InternalDictionaryDerivedDerived*);
-  InternalDictionaryDerivedDerived* getDerivedDerived();
+  InternalDictionaryDerivedDerived* getDerivedDerived(v8::Isolate* isolate);
 
   void Trace(Visitor*) override;
 

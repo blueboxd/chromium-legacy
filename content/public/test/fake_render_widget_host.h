@@ -39,6 +39,8 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
 
   // blink::mojom::WidgetHost overrides.
   void SetCursor(const ui::Cursor& cursor) override;
+  void SetToolTipText(const base::string16& tooltip_text,
+                      base::i18n::TextDirection text_direction_hint) override;
 
   mojo::AssociatedReceiver<blink::mojom::WidgetHost>&
   widget_host_receiver_for_testing() {

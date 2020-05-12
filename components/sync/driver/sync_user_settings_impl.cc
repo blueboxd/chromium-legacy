@@ -223,9 +223,7 @@ bool SyncUserSettingsImpl::SetDecryptionPassphrase(
 
   DVLOG(1) << "Setting passphrase for decryption.";
 
-  bool result = crypto_->SetDecryptionPassphrase(passphrase);
-  UMA_HISTOGRAM_BOOLEAN("Sync.PassphraseDecryptionSucceeded", result);
-  return result;
+  return crypto_->SetDecryptionPassphrase(passphrase);
 }
 
 void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {

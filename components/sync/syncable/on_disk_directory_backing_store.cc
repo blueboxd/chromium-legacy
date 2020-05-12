@@ -5,22 +5,10 @@
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 
 #include "base/check_op.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 
 namespace syncer {
 namespace syncable {
-
-namespace {
-
-enum HistogramResultEnum {
-  FIRST_TRY_SUCCESS,
-  SECOND_TRY_SUCCESS,
-  SECOND_TRY_FAILURE,
-  RESULT_COUNT
-};
-
-}  // namespace
 
 OnDiskDirectoryBackingStore::OnDiskDirectoryBackingStore(
     const std::string& dir_name,
@@ -66,8 +54,6 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   DirOpenResult result =
       TryLoad(handles_map, metahandles_to_purge, kernel_load_info);
   if (result == OPENED_NEW || result == OPENED_EXISTING) {
-    UMA_HISTOGRAM_ENUMERATION("Sync.DirectoryOpenResult", FIRST_TRY_SUCCESS,
-                              RESULT_COUNT);
     return result;
   }
 
@@ -81,16 +67,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
 
   base::DeleteFile(backing_file_path_, false);
 
-  result = TryLoad(handles_map, metahandles_to_purge, kernel_load_info);
-  if (result == OPENED_NEW || result == OPENED_EXISTING) {
-    UMA_HISTOGRAM_ENUMERATION("Sync.DirectoryOpenResult", SECOND_TRY_SUCCESS,
-                              RESULT_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Sync.DirectoryOpenResult", SECOND_TRY_FAILURE,
-                              RESULT_COUNT);
-  }
-
-  return result;
+  return TryLoad(handles_map, metahandles_to_purge, kernel_load_info);
 }
 
 void OnDiskDirectoryBackingStore::ReportFirstTryOpenFailure() {

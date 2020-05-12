@@ -107,6 +107,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       const;
 
+  mojom::blink::WidgetHost* GetWidgetHostRemote() { return widget_host_.get(); }
+
   // Returns if we should gather begin main frame metrics. If there is no
   // compositor thread this returns false.
   static bool ShouldRecordBeginMainFrameMetrics();

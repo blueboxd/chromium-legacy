@@ -40,11 +40,13 @@ class LayoutWorkletTest : public PageTestBase {
     proxy_ = nullptr;
   }
 
-  ScriptValue EvaluateScriptModule(const String& source_code) {
-    ScriptState* script_state =
-        GetGlobalScope()->ScriptController()->GetScriptState();
+  ScriptState* GetScriptState() {
+    return GetGlobalScope()->ScriptController()->GetScriptState();
+  }
+
+  ModuleEvaluationResult EvaluateScriptModule(const String& source_code) {
+    ScriptState* script_state = GetScriptState();
     EXPECT_TRUE(script_state);
-    ScriptState::Scope scope(script_state);
 
     KURL js_url("https://example.com/worklet.js");
     v8::Local<v8::Module> module = ModuleRecord::Compile(
@@ -66,14 +68,16 @@ class LayoutWorkletTest : public PageTestBase {
 };
 
 TEST_F(LayoutWorkletTest, ParseProperties) {
-  EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  EXPECT_TRUE(EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       static get inputProperties() { return ['--prop', 'flex-basis', 'thing'] }
       static get childInputProperties() { return ['--child-prop', 'margin-top', 'other-thing'] }
       async intrinsicSizes() { }
       async layout() { }
     });
-  )JS");
+  )JS")
+                  .IsSuccess());
 
   LayoutWorkletGlobalScope* global_scope = GetGlobalScope();
   CSSLayoutDefinition* definition = global_scope->FindDefinition("foo");
@@ -100,16 +104,17 @@ TEST_F(LayoutWorkletTest, ParseProperties) {
 // layout API actually have effects that we can test in script.
 
 TEST_F(LayoutWorkletTest, RegisterLayout) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       async intrinsicSizes() { }
       async layout() { }
     });
   )JS");
 
-  EXPECT_TRUE(error.IsEmpty());
+  EXPECT_TRUE(result.IsSuccess());
 
-  error = EvaluateScriptModule(R"JS(
+  result = EvaluateScriptModule(R"JS(
     registerLayout('bar', class {
       static get inputProperties() { return ['--prop'] }
       static get childInputProperties() { return ['--child-prop'] }
@@ -118,21 +123,23 @@ TEST_F(LayoutWorkletTest, RegisterLayout) {
     });
   )JS");
 
-  EXPECT_TRUE(error.IsEmpty());
+  EXPECT_TRUE(result.IsSuccess());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_EmptyName) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('', class {
     });
   )JS");
 
   // "The empty string is not a valid name."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_Duplicate) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       async intrinsicSizes() { }
       async layout() { }
@@ -144,87 +151,95 @@ TEST_F(LayoutWorkletTest, RegisterLayout_Duplicate) {
   )JS");
 
   // "A class with name:'foo' is already registered."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_NoIntrinsicSizes) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
     });
   )JS");
 
   // "The 'intrinsicSizes' property on the prototype does not exist."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_ThrowingPropertyGetter) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       static get inputProperties() { throw Error(); }
     });
   )JS");
 
   // "Uncaught Error"
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_BadPropertyGetter) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       static get inputProperties() { return 42; }
     });
   )JS");
 
   // "The provided value cannot be converted to a sequence."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_NoPrototype) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     const foo = function() { };
     foo.prototype = undefined;
     registerLayout('foo', foo);
   )JS");
 
   // "The 'prototype' object on the class does not exist."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_BadPrototype) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     const foo = function() { };
     foo.prototype = 42;
     registerLayout('foo', foo);
   )JS");
 
   // "The 'prototype' property on the class is not an object."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_BadIntrinsicSizes) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       get intrinsicSizes() { return 42; }
     });
   )JS");
 
   // "The 'intrinsicSizes' property on the prototype is not a function."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_NoLayout) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       async intrinsicSizes() { }
     });
   )JS");
 
   // "The 'layout' property on the prototype does not exist."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_BadLayout) {
-  ScriptValue error = EvaluateScriptModule(R"JS(
+  ScriptState::Scope scope(GetScriptState());
+  ModuleEvaluationResult result = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
       async intrinsicSizes() { }
       get layout() { return 42; }
@@ -232,7 +247,7 @@ TEST_F(LayoutWorkletTest, RegisterLayout_BadLayout) {
   )JS");
 
   // "The 'layout' property on the prototype is not a function."
-  EXPECT_FALSE(error.IsEmpty());
+  EXPECT_TRUE(result.IsException());
 }
 
 }  // namespace blink

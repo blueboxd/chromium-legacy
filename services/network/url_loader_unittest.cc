@@ -22,6 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -4548,9 +4549,11 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
 class MockOriginPolicyManager : public mojom::OriginPolicyManager {
  public:
   void RetrieveOriginPolicy(const url::Origin& origin,
+                            const net::IsolationInfo& isolation_info,
                             const base::Optional<std::string>& header,
                             RetrieveOriginPolicyCallback callback) override {
     retrieve_origin_policy_called_ = true;
+    isolation_info_ = isolation_info;
     header_ = header;
     OriginPolicy result;
     result.state = OriginPolicyState::kLoaded;
@@ -4561,12 +4564,14 @@ class MockOriginPolicyManager : public mojom::OriginPolicyManager {
 
   void AddExceptionFor(const url::Origin& origin) override {}
 
-  const base::Optional<std::string>& header() { return header_; }
-  bool retrieve_origin_policy_called() {
+  const net::IsolationInfo& isolation_info() const { return isolation_info_; }
+  const base::Optional<std::string>& header() const { return header_; }
+  bool retrieve_origin_policy_called() const {
     return retrieve_origin_policy_called_;
   }
 
  private:
+  net::IsolationInfo isolation_info_;
   base::Optional<std::string> header_ = base::nullopt;
   bool retrieve_origin_policy_called_ = false;
 };
@@ -4584,6 +4589,8 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
       }));
   ASSERT_TRUE(server.Start());
 
+  url::Origin test_server_origin = url::Origin::Create(server.base_url());
+
   // A request that has "obey_origin_policy" set will call the origin policy
   // manager with the correct value of the "Sec-Origin-Policy" header from the
   // response.
@@ -4591,6 +4598,14 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     MockOriginPolicyManager mock_origin_policy_manager;
     ResourceRequest request =
         CreateResourceRequest("GET", server.GetURL("/with_policy"));
+    // This is what the IsolationInfo for a main frame will normally look like.
+    request.trusted_params->isolation_info = net::IsolationInfo::Create(
+        net::IsolationInfo::RedirectMode::kUpdateTopFrame,
+        test_server_origin /* top_frame_origin */,
+        test_server_origin /* frame_origin */,
+        net::SiteForCookies::FromOrigin(test_server_origin));
+    request.site_for_cookies =
+        request.trusted_params->isolation_info.site_for_cookies();
     request.obey_origin_policy = true;
 
     base::RunLoop delete_run_loop;
@@ -4624,6 +4639,17 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
               loader_client.response_head()->origin_policy.value().state);
     EXPECT_EQ(server.base_url(),
               loader_client.response_head()->origin_policy.value().policy_url);
+
+    // Check IsolationInfo sent to the OriginPolicyManager. Both origins should
+    // be the same as the |isolation_info| field of
+    // ResourceRequest::trusted_params, but the RedirectMode should be
+    // kUpdateNothing, and the SiteForCookies should be null.
+    EXPECT_TRUE(
+        net::IsolationInfo::Create(
+            net::IsolationInfo::RedirectMode::kUpdateNothing,
+            test_server_origin /* top_frame_origin */,
+            test_server_origin /* frame_origin */, net::SiteForCookies())
+            .IsEqualForTesting(mock_origin_policy_manager.isolation_info()));
   }
 
   // If the "Sec-Origin-Policy" header is not present in the response, still
@@ -4697,6 +4723,60 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
 
     EXPECT_FALSE(mock_origin_policy_manager.retrieve_origin_policy_called());
     EXPECT_FALSE(loader_client.response_head()->origin_policy.has_value());
+  }
+
+  // Check the case where OriginPolicy is fetched for a cross-site subframe -
+  // only difference is the IsolationInfo passed in has two different origins
+  // and a null SiteForCookies..
+  {
+    url::Origin top_frame_origin =
+        url::Origin::Create(GURL("http://top-frame.test/"));
+
+    MockOriginPolicyManager mock_origin_policy_manager;
+    ResourceRequest request =
+        CreateResourceRequest("GET", server.GetURL("/with_policy"));
+    // IsolationInfo used for the ResourceRequest. This is what the
+    // IsolationInfo for a cross-origin subframe will normally look like.
+    request.trusted_params->isolation_info = net::IsolationInfo::Create(
+        net::IsolationInfo::RedirectMode::kUpdateFrameOnly, top_frame_origin,
+        test_server_origin /* frame_origin */, net::SiteForCookies());
+    request.site_for_cookies =
+        request.trusted_params->isolation_info.site_for_cookies();
+    request.obey_origin_policy = true;
+
+    base::RunLoop delete_run_loop;
+    mojo::PendingRemote<mojom::URLLoader> loader;
+    std::unique_ptr<URLLoader> url_loader;
+    mojom::URLLoaderFactoryParams params;
+    TestURLLoaderClient loader_client;
+    params.process_id = mojom::kBrowserProcessId;
+
+    url_loader = std::make_unique<URLLoader>(
+        context(), nullptr /* network_service_client */,
+        nullptr /* network_context_client */,
+        DeleteLoaderCallback(&delete_run_loop, &url_loader),
+        loader.InitWithNewPipeAndPassReceiver(), 0, request,
+        loader_client.CreateRemote(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+        /*coep_reporter=*/nullptr, 0 /* request_id */,
+        0 /* keepalive_request_size */, resource_scheduler_client(), nullptr,
+        nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+        &mock_origin_policy_manager, nullptr /* trust_token_helper */,
+        mojo::NullRemote() /* cookie_observer */);
+
+    loader_client.RunUntilComplete();
+    delete_run_loop.Run();
+
+    EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
+
+    // Check IsolationInfo sent to the OriginPolicyManager. Both origins should
+    // be the same as the |isolation_info| field of
+    // ResourceRequest::trusted_params, but the RedirectMode should be
+    // kUpdateNothing, and the SiteForCookies should be null.
+    EXPECT_TRUE(
+        net::IsolationInfo::Create(
+            net::IsolationInfo::RedirectMode::kUpdateNothing, top_frame_origin,
+            test_server_origin /* frame_origin */, net::SiteForCookies())
+            .IsEqualForTesting(mock_origin_policy_manager.isolation_info()));
   }
 }
 

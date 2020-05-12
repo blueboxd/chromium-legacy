@@ -853,6 +853,10 @@ jumbo_component("views") {
   if (is_fuchsia) {
     sources += [ "controls/menu/menu_config_fuchsia.cc" ]
   }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
 }
 
 jumbo_source_set("test_support") {
@@ -1291,6 +1295,10 @@ test("views_unittests") {
     sources +=
         [ "accessibility/view_ax_platform_node_delegate_auralinux_unittest.cc" ]
     configs += [ "//build/config/linux/atk" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -15,6 +17,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
+#include "third_party/blink/renderer/core/testing/module_test_base.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -88,13 +91,15 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     fetch_tree_was_called_ = true;
   }
 
-  ScriptValue ExecuteModule(ModuleScript* module_script,
-                            CaptureEvalErrorFlag capture_error) final {
+  ModuleEvaluationResult ExecuteModule(
+      ModuleScript* module_script,
+      CaptureEvalErrorFlag capture_error) final {
     EXPECT_EQ(CaptureEvalErrorFlag::kCapture, capture_error);
 
-    ScriptState::Scope scope(script_state_);
-    return ModuleRecord::Evaluate(script_state_, module_script->V8Module(),
-                                  module_script->SourceURL());
+    ScriptState::EscapableScope scope(script_state_);
+    ModuleEvaluationResult result = ModuleRecord::Evaluate(
+        script_state_, module_script->V8Module(), module_script->SourceURL());
+    return result.Escape(&scope);
   }
 
   Member<ScriptState> script_state_;
@@ -202,9 +207,17 @@ class DynamicModuleResolverTestNotReached final : public ScriptFunction {
   }
 };
 
+class DynamicModuleResolverTest : public testing::Test,
+                                  public ParametrizedModuleTest {
+ public:
+  void SetUp() override { ParametrizedModuleTest::SetUp(); }
+
+  void TearDown() override { ParametrizedModuleTest::TearDown(); }
+};
+
 }  // namespace
 
-TEST(DynamicModuleResolverTest, ResolveSuccess) {
+TEST_P(DynamicModuleResolverTest, ResolveSuccess) {
   V8TestingScope scope;
   auto* modulator = MakeGarbageCollected<DynamicModuleResolverTestModulator>(
       scope.GetScriptState());
@@ -243,7 +256,7 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
   EXPECT_EQ("hello", capture->CapturedValue());
 }
 
-TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
+TEST_P(DynamicModuleResolverTest, ResolveSpecifierFailure) {
   V8TestingScope scope;
   auto* modulator = MakeGarbageCollected<DynamicModuleResolverTestModulator>(
       scope.GetScriptState());
@@ -269,7 +282,7 @@ TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
   EXPECT_TRUE(capture->Message().StartsWith("Failed to resolve"));
 }
 
-TEST(DynamicModuleResolverTest, FetchFailure) {
+TEST_P(DynamicModuleResolverTest, FetchFailure) {
   V8TestingScope scope;
   auto* modulator = MakeGarbageCollected<DynamicModuleResolverTestModulator>(
       scope.GetScriptState());
@@ -299,7 +312,7 @@ TEST(DynamicModuleResolverTest, FetchFailure) {
   EXPECT_TRUE(capture->Message().StartsWith("Failed to fetch"));
 }
 
-TEST(DynamicModuleResolverTest, ExceptionThrown) {
+TEST_P(DynamicModuleResolverTest, ExceptionThrown) {
   V8TestingScope scope;
   auto* modulator = MakeGarbageCollected<DynamicModuleResolverTestModulator>(
       scope.GetScriptState());
@@ -338,7 +351,7 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
   EXPECT_EQ("bar", capture->Message());
 }
 
-TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
+TEST_P(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   V8TestingScope scope;
   scope.GetDocument().SetURL(KURL("https://example.com"));
 
@@ -379,7 +392,7 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   EXPECT_EQ("hello", capture->CapturedValue());
 }
 
-TEST(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
+TEST_P(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
   V8TestingScope scope;
   scope.GetDocument().SetURL(KURL("https://example.com"));
 
@@ -401,5 +414,11 @@ TEST(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_TRUE(modulator->fetch_tree_was_called());
 }
+
+// Instantiate tests once with TLA and once without:
+INSTANTIATE_TEST_SUITE_P(DynamicModuleResolverTestGroup,
+                         DynamicModuleResolverTest,
+                         testing::Bool(),
+                         ParametrizedModuleTestParamName());
 
 }  // namespace blink

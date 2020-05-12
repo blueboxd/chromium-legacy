@@ -10,6 +10,7 @@
 #include "net/http/http_util.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/origin_policy/origin_policy_parser.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -18,12 +19,21 @@ namespace network {
 OriginPolicyFetcher::OriginPolicyFetcher(
     OriginPolicyManager* owner_policy_manager,
     const url::Origin& origin,
+    const net::IsolationInfo& isolation_info,
     mojom::URLLoaderFactory* factory,
     mojom::OriginPolicyManager::RetrieveOriginPolicyCallback callback)
     : owner_policy_manager_(owner_policy_manager),
       fetch_url_(GetPolicyURL(origin)),
+      isolation_info_(isolation_info),
       callback_(std::move(callback)) {
   DCHECK(callback_);
+  DCHECK(!isolation_info.IsEmpty());
+  // Policy requests shouldn't update frame origins on redirect.
+  DCHECK_EQ(net::IsolationInfo::RedirectMode::kUpdateNothing,
+            isolation_info.redirect_mode());
+  // While they use CredentialsMode::kOmit, so it shouldn't matter, policy
+  // requests should have a null SiteForCookies.
+  DCHECK(isolation_info.site_for_cookies().IsNull());
   FetchPolicy(factory);
 }
 
@@ -66,9 +76,13 @@ void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
   std::unique_ptr<ResourceRequest> policy_request =
       std::make_unique<ResourceRequest>();
   policy_request->url = fetch_url_;
-  policy_request->request_initiator = url::Origin::Create(fetch_url_);
+  policy_request->request_initiator = isolation_info_.frame_origin().value();
   policy_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   policy_request->redirect_mode = network::mojom::RedirectMode::kError;
+
+  // Set the IsolationInfo for the load of the Origin Policy manifest.
+  policy_request->trusted_params = network::ResourceRequest::TrustedParams();
+  policy_request->trusted_params->isolation_info = isolation_info_;
 
   url_loader_ =
       SimpleURLLoader::Create(std::move(policy_request), traffic_annotation);

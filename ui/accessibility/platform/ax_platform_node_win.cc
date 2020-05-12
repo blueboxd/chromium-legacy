@@ -6978,8 +6978,13 @@ bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
     // TODO(bebeaudr): We might be able to remove ax::mojom::Role::kLink once
     // http://crbug.com/1054514 is fixed. Links should not have to hide their
     // children.
+    // TODO(virens): |kPdfActionableHighlight| needs to follow a fix similar to
+    // links. At present Pdf highlghts have text nodes as children. But, we may
+    // enable pdf highlights to have complex children like links based on user
+    // feedback.
     case ax::mojom::Role::kLink:
     case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kPdfActionableHighlight:
       return true;
     default:
       return false;

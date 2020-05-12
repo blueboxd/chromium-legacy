@@ -25,7 +25,7 @@ namespace policy {
 class PolicyChangeRegistrar;
 }
 
-// // Handles the global state for cookie settings changes and observation.
+// Handles the global state for cookie settings changes and observation.
 class CookieControlsService : public KeyedService {
  public:
   class Observer : public base::CheckedObserver {

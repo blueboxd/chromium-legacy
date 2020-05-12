@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -21,7 +22,10 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
+import org.chromium.chrome.browser.util.AndroidTaskUtils;
 
 import javax.inject.Inject;
 
@@ -30,9 +34,11 @@ import javax.inject.Inject;
  * Add methods here if other components need to communicate with either of these components.
  */
 @ActivityScope
-public class WebappActivityCoordinator implements InflationObserver {
+public class WebappActivityCoordinator
+        implements InflationObserver, PauseResumeWithNativeObserver, StartStopWithNativeObserver {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final WebappInfo mWebappInfo;
+    private final ChromeActivity<?> mActivity;
     private final CurrentPageVerifier mCurrentPageVerifier;
     private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final CustomTabToolbarColorController mToolbarColorController;
@@ -60,6 +66,7 @@ public class WebappActivityCoordinator implements InflationObserver {
 
         mIntentDataProvider = intentDataProvider;
         mWebappInfo = WebappInfo.create(mIntentDataProvider);
+        mActivity = activity;
         mCurrentPageVerifier = currentPageVerifier;
         mDeferredStartupWithStorageHandler = deferredStartupWithStorageHandler;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
@@ -87,6 +94,14 @@ public class WebappActivityCoordinator implements InflationObserver {
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
+
+        // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
+        // if the registry and this web app are already initialized. Must override Strict Mode to
+        // avoid a violation.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            WebappRegistry.getInstance();
+            WebappRegistry.warmUpSharedPrefsForId(mWebappInfo.id());
+        }
     }
 
     /**
@@ -106,6 +121,28 @@ public class WebappActivityCoordinator implements InflationObserver {
         // Before verification completes, optimistically expect it to be successful.
         if (mCurrentPageVerifier.getState() == null) {
             updateUi(true);
+        }
+    }
+
+    @Override
+    public void onStartWithNative() {
+        WebappDirectoryManager.cleanUpDirectories();
+    }
+
+    @Override
+    public void onStopWithNative() {}
+
+    @Override
+    public void onPauseWithNative() {}
+
+    @Override
+    public void onResumeWithNative() {
+        if (!mActivity.isFinishing() && mActivity.getIntent() != null) {
+            // Avoid situations where Android starts two Activities with the same data.
+            // TODO: Determine whether this is still needed now that we use
+            // Activity#finishAndRemoveTask() when handling 'back'.
+            AndroidTaskUtils.finishOtherTasksWithData(
+                    mActivity.getIntent().getData(), mActivity.getTaskId());
         }
     }
 

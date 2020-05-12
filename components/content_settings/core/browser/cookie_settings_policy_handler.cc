@@ -12,9 +12,9 @@
 
 namespace content_settings {
 
-CookieSettingsPolicyHandler::CookieSettingsPolicyHandler() {}
+CookieSettingsPolicyHandler::CookieSettingsPolicyHandler() = default;
 
-CookieSettingsPolicyHandler::~CookieSettingsPolicyHandler() {}
+CookieSettingsPolicyHandler::~CookieSettingsPolicyHandler() = default;
 
 bool CookieSettingsPolicyHandler::CheckPolicySettings(
     const policy::PolicyMap& policies,
@@ -30,10 +30,11 @@ void CookieSettingsPolicyHandler::ApplyPolicySettings(
   const base::Value* third_party_cookie_blocking =
       policies.GetValue(policy::key::kBlockThirdPartyCookies);
   if (third_party_cookie_blocking) {
-    prefs->SetInteger(prefs::kCookieControlsMode,
-                      static_cast<int>(third_party_cookie_blocking->GetBool()
-                                           ? CookieControlsMode::kOn
-                                           : CookieControlsMode::kOff));
+    prefs->SetInteger(
+        prefs::kCookieControlsMode,
+        static_cast<int>(third_party_cookie_blocking->GetBool()
+                             ? CookieControlsMode::kBlockThirdParty
+                             : CookieControlsMode::kOff));
   }
 }
 

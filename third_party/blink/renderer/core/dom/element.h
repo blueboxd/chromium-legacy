@@ -300,8 +300,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // return value should be cached for performance.
   AttributeCollection Attributes() const;
   // This variant will not update the potentially invalid attributes. To be used
-  // when not interested in style attribute or one of the SVG animation
-  // attributes.
+  // when not interested in style attribute or one of the SVG attributes.
   AttributeCollection AttributesWithoutUpdate() const;
 
   void scrollIntoView(ScrollIntoViewOptionsOrBoolean);
@@ -877,6 +876,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   MutableCSSPropertyValueSet& EnsureMutableInlineStyle();
   void ClearMutableInlineStyleIfEmpty();
+
+  CSSPropertyValueSet* CreatePresentationAttributeStyle();
 
   void setTabIndex(int);
   int tabIndex() const;

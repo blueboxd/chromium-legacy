@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -29,6 +30,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
   OriginPolicyFetcher(
       OriginPolicyManager* owner_policy_manager,
       const url::Origin& origin,
+      const net::IsolationInfo& isolation_info,
       mojom::URLLoaderFactory* factory,
       mojom::OriginPolicyManager::RetrieveOriginPolicyCallback callback);
 
@@ -41,6 +43,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
 
   void OnResponseStarted(const GURL& final_url,
                          const mojom::URLResponseHead& response_head);
+
   void OnPolicyHasArrived(std::unique_ptr<std::string> policy_content);
   void FetchPolicy(mojom::URLLoaderFactory* factory);
 
@@ -52,6 +55,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
   GURL fetch_url_;
+  net::IsolationInfo isolation_info_;
 
   // Called back with policy fetch result.
   mojom::OriginPolicyManager::RetrieveOriginPolicyCallback callback_;

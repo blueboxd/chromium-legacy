@@ -61,6 +61,10 @@ BubbleBorder::Arrow GetArrowAlignment(ash::ShelfAlignment alignment) {
   }
 }
 
+// Only one TrayBubbleView is visible at a time, but there are cases where the
+// lifetimes of two different bubbles can overlap briefly.
+int g_current_tray_bubble_showing_count_ = 0;
+
 // Detects any mouse movement. This is needed to detect mouse movements by the
 // user over the bubble if the bubble got created underneath the cursor.
 class MouseMoveDetectorHost : public views::MouseWatcherHost {
@@ -277,14 +281,17 @@ TrayBubbleView::~TrayBubbleView() {
   }
 }
 
+// static
+bool TrayBubbleView::IsATrayBubbleOpen() {
+  return g_current_tray_bubble_showing_count_ > 0;
+}
+
 void TrayBubbleView::InitializeAndShowBubble() {
   GetWidget()->Show();
   UpdateBubble();
 
-  if (IsAnchoredToStatusArea()) {
-    tray_bubble_counter_.emplace(
-        StatusAreaWidget::ForWindow(GetWidget()->GetNativeView()));
-  }
+  if (IsAnchoredToStatusArea())
+    ++g_current_tray_bubble_showing_count_;
 
   // If TrayBubbleView cannot be activated and is shown by clicking on the
   // corresponding tray view, register pre target event handler to reroute key
@@ -373,8 +380,11 @@ void TrayBubbleView::OnWidgetClosing(Widget* widget) {
 
   BubbleDialogDelegateView::OnWidgetClosing(widget);
 
-  if (IsAnchoredToStatusArea())
-    tray_bubble_counter_.reset();
+  if (IsAnchoredToStatusArea()) {
+    --g_current_tray_bubble_showing_count_;
+  }
+  DCHECK_GE(g_current_tray_bubble_showing_count_, 0)
+      << "Closing " << widget->GetName();
 }
 
 void TrayBubbleView::OnWidgetActivationChanged(Widget* widget, bool active) {

@@ -33,14 +33,11 @@
 #include <algorithm>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -159,13 +156,7 @@ CSSPropertyValueSet* ComputePresentationAttributeStyle(Element& element) {
   }
 
   // No entry in the cache or cannot be cached. Miss. Create a new property set.
-  auto* style = MakeGarbageCollected<MutableCSSPropertyValueSet>(
-      element.IsSVGElement() ? kSVGAttributeMode : kHTMLStandardMode);
-  AttributeCollection attributes = element.AttributesWithoutUpdate();
-  for (const Attribute& attr : attributes) {
-    element.CollectStyleForPresentationAttribute(attr.GetName(), attr.Value(),
-                                                 style);
-  }
+  CSSPropertyValueSet* style = element.CreatePresentationAttributeStyle();
 
   // Cannot be cached, so return without inserting into cache.
   if (!cache_hash)

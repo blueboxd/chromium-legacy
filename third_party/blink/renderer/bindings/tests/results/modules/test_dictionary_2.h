@@ -24,6 +24,9 @@ class TestDictionary;
 class MODULES_EXPORT TestDictionary2 : public IDLDictionaryBase {
  public:
   static TestDictionary2* Create() { return MakeGarbageCollected<TestDictionary2>(); }
+  static TestDictionary2* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<TestDictionary2>();
+  }
 
   TestDictionary2();
   virtual ~TestDictionary2();

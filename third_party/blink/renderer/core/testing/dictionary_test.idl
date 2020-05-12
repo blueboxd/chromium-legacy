@@ -4,11 +4,11 @@
 
 interface DictionaryTest {
     void set(optional InternalDictionary testingDictionary = {});
-    InternalDictionary get();
+    [CallWith=Isolate] InternalDictionary get();
 
     void setDerived(InternalDictionaryDerived derived);
-    InternalDictionaryDerived getDerived();
+    [CallWith=Isolate] InternalDictionaryDerived getDerived();
 
     void setDerivedDerived(InternalDictionaryDerivedDerived derived);
-    InternalDictionaryDerivedDerived getDerivedDerived();
+    [CallWith=Isolate] InternalDictionaryDerivedDerived getDerivedDerived();
 };

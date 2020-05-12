@@ -90,6 +90,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
     // Determines if the platform supports vulkan swap chain.
     bool supports_vulkan_swap_chain = false;
+
+    // Wayland only: determines if the client must ignore the screen bounds when
+    // calculating bounds of menu windows.
+    bool ignore_screen_bounds_for_menus = false;
   };
 
   // Properties available in the host process after initialization.

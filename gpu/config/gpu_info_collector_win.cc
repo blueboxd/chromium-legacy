@@ -33,7 +33,7 @@
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "gpu/config/gpu_util.h"
-#include "third_party/vulkan_headers/include/vulkan/vulkan.h"
+#include "third_party/vulkan/include/vulkan/vulkan.h"
 #include "ui/gl/direct_composition_surface_win.h"
 
 namespace gpu {

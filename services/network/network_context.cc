@@ -2300,10 +2300,11 @@ void NetworkContext::GetOriginPolicyManager(
   origin_policy_manager_->AddReceiver(std::move(receiver));
 }
 
-void NetworkContext::CreateUrlLoaderFactoryForNetworkService(
+void NetworkContext::CreateTrustedUrlLoaderFactoryForNetworkService(
     mojo::PendingReceiver<mojom::URLLoaderFactory>
         url_loader_factory_pending_receiver) {
   auto url_loader_factory_params = mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->is_trusted = true;
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   CreateURLLoaderFactory(std::move(url_loader_factory_pending_receiver),
                          std::move(url_loader_factory_params));

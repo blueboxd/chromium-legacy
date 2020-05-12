@@ -80,21 +80,23 @@ SpellCheckRequester& IdleSpellCheckController::GetSpellCheckRequester() const {
 }
 
 LocalDOMWindow& IdleSpellCheckController::GetWindow() const {
-  DCHECK(IsAvailable());
+  DCHECK(GetExecutionContext());
   return *To<LocalDOMWindow>(GetExecutionContext());
 }
 
 Document& IdleSpellCheckController::GetDocument() const {
-  DCHECK(IsAvailable());
+  DCHECK(GetExecutionContext());
   return *GetWindow().document();
 }
 
 bool IdleSpellCheckController::IsSpellCheckingEnabled() const {
+  if (!GetExecutionContext())
+    return false;
   return GetWindow().GetSpellChecker().IsSpellCheckingEnabled();
 }
 
 void IdleSpellCheckController::DisposeIdleCallback() {
-  if (idle_callback_handle_ != kInvalidHandle && IsAvailable())
+  if (idle_callback_handle_ != kInvalidHandle && GetExecutionContext())
     GetDocument().CancelIdleCallback(idle_callback_handle_);
   idle_callback_handle_ = kInvalidHandle;
 }
@@ -109,7 +111,7 @@ void IdleSpellCheckController::Deactivate() {
 }
 
 void IdleSpellCheckController::SetNeedsInvocation() {
-  if (!IsSpellCheckingEnabled() || !IsAvailable()) {
+  if (!IsSpellCheckingEnabled()) {
     Deactivate();
     return;
   }
@@ -135,11 +137,7 @@ void IdleSpellCheckController::SetNeedsInvocation() {
 }
 
 void IdleSpellCheckController::SetNeedsColdModeInvocation() {
-  if (!IsSpellCheckingEnabled()) {
-    Deactivate();
-    return;
-  }
-
+  DCHECK(IsSpellCheckingEnabled());
   if (state_ != State::kInactive && state_ != State::kInHotModeInvocation &&
       state_ != State::kInColdModeInvocation)
     return;
@@ -159,7 +157,7 @@ void IdleSpellCheckController::SetNeedsColdModeInvocation() {
 void IdleSpellCheckController::ColdModeTimerFired() {
   DCHECK_EQ(State::kColdModeTimerStarted, state_);
 
-  if (!IsSpellCheckingEnabled() || !IsAvailable()) {
+  if (!IsSpellCheckingEnabled()) {
     Deactivate();
     return;
   }
@@ -202,7 +200,7 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
   DCHECK_NE(idle_callback_handle_, kInvalidHandle);
   idle_callback_handle_ = kInvalidHandle;
 
-  if (!IsSpellCheckingEnabled() || !IsAvailable()) {
+  if (!IsSpellCheckingEnabled()) {
     Deactivate();
     return;
   }

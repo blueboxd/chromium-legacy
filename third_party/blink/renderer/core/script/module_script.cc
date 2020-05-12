@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/module_script.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -101,12 +102,19 @@ void ModuleScript::Trace(Visitor* visitor) {
 }
 
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) {
+  // We need a HandleScope for the ModuleEvaluationResult that is created
+  // in ::ExecuteModule(...).
+  ScriptState::Scope scope(SettingsObject()->GetScriptState());
   DVLOG(1) << *this << "::RunScript()";
+
   SettingsObject()->ExecuteModule(this,
                                   Modulator::CaptureEvalErrorFlag::kReport);
 }
 
 void ModuleScript::RunScriptOnWorker(WorkerGlobalScope& worker_global_scope) {
+  // We need a HandleScope for the ModuleEvaluationResult that is created
+  // in ::ExecuteModule(...).
+  ScriptState::Scope scope(SettingsObject()->GetScriptState());
   DCHECK(worker_global_scope.IsContextThread());
 
   WorkerReportingProxy& worker_reporting_proxy =
@@ -116,9 +124,9 @@ void ModuleScript::RunScriptOnWorker(WorkerGlobalScope& worker_global_scope) {
   // This |error| is always null because the second argument is |kReport|.
   // TODO(nhiroki): Catch an error when an evaluation error happens.
   // (https://crbug.com/680046)
-  ScriptValue error = SettingsObject()->ExecuteModule(
+  ModuleEvaluationResult result = SettingsObject()->ExecuteModule(
       this, Modulator::CaptureEvalErrorFlag::kReport);
-  worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());
+  worker_reporting_proxy.DidEvaluateModuleScript(result.IsSuccess());
 }
 
 std::ostream& operator<<(std::ostream& stream,

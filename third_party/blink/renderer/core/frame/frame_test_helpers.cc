@@ -259,6 +259,15 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
       frame_widget_host_receiver =
           frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
+  mojo::AssociatedRemote<mojom::blink::Widget> widget_remote;
+  mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
+      widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
+      widget_host_receiver =
+          widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
   // Create a local root, if necessary.
   if (!frame->Parent()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
@@ -266,9 +275,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     // Eliminate this once WebView is no longer a WebWidget.
     WebFrameWidget* frame_widget = WebFrameWidget::CreateForMainFrame(
         widget_client.get(), frame, frame_widget_host.Unbind(),
-        std::move(frame_widget_receiver),
-        CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
-        CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+        std::move(frame_widget_receiver), widget_host.Unbind(),
+        std::move(widget_receiver));
     widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
@@ -340,11 +348,18 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       frame_widget_host_receiver =
           frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
+  mojo::AssociatedRemote<mojom::blink::Widget> widget_remote;
+  mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
+      widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
+      widget_host_receiver =
+          widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
   WebFrameWidget* frame_widget = WebFrameWidget::CreateForChildLocalRoot(
       widget_client, frame, frame_widget_host.Unbind(),
-      std::move(frame_widget_receiver),
-      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+      std::move(frame_widget_receiver), widget_host.Unbind(),
+      std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
   widget_client->SetFrameWidget(frame_widget);
   widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
@@ -421,13 +436,21 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       frame_widget_host_receiver =
           frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
+  mojo::AssociatedRemote<mojom::blink::Widget> widget_remote;
+  mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
+      widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host;
+  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
+      widget_host_receiver =
+          widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   WebFrameWidget* widget = blink::WebFrameWidget::CreateForMainFrame(
       test_web_widget_client_, frame, frame_widget_host.Unbind(),
-      std::move(frame_widget_receiver),
-      CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
-      CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+      std::move(frame_widget_receiver), widget_host.Unbind(),
+      std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
   test_web_widget_client_->SetFrameWidget(widget);
   test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(

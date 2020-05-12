@@ -67,9 +67,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       context_(context),
       baseline_type_(container_builder_.Style().GetFontBaseline()),
       is_horizontal_writing_mode_(
-          blink::IsHorizontalWritingMode(space.GetWritingMode())),
-      truncate_type_(
-          static_cast<unsigned>(TruncateTypeFromConstraintSpace(space))) {
+          blink::IsHorizontalWritingMode(space.GetWritingMode())) {
   DCHECK(context);
   quirks_mode_ = inline_node.InLineHeightQuirksMode();
 }
@@ -320,7 +318,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   if (UNLIKELY((inline_size >
                     line_info->AvailableWidth() - line_info->TextIndent() &&
                 node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
-               ShouldTruncateForLineClamp(*line_info))) {
+               ConstraintSpace().LinesUntilClamp() == 1)) {
     // TODO(kojii): |NGLineTruncator| does not support |Child|-based truncation
     // yet, so create |NGPhysicalTextFragment| first.
     if (has_logical_text_items) {
@@ -1148,24 +1146,6 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
   }
   DCHECK_EQ(line_box_.size(), visual_items.size());
   line_box_ = std::move(visual_items);
-}
-
-// static
-NGInlineLayoutAlgorithm::TruncateType
-NGInlineLayoutAlgorithm::TruncateTypeFromConstraintSpace(
-    const NGConstraintSpace& space) {
-  if (space.LinesUntilClamp() != 1)
-    return TruncateType::kDefault;
-  return space.ForceTruncateAtLineClamp() ? TruncateType::kAlways
-                                          : TruncateType::kIfNotLastLine;
-}
-
-bool NGInlineLayoutAlgorithm::ShouldTruncateForLineClamp(
-    const NGLineInfo& line_info) const {
-  const TruncateType truncate_type = static_cast<TruncateType>(truncate_type_);
-  return truncate_type == TruncateType::kAlways ||
-         (truncate_type == TruncateType::kIfNotLastLine &&
-          !line_info.IsLastLine());
 }
 
 }  // namespace blink

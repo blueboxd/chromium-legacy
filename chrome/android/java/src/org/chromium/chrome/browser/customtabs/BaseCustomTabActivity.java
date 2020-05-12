@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Pair;
@@ -51,6 +54,7 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
  */
 public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityComponent>
         extends ChromeActivity<C> {
+    protected BrowserServicesIntentDataProvider mIntentDataProvider;
     protected CustomTabDelegateFactory mDelegateFactory;
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
@@ -78,7 +82,9 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
      * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
      */
     @VisibleForTesting
-    public abstract BrowserServicesIntentDataProvider getIntentDataProvider();
+    public BrowserServicesIntentDataProvider getIntentDataProvider() {
+        return mIntentDataProvider;
+    }
 
     /**
      * @return Whether the activity window is initially translucent.
@@ -111,7 +117,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
 
         // Color scheme doesn't matter here: currently we don't support updating UI using Intents.
         BrowserServicesIntentDataProvider dataProvider =
-                buildIntentDataProvider(intent, CustomTabsIntent.COLOR_SCHEME_LIGHT);
+                buildIntentDataProvider(intent, COLOR_SCHEME_LIGHT);
 
         mCustomTabIntentHandler.onNewIntent(dataProvider);
     }
@@ -161,6 +167,19 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
 
     @Override
     public void performPreInflationStartup() {
+        // Parse the data from the Intent before calling super to allow the Intent to customize
+        // the Activity parameters, including the background of the page.
+        // Note that color scheme is fixed for the lifetime of Activity: if the system setting
+        // changes, we recreate the activity.
+        mIntentDataProvider = buildIntentDataProvider(getIntent(), getColorScheme());
+
+        if (mIntentDataProvider == null) {
+            // |mIntentDataProvider| is null if the WebAPK server vended an invalid WebAPK (WebAPK
+            // correctly signed, mandatory <meta-data> missing).
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
+
         super.performPreInflationStartup();
 
         WebappExtras webappExtras = getIntentDataProvider().getWebappExtras();
@@ -170,6 +189,15 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
             // bringing it to the foreground via Android Recents.
             setTitle(webappExtras.shortName);
         }
+    }
+
+    private int getColorScheme() {
+        if (mNightModeStateController != null) {
+            return mNightModeStateController.isInNightMode() ? COLOR_SCHEME_DARK
+                                                             : COLOR_SCHEME_LIGHT;
+        }
+        assert false : "NightModeStateController should have been already created";
+        return COLOR_SCHEME_LIGHT;
     }
 
     @Override
@@ -315,6 +343,9 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         }
         super.initDeferredStartupForActivity();
     }
+
+    @Override
+    public void onUpdateStateChanged() {}
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {

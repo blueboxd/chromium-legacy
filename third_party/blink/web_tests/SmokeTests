@@ -97,7 +97,7 @@ editing/pasteboard/pasting-empty-html-falls-back-to-text.html
 editing/selection/select_all/select_all_in_contenteditable.html
 editing/selection/4402375.html
 editing/selection/5794920-1.html
-editing/selection/6476.html
+editing/selection/caret_at_soft_line_break.html
 editing/selection/collapse/collapse_before_select.html
 editing/selection/leave-requested-block.html
 editing/selection/modify_move/move-by-character-001.html

@@ -58,7 +58,6 @@
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
 #include "ash/shelf/test/widget_animation_waiter.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -3471,37 +3470,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfRemainsCenteredOnSecondDisplay) {
   // The app icon should be at the horizontal center of each display.
   EXPECT_EQ(display_1.bounds().CenterPoint().x(), app_center_1.x());
   EXPECT_EQ(display_2.bounds().CenterPoint().x(), app_center_2.x());
-}
-
-// Verifies that showing the system tray view on the secondary display
-// should not affect the auto-hide shelf on the primary display
-// (https://crbug.com/1079464).
-TEST_F(ShelfLayoutManagerTest, VerifyAutoHideBehaviorOnMultipleDisplays) {
-  UpdateDisplay("800x600, 800x600");
-  Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
-  CreateTestWidget();
-
-  // The primary shelf should be hidden.
-  ASSERT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-
-  // Set focus on the secondary display.
-  aura::Window* secondary_root_window =
-      Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id());
-  Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-      secondary_root_window);
-
-  // Show the system tray on the secondary display.
-  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      TOGGLE_SYSTEM_TRAY_BUBBLE, {});
-  Shelf* secondary_shelf =
-      RootWindowController::ForWindow(secondary_root_window)->shelf();
-  ASSERT_TRUE(secondary_shelf->status_area_widget()->IsMessageBubbleShown());
-  ASSERT_FALSE(GetPrimaryUnifiedSystemTray()->IsBubbleShown());
-
-  // Verify that the primary shelf is still hidden.
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 // Tests that pinned app icons are visible on non-primary displays.

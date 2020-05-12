@@ -38,6 +38,7 @@ public class ListMenuButton
     private AnchoredPopupWindow mPopupMenu;
     private ListMenuButtonDelegate mDelegate;
     private ObserverList<PopupMenuShownListener> mPopupListeners = new ObserverList<>();
+    private boolean mTryToFitLargestItem = false;
 
     /**
      * Creates a new {@link ListMenuButton}.
@@ -122,6 +123,9 @@ public class ListMenuButton
         mPopupMenu.setVerticalOverlapAnchor(mMenuVerticalOverlapAnchor);
         mPopupMenu.setHorizontalOverlapAnchor(mMenuHorizontalOverlapAnchor);
         mPopupMenu.setMaxWidth(mMenuMaxWidth);
+        if (mTryToFitLargestItem) {
+            mPopupMenu.setDesiredContentWidth(menu.getMaxItemWidth());
+        }
         mPopupMenu.setFocusable(true);
         mPopupMenu.setLayoutObserver(this);
         mPopupMenu.addOnDismissListener(() -> { mPopupMenu = null; });
@@ -151,6 +155,20 @@ public class ListMenuButton
             boolean positionBelow, int x, int y, int width, int height, Rect anchorRect) {
         mPopupMenu.setAnimationStyle(
                 positionBelow ? R.style.OverflowMenuAnim : R.style.OverflowMenuAnimBottom);
+    }
+
+    /**
+     * Determines whether to try to fit the largest menu item without overflowing by measuring the
+     * exact width of each item.
+     *
+     * WARNING: do not call when the menu list has more than a handful of items, the performance
+     * will be terrible since it measures every single item.
+     *
+     * @param value Determines whether to try to exactly fit the width of the largest item in the
+     *              list.
+     */
+    public void tryToFitLargestItem(boolean value) {
+        mTryToFitLargestItem = value;
     }
 
     // View implementation.

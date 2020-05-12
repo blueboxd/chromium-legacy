@@ -223,7 +223,7 @@ bool CookieSettings::IsCookieControlsEnabled() {
       pref_change_registrar_.prefs()->GetInteger(prefs::kCookieControlsMode));
 
   switch (mode) {
-    case CookieControlsMode::kOn:
+    case CookieControlsMode::kBlockThirdParty:
       return true;
     case CookieControlsMode::kIncognitoOnly:
       return is_incognito_;

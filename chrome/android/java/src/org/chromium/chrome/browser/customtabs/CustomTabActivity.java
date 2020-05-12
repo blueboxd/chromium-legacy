@@ -61,7 +61,6 @@ import org.chromium.content_public.browser.WebContents;
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
 public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityComponent> {
-    private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
     private TrustedWebActivityCoordinator mTwaCoordinator;
@@ -99,13 +98,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
 
     @Override
     public void performPreInflationStartup() {
-        // Parse the data from the Intent before calling super to allow the Intent to customize
-        // the Activity parameters, including the background of the page.
-        // Note that color scheme is fixed for the lifetime of Activity: if the system setting
-        // changes, we recreate the activity.
-        mIntentDataProvider = (CustomTabIntentDataProvider) buildIntentDataProvider(
-                getIntent(), getColorScheme());
-
         super.performPreInflationStartup();
         mTabProvider.addObserver(mTabChangeObserver);
         // We might have missed an onInitialTabCreated event.
@@ -114,15 +106,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         mSession = mIntentDataProvider.getSession();
 
         CustomTabNavigationBarController.updateNavigationBarColor(this, mIntentDataProvider);
-    }
-
-    private int getColorScheme() {
-        if (mNightModeStateController != null) {
-            return mNightModeStateController.isInNightMode() ? COLOR_SCHEME_DARK :
-                    COLOR_SCHEME_LIGHT;
-        }
-        assert false : "NightModeStateController should have been already created";
-        return COLOR_SCHEME_LIGHT;
     }
 
     @Override
@@ -201,8 +184,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         int menuIndex =
                 CustomTabAppMenuPropertiesDelegate.getIndexOfMenuItemFromBundle(menuItemData);
         if (menuIndex >= 0) {
-            mIntentDataProvider.clickMenuItemWithUrlAndTitle(
-                    this, menuIndex, getActivityTab().getUrlString(), getActivityTab().getTitle());
+            ((CustomTabIntentDataProvider) mIntentDataProvider)
+                    .clickMenuItemWithUrlAndTitle(this, menuIndex, getActivityTab().getUrlString(),
+                            getActivityTab().getTitle());
             RecordUserAction.record("CustomTabsMenuCustomMenuItem");
             return true;
         }
@@ -241,17 +225,9 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     }
 
     @Override
-    public void onUpdateStateChanged() {}
-
-    @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
             Intent intent, @CustomTabsIntent.ColorScheme int colorScheme) {
         return new CustomTabIntentDataProvider(intent, this, colorScheme);
-    }
-
-    @Override
-    public BrowserServicesIntentDataProvider getIntentDataProvider() {
-        return mIntentDataProvider;
     }
 
     @Override

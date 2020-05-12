@@ -1838,11 +1838,6 @@ WebRect RenderWidget::ViewRect() {
   return rect;
 }
 
-void RenderWidget::SetToolTipText(const blink::WebString& text,
-                                  base::i18n::TextDirection hint) {
-  Send(new WidgetHostMsg_SetTooltipText(routing_id_, text.Utf16(), hint));
-}
-
 void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
   // This path is for the renderer to change the on-screen position/size of
   // the widget by changing its window rect. This is not possible for

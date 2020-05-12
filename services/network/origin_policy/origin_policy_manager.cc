@@ -32,6 +32,7 @@ void OriginPolicyManager::AddReceiver(
 
 void OriginPolicyManager::RetrieveOriginPolicy(
     const url::Origin& origin,
+    const net::IsolationInfo& isolation_info,
     const base::Optional<std::string>& header,
     RetrieveOriginPolicyCallback callback) {
   DCHECK(origin.GetURL().is_valid());
@@ -56,7 +57,8 @@ void OriginPolicyManager::RetrieveOriginPolicy(
   // TODO(https://crbug.com/1042049): actually used parsed_header.
 
   origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
-      this, origin, url_loader_factory_.get(), std::move(callback)));
+      this, origin, isolation_info, url_loader_factory_.get(),
+      std::move(callback)));
 }
 
 void OriginPolicyManager::AddExceptionFor(const url::Origin& origin) {
@@ -75,7 +77,7 @@ void OriginPolicyManager::FetcherDone(OriginPolicyFetcher* fetcher,
 
 void OriginPolicyManager::CreateOrRecreateURLLoaderFactory() {
   url_loader_factory_.reset();
-  owner_network_context_->CreateUrlLoaderFactoryForNetworkService(
+  owner_network_context_->CreateTrustedUrlLoaderFactoryForNetworkService(
       url_loader_factory_.BindNewPipeAndPassReceiver());
 
   // This disconnect handler is necessary to avoid crbug.com/1047275.

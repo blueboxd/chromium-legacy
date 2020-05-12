@@ -74,7 +74,8 @@ class DummyModulator : public Modulator {
   ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) override;
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
       v8::Local<v8::Module>) override;
-  ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
+  ModuleEvaluationResult ExecuteModule(ModuleScript*,
+                                       CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType,
       util::PassKey<ModuleScriptLoader>) override;

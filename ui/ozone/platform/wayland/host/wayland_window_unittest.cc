@@ -1003,9 +1003,7 @@ TEST_P(WaylandWindowTest, DispatchWindowResize) {
 }
 
 // Tests WaylandWindow repositions menu windows to be relative to parent window
-// in a right way. Also, tests it sends right anchor and is able to calculate
-// bounds back from relative to parent to be relative to screen/toplevel window.
-// All bounds values are taken by manually running the browser.
+// in a right way.
 TEST_P(WaylandWindowTest, AdjustPopupBounds) {
   PopupPosition menu_window_positioner, nested_menu_window_positioner;
 
@@ -1174,97 +1172,6 @@ TEST_P(WaylandWindowTest, AdjustPopupBounds) {
               OnBoundsChanged(gfx::Rect({440, 76}, menu_window_bounds.size())));
   SendConfigureEventPopup(menu_window_widget,
                           gfx::Rect({440, 76}, menu_window_bounds.size()));
-
-  Sync();
-
-  VerifyAndClearExpectations();
-
-  // Case 7: imagine the top level window has the size corresponding near to the
-  // maximum work area of a display. Despite being unaware where the top level
-  // window is, Chromium positions the nested menu window to be on the left side
-  // of the menu window. But, WaylandWindow must reposition it to be on the
-  // right side of the menu window, and let the Wayland compositor decide how to
-  // position the nested menu (if its pixels do not fit one display, it can be
-  // flipped along x-axis). PS: all the values are taken after manually using
-  // the browser and logging bounds.
-  nested_menu_window.reset();
-  menu_window.reset();
-
-  window_->SetBounds(gfx::Rect(0, 0, 2493, 1413));
-
-  menu_window_bounds.set_origin({2206, 67});
-  menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::kMenu, toplevel_window->GetWidget(),
-      menu_window_bounds, &menu_window_delegate);
-  EXPECT_TRUE(menu_window);
-
-  Sync();
-
-  menu_window_widget = menu_window->GetWidget();
-  menu_window_positioner.anchor_rect.set_origin({2205, 37});
-  VerifyXdgPopupPosition(menu_window_widget, menu_window_positioner);
-
-  EXPECT_CALL(menu_window_delegate, OnBoundsChanged(_)).Times(0);
-  SendConfigureEventPopup(menu_window_widget, menu_window_bounds);
-
-  Sync();
-
-  nested_menu_window_bounds.set_origin({1905, 147});
-  nested_menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::kMenu, menu_window_widget, nested_menu_window_bounds,
-      &nested_menu_window_delegate);
-  EXPECT_TRUE(nested_menu_window);
-
-  Sync();
-
-  nested_menu_window_widget = nested_menu_window->GetWidget();
-  nested_menu_window_positioner.anchor_rect.set_origin({4, 80});
-  VerifyXdgPopupPosition(nested_menu_window_widget,
-                         nested_menu_window_positioner);
-
-  VerifyAndClearExpectations();
-
-  // Case 8: now, the top level window becomes maximized. Compared to the case
-  // 7, despite having the size corresponding to the work area of a display, the
-  // WaylandWindow must not reposition the nested menu window to the right side,
-  // and let it be on the left side of a menu window as long as letting the
-  // Wayland compositor repositioning the nested window may result in a window
-  // shown on another display.
-  auto active_maximized = MakeStateArray(
-      {XDG_TOPLEVEL_STATE_ACTIVATED, XDG_TOPLEVEL_STATE_MAXIMIZED});
-  EXPECT_CALL(*GetXdgToplevel(), SetMaximized());
-
-  window_->Maximize();
-  SendConfigureEvent(2493, 1413, 1, active_maximized.get());
-
-  Sync();
-
-  nested_menu_window.reset();
-
-  nested_menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::kMenu, menu_window_widget, nested_menu_window_bounds,
-      &nested_menu_window_delegate);
-  EXPECT_TRUE(nested_menu_window);
-
-  Sync();
-
-  nested_menu_window_widget = nested_menu_window->GetWidget();
-  // The anchor and gravity must change to be on the right side.
-  if (GetParam() == kXdgShellV6) {
-    nested_menu_window_positioner.anchor =
-        ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_LEFT;
-    nested_menu_window_positioner.gravity =
-        ZXDG_POSITIONER_V6_GRAVITY_BOTTOM | ZXDG_POSITIONER_V6_GRAVITY_LEFT;
-  } else {
-    nested_menu_window_positioner.anchor = XDG_POSITIONER_ANCHOR_TOP_LEFT;
-    nested_menu_window_positioner.gravity = XDG_POSITIONER_GRAVITY_BOTTOM_LEFT;
-  }
-  VerifyXdgPopupPosition(nested_menu_window_widget,
-                         nested_menu_window_positioner);
-
-  calculated_nested_bounds.set_origin({-301, 80});
-  EXPECT_CALL(nested_menu_window_delegate, OnBoundsChanged(_)).Times(0);
-  SendConfigureEventPopup(nested_menu_window_widget, calculated_nested_bounds);
 
   Sync();
 

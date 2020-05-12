@@ -452,7 +452,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Creates a new url loader factory bound to this network context. For use
   // inside the network service.
-  void CreateUrlLoaderFactoryForNetworkService(
+  void CreateTrustedUrlLoaderFactoryForNetworkService(
       mojo::PendingReceiver<mojom::URLLoaderFactory>
           url_loader_factory_pending_receiver);
 

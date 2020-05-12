@@ -207,11 +207,14 @@ class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
   // CaptureEvalErrorFlag is used to implement "rethrow errors" parameter in
   // run-a-module-script.
   // - When "rethrow errors" is to be set, use kCapture for EvaluateModule().
-  // Then EvaluateModule() returns an exception if any (instead of throwing it),
-  // and the caller should rethrow the returned exception. - When "rethrow
-  // errors" is not to be set, use kReport. EvaluateModule() "report the error"
-  // inside it (if any), and always returns null ScriptValue().
-  virtual ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) = 0;
+  // Then EvaluateModule() wraps exceptions in a ModuleEvaluationResult instead
+  // of throwing it and the caller should rethrow the exception.
+  // - When "rethrow errors" is not to be set, use kReport. EvaluateModule()
+  // "report the error" inside it (if any), and returns either a
+  // ModuleEvaluationResult that is empty or contains the successful
+  // evaluation result.
+  virtual ModuleEvaluationResult ExecuteModule(ModuleScript*,
+                                               CaptureEvalErrorFlag) = 0;
 
   virtual ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType,

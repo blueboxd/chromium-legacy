@@ -275,7 +275,6 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
       is_resuming_(IsResumingLayout(params.break_token)),
       exclusion_space_(params.space.ExclusionSpace()),
       lines_until_clamp_(params.space.LinesUntilClamp()),
-      force_truncate_at_line_clamp_(params.space.ForceTruncateAtLineClamp()),
       early_break_(params.early_break) {
   AdjustForFragmentation(BreakToken(), &border_scrollbar_padding_);
   container_builder_.SetIsNewFormattingContext(
@@ -480,8 +479,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   } else if (UNLIKELY(result->Status() ==
                       NGLayoutResult::
                           kNeedsRelayoutWithNoForcedTruncateAtLineClamp)) {
-    DCHECK(force_truncate_at_line_clamp_);
-    return RelayoutNoForcedTruncateForLineClamp();
+    DCHECK(!ignore_line_clamp_);
+    return RelayoutIgnoringLineClamp();
   }
   return result;
 }
@@ -528,16 +527,16 @@ NGBlockLayoutAlgorithm::RelayoutAndBreakEarlier(
 }
 
 NOINLINE scoped_refptr<const NGLayoutResult>
-NGBlockLayoutAlgorithm::RelayoutNoForcedTruncateForLineClamp() {
+NGBlockLayoutAlgorithm::RelayoutIgnoringLineClamp() {
   NGLayoutAlgorithmParams params(Node(),
                                  container_builder_.InitialFragmentGeometry(),
                                  ConstraintSpace(), BreakToken(), nullptr);
-  NGBlockLayoutAlgorithm algorithm_with_forced_truncate(params);
-  algorithm_with_forced_truncate.force_truncate_at_line_clamp_ = false;
+  NGBlockLayoutAlgorithm algorithm_ignoring_line_clamp(params);
+  algorithm_ignoring_line_clamp.ignore_line_clamp_ = true;
   NGBoxFragmentBuilder& new_builder =
-      algorithm_with_forced_truncate.container_builder_;
+      algorithm_ignoring_line_clamp.container_builder_;
   new_builder.SetBoxType(container_builder_.BoxType());
-  return algorithm_with_forced_truncate.Layout();
+  return algorithm_ignoring_line_clamp.Layout();
 }
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
@@ -580,8 +579,9 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     container_builder_.SetAdjoiningObjectTypes(adjoining_object_types);
   }
 
-  if (Style().IsDeprecatedWebkitBoxWithVerticalLineClamp() &&
-      RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled())
+  if (RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled() &&
+      Style().IsDeprecatedWebkitBoxWithVerticalLineClamp() &&
+      !ignore_line_clamp_)
     lines_until_clamp_ = Style().LineClamp();
 
   LayoutUnit content_edge = border_scrollbar_padding_.block_start;
@@ -771,8 +771,8 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     LayoutRubyText(&ruby_text_child);
 
   if (UNLIKELY(ConstraintSpace().IsNewFormattingContext() &&
-               force_truncate_at_line_clamp_ &&
-               intrinsic_block_size_when_clamped_ && lines_until_clamp_ == 0)) {
+               !ignore_line_clamp_ && lines_until_clamp_ == 0 &&
+               intrinsic_block_size_when_clamped_)) {
     // Truncation of the last line was forced, but there are no lines after the
     // truncated line. Rerun layout without forcing truncation. This is only
     // done if line-clamp was specified on the element as the element containing
@@ -2574,7 +2574,6 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
           container_builder_.AdjoiningObjectTypes());
     }
     builder.SetLinesUntilClamp(lines_until_clamp_);
-    builder.SetForceTruncateAtLineClamp(force_truncate_at_line_clamp_);
   } else if (child_data.is_resuming_after_break) {
     // If the child is being resumed after a break, margins inside the child may
     // be adjoining with the fragmentainer boundary, regardless of whether the

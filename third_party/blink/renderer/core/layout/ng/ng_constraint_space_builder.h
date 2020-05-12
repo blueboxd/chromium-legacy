@@ -318,15 +318,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     }
   }
 
-  void SetForceTruncateAtLineClamp(bool value) {
-#if DCHECK_IS_ON()
-    DCHECK(!is_force_truncate_at_line_clamp_set_);
-    is_force_truncate_at_line_clamp_set_ = true;
-#endif
-    if (!value)
-      space_.EnsureRareData()->SetForceTruncateAtLineClamp(value);
-  }
-
   void SetLinesUntilClamp(const base::Optional<int>& clamp) {
 #if DCHECK_IS_ON()
     DCHECK(!is_lines_until_clamp_set_);
@@ -401,7 +392,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_table_cell_intrinsic_padding_set_ = false;
   bool is_custom_layout_data_set_ = false;
   bool is_lines_until_clamp_set_ = false;
-  bool is_force_truncate_at_line_clamp_set_ = false;
 
   bool to_constraint_space_called_ = false;
 #endif

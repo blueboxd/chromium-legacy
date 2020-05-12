@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/script/modulator_impl_base.h"
-
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -325,7 +327,7 @@ void ModulatorImplBase::ProduceCacheModuleTree(
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#run-a-module-script">
-ScriptValue ModulatorImplBase::ExecuteModule(
+ModuleEvaluationResult ModulatorImplBase::ExecuteModule(
     ModuleScript* module_script,
     CaptureEvalErrorFlag capture_error) {
   // <spec step="1">If rethrow errors is not given, let it be false.</spec>
@@ -337,23 +339,24 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   // <spec step="3">Check if we can run script with settings. If this returns
   // "do not run" then return NormalCompletion(empty).</spec>
   if (IsScriptingDisabled())
-    return ScriptValue();
+    return ModuleEvaluationResult::Empty();
 
   // <spec step="4">Prepare to run script given settings.</spec>
   //
   // This is placed here to also cover ModuleRecord::ReportException().
-  ScriptState::Scope scope(script_state_);
+  ScriptState::EscapableScope scope(script_state_);
 
   // <spec step="5">Let evaluationStatus be null.</spec>
   //
-  // |error| corresponds to "evaluationStatus of [[Type]]: throw".
-  ScriptValue error;
+  // |result| corresponds to "evaluationStatus of [[Type]]: throw".
+  ModuleEvaluationResult result = ModuleEvaluationResult::Empty();
 
   // <spec step="6">If script's error to rethrow is not null, ...</spec>
   if (module_script->HasErrorToRethrow()) {
     // <spec step="6">... then set evaluationStatus to Completion { [[Type]]:
     // throw, [[Value]]: script's error to rethrow, [[Target]]: empty }.</spec>
-    error = module_script->CreateErrorToRethrow();
+    result = ModuleEvaluationResult::FromException(
+        module_script->CreateErrorToRethrow().V8Value());
   } else {
     // <spec step="7">Otherwise:</spec>
 
@@ -362,8 +365,8 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     CHECK(!record.IsEmpty());
 
     // <spec step="7.2">Set evaluationStatus to record.Evaluate(). ...</spec>
-    error = ModuleRecord::Evaluate(script_state_, record,
-                                   module_script->SourceURL());
+    result = ModuleRecord::Evaluate(script_state_, record,
+                                    module_script->SourceURL());
 
     // <spec step="7.2">... If Evaluate fails to complete as a result of the
     // user agent aborting the running script, then set evaluationStatus to
@@ -371,7 +374,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
     // DOMException, [[Target]]: empty }.</spec>
 
     // [not specced] Store V8 code cache on successful evaluation.
-    if (error.IsEmpty()) {
+    if (result.IsSuccess()) {
       TaskRunner()->PostTask(
           FROM_HERE,
           WTF::Bind(&ModulatorImplBase::ProduceCacheModuleTreeTopLevel,
@@ -380,21 +383,24 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   }
 
   // <spec step="8">If evaluationStatus is an abrupt completion, then:</spec>
-  if (!error.IsEmpty()) {
+  if (result.IsException()) {
     // <spec step="8.1">If rethrow errors is true, rethrow the exception given
     // by evaluationStatus.[[Value]].</spec>
     if (capture_error == CaptureEvalErrorFlag::kCapture)
-      return error;
+      return result.Escape(&scope);
 
     // <spec step="8.2">Otherwise, report the exception given by
     // evaluationStatus.[[Value]] for script.</spec>
-    ModuleRecord::ReportException(script_state_, error.V8Value());
+    ModuleRecord::ReportException(script_state_, result.GetException());
   }
 
   // <spec step="9">Clean up after running script with settings.</spec>
   //
   // Implemented as the ScriptState::Scope destructor.
-  return ScriptValue();
+  if (base::FeatureList::IsEnabled(features::kTopLevelAwait))
+    return result.Escape(&scope);
+  else
+    return ModuleEvaluationResult::Empty();
 }
 
 void ModulatorImplBase::Trace(Visitor* visitor) {

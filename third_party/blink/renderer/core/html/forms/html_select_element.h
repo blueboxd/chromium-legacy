@@ -122,8 +122,6 @@ class CORE_EXPORT HTMLSelectElement final
   Element* namedItem(const AtomicString& name);
   HTMLOptionElement* item(unsigned index);
 
-  void ScrollToSelection();
-
   bool CanSelectAll() const;
   void SelectAll();
   int ActiveSelectionEndListIndex() const;

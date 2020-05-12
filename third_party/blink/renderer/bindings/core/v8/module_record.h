@@ -120,10 +120,10 @@ class CORE_EXPORT ModuleRecord final {
                                  v8::Local<v8::Module> record,
                                  const KURL& source_url);
 
-  // Returns exception, if any
-  static ScriptValue Evaluate(ScriptState*,
-                              v8::Local<v8::Module> record,
-                              const KURL& source_url);
+  static ModuleEvaluationResult Evaluate(ScriptState*,
+                                         v8::Local<v8::Module> record,
+                                         const KURL& source_url);
+
   static void ReportException(ScriptState*, v8::Local<v8::Value> exception);
 
   static Vector<String> ModuleRequests(ScriptState*,

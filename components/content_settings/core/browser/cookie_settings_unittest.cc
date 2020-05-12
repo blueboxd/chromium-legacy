@@ -174,7 +174,7 @@ TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsDefault) {
 
 TEST_F(ImprovedCookieControlsCookieSettingsTest, CookiesControlsEnabled) {
   prefs_.SetInteger(prefs::kCookieControlsMode,
-                    static_cast<int>(CookieControlsMode::kOn));
+                    static_cast<int>(CookieControlsMode::kBlockThirdParty));
   EXPECT_FALSE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_FALSE(cookie_settings_incognito_->IsCookieAccessAllowed(
@@ -206,7 +206,7 @@ TEST_F(CookieSettingsTest, CookiesControlsEnabledButFeatureDisabled) {
   EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(
       kBlockedSite, kFirstPartySite));
   prefs_.SetInteger(prefs::kCookieControlsMode,
-                    static_cast<int>(CookieControlsMode::kOn));
+                    static_cast<int>(CookieControlsMode::kBlockThirdParty));
   EXPECT_TRUE(
       cookie_settings_->IsCookieAccessAllowed(kBlockedSite, kFirstPartySite));
   EXPECT_TRUE(cookie_settings_incognito_->IsCookieAccessAllowed(

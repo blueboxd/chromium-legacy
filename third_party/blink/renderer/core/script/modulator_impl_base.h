@@ -89,7 +89,8 @@ class ModulatorImplBase : public Modulator {
   ScriptValue InstantiateModule(v8::Local<v8::Module>, const KURL&) override;
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(
       v8::Local<v8::Module>) override;
-  ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
+  ModuleEvaluationResult ExecuteModule(ModuleScript*,
+                                       CaptureEvalErrorFlag) override;
 
   // Populates |reason| and returns true if the dynamic import is disallowed on
   // the associated execution context. In that case, a caller of this function

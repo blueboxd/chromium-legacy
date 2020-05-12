@@ -23,6 +23,9 @@ namespace blink {
 class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
  public:
   static TestDictionaryDerivedImplementedAs* Create() { return MakeGarbageCollected<TestDictionaryDerivedImplementedAs>(); }
+  static TestDictionaryDerivedImplementedAs* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<TestDictionaryDerivedImplementedAs>();
+  }
 
   TestDictionaryDerivedImplementedAs();
   virtual ~TestDictionaryDerivedImplementedAs();

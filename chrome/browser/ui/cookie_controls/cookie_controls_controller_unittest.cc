@@ -72,7 +72,8 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
             web_contents()));
     profile()->GetPrefs()->SetInteger(
         prefs::kCookieControlsMode,
-        static_cast<int>(content_settings::CookieControlsMode::kOn));
+        static_cast<int>(
+            content_settings::CookieControlsMode::kBlockThirdParty));
     NavigateAndCommit(GURL("chrome://newtab"));
 
     cookie_controls_ =

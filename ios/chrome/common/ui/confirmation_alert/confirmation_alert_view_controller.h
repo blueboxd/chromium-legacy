@@ -41,6 +41,10 @@ extern NSString* const
 // The image. Must be set before the view is loaded.
 @property(nonatomic, strong) UIImage* image;
 
+// Sets the custom spacing between the image and the title / subtitle. Must be
+// set before the view is loaded.
+@property(nonatomic, assign) CGFloat customSpacingAfterImage;
+
 // The accessibility label for the image view. If nil, the image won't be
 // accessible.
 @property(nonatomic, strong) NSString* imageAccessibilityLabel;

@@ -580,11 +580,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 break;
             case BLOCK_THIRD_PARTY:
                 allowCookies = true;
-                mode = CookieControlsMode.ON;
+                mode = CookieControlsMode.BLOCK_THIRD_PARTY;
                 break;
             case BLOCK:
                 allowCookies = false;
-                mode = CookieControlsMode.ON;
+                mode = CookieControlsMode.BLOCK_THIRD_PARTY;
                 break;
             default:
                 return;
@@ -594,7 +594,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES,
                 allowCookies);
         getPrefs().setCookieControlsMode(mode);
-        getPrefs().setBlockThirdPartyCookies(mode == CookieControlsMode.ON);
+        getPrefs().setBlockThirdPartyCookies(mode == CookieControlsMode.BLOCK_THIRD_PARTY);
     }
 
     private boolean cookieSettingsExceptionShouldBlock() {

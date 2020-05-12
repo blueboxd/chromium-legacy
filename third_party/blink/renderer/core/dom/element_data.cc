@@ -55,13 +55,13 @@ ElementData::ElementData()
     : bit_field_(IsUniqueFlag::encode(true) | ArraySize::encode(0) |
                  PresentationAttributeStyleIsDirty::encode(false) |
                  StyleAttributeIsDirty::encode(false) |
-                 AnimatedSvgAttributesAreDirty::encode(false)) {}
+                 SvgAttributesAreDirty::encode(false)) {}
 
 ElementData::ElementData(unsigned array_size)
     : bit_field_(IsUniqueFlag::encode(false) | ArraySize::encode(array_size) |
                  PresentationAttributeStyleIsDirty::encode(false) |
                  StyleAttributeIsDirty::encode(false) |
-                 AnimatedSvgAttributesAreDirty::encode(false)) {}
+                 SvgAttributesAreDirty::encode(false)) {}
 
 ElementData::ElementData(const ElementData& other, bool is_unique)
     : bit_field_(
@@ -71,8 +71,8 @@ ElementData::ElementData(const ElementData& other, bool is_unique)
               other.bit_field_.get<PresentationAttributeStyleIsDirty>()) |
           StyleAttributeIsDirty::encode(
               other.bit_field_.get<StyleAttributeIsDirty>()) |
-          AnimatedSvgAttributesAreDirty::encode(
-              other.bit_field_.get<AnimatedSvgAttributesAreDirty>())),
+          SvgAttributesAreDirty::encode(
+              other.bit_field_.get<SvgAttributesAreDirty>())),
       class_names_(other.class_names_),
       id_for_style_resolution_(other.id_for_style_resolution_) {
   // NOTE: The inline style is copied by the subclass copy constructor since we

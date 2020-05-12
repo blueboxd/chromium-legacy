@@ -927,10 +927,9 @@ CookieControlsManagedState GetCookieControlsManagedState(Profile* profile) {
   // kCookieControlsMode == kOn should imply block_third_party is on.
   auto control_mode = static_cast<content_settings::CookieControlsMode>(
       profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
-  DCHECK(control_mode != content_settings::CookieControlsMode::kOn ||
-         block_third_party_on)
-      << "kCookieControlsMode == kOn should imply "
-      << "kBlockThirdPartyCookies is true";
+  DCHECK(control_mode !=
+             content_settings::CookieControlsMode::kBlockThirdParty ||
+         block_third_party_on);
 
   // Get indicators representing each settings source. These may or may not
   // be used depending on the determined managed state.

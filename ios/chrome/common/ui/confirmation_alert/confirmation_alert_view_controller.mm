@@ -66,6 +66,14 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 #pragma mark - Public
 
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _customSpacingAfterImage = kStackViewSpacingAfterIllustration;
+  }
+  return self;
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -78,8 +86,8 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   UILabel* title = [self createTitleLabel];
   UILabel* subtitle = [self createSubtitleLabel];
 
-  self.stackView = [self
-      createStackViewWithArrangedSubviews:@[ self.imageView, title, subtitle ]];
+  NSArray* stackSubviews = @[ self.imageView, title, subtitle ];
+  self.stackView = [self createStackViewWithArrangedSubviews:stackSubviews];
 
   UIScrollView* scrollView = [self createScrollView];
   [scrollView addSubview:self.stackView];
@@ -447,7 +455,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
     (NSArray<UIView*>*)subviews {
   UIStackView* stackView =
       [[UIStackView alloc] initWithArrangedSubviews:subviews];
-  [stackView setCustomSpacing:kStackViewSpacingAfterIllustration
+  [stackView setCustomSpacing:self.customSpacingAfterImage
                     afterView:self.imageView];
 
   if (self.imageHasFixedSize) {

@@ -1585,6 +1585,7 @@ TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
   // Setting the extra title/debug text won't change the window's title, but it
   // will be drawn by the frame header.
   shell_surface->SetExtraTitle(base::ASCIIToUTF16("extra"));
+  surface->Commit();
   EXPECT_EQ(window_title, window->GetTitle());
   EXPECT_TRUE(paint_does_draw_text());
   EXPECT_FALSE(
@@ -1932,6 +1933,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
           shell_surface->GetWidget()->non_client_view()->frame_view());
   // Snapped window can also use auto hide.
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  surface->Commit();
   EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
 }

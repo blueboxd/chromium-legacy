@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
@@ -275,6 +276,8 @@ class CORE_EXPORT WebFrameWidgetBase
   // Ask compositor to composite a frame for testing. This will generate a
   // BeginMainFrame, and update the document lifecycle.
   void SynchronouslyCompositeForTesting(base::TimeTicks frame_time);
+
+  void SetToolTipText(const String& tooltip_text, TextDirection dir);
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

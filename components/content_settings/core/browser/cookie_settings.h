@@ -33,7 +33,7 @@ namespace content_settings {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.content_settings
 enum class CookieControlsMode {
   kOff = 0,
-  kOn = 1,
+  kBlockThirdParty = 1,
   kIncognitoOnly = 2,
   kMaxValue = kIncognitoOnly,
 };

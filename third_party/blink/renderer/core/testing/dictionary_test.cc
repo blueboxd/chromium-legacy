@@ -92,8 +92,8 @@ void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
     callback_function_member_ = testing_dictionary->callbackFunctionMember();
 }
 
-InternalDictionary* DictionaryTest::get() {
-  InternalDictionary* result = InternalDictionary::Create();
+InternalDictionary* DictionaryTest::get(v8::Isolate* isolate) {
+  InternalDictionary* result = InternalDictionary::Create(isolate);
   GetInternals(result);
   return result;
 }
@@ -108,8 +108,9 @@ void DictionaryTest::setDerived(const InternalDictionaryDerived* derived) {
   required_boolean_member_ = derived->requiredBooleanMember();
 }
 
-InternalDictionaryDerived* DictionaryTest::getDerived() {
-  InternalDictionaryDerived* result = InternalDictionaryDerived::Create();
+InternalDictionaryDerived* DictionaryTest::getDerived(v8::Isolate* isolate) {
+  InternalDictionaryDerived* result =
+      InternalDictionaryDerived::Create(isolate);
   GetDerivedInternals(result);
   return result;
 }
@@ -121,9 +122,10 @@ void DictionaryTest::setDerivedDerived(
     derived_derived_string_member_ = derived->derivedDerivedStringMember();
 }
 
-InternalDictionaryDerivedDerived* DictionaryTest::getDerivedDerived() {
+InternalDictionaryDerivedDerived* DictionaryTest::getDerivedDerived(
+    v8::Isolate* isolate) {
   InternalDictionaryDerivedDerived* result =
-      InternalDictionaryDerivedDerived::Create();
+      InternalDictionaryDerivedDerived::Create(isolate);
   GetDerivedDerivedInternals(result);
   return result;
 }

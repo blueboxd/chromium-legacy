@@ -133,9 +133,8 @@ public class CookieControlsBridgeTest {
     @RetryOnFailure
     public void testCookieBridgeWith3PCookiesEnabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Set CookieControlsMode Pref to On
             PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.ON);
+                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
         });
         int currentCallCount = mCallbackHelper.getCallCount();
 
@@ -164,9 +163,8 @@ public class CookieControlsBridgeTest {
     @RetryOnFailure
     public void testCookieBridgeWithChangingBlockedCookiesCount() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Set CookieControlsMode Pref to On
             PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.ON);
+                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
             // Block all cookies
             WebsitePreferenceBridge.setCategoryEnabled(
                     Profile.getLastUsedRegularProfile(), ContentSettingsType.COOKIES, false);

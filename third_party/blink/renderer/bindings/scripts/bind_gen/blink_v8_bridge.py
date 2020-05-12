@@ -269,7 +269,10 @@ def native_value_tag(idl_type):
         return "IDLPromise"
 
     if real_type.is_union:
-        return blink_type_info(real_type).value_t
+        class_name = blink_class_name(real_type.union_definition_object)
+        if real_type.does_include_nullable_type:
+            return "IDLUnionINT<{}>".format(class_name)
+        return "IDLUnionNotINT<{}>".format(class_name)
 
     if real_type.is_nullable:
         return "IDLNullable<{}>".format(native_value_tag(real_type.inner_type))

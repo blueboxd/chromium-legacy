@@ -9,10 +9,10 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_portal_activate_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window_post_message_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/window_post_message_options.h"
 #include "third_party/blink/renderer/core/html/portal/portal_activate_event.h"
-#include "third_party/blink/renderer/core/html/portal/portal_activate_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
@@ -41,7 +41,8 @@ TEST_F(HTMLPortalElementTest, PortalsDisabledInDocument) {
   ScriptState* script_state = ToScriptStateForMainWorld(&GetFrame());
   const auto& console_messages = GetPage().GetConsoleMessageStorage();
 
-  portal->activate(script_state, MakeGarbageCollected<PortalActivateOptions>(),
+  portal->activate(script_state,
+                   PortalActivateOptions::Create(script_state->GetIsolate()),
                    exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(DOMExceptionCode::kNotSupportedError,

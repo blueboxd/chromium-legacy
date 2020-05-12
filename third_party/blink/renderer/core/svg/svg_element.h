@@ -132,7 +132,7 @@ class CORE_EXPORT SVGElement : public Element {
   virtual AffineTransform* AnimateMotionTransform() { return nullptr; }
 
   void InvalidateSVGAttributes() {
-    EnsureUniqueElementData().SetAnimatedSvgAttributesAreDirty(true);
+    EnsureUniqueElementData().SetSvgAttributesAreDirty(true);
   }
   void InvalidateSVGPresentationAttributeStyle() {
     EnsureUniqueElementData().SetPresentationAttributeStyleIsDirty(true);
@@ -146,7 +146,9 @@ class CORE_EXPORT SVGElement : public Element {
   void SetCorrespondingElement(SVGElement*);
   SVGUseElement* GeneratingUseElement() const;
 
-  void SynchronizeAnimatedSVGAttribute(const QualifiedName&) const;
+  void SynchronizeSVGAttribute(const QualifiedName&) const;
+  void CollectStyleForAnimatedPresentationAttributes(
+      MutableCSSPropertyValueSet*);
 
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;

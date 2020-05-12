@@ -454,8 +454,8 @@ Polymer({
     this.setPrefValue('profile.block_third_party_cookies', target.checked);
     this.setPrefValue(
         'profile.cookie_controls_mode',
-        target.checked ? CookieControlsMode.ENABLED :
-                         CookieControlsMode.DISABLED);
+        target.checked ? CookieControlsMode.BLOCK_THIRD_PARTY :
+                         CookieControlsMode.OFF);
   },
 
   /**

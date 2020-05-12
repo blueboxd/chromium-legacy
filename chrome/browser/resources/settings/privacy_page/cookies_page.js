@@ -317,7 +317,7 @@ Polymer({
     this.setPrefValue('profile.cookie_controls_mode', controlsMode);
     this.setPrefValue(
         'profile.block_third_party_cookies',
-        controlsMode == CookieControlsMode.ENABLED);
+        controlsMode == CookieControlsMode.BLOCK_THIRD_PARTY);
     this.browserProxy_.setDefaultValueForContentType(
         ContentSettingsTypes.COOKIES, contentSetting);
   },
@@ -331,7 +331,7 @@ Polymer({
   onCookiesControlRadioChange_(event) {
     if (event.detail.value === CookiesControl.ALLOW_ALL) {
       this.setAllPrefs_(
-          CookieControlsMode.DISABLED, this.computeClearOnExitSetting_());
+          CookieControlsMode.OFF, this.computeClearOnExitSetting_());
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_ALL);
     } else if (
@@ -342,11 +342,13 @@ Polymer({
           PrivacyElementInteractions.COOKIES_INCOGNITO);
     } else if (event.detail.value === CookiesControl.BLOCK_THIRD_PARTY) {
       this.setAllPrefs_(
-          CookieControlsMode.ENABLED, this.computeClearOnExitSetting_());
+          CookieControlsMode.BLOCK_THIRD_PARTY,
+          this.computeClearOnExitSetting_());
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_THIRD);
     } else {  // CookiesControl.BLOCK_ALL
-      this.setAllPrefs_(CookieControlsMode.ENABLED, ContentSetting.BLOCK);
+      this.setAllPrefs_(
+          CookieControlsMode.BLOCK_THIRD_PARTY, ContentSetting.BLOCK);
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_BLOCK);
     }

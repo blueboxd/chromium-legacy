@@ -10,14 +10,12 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -37,7 +35,6 @@ import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsMod
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -52,18 +49,12 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
-    private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
-
-    protected static final String BUNDLE_TAB_ID = "tabId";
 
     private static BrowserServicesIntentDataProvider sIntentDataProviderOverride;
 
-    private BrowserServicesIntentDataProvider mIntentDataProvider;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
-
-    private Integer mBrandColor;
 
     private static Integer sOverrideCoreCountForTesting;
 
@@ -85,11 +76,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     public static void setIntentDataProviderForTesting(
             BrowserServicesIntentDataProvider intentDataProvider) {
         sIntentDataProviderOverride = intentDataProvider;
-    }
-
-    @Override
-    public BrowserServicesIntentDataProvider getIntentDataProvider() {
-        return mIntentDataProvider;
     }
 
     @Override
@@ -171,30 +157,9 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     @Override
     public void performPreInflationStartup() {
-        mIntentDataProvider =
-                buildIntentDataProvider(getIntent(), CustomTabsIntent.COLOR_SCHEME_LIGHT);
-
-        if (mIntentDataProvider == null) {
-            // If {@link info} is null, there isn't much we can do, abort.
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
-            return;
-        }
-
-        WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
-
-        // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
-        // if the registry and this web app are already initialized. Must override Strict Mode to
-        // avoid a violation.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            WebappRegistry.getInstance();
-            WebappRegistry.warmUpSharedPrefsForId(webappExtras.id);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
         super.performPreInflationStartup();
 
+        WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
         if (webappExtras.displayMode == WebDisplayMode.FULLSCREEN) {
             new ImmersiveModeController(getLifecycleDispatcher(), this)
                     .enterImmersiveMode(LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
@@ -226,26 +191,9 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    public void onStartWithNative() {
-        super.onStartWithNative();
-        WebappDirectoryManager.cleanUpDirectories();
-    }
-
-    @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         getFullscreenManager().exitPersistentFullscreenMode();
-    }
-
-    @Override
-    public void onResume() {
-        if (!isFinishing()) {
-            if (getIntent() != null) {
-                // Avoid situations where Android starts two Activities with the same data.
-                AndroidTaskUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
-            }
-        }
-        super.onResume();
     }
 
     @Override
@@ -324,7 +272,4 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                                             WebappInfo.create(mIntentDataProvider)),
                 isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
     }
-
-    @Override
-    public void onUpdateStateChanged() {}
 }

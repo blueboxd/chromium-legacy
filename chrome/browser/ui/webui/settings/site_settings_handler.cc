@@ -1097,7 +1097,7 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     // Clear any existing embargo status if the new setting isn't block.
     if (setting != CONTENT_SETTING_BLOCK) {
       PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
-          ->RemoveEmbargoByUrl(origin, content_type);
+          ->RemoveEmbargoAndResetCounts(origin, content_type);
     }
     map->SetContentSettingDefaultScope(origin, origin, content_type,
                                        std::string(), setting);
@@ -1200,10 +1200,9 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
     }
   }
 
-  auto* auto_blocker =
-      PermissionDecisionAutoBlockerFactory::GetForProfile(profile);
-  // End embargo if currently active, no-op otherwise.
-  auto_blocker->RemoveEmbargoByUrl(GURL(primary_pattern_string), content_type);
+  // End embargo if currently active.
+  PermissionDecisionAutoBlockerFactory::GetForProfile(profile)
+      ->RemoveEmbargoAndResetCounts(GURL(primary_pattern_string), content_type);
 
   content_settings::LogWebSiteSettingsPermissionChange(
       content_type, ContentSetting::CONTENT_SETTING_DEFAULT);

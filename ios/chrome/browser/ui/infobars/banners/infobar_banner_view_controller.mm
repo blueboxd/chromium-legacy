@@ -207,6 +207,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   UIStackView* labelsStackView = [[UIStackView alloc]
       initWithArrangedSubviews:@[ self.titleLabel, self.subTitleLabel ]];
   labelsStackView.axis = UILayoutConstraintAxisVertical;
+  labelsStackView.layoutMarginsRelativeArrangement = YES;
+  labelsStackView.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
+      kContainerStackVerticalPadding, 0, kContainerStackVerticalPadding, 0);
 
   // Button setup.
   self.infobarButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -226,6 +229,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.infobarButton.pointerInteractionEnabled = YES;
+      self.infobarButton.pointerStyleProvider =
+          ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                           UIPointerShape* proposedShape) {
+        UIPointerShape* shape =
+            [UIPointerShape shapeWithRoundedRect:button.frame
+                                    cornerRadius:kBannerViewCornerRadius];
+        return [UIPointerStyle styleWithEffect:proposedEffect shape:shape];
+      };
     }
   }
 #endif  // defined(__IPHONE_13_4)
@@ -279,11 +290,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   containerStack.axis = UILayoutConstraintAxisHorizontal;
   containerStack.spacing = kContainerStackSpacing;
   containerStack.distribution = UIStackViewDistributionFill;
-  containerStack.alignment = UIStackViewAlignmentFill;
+  containerStack.alignment = UIStackViewAlignmentCenter;
   containerStack.translatesAutoresizingMaskIntoConstraints = NO;
-  containerStack.layoutMarginsRelativeArrangement = YES;
-  containerStack.directionalLayoutMargins = NSDirectionalEdgeInsetsMake(
-      kContainerStackVerticalPadding, 0, kContainerStackVerticalPadding, 0);
   containerStack.insetsLayoutMarginsFromSafeArea = NO;
   [self.view addSubview:containerStack];
 
@@ -300,6 +308,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
         constraintEqualToAnchor:self.view.bottomAnchor],
     // Button.
     [self.infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
+    [self.infobarButton.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [self.infobarButton.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
     [buttonSeparator.widthAnchor
         constraintEqualToConstant:kButtonSeparatorWidth],
     [buttonSeparator.leadingAnchor

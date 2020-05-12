@@ -21,7 +21,6 @@ namespace blink {
 
 // static
 ModuleEvaluationResult ModuleEvaluationResult::Empty() {
-  DCHECK(!base::FeatureList::IsEnabled(features::kTopLevelAwait));
   return ModuleEvaluationResult(true, {});
 }
 
@@ -157,9 +156,9 @@ ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
   return ScriptValue();
 }
 
-ScriptValue ModuleRecord::Evaluate(ScriptState* script_state,
-                                   v8::Local<v8::Module> record,
-                                   const KURL& source_url) {
+ModuleEvaluationResult ModuleRecord::Evaluate(ScriptState* script_state,
+                                              v8::Local<v8::Module> record,
+                                              const KURL& source_url) {
   v8::Isolate* isolate = script_state->GetIsolate();
 
   // Isolate exceptions that occur when executing the code. These exceptions
@@ -170,17 +169,17 @@ ScriptValue ModuleRecord::Evaluate(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   probe::ExecuteScript probe(execution_context, source_url);
 
-  // TODO(kouhei): We currently don't have a code-path which use return value of
-  // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::EvaluateModule(isolate, execution_context, record,
                                       script_state->GetContext())
            .ToLocal(&result)) {
-    DCHECK(try_catch.HasCaught());
-    return ScriptValue(isolate, try_catch.Exception());
+    return ModuleEvaluationResult::FromException(try_catch.Exception());
   }
-
-  return ScriptValue();
+  if (base::FeatureList::IsEnabled(features::kTopLevelAwait)) {
+    return ModuleEvaluationResult::FromResult(result);
+  } else {
+    return ModuleEvaluationResult::Empty();
+  }
 }
 
 void ModuleRecord::ReportException(ScriptState* script_state,

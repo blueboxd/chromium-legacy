@@ -990,8 +990,8 @@ void Element::SynchronizeAllAttributes() const {
     DCHECK(IsStyledElement());
     SynchronizeStyleAttributeInternal();
   }
-  if (GetElementData()->animated_svg_attributes_are_dirty())
-    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
+  if (GetElementData()->svg_attributes_are_dirty())
+    To<SVGElement>(this)->SynchronizeSVGAttribute(AnyQName());
 }
 
 inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
@@ -1003,15 +1003,15 @@ inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
     SynchronizeStyleAttributeInternal();
     return;
   }
-  if (UNLIKELY(GetElementData()->animated_svg_attributes_are_dirty())) {
+  if (UNLIKELY(GetElementData()->svg_attributes_are_dirty())) {
     // See comment in the AtomicString version of SynchronizeAttribute()
     // also.
-    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(name);
+    To<SVGElement>(this)->SynchronizeSVGAttribute(name);
   }
 }
 
 void Element::SynchronizeAttribute(const AtomicString& local_name) const {
-  // This version of synchronizeAttribute() is streamlined for the case where
+  // This version of SynchronizeAttribute() is streamlined for the case where
   // you don't have a full QualifiedName, e.g when called from DOM API.
   if (!GetElementData())
     return;
@@ -1021,20 +1021,17 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
     SynchronizeStyleAttributeInternal();
     return;
   }
-  if (GetElementData()->animated_svg_attributes_are_dirty()) {
-    // We're not passing a namespace argument on purpose. SVGNames::*Attr are
-    // defined w/o namespaces as well.
+  if (GetElementData()->svg_attributes_are_dirty()) {
+    // We're passing a null namespace argument. svg_names::k*Attr are defined in
+    // the null namespace, but for attributes that are not (like 'href' in the
+    // XLink NS), this will not do the right thing.
 
-    // FIXME: this code is called regardless of whether name is an
-    // animated SVG Attribute. It would seem we should only call this method
-    // if SVGElement::isAnimatableAttribute is true, but the list of
-    // animatable attributes in isAnimatableAttribute does not suffice to
-    // pass all web tests. Also, animated_svg_attributes_are_dirty_ stays
-    // dirty unless SynchronizeAnimatedSVGAttribute is called with
-    // AnyQName(). This means that even if Element::SynchronizeAttribute()
-    // is called on all attributes, animated_svg_attributes_are_dirty_ remains
-    // true.
-    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(
+    // TODO(fs): svg_attributes_are_dirty_ stays dirty unless
+    // SynchronizeSVGAttribute is called with AnyQName(). This means that even
+    // if Element::SynchronizeAttribute() is called on all attributes,
+    // svg_attributes_are_dirty_ remains true. This information is available in
+    // the attribute->property map in SVGElement.
+    To<SVGElement>(this)->SynchronizeSVGAttribute(
         QualifiedName(g_null_atom, local_name, g_null_atom));
   }
 }
@@ -6240,6 +6237,17 @@ void Element::UpdatePresentationAttributeStyle() {
   element_data.SetPresentationAttributeStyleIsDirty(false);
   element_data.presentation_attribute_style_ =
       ComputePresentationAttributeStyle(*this);
+}
+
+CSSPropertyValueSet* Element::CreatePresentationAttributeStyle() {
+  auto* style = MakeGarbageCollected<MutableCSSPropertyValueSet>(
+      IsSVGElement() ? kSVGAttributeMode : kHTMLStandardMode);
+  AttributeCollection attributes = AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes)
+    CollectStyleForPresentationAttribute(attr.GetName(), attr.Value(), style);
+  if (IsSVGElement())
+    To<SVGElement>(this)->CollectStyleForAnimatedPresentationAttributes(style);
+  return style;
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(

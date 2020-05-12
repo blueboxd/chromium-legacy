@@ -291,10 +291,6 @@ source_set("headless_shared_sources") {
     deps += [ "//components/crash/core/app:crash_export_thunks" ]
   }
 
-  if (is_linux && !is_chromeos) {
-    deps += [ "//components/os_crypt" ]
-  }
-
   configs += [ ":inside_headless_component" ]
 }
 
@@ -701,7 +697,6 @@ static_library("headless_shell_lib") {
   deps = [
     ":headless_renderer",
     "//build:branding_buildflags",
-    "//components/os_crypt",
     "//components/security_state/content",
     "//content/public/app",
     "//content/public/browser",
@@ -737,6 +732,10 @@ static_library("headless_shell_lib") {
       "//content:sandbox_helper_win",
       "//sandbox",
     ]
+  }
+
+  if (is_mac) {
+    deps += [ "//components/os_crypt" ]
   }
 }
 

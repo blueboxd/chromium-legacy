@@ -57,10 +57,26 @@
 #include "ui/base/ui_base_features.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace views {
 namespace test {
 
 namespace {
+
+bool ShouldIgnoreScreenBoundsForMenus() {
+#if defined(USE_OZONE)
+  // Wayland requires placing menus is screen coordinates. See comment in
+  // ozone_platform_wayland.cc.
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .ignore_screen_bounds_for_menus;
+#else
+  return false;
+#endif
+}
 
 // Test implementation of MenuControllerDelegate that only reports the values
 // called of OnMenuClosed.
@@ -1710,6 +1726,8 @@ TEST_F(MenuControllerTest, ArrowKeysAtEnds) {
 TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   MenuBoundsOptions options;
   gfx::Rect expected;
+  const bool ignore_screen_bounds_for_menus =
+      ShouldIgnoreScreenBoundsForMenus();
 
   // Fits in all locations -> placed below.
   options.anchor_bounds =
@@ -1728,9 +1746,13 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.anchor_bounds.bottom());
-  expected = gfx::Rect(options.anchor_bounds.x(),
-                       options.anchor_bounds.y() - options.menu_size.height(),
-                       options.menu_size.width(), options.menu_size.height());
+  if (ignore_screen_bounds_for_menus) {
+    expected = gfx::Rect(options.anchor_bounds.origin(), options.menu_size);
+  } else {
+    expected = gfx::Rect(options.anchor_bounds.x(),
+                         options.anchor_bounds.y() - options.menu_size.height(),
+                         options.menu_size.width(), options.menu_size.height());
+  }
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits on both sides, prefer right -> placed right.
@@ -1739,10 +1761,15 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.right(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  if (ignore_screen_bounds_for_menus) {
+    expected = gfx::Rect(options.anchor_bounds.origin(), options.menu_size);
+  } else {
+    expected =
+        gfx::Rect(options.anchor_bounds.right(),
+                  options.monitor_bounds.bottom() - options.menu_size.height(),
+                  options.menu_size.width(), options.menu_size.height());
+  }
+
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits only on left -> placed left.
@@ -1750,10 +1777,14 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
                                     options.menu_size.height() / 2, 0, 0);
   options.monitor_bounds = gfx::Rect(0, 0, options.anchor_bounds.right(),
                                      options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.x() - options.menu_size.width(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  if (ignore_screen_bounds_for_menus) {
+    expected = gfx::Rect(options.anchor_bounds.origin(), options.menu_size);
+  } else {
+    expected =
+        gfx::Rect(options.anchor_bounds.x() - options.menu_size.width(),
+                  options.monitor_bounds.bottom() - options.menu_size.height(),
+                  options.menu_size.width(), options.menu_size.height());
+  }
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits on both sides, prefer left -> placed left.
@@ -1763,10 +1794,17 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.x() - options.menu_size.width(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  if (ignore_screen_bounds_for_menus) {
+    expected =
+        gfx::Rect({options.anchor_bounds.right() - options.menu_size.width(),
+                   options.anchor_bounds.origin().y()},
+                  options.menu_size);
+  } else {
+    expected =
+        gfx::Rect(options.anchor_bounds.x() - options.menu_size.width(),
+                  options.monitor_bounds.bottom() - options.menu_size.height(),
+                  options.menu_size.width(), options.menu_size.height());
+  }
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 
   // Fits only on right -> placed right.
@@ -1774,10 +1812,17 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsBestFitTest) {
   options.monitor_bounds =
       gfx::Rect(0, 0, options.anchor_bounds.right() + options.menu_size.width(),
                 options.menu_size.height());
-  expected =
-      gfx::Rect(options.anchor_bounds.right(),
-                options.monitor_bounds.bottom() - options.menu_size.height(),
-                options.menu_size.width(), options.menu_size.height());
+  if (ignore_screen_bounds_for_menus) {
+    expected =
+        gfx::Rect({options.anchor_bounds.right() - options.menu_size.width(),
+                   options.anchor_bounds.origin().y()},
+                  options.menu_size);
+  } else {
+    expected =
+        gfx::Rect(options.anchor_bounds.right(),
+                  options.monitor_bounds.bottom() - options.menu_size.height(),
+                  options.menu_size.width(), options.menu_size.height());
+  }
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 }
 
@@ -1814,11 +1859,20 @@ TEST_F(MenuControllerTest, CalculateMenuBoundsAnchorTest) {
   // Menu does not fit above -> placed below.
   options.anchor_bounds = gfx::Rect(options.menu_size.height() / 2,
                                     options.menu_size.width(), 0, 0);
-  expected = gfx::Rect(
-      options.anchor_bounds.x() +
-          (options.anchor_bounds.width() - options.menu_size.width()) / 2,
-      options.anchor_bounds.y() + kTouchYPadding, options.menu_size.width(),
-      options.menu_size.height());
+  if (ShouldIgnoreScreenBoundsForMenus()) {
+    expected = gfx::Rect(
+        options.anchor_bounds.x() +
+            (options.anchor_bounds.width() - options.menu_size.width()) / 2,
+        options.anchor_bounds.y() - options.anchor_bounds.bottom() -
+            kTouchYPadding,
+        options.menu_size.width(), options.menu_size.height());
+  } else {
+    expected = gfx::Rect(
+        options.anchor_bounds.x() +
+            (options.anchor_bounds.width() - options.menu_size.width()) / 2,
+        options.anchor_bounds.y() + kTouchYPadding, options.menu_size.width(),
+        options.menu_size.height());
+  }
   EXPECT_EQ(expected, CalculateMenuBounds(options));
 }
 
@@ -1949,6 +2003,11 @@ TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
 // squished or move above the anchor when it grows vertically and horizontally
 // beyond the monitor bounds.
 TEST_F(MenuControllerTest, GrowingMenuMovesLaterallyNotVertically) {
+  // We can't know the position of windows in Wayland. Thus, this case is not
+  // valid for Wayland.
+  if (ShouldIgnoreScreenBoundsForMenus())
+    return;
+
   MenuBoundsOptions options;
   options.monitor_bounds = gfx::Rect(0, 0, 100, 100);
   // The anchor should be near the bottom right side of the screen.

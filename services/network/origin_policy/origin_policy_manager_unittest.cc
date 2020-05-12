@@ -3,13 +3,17 @@
 // found in the LICENSE file.
 
 #include "services/network/origin_policy/origin_policy_manager.h"
+#include "base/optional.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
+#include "net/cookies/site_for_cookies.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/origin_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 // Unit tests for OriginPolicyManager.
 //
@@ -41,7 +45,11 @@ class OriginPolicyManagerTest : public testing::Test {
       const url::Origin& origin,
       const base::Optional<std::string>& header) {
     manager_->RetrieveOriginPolicy(
-        origin, header,
+        origin,
+        net::IsolationInfo::Create(
+            net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+            net::SiteForCookies()),
+        header,
         base::BindOnce(&OriginPolicyManagerTest::Callback,
                        base::Unretained(this)));
   }

@@ -20,6 +20,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.view.View;
 
@@ -61,6 +62,8 @@ import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils.FeatureStatus;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -118,6 +121,12 @@ public class TabGroupUiMediatorUnitTest {
     TabGridDialogMediator.DialogController mTabGridDialogController;
     @Mock
     ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
+    @Mock
+    Context mContext;
+    @Mock
+    SnackbarManager.SnackbarManageable mSnackbarManageable;
+    @Mock
+    SnackbarManager mSnackbarManager;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverArgumentCaptor;
     @Captor
@@ -188,9 +197,9 @@ public class TabGroupUiMediatorUnitTest {
 
         TabGridDialogMediator.DialogController controller =
                 TabUiFeatureUtilities.isTabGroupsAndroidEnabled() ? mTabGridDialogController : null;
-        mTabGroupUiMediator = new TabGroupUiMediator(mVisibilityController, mResetHandler, mModel,
-                mTabModelSelector, mTabCreatorManager, mOverviewModeBehavior, mThemeColorProvider,
-                controller, mActivityLifecycleDispatcher);
+        mTabGroupUiMediator = new TabGroupUiMediator(mContext, mVisibilityController, mResetHandler,
+                mModel, mTabModelSelector, mTabCreatorManager, mOverviewModeBehavior,
+                mThemeColorProvider, controller, mActivityLifecycleDispatcher, mSnackbarManageable);
 
         if (currentTab == null) {
             verifyNeverReset();
@@ -233,6 +242,7 @@ public class TabGroupUiMediatorUnitTest {
         doReturn(mTabModel).when(mTabModel).getComprehensiveModel();
         doReturn(mTabModel).when(mTabModelSelector).getModel(false);
         doReturn(false).when(mTabModel).isIncognito();
+        doReturn(mTabModel).when(mTabModelSelector).getModel(false);
         doReturn(3).when(mTabModel).getCount();
         doReturn(0).when(mTabModel).index();
         doReturn(mTab1).when(mTabModel).getTabAt(0);
@@ -314,6 +324,9 @@ public class TabGroupUiMediatorUnitTest {
         // Set up TabCreatorManager
         doReturn(mTabCreator).when(mTabCreatorManager).getTabCreator(anyBoolean());
         doReturn(null).when(mTabCreator).createNewTab(any(), anyInt(), any());
+
+        // Set up SnackbarManageable.
+        doReturn(mSnackbarManager).when(mSnackbarManageable).getSnackbarManager();
 
         mResetHandlerInOrder = inOrder(mResetHandler);
         mVisibilityControllerInOrder = inOrder(mVisibilityController);
@@ -844,6 +857,7 @@ public class TabGroupUiMediatorUnitTest {
         verifyResetStrip(false, null);
         assertThat(mTabGroupUiMediator.getConditionalTabStripFeatureStatusForTesting(),
                 equalTo(FeatureStatus.FORBIDDEN));
+        verify(mSnackbarManager).showSnackbar(any(Snackbar.class));
     }
 
     @Test
@@ -868,6 +882,38 @@ public class TabGroupUiMediatorUnitTest {
 
         // Strip should not be showing since this is a selection of the same tab.
         verifyResetStrip(false, null);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
+    public void tabSelection_SameTab_NotDismissSnackbar_CTS() {
+        initAndAssertProperties(mTab1);
+
+        // Mock that undo snackbar is showing.
+        doReturn(true).when(mSnackbarManager).isShowing();
+
+        // Select the same tab.
+        mTabModelObserverArgumentCaptor.getValue().didSelectTab(
+                mTab1, TabSelectionType.FROM_USER, TAB1_ID);
+
+        // Verify that snackbar is not dismissed since there is no different tab selection.
+        verify(mSnackbarManager, never()).dismissSnackbars(eq(mTabGroupUiMediator));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
+    public void tabSelection_DifferentTab_DismissSnackbar_CTS() {
+        initAndAssertProperties(mTab1);
+
+        // Mock that undo snackbar is showing.
+        doReturn(true).when(mSnackbarManager).isShowing();
+
+        // Select a different tab.
+        mTabModelObserverArgumentCaptor.getValue().didSelectTab(
+                mTab1, TabSelectionType.FROM_USER, TAB2_ID);
+
+        // Verify that snackbar is dismissed when a different tab is selected.
+        verify(mSnackbarManager).dismissSnackbars(eq(mTabGroupUiMediator));
     }
 
     @Test
@@ -1136,6 +1182,7 @@ public class TabGroupUiMediatorUnitTest {
                 incognitoTabModel, mTabModel);
 
         verifyResetStrip(false, null);
+        verify(mSnackbarManager).dismissSnackbars(eq(mTabGroupUiMediator));
     }
 
     @Test

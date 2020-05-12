@@ -227,9 +227,7 @@ suite('PrivacyPage', function() {
 
   test('BlockThirdPartyCookiesToggle', async function() {
     page.prefs.profile.block_third_party_cookies = {value: false};
-    page.prefs.profile.cookie_controls_mode = {
-      value: CookieControlsMode.DISABLED
-    };
+    page.prefs.profile.cookie_controls_mode = {value: CookieControlsMode.OFF};
     Router.getInstance().navigateTo(routes.SITE_SETTINGS_COOKIES);
     flush();
 
@@ -238,14 +236,13 @@ suite('PrivacyPage', function() {
     assertTrue(page.prefs.profile.block_third_party_cookies.value);
     assertEquals(
         page.prefs.profile.cookie_controls_mode.value,
-        CookieControlsMode.ENABLED);
+        CookieControlsMode.BLOCK_THIRD_PARTY);
 
     page.$$('#blockThirdPartyCookies').click();
     flush();
     assertFalse(page.prefs.profile.block_third_party_cookies.value);
     assertEquals(
-        page.prefs.profile.cookie_controls_mode.value,
-        CookieControlsMode.DISABLED);
+        page.prefs.profile.cookie_controls_mode.value, CookieControlsMode.OFF);
   });
 });
 

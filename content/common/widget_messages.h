@@ -185,11 +185,6 @@ IPC_MESSAGE_ROUTED1(WidgetHostMsg_SelectionBoundsChanged,
 // throttle these messages.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
 
-// Send the tooltip text for the current mouse position to the browser.
-IPC_MESSAGE_ROUTED2(WidgetHostMsg_SetTooltipText,
-                    base::string16 /* tooltip text string */,
-                    base::i18n::TextDirection /* text direction hint */)
-
 // Request a non-decelerating synthetic fling animation to be latched on the
 // scroller at the start point, and whose velocity can be changed over time by
 // sending multiple AutoscrollFling gestures.  Used for features like

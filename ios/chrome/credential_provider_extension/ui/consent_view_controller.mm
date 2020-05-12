@@ -8,12 +8,18 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+constexpr CGFloat kStackViewSpacingAfterIllustration = 37;
+}  // namespace
+
 @implementation ConsentViewController
 
 #pragma mark - Public
 
 - (void)loadView {
   self.image = [UIImage imageNamed:@"consent_illustration"];
+  self.customSpacingAfterImage = kStackViewSpacingAfterIllustration;
+
   self.helpButtonAvailable = YES;
   self.primaryActionAvailable = YES;
   NSString* titleString =

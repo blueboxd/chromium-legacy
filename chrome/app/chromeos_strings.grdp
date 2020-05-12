@@ -4923,6 +4923,15 @@
   <message name="IDS_PLUGIN_VM_APP_NAME" desc="Name of the 'Plugin VM' app.">
     Plugin VM
   </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_TITLE" desc="Title of the Plugin VM installer when asking user to start installation.">
+    Set up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> on your Chromebook
+  </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_MESSAGE" desc="Body of the Plugin VM installer when asking user to start installation." translateable="false">
+    <ph name="RECOMMENDED_SPACE">$1<ex>32GB</ex></ph> of free space is recommended for installation.
+  </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Plugin VM installer to begin installion.">
+    Install
+  </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_ENVIRONMENT_SETTING_TITLE" desc="Title of the Plugin VM installer during installation.">
     Setting up <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>...
   </message>

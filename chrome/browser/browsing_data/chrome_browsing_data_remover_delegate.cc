@@ -801,7 +801,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #endif
 
     PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
-        ->RemoveCountsByUrl(filter);
+        ->RemoveEmbargoAndResetCounts(filter);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(

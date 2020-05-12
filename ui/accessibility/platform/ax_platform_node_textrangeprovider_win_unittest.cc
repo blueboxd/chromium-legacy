@@ -2971,13 +2971,13 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   //
   // root
   // |
-  // paragraph________________________
-  // |               |                |
-  // static_text     link             search input
-  // |               |                |
-  // text_node       static_text      text_node
-  //                 |
-  //                 text_node
+  // paragraph_________________________________________
+  // |               |                |                |
+  // static_text     link             search input     pdf_highlight
+  // |               |                |                |
+  // text_node       static_text      text_node        static_text
+  //                 |                                 |
+  //                 text_node                         text_node
 
   ui::AXNodeData root_data;
   root_data.id = 1;
@@ -3024,6 +3024,21 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   search_text.SetName("placeholder");
   search_box.child_ids.push_back(search_text.id);
 
+  ui::AXNodeData pdf_highlight_data;
+  pdf_highlight_data.id = 10;
+  pdf_highlight_data.role = ax::mojom::Role::kPdfActionableHighlight;
+  paragraph_data.child_ids.push_back(pdf_highlight_data.id);
+
+  ui::AXNodeData static_text_data3;
+  static_text_data3.id = 11;
+  static_text_data3.role = ax::mojom::Role::kStaticText;
+  pdf_highlight_data.child_ids.push_back(static_text_data3.id);
+
+  ui::AXNodeData inline_text_data3;
+  inline_text_data3.id = 12;
+  inline_text_data3.role = ax::mojom::Role::kInlineTextBox;
+  static_text_data3.child_ids.push_back(inline_text_data3.id);
+
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
   tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
@@ -3039,6 +3054,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.nodes.push_back(inline_text_data2);
   update.nodes.push_back(search_box);
   update.nodes.push_back(search_text);
+  update.nodes.push_back(pdf_highlight_data);
+  update.nodes.push_back(static_text_data3);
+  update.nodes.push_back(inline_text_data3);
 
   Init(update);
 
@@ -3051,6 +3069,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   AXNode* inline_text_node2 = static_text_node2->children()[0];
   AXNode* search_box_node = paragraph_node->children()[2];
   AXNode* search_text_node = search_box_node->children()[0];
+  AXNode* pdf_highlight_node = paragraph_node->children()[3];
+  AXNode* static_text_node3 = pdf_highlight_node->children()[0];
+  AXNode* inline_text_node3 = static_text_node3->children()[0];
 
   ComPtr<IRawElementProviderSimple> link_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
@@ -3064,6 +3085,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       QueryInterfaceFromNode<IRawElementProviderSimple>(search_box_node);
   ComPtr<IRawElementProviderSimple> search_text_node_raw =
       QueryInterfaceFromNode<IRawElementProviderSimple>(search_text_node);
+  ComPtr<IRawElementProviderSimple> pdf_highlight_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(pdf_highlight_node);
+  ComPtr<IRawElementProviderSimple> inline_text_node_raw3 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node3);
 
   // Test GetEnclosingElement for the two leaves text nodes. The enclosing
   // element of the first one should be its static text parent (because inline
@@ -3106,6 +3131,18 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetEnclosingElement(&enclosing_element));
   EXPECT_EQ(search_box_node_raw.Get(), enclosing_element.Get());
+
+  // The enclosing element for the text node that is grandchild of the
+  // pdf_highlight node should return the pdf_highlight node.
+  EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw3->GetPatternProvider(
+      UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(pdf_highlight_node_raw.Get(), enclosing_element.Get());
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

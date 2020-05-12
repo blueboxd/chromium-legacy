@@ -25,11 +25,15 @@ class MODULES_EXPORT PaymentMethodChangeEvent final
  public:
   ~PaymentMethodChangeEvent() override;
 
-  static PaymentMethodChangeEvent* Create(
-      ScriptState*,
-      const AtomicString& type,
-      const PaymentMethodChangeEventInit* =
-          PaymentMethodChangeEventInit::Create());
+  static PaymentMethodChangeEvent* Create(ScriptState* script_state,
+                                          const AtomicString& type) {
+    return Create(
+        script_state, type,
+        PaymentMethodChangeEventInit::Create(script_state->GetIsolate()));
+  }
+  static PaymentMethodChangeEvent* Create(ScriptState*,
+                                          const AtomicString& type,
+                                          const PaymentMethodChangeEventInit*);
 
   const String& methodName() const;
   const ScriptValue methodDetails(ScriptState*) const;

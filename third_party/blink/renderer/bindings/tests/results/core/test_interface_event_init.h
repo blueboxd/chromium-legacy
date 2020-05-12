@@ -21,6 +21,9 @@ namespace blink {
 class CORE_EXPORT TestInterfaceEventInit : public EventInit {
  public:
   static TestInterfaceEventInit* Create() { return MakeGarbageCollected<TestInterfaceEventInit>(); }
+  static TestInterfaceEventInit* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<TestInterfaceEventInit>();
+  }
 
   TestInterfaceEventInit();
   virtual ~TestInterfaceEventInit();

@@ -711,7 +711,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
 
   // First, we spin down the engine to stop change processing as soon as
   // possible.
-  base::Time shutdown_start_time = base::Time::Now();
   engine_->StopSyncingForShutdown();
 
   // Stop all data type controllers, if needed. Note that until Stop completes,
@@ -736,9 +735,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
 
   engine_->Shutdown(reason);
   engine_.reset();
-
-  base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
-  UMA_HISTOGRAM_TIMES("Sync.Shutdown.BackendDestroyedTime", shutdown_time);
 
   sync_enabled_weak_factory_.InvalidateWeakPtrs();
 

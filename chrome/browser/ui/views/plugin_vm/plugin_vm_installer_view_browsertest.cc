@@ -94,23 +94,6 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     plugin_vm_image->SetKey("hash", base::Value(hash));
   }
 
-  void CheckSetupNotAllowed(
-      plugin_vm::PluginVmInstaller::FailureReason reason) {
-    base::string16 app_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
-    EXPECT_FALSE(HasAcceptButton());
-    EXPECT_TRUE(HasCancelButton());
-    EXPECT_EQ(view_->GetBigMessage(),
-              l10n_util::GetStringFUTF16(
-                  IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE, app_name));
-    EXPECT_EQ(
-        view_->GetMessage(),
-        l10n_util::GetStringFUTF16(
-            IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE, app_name,
-            base::NumberToString16(
-                static_cast<std::underlying_type_t<
-                    plugin_vm::PluginVmInstaller::FailureReason>>(reason))));
-  }
-
   void WaitForSetupToFinish() {
     base::RunLoop run_loop;
     view_->SetFinishedCallbackForTesting(
@@ -207,6 +190,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
+  view_->AcceptDialog();
   WaitForSetupToFinish();
 
   CheckSetupIsFinishedSuccessfully();
@@ -226,6 +210,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
+  view_->AcceptDialog();
   WaitForSetupToFinish();
 
   CheckSetupFailed();
@@ -244,6 +229,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
+  view_->AcceptDialog();
   WaitForSetupToFinish();
 
   CheckSetupFailed();
@@ -263,6 +249,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
+  view_->AcceptDialog();
   WaitForSetupToFinish();
 
   CheckSetupFailed();
@@ -292,10 +279,22 @@ IN_PROC_BROWSER_TEST_F(
   ShowUi("default");
   EXPECT_NE(nullptr, view_);
 
-  // We do not have to wait for setup to finish since the NOT_ALLOWED state
-  // is set during dialogue construction.
-  CheckSetupNotAllowed(
-      plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED);
+  view_->AcceptDialog();
+
+  base::string16 app_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
+  EXPECT_FALSE(HasAcceptButton());
+  EXPECT_TRUE(HasCancelButton());
+  EXPECT_EQ(view_->GetBigMessage(),
+            l10n_util::GetStringFUTF16(
+                IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE, app_name));
+  EXPECT_EQ(
+      view_->GetMessage(),
+      l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE, app_name,
+          base::NumberToString16(
+              static_cast<std::underlying_type_t<
+                  plugin_vm::PluginVmInstaller::FailureReason>>(
+                  plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED))));
 
   histogram_tester_->ExpectUniqueSample(
       plugin_vm::kPluginVmSetupResultHistogram,

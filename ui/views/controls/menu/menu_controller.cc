@@ -61,6 +61,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 using base::TimeDelta;
 using ui::OSExchangeData;
 
@@ -99,6 +103,18 @@ bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
          accelerator.IsCmdDown();
 }
 #endif
+
+bool ShouldIgnoreScreenBoundsForMenus() {
+#if defined(USE_OZONE)
+  // Wayland requires placing menus is screen coordinates. See comment in
+  // ozone_platform_wayland.cc.
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .ignore_screen_bounds_for_menus;
+#else
+  return false;
+#endif
+}
 
 // The amount of time the mouse should be down before a mouse release is
 // considered intentional. This is to prevent spurious mouse releases from
@@ -2222,7 +2238,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     menu_bounds.set_x(create_on_right ? right_of_parent : left_of_parent);
 
     // Everything after this check requires monitor bounds to be non-empty.
-    if (monitor_bounds.IsEmpty())
+    if (ShouldIgnoreScreenBoundsForMenus() || monitor_bounds.IsEmpty())
       return menu_bounds;
 
     // Menu does not actually fit where it was placed, move it to the other side
@@ -2254,7 +2270,8 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
           anchor_bounds.x() + (anchor_bounds.width() - menu_bounds.width()) / 2;
       menu_bounds.set_x(horizontally_centered);
       menu_bounds.set_y(above_anchor - kTouchYPadding);
-      if (menu_bounds.y() < monitor_bounds.y())
+      if (!ShouldIgnoreScreenBoundsForMenus() &&
+          menu_bounds.y() < monitor_bounds.y())
         menu_bounds.set_y(anchor_bounds.y() + kTouchYPadding);
     }
 
@@ -2264,7 +2281,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
     }
 
     // Everything beyond this point requires monitor bounds to be non-empty.
-    if (monitor_bounds.IsEmpty())
+    if (ShouldIgnoreScreenBoundsForMenus() || monitor_bounds.IsEmpty())
       return menu_bounds;
 
     // If the menu position is below or above the anchor bounds, force it to fit

@@ -48,8 +48,9 @@ enum class PluginVmSetupResult {
   kUserCancelledCheckingDiskSpace = 12,
   // Failure reasons are broken down in PluginVm.SetupFailureReason.
   kError = 13,
+  kUserCancelledWithoutStarting = 14,
 
-  kMaxValue = kError,
+  kMaxValue = kUserCancelledWithoutStarting,
 };
 
 enum class PluginVmDlcUseResult {

@@ -842,9 +842,7 @@ body.files-ng [file-type-icon='removable'] {
 }
 
 body.files-ng [file-type-icon='crostini'] {
-  -webkit-mask-image: url(../images/volumes/linux_files.svg);
-  background-color: currentColor;
-  background-image: none;
+  background-image: url(../images/volumes/linux_files.svg);
 }
 
 .tree-row[selected] > [root-type-icon='crostini'],

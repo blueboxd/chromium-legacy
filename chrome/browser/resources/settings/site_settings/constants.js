@@ -79,8 +79,8 @@ export const ChooserType = {
  * @enum {number}
  */
 export const CookieControlsMode = {
-  DISABLED: 0,
-  ENABLED: 1,
+  OFF: 0,
+  BLOCK_THIRD_PARTY: 1,
   INCOGNITO_ONLY: 2,
 };
 

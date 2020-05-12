@@ -288,7 +288,6 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   bookmark_model_ = model;
   schedule_save_closure_ = schedule_save_closure;
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.ParseFromString(metadata_str);
 
@@ -298,8 +297,6 @@ void BookmarkModelTypeProcessor::ModelReadyToSync(
   if (bookmark_tracker_) {
     bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
     StartTrackingMetadata();
-    UMA_HISTOGRAM_TIMES("Sync.BookmarksModelReadyToSyncTime",
-                        base::TimeTicks::Now() - start_time);
   } else if (!model_metadata.model_type_state().initial_sync_done() &&
              !model_metadata.bookmarks_metadata().empty()) {
     DLOG(ERROR)

@@ -231,7 +231,7 @@ void SetSettingForOrigin(JNIEnv* env,
   if (setting != CONTENT_SETTING_BLOCK) {
     permissions::PermissionsClient::Get()
         ->GetPermissionDecisionAutoBlocker(browser_context)
-        ->RemoveEmbargoByUrl(origin_url, content_type);
+        ->RemoveEmbargoAndResetCounts(origin_url, content_type);
   }
 
   if (MaybeResetDSEPermission(browser_context, content_type, origin_url,
@@ -491,7 +491,7 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
 
   permissions::PermissionsClient::Get()
       ->GetPermissionDecisionAutoBlocker(browser_context)
-      ->RemoveEmbargoByUrl(url, ContentSettingsType::NOTIFICATIONS);
+      ->RemoveEmbargoAndResetCounts(url, ContentSettingsType::NOTIFICATIONS);
 
   if (MaybeResetDSEPermission(browser_context,
                               ContentSettingsType::NOTIFICATIONS, url, GURL(),

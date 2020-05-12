@@ -277,7 +277,7 @@ ContentSetting SearchPermissionsService::UpdatePermissionAndReturnPrevious(
     bool dse_name_changed) {
   // Remove any embargo on the URL.
   PermissionDecisionAutoBlockerFactory::GetForProfile(profile_)
-      ->RemoveEmbargoByUrl(new_dse_origin, type);
+      ->RemoveEmbargoAndResetCounts(new_dse_origin, type);
 
   ContentSetting dse_setting = RestoreOldSettingAndReturnPrevious(
       old_dse_origin, type, old_dse_setting_to_restore);

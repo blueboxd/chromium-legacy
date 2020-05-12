@@ -23,6 +23,8 @@
 #include "components/prefs/pref_service.h"
 #include "url/gurl.h"
 
+using content_settings::CookieControlsMode;
+
 CookieControlsService::CookieControlsService(Profile* profile)
     : profile_(profile) {
   Init();
@@ -58,9 +60,8 @@ void CookieControlsService::Shutdown() {
 void CookieControlsService::HandleCookieControlsToggleChanged(bool checked) {
   profile_->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
-      static_cast<int>(
-          checked ? content_settings::CookieControlsMode::kIncognitoOnly
-                  : content_settings::CookieControlsMode::kOff));
+      static_cast<int>(checked ? CookieControlsMode::kIncognitoOnly
+                               : CookieControlsMode::kOff));
   base::RecordAction(
       checked ? base::UserMetricsAction("CookieControls.NTP.Enabled")
               : base::UserMetricsAction("CookieControls.NTP.Disabled"));

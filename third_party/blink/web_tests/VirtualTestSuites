@@ -1,5 +1,10 @@
 [
   {
+    "prefix": "module-top-level-await",
+    "bases": [],
+    "args": ["--enable-features=TopLevelAwait"]
+  },
+  {
     "prefix": "disable-accept-language-header",
     "bases": ["http/tests/navigation/language"],
     "args": ["--disable-features=AcceptLanguageHeader"]

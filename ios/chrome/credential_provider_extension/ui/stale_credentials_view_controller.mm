@@ -8,12 +8,18 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+constexpr CGFloat kStackViewSpacingAfterIllustration = 32;
+}  // namespace
+
 @implementation StaleCredentialsViewController
 
 #pragma mark - Public
 
 - (void)loadView {
-  self.image = [UIImage imageNamed:@"stale_credentials_illustration"];
+  self.image = [UIImage imageNamed:@"empty_credentials_illustration"];
+  self.customSpacingAfterImage = kStackViewSpacingAfterIllustration;
+
   self.helpButtonAvailable = NO;
   self.primaryActionAvailable = NO;
   NSString* titleString =

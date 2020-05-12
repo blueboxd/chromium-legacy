@@ -19,6 +19,8 @@
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/metal_context_provider.h"
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -98,11 +100,6 @@
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 #include "base/test/clang_profiling.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #endif
 
 namespace viz {

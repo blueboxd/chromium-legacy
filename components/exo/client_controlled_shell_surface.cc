@@ -690,28 +690,7 @@ bool ClientControlledShellSurface::IsInputEnabled(Surface* surface) const {
 }
 
 void ClientControlledShellSurface::OnSetFrame(SurfaceFrameType type) {
-  if (container_ == ash::kShellWindowId_SystemModalContainer &&
-      type != SurfaceFrameType::NONE) {
-    LOG(WARNING)
-        << "A surface in system modal container should not have a frame:"
-        << static_cast<int>(type);
-    return;
-  }
-
-  // TODO(oshima): We shouldn't send the synthesized motion event when just
-  // changing the frame type. The better solution would be to keep the window
-  // position regardless of the frame state, but that won't be available until
-  // next arc version.
-  // This is a stopgap solution not to generate the event until it is resolved.
-  EventTargetingBlocker blocker;
-  bool suppress_mouse_event = frame_type_ != type && widget_;
-  if (suppress_mouse_event)
-    blocker.Block(widget_->GetNativeWindow());
-  ShellSurfaceBase::OnSetFrame(type);
-  UpdateAutoHideFrame();
-
-  if (suppress_mouse_event)
-    UpdateSurfaceBounds();
+  pending_frame_type_ = type;
 }
 
 void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
@@ -1242,6 +1221,31 @@ void ClientControlledShellSurface::UpdateFrameWidth() {
   }
   static_cast<ash::HeaderView*>(GetFrameView()->GetHeaderView())
       ->SetWidthInPixels(width);
+}
+
+void ClientControlledShellSurface::UpdateFrameType() {
+  if (container_ == ash::kShellWindowId_SystemModalContainer &&
+      pending_frame_type_ != SurfaceFrameType::NONE) {
+    LOG(WARNING)
+        << "A surface in system modal container should not have a frame:"
+        << static_cast<int>(pending_frame_type_);
+    return;
+  }
+
+  // TODO(oshima): We shouldn't send the synthesized motion event when just
+  // changing the frame type. The better solution would be to keep the window
+  // position regardless of the frame state, but that won't be available until
+  // next arc version.
+  // This is a stopgap solution not to generate the event until it is resolved.
+  EventTargetingBlocker blocker;
+  bool suppress_mouse_event = frame_type_ != pending_frame_type_ && widget_;
+  if (suppress_mouse_event)
+    blocker.Block(widget_->GetNativeWindow());
+  ShellSurfaceBase::OnSetFrame(pending_frame_type_);
+  UpdateAutoHideFrame();
+
+  if (suppress_mouse_event)
+    UpdateSurfaceBounds();
 }
 
 void ClientControlledShellSurface::

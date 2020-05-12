@@ -28,7 +28,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "components/os_crypt/os_crypt_switches.h"
 #include "components/viz/common/switches.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,6 +53,10 @@
 #include "components/crash/core/app/crash_switches.h"
 #include "components/crash/core/app/run_as_crashpad_handler_win.h"
 #include "sandbox/win/src/sandbox_types.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "components/os_crypt/os_crypt_switches.h"
 #endif
 
 namespace headless {

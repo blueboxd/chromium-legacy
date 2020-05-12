@@ -62,20 +62,15 @@ void SVGAnimatedPropertyBase::Trace(Visitor* visitor) {
   visitor->Trace(context_element_);
 }
 
-void SVGAnimatedPropertyBase::AnimationEnded() {
-  SynchronizeAttribute();
-}
-
 bool SVGAnimatedPropertyBase::NeedsSynchronizeAttribute() const {
   // DOM attribute synchronization is only needed if a change has been made
-  // through JavaScript (via a tear-off or primitive) or the property is being
-  // animated. This prevents unnecessary attribute creation on the target
-  // element.
-  return base_value_needs_synchronization_ || IsAnimating();
+  // through the JavaScript IDL attribute (via a tear-off or primitive). This
+  // prevents unnecessary attribute creation on the target element.
+  return base_value_needs_synchronization_;
 }
 
 void SVGAnimatedPropertyBase::SynchronizeAttribute() {
-  AtomicString value(CurrentValueBase()->ValueAsString());
+  AtomicString value(BaseValueBase().ValueAsString());
   context_element_->SetSynchronizedLazyAttribute(attribute_name_, value);
   base_value_needs_synchronization_ = false;
 }

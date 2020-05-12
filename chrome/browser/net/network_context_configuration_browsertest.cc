@@ -1583,8 +1583,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 
   // For regular sessions, the kBlockThirdpartyCookies preference gets migrated
   // to kCookieControlsMode. Reset it so it doesn't interfere with the test.
-  EXPECT_EQ(static_cast<int>(content_settings::CookieControlsMode::kOn),
-            GetPrefService()->GetInteger(prefs::kCookieControlsMode));
+  EXPECT_EQ(
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty),
+      GetPrefService()->GetInteger(prefs::kCookieControlsMode));
   GetPrefService()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly));

@@ -862,8 +862,7 @@ PerformanceMeasure* Performance::MeasureInternal(
   return MeasureWithDetail(
       script_state, measure_name, converted_start,
       /* duration = */ base::nullopt,
-      end_mark ? StringOrDouble::FromString(*end_mark)
-               : NativeValueTraits<StringOrDouble>::NullValue(),
+      end_mark ? StringOrDouble::FromString(*end_mark) : StringOrDouble(),
       ScriptValue::CreateNull(script_state->GetIsolate()), exception_state);
 }
 

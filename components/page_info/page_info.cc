@@ -532,8 +532,8 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   // The permission may have been blocked due to being under embargo, so if it
   // was changed away from BLOCK, clear embargo status if it exists.
   if (setting != CONTENT_SETTING_BLOCK) {
-    delegate_->GetPermissionDecisionAutoblocker()->RemoveEmbargoByUrl(site_url_,
-                                                                      type);
+    delegate_->GetPermissionDecisionAutoblocker()->RemoveEmbargoAndResetCounts(
+        site_url_, type);
   }
   content_settings->SetNarrowestContentSetting(site_url_, site_url_, type,
                                                setting);

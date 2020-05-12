@@ -4,12 +4,15 @@
 
 #include "third_party/blink/renderer/core/script/module_record_resolver_impl.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/script/js_module_script.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
+#include "third_party/blink/renderer/core/testing/module_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -104,7 +107,8 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
 
 }  // namespace
 
-class ModuleRecordResolverImplTest : public testing::Test {
+class ModuleRecordResolverImplTest : public testing::Test,
+                                     public ParametrizedModuleTest {
  public:
   void SetUp() override;
 
@@ -119,11 +123,12 @@ class ModuleRecordResolverImplTest : public testing::Test {
 };
 
 void ModuleRecordResolverImplTest::SetUp() {
+  ParametrizedModuleTest::SetUp();
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   modulator_ = MakeGarbageCollected<ModuleRecordResolverImplTestModulator>();
 }
 
-TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
+TEST_P(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   V8TestingScope scope;
   ModuleRecordResolver* resolver =
       MakeGarbageCollected<ModuleRecordResolverImpl>(
@@ -147,5 +152,11 @@ TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
   EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
       << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();
 }
+
+// Instantiate tests once with TLA and once without:
+INSTANTIATE_TEST_SUITE_P(ModuleRecordResolverImplTestGroup,
+                         ModuleRecordResolverImplTest,
+                         testing::Bool(),
+                         ParametrizedModuleTestParamName());
 
 }  // namespace blink

@@ -135,11 +135,9 @@ base::Value SessionWindowToValue(const ::sessions::SessionWindow& window) {
 
 }  // namespace
 
-ForeignSessionHandler::ForeignSessionHandler() {
-  load_attempt_time_ = base::TimeTicks::Now();
-}
+ForeignSessionHandler::ForeignSessionHandler() = default;
 
-ForeignSessionHandler::~ForeignSessionHandler() {}
+ForeignSessionHandler::~ForeignSessionHandler() = default;
 
 // static
 void ForeignSessionHandler::RegisterProfilePrefs(
@@ -301,12 +299,6 @@ base::Value ForeignSessionHandler::GetForeignSessions() {
 
   base::Value session_list(base::Value::Type::LIST);
   if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
-    if (!load_attempt_time_.is_null()) {
-      UMA_HISTOGRAM_TIMES("Sync.SessionsRefreshDelay",
-                          base::TimeTicks::Now() - load_attempt_time_);
-      load_attempt_time_ = base::TimeTicks();
-    }
-
     // Use a pref to keep track of sessions that were collapsed by the user.
     // To prevent the pref from accumulating stale sessions, clear it each time
     // and only add back sessions that are still current.

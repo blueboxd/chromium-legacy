@@ -99,10 +99,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler {
 
   void HandleSetForeignSessionCollapsed(const base::ListValue* args);
 
-  // The time at which this WebUI was created. Used to calculate how long
-  // the WebUI was present before the sessions data was visible.
-  base::TimeTicks load_attempt_time_;
-
   base::Value initial_session_list_;
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>

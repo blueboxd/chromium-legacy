@@ -285,6 +285,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   void UpdateFrameWidth();
 
+  void UpdateFrameType() override;
+
   void AttemptToStartDrag(int component, const gfx::PointF& location);
 
   // Lock the compositor if it's not already locked, or extends the
@@ -324,6 +326,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
 
   bool pending_always_on_top_ = false;
+
+  SurfaceFrameType pending_frame_type_ = SurfaceFrameType::NONE;
 
   ash::WindowPinType current_pin_;
 

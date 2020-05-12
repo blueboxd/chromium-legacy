@@ -401,6 +401,27 @@ public class ConditionalTabStripTest {
         verifyShowingStrip(cta, false, 4);
     }
 
+    @Test
+    @MediumTest
+    public void testStrip_UndoDismiss() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        for (int i = 0; i < 3; i++) {
+            createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        }
+        verifyShowingStrip(cta, false, 4);
+
+        // Dismiss the strip, and then click on the undo snack bar to bring the strip back.
+        clickDismissButtonInStrip();
+        CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
+        verifyShowingStrip(cta, false, 4);
+
+        // Update the session time so that the enabled state is not expired for next restart. Verify
+        // that the undo correctly updated the feature status to enabled.
+        CONDITIONAL_TAB_STRIP_SESSION_TIME_MS.setForTesting(TEST_SESSION_MS);
+        cta = restartChrome();
+        verifyShowingStrip(cta, false, 4);
+    }
+
     private ChromeTabbedActivity restartChrome() throws Exception {
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();

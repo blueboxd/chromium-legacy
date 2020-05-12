@@ -58,7 +58,6 @@ SVGPropertyBase* SVGStaticStringList::CurrentValueBase() {
 }
 
 const SVGPropertyBase& SVGStaticStringList::BaseValueBase() const {
-  NOTREACHED();
   return *value_;
 }
 

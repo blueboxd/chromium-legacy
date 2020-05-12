@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
 
@@ -168,9 +169,10 @@ Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromModuleRecord(
   return Vector<ModuleRequest>();
 }
 
-ScriptValue DummyModulator::ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) {
+ModuleEvaluationResult DummyModulator::ExecuteModule(ModuleScript*,
+                                                     CaptureEvalErrorFlag) {
   NOTREACHED();
-  return ScriptValue();
+  return ModuleEvaluationResult::Empty();
 }
 
 ModuleScriptFetcher* DummyModulator::CreateModuleScriptFetcher(

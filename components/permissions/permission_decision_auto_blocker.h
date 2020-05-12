@@ -62,8 +62,9 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   // Returns the most recent recorded time either an ignore or dismiss embargo
   // was started. Records of embargo start times persist beyond the duration of
-  // the embargo, but are removed along with embargoes when RemoveEmbargoByUrl
-  // or RemoveCountsByUrl are used. Returns base::Time() if no record is found.
+  // the embargo, but are removed along with embargoes when
+  // RemoveEmbargoAndResetCounts is used. Returns base::Time() if no record is
+  // found.
   base::Time GetEmbargoStartTime(const GURL& request_origin,
                                  ContentSettingsType permission);
 
@@ -105,12 +106,14 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   // Clears any existing embargo status for |url|, |permission|. For permissions
   // embargoed under repeated dismissals, this means a prompt will be shown to
-  // the user on next permission request. This is a NO-OP for non-embargoed
-  // |url|, |permission| pairs.
-  void RemoveEmbargoByUrl(const GURL& url, ContentSettingsType permission);
+  // the user on next permission request. Clears dismiss and ignore counts.
+  void RemoveEmbargoAndResetCounts(const GURL& url,
+                                   ContentSettingsType permission);
 
-  // Removes any recorded counts for urls which match |filter|.
-  void RemoveCountsByUrl(base::Callback<bool(const GURL& url)> filter);
+  // Same as above, but cleans the slate for all permissions and for all URLs
+  // matching |filter|.
+  void RemoveEmbargoAndResetCounts(
+      base::Callback<bool(const GURL& url)> filter);
 
   static const char* GetPromptDismissCountKeyForTesting();
 

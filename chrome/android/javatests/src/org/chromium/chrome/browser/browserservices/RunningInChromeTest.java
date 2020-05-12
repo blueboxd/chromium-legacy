@@ -10,12 +10,14 @@ import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createSession;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createTrustedWebActivityIntent;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.isTrustedWebActivity;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.spoofVerification;
+import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE;
 
 import android.content.Intent;
 import android.support.test.espresso.Espresso;
@@ -46,8 +48,10 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy;
+import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxy;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
@@ -61,6 +65,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Features.EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)
 public class RunningInChromeTest {
     private static final String TAG = "RunningInChrome";
 
@@ -137,10 +142,8 @@ public class RunningInChromeTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)
     public void showsNewRunningInChrome() throws TimeoutException {
-        Intent intent = createTrustedWebActivityIntent(mTestPage);
-        launch(intent);
+        launch(createTrustedWebActivityIntent(mTestPage));
 
         clearOtherSnackbars();
 
@@ -152,6 +155,60 @@ public class RunningInChromeTest {
 
         Espresso.onView(withText(containsString(getV2String(site))))
                 .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void showsNotification() throws TimeoutException {
+        mMockNotificationManager.setNotificationsEnabled(true);
+
+        launch(createTrustedWebActivityIntent(mTestPage));
+
+        String scope = Origin.createOrThrow(mTestPage).toString();
+        CriteriaHelper.pollUiThread(() ->
+                assertTrue(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+    }
+
+    @Test
+    @MediumTest
+    public void dismissesNotification_onNavigation() throws TimeoutException {
+        mMockNotificationManager.setNotificationsEnabled(true);
+
+        launch(createTrustedWebActivityIntent(mTestPage));
+
+        String scope = Origin.createOrThrow(mTestPage).toString();
+        CriteriaHelper.pollUiThread(() ->
+                assertTrue(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+
+        mCustomTabActivityTestRule.loadUrl("https://www.example.com/");
+
+        CriteriaHelper.pollUiThread(() ->
+                assertFalse(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+    }
+
+    @Test
+    @MediumTest
+    public void dismissesNotification_onActivityClose() throws TimeoutException {
+        mMockNotificationManager.setNotificationsEnabled(true);
+
+        launch(createTrustedWebActivityIntent(mTestPage));
+
+        String scope = Origin.createOrThrow(mTestPage).toString();
+        CriteriaHelper.pollUiThread(() ->
+                assertTrue(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+
+        mCustomTabActivityTestRule.getActivity().finish();
+
+        CriteriaHelper.pollUiThread(() ->
+                assertFalse(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+    }
+
+    private boolean showingNotification(String tag, int id) {
+        for (NotificationEntry entry : mMockNotificationManager.getNotifications()) {
+            if (entry.tag.equals(tag) && entry.id == id) return true;
+        }
+
+        return false;
     }
 
     public void launch(Intent intent) throws TimeoutException {

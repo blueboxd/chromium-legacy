@@ -108,9 +108,10 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
             dialogController = mTabGridDialogCoordinator.getDialogController();
         }
 
-        mMediator = new TabGroupUiMediator(visibilityController, this, mModel, tabModelSelector,
-                activity, ((ChromeTabbedActivity) activity).getOverviewModeBehavior(),
-                mThemeColorProvider, dialogController, activity.getLifecycleDispatcher());
+        mMediator = new TabGroupUiMediator(activity, visibilityController, this, mModel,
+                tabModelSelector, activity,
+                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider,
+                dialogController, activity.getLifecycleDispatcher(), activity);
 
         TabGroupUtils.startObservingForCreationIPH();
 

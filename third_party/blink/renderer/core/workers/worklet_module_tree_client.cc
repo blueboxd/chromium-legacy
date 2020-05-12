@@ -56,8 +56,8 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   // Step 4: "If script's error to rethrow is not null, then queue a task on
   // outsideSettings's responsible event loop given script's error to rethrow to
   // run these steps:
+  ScriptState::Scope scope(script_state_);
   if (module_script->HasErrorToRethrow()) {
-    ScriptState::Scope scope(script_state_);
     PostCrossThreadTask(
         *outside_settings_task_runner_, FROM_HERE,
         CrossThreadBindOnce(
@@ -70,7 +70,7 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   }
 
   // Step 5: "Run a module script given script."
-  ScriptValue error =
+  ModuleEvaluationResult result =
       Modulator::From(script_state_)
           ->ExecuteModule(module_script,
                           Modulator::CaptureEvalErrorFlag::kReport);
@@ -78,7 +78,7 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
   auto* global_scope =
       To<WorkletGlobalScope>(ExecutionContext::From(script_state_));
 
-  global_scope->ReportingProxy().DidEvaluateModuleScript(error.IsEmpty());
+  global_scope->ReportingProxy().DidEvaluateModuleScript(result.IsSuccess());
 
   // Step 6: "Queue a task on outsideSettings's responsible event loop to run
   // these steps:"

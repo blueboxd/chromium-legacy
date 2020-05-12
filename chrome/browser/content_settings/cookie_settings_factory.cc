@@ -18,6 +18,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 
+using content_settings::CookieControlsMode;
+
 // static
 scoped_refptr<content_settings::CookieSettings>
 CookieSettingsFactory::GetForProfile(Profile* profile) {
@@ -38,8 +40,7 @@ CookieSettingsFactory::CookieSettingsFactory()
   DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
-CookieSettingsFactory::~CookieSettingsFactory() {
-}
+CookieSettingsFactory::~CookieSettingsFactory() = default;
 
 void CookieSettingsFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -63,10 +64,9 @@ CookieSettingsFactory::BuildServiceInstanceFor(
   if (prefs->IsUserModifiablePreference(prefs::kBlockThirdPartyCookies) &&
       prefs->GetBoolean(prefs::kBlockThirdPartyCookies) &&
       prefs->GetInteger(prefs::kCookieControlsMode) !=
-          static_cast<int>(content_settings::CookieControlsMode::kOn)) {
-    prefs->SetInteger(
-        prefs::kCookieControlsMode,
-        static_cast<int>(content_settings::CookieControlsMode::kOn));
+          static_cast<int>(CookieControlsMode::kBlockThirdParty)) {
+    prefs->SetInteger(prefs::kCookieControlsMode,
+                      static_cast<int>(CookieControlsMode::kBlockThirdParty));
   }
 
   // Record cookie setting histograms.
@@ -74,7 +74,7 @@ CookieSettingsFactory::BuildServiceInstanceFor(
                             prefs->GetBoolean(prefs::kBlockThirdPartyCookies));
   base::UmaHistogramEnumeration(
       "Privacy.CookieControlsSetting",
-      static_cast<content_settings::CookieControlsMode>(
+      static_cast<CookieControlsMode>(
           prefs->GetInteger(prefs::kCookieControlsMode)));
   // The DNT setting is only vaguely cookie-related. However, there is currently
   // no DNT-related code that is executed once per Profile lifetime, and

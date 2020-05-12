@@ -21,6 +21,10 @@
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
+namespace net {
+class IsolationInfo;
+}
+
 namespace network {
 
 class NetworkContext;
@@ -45,6 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
 
   // mojom::OriginPolicyManager
   void RetrieveOriginPolicy(const url::Origin& origin,
+                            const net::IsolationInfo& isolation_info,
                             const base::Optional<std::string>& header,
                             RetrieveOriginPolicyCallback callback) override;
   void AddExceptionFor(const url::Origin& origin) override;

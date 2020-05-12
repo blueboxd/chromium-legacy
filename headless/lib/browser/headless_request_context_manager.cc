@@ -8,7 +8,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/os_crypt/key_storage_config_linux.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
@@ -28,7 +27,7 @@ namespace headless {
 namespace {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-static char kProductName[] = "HeadlessChrome";
+constexpr char kProductName[] = "HeadlessChrome";
 #endif
 
 net::NetworkTrafficAnnotationTag GetProxyConfigTrafficAnnotationTag() {

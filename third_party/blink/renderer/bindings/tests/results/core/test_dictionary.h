@@ -43,6 +43,9 @@ class Element;
 class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
  public:
   static TestDictionary* Create() { return MakeGarbageCollected<TestDictionary>(); }
+  static TestDictionary* Create(v8::Isolate* isolate) {
+    return MakeGarbageCollected<TestDictionary>();
+  }
 
   TestDictionary();
   virtual ~TestDictionary();

@@ -556,7 +556,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   }
 
   bool frame_was_disabled = !frame_enabled();
-  // TODO(b/141151475): Make frame_type a committable property.
+  bool frame_type_Changed = frame_type_ != frame_type;
   frame_type_ = frame_type;
   switch (frame_type) {
     case SurfaceFrameType::NONE:
@@ -565,15 +565,14 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
     case SurfaceFrameType::NORMAL:
     case SurfaceFrameType::AUTOHIDE:
     case SurfaceFrameType::OVERLAY:
+    case SurfaceFrameType::SHADOW:
       // Initialize the shadow if it didn't exist. Do not reset if
       // the frame type just switched from another enabled type or
       // there is a pending shadow_bounds_ change to avoid overriding
       // a shadow bounds which have been changed and not yet committed.
-      if (!shadow_bounds_ || (frame_was_disabled && !shadow_bounds_changed_))
+      if (frame_type_Changed &&
+          (!shadow_bounds_ || (frame_was_disabled && !shadow_bounds_changed_)))
         shadow_bounds_ = gfx::Rect();
-      break;
-    case SurfaceFrameType::SHADOW:
-      shadow_bounds_ = gfx::Rect();
       break;
   }
   if (!widget_)
@@ -1012,8 +1011,6 @@ void ShellSurfaceBase::UpdateShadow() {
   if (!widget_ || !root_surface())
     return;
 
-  shadow_bounds_changed_ = false;
-
   aura::Window* window = widget_->GetNativeWindow();
 
   if (!shadow_bounds_) {
@@ -1035,6 +1032,11 @@ void ShellSurfaceBase::UpdateShadow() {
     if (!frame_enabled())
       shadow->SetRoundedCornerRadius(0);
   }
+}
+
+void ShellSurfaceBase::UpdateFrameType() {
+  // Nothing to do here for now as frame type is updated immediately in
+  // OnSetFrame() by default.
 }
 
 gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
@@ -1104,6 +1106,14 @@ void ShellSurfaceBase::StartCapture() {
   widget_->SetCapture(nullptr /* view */);
 }
 
+void ShellSurfaceBase::OnPostWidgetCommit() {
+  // |shadow_bounds_changed_| represents whether |shadow_bounds_| has changed
+  // since the last commit, but as UpdateShadow() can be called multiple times
+  // in a single commit process, we need to ensure that it's not reset halfway
+  // in the current commit by resetting it here.
+  shadow_bounds_changed_ = false;
+}
+
 void ShellSurfaceBase::CommitWidget() {
   // Apply new window geometry.
   geometry_ = pending_geometry_;
@@ -1127,6 +1137,7 @@ void ShellSurfaceBase::CommitWidget() {
 
   UpdateWidgetBounds();
   SurfaceTreeHost::UpdateHostWindowBounds();
+  UpdateFrameType();
   UpdateShadow();
 
   // System modal container is used by clients to implement overlay

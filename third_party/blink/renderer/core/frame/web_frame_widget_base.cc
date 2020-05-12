@@ -907,4 +907,15 @@ WebFrameWidgetBase::RendererWidgetSchedulingState() {
   return widget_base_->RendererWidgetSchedulingState();
 }
 
+void WebFrameWidgetBase::SetToolTipText(const String& tooltip_text,
+                                        TextDirection dir) {
+  widget_base_->GetWidgetHostRemote()->SetToolTipText(
+      tooltip_text.IsEmpty() ? "" : tooltip_text,
+      dir == TextDirection::kLtr
+          ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
+          : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT);
+
+  Client()->SetToolTipText(tooltip_text, ToBaseTextDirection(dir));
+}
+
 }  // namespace blink

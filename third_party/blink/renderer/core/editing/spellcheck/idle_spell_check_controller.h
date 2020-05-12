@@ -67,10 +67,8 @@ class CORE_EXPORT IdleSpellCheckController final
 
   LocalDOMWindow& GetWindow() const;
 
-  // Returns whether there is an active document to work on.
-  bool IsAvailable() const { return GetExecutionContext(); }
-
-  // Return the document to work on. Callable only when IsAvailable() is true.
+  // Return the document to work on. Callable only when GetExecutionContext()
+  // is non-null.
   Document& GetDocument() const;
 
   // Returns whether spell checking is globally enabled.

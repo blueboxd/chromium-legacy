@@ -94,6 +94,13 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
   void OnDeferredNavigationProcessed(
       std::vector<apps::IntentPickerAppInfo> apps);
 
+  // Whether or not the intent picker UI should be displayed without the user
+  // clicking in the omnibox's icon.
+  bool ShouldAutoDisplayUi(
+      const std::vector<apps::IntentPickerAppInfo>& apps_for_picker,
+      content::WebContents* web_contents,
+      const GURL& url);
+
   base::WeakPtrFactory<CommonAppsNavigationThrottle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CommonAppsNavigationThrottle);

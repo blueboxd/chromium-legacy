@@ -551,7 +551,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, ThirdPartyCookiesAllowed) {
                                     /* expected_controlled */ true);
   VerifyPrefValueAndControlledState(
       prefs::kCookieControlsMode,
-      base::Value(static_cast<int>(content_settings::CookieControlsMode::kOn)),
+      base::Value(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)),
       /* expected_controlled */ true);
   listener_false.Reply("ok");
 

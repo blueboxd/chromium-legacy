@@ -247,11 +247,11 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
     if (!decision_string.empty()) {
       histograms.ExpectUniqueSample(
-          "Permissions.Prompt." + decision_string + ".PriorDismissCount." +
+          "Permissions.Prompt." + decision_string + ".PriorDismissCount2." +
               PermissionUtil::GetPermissionString(content_settings_type),
           0, 1);
       histograms.ExpectUniqueSample(
-          "Permissions.Prompt." + decision_string + ".PriorIgnoreCount." +
+          "Permissions.Prompt." + decision_string + ".PriorIgnoreCount2." +
               PermissionUtil::GetPermissionString(content_settings_type),
           0, 1);
 #if defined(OS_ANDROID)
@@ -331,11 +331,11 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
           base::Bind(&TestPermissionContext::TrackPermissionDecision,
                      base::Unretained(&permission_context)));
       histograms.ExpectTotalCount(
-          "Permissions.Prompt.Dismissed.PriorDismissCount." +
+          "Permissions.Prompt.Dismissed.PriorDismissCount2." +
               PermissionUtil::GetPermissionString(content_settings_type),
           i + 1);
       histograms.ExpectBucketCount(
-          "Permissions.Prompt.Dismissed.PriorDismissCount." +
+          "Permissions.Prompt.Dismissed.PriorDismissCount2." +
               PermissionUtil::GetPermissionString(content_settings_type),
           i, 1);
 
@@ -421,10 +421,11 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
             base::Bind(&TestPermissionContext::TrackPermissionDecision,
                        base::Unretained(&permission_context)));
         histograms.ExpectTotalCount(
-            "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation",
+            "Permissions.Prompt.Dismissed.PriorDismissCount2.Geolocation",
             i + 1);
         histograms.ExpectBucketCount(
-            "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
+            "Permissions.Prompt.Dismissed.PriorDismissCount2.Geolocation", i,
+            1);
         histograms.ExpectUniqueSample(
             "Permissions.AutoBlocker.EmbargoPromptSuppression",
             static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
@@ -503,9 +504,9 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
           nullptr /* render_frame_host */, url, url);
 
       histograms.ExpectTotalCount(
-          "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i + 1);
+          "Permissions.Prompt.Dismissed.PriorDismissCount2.MidiSysEx", i + 1);
       histograms.ExpectBucketCount(
-          "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i, 1);
+          "Permissions.Prompt.Dismissed.PriorDismissCount2.MidiSysEx", i, 1);
       histograms.ExpectUniqueSample(
           "Permissions.AutoBlocker.EmbargoPromptSuppression",
           static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);

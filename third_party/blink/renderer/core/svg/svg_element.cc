@@ -180,7 +180,6 @@ void SVGElement::SetInstanceUpdatesBlocked(bool value) {
 void SVGElement::SetWebAnimationsPending() {
   GetDocument().AccessSVGExtensions().AddWebAnimationsPendingSVGElement(*this);
   EnsureSVGRareData()->SetWebAnimatedAttributesDirty(true);
-  EnsureUniqueElementData().SetAnimatedSvgAttributesAreDirty(true);
 }
 
 static bool IsSVGAttributeHandle(const PropertyHandle& property_handle) {
@@ -202,12 +201,6 @@ void SVGElement::ApplyActiveWebAnimations() {
   if (!HasSVGRareData())
     return;
   SvgRareData()->SetWebAnimatedAttributesDirty(false);
-}
-
-static inline void NotifyAnimValChanged(SVGElement* target_element,
-                                        const QualifiedName& attribute_name) {
-  target_element->InvalidateSVGAttributes();
-  target_element->SvgAttributeChanged(attribute_name);
 }
 
 template <typename T>
@@ -246,11 +239,17 @@ ElementSMILAnimations& SVGElement::EnsureSMILAnimations() {
 
 void SVGElement::SetAnimatedAttribute(const QualifiedName& attribute,
                                       SVGPropertyBase* value) {
+  // When animating the 'class' attribute we need to have our own
+  // unique element data since we'll be altering the active class
+  // names for the element.
+  if (attribute == html_names::kClassAttr)
+    EnsureUniqueElementData();
+
   ForSelfAndInstances(this, [&attribute, &value](SVGElement* element) {
     if (SVGAnimatedPropertyBase* animated_property =
             element->PropertyFromAttribute(attribute)) {
       animated_property->SetAnimatedValue(value);
-      NotifyAnimValChanged(element, attribute);
+      element->SvgAttributeChanged(attribute);
     }
   });
 }
@@ -260,7 +259,7 @@ void SVGElement::ClearAnimatedAttribute(const QualifiedName& attribute) {
     if (SVGAnimatedPropertyBase* animated_property =
             element->PropertyFromAttribute(attribute)) {
       animated_property->AnimationEnded();
-      NotifyAnimValChanged(element, attribute);
+      element->SvgAttributeChanged(attribute);
     }
   });
 }
@@ -921,26 +920,44 @@ void SVGElement::EnsureAttributeAnimValUpdated() {
   }
 }
 
-void SVGElement::SynchronizeAnimatedSVGAttribute(
-    const QualifiedName& name) const {
-  if (!GetElementData() ||
-      !GetElementData()->animated_svg_attributes_are_dirty())
-    return;
+void SVGElement::SynchronizeSVGAttribute(const QualifiedName& name) const {
+  DCHECK(GetElementData());
+  DCHECK(GetElementData()->svg_attributes_are_dirty());
   if (name == AnyQName()) {
-    AttributeToPropertyMap::const_iterator::ValuesIterator it =
-        attribute_to_property_map_.Values().begin();
-    AttributeToPropertyMap::const_iterator::ValuesIterator end =
-        attribute_to_property_map_.Values().end();
-    for (; it != end; ++it) {
-      if ((*it)->NeedsSynchronizeAttribute())
-        (*it)->SynchronizeAttribute();
+    for (SVGAnimatedPropertyBase* property :
+         attribute_to_property_map_.Values()) {
+      if (property->NeedsSynchronizeAttribute())
+        property->SynchronizeAttribute();
     }
-
-    GetElementData()->SetAnimatedSvgAttributesAreDirty(false);
+    GetElementData()->SetSvgAttributesAreDirty(false);
   } else {
-    SVGAnimatedPropertyBase* property = attribute_to_property_map_.at(name);
+    SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
     if (property && property->NeedsSynchronizeAttribute())
       property->SynchronizeAttribute();
+  }
+}
+
+void SVGElement::CollectStyleForAnimatedPresentationAttributes(
+    MutableCSSPropertyValueSet* style) {
+  // TODO(fs): This re-applies all animating attributes that are also
+  // presentation attributes. The precise predicate that we want is animated
+  // attributes that are presentation attributes and do not have a content
+  // attribute.
+  // That last bit ("do not have a content attribute") would mean a linear
+  // search of the attribute collection per property.
+  // Maybe reversing the order of operations would be preferable here (i.e
+  // collect style for animating attributes first, stashing which in a map, and
+  // then selectively collecting the rest of the presentation attributes).
+  // Maintaining the presentation attribute style "manually" also seems like a
+  // reasonable scheme since that means we can avoid reparsing the presentation
+  // attributes that didn't change.
+  for (SVGAnimatedPropertyBase* property :
+       attribute_to_property_map_.Values()) {
+    if (!property->HasPresentationAttributeMapping() ||
+        !property->IsAnimating())
+      continue;
+    CollectStyleForPresentationAttribute(property->AttributeName(),
+                                         g_empty_atom, style);
   }
 }
 

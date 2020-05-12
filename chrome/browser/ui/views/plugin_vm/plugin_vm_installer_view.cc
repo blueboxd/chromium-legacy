@@ -165,6 +165,11 @@ bool PluginVmInstallerView::ShouldShowWindowTitle() const {
 }
 
 bool PluginVmInstallerView::Accept() {
+  if (state_ == State::CONFIRM_INSTALL) {
+    StartInstallation();
+    return false;
+  }
+
   if (state_ == State::CREATED || state_ == State::IMPORTED) {
     // Launch button has been clicked.
     plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->LaunchPluginVm(
@@ -186,7 +191,10 @@ bool PluginVmInstallerView::Accept() {
 
 bool PluginVmInstallerView::Cancel() {
   switch (state_) {
-    case State::STARTING:
+    case State::CONFIRM_INSTALL:
+      plugin_vm::RecordPluginVmSetupResultHistogram(
+          plugin_vm::PluginVmSetupResult::kUserCancelledWithoutStarting);
+      break;
     case State::CHECKING_DISK_SPACE:
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::kUserCancelledCheckingDiskSpace);
@@ -339,7 +347,9 @@ void PluginVmInstallerView::OnError(
 
 base::string16 PluginVmInstallerView::GetBigMessage() const {
   switch (state_) {
-    case State::STARTING:
+    case State::CONFIRM_INSTALL:
+      return l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_TITLE, app_name_);
     case State::CHECKING_DISK_SPACE:
     case State::LOW_DISK_SPACE:
     case State::DOWNLOADING_DLC:
@@ -365,6 +375,13 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
 
 base::string16 PluginVmInstallerView::GetMessage() const {
   switch (state_) {
+    case State::CONFIRM_INSTALL:
+      return l10n_util::GetStringFUTF16(
+          IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_MESSAGE,
+          ui::FormatBytesWithUnits(
+              plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
+              ui::DATA_UNITS_GIBIBYTE,
+              /*show_units=*/true));
     case State::LOW_DISK_SPACE:
       return l10n_util::GetStringFUTF16(
           IDS_PLUGIN_VM_INSTALLER_LOW_DISK_SPACE_MESSAGE,
@@ -373,7 +390,6 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               ui::DATA_UNITS_GIBIBYTE,
               /*show_units=*/true),
           app_name_);
-    case State::STARTING:
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
@@ -470,13 +486,13 @@ PluginVmInstallerView::~PluginVmInstallerView() {
 
 int PluginVmInstallerView::GetCurrentDialogButtons() const {
   switch (state_) {
-    case State::STARTING:
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
     case State::DOWNLOADING:
     case State::IMPORTING:
       return ui::DIALOG_BUTTON_CANCEL;
+    case State::CONFIRM_INSTALL:
     case State::LOW_DISK_SPACE:
     case State::IMPORTED:
     case State::CREATED:
@@ -495,7 +511,11 @@ int PluginVmInstallerView::GetCurrentDialogButtons() const {
 base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
     ui::DialogButton button) const {
   switch (state_) {
-    case State::STARTING:
+    case State::CONFIRM_INSTALL:
+      return l10n_util::GetStringUTF16(
+          button == ui::DIALOG_BUTTON_OK
+              ? IDS_PLUGIN_VM_INSTALLER_INSTALL_BUTTON
+              : IDS_APP_CANCEL);
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
@@ -532,10 +552,8 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
 }
 
 void PluginVmInstallerView::AddedToWidget() {
-  if (state_ == State::STARTING)
-    StartInstallation();
-  else
-    OnStateUpdated();
+  // At this point GetWidget() is guaranteed to return non-null.
+  OnStateUpdated();
 }
 
 void PluginVmInstallerView::OnStateUpdated() {
@@ -557,7 +575,7 @@ void PluginVmInstallerView::OnStateUpdated() {
   }
 
   const bool progress_bar_visible =
-      state_ == State::STARTING || state_ == State::CHECKING_DISK_SPACE ||
+      state_ == State::CHECKING_DISK_SPACE ||
       state_ == State::DOWNLOADING_DLC || state_ == State::CHECKING_VMS ||
       state_ == State::DOWNLOADING || state_ == State::IMPORTING;
   progress_bar_->SetVisible(progress_bar_visible);
@@ -625,8 +643,7 @@ void PluginVmInstallerView::SetBigImage() {
 }
 
 void PluginVmInstallerView::StartInstallation() {
-  // In each case setup starts from this function (when dialog is opened or
-  // retry button is clicked).
+  // Setup always starts from this function, including retries.
   setup_start_tick_ = base::TimeTicks::Now();
 
   state_ = State::CHECKING_DISK_SPACE;

@@ -19,9 +19,10 @@ import java.lang.annotation.RetentionPolicy;
  * Helper class to handle conditional tab strip related utilities.
  */
 public class ConditionalTabStripUtils {
+    public static final int UNDO_DISMISS_SNACKBAR_DURATION = 5000;
     private static final String FEATURE_STATUS =
             ChromePreferenceKeys.CONDITIONAL_TAB_STRIP_FEATURE_STATUS;
-    public static final String CONDITIONAL_TAB_STRIP_SESSION_TIME_MS_PARAM =
+    private static final String CONDITIONAL_TAB_STRIP_SESSION_TIME_MS_PARAM =
             "conditional_tab_strip_session_time_ms";
     @VisibleForTesting
     public static final IntCachedFieldTrialParameter CONDITIONAL_TAB_STRIP_SESSION_TIME_MS =

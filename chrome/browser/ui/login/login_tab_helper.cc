@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/storage_partition.h"
@@ -19,6 +20,26 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 
 LoginTabHelper::~LoginTabHelper() {}
+
+std::unique_ptr<content::LoginDelegate>
+LoginTabHelper::CreateAndStartMainFrameLoginDelegate(
+    const net::AuthChallengeInfo& auth_info,
+    content::WebContents* web_contents,
+    const content::GlobalRequestID& request_id,
+    const GURL& url,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    LoginAuthRequiredCallback auth_required_callback) {
+  std::unique_ptr<LoginHandler> login_handler = LoginHandler::Create(
+      auth_info, web_contents, std::move(auth_required_callback));
+  login_handler->StartMainFrame(
+      request_id, url, response_headers,
+      // The caller owns the created LoginHandler, and there's no guarantee that
+      // |this| outlives it, so use a weak pointer to receive a callback when an
+      // extension has cancelled the auth request for a navigation.
+      base::BindOnce(&LoginTabHelper::RegisterExtensionCancelledNavigation,
+                     weak_ptr_factory_.GetWeakPtr()));
+  return login_handler;
+}
 
 void LoginTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -123,11 +144,6 @@ bool LoginTabHelper::IsShowingPrompt() const {
   return !!login_handler_;
 }
 
-void LoginTabHelper::RegisterExtensionCancelledNavigation(
-    const content::GlobalRequestID& request_id) {
-  request_id_for_extension_cancelled_navigation_ = request_id;
-}
-
 content::NavigationThrottle::ThrottleCheckResult
 LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
     content::NavigationHandle* navigation_handle) {
@@ -227,6 +243,11 @@ void LoginTabHelper::HandleCredentials(
                    base::BindOnce(&LoginTabHelper::Reload,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void LoginTabHelper::RegisterExtensionCancelledNavigation(
+    const content::GlobalRequestID& request_id) {
+  request_id_for_extension_cancelled_navigation_ = request_id;
 }
 
 void LoginTabHelper::Reload() {

@@ -30,4 +30,9 @@ public interface ListMenu {
      * @param runnable The task to be run on click event on content view.
      */
     void addContentViewClickRunnable(Runnable runnable);
+
+    /**
+     * @return Width of the largest item in the list.
+     */
+    int getMaxItemWidth();
 }

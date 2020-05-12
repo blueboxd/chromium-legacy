@@ -137,6 +137,11 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
      */
     private int mMaxWidthPx;
 
+    /**
+     * The desired width for the content.
+     */
+    private int mDesiredContentWidth = 0;
+
     // Preferred orientation for the popup with respect to the anchor.
     // Preferred vertical orientation for the popup with respect to the anchor.
     @VerticalOrientation
@@ -355,6 +360,13 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         ApiCompatibilityUtils.setElevation(mPopupWindow, elevation);
     }
 
+    /**
+     * Sets the width for the content of the popup window.
+     */
+    public void setDesiredContentWidth(int width) {
+        mDesiredContentWidth = width;
+    }
+
     // RectProvider.Observer implementation.
     @Override
     public void onRectChanged() {
@@ -388,7 +400,16 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         // Determine whether or not the popup should be above or below the anchor.
         // Aggressively try to put it below the anchor.  Put it above only if it would fit better.
         View contentView = mPopupWindow.getContentView();
-        int widthSpec = MeasureSpec.makeMeasureSpec(maxContentWidth, MeasureSpec.AT_MOST);
+
+        int widthSpec = 0;
+        if (mDesiredContentWidth > 0) {
+            int width =
+                    mDesiredContentWidth < maxContentWidth ? mDesiredContentWidth : maxContentWidth;
+            widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+        } else {
+            widthSpec = MeasureSpec.makeMeasureSpec(maxContentWidth, MeasureSpec.AT_MOST);
+        }
+
         contentView.measure(widthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
         int idealContentHeight = contentView.getMeasuredHeight();
         int idealContentWidth = contentView.getMeasuredWidth();

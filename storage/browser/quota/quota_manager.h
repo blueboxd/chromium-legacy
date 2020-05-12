@@ -278,7 +278,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   friend class base::RefCountedDeleteOnSequence<QuotaManager>;
   friend class quota_internals::QuotaInternalsProxy;
   friend class MockQuotaManager;
-  friend class MockStorageClient;
+  friend class MockQuotaClient;
   friend class QuotaManagerProxy;
   friend class QuotaManagerTest;
   friend class QuotaTemporaryStorageEvictor;

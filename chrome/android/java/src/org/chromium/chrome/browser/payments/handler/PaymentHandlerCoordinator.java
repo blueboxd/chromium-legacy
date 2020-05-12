@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -102,8 +101,7 @@ public class PaymentHandlerCoordinator {
         // Observer is designed to set here rather than in the constructor because
         // PaymentHandlerMediator and PaymentHandlerToolbarCoordinator have mutual dependencies.
         mToolbarCoordinator.setObserver(mediator);
-        ThinWebView thinWebView = ThinWebViewFactory.create(
-                activity, new ActivityWindowAndroid(activity), new ThinWebViewConstraints());
+        ThinWebView thinWebView = ThinWebViewFactory.create(activity, new ThinWebViewConstraints());
         assert webContentView.getParent() == null;
         thinWebView.attachWebContents(mWebContents, webContentView, null);
         PaymentHandlerView view = new PaymentHandlerView(

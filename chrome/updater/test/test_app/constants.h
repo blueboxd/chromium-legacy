@@ -5,6 +5,9 @@
 #ifndef CHROME_UPDATER_TEST_TEST_APP_CONSTANTS_H_
 #define CHROME_UPDATER_TEST_TEST_APP_CONSTANTS_H_
 
+#include "base/strings/string16.h"
+#include "build/build_config.h"
+
 namespace updater {
 
 // Installs the updater.
@@ -15,6 +18,11 @@ extern const char kRegisterToUpdaterSwitch[];
 
 // Initiates a foreground update through IPC.
 extern const char kForegroundUpdateSwitch[];
+
+#if defined(OS_WIN)
+// Test app GUID.
+extern const base::char16 kAppId[];
+#endif  // defined(OS_WIN)
 
 // Update process state machine.
 enum class UpdateStatus {

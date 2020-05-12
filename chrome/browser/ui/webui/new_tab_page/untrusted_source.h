@@ -54,7 +54,7 @@ class UntrustedSource : public content::URLDataSource,
   std::string GetContentSecurityPolicyFrameAncestors() override;
   bool ShouldReplaceExistingSource() override;
   bool ShouldServiceRequest(const GURL& url,
-                            content::BrowserContext* browser_context,
+                            content::ResourceContext* resource_context,
                             int render_process_id) override;
 
  private:
@@ -71,6 +71,7 @@ class UntrustedSource : public content::URLDataSource,
   OneGoogleBarService* one_google_bar_service_;
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_{this};
+  base::Optional<base::TimeTicks> one_google_bar_load_start_time_;
   Profile* profile_;
   std::vector<content::URLDataSource::GotDataCallback> promo_callbacks_;
   PromoService* promo_service_;

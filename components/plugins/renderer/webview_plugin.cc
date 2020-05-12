@@ -232,8 +232,7 @@ blink::WebInputEventResult WebViewPlugin::HandleInputEvent(
   current_cursor_ = *cursor;
   DCHECK(web_view()->MainFrameWidget());
   blink::WebInputEventResult handled =
-      web_view()->MainFrameWidget()->HandleInputEvent(
-          blink::WebCoalescedInputEvent(event));
+      web_view()->MainFrameWidget()->HandleInputEvent(coalesced_event);
   *cursor = current_cursor_;
 
   return handled;

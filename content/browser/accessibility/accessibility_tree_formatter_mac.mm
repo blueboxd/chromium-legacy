@@ -152,6 +152,71 @@ std::unique_ptr<base::Value> PopulateObject(id value) {
       SysNSStringToUTF16([NSString stringWithFormat:@"%@", value])));
 }
 
+NSArray* AllAttributesArray() {
+  static NSArray* all_attributes = [@[
+    NSAccessibilityRoleDescriptionAttribute,
+    NSAccessibilityTitleAttribute,
+    NSAccessibilityValueAttribute,
+    NSAccessibilityMinValueAttribute,
+    NSAccessibilityMaxValueAttribute,
+    NSAccessibilityValueDescriptionAttribute,
+    NSAccessibilityDescriptionAttribute,
+    NSAccessibilityHelpAttribute,
+    @"AXInvalid",
+    NSAccessibilityDisclosingAttribute,
+    NSAccessibilityDisclosureLevelAttribute,
+    @"AXAccessKey",
+    @"AXARIAAtomic",
+    @"AXARIABusy",
+    @"AXARIAColumnCount",
+    @"AXARIAColumnIndex",
+    @"AXARIALive",
+    @"AXARIARelevant",
+    @"AXARIARowCount",
+    @"AXARIARowIndex",
+    @"AXARIASetSize",
+    @"AXARIAPosInSet",
+    @"AXAutocomplete",
+    @"AXAutocompleteValue",
+    @"AXBlockQuoteLevel",
+    NSAccessibilityColumnHeaderUIElementsAttribute,
+    NSAccessibilityColumnIndexRangeAttribute,
+    @"AXDOMIdentifier",
+    @"AXDropEffects",
+    @"AXEditableAncestor",
+    NSAccessibilityEnabledAttribute,
+    NSAccessibilityExpandedAttribute,
+    @"AXFocusableAncestor",
+    NSAccessibilityFocusedAttribute,
+    @"AXGrabbed",
+    NSAccessibilityHeaderAttribute,
+    @"AXHasPopup",
+    @"AXHasPopupValue",
+    @"AXHighestEditableAncestor",
+    NSAccessibilityIndexAttribute,
+    @"AXLanguage",
+    @"AXLoaded",
+    @"AXLoadingProcess",
+    NSAccessibilityNumberOfCharactersAttribute,
+    NSAccessibilitySortDirectionAttribute,
+    NSAccessibilityOrientationAttribute,
+    NSAccessibilityPlaceholderValueAttribute,
+    @"AXRequired",
+    NSAccessibilityRowHeaderUIElementsAttribute,
+    NSAccessibilityRowIndexRangeAttribute,
+    NSAccessibilitySelectedAttribute,
+    NSAccessibilitySelectedChildrenAttribute,
+    NSAccessibilityTitleUIElementAttribute,
+    NSAccessibilityURLAttribute,
+    NSAccessibilityVisibleCharacterRangeAttribute,
+    NSAccessibilityVisibleChildrenAttribute,
+    @"AXVisited",
+    @"AXLinkedUIElements"
+  ] retain];
+
+  return all_attributes;
+}
+
 }  // namespace
 
 class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
@@ -210,8 +275,8 @@ AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {}
 void AccessibilityTreeFormatterMac::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {
   static NSArray* default_attributes = [@[
-    @"AXAutocomplete*", @"AXDescription=*", @"AXTitle=*", @"AXTitleUIElement=*",
-    @"AXHelp=*", @"AXValue=*"
+    @"AXValueAutofill*", @"AXAutocomplete*", @"AXDescription=*", @"AXTitle=*",
+    @"AXTitleUIElement=*", @"AXHelp=*", @"AXValue=*"
   ] retain];
 
   for (NSString* attribute : default_attributes) {
@@ -274,13 +339,27 @@ void AccessibilityTreeFormatterMac::AddProperties(
     const BrowserAccessibilityCocoa* cocoa_node,
     base::DictionaryValue* dict) {
   BrowserAccessibility* node = [cocoa_node owner];
-  dict->SetString("id", base::NumberToString16(node->GetId()));
+  dict->SetInteger("id", node->GetId());
 
-  for (NSString* supportedAttribute in
-       [cocoa_node accessibilityAttributeNames]) {
-    id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
+  NSArray* supportedAttributes = [cocoa_node accessibilityAttributeNames];
+
+  string role = SysNSStringToUTF8(
+      [cocoa_node accessibilityAttributeValue:NSAccessibilityRoleAttribute]);
+  dict->SetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), role);
+
+  NSString* subrole =
+      [cocoa_node accessibilityAttributeValue:NSAccessibilitySubroleAttribute];
+  if (subrole != nil) {
+    dict->SetString(SysNSStringToUTF8(NSAccessibilitySubroleAttribute),
+                    SysNSStringToUTF8(subrole));
+  }
+
+  for (NSString* requestedAttribute in AllAttributesArray()) {
+    if (![supportedAttributes containsObject:requestedAttribute])
+      continue;
+    id value = [cocoa_node accessibilityAttributeValue:requestedAttribute];
     if (value != nil) {
-      dict->Set(SysNSStringToUTF8(supportedAttribute), PopulateObject(value));
+      dict->Set(SysNSStringToUTF8(requestedAttribute), PopulateObject(value));
     }
   }
   dict->Set(kPositionDictAttr, PopulatePosition(*node));
@@ -295,59 +374,52 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
     return error_value;
 
   base::string16 line;
+  int id_value;
+  dict.GetInteger("id", &id_value);
+  WriteAttribute(false, base::NumberToString16(id_value), &line);
 
-  // AXRole and AXSubrole have own formatting and should be listed upfront.
-  std::string role_attr = SysNSStringToUTF8(NSAccessibilityRoleAttribute);
-  const std::string* value = dict.FindStringPath(role_attr);
-  if (value) {
-    WriteAttribute(true, *value, &line);
-  }
-  std::string subrole_attr = SysNSStringToUTF8(NSAccessibilitySubroleAttribute);
-  value = dict.FindStringPath(subrole_attr);
-  if (value) {
-    WriteAttribute(false,
-                   StringPrintf("%s=%s", subrole_attr.c_str(), value->c_str()),
-                   &line);
+  string s_value;
+  dict.GetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), &s_value);
+  WriteAttribute(true, s_value, &line);
+
+  string subroleAttribute = SysNSStringToUTF8(NSAccessibilitySubroleAttribute);
+  if (dict.GetString(subroleAttribute, &s_value)) {
+    WriteAttribute(
+        false, StringPrintf("%s=%s", subroleAttribute.c_str(), s_value.c_str()),
+        &line);
   }
 
-  // Expose all other attributes.
-  for (auto item : dict.DictItems()) {
-    if (item.second.is_string()) {
-      if (item.first != role_attr && item.first != subrole_attr) {
-        WriteAttribute(false,
-                       StringPrintf("%s='%s'", item.first.c_str(),
-                                    item.second.GetString().c_str()),
-                       &line);
-      }
+  for (NSString* requestedAttribute in AllAttributesArray()) {
+    string requestedAttributeUTF8 = SysNSStringToUTF8(requestedAttribute);
+    if (dict.GetString(requestedAttributeUTF8, &s_value)) {
+      WriteAttribute(false,
+                     StringPrintf("%s='%s'", requestedAttributeUTF8.c_str(),
+                                  s_value.c_str()),
+                     &line);
       continue;
     }
-
-    // Special processing for position and size.
-    if (item.second.is_dict()) {
-      if (item.first == kPositionDictAttr) {
-        WriteAttribute(false,
-                       FormatCoordinates(
-                           base::Value::AsDictionaryValue(item.second),
-                           kPositionDictAttr, kXCoordDictAttr, kYCoordDictAttr),
-                       &line);
-        continue;
-      }
-      if (item.first == kSizeDictAttr) {
-        WriteAttribute(
-            false,
-            FormatCoordinates(base::Value::AsDictionaryValue(item.second),
-                              kSizeDictAttr, kWidthDictAttr, kHeightDictAttr),
-            &line);
-        continue;
-      }
+    const base::Value* value;
+    if (dict.Get(requestedAttributeUTF8, &value)) {
+      std::string json_value;
+      base::JSONWriter::Write(*value, &json_value);
+      WriteAttribute(false,
+                     StringPrintf("%s=%s", requestedAttributeUTF8.c_str(),
+                                  json_value.c_str()),
+                     &line);
     }
-
-    // Write everything else as JSON.
-    std::string json_value;
-    base::JSONWriter::Write(item.second, &json_value);
-    WriteAttribute(
-        false, StringPrintf("%s=%s", item.first.c_str(), json_value.c_str()),
-        &line);
+  }
+  const base::DictionaryValue* d_value = NULL;
+  if (dict.GetDictionary(kPositionDictAttr, &d_value)) {
+    WriteAttribute(false,
+                   FormatCoordinates(*d_value, kPositionDictAttr,
+                                     kXCoordDictAttr, kYCoordDictAttr),
+                   &line);
+  }
+  if (dict.GetDictionary(kSizeDictAttr, &d_value)) {
+    WriteAttribute(false,
+                   FormatCoordinates(*d_value, kSizeDictAttr, kWidthDictAttr,
+                                     kHeightDictAttr),
+                   &line);
   }
 
   return line;

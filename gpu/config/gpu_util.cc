@@ -38,7 +38,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/vulkan/buildflags.h"
-#include "third_party/vulkan/include/vulkan/vulkan.h"
+#include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
@@ -1015,18 +1015,18 @@ std::string VulkanVersionToString(uint32_t vulkan_version) {
 #endif  // OS_WIN
 
 VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
-  switch (vulkan_version) {
-    case 0:
-      return VulkanVersion::kVulkanVersionUnknown;
-    case VK_MAKE_VERSION(1, 0, 0):
-      return VulkanVersion::kVulkanVersion_1_0_0;
-    case VK_MAKE_VERSION(1, 1, 0):
-      return VulkanVersion::kVulkanVersion_1_1_0;
-    case VK_MAKE_VERSION(1, 2, 0):
-      return VulkanVersion::kVulkanVersion_1_2_0;
-    default:
-      NOTREACHED();
-      return VulkanVersion::kVulkanVersionUnknown;
+  if (vulkan_version < VK_MAKE_VERSION(1, 0, 0))
+    return VulkanVersion::kVulkanVersionUnknown;
+  else if (vulkan_version < VK_MAKE_VERSION(1, 1, 0))
+    return VulkanVersion::kVulkanVersion_1_0_0;
+  else if (vulkan_version < VK_MAKE_VERSION(1, 2, 0))
+    return VulkanVersion::kVulkanVersion_1_1_0;
+  else if (vulkan_version < VK_MAKE_VERSION(1, 3, 0))
+    return VulkanVersion::kVulkanVersion_1_2_0;
+  else {
+    // Need to add 1.3.0+ to enum VulkanVersion.
+    NOTREACHED();
+    return VulkanVersion::kVulkanVersion_1_2_0;
   }
 }
 

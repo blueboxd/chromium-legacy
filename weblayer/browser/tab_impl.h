@@ -140,7 +140,9 @@ class TabImpl : public Tab,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& autofill_provider);
 
-  void UpdateBrowserControlsState(JNIEnv* env, jint constraint);
+  void UpdateBrowserControlsState(JNIEnv* env,
+                                  jint constraint,
+                                  jboolean animate);
 
   base::android::ScopedJavaLocalRef<jstring> GetGuid(JNIEnv* env);
 

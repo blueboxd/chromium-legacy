@@ -30,7 +30,7 @@ public class MultiWindowModeStateDispatcherImpl implements MultiWindowModeStateD
      * Notify observers that multi-window mode has changed.
      * @param inMultiWindowMode Whether the activity is currently in multi-window mode.
      */
-    public void dipatchMultiWindowModeChanged(boolean inMultiWindowMode) {
+    public void dispatchMultiWindowModeChanged(boolean inMultiWindowMode) {
         for (MultiWindowModeObserver observer : mObservers) {
             observer.onMultiWindowModeChanged(inMultiWindowMode);
         }

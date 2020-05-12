@@ -4,45 +4,23 @@
 
 package org.chromium.chrome.browser.settings;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.TextView;
-
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
-
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.profiles.Profile;
 
 /**
- * A preference that opens a HelpAndFeedback activity to learn more about the specified context.
+ * A preference with a clickable "Learn more" link.
+ *
+ * During {@link androidx.preference.PreferenceFragmentCompat#onCreatePreferences}, call {@link
+ * #setOnPreferenceClickListener} to configure the link click behavior.
  */
 public class LearnMorePreference extends Preference {
-    /**
-     * Resource id for the help page to link to by context name. Corresponds to go/mobilehelprecs.
-     */
-    private final int mHelpContext;
-
-    /**
-     * Link text color.
-     */
-    private final int mColor;
-
     public LearnMorePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        TypedArray styledAttributes =
-                context.obtainStyledAttributes(attrs, R.styleable.LearnMorePreference, 0, 0);
-        mHelpContext =
-                styledAttributes.getResourceId(R.styleable.LearnMorePreference_helpContext, 0);
-        mColor = ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.default_text_color_link);
-        styledAttributes.recycle();
 
         setTitle(R.string.learn_more);
         setSelectable(false);
@@ -50,18 +28,11 @@ public class LearnMorePreference extends Preference {
     }
 
     @Override
-    protected void onClick() {
-        Activity activity = ContextUtils.activityFromContext(getContext());
-        HelpAndFeedback.getInstance().show(activity, activity.getString(mHelpContext),
-                Profile.getLastUsedRegularProfile(), null);
-    }
-
-    @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
         TextView titleView = (TextView) holder.findViewById(android.R.id.title);
+        ApiCompatibilityUtils.setTextAppearance(titleView, R.style.TextAppearance_TextLarge_Blue);
         titleView.setClickable(true);
-        titleView.setTextColor(mColor);
-        titleView.setOnClickListener(v -> LearnMorePreference.this.onClick());
+        titleView.setOnClickListener(v -> getOnPreferenceClickListener().onPreferenceClick(this));
     }
 }

@@ -319,8 +319,7 @@ TEST_F(ObfuscatedFileUtilMemoryDelegateTest, CopyForeignFile) {
                                      FileSystemOperation::OPTION_NONE, sync));
 
   // Create source file.
-  EXPECT_EQ(test_data_len,
-            base::WriteFile(from_file, test_data, test_data_len));
+  EXPECT_TRUE(base::WriteFile(from_file, test_data));
 
   // Test copying to a nonexistent directory.
   EXPECT_EQ(

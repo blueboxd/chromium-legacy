@@ -470,14 +470,14 @@ void PluginVmManagerImpl::OnGetVmInfoForSharing(
   seneschal_server_handle_ = reply->vm_info().seneschal_server_handle();
 
   // Create and share default folder, and other persisted shares.
-  EnsureDefaultSharedDirExists(
-      profile_, base::BindOnce(&PluginVmManagerImpl::OnDefaultSharedDirExists,
+  EnsureDefaultSharedDirsExist(
+      profile_, base::BindOnce(&PluginVmManagerImpl::OnDefaultSharedDirsExist,
                                weak_ptr_factory_.GetWeakPtr()));
   guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePersistedPaths(
       kPluginVmName, base::DoNothing());
 }
 
-void PluginVmManagerImpl::OnDefaultSharedDirExists(const base::FilePath& dir,
+void PluginVmManagerImpl::OnDefaultSharedDirsExist(const base::FilePath& dir,
                                                    bool exists) {
   if (exists) {
     guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(

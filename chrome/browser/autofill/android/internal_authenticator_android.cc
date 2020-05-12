@@ -63,6 +63,8 @@ void InternalAuthenticatorAndroid::MakeCredential(
   if (obj.is_null())
     return;
 
+  make_credential_response_callback_ = std::move(callback);
+
   std::vector<uint8_t> byte_vector =
       blink::mojom::PublicKeyCredentialCreationOptions::Serialize(&options);
   base::android::ScopedJavaLocalRef<jobject> byte_buffer =
@@ -80,6 +82,8 @@ void InternalAuthenticatorAndroid::GetAssertion(
   ScopedJavaLocalRef<jobject> obj = java_authenticator_impl_ref_.get(env);
   if (obj.is_null())
     return;
+
+  get_assertion_response_callback_ = std::move(callback);
 
   std::vector<uint8_t> byte_vector =
       blink::mojom::PublicKeyCredentialRequestOptions::Serialize(&options);

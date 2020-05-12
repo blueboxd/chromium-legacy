@@ -1440,9 +1440,8 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
   // cross-tree traversal is necessary.
   if (child->IsTextOnlyObject()) {
     int32_t hypertext_offset = 0;
-    for (AXPlatformNodeBase* sibling = GetFirstChild(); sibling != child;
-         sibling = sibling->GetNextSibling()) {
-      DCHECK(sibling);
+    for (AXPlatformNodeBase* sibling = GetFirstChild();
+         sibling && sibling != child; sibling = sibling->GetNextSibling()) {
       if (sibling->IsTextOnlyObject()) {
         hypertext_offset += (int32_t)sibling->GetHypertext().size();
       } else {

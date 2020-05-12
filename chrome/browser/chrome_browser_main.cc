@@ -88,7 +88,6 @@
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
-#include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
@@ -953,12 +952,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   vr::XRSessionRequestConsentManager::SetInstance(
       new vr::XRSessionRequestConsentManagerImpl());
 #endif  // BUILDFLAG(ENABLE_VR) && OS_WIN
-
-  // Enable Navigation Tracing only if a trace upload url is specified.
-  if (parsed_command_line_.HasSwitch(switches::kEnableNavigationTracing) &&
-      parsed_command_line_.HasSwitch(switches::kTraceUploadURL)) {
-    tracing::SetupNavigationTracing();
-  }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

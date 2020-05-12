@@ -1051,10 +1051,8 @@ viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
 
 bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
-    const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
-  input_handler_->HandleInputEvent(input_event, latency_info,
-                                   std::move(callback));
+  input_handler_->HandleInputEvent(input_event, std::move(callback));
   return true;
 }
 

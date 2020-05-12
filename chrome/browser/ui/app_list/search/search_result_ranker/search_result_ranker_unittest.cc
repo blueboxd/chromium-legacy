@@ -125,7 +125,7 @@ std::unique_ptr<KeyedService> BuildHistoryService(
 class SearchControllerFake : public SearchController {
  public:
   explicit SearchControllerFake(Profile* profile)
-      : SearchController(nullptr, nullptr, profile) {}
+      : SearchController(nullptr, nullptr, nullptr, profile) {}
 };
 
 }  // namespace

@@ -237,23 +237,10 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
 
   GURL url;
   if (params.url.get()) {
-    std::string url_string = *params.url;
-    url = ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string,
-                                                       function->extension());
-    if (!url.is_valid()) {
-      *error = ErrorUtils::FormatErrorMessage(tabs_constants::kInvalidUrlError,
-                                              url_string);
+    if (!ExtensionTabUtil::PrepareURLForNavigation(
+            *params.url, function->extension(), &url, error)) {
       return nullptr;
     }
-
-    // Don't let extensions crash the browser or renderers.
-    if (ExtensionTabUtil::IsKillURL(url)) {
-      *error = tabs_constants::kNoCrashBrowserError;
-      return nullptr;
-    }
-
-    // Log if this navigation looks like it is to a devtools URL.
-    ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
   } else {
     url = GURL(chrome::kChromeUINewTabURL);
   }
@@ -789,6 +776,32 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
   }
 
   return false;
+}
+
+bool ExtensionTabUtil::PrepareURLForNavigation(const std::string& url_string,
+                                               const Extension* extension,
+                                               GURL* return_url,
+                                               std::string* error) {
+  GURL url =
+      ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string, extension);
+
+  if (!url.is_valid()) {
+    *error = ErrorUtils::FormatErrorMessage(tabs_constants::kInvalidUrlError,
+                                            url_string);
+    return false;
+  }
+
+  // Don't let the extension crash the browser or renderers.
+  if (ExtensionTabUtil::IsKillURL(url)) {
+    *error = tabs_constants::kNoCrashBrowserError;
+    return false;
+  }
+
+  // Log if this navigation looks like it is to a devtools URL.
+  ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
+
+  return_url->Swap(&url);
+  return true;
 }
 
 void ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(const GURL& url) {

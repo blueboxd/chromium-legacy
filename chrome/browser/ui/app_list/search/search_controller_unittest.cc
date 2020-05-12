@@ -51,7 +51,8 @@ class SearchControllerTest : public ChromeAshTestBase {
  private:
   TestAppListControllerDelegate list_controller_;
   SearchController search_controller_{/*model_updater=*/nullptr,
-                                      &list_controller_, /*profile=*/nullptr};
+                                      &list_controller_, /*profile=*/nullptr,
+                                      /*notifier=*/nullptr};
 };
 
 // Tests -----------------------------------------------------------------------

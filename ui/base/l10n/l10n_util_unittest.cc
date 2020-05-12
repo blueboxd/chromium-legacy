@@ -115,7 +115,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   for (size_t i = 0; i < base::size(filenames); ++i) {
     base::FilePath filename = new_locale_dir.AppendASCII(
         filenames[i] + ".pak");
-    base::WriteFile(filename, "", 0);
+    base::WriteFile(filename, "");
   }
 
   // Keep a copy of ICU's default locale before we overwrite it.

@@ -27,6 +27,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   static PluginVmInstallerView* GetActiveViewForTesting();
 
   // views::BubbleDialogDelegateView implementation.
+  bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
   bool Accept() override;
   bool Cancel() override;

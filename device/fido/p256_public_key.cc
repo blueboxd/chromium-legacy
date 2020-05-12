@@ -11,7 +11,10 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 
 namespace device {
@@ -25,6 +28,31 @@ constexpr size_t kFieldElementLength = 32;
 // P-256. It's one byte of type information followed by two field elements (x
 // and y).
 constexpr size_t kUncompressedPointLength = 1 + 2 * kFieldElementLength;
+
+namespace {
+
+// DERFromEC_POINT returns the ASN.1, DER, SubjectPublicKeyInfo for a given
+// elliptic-curve point.
+static std::vector<uint8_t> DERFromEC_POINT(const EC_POINT* point) {
+  bssl::UniquePtr<EC_KEY> ec_key(
+      EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
+  CHECK(EC_KEY_set_public_key(ec_key.get(), point));
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new());
+  CHECK(EVP_PKEY_assign_EC_KEY(pkey.get(), ec_key.release()));
+
+  bssl::ScopedCBB cbb;
+  uint8_t* der_bytes = nullptr;
+  size_t der_bytes_len = 0;
+  CHECK(CBB_init(cbb.get(), /* initial size */ 128) &&
+        EVP_marshal_public_key(cbb.get(), pkey.get()) &&
+        CBB_finish(cbb.get(), &der_bytes, &der_bytes_len));
+
+  std::vector<uint8_t> ret(der_bytes, der_bytes + der_bytes_len);
+  OPENSSL_free(der_bytes);
+  return ret;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<PublicKey> P256PublicKey::ExtractFromU2fRegistrationResponse(
@@ -91,7 +119,8 @@ std::unique_ptr<PublicKey> P256PublicKey::ExtractFromCOSEKey(
     return nullptr;
   }
 
-  return std::make_unique<PublicKey>(algorithm, cbor_bytes);
+  return std::make_unique<PublicKey>(algorithm, cbor_bytes,
+                                     DERFromEC_POINT(point.get()));
 }
 
 // static
@@ -128,7 +157,8 @@ std::unique_ptr<PublicKey> P256PublicKey::ParseX962Uncompressed(
   const std::vector<uint8_t> cbor_bytes(
       std::move(cbor::Writer::Write(cbor::Value(std::move(map))).value()));
 
-  return std::make_unique<PublicKey>(algorithm, cbor_bytes);
+  return std::make_unique<PublicKey>(algorithm, cbor_bytes,
+                                     DERFromEC_POINT(point.get()));
 }
 
 }  // namespace device

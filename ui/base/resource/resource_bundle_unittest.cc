@@ -258,9 +258,9 @@ TEST_F(ResourceBundleTest, IsGzipped) {
   base::FilePath data_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump contents into a pak file and load it.
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
-                            kSampleCompressPakSizeV5),
-            static_cast<int>(kSampleCompressPakSizeV5));
+  ASSERT_TRUE(
+      base::WriteFile(data_path, base::StringPiece(kSampleCompressPakContentsV5,
+                                                   kSampleCompressPakSizeV5)));
   ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
 
@@ -277,9 +277,9 @@ TEST_F(ResourceBundleTest, IsBrotli) {
   base::FilePath data_path =
       temp_dir_.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump contents into a pak file and load it.
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
-                            kSampleCompressPakSizeV5),
-            static_cast<int>(kSampleCompressPakSizeV5));
+  ASSERT_TRUE(
+      base::WriteFile(data_path, base::StringPiece(kSampleCompressPakContentsV5,
+                                                   kSampleCompressPakSizeV5)));
   ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
 
@@ -377,8 +377,8 @@ class ResourceBundleImageTest : public ResourceBundleTest {
     // Write an empty data pak for locale data.
     const base::FilePath& locale_path = dir_path().Append(
         FILE_PATH_LITERAL("locale.pak"));
-    EXPECT_EQ(base::WriteFile(locale_path, kEmptyPakContents, kEmptyPakSize),
-              static_cast<int>(kEmptyPakSize));
+    EXPECT_TRUE(base::WriteFile(
+        locale_path, base::StringPiece(kEmptyPakContents, kEmptyPakSize)));
 
     ui::ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
 
@@ -406,9 +406,9 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak files.
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
-                            kSampleCompressPakSizeV5),
-            static_cast<int>(kSampleCompressPakSizeV5));
+  ASSERT_TRUE(
+      base::WriteFile(data_path, base::StringPiece(kSampleCompressPakContentsV5,
+                                                   kSampleCompressPakSizeV5)));
 
   // Load pak file.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -439,8 +439,8 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytesNotFound) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak files.
-  ASSERT_EQ(base::WriteFile(data_path, kEmptyPakContents,
-      kEmptyPakSize), static_cast<int>(kEmptyPakSize));
+  ASSERT_TRUE(base::WriteFile(
+      data_path, base::StringPiece(kEmptyPakContents, kEmptyPakSize)));
 
   // Create a resource bundle from the file.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -464,12 +464,12 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceStringForScale) {
       dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
   // Dump content into pak files.
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
-                            kSampleCompressPakSizeV5),
-            static_cast<int>(kSampleCompressPakSizeV5));
-  ASSERT_EQ(base::WriteFile(data_2x_path, kSampleCompressScaledPakContents,
-                            kSampleCompressScaledPakSize),
-            static_cast<int>(kSampleCompressScaledPakSize));
+  ASSERT_TRUE(
+      base::WriteFile(data_path, base::StringPiece(kSampleCompressPakContentsV5,
+                                                   kSampleCompressPakSizeV5)));
+  ASSERT_TRUE(base::WriteFile(
+      data_2x_path, base::StringPiece(kSampleCompressScaledPakContents,
+                                      kSampleCompressScaledPakSize)));
 
   // Load pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
@@ -487,9 +487,9 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceStringForScale) {
 TEST_F(ResourceBundleImageTest, LoadLocalizedResourceString) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump content into pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
-                            kSampleCompressPakSizeV5),
-            static_cast<int>(kSampleCompressPakSizeV5));
+  ASSERT_TRUE(
+      base::WriteFile(data_path, base::StringPiece(kSampleCompressPakContentsV5,
+                                                   kSampleCompressPakSizeV5)));
   // Load pak file.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_NONE);
@@ -502,9 +502,9 @@ TEST_F(ResourceBundleImageTest, LoadLocalizedResourceString) {
 TEST_F(ResourceBundleImageTest, LoadDataResourceString) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump content into pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
-                            kSampleCompressPakSizeV5),
-            static_cast<int>(kSampleCompressPakSizeV5));
+  ASSERT_TRUE(
+      base::WriteFile(data_path, base::StringPiece(kSampleCompressPakContentsV5,
+                                                   kSampleCompressPakSizeV5)));
   // Load pak file.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_NONE);
@@ -525,10 +525,10 @@ TEST_F(ResourceBundleImageTest, GetRawDataResource) {
       dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
 
   // Dump contents into the pak files.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
-            static_cast<int>(kSamplePakSizeV4));
-  ASSERT_EQ(base::WriteFile(data_2x_path, kSamplePakContents2x,
-      kSamplePakSize2x), static_cast<int>(kSamplePakSize2x));
+  ASSERT_TRUE(base::WriteFile(
+      data_path, base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4)));
+  ASSERT_TRUE(base::WriteFile(
+      data_2x_path, base::StringPiece(kSamplePakContents2x, kSamplePakSize2x)));
 
   // Load the regular and 2x pak files.
   ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();

@@ -371,10 +371,12 @@
     },
     {
       name: "CookieStoreDocument",
+      origin_trial_feature_name: "CookieStore",
       status: "experimental",
     },
     {
       name: "CookieStoreWorker",
+      origin_trial_feature_name: "CookieStore",
       status: "experimental",
     },
     {
@@ -586,10 +588,6 @@
     {
       name: "CSSVariables2TransformValues",
       status: "test",
-    },
-    {
-      name: "CSSViewport",
-      status: "experimental",
     },
     {
       name: "CustomElementDefaultStyle",
@@ -1201,6 +1199,10 @@
     {
       name: "NeverSlowMode",
     },
+    {
+      name: "NewCanvas2DAPI",
+      status: "experimental",
+    },
     // Not a web exposed feature, enabled from the command line.
     {
       name: "NewRemotePlaybackPipeline",
@@ -1686,7 +1688,7 @@
     },
     {
       name: "SmsReceiver",
-      status: {"default": "experimental", "Android": "experimental"},
+      status: {"default": "experimental", "Android": "stable"},
     },
     {
       name: "SquashAfterPaint",
@@ -1867,6 +1869,11 @@
     },
     {
       name: "WebAnimationsSVG",
+      status: "experimental",
+    },
+    {
+      name: "WebAssemblySimd",
+      origin_trial_feature_name: "WebAssemblySimd",
       status: "experimental",
     },
     {

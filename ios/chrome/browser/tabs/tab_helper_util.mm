@@ -132,13 +132,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   if (base::FeatureList::IsEnabled(
           safe_browsing::kSafeBrowsingAvailableOnIOS)) {
     SafeBrowsingTabHelper::CreateForWebState(web_state);
-    if (!for_prerender) {
-      // Unsafe navigations will never be allowed for prerender WebStates, and
-      // error pages will never be shown, so the allow list and unsafe resource
-      // container do not need to be created.
-      SafeBrowsingUrlAllowList::CreateForWebState(web_state);
-      SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
-    }
+    SafeBrowsingUrlAllowList::CreateForWebState(web_state);
+    SafeBrowsingUnsafeResourceContainer::CreateForWebState(web_state);
   }
 
   if (IsURLBlocklistEnabled()) {

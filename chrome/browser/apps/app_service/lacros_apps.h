@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_LACROS_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_LACROS_APPS_H_
 
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/services/app_service/public/cpp/publisher_base.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -26,6 +28,15 @@ class LacrosApps : public apps::PublisherBase {
   LacrosApps& operator=(const LacrosApps&) = delete;
 
  private:
+  // Returns the single lacros app.
+  apps::mojom::AppPtr GetLacrosApp(bool is_ready);
+
+  // Returns an IconKey with appropriate effects for the binary ready state.
+  apps::mojom::IconKeyPtr NewIconKey(bool is_ready);
+
+  // Callback when the binary is ready.
+  void OnLacrosReady();
+
   // apps::PublisherBase:
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
@@ -45,6 +56,8 @@ class LacrosApps : public apps::PublisherBase {
                     GetMenuModelCallback callback) override;
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
+  apps_util::IncrementingIconKeyFactory icon_key_factory_;
+  base::WeakPtrFactory<LacrosApps> weak_factory_{this};
 };
 
 }  // namespace apps

@@ -47,6 +47,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
@@ -722,7 +723,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)orientationDidChange:(NSNotification*)notification {
-  breakpad_helper::SetCurrentOrientation(
+  crash_keys::SetCurrentOrientation(
       [[UIApplication sharedApplication] statusBarOrientation],
       [[UIDevice currentDevice] orientation]);
 }

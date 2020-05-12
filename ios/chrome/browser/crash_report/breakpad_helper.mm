@@ -36,8 +36,6 @@
 
 namespace breakpad_helper {
 
-NSString* const kBreadcrumbsProductDataKey = @"breadcrumbs";
-
 namespace {
 
 // Key in NSUserDefaults for a Boolean value that stores whether to upload
@@ -45,29 +43,10 @@ namespace {
 NSString* const kCrashReportsUploadingEnabledKey =
     @"CrashReportsUploadingEnabled";
 
-NSString* const kCrashedInBackground = @"crashed_in_background";
-NSString* const kFreeDiskInKB = @"free_disk_in_kb";
-NSString* const kFreeMemoryInKB = @"free_memory_in_kb";
-NSString* const kMemoryWarningInProgress = @"memory_warning_in_progress";
-NSString* const kHangReport = @"hang-report";
-NSString* const kMemoryWarningCount = @"memory_warning_count";
 NSString* const kUptimeAtRestoreInMs = @"uptime_at_restore_in_ms";
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
-NSString* const kGridToVisibleTabAnimation = @"grid_to_visible_tab_animation";
 
-// Multiple state information are combined into one CrachReportMultiParameter
-// to save limited and finite number of ReportParameters.
-// These are the values grouped in the user_application_state parameter.
-NSString* const kOrientationState = @"orient";
-NSString* const kHorizontalSizeClass = @"sizeclass";
-NSString* const kUserInterfaceStyle = @"user_interface_style";
-NSString* const kSignedIn = @"signIn";
-NSString* const kIsShowingPDF = @"pdf";
-NSString* const kVideoPlaying = @"avplay";
-NSString* const kIncognitoTabCount = @"OTRTabs";
-NSString* const kRegularTabCount = @"regTabs";
-NSString* const kDestroyingAndRebuildingIncognitoBrowserState =
-    @"destroyingAndRebuildingOTR";
+NSString* const kHangReport = @"hang-report";
 
 void DeleteAllReportsInDirectory(base::FilePath directory) {
   base::FileEnumerator enumerator(directory, false,
@@ -249,139 +228,6 @@ void RemoveReportParameter(NSString* key) {
   [[BreakpadController sharedInstance] removeUploadParameterForKey:key];
 }
 
-void SetCurrentlyInBackground(bool background) {
-  if (background) {
-    AddReportParameter(kCrashedInBackground, @"yes", true);
-    [[MainThreadFreezeDetector sharedInstance] stop];
-  } else {
-    RemoveReportParameter(kCrashedInBackground);
-    [[MainThreadFreezeDetector sharedInstance] start];
-  }
-}
-
-void SetMemoryWarningCount(int count) {
-  if (count) {
-    AddReportParameter(kMemoryWarningCount,
-                       [NSString stringWithFormat:@"%d", count], true);
-  } else {
-    RemoveReportParameter(kMemoryWarningCount);
-  }
-}
-
-void SetMemoryWarningInProgress(bool value) {
-  if (value)
-    AddReportParameter(kMemoryWarningInProgress, @"yes", true);
-  else
-    RemoveReportParameter(kMemoryWarningInProgress);
-}
-
-void SetHangReport(bool value) {
-  if (value)
-    AddReportParameter(kHangReport, @"yes", false);
-  else
-    RemoveReportParameter(kHangReport);
-}
-
-void SetCurrentFreeMemoryInKB(int value) {
-  AddReportParameter(kFreeMemoryInKB, [NSString stringWithFormat:@"%d", value],
-                     true);
-}
-
-void SetCurrentFreeDiskInKB(int value) {
-  AddReportParameter(kFreeDiskInKB, [NSString stringWithFormat:@"%d", value],
-                     true);
-}
-
-void SetCurrentTabIsPDF(bool value) {
-  if (value) {
-    [[CrashReportUserApplicationState sharedInstance]
-        incrementValue:kIsShowingPDF];
-  } else {
-    [[CrashReportUserApplicationState sharedInstance]
-        decrementValue:kIsShowingPDF];
-  }
-}
-
-void SetCurrentOrientation(int statusBarOrientation, int deviceOrientation) {
-  DCHECK((statusBarOrientation < 10) && (deviceOrientation < 10));
-  int deviceAndUIOrientation = 10 * statusBarOrientation + deviceOrientation;
-  [[CrashReportUserApplicationState sharedInstance]
-       setValue:kOrientationState
-      withValue:deviceAndUIOrientation];
-}
-
-void SetCurrentHorizontalSizeClass(int horizontalSizeClass) {
-  [[CrashReportUserApplicationState sharedInstance]
-       setValue:kHorizontalSizeClass
-      withValue:horizontalSizeClass];
-}
-
-void SetCurrentUserInterfaceStyle(int userInterfaceStyle) {
-  [[CrashReportUserApplicationState sharedInstance]
-       setValue:kUserInterfaceStyle
-      withValue:userInterfaceStyle];
-}
-
-void SetCurrentlySignedIn(bool signedIn) {
-  if (signedIn) {
-    [[CrashReportUserApplicationState sharedInstance] setValue:kSignedIn
-                                                     withValue:1];
-  } else {
-    [[CrashReportUserApplicationState sharedInstance] removeValue:kSignedIn];
-  }
-}
-
-void SetRegularTabCount(int tabCount) {
-  [[CrashReportUserApplicationState sharedInstance] setValue:kRegularTabCount
-                                                   withValue:tabCount];
-}
-
-void SetIncognitoTabCount(int tabCount) {
-  [[CrashReportUserApplicationState sharedInstance] setValue:kIncognitoTabCount
-                                                   withValue:tabCount];
-}
-
-void SetDestroyingAndRebuildingIncognitoBrowserState(bool in_progress) {
-  if (in_progress) {
-    [[CrashReportUserApplicationState sharedInstance]
-         setValue:kDestroyingAndRebuildingIncognitoBrowserState
-        withValue:1];
-  } else {
-    [[CrashReportUserApplicationState sharedInstance]
-        removeValue:kDestroyingAndRebuildingIncognitoBrowserState];
-  }
-}
-
-void SetGridToVisibleTabAnimation(NSString* to_view_controller,
-                                  NSString* presenting_view_controller,
-                                  NSString* presented_view_controller,
-                                  NSString* parent_view_controller) {
-  NSString* formatted_value =
-      [NSString stringWithFormat:
-                    @"{toVC:%@, presentingVC:%@, presentedVC:%@, parentVC:%@}",
-                    to_view_controller, presenting_view_controller,
-                    presented_view_controller, parent_view_controller];
-  AddReportParameter(kGridToVisibleTabAnimation, formatted_value, true);
-}
-
-void RemoveGridToVisibleTabAnimation() {
-  RemoveReportParameter(kGridToVisibleTabAnimation);
-}
-
-void SetBreadcrumbEvents(NSString* breadcrumbs) {
-  AddReportParameter(kBreadcrumbsProductDataKey, breadcrumbs, /*async=*/true);
-}
-
-void MediaStreamPlaybackDidStart() {
-  [[CrashReportUserApplicationState sharedInstance]
-      incrementValue:kVideoPlaying];
-}
-
-void MediaStreamPlaybackDidStop() {
-  [[CrashReportUserApplicationState sharedInstance]
-      decrementValue:kVideoPlaying];
-}
-
 // Records the current process uptime in the "uptime_at_restore_in_ms". This
 // will allow engineers to dremel crash logs to find crash whose delta between
 // process uptime at crash and process uptime at restore is smaller than X
@@ -436,6 +282,13 @@ void RestoreDefaultConfiguration() {
   [[BreakpadController sharedInstance] resetConfiguration];
   [[BreakpadController sharedInstance] start:NO];
   [[BreakpadController sharedInstance] setUploadingEnabled:NO];
+}
+
+void SetHangReport(bool value) {
+  if (value)
+    AddReportParameter(kHangReport, @"yes", false);
+  else
+    RemoveReportParameter(kHangReport);
 }
 
 }  // namespace breakpad_helper

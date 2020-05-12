@@ -108,6 +108,27 @@ gpu_android_builder(
 )
 
 
+def gpu_chromeos_builder(*, name, **kwargs):
+    return try_.builder(
+        name = name,
+        builderless = True,
+        goma_backend = goma.backend.RBE_PROD,
+        mastername = 'tryserver.chromium.chromiumos',
+        ssd = None,
+        **kwargs
+    )
+
+gpu_chromeos_builder(
+    name = 'gpu-fyi-try-chromeos-amd64-generic',
+    pool = 'luci.chromium.gpu.chromeos.amd64.generic.try',
+)
+
+gpu_chromeos_builder(
+    name = 'gpu-fyi-try-chromeos-kevin',
+    pool = 'luci.chromium.gpu.chromeos.kevin.try',
+)
+
+
 def gpu_linux_builder(*, name, **kwargs):
   return try_.builder(
       name = name,

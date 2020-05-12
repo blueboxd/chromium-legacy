@@ -275,6 +275,17 @@ class CustomWindowStateDelegate : public ash::WindowStateDelegate {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowStateDelegate);
 };
 
+void CloseAllTransientChildren(aura::Window* window) {
+  // Deleting a window may delete other transient children, so
+  // delete them by popping from the list.
+  for (;;) {
+    auto list = wm::GetTransientChildren(window);
+    if (list.empty())
+      return;
+    wm::RemoveTransientChild(window, *list.begin());
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -305,8 +316,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
     widget_->GetNativeWindow()->RemoveObserver(this);
     widget_->RemoveObserver(this);
     // Remove transient children so they are not automatically destroyed.
-    for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
-      wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
+    CloseAllTransientChildren(widget_->GetNativeWindow());
     if (widget_->IsVisible())
       widget_->Hide();
     widget_->CloseNow();
@@ -630,8 +640,7 @@ void ShellSurfaceBase::OnSurfaceDestroying(Surface* surface) {
   // run using the current surface contents.
   if (widget_) {
     // Remove transient children so they are not automatically hidden.
-    for (auto* child : wm::GetTransientChildren(widget_->GetNativeWindow()))
-      wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
+    CloseAllTransientChildren(widget_->GetNativeWindow());
     widget_->Hide();
   }
 

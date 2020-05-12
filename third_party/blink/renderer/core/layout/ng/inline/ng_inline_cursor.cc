@@ -1054,6 +1054,17 @@ void NGInlineCursor::MoveToLastChild() {
     MakeNull();
 }
 
+void NGInlineCursor::MoveToLastLine() {
+  DCHECK(IsItemCursor());
+  auto iter = std::find_if(
+      items_.rbegin(), items_.rend(),
+      [](const auto& item) { return item->Type() == NGFragmentItem::kLine; });
+  if (iter != items_.rend())
+    MoveToItem(std::next(iter).base());
+  else
+    MakeNull();
+}
+
 void NGInlineCursor::MoveToLastLogicalLeaf() {
   DCHECK(Current().IsLineBox());
   // TODO(yosin): This isn't correct for mixed Bidi. Fix it. Besides, we

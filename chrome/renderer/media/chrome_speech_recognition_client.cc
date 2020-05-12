@@ -41,20 +41,9 @@ bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
 }
 
 void ChromeSpeechRecognitionClient::OnSpeechRecognitionRecognitionEvent(
-    const std::string& transcription) {
-  // This is a heuristic for whether the transcription is partial or final.
-  // If the previous transcription is much longer than the current one, send
-  // the previous transcription as a final result. Then, send the current one.
-  // TODO(1055150): Get whether the transcription is partial or final from the
-  // speech service.
-  if ((transcription.size() < previous_transcription.size() / 2) &&
-      (transcription.size() < previous_transcription.size() - 10)) {
-    caption_host_->OnTranscription(
-        chrome::mojom::TranscriptionResult::New(previous_transcription, true));
-  }
-  caption_host_->OnTranscription(
-      chrome::mojom::TranscriptionResult::New(transcription, false));
-  previous_transcription = transcription;
+    media::mojom::SpeechRecognitionResultPtr result) {
+  caption_host_->OnTranscription(chrome::mojom::TranscriptionResult::New(
+      result->transcription, result->is_final));
 }
 
 media::mojom::AudioDataS16Ptr

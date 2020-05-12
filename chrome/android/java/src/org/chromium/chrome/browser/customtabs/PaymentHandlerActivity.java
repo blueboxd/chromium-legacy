@@ -63,8 +63,8 @@ public class PaymentHandlerActivity extends CustomTabActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
+    public void performOnConfigurationChanged(Configuration newConfig) {
+        super.performOnConfigurationChanged(newConfig);
         updateHeight();
     }
 

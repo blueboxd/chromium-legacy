@@ -18,7 +18,9 @@ namespace device {
 // https://www.w3.org/TR/webauthn/#credentialpublickey
 class COMPONENT_EXPORT(DEVICE_FIDO) PublicKey {
  public:
-  PublicKey(int32_t algorithm, base::span<const uint8_t> cbor_bytes);
+  PublicKey(int32_t algorithm,
+            base::span<const uint8_t> cbor_bytes,
+            base::Optional<std::vector<uint8_t>> der_bytes);
   virtual ~PublicKey();
 
   // algorithm returns the COSE algorithm identifier for this public key.
@@ -28,9 +30,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKey {
   // of https://tools.ietf.org/html/rfc8152.
   const std::vector<uint8_t>& cose_key_bytes() const;
 
+  // der_bytes returns an ASN.1, DER, SubjectPublicKeyInfo describing this
+  // public key, if possible. (WebAuthn can negotiate the use of unknown
+  // public-key algorithms so not all public keys can be transformed into SPKI
+  // form.)
+  const base::Optional<std::vector<uint8_t>>& der_bytes() const;
+
  private:
   const int32_t algorithm_;
   std::vector<uint8_t> cbor_bytes_;
+  base::Optional<std::vector<uint8_t>> der_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(PublicKey);
 };

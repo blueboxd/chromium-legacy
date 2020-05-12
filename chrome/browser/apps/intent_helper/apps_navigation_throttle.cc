@@ -10,6 +10,10 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -458,7 +462,7 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
                         ui_auto_display_service, url);
 }
 
-bool AppsNavigationThrottle::navigate_from_link() {
+bool AppsNavigationThrottle::navigate_from_link() const {
   return navigate_from_link_;
 }
 
@@ -510,6 +514,9 @@ AppsNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::DEFER;
   }
 
+  if (CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle))
+    return content::NavigationThrottle::CANCEL_AND_IGNORE;
+
   // We didn't query ARC, so proceed with the navigation and query if we have an
   // installed desktop PWA to handle the URL.
   std::vector<IntentPickerAppInfo> apps = FindAppsForUrl(web_contents, url, {});
@@ -522,6 +529,51 @@ AppsNavigationThrottle::HandleRequest() {
       GetOnPickerClosedCallback(web_contents, ui_auto_display_service_, url));
 
   return content::NavigationThrottle::PROCEED;
+}
+
+bool AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
+    content::WebContents* web_contents,
+    content::NavigationHandle* handle) const {
+  if (!navigate_from_link())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) ||
+      !base::FeatureList::IsEnabled(
+          features::kDesktopPWAsTabStripLinkCapturing)) {
+    return false;
+  }
+
+  Profile* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  web_app::WebAppProviderBase* provider =
+      web_app::WebAppProviderBase::GetProviderBase(profile);
+  if (!provider)
+    return false;
+
+  base::Optional<web_app::AppId> app_id =
+      provider->registrar().FindInstalledAppWithUrlInScope(
+          handle->GetURL(), /*window_only=*/true);
+  if (!app_id)
+    return false;
+
+  if (!provider->registrar().IsInExperimentalTabbedWindowMode(*app_id))
+    return false;
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (web_app::AppBrowserController::IsForWebAppBrowser(browser, *app_id)) {
+    // Already in the app window; navigation already captured.
+    return false;
+  }
+
+  apps::AppLaunchParams launch_params(
+      *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      WindowOpenDisposition::CURRENT_TAB,
+      apps::mojom::AppLaunchSource::kSourceUrlHandler);
+  launch_params.override_url = handle->GetURL();
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->BrowserAppLauncher()
+      .LaunchAppWithParams(launch_params);
+  return true;
 }
 
 }  // namespace apps

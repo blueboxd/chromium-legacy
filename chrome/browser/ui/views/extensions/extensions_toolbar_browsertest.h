@@ -28,11 +28,16 @@ class Extension;
 // Separating those test suites is done to clarify what the suite is primarily
 // trying to test.
 class ExtensionsToolbarBrowserTest : public DialogBrowserTest {
- protected:
-  ExtensionsToolbarBrowserTest();
+ public:
   ExtensionsToolbarBrowserTest(const ExtensionsToolbarBrowserTest&) = delete;
   ExtensionsToolbarBrowserTest& operator=(const ExtensionsToolbarBrowserTest&) =
       delete;
+
+ protected:
+  // Note the |enable_flag| parameter exists to test migration of extensions
+  // triggered by the experiment. Pre-migration setup must be done with the flag
+  // disabled.
+  explicit ExtensionsToolbarBrowserTest(bool enable_flag = true);
   ~ExtensionsToolbarBrowserTest() override;
 
   void SetUpOnMainThread() override;

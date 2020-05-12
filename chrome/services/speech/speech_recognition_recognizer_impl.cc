@@ -4,6 +4,9 @@
 
 #include "chrome/services/speech/speech_recognition_recognizer_impl.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "components/soda/constants.h"
 #include "media/base/audio_buffer.h"
@@ -28,11 +31,13 @@ namespace {
 // which owns the instance of SODA and their sequential destruction order
 // ensures that this callback will never be called with an invalid callback
 // handle to the SpeechRecognitionRecognizerImpl.
-void RecognitionCallback(const char* result, void* callback_handle) {
+void RecognitionCallback(const char* result,
+                         const bool is_final,
+                         void* callback_handle) {
   DCHECK(callback_handle);
   static_cast<SpeechRecognitionRecognizerImpl*>(callback_handle)
       ->recognition_event_callback()
-      .Run(std::string(result));
+      .Run(std::string(result), is_final);
 }
 #endif  // BUILDFLAG(ENABLE_SODA)
 
@@ -50,8 +55,10 @@ void SpeechRecognitionRecognizerImpl::Create(
 }
 
 void SpeechRecognitionRecognizerImpl::OnRecognitionEvent(
-    const std::string& result) {
-  client_remote_->OnSpeechRecognitionRecognitionEvent(result);
+    const std::string& result,
+    const bool is_final) {
+  client_remote_->OnSpeechRecognitionRecognitionEvent(
+      media::mojom::SpeechRecognitionResult::New(result, is_final));
 }
 
 SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(

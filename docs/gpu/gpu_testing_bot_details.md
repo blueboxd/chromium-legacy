@@ -429,21 +429,17 @@ Builder].
         1.  Run [`generate_buildbot_json.py`][generate_buildbot_json.py] to
             regenerate `src/testing/buildbot/chromium.gpu.fyi.json`.
     1. Updates [`ci.star`][ci.star] and its related generated files
-       [`cr-buildbucket.cfg`][cr-buildbucket.cfg] and
-       [`luci-scheduler.cfg`][luci-scheduler.cfg]:
+       [`cr-buildbucket.cfg`][cr-buildbucket.cfg],
+       [`luci-scheduler.cfg`][luci-scheduler.cfg], and
+       ['luci-milo.cfg`][luci-milo.cfg]:
         *   Use the appropriate definition for the type of the bot being added,
             for example, `ci.gpu_fyi_thin_tester()` should be used for all CI
             tester bots on GPU FYI waterfall.
         *   Make sure to set `triggered_by` property to the builder which
             triggers the testers (like `'GPU Win FYI Builder'`).
-    1. Updates [`chromium.gpu.star`][chromium.gpu.star] or
-       [`chromium.gpu.fyi.star`][chromium.gpu.fyi.star] and their related
-       generated file [`luci-milo.cfg`][luci-milo.cfg]:
-        *   Add new `luci.console_view_entry()` definitions for your new
-            testers (Release and Debug) on the
-            [`chromium.gpu.fyi`][chromium.gpu.fyi] console. Look at the
-            short names and categories and try to come up with a reasonable
-            organization.
+        *   Include a `ci.console_view_entry` for the builder's
+            `console_view_entry` argument. Look at the short names and
+            categories to try and come up with a reasonable organization.
     1.  Run `main.star` in [`src/infra/config`][src/infra/config] to update the
         generated files. Double-check your work there.
     1.  If you were adding a new builder, you would need to also add the new
@@ -487,7 +483,7 @@ Builder].
 
 [How to add a new manually-triggered trybot]: https://chromium.googlesource.com/chromium/src/+/master/docs/gpu/gpu_testing_bot_details.md#How-to-add-a-new-manually_triggered-trybot
 
-[ci.star]:               https://chromium.googlesource.com/chromium/src/+/master/infra/config/buckets/ci.star
+[ci.star]:               https://chromium.googlesource.com/chromium/src/+/master/infra/config/subprojects/ci.star
 [chromium.gpu.star]:     https://chromium.googlesource.com/chromium/src/+/master/infra/config/consoles/chromium.gpu.star
 [chromium.gpu.fyi.star]: https://chromium.googlesource.com/chromium/src/+/master/infra/config/consoles/chromium.gpu.fyi.star
 [cr-buildbucket.cfg]:    https://chromium.googlesource.com/chromium/src/+/master/infra/config/generated/cr-buildbucket.cfg
@@ -542,21 +538,14 @@ trybot for the Win7 NVIDIA GPUs in Release mode. We will call the new bot
     [How to set up new virtual machine instances](#How-to-set-up-new-virtual-machine-instances),
     following the "Manually-triggered GPU trybots" instructions.
 
-1.  Create a CL in the Chromium workspace which does the following. Here's an
-    [outdated example CL](https://chromium-review.googlesource.com/c/chromium/src/+/1974575)
-    and a [reference CL](https://chromium-review.googlesource.com/c/chromium/src/+/2015548)
+1.  Create a CL in the Chromium workspace which does the following. Here's a
+    [reference CL](https://chromium-review.googlesource.com/c/chromium/src/+/2191276)
     exemplifying the new "GCE pool per GPU hardware pool" way.
     1.  Updates [`gpu.try.star`][gpu.try.star] and its related generated file
         [`cr-buildbucket.cfg`][cr-buildbucket.cfg]:
         *   Add the new trybot with the right `builder` define and VMs pool.
             For `gpu-fyi-try-win7-nvidia-rel-64` this would be
             `gpu_win_builder()` and `luci.chromium.gpu.win7.nvidia.try`.
-    1.  Updates the LUCI consoles you want the trybot to show in and their
-        related generated file [`luci-milo.cfg`][luci-milo.cfg]:
-        *   For `gpu-fyi-try-win7-nvidia-rel-64` these would be
-            [`luci.chromium.try.star`][luci.chromium.try.star] and
-            [`tryserver.chromium.win.star`][tryserver.chromium.win.star]
-            consoles. Just add `try/` followed by trybot name to the lists.
     1.  Run `main.star` in [`src/infra/config`][src/infra/config] to update the
         generated files. Double-check your work there.
     1.  Adds the new trybot to [`src/tools/mb/mb_config.pyl`][mb_config.pyl]
@@ -597,7 +586,7 @@ should be possible to send a CL to it.
 mentioned at the bottom of the "Choose tryjobs" pop-up. Contact the
 chrome-infra team if this doesn't work as expected.)
 
-[gpu.try.star]:                https://chromium.googlesource.com/chromium/src/+/master/infra/config/buckets/gpu.try.star
+[gpu.try.star]:                https://chromium.googlesource.com/chromium/src/+/master/infra/config/subprojects/gpu.try.star
 [luci.chromium.try.star]:      https://chromium.googlesource.com/chromium/src/+/master/infra/config/consoles/luci.chromium.try.star
 [tryserver.chromium.win.star]: https://chromium.googlesource.com/chromium/src/+/master/infra/config/consoles/tryserver.chromium.win.star
 
@@ -662,7 +651,7 @@ Win10 Release (CoolNewGPUType)".
     using Choose Trybots in Gerrit.
 
 [scheduler-noop-jobs.star]: https://chromium.googlesource.com/chromium/src/+/master/infra/config/generators/scheduler-noop-jobs.star
-[try.star]:                 https://chromium.googlesource.com/chromium/src/+/master/infra/config/buckets/try.star
+[try.star]:                 https://chromium.googlesource.com/chromium/src/+/master/infra/config/subprojects/try.star
 
 
 ### How to test and deploy a driver and/or OS update

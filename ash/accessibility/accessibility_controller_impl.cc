@@ -1184,7 +1184,7 @@ void AccessibilityControllerImpl::ShowFloatingMenuIfEnabled() {
 }
 
 FloatingAccessibilityController*
-AccessibilityControllerImpl::GetFloatingMenuControllerForTesting() {
+AccessibilityControllerImpl::GetFloatingMenuController() {
   return floating_menu_controller_.get();
 }
 

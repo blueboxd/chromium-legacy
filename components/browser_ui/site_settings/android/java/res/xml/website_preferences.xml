@@ -48,9 +48,7 @@
         android:defaultValue="true" />
     <!-- An hyperlink to explain more about Protected Media content settings. -->
     <org.chromium.chrome.browser.settings.LearnMorePreference
-        android:key="protected_content_learn_more"
-        android:background="?android:attr/listDivider"
-        app:helpContext="@string/help_context_protected_content"/>
+        android:key="protected_content_learn_more" />
 
     <!-- Collapsible headers for sorting preferences. -->
     <org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup

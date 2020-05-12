@@ -401,6 +401,21 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
   return logger;
 }
 
+// static
+void NTPUserDataLogger::LogOneGoogleBarFetchDuration(
+    bool success,
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency",
+                             duration);
+  if (success) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency.Success",
+                               duration);
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.OneGoogleBar.RequestLatency.Failure",
+                               duration);
+  }
+}
+
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
   if (event == NTP_ALL_TILES_LOADED) {

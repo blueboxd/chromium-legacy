@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
@@ -39,6 +40,7 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
     public static final String FROM_MAIN_MENU = "FromMainMenu";
 
     public static final String PREF_DATA_REDUCTION_SWITCH = "data_reduction_switch";
+    public static final String PREF_LEARN_MORE_KEY = "data_reduction_learn_more";
 
     // This is the same as Chromium data_reduction_proxy::switches::kEnableDataReductionProxy.
     private static final String ENABLE_DATA_REDUCTION_PROXY = "enable-spdy-proxy-auth";
@@ -142,6 +144,15 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
         } else {
             SettingsUtils.addPreferencesFromResource(
                     this, R.xml.data_reduction_preferences_off_lite_mode);
+
+            // Configure "Learn more" link.
+            Preference learnMorePreference = findPreference(PREF_LEARN_MORE_KEY);
+            learnMorePreference.setOnPreferenceClickListener(preference -> {
+                HelpAndFeedback.getInstance().show(getActivity(),
+                        getString(R.string.help_context_data_reduction),
+                        Profile.getLastUsedRegularProfile(), null);
+                return true;
+            });
         }
         mIsEnabled = isEnabled;
     }

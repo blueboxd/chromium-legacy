@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/system/status_area_widget.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -101,9 +102,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
   explicit TrayBubbleView(const InitParams& init_params);
   ~TrayBubbleView() override;
-
-  // Returns whether a tray bubble is active.
-  static bool IsATrayBubbleOpen();
 
   // Sets up animations, and show the bubble. Must occur after CreateBubble()
   // is called.
@@ -234,6 +232,9 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Used to activate tray bubble view if user tries to interact the tray with
   // keyboard.
   std::unique_ptr<EventHandler> reroute_event_handler_;
+
+  base::Optional<StatusAreaWidget::ScopedTrayBubbleCounter>
+      tray_bubble_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };

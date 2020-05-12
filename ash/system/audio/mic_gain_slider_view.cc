@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/layout/box_layout.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -24,6 +25,14 @@ MicGainSliderView::MicGainSliderView(MicGainSliderController* controller,
                         IDS_ASH_STATUS_TRAY_VOLUME_SLIDER_LABEL),
       device_id_(device_id) {
   CrasAudioHandler::Get()->AddAudioObserver(this);
+
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal, kMicGainSliderViewPadding,
+      kMicGainSliderViewSpacing));
+  slider()->SetBorder(views::CreateEmptyBorder(kMicGainSliderPadding));
+  layout->SetFlexForView(slider(), 1);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   Update(false /* by_user */);
 }

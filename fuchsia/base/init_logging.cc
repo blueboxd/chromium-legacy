@@ -8,13 +8,9 @@
 #include "base/logging.h"
 
 namespace cr_fuchsia {
-namespace {
 
-// These are intended to match those in content_switches.cc.
 constexpr char kEnableLogging[] = "enable-logging";
 constexpr char kLogFile[] = "log-file";
-
-}  // namespace
 
 bool InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;

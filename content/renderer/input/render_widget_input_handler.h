@@ -14,6 +14,7 @@
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_types.h"
@@ -55,7 +56,6 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
   // Handle input events from the input event provider.
   virtual void HandleInputEvent(
       const blink::WebCoalescedInputEvent& coalesced_event,
-      const ui::LatencyInfo& latency_info,
       HandledEventCallback callback);
 
   // Handle overscroll from Blink.

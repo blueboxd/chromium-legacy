@@ -151,7 +151,7 @@ void UpdateClientMac::BeginRegister(const std::string& brand_code,
       std::move(callback);
 
   auto reply = ^(int error) {
-    GetTaskRunner()->PostTask(
+    task_runner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
                                   static_cast<UpdateService::Result>(error)));
   };
@@ -173,7 +173,7 @@ void UpdateClientMac::BeginUpdateCheck(
       std::move(callback);
 
   auto reply = ^(int error) {
-    GetTaskRunner()->PostTask(
+    task_runner()->PostTask(
         FROM_HERE, base::BindOnce(std::move(block_callback),
                                   static_cast<UpdateService::Result>(error)));
   };
@@ -182,9 +182,8 @@ void UpdateClientMac::BeginUpdateCheck(
       [[CRUPriorityWrapper alloc]
           initWithPriority:UpdateService::Priority::kForeground]);
   base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
-      [[CRUUpdateStateObserver alloc]
-          initWithRepeatingCallback:state_update
-                     callbackRunner:GetTaskRunner()]);
+      [[CRUUpdateStateObserver alloc] initWithRepeatingCallback:state_update
+                                                 callbackRunner:task_runner()]);
 
   [client_.get()
       checkForUpdateWithAppID:base::SysUTF8ToNSString(base::mac::BaseBundleID())

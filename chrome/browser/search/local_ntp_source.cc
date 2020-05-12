@@ -29,7 +29,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "chrome/browser/search/background/ntp_background_service_factory.h"
-#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/local_ntp_js_integrity.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
@@ -533,6 +533,31 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   }
 
   return result;
+}
+
+// Note: Code that runs on the IO thread is implemented as non-member functions,
+// to avoid accidentally accessing member data that's owned by the UI thread.
+
+bool ShouldServiceRequestIOThread(const GURL& url,
+                                  content::ResourceContext* resource_context,
+                                  int render_process_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
+  if (!InstantIOContext::ShouldServiceRequest(url, resource_context,
+                                              render_process_id)) {
+    return false;
+  }
+
+  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
+    std::string filename;
+    webui::ParsePathAndScale(url, &filename, nullptr);
+    for (size_t i = 0; i < base::size(kResources); ++i) {
+      if (filename == kResources[i].filename)
+        return true;
+    }
+  }
+  return false;
 }
 
 std::string GetErrorDict(const ErrorInfo& error) {
@@ -1093,23 +1118,11 @@ bool LocalNtpSource::AllowCaching() {
 
 bool LocalNtpSource::ShouldServiceRequest(
     const GURL& url,
-    content::BrowserContext* browser_context,
+    content::ResourceContext* resource_context,
     int render_process_id) {
-  DCHECK(url.host_piece() == chrome::kChromeSearchLocalNtpHost);
-  if (!InstantService::ShouldServiceRequest(url, browser_context,
-                                            render_process_id)) {
-    return false;
-  }
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (url.SchemeIs(chrome::kChromeSearchScheme)) {
-    std::string filename;
-    webui::ParsePathAndScale(url, &filename, nullptr);
-    for (size_t i = 0; i < base::size(kResources); ++i) {
-      if (filename == kResources[i].filename)
-        return true;
-    }
-  }
-  return false;
+  return ShouldServiceRequestIOThread(url, resource_context, render_process_id);
 }
 
 bool LocalNtpSource::ShouldAddContentSecurityPolicy() {

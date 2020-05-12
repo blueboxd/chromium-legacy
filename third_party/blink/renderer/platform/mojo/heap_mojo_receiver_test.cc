@@ -112,7 +112,7 @@ class HeapMojoReceiverGCBaseTest : public TestSupportingGC {
         },
         WTF::Unretained(this)));
   }
-  void TearDown() {
+  void TearDown() override {
     owner_ = nullptr;
     PreciselyCollectGarbage();
   }
@@ -123,6 +123,35 @@ class HeapMojoReceiverGCBaseTest : public TestSupportingGC {
   base::RunLoop run_loop_;
   mojo::Remote<sample::blink::Service> remote_;
   bool disconnected_ = false;
+};
+
+template <HeapMojoWrapperMode Mode>
+class HeapMojoReceiverDisconnectWithReasonHandlerBaseTest
+    : public HeapMojoReceiverGCBaseTest<Mode> {
+ public:
+  std::string& disconnected_reason() { return disconnected_reason_; }
+
+ protected:
+  void SetUp() override {
+    CHECK(disconnected_reason_.empty());
+    this->disconnected_ = false;
+    this->context_ = MakeGarbageCollected<MockContext>();
+    this->owner_ =
+        MakeGarbageCollected<ReceiverOwner<Mode>>(this->context_, this);
+    scoped_refptr<base::NullTaskRunner> null_task_runner =
+        base::MakeRefCounted<base::NullTaskRunner>();
+    this->remote_ = mojo::Remote<sample::blink::Service>(
+        this->owner_->receiver().BindNewPipeAndPassRemote(null_task_runner));
+    this->remote_.set_disconnect_with_reason_handler(WTF::Bind(
+        [](HeapMojoReceiverDisconnectWithReasonHandlerBaseTest* receiver_test,
+           const uint32_t custom_reason, const std::string& description) {
+          receiver_test->run_loop().Quit();
+          receiver_test->disconnected_reason() = description;
+        },
+        WTF::Unretained(this)));
+  }
+
+  std::string disconnected_reason_;
 };
 
 template <HeapMojoWrapperMode Mode>
@@ -155,6 +184,12 @@ class HeapMojoReceiverDestroyContextWithContextObserverTest
           HeapMojoWrapperMode::kWithContextObserver> {};
 class HeapMojoReceiverDestroyContextWithoutContextObserverTest
     : public HeapMojoReceiverDestroyContextBaseTest<
+          HeapMojoWrapperMode::kWithoutContextObserver> {};
+class HeapMojoReceiverDisconnectWithReasonHandlerWithContextObserverTest
+    : public HeapMojoReceiverDisconnectWithReasonHandlerBaseTest<
+          HeapMojoWrapperMode::kWithContextObserver> {};
+class HeapMojoReceiverDisconnectWithReasonHandlerWithoutContextObserverTest
+    : public HeapMojoReceiverDisconnectWithReasonHandlerBaseTest<
           HeapMojoWrapperMode::kWithoutContextObserver> {};
 
 // Make HeapMojoReceiver with context observer garbage collected and check that
@@ -207,6 +242,30 @@ TEST_F(HeapMojoReceiverDestroyContextWithoutContextObserverTest,
   EXPECT_TRUE(owner_->receiver().is_bound());
   context_->NotifyContextDestroyed();
   EXPECT_TRUE(owner_->receiver().is_bound());
+}
+
+// Reset the receiver with custom reason and check that the specified handler is
+// fired.
+TEST_F(HeapMojoReceiverDisconnectWithReasonHandlerWithContextObserverTest,
+       ResetWithReason) {
+  EXPECT_TRUE(disconnected_reason().empty());
+  const std::string message = "test message";
+  const uint32_t reason = 0;
+  owner_->receiver().ResetWithReason(reason, message);
+  run_loop().Run();
+  EXPECT_EQ(disconnected_reason(), message);
+}
+
+// Reset the receiver with custom reason and check that the specified handler is
+// fired.
+TEST_F(HeapMojoReceiverDisconnectWithReasonHandlerWithoutContextObserverTest,
+       ResetWithReason) {
+  EXPECT_TRUE(disconnected_reason().empty());
+  const std::string message = "test message";
+  const uint32_t reason = 0;
+  owner_->receiver().ResetWithReason(reason, message);
+  run_loop().Run();
+  EXPECT_EQ(disconnected_reason(), message);
 }
 
 }  // namespace blink

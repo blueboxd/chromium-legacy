@@ -15,6 +15,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/lifecycle/LifecycleObserver.java",
     "java/src/org/chromium/chrome/browser/lifecycle/NativeInitObserver.java",
     "java/src/org/chromium/chrome/browser/lifecycle/PauseResumeWithNativeObserver.java",
+    "java/src/org/chromium/chrome/browser/lifecycle/RecreateObserver.java",
     "java/src/org/chromium/chrome/browser/lifecycle/SaveInstanceStateObserver.java",
     "java/src/org/chromium/chrome/browser/lifecycle/StartStopWithNativeObserver.java",
     "java/src/org/chromium/chrome/browser/lifecycle/WindowFocusChangedObserver.java",

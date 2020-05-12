@@ -131,7 +131,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   // TODO(crbug.com/1025626): and crbug.com/1051752, make speech work with
   // WebLayer.
   cl->AppendSwitch(::switches::kDisableSpeechSynthesisAPI);
-  cl->AppendSwitch(::switches::kDisableSpeechAPI);
   // TODO(crbug.com/1057099): make presentation-api work with WebLayer.
   cl->AppendSwitch(::switches::kDisablePresentationAPI);
   // TODO(crbug.com/1057100): make remote-playback-api work with WebLayer.

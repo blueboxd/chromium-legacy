@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #include "ios/chrome/browser/crash_report/crash_reporter_breadcrumb_observer.h"
 #include "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
@@ -61,28 +62,28 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
   // single breakpad record. This test should include all keys for
   // CrashReportUserApplicationState, since the whole dictionary is considered a
   // single breakpad record.
-  breakpad_helper::SetCurrentlyInBackground(true);
-  breakpad_helper::SetCurrentlySignedIn(true);
-  breakpad_helper::SetMemoryWarningCount(2);
-  breakpad_helper::SetMemoryWarningInProgress(true);
   breakpad_helper::SetHangReport(true);
-  breakpad_helper::SetCurrentFreeMemoryInKB(1234);
-  breakpad_helper::SetCurrentFreeDiskInKB(12345);
-  breakpad_helper::SetCurrentTabIsPDF(true);
-  breakpad_helper::SetCurrentOrientation(3, 7);
-  breakpad_helper::SetCurrentHorizontalSizeClass(2);
-  breakpad_helper::SetCurrentUserInterfaceStyle(2);
-  breakpad_helper::SetRegularTabCount(999);
-  breakpad_helper::SetIncognitoTabCount(999);
-  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(true);
-  breakpad_helper::SetGridToVisibleTabAnimation(
+  crash_keys::SetCurrentlyInBackground(true);
+  crash_keys::SetCurrentlySignedIn(true);
+  crash_keys::SetMemoryWarningCount(2);
+  crash_keys::SetMemoryWarningInProgress(true);
+  crash_keys::SetCurrentFreeMemoryInKB(1234);
+  crash_keys::SetCurrentFreeDiskInKB(12345);
+  crash_keys::SetCurrentTabIsPDF(true);
+  crash_keys::SetCurrentOrientation(3, 7);
+  crash_keys::SetCurrentHorizontalSizeClass(2);
+  crash_keys::SetCurrentUserInterfaceStyle(2);
+  crash_keys::SetRegularTabCount(999);
+  crash_keys::SetIncognitoTabCount(999);
+  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(true);
+  crash_keys::SetGridToVisibleTabAnimation(
       @"to_view_controller", @"presenting_view_controller",
       @"presented_view_controller", @"parent_view_controller");
-  breakpad_helper::MediaStreamPlaybackDidStart();
+  crash_keys::MediaStreamPlaybackDidStart();
 
   // Set a max-length breadcrumbs string.
   std::string breadcrumbs(kMaxBreadcrumbsDataLength, 'A');
-  breakpad_helper::SetBreadcrumbEvents(base::SysUTF8ToNSString(breadcrumbs));
+  crash_keys::SetBreadcrumbEvents(base::SysUTF8ToNSString(breadcrumbs));
 }
 
 TEST_F(BreakpadHelperTest, GetCrashReportCount) {

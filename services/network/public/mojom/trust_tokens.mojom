@@ -152,16 +152,10 @@ struct TrustTokenVerificationKey {
   mojo_base.mojom.Time expiry;
 };
 
-// This is a wrapper struct that exists in order to make the batch size
-// nullable.
-struct TrustTokenKeyCommitmentBatchSize {
-  int32 value;
-};
-
 struct TrustTokenKeyCommitmentResult {
-  // |batch_size| is the issuer's optional number of tokens it wishes the client
+  // |batch_size| is the issuer's number of tokens it wishes the client
   // to request per Trust Tokens issuance operation.
-  TrustTokenKeyCommitmentBatchSize? batch_size;
+  int32 batch_size;
 
   // |keys| is the collection of the issuer's current trust token verification
   // keys.

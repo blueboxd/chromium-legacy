@@ -30,6 +30,9 @@ namespace plugin_vm {
 
 namespace {
 
+const char* kDefaultDir[] = {"Desktop", "Documents", "Downloads",
+                             "Movies",  "Music",     "Pictures"};
+
 void DirExistsResult(
     const base::FilePath& dir,
     bool result,
@@ -39,17 +42,28 @@ void DirExistsResult(
 }
 
 void EnsureDirExists(
-    base::FilePath dir,
+    base::FilePath root_dir,
     base::OnceCallback<void(const base::FilePath&, bool)> callback) {
   base::File::Error error = base::File::FILE_OK;
-  bool result = base::CreateDirectoryAndGetError(dir, &error);
-  if (!result) {
-    LOG(ERROR) << "Failed to create PluginVm shared dir " << dir.value() << ": "
-               << base::File::ErrorToString(error);
+  bool result = base::CreateDirectoryAndGetError(root_dir, &error);
+  if (result) {
+    for (const char* sub_dir : kDefaultDir) {
+      // If there's an error creating a subdirectory, we still return success
+      // as we can still share the root directory.
+      if (!base::CreateDirectoryAndGetError(root_dir.Append(sub_dir), &error)) {
+        LOG(ERROR) << "Failed to create subdirectory '" << sub_dir
+                   << "' in Plugin VM shared dir: "
+                   << base::File::ErrorToString(error);
+      }
+    }
+  } else {
+    LOG(ERROR) << "Failed to create Plugin VM shared dir " << root_dir.value()
+               << ": " << base::File::ErrorToString(error);
   }
+
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DirExistsResult, dir, result, std::move(callback)));
+      base::BindOnce(&DirExistsResult, root_dir, result, std::move(callback)));
 }
 
 base::FilePath GetDefaultSharedDir(Profile* profile) {
@@ -124,7 +138,7 @@ void LaunchPluginVmAppImpl(Profile* profile,
 
 }  // namespace
 
-void EnsureDefaultSharedDirExists(
+void EnsureDefaultSharedDirsExist(
     Profile* profile,
     base::OnceCallback<void(const base::FilePath&, bool)> callback) {
   base::ThreadPool::PostTask(

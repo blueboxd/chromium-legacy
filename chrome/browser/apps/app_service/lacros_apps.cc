@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/lacros/lacros_loader.h"
@@ -13,33 +14,6 @@
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
-
-namespace {
-
-apps::mojom::AppPtr GetLacrosApp() {
-  apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
-      apps::mojom::AppType::kLacros, extension_misc::kLacrosAppId,
-      apps::mojom::Readiness::kReady,
-      "LaCrOS",  // TODO(jamescook): Localized name.
-      apps::mojom::InstallSource::kSystem);
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Canary icon only exists in branded builds.
-  int icon_resource_id = IDR_PRODUCT_LOGO_256_CANARY;
-#else
-  int icon_resource_id = IDR_PRODUCT_LOGO_256;
-#endif
-  app->icon_key =
-      apps::mojom::IconKey::New(apps::mojom::IconKey::kDoesNotChangeOverTime,
-                                icon_resource_id, apps::IconEffects::kNone);
-  app->searchable = apps::mojom::OptionalBool::kTrue;
-  app->show_in_launcher = apps::mojom::OptionalBool::kTrue;
-  app->show_in_search = apps::mojom::OptionalBool::kTrue;
-  app->show_in_management = apps::mojom::OptionalBool::kFalse;
-  return app;
-}
-
-}  // namespace
 
 namespace apps {
 
@@ -51,11 +25,43 @@ LacrosApps::LacrosApps(
 
 LacrosApps::~LacrosApps() = default;
 
+apps::mojom::AppPtr LacrosApps::GetLacrosApp(bool is_ready) {
+  apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
+      apps::mojom::AppType::kLacros, extension_misc::kLacrosAppId,
+      apps::mojom::Readiness::kReady,
+      "LaCrOS",  // TODO(jamescook): Localized name.
+      apps::mojom::InstallSource::kSystem);
+  app->icon_key = NewIconKey(is_ready);
+  app->searchable = apps::mojom::OptionalBool::kTrue;
+  app->show_in_launcher = apps::mojom::OptionalBool::kTrue;
+  app->show_in_search = apps::mojom::OptionalBool::kTrue;
+  app->show_in_management = apps::mojom::OptionalBool::kFalse;
+  return app;
+}
+
+apps::mojom::IconKeyPtr LacrosApps::NewIconKey(bool is_ready) {
+  // Show as "paused" until the download is done.
+  apps::mojom::IconKeyPtr icon_key = icon_key_factory_.MakeIconKey(
+      is_ready ? apps::IconEffects::kNone : apps::IconEffects::kPaused);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Canary icon only exists in branded builds.
+  icon_key->resource_id = IDR_PRODUCT_LOGO_256_CANARY;
+#else
+  icon_key->resource_id = IDR_PRODUCT_LOGO_256;
+#endif
+  return icon_key;
+}
+
 void LacrosApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
+  bool is_ready = LacrosLoader::Get()->IsReady();
+  if (!is_ready) {
+    LacrosLoader::Get()->SetReadyCallback(
+        base::BindOnce(&LacrosApps::OnLacrosReady, weak_factory_.GetWeakPtr()));
+  }
   std::vector<apps::mojom::AppPtr> apps;
-  apps.push_back(GetLacrosApp());
+  apps.push_back(GetLacrosApp(is_ready));
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
@@ -95,6 +101,14 @@ void LacrosApps::GetMenuModel(const std::string& app_id,
                               GetMenuModelCallback callback) {
   // No menu items.
   std::move(callback).Run(apps::mojom::MenuItems::New());
+}
+
+void LacrosApps::OnLacrosReady() {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kLacros;
+  app->app_id = extension_misc::kLacrosAppId;
+  app->icon_key = NewIconKey(/*is_ready=*/true);
+  Publish(std::move(app), subscribers_);
 }
 
 }  // namespace apps

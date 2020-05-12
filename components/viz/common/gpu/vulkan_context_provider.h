@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/viz_vulkan_context_provider_export.h"
-#include "third_party/vulkan/include/vulkan/vulkan.h"
+#include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 
 class GrContext;
 class GrVkSecondaryCBDrawContext;

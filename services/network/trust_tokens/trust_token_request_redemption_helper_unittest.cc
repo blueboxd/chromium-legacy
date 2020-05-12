@@ -218,8 +218,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -264,8 +263,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -311,8 +309,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfKeyPairGenerationFails) {
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -361,8 +358,7 @@ class TrustTokenBeginRedemptionPostconditionsTest
     key_commitment_result->keys.push_back(
         mojom::TrustTokenVerificationKey::New());
     key_commitment_result->batch_size =
-        mojom::TrustTokenKeyCommitmentBatchSize::New(
-            static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+        static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
     auto getter = std::make_unique<FixedKeyCommitmentGetter>(
         *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
         std::move(key_commitment_result));
@@ -430,8 +426,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseOmitsHeader) {
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -489,8 +484,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, RejectsIfResponseIsUnusable) {
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -556,8 +550,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, Success) {
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -623,8 +616,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, AssociatesIssuerWithToplevel) {
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -680,8 +672,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest, StoresObtainedRedemptionRecord) {
   key_commitment_result->keys.push_back(mojom::TrustTokenVerificationKey::New(
       "token verification key", /*expiry=*/base::Time::Max()));
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));
@@ -808,8 +799,7 @@ TEST_F(TrustTokenRequestRedemptionHelperTest,
   key_commitment_result->keys.push_back(
       mojom::TrustTokenVerificationKey::New());
   key_commitment_result->batch_size =
-      mojom::TrustTokenKeyCommitmentBatchSize::New(
-          static_cast<int>(kMaximumTrustTokenIssuanceBatchSize));
+      static_cast<int>(kMaximumTrustTokenIssuanceBatchSize);
   auto getter = std::make_unique<FixedKeyCommitmentGetter>(
       *SuitableTrustTokenOrigin::Create(GURL("https://issuer.com")),
       std::move(key_commitment_result));

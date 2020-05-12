@@ -292,11 +292,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
-// Enables tracing for each navigation. It will attempt to trace each navigation
-// for 10s, until the buffer is full, or until the next navigation.
-// It only works if a URL was provided by --trace-upload-url.
-const char kEnableNavigationTracing[] = "enable-navigation-tracing";
-
 // Enables the network-related benchmarking extensions.
 const char kEnableNetBenchmarking[]         = "enable-net-benchmarking";
 

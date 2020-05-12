@@ -2886,77 +2886,6 @@ TEST_F(WebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurnedOff) {
               0.01f);
 }
 
-TEST_F(WebFrameTest, AtViewportInsideAtMediaInitialViewport) {
-  RegisterMockedHttpURLLoad("viewport-inside-media.html");
-
-  FixedLayoutTestWebWidgetClient client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url_ + "viewport-inside-media.html",
-                                    nullptr, nullptr, &client,
-                                    ConfigureAndroid);
-  web_view_helper.Resize(WebSize(640, 480));
-
-  EXPECT_EQ(2000, web_view_helper.GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrameView()
-                      ->GetLayoutSize()
-                      .Width());
-
-  web_view_helper.Resize(WebSize(1200, 480));
-
-  EXPECT_EQ(1200, web_view_helper.GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrameView()
-                      ->GetLayoutSize()
-                      .Width());
-}
-
-TEST_F(WebFrameTest, AtViewportAffectingAtMediaRecalcCount) {
-  RegisterMockedHttpURLLoad("viewport-and-media.html");
-
-  FixedLayoutTestWebWidgetClient client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, nullptr, &client, ConfigureAndroid);
-  web_view_helper.Resize(WebSize(640, 480));
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "viewport-and-media.html");
-
-  Document* document =
-      web_view_helper.LocalMainFrame()->GetFrame()->GetDocument();
-  EXPECT_EQ(2000, web_view_helper.GetWebView()
-                      ->MainFrameImpl()
-                      ->GetFrameView()
-                      ->GetLayoutSize()
-                      .Width());
-
-  // The styleForElementCount() should match the number of elements for a single
-  // pass of computed styles construction for the document.
-  EXPECT_EQ(8u, document->GetStyleEngine().StyleForElementCount());
-  EXPECT_EQ(Color(0, 128, 0),
-            document->body()->GetComputedStyle()->VisitedDependentColor(
-                GetCSSPropertyColor()));
-}
-
-TEST_F(WebFrameTest, AtViewportWithViewportLengths) {
-  RegisterMockedHttpURLLoad("viewport-lengths.html");
-
-  FixedLayoutTestWebWidgetClient client;
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, nullptr, &client, ConfigureAndroid);
-  web_view_helper.Resize(WebSize(800, 600));
-  frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
-                                base_url_ + "viewport-lengths.html");
-
-  LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
-  EXPECT_EQ(400, view->GetLayoutSize().Width());
-  EXPECT_EQ(300, view->GetLayoutSize().Height());
-
-  web_view_helper.Resize(WebSize(1000, 400));
-
-  EXPECT_EQ(500, view->GetLayoutSize().Width());
-  EXPECT_EQ(200, view->GetLayoutSize().Height());
-}
-
 class WebFrameResizeTest : public WebFrameTest {
  protected:
   static FloatSize ComputeRelativeOffset(const IntPoint& absolute_offset,
@@ -4388,32 +4317,37 @@ TEST_F(WebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
   // Move to the next text-field: 1 cursor change.
   counter.Reset();
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(tab_down));
-  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+      WebCoalescedInputEvent(tab_down, ui::LatencyInfo()));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(tab_up, ui::LatencyInfo()));
   EXPECT_EQ(1, counter.Count());
 
   // Move to another text-field: 1 cursor change.
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(tab_down));
-  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+      WebCoalescedInputEvent(tab_down, ui::LatencyInfo()));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(tab_up, ui::LatencyInfo()));
   EXPECT_EQ(2, counter.Count());
 
   // Move to a number-field: 1 cursor change.
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(tab_down));
-  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+      WebCoalescedInputEvent(tab_down, ui::LatencyInfo()));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(tab_up, ui::LatencyInfo()));
   EXPECT_EQ(3, counter.Count());
 
   // Move to an editable element: 1 cursor change.
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(tab_down));
-  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+      WebCoalescedInputEvent(tab_down, ui::LatencyInfo()));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(tab_up, ui::LatencyInfo()));
   EXPECT_EQ(4, counter.Count());
 
   // Move to a non-editable element: 0 cursor changes.
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(tab_down));
-  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(tab_up));
+      WebCoalescedInputEvent(tab_down, ui::LatencyInfo()));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(tab_up, ui::LatencyInfo()));
   EXPECT_EQ(4, counter.Count());
 }
 
@@ -9731,7 +9665,8 @@ TEST_F(WebFrameTest, FrameWidgetTest) {
                         WebInputEvent::GetStaticTimeStampForTests(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(gfx::PointF(20, 20));
-  child_frame->FrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
+  child_frame->FrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event, ui::LatencyInfo()));
   EXPECT_TRUE(child_widget_client.DidHandleGestureEvent());
 
   helper.Reset();
@@ -10075,7 +10010,7 @@ class WebFrameOverscrollTest
       event.data.scroll_begin.delta_x_hint = delta_x;
       event.data.scroll_begin.delta_y_hint = delta_y;
     }
-    return WebCoalescedInputEvent(event);
+    return WebCoalescedInputEvent(event, ui::LatencyInfo());
   }
 
   void ScrollBegin(frame_test_helpers::WebViewHelper* web_view_helper,
@@ -11392,17 +11327,17 @@ TEST_F(WebFrameTest, ScrollBeforeLayoutDoesntCrash) {
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
   // seeing a Begin first doesn't break anything. (This currently happens).
   web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(end_event));
+      WebCoalescedInputEvent(end_event, ui::LatencyInfo()));
   web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(update_event));
+      WebCoalescedInputEvent(update_event, ui::LatencyInfo()));
 
   // Try a full Begin/Update/End cycle.
   web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(begin_event));
+      WebCoalescedInputEvent(begin_event, ui::LatencyInfo()));
   web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(update_event));
+      WebCoalescedInputEvent(update_event, ui::LatencyInfo()));
   web_view_helper.GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(end_event));
+      WebCoalescedInputEvent(end_event, ui::LatencyInfo()));
 }
 
 TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
@@ -11714,20 +11649,20 @@ TEST_F(WebFrameSimTest, ScrollToEndBubblingCrash) {
   // Scroll the iframe to the end.
   key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(key_event));
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
   key_event.SetType(WebInputEvent::Type::kKeyUp);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(key_event));
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
 
   Compositor().BeginFrame();
 
   // End key should now bubble from the iframe up to the main viewport.
   key_event.SetType(WebInputEvent::Type::kRawKeyDown);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(key_event));
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
   key_event.SetType(WebInputEvent::Type::kKeyUp);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(key_event));
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
 }
 
 TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
@@ -12577,7 +12512,7 @@ bool TestSelectAll(const std::string& html) {
   mouse_event.SetPositionInWidget(8, 8);
   mouse_event.click_count = 1;
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+      WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
   RunPendingTasks();
   web_view_helper.Reset();
   return frame.GetMenuData().edit_flags &
@@ -12617,7 +12552,7 @@ TEST_F(WebFrameTest, ContextMenuDataSelectedText) {
   mouse_event.SetPositionInWidget(8, 8);
   mouse_event.click_count = 1;
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+      WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
   RunPendingTasks();
   web_view_helper.Reset();
   EXPECT_EQ(frame.GetMenuData().selected_text, " ");
@@ -12646,7 +12581,7 @@ TEST_F(WebFrameTest, ContextMenuDataPasswordSelectedText) {
   mouse_event.SetPositionInWidget(8, 8);
   mouse_event.click_count = 1;
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+      WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
 
   RunPendingTasks();
   web_view_helper.Reset();
@@ -12678,7 +12613,7 @@ TEST_F(WebFrameTest, ContextMenuDataNonLocatedMenu) {
   mouse_event.SetPositionInWidget(0, 0);
   mouse_event.click_count = 2;
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_event));
+      WebCoalescedInputEvent(mouse_event, ui::LatencyInfo()));
 
   web_view->MainFrameWidget()->ShowContextMenu(kMenuSourceTouch);
 

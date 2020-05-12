@@ -81,10 +81,11 @@ constexpr float kBoostOfApps = 8.0f;
 std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModelUpdater* model_updater,
-    AppListControllerDelegate* list_controller) {
+    AppListControllerDelegate* list_controller,
+    ash::AppListNotifier* notifier) {
   std::unique_ptr<SearchController> controller =
       std::make_unique<SearchController>(model_updater, list_controller,
-                                         profile);
+                                         notifier, profile);
 
   // Set up rankers for search results.
   controller->InitializeRankers();

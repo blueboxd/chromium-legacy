@@ -816,9 +816,10 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
     FocusPlugin();
 
   ui::Cursor cursor(ui::mojom::blink::CursorType::kPointer);
-  if (web_plugin_ && web_plugin_->HandleInputEvent(
-                         WebCoalescedInputEvent(transformed_event), &cursor) !=
-                         WebInputEventResult::kNotHandled)
+  if (web_plugin_ &&
+      web_plugin_->HandleInputEvent(
+          WebCoalescedInputEvent(transformed_event, ui::LatencyInfo()),
+          &cursor) != WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 
   // A windowless plugin can change the cursor in response to a mouse move
@@ -875,9 +876,9 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
   ui::Cursor dummy_cursor;
-  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    &dummy_cursor) !=
-      WebInputEventResult::kNotHandled)
+  if (web_plugin_->HandleInputEvent(
+          WebCoalescedInputEvent(translated_event, ui::LatencyInfo()),
+          &dummy_cursor) != WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }
 
@@ -898,9 +899,9 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
     web_frame->Client()->HandleCurrentKeyboardEvent();
 
   ui::Cursor dummy_cursor;
-  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    &dummy_cursor) !=
-      WebInputEventResult::kNotHandled) {
+  if (web_plugin_->HandleInputEvent(
+          WebCoalescedInputEvent(web_event, ui::LatencyInfo()),
+          &dummy_cursor) != WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
   }
 }
@@ -975,7 +976,8 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
 WebCoalescedInputEvent WebPluginContainerImpl::TransformCoalescedTouchEvent(
     const WebCoalescedInputEvent& coalesced_event) {
   WebCoalescedInputEvent transformed_event(
-      TransformTouchEvent(coalesced_event.Event()).Clone(), {}, {});
+      TransformTouchEvent(coalesced_event.Event()).Clone(), {}, {},
+      coalesced_event.latency_info());
   for (size_t i = 0; i < coalesced_event.CoalescedEventSize(); ++i) {
     transformed_event.AddCoalescedEvent(
         TransformTouchEvent(coalesced_event.CoalescedEvent(i)));
@@ -1033,9 +1035,9 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   translated_event.SetPositionInWidget(local_point);
 
   ui::Cursor dummy_cursor;
-  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(translated_event),
-                                    &dummy_cursor) !=
-      WebInputEventResult::kNotHandled) {
+  if (web_plugin_->HandleInputEvent(
+          WebCoalescedInputEvent(translated_event, ui::LatencyInfo()),
+          &dummy_cursor) != WebInputEventResult::kNotHandled) {
     event.SetDefaultHandled();
     return;
   }
@@ -1050,9 +1052,9 @@ void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
     return;
 
   ui::Cursor dummy_cursor;
-  if (web_plugin_->HandleInputEvent(WebCoalescedInputEvent(web_event),
-                                    &dummy_cursor) !=
-      WebInputEventResult::kNotHandled)
+  if (web_plugin_->HandleInputEvent(
+          WebCoalescedInputEvent(web_event, ui::LatencyInfo()),
+          &dummy_cursor) != WebInputEventResult::kNotHandled)
     event.SetDefaultHandled();
 }
 

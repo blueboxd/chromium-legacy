@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/policy/cpp/fidl.h>
 #include <fuchsia/ui/views/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
+#include <lib/vfs/cpp/pseudo_file.h>
 #include <iostream>
 
 #include "base/base_paths_fuchsia.h"
@@ -14,29 +16,100 @@
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/values.h"
 #include "fuchsia/base/init_logging.h"
+#include "fuchsia/base/release_channel.h"
 #include "url/gurl.h"
 
+fuchsia::sys::ComponentControllerPtr component_controller_;
+
+namespace {
+
 constexpr char kRemoteDebuggingPortSwitch[] = "remote-debugging-port";
-constexpr char kEnableLoggingSwitch[] = "enable-logging";
 constexpr char kHeadlessSwitch[] = "headless";
 
 void PrintUsage() {
   std::cerr << "Usage: "
             << base::CommandLine::ForCurrentProcess()->GetProgram().BaseName()
             << " [--" << kRemoteDebuggingPortSwitch << "] [--"
-            << kHeadlessSwitch << "] URL." << std::endl
+            << kHeadlessSwitch << "] URL. [--] [--{extra_flag1}] "
+            << "[--{extra_flag2}]" << std::endl
             << "Setting " << kRemoteDebuggingPortSwitch << " to 0 will "
             << "automatically choose an available port." << std::endl
             << "Setting " << kHeadlessSwitch << " will prevent creation of "
-            << "a view." << std::endl;
+            << "a view." << std::endl
+            << "Extra flags will be passed to "
+            << "WebEngine to be processed." << std::endl;
 }
+
+base::Optional<uint16_t> ParseRemoteDebuggingPort(
+    const base::CommandLine& command_line) {
+  std::string port_str =
+      command_line.GetSwitchValueNative(kRemoteDebuggingPortSwitch);
+  int port_parsed;
+  if (!base::StringToInt(port_str, &port_parsed) || port_parsed < 0 ||
+      port_parsed > 65535) {
+    LOG(ERROR) << "Invalid value for --remote-debugging-port (must be in the "
+                  "range 0-65535).";
+    return base::nullopt;
+  }
+  return (uint16_t)port_parsed;
+}
+
+GURL GetUrlFromArgs(const base::CommandLine::StringVector& args) {
+  if (args.empty()) {
+    LOG(ERROR) << "No URL provided.";
+    return GURL();
+  }
+  GURL url = GURL(args.front());
+  if (!url.is_valid()) {
+    LOG(ERROR) << "URL is not valid: " << url.spec();
+    return GURL();
+  }
+  return url;
+}
+
+fuchsia::web::ContextProviderPtr ConnectToContextProvider(
+    const base::CommandLine::StringVector& extra_command_line_arguments) {
+  sys::ComponentContext* const component_context =
+      base::fuchsia::ComponentContextForCurrentProcess();
+
+  // If there are no additional command-line arguments then use the
+  // system instance of the ContextProvider.
+  if (extra_command_line_arguments.empty()) {
+    return component_context->svc()->Connect<fuchsia::web::ContextProvider>();
+  }
+
+  // Launch a private ContextProvider instance, with the desired command-line
+  // arguments.
+  fuchsia::sys::LauncherPtr launcher;
+  component_context->svc()->Connect(launcher.NewRequest());
+
+  fuchsia::sys::LaunchInfo launch_info;
+  launch_info.url = base::StrCat({"fuchsia-pkg://fuchsia.com/web_engine",
+                                  BUILDFLAG(FUCHSIA_RELEASE_CHANNEL_SUFFIX),
+                                  "#meta/context_provider.cmx"});
+
+  launch_info.arguments = extra_command_line_arguments;
+  fidl::InterfaceHandle<fuchsia::io::Directory> service_directory;
+  launch_info.directory_request = service_directory.NewRequest().TakeChannel();
+
+  launcher->CreateComponent(std::move(launch_info),
+                            component_controller_.NewRequest());
+
+  sys::ServiceDirectory web_engine_service_dir(std::move(service_directory));
+  return web_engine_service_dir.Connect<fuchsia::web::ContextProvider>();
+}
+
+}  // namespace
 
 int main(int argc, char** argv) {
   base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
@@ -44,47 +117,35 @@ int main(int argc, char** argv) {
   // Parse the command line arguments and set up logging.
   CHECK(base::CommandLine::Init(argc, argv));
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitchNative(kEnableLoggingSwitch, "stderr");
 
+  // Set logging to stderr if not specified.
+  if (!command_line->HasSwitch(cr_fuchsia::kEnableLogging)) {
+    command_line->AppendSwitchNative(cr_fuchsia::kEnableLogging, "stderr");
+  }
   CHECK(cr_fuchsia::InitLoggingFromCommandLine(*command_line));
-  base::CommandLine::StringVector args =
-      base::CommandLine::ForCurrentProcess()->GetArgs();
-  if (args.empty()) {
-    LOG(ERROR) << "No URL provided.";
-    PrintUsage();
-    return 1;
-  }
-  if (args.size() > 1) {
-    LOG(ERROR) << "Too many arguments provided.";
-    PrintUsage();
-    return 1;
-  }
-  GURL url(args.front());
-  if (!url.is_valid()) {
-    LOG(ERROR) << "URL is not valid: " << url.spec();
-    PrintUsage();
-    return 1;
-  }
+
   base::Optional<uint16_t> remote_debugging_port;
   if (command_line->HasSwitch(kRemoteDebuggingPortSwitch)) {
-    std::string port_str =
-        command_line->GetSwitchValueNative(kRemoteDebuggingPortSwitch);
-    int port_parsed;
-    if (!base::StringToInt(port_str, &port_parsed) || port_parsed < 0 ||
-        port_parsed > 65535) {
-      LOG(ERROR) << "Invalid value for --remote-debugging-port (must be in the "
-                    "range 0-65535).";
+    remote_debugging_port = ParseRemoteDebuggingPort(*command_line);
+    if (!remote_debugging_port) {
       PrintUsage();
       return 1;
     }
-    remote_debugging_port = base::checked_cast<uint16_t>(port_parsed);
+  }
+  bool is_headless = command_line->HasSwitch(kHeadlessSwitch);
+
+  base::CommandLine::StringVector additional_args = command_line->GetArgs();
+  GURL url(GetUrlFromArgs(additional_args));
+  if (!url.is_valid()) {
+    PrintUsage();
+    return 1;
   }
 
-  auto web_context_provider = base::fuchsia::ComponentContextForCurrentProcess()
-                                  ->svc()
-                                  ->Connect<fuchsia::web::ContextProvider>();
+  // Remove the url since we don't pass it into WebEngine
+  additional_args.erase(additional_args.begin());
 
-  bool is_headless = command_line->HasSwitch(kHeadlessSwitch);
+  fuchsia::web::ContextProviderPtr web_context_provider =
+      ConnectToContextProvider(additional_args);
 
   // Set up the content directory fuchsia-pkg://shell-data/, which will host
   // the files stored under //fuchsia/engine/test/shell_data.

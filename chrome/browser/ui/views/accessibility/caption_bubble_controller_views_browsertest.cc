@@ -472,13 +472,13 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_EQ("No human", GetLabelText());
   OnFinalTranscription("No human has ever seen");
   EXPECT_EQ("No human has ever seen", GetLabelText());
-  OnFinalTranscription(" a living");
+  OnFinalTranscription("a living");
   EXPECT_EQ("No human has ever seen a living", GetLabelText());
-  OnPartialTranscription(" giant");
+  OnPartialTranscription("giant");
   EXPECT_EQ("No human has ever seen a living giant", GetLabelText());
   OnPartialTranscription("");
-  EXPECT_EQ("No human has ever seen a living", GetLabelText());
-  OnPartialTranscription(" giant squid");
+  EXPECT_EQ("No human has ever seen a living ", GetLabelText());
+  OnPartialTranscription("giant squid");
   EXPECT_EQ("No human has ever seen a living giant squid", GetLabelText());
 }
 
@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ChangeActiveTab) {
   // Switch back to tab 1 and send transcriptions.
   ActivateTabAt(1);
   OnFinalTranscription("A snail can sleep", 1);
-  OnPartialTranscription(" for two years", 1);
+  OnPartialTranscription("for two years", 1);
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
   EXPECT_EQ("A snail can sleep for two years", GetLabelText());
 
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ChangeActiveTab) {
   EXPECT_EQ("A snail can sleep for two years", GetLabelText());
 
   // Add a new final transcription.
-  OnFinalTranscription(" for three years", 1);
+  OnFinalTranscription("for three years", 1);
   EXPECT_EQ("A snail can sleep for three years", GetLabelText());
 
   // Close tab 1 and check that the bubble is still visible on tabs 0 and 2.

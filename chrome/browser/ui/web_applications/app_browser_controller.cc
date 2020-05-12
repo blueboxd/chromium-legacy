@@ -124,6 +124,13 @@ bool AppBrowserController::IsForWebAppBrowser(const Browser* browser) {
 }
 
 // static
+bool AppBrowserController::IsForWebAppBrowser(const Browser* browser,
+                                              const AppId& app_id) {
+  return IsForWebAppBrowser(browser) && browser->app_controller()->HasAppId() &&
+         browser->app_controller()->GetAppId() == app_id;
+}
+
+// static
 base::string16 AppBrowserController::FormatUrlOrigin(const GURL& url) {
   return url_formatter::FormatUrl(
       url.GetOrigin(),

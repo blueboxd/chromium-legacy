@@ -1111,6 +1111,16 @@ void LayoutBlock::AddPercentHeightDescendant(LayoutBox* descendant) {
   }
   descendant->SetPercentHeightContainer(this);
 
+  // Mark our containing block chain as potentially having a percent height
+  // descendant.
+  LayoutBlock* cb = descendant->ContainingBlock();
+  while (cb) {
+    cb->SetMaybeHasPercentHeightDescendant();
+    if (cb == this)
+      break;
+    cb = cb->ContainingBlock();
+  }
+
   if (!g_percent_height_descendants_map)
     g_percent_height_descendants_map = new TrackedDescendantsMap;
   TrackedLayoutBoxListHashSet* descendant_set =

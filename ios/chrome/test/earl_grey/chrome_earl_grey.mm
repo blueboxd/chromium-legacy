@@ -809,6 +809,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [self signOutAndClearIdentities];
 }
 
+- (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase {
+  [ChromeEarlGreyAppInterface addBookmarkWithSyncPassphrase:syncPassphrase];
+}
+
 #pragma mark - Bookmarks Utilities (EG2)
 
 - (void)waitForBookmarksToFinishLoading {

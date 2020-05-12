@@ -16,13 +16,13 @@
 #include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/browser/test/mock_storage_client.h"
+#include "storage/browser/test/mock_quota_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::mojom::StorageType;
 using content::BrowserThread;
 using storage::MockOriginData;
-using storage::MockStorageClient;
+using storage::MockQuotaClient;
 
 class BrowsingDataQuotaHelperTest : public testing::Test {
  public:
@@ -66,9 +66,9 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   }
 
   void RegisterClient(const MockOriginData* data, std::size_t data_len) {
-    MockStorageClient* client =
-        new MockStorageClient(quota_manager_->proxy(), data,
-                              storage::QuotaClientType::kFileSystem, data_len);
+    MockQuotaClient* client =
+        new MockQuotaClient(quota_manager_->proxy(), data,
+                            storage::QuotaClientType::kFileSystem, data_len);
     quota_manager_->proxy()->RegisterClient(client);
     client->TouchAllOriginsAndNotify();
   }

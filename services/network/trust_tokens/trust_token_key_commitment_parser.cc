@@ -78,16 +78,12 @@ mojom::TrustTokenKeyCommitmentResultPtr ParseSingleIssuer(
 
   auto result = mojom::TrustTokenKeyCommitmentResult::New();
 
-  // Confirm that the batchsize field is type-safe, if it's present.
-  if (value.FindKey(kTrustTokenKeyCommitmentBatchsizeField) &&
-      !value.FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
+  // Confirm that the batchsize field is present and type-safe.
+  base::Optional<int> maybe_batch_size =
+      value.FindIntKey(kTrustTokenKeyCommitmentBatchsizeField);
+  if (!maybe_batch_size || *maybe_batch_size <= 0)
     return nullptr;
-  }
-  if (base::Optional<int> maybe_batch_size =
-          value.FindIntKey(kTrustTokenKeyCommitmentBatchsizeField)) {
-    result->batch_size =
-        mojom::TrustTokenKeyCommitmentBatchSize::New(*maybe_batch_size);
-  }
+  result->batch_size = *maybe_batch_size;
 
   // Confirm that the srrkey field is present and base64-encoded.
   const std::string* maybe_srrkey =

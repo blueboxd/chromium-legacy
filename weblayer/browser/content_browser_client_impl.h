@@ -111,6 +111,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
 #endif  // OS_ANDROID
 
   void CreateFeatureListAndFieldTrials();
+  content::SpeechRecognitionManagerDelegate*
+  CreateSpeechRecognitionManagerDelegate() override;
 
  private:
   std::unique_ptr<PrefService> CreateLocalState();

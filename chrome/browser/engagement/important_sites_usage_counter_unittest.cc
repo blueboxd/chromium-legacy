@@ -22,7 +22,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/browser/test/mock_storage_client.h"
+#include "storage/browser/test/mock_quota_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
@@ -54,7 +54,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   }
 
   void RegisterClient(const std::vector<storage::MockOriginData>& data) {
-    auto* client = new storage::MockStorageClient(
+    auto* client = new storage::MockQuotaClient(
         quota_manager_->proxy(), data.data(),
         storage::QuotaClientType::kFileSystem, data.size());
     quota_manager_->proxy()->RegisterClient(client);

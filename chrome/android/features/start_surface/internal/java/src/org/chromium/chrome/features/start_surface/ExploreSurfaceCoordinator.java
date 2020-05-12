@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -93,13 +94,19 @@ class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
         SectionHeaderView sectionHeaderView = null;
         if (hasHeader) {
             LayoutInflater inflater = LayoutInflater.from(mActivity);
-            sectionHeaderView =
-                    (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+                sectionHeaderView = (SectionHeaderView) inflater.inflate(
+                        R.layout.new_tab_page_snippets_expandable_header_with_menu, null, false);
+            } else {
+                sectionHeaderView =
+                        (SectionHeaderView) inflater.inflate(R.layout.ss_feed_header, null, false);
+            }
         }
-        FeedSurfaceCoordinator feedSurfaceCoordinator = new FeedSurfaceCoordinator(mActivity,
-                mActivity.getSnackbarManager(), mActivity.getTabModelSelector(),
-                mActivity.getActivityTabProvider(), null, null, sectionHeaderView,
-                exploreSurfaceActionHandler, isInNightMode, this, null, profile);
+        FeedSurfaceCoordinator feedSurfaceCoordinator =
+                new FeedSurfaceCoordinator(mActivity, mActivity.getSnackbarManager(),
+                        mActivity.getTabModelSelector(), mActivity.getActivityTabProvider(), null,
+                        null, sectionHeaderView, exploreSurfaceActionHandler, isInNightMode, this,
+                        mExploreSurfaceNavigationDelegate, profile);
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.

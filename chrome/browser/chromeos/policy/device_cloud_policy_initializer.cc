@@ -315,6 +315,9 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   std::string brand_code;
   statistics_provider_->GetMachineStatistic(chromeos::system::kRlzBrandCodeKey,
                                             &brand_code);
+  std::string attested_device_id;
+  statistics_provider_->GetMachineStatistic(
+      chromeos::system::kAttestedDeviceIdKey, &attested_device_id);
   // The :'s should be removed from MAC addresses to match the format of
   // reporting MAC addresses and corresponding VPD fields.
   std::string ethernet_mac_address;
@@ -332,8 +335,8 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
   // DMToken is already provided in the policy fetch requests.
   return std::make_unique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model, brand_code,
-      ethernet_mac_address, dock_mac_address, manufacture_date,
-      signing_service_.get(), device_management_service,
+      attested_device_id, ethernet_mac_address, dock_mac_address,
+      manufacture_date, signing_service_.get(), device_management_service,
       system_url_loader_factory_for_testing_
           ? system_url_loader_factory_for_testing_
           : g_browser_process->shared_url_loader_factory(),

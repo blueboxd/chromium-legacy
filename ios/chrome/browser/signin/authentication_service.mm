@@ -19,7 +19,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/constants.h"
@@ -110,7 +110,7 @@ void AuthenticationService::Initialize(
 
   HandleForgottenIdentity(nil, true /* should_prompt */);
 
-  breakpad_helper::SetCurrentlySignedIn(IsAuthenticated());
+  crash_keys::SetCurrentlySignedIn(IsAuthenticated());
 
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
@@ -349,7 +349,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity) {
   // SigninGlobalError instead of the sync auth error state.
   // crbug.com/289493
   sync_service_->GetUserSettings()->SetSyncRequested(true);
-  breakpad_helper::SetCurrentlySignedIn(true);
+  crash_keys::SetCurrentlySignedIn(true);
 }
 
 void AuthenticationService::SignOut(
@@ -373,7 +373,7 @@ void AuthenticationService::SignOut(
   account_mutator->ClearPrimaryAccount(
       signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);
-  breakpad_helper::SetCurrentlySignedIn(false);
+  crash_keys::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
   if (force_clear_browsing_data || is_managed) {
     delegate_->ClearBrowsingData(completion);

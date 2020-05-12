@@ -24,11 +24,15 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+
+import java.util.List;
 
 /**
  * This is a utility class for managing experiments related to returning to Chrome.
@@ -209,5 +213,21 @@ public final class ReturnToChromeExperimentsUtil {
                 && !AccessibilityUtil.isAccessibilityEnabled()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                         ContextUtils.getApplicationContext());
+    }
+
+    /**
+     * @param tabModelSelector The tab model selector.
+     * @return the total tab count, and works before native initialization.
+     */
+    public static int getTotalTabCount(TabModelSelector tabModelSelector) {
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+                && !tabModelSelector.isTabStateInitialized()) {
+            List<PseudoTab> allTabs;
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                allTabs = PseudoTab.getAllPseudoTabsFromStateFile();
+            }
+            return allTabs != null ? allTabs.size() : 0;
+        }
+        return tabModelSelector.getTotalTabCount();
     }
 }

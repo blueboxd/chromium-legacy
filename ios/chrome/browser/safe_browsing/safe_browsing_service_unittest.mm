@@ -19,6 +19,11 @@
 #include "components/safe_browsing/core/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/db/v4_test_util.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/prerender/fake_prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -37,7 +42,18 @@ const char kMalwarePage[] = "http://example.test/malware.html";
 class TestUrlCheckerClient {
  public:
   TestUrlCheckerClient(SafeBrowsingService* safe_browsing_service)
-      : safe_browsing_service_(safe_browsing_service) {}
+      : safe_browsing_service_(safe_browsing_service),
+        browser_state_(TestChromeBrowserState::Builder().Build()) {
+    SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
+    SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state_);
+    web_state_.SetBrowserState(browser_state_.get());
+    PrerenderServiceFactory::GetInstance()->SetTestingFactory(
+        browser_state_.get(),
+        base::BindRepeating(
+            [](web::BrowserState*) -> std::unique_ptr<KeyedService> {
+              return std::make_unique<FakePrerenderService>();
+            }));
+  }
 
   ~TestUrlCheckerClient() = default;
 
@@ -92,6 +108,7 @@ class TestUrlCheckerClient {
   bool result_pending_ = false;
   bool url_is_unsafe_ = false;
   SafeBrowsingService* safe_browsing_service_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl> url_checker_;
 };

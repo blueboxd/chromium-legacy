@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.offlinepages.indicator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.SystemClock;
 
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
@@ -14,6 +15,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.offlinepages.indicator.ConnectivityDetector.ConnectionState;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 
 /**
@@ -22,6 +24,7 @@ import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
  */
 public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observer {
     private static final int STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
+    private static final int STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS = 5000;
 
     private Context mContext;
     private StatusIndicatorCoordinator mStatusIndicator;
@@ -31,6 +34,9 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
     private Runnable mShowRunnable;
     private Runnable mHideRunnable;
     private Runnable mOnUrlBarUnfocusedRunnable;
+    private Runnable mUpdateStatusIndicatorDelayedRunnable;
+    private long mLastActionTime;
+    private boolean mIsOffline;
 
     /**
      * Constructs the offline indicator.
@@ -45,7 +51,13 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         mContext = context;
         mStatusIndicator = statusIndicator;
 
+        // If we're offline at start-up, we should have a small enough last action time so that we
+        // don't wait for the cool-down.
+        mLastActionTime =
+                SystemClock.elapsedRealtime() - STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS;
+
         mShowRunnable = () -> {
+            setLastActionTime();
             final int backgroundColor = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.offline_indicator_offline_color);
             final int textColor = ApiCompatibilityUtils.getColor(
@@ -59,6 +71,7 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         };
 
         mHideRunnable = () -> {
+            setLastActionTime();
             final int backgroundColor = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.offline_indicator_back_online_color);
             final int textColor = ApiCompatibilityUtils.getColor(
@@ -87,19 +100,36 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         };
         mIsUrlBarFocusedSupplier.addObserver(mOnUrlBarFocusChanged);
 
+        mUpdateStatusIndicatorDelayedRunnable = () -> {
+            final boolean offline =
+                    isConnectionStateOffline(mConnectivityDetector.getConnectionState());
+            if (offline != mIsOffline) {
+                updateStatusIndicator(offline);
+            }
+        };
         mConnectivityDetector = new ConnectivityDetector(this);
     }
 
     @Override
     public void onConnectionStateChanged(int connectionState) {
-        final boolean offline = connectionState != ConnectivityDetector.ConnectionState.VALIDATED;
-
-        if (mIsUrlBarFocusedSupplier.get()) {
-            mOnUrlBarUnfocusedRunnable = offline ? mShowRunnable : mHideRunnable;
-        } else {
-            (offline ? mShowRunnable : mHideRunnable).run();
-            assert mOnUrlBarUnfocusedRunnable == null;
+        final boolean offline = isConnectionStateOffline(connectionState);
+        if (mIsOffline == offline) {
+            return;
         }
+
+        final Handler handler = new Handler();
+        handler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
+
+        // TODO(crbug.com/1081427): This currently only protects the widget from going into a bad
+        // state. We need a better way to handle flaky connections.
+        final long elapsedTimeSinceLastAction = SystemClock.elapsedRealtime() - mLastActionTime;
+        if (elapsedTimeSinceLastAction < STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS) {
+            handler.postDelayed(mUpdateStatusIndicatorDelayedRunnable,
+                    STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS - elapsedTimeSinceLastAction);
+            return;
+        }
+
+        updateStatusIndicator(offline);
     }
 
     public void destroy() {
@@ -114,5 +144,31 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         }
 
         mOnUrlBarFocusChanged = null;
+    }
+
+    private void updateStatusIndicator(boolean offline) {
+        mIsOffline = offline;
+        if (mIsUrlBarFocusedSupplier.get()) {
+            // We should clear the runnable if we would be assigning an unnecessary show or hide
+            // runnable. E.g, without this condition, we would be trying to hide the indicator when
+            // it's not shown if we were set to show the widget but then went back online.
+            if ((!offline && mOnUrlBarUnfocusedRunnable == mShowRunnable)
+                    || (offline && mOnUrlBarUnfocusedRunnable == mHideRunnable)) {
+                mOnUrlBarUnfocusedRunnable = null;
+                return;
+            }
+            mOnUrlBarUnfocusedRunnable = offline ? mShowRunnable : mHideRunnable;
+        } else {
+            (offline ? mShowRunnable : mHideRunnable).run();
+            assert mOnUrlBarUnfocusedRunnable == null;
+        }
+    }
+
+    private void setLastActionTime() {
+        mLastActionTime = SystemClock.elapsedRealtime();
+    }
+
+    private boolean isConnectionStateOffline(@ConnectionState int connectionState) {
+        return connectionState != ConnectionState.VALIDATED;
     }
 }

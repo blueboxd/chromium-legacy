@@ -101,8 +101,6 @@ target(link_target_type, "renderer") {
     "input/render_widget_input_handler.cc",
     "input/render_widget_input_handler.h",
     "input/render_widget_input_handler_delegate.h",
-    "input/scoped_web_input_event_with_latency_info.cc",
-    "input/scoped_web_input_event_with_latency_info.h",
     "input/widget_input_handler_impl.cc",
     "input/widget_input_handler_impl.h",
     "input/widget_input_handler_manager.cc",

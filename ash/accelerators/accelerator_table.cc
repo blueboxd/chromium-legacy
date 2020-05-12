@@ -350,6 +350,13 @@ const AcceleratorAction kActionsAllowedInPinnedMode[] = {
 const size_t kActionsAllowedInPinnedModeLength =
     base::size(kActionsAllowedInPinnedMode);
 
+const AcceleratorAction kActionsAllowedInAppMode[] = {
+    FOCUS_SHELF,
+};
+
+const size_t kActionsAllowedInAppModeLength =
+    base::size(kActionsAllowedInAppMode);
+
 const AcceleratorAction kActionsNeedingWindow[] = {
     // clang-format off
     DESKS_MOVE_ACTIVE_ITEM,

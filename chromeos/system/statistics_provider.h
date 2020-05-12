@@ -112,6 +112,10 @@ COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kInitialLocaleKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kInitialTimezoneKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kKeyboardLayoutKey[];
 
+// The key that will be present in RO VPD to indicate what identifier is used
+// for attestation-based registration of a device.
+COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kAttestedDeviceIdKey[];
+
 // Serial number key (VPD v2+ devices, Samsung: caroline and later) for use in
 // tests. Outside of tests GetEnterpriseMachineID() is the backward-compatible
 // way to obtain the serial number.

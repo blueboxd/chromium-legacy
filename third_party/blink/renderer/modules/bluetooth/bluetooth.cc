@@ -393,7 +393,7 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
       client;
   // See https://bit.ly/2S0zRAS for task types.
   mojo::ReceiverId id =
-      client_receivers_.Add(this, client.InitWithNewEndpointAndPassReceiver(),
+      client_receivers_.Add(client.InitWithNewEndpointAndPassReceiver(),
                             context->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
   auto scan_options_copy = scan_options->Clone();
@@ -465,12 +465,10 @@ ExecutionContext* Bluetooth::GetExecutionContext() const {
   return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
-void Bluetooth::ContextDestroyed() {
-  client_receivers_.Clear();
-}
-
 void Bluetooth::Trace(Visitor* visitor) {
   visitor->Trace(device_instance_map_);
+  visitor->Trace(client_receivers_);
+  visitor->Trace(service_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
@@ -479,7 +477,9 @@ void Bluetooth::Trace(Visitor* visitor) {
 Bluetooth::Bluetooth(ExecutionContext* context)
     : ExecutionContextLifecycleObserver(context),
       PageVisibilityObserver(
-          To<LocalDOMWindow>(context)->GetFrame()->GetPage()) {}
+          To<LocalDOMWindow>(context)->GetFrame()->GetPage()),
+      client_receivers_(this, context),
+      service_(context) {}
 
 Bluetooth::~Bluetooth() {
   DCHECK(client_receivers_.empty());
@@ -500,7 +500,7 @@ BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
 }
 
 void Bluetooth::EnsureServiceConnection(ExecutionContext* context) {
-  if (!service_) {
+  if (!service_.is_bound()) {
     // See https://bit.ly/2S0zRAS for task types.
     auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
     context->GetBrowserInterfaceBroker().GetInterface(

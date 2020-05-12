@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
-#include "base/bind.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
@@ -22,50 +21,69 @@
 
 namespace ash {
 
-namespace {
-const char kNotifierId[] = "ash.gesture_education";
-const char kNotificationId[] = "chrome://gesture_education";
-}  // namespace
+// static
+const char GestureEducationNotificationController::kNotificationId[] =
+    "chrome://gesture_education";
 
 GestureEducationNotificationController::
     GestureEducationNotificationController() {
   Shell::Get()->session_controller()->AddObserver(this);
-
-  chromeos::PowerManagerClient* power_manager_client =
-      chromeos::PowerManagerClient::Get();
-
-  power_manager_client->GetSwitchStates(base::BindOnce(
-      &GestureEducationNotificationController::OnReceivedSwitchStates,
-      weak_ptr_factory_.GetWeakPtr()));
+  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
 }
 
 GestureEducationNotificationController::
     ~GestureEducationNotificationController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
+  tablet_mode_observer_.RemoveAll();
+}
+
+void GestureEducationNotificationController::MaybeShowNotification() {
+  bool is_user_session_blocked =
+      Shell::Get()->session_controller()->IsUserSessionBlocked();
+  if (TabletModeController::Get()->InTabletMode() && !is_user_session_blocked &&
+      (active_user_prefs_ && !active_user_prefs_->GetBoolean(
+                                 prefs::kGestureEducationNotificationShown)) &&
+      !ShelfConfig::Get()->ShelfControlsForcedShownForAccessibility()) {
+    GenerateGestureEducationNotification();
+    active_user_prefs_->SetBoolean(prefs::kGestureEducationNotificationShown,
+                                   true);
+  }
 }
 
 void GestureEducationNotificationController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
-  if (!tablet_mode_supported_ ||
-      prefs->GetBoolean(prefs::kGestureEducationNotificationShown) ||
-      ShelfConfig::Get()->ShelfControlsForcedShownForAccessibility()) {
-    return;
-  }
-  GenerateGestureEducationNotification();
-  prefs->SetBoolean(prefs::kGestureEducationNotificationShown, true);
+  active_user_prefs_ = prefs;
+  MaybeShowNotification();
+}
+
+void GestureEducationNotificationController::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  MaybeShowNotification();
+}
+
+void GestureEducationNotificationController::OnTabletModeStarted() {
+  MaybeShowNotification();
+}
+
+void GestureEducationNotificationController::OnTabletControllerDestroyed() {
+  tablet_mode_observer_.RemoveAll();
 }
 
 void GestureEducationNotificationController::RegisterProfilePrefs(
-    PrefRegistrySimple* registry) {
+    PrefRegistrySimple* registry,
+    bool for_test) {
+  // Some tests fail when the notification shows up. Use |for_test|
+  // as the default value so that it is true in test to suppress the
+  // notification there.
   registry->RegisterBooleanPref(prefs::kGestureEducationNotificationShown,
-                                false);
+                                for_test);
 }
 
 void GestureEducationNotificationController::
     GenerateGestureEducationNotification() {
   std::unique_ptr<message_center::Notification> notification =
       CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotifierId,
+          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           GetNotificationTitle(), GetNotificationMessage(),
           base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
@@ -86,30 +104,21 @@ void GestureEducationNotificationController::HandleNotificationClick() {
   Shell::Get()->system_tray_model()->client()->ShowGestureEducationHelp();
 }
 
+void GestureEducationNotificationController::ResetPrefForTest() {
+  if (active_user_prefs_) {
+    active_user_prefs_->SetBoolean(prefs::kGestureEducationNotificationShown,
+                                   false);
+  }
+}
+
 base::string16 GestureEducationNotificationController::GetNotificationMessage()
     const {
-  base::string16 system_app_name =
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME);
-
-  base::string16 update_text;
-  update_text = l10n_util::GetStringFUTF16(
-      IDS_GESTURE_NOTIFICATION_MESSAGE_LEARN_MORE, system_app_name);
-
-  return update_text;
+  return l10n_util::GetStringUTF16(IDS_GESTURE_NOTIFICATION_MESSAGE_LEARN_MORE);
 }
 
 base::string16 GestureEducationNotificationController::GetNotificationTitle()
     const {
   return l10n_util::GetStringUTF16(IDS_GESTURE_NOTIFICATION_TITLE);
-}
-
-void GestureEducationNotificationController::OnReceivedSwitchStates(
-    base::Optional<chromeos::PowerManagerClient::SwitchStates> switch_states) {
-  if (switch_states.has_value() &&
-      switch_states->tablet_mode !=
-          chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
-    tablet_mode_supported_ = true;
-  }
 }
 
 }  // namespace ash

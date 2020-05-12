@@ -39,5 +39,12 @@ interface SpeechRecognitionRecognizer {
 // speech recognition process and the receiver lives in the renderer process.
 interface SpeechRecognitionRecognizerClient {
   // Triggered by speech recognition process on a speech recognition event.
-  OnSpeechRecognitionRecognitionEvent(string transcription);
+  OnSpeechRecognitionRecognitionEvent(SpeechRecognitionResult result);
+};
+
+// A speech recognition result created by the speech service and passed to the
+// renderer.
+struct SpeechRecognitionResult {
+  string transcription;
+  bool is_final;
 };

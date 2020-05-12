@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.thinwebview;
 import android.content.Context;
 
 import org.chromium.chrome.browser.thinwebview.internal.ThinWebViewImpl;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Factory for creating a {@link ThinWebView}.
@@ -17,12 +16,9 @@ public class ThinWebViewFactory {
      * Creates a {@link ThinWebView} backed by a {@link Surface}. The surface is provided by
      * a either a {@link TextureView} or {@link SurfaceView}.
      * @param context The context to create this view.
-     * @param windowAndroid The associated {@code WindowAndroid} on which the view is to be
-     *         displayed.
      * @param constraints A set of constraints associated with this view.
      */
-    public static ThinWebView create(
-            Context context, WindowAndroid windowAndroid, ThinWebViewConstraints constraints) {
-        return new ThinWebViewImpl(context, windowAndroid, constraints);
+    public static ThinWebView create(Context context, ThinWebViewConstraints constraints) {
+        return new ThinWebViewImpl(context, constraints);
     }
 }

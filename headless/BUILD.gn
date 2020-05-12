@@ -432,7 +432,6 @@ component("headless_non_renderer") {
     deps += [
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
-      "//components/services/print_compositor/public/mojom",
       "//gin",
       "//third_party/blink/public:blink",
       "//third_party/blink/public:blink_headers",
@@ -565,31 +564,17 @@ test("headless_unittests") {
     "public/util/error_reporter_unittest.cc",
   ]
 
-  if (!is_component_build) {
-    sources += [
-      "lib/browser/headless_content_browser_client.cc",
-      "lib/browser/headless_content_browser_client.h",
-      "lib/utility/headless_content_utility_client.cc",
-      "lib/utility/headless_content_utility_client.h",
-    ]
-  }
-
   deps = [
     ":headless_shell_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
-    "//components/services/print_compositor/public/mojom",
     "//content/public/app",
     "//content/public/child:child",
     "//content/public/common",
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (!is_fuchsia) {
-    deps += [ "//components/crash/content/browser" ]
-  }
 
   if (is_win) {
     deps += [ "//components/crash/core/app:crash_export_thunks" ]
@@ -599,7 +584,6 @@ test("headless_unittests") {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
     deps += [
       "//components/printing/browser",
-      "//components/services/print_compositor",
       "//third_party/blink/public:blink",
     ]
   }
@@ -649,31 +633,17 @@ test("headless_browsertests") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  if (!is_component_build) {
-    sources += [
-      "lib/browser/headless_content_browser_client.cc",
-      "lib/browser/headless_content_browser_client.h",
-      "lib/utility/headless_content_utility_client.cc",
-      "lib/utility/headless_content_utility_client.h",
-    ]
-  }
-
   deps = [
     ":headless_shell_lib",
     "//base",
     "//cc:test_support",
     "//components/security_state/content",
-    "//components/services/print_compositor/public/mojom",
     "//content/test:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base/clipboard",
   ]
-
-  if (!is_fuchsia) {
-    deps += [ "//components/crash/content/browser" ]
-  }
 
   if (is_mac) {
     deps += [ "//third_party/crashpad/crashpad/client" ]
@@ -682,7 +652,6 @@ test("headless_browsertests") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/browser",
-      "//components/services/print_compositor",
       "//pdf",
     ]
   }
@@ -702,7 +671,6 @@ if (is_win) {
     deps = [
       ":headless_non_renderer",
       "//build:branding_buildflags",
-      "//components/services/print_compositor/public/mojom",
       "//content:sandbox_helper_win",
       "//content/public/browser",
       "//content/public/common",
@@ -735,7 +703,6 @@ static_library("headless_shell_lib") {
     "//build:branding_buildflags",
     "//components/os_crypt",
     "//components/security_state/content",
-    "//components/services/print_compositor/public/mojom",
     "//content/public/app",
     "//content/public/browser",
     "//content/public/child:child",
@@ -757,6 +724,7 @@ static_library("headless_shell_lib") {
       "//components/printing/browser",
       "//components/printing/renderer",
       "//components/services/print_compositor",
+      "//components/services/print_compositor/public/mojom",
     ]
   }
 

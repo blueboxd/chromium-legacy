@@ -24,6 +24,8 @@ class WebContents;
 
 namespace web_app {
 
+class WebAppProviderBase;
+
 enum class ControllerType {
   kHostedAppController,
   kUnifiedControllerWithBookmarkApp,
@@ -42,6 +44,8 @@ class WebAppControllerBrowserTestBase
  public:
   WebAppControllerBrowserTestBase();
   ~WebAppControllerBrowserTestBase() = 0;
+
+  WebAppProviderBase& provider();
 
   AppId InstallPWA(const GURL& app_url);
 

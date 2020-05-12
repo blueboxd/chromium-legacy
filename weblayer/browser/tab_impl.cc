@@ -514,18 +514,16 @@ void TabImpl::OnAutofillProviderChanged(
   provider->OnJavaAutofillProviderChanged(env, autofill_provider);
 }
 
-void TabImpl::UpdateBrowserControlsState(JNIEnv* env, jint constraint) {
+void TabImpl::UpdateBrowserControlsState(JNIEnv* env,
+                                         jint constraint,
+                                         jboolean animate) {
   auto state_constraint =
       static_cast<content::BrowserControlsState>(constraint);
   content::BrowserControlsState current_state =
       content::BROWSER_CONTROLS_STATE_SHOWN;
-  // Animate unless hiding the controls. Show the controls now, unless that's
-  // not allowed.
-  bool animate = true;
-  if (state_constraint == content::BROWSER_CONTROLS_STATE_HIDDEN) {
+
+  if (state_constraint == content::BROWSER_CONTROLS_STATE_HIDDEN)
     current_state = content::BROWSER_CONTROLS_STATE_BOTH;
-    animate = false;
-  }
 
   web_contents_->GetMainFrame()->UpdateBrowserControlsState(
       state_constraint, current_state, animate);

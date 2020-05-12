@@ -54,6 +54,12 @@ WebAppControllerBrowserTestBase::WebAppControllerBrowserTestBase() {
 
 WebAppControllerBrowserTestBase::~WebAppControllerBrowserTestBase() = default;
 
+WebAppProviderBase& WebAppControllerBrowserTestBase::provider() {
+  auto* provider = WebAppProviderBase::GetProviderBase(profile());
+  DCHECK(provider);
+  return *provider;
+}
+
 AppId WebAppControllerBrowserTestBase::InstallPWA(const GURL& app_url) {
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = app_url;
@@ -104,9 +110,7 @@ WebAppControllerBrowserTestBase::NavigateInNewWindowAndAwaitInstallabilityCheck(
 
 base::Optional<AppId> WebAppControllerBrowserTestBase::FindAppWithUrlInScope(
     const GURL& url) {
-  auto* provider = WebAppProvider::Get(profile());
-  DCHECK(provider);
-  return provider->registrar().FindAppWithUrlInScope(url);
+  return provider().registrar().FindAppWithUrlInScope(url);
 }
 
 WebAppControllerBrowserTest::WebAppControllerBrowserTest()
@@ -126,10 +130,8 @@ void WebAppControllerBrowserTest::SetUp() {
 
 content::WebContents* WebAppControllerBrowserTest::OpenApplication(
     const AppId& app_id) {
-  auto* provider = WebAppProvider::Get(profile());
-  DCHECK(provider);
   ui_test_utils::UrlLoadObserver url_observer(
-      provider->registrar().GetAppLaunchURL(app_id),
+      provider().registrar().GetAppLaunchURL(app_id),
       content::NotificationService::AllSources());
 
   apps::AppLaunchParams params(
@@ -179,9 +181,7 @@ void WebAppControllerBrowserTest::SetUpOnMainThread() {
   // By default, all SSL cert checks are valid. Can be overridden in tests.
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
-  web_app::WebAppProviderBase::GetProviderBase(profile())
-      ->shortcut_manager()
-      .SuppressShortcutsForTesting();
+  provider().shortcut_manager().SuppressShortcutsForTesting();
 }
 
 }  // namespace web_app

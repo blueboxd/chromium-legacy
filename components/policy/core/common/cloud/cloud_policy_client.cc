@@ -135,6 +135,7 @@ CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_id,
     const std::string& machine_model,
     const std::string& brand_code,
+    const std::string& attested_device_id,
     const std::string& ethernet_mac_address,
     const std::string& dock_mac_address,
     const std::string& manufacture_date,
@@ -145,6 +146,7 @@ CloudPolicyClient::CloudPolicyClient(
     : machine_id_(machine_id),
       machine_model_(machine_model),
       brand_code_(brand_code),
+      attested_device_id_(attested_device_id),
       ethernet_mac_address_(ethernet_mac_address),
       dock_mac_address_(dock_mac_address),
       manufacture_date_(manufacture_date),
@@ -1402,6 +1404,9 @@ void CloudPolicyClient::CreateDeviceRegisterRequest(
     request->set_machine_model(machine_model_);
   if (!brand_code_.empty())
     request->set_brand_code(brand_code_);
+  if (!attested_device_id_.empty())
+    request->mutable_device_register_identification()->set_attested_device_id(
+        attested_device_id_);
   if (!ethernet_mac_address_.empty())
     request->set_ethernet_mac_address(ethernet_mac_address_);
   if (!dock_mac_address_.empty())

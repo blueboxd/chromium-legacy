@@ -5003,13 +5003,6 @@ void RenderFrameHostImpl::HandleAXLocationChanges(
   }
 }
 
-void RenderFrameHostImpl::RegisterMojoInterfaces() {
-  file_system_manager_.reset(new FileSystemManagerImpl(
-      GetProcess()->GetID(),
-      GetProcess()->GetStoragePartition()->GetFileSystemContext(),
-      ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-}
-
 media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
 RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback() {
   return delegate_->GetRecordAggregateWatchTimeCallback();
@@ -6138,7 +6131,11 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       },
       base::Unretained(this)));
 
-  RegisterMojoInterfaces();
+  file_system_manager_.reset(new FileSystemManagerImpl(
+      GetProcess()->GetID(),
+      GetProcess()->GetStoragePartition()->GetFileSystemContext(),
+      ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
+
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
   GetProcess()->BindReceiver(frame_factory.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::FrameFactory>(std::move(frame_factory))
@@ -7312,13 +7309,9 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
 std::unique_ptr<NavigationRequest>
 RenderFrameHostImpl::CreateNavigationRequestForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_same_document,
-    NavigationEntryImpl* entry_for_request) {
-  bool is_renderer_initiated =
-      entry_for_request ? entry_for_request->is_renderer_initiated() : true;
-  return NavigationRequest::CreateForCommit(
-      frame_tree_node_, this, entry_for_request, params, is_renderer_initiated,
-      is_same_document);
+    bool is_same_document) {
+  return NavigationRequest::CreateForCommit(frame_tree_node_, this, params,
+                                            is_same_document);
 }
 
 bool RenderFrameHostImpl::NavigationRequestWasIntendedForPendingEntry(
@@ -7724,8 +7717,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // one in order to properly issue DidFinishNavigation calls to
   // WebContentsObservers.
   if (!navigation_request) {
-    navigation_request = CreateNavigationRequestForCommit(
-        *params, is_same_document_navigation, nullptr);
+    navigation_request =
+        CreateNavigationRequestForCommit(*params, is_same_document_navigation);
   }
 
   DCHECK(navigation_request);

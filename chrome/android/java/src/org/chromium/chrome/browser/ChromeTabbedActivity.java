@@ -135,6 +135,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.EngagementTimeUtil;
 import org.chromium.chrome.browser.tasks.JourneyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
@@ -762,7 +763,9 @@ public class ChromeTabbedActivity
 
             mLayoutManager.setToolbarManager(getToolbarManager());
 
-            mOverviewModeController.hideOverview(false);
+            if (!TabUiFeatureUtilities.supportInstantStart(isTablet())) {
+                assert !mOverviewModeController.overviewVisible();
+            }
         }
     }
 
@@ -970,9 +973,14 @@ public class ChromeTabbedActivity
         // Don't call setInitialOverviewState if we're waiting for the tab's creation or we risk
         // showing a glimpse of the tab selector during start up.
         if (!mPendingInitialTabCreation
-                && !TabUiFeatureUtilities.supportStartSurfaceInInstantStart(
-                        isTablet(), mInactivityTracker.getLastBackgroundedTimeMs())) {
+                && !(TabUiFeatureUtilities.supportInstantStart(isTablet())
+                        && shouldShowTabSwitcherOnStart())) {
             setInitialOverviewState();
+        }
+
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            ConditionalTabStripUtils.updateFeatureExpiration(
+                    mInactivityTracker.getLastBackgroundedTimeMs());
         }
 
         resetSavedInstanceState();
@@ -1075,7 +1083,8 @@ public class ChromeTabbedActivity
             String intentUrl = IntentHandler.getUrlFromIntent(getIntent());
             if (NewTabPage.isNTPUrl(intentUrl)
                     || (isMainIntentFromLauncher(getIntent())
-                            && (getTabModelSelector().getTotalTabCount() <= 0))) {
+                            && ReturnToChromeExperimentsUtil.getTotalTabCount(getTabModelSelector())
+                                    <= 0)) {
                 return true;
             }
         }
@@ -1228,8 +1237,8 @@ public class ChromeTabbedActivity
         // If we didn't call setInitialOverviewState() in startWithNative() because
         // mPendingInitialTabCreation was true then do so now.
         if (hasStartWithNativeBeenCalled()
-                && !TabUiFeatureUtilities.supportStartSurfaceInInstantStart(
-                        isTablet(), mInactivityTracker.getLastBackgroundedTimeMs())) {
+                && !(TabUiFeatureUtilities.supportInstantStart(isTablet())
+                        && shouldShowTabSwitcherOnStart())) {
             setInitialOverviewState();
         }
     }
@@ -1584,6 +1593,7 @@ public class ChromeTabbedActivity
      * an LayoutManagerChrome object, add overview mode observer and so on.
      */
     private void prepareToShowStartPagePreNative() {
+        assert TabUiFeatureUtilities.supportInstantStart(isTablet());
         try (TraceEvent e =
                         TraceEvent.scoped("ChromeTabbedActivity.prepareToShowStartPagePreNative")) {
             setupCompositorContentPreNativeForPhone();
@@ -1591,8 +1601,8 @@ public class ChromeTabbedActivity
             mLayoutManager.setTabModelSelector(mTabModelSelectorImpl);
             addOverviewModeObserverPreNative();
 
-            if (TabUiFeatureUtilities.supportStartSurfaceInInstantStart(
-                        isTablet(), mInactivityTracker.getLastBackgroundedTimeMs())) {
+            if (shouldShowTabSwitcherOnStart()) {
+                mIsAccessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
                 setInitialOverviewState();
             }
         }

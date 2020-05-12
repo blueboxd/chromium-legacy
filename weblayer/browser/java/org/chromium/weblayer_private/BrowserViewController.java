@@ -251,6 +251,14 @@ public final class BrowserViewController
     }
 
     /**
+     * Causes the browser controls to be fully shown.
+     */
+    public void showControls() {
+        mTopControlsContainerView.onOffsetsChanged(0, mTopControlsContainerView.getHeight());
+        mBottomControlsContainerView.onOffsetsChanged(0, 0);
+    }
+
+    /**
      * @return true if a tab modal was showing and has been dismissed.
      */
     public boolean dismissTabModalOverlay() {

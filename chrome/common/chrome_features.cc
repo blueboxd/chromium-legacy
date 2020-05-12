@@ -234,6 +234,12 @@ const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
 const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Makes user navigations via links within web app scopes get captured tab
+// tabbed app windows.
+// TODO(crbug.com/897314): Enable this feature.
+const base::Feature kDesktopPWAsTabStripLinkCapturing{
+    "DesktopPWAsTabStripLinkCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Desktop PWA installs to have a menu of shortcuts associated with
 // the app icon in the taskbar on Windows, or the dock on macOS or Linux.
 const base::Feature kDesktopPWAsAppIconShortcutsMenu{
@@ -392,15 +398,14 @@ const base::Feature kHappinessTrackingSurveysForDesktopMigration{
 #endif  // !defined(OS_ANDROID)
 
 // Hide CorsLegacyModeEnabled enterprise policy support. This feature and
-// the enterprise policy supporting code will be removed soon around m83.
+// the enterprise policy supporting code will be removed at m84.
 const base::Feature kHideCorsLegacyModeEnabledPolicySupport{
-    "HideCorsLegacyModeEnabledPolicySupport",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "HideCorsLegacyModeEnabledPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Hide CorsMitigationList enterprise policy support. This feature and
-// the enterprise policy supporting code will be removed soon around m83.
+// the enterprise policy supporting code will be removed at m84.
 const base::Feature kHideCorsMitigationListPolicySupport{
-    "HideCorsMitigationListPolicySupport", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HideCorsMitigationListPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with

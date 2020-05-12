@@ -10,7 +10,11 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.DisplayManager.DisplayListener;
 import android.os.Build;
+import android.view.Display;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -21,16 +25,20 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.RecreateObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
+import org.chromium.ui.display.DisplayAndroidManager;
 
 import java.util.List;
 
@@ -41,9 +49,9 @@ import java.util.List;
  */
 @TargetApi(Build.VERSION_CODES.N)
 public class MultiInstanceManager
-        implements PauseResumeWithNativeObserver, NativeInitObserver,
-                   MultiWindowModeStateDispatcher.MultiWindowModeObserver, Destroyable,
-                   MenuOrKeyboardActionController.MenuOrKeyboardActionHandler {
+        implements PauseResumeWithNativeObserver, RecreateObserver, ConfigurationChangedObserver,
+                   NativeInitObserver, MultiWindowModeStateDispatcher.MultiWindowModeObserver,
+                   Destroyable, MenuOrKeyboardActionController.MenuOrKeyboardActionHandler {
     /**
      * Should be called when multi-instance mode is started.
      */
@@ -55,6 +63,9 @@ public class MultiInstanceManager
     /** The task id of the activity that tabs were merged into. */
     private static int sMergedInstanceTaskId;
 
+    /** The class of the activity will do merge on start up. */
+    private static Class sActivityTypePendingMergeOnStartup;
+
     private Boolean mMergeTabsOnResume;
     /**
      * Used to observe state changes to a different ChromeTabbedActivity instances to determine
@@ -62,7 +73,7 @@ public class MultiInstanceManager
      */
     private ApplicationStatus.ActivityStateListener mOtherCTAStateObserver;
 
-    private final Context mContext;
+    private final Activity mActivity;
     private final ObservableSupplier<TabModelSelector> mTabModelSelectorSupplier;
     private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -70,10 +81,14 @@ public class MultiInstanceManager
 
     private int mActivityTaskId;
     private boolean mNativeInitialized;
+    private DisplayManager.DisplayListener mDisplayListener;
+    private boolean mShouldMergeOnConfigurationChange;
+    private boolean mIsRecreating;
+    private int mDisplayId;
 
     /**
      * Create a new {@link MultiInstanceManager}.
-     * @param context The activity context.
+     * @param activity The activity.
      * @param tabModelSelectorSupplier A supplier for the {@link TabModelSelector} for the
      *         associated activity.
      * @param multiWindowModeStateDispatcher The {@link MultiWindowModeStateDispatcher} for the
@@ -83,12 +98,12 @@ public class MultiInstanceManager
      * @param menuOrKeyboardActionController The {@link MenuOrKeyboardActionController} for the
      *         associated activity.
      */
-    public MultiInstanceManager(Context context,
+    public MultiInstanceManager(Activity activity,
             ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
             MenuOrKeyboardActionController menuOrKeyboardActionController) {
-        mContext = context;
+        mActivity = activity;
         mTabModelSelectorSupplier = tabModelSelectorSupplier;
 
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
@@ -105,6 +120,31 @@ public class MultiInstanceManager
     public void destroy() {
         mMultiWindowModeStateDispatcher.removeObserver(this);
         mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(this);
+        DisplayManager displayManager =
+                (DisplayManager) mActivity.getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager != null && mDisplayListener != null) {
+            displayManager.unregisterDisplayListener(mDisplayListener);
+        }
+    }
+
+    /**
+     * Called during activity startup to check whether the activity is recreated because
+     * the secondary display is removed.
+     *
+     * @return True if the activity is recreated after a display is removed. Should consider
+     *         merging tabs.
+     */
+    public static boolean shouldMergeOnStartup(Activity activity) {
+        return sActivityTypePendingMergeOnStartup != null
+                && sActivityTypePendingMergeOnStartup.equals(activity.getClass());
+    }
+
+    /**
+     * Called after {@link #shouldMergeOnStartup(Activity)} to indicate merge has started,
+     * so there is no merge on following recreate.
+     */
+    public static void mergedOnStartup() {
+        sActivityTypePendingMergeOnStartup = null;
     }
 
     /**
@@ -144,6 +184,46 @@ public class MultiInstanceManager
     @Override
     public void onFinishNativeInitialization() {
         mNativeInitialized = true;
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)) return;
+        DisplayManager displayManager =
+                (DisplayManager) mActivity.getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager == null) return;
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(mActivity);
+        mDisplayId = display.getDisplayId();
+        mDisplayListener = new DisplayListener() {
+            @Override
+            public void onDisplayAdded(int displayId) {
+                sActivityTypePendingMergeOnStartup = null;
+            }
+
+            @Override
+            public void onDisplayRemoved(int displayId) {
+                if (displayId == mDisplayId) {
+                    // If activity on removed display is in the foreground, do tab merge.
+                    // Note that activity on removed display may be recreated because of the
+                    // change of the dpi. If it is going to recreate, then CTA will merge on
+                    // start up; otherwise, calling maybeMergeTabs() can merge tabs.
+                    if (mActivityLifecycleDispatcher.getCurrentActivityState()
+                            == ActivityLifecycleDispatcher.ActivityState.RESUMED_WITH_NATIVE) {
+                        // wait to merge until onConfigurationChanged so that we can know whether
+                        // the activity is going to recreate.
+                        mShouldMergeOnConfigurationChange = true;
+                    }
+                } else {
+                    // Otherwise, activity on the remaining display does tab merge.
+                    Activity cta = getOtherResumedCTA();
+                    if (cta == null) {
+                        maybeMergeTabs();
+                    }
+                }
+            }
+
+            @Override
+            public void onDisplayChanged(int displayId) {
+                // TODO(crbug.com/824954): try to merge tabs sharing logic w/ onDisplayRemoved
+            }
+        };
+        displayManager.registerDisplayListener(mDisplayListener, null);
     }
 
     @Override
@@ -204,6 +284,26 @@ public class MultiInstanceManager
     }
 
     @Override
+    public void onRecreate() {
+        mIsRecreating = true;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // Prepare for merging tabs: do tab merge now if the activity is not going to recreate;
+        // otherwise, do it on start up.
+        if (mShouldMergeOnConfigurationChange) {
+            if (mIsRecreating) {
+                sActivityTypePendingMergeOnStartup = mActivity.getClass();
+            } else {
+                sActivityTypePendingMergeOnStartup = null;
+                maybeMergeTabs();
+            }
+            mShouldMergeOnConfigurationChange = false;
+        }
+    }
+
+    @Override
     public boolean handleMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == org.chromium.chrome.R.id.move_to_other_window_menu_id) {
             Tab currentTab = mTabModelSelectorSupplier.get() == null
@@ -243,7 +343,7 @@ public class MultiInstanceManager
         // 1. Find the other activity's task if it's still running so that it can be removed from
         //    Android recents.
         ActivityManager activityManager =
-                (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+                (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> appTasks = activityManager.getAppTasks();
         ActivityManager.AppTask otherActivityTask = null;
         for (ActivityManager.AppTask task : appTasks) {
@@ -273,7 +373,7 @@ public class MultiInstanceManager
     }
 
     /**
-     * Merges tabs from a second ChromeTabbedActivity instance if necesssary and calls
+     * Merges tabs from a second ChromeTabbedActivity instance if necessary and calls
      * finishAndRemoveTask() on the other activity.
      */
     @VisibleForTesting
@@ -296,7 +396,7 @@ public class MultiInstanceManager
         }
 
         ActivityManager manager =
-                (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
+                (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask task : manager.getAppTasks()) {
             ActivityManager.RecentTaskInfo info = AndroidTaskUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
@@ -310,7 +410,7 @@ public class MultiInstanceManager
         if (intent == null) return;
 
         onMultiInstanceModeStarted();
-        ReparentingTask.from(tab).begin(mContext, intent,
+        ReparentingTask.from(tab).begin(mActivity, intent,
                 mMultiWindowModeStateDispatcher.getOpenInOtherWindowActivityOptions(), null);
     }
 
@@ -322,5 +422,15 @@ public class MultiInstanceManager
             return false;
         }
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
+    }
+
+    @VisibleForTesting
+    public void setCurrentDisplayIdForTesting(int displayId) {
+        mDisplayId = displayId;
+    }
+
+    @VisibleForTesting
+    public DisplayManager.DisplayListener getDisplayListenerForTesting() {
+        return mDisplayListener;
     }
 }

@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
@@ -25,12 +26,14 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
@@ -43,6 +46,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -266,6 +270,33 @@ public class TabModelMergingTest {
         }
     }
 
+    /**
+     * Wait until the activity is on an expected or not expected state.
+     * @param state The expected state or not one.
+     * @param activity The activity whose state will be observed.
+     * @param expected If true, wait until activity is on the {@code state}; otherwise, wait util
+     *         activity is on any state other than {@code state}.
+     * @throws TimeoutException
+     */
+    private void waitForActivityStateChange(
+            @ActivityState int state, Activity activity, boolean expected) throws TimeoutException {
+        // do nothing if already in expected state.
+        CallbackHelper helper = new CallbackHelper();
+        ApplicationStatus.ActivityStateListener listener = (act, newState) -> {
+            if (expected == (state == newState)) helper.notifyCalled();
+        };
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            int currentState = ApplicationStatus.getStateForActivity(activity);
+            if (expected == (state == currentState)) {
+                helper.notifyCalled();
+                return;
+            }
+            ApplicationStatus.registerStateListenerForActivity(listener, activity);
+        });
+        helper.waitForFirst();
+        ApplicationStatus.unregisterActivityStateListener(listener);
+    }
+
     @Test
     @LargeTest
     @Feature({"TabPersistentStore", "MultiWindow"})
@@ -481,5 +512,50 @@ public class TabModelMergingTest {
 
         String selectedUrl = mActivity1.getTabModelSelector().getCurrentTab().getUrlString();
         mergeTabsAndAssert(mActivity1, mMergeIntoActivity1ExpectedTabs, 9, selectedUrl);
+    }
+
+    @Test
+    @LargeTest
+    @EnableFeatures(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.O)
+    public void testMergeOnMultiDisplay_CTA_Resumed_CTA2_Not_Resumed() throws TimeoutException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity1.saveState();
+            mActivity2.saveState();
+        });
+        MultiInstanceManager m1 = mActivity1.getMultiInstanceMangerForTesting();
+        MultiInstanceManager m2 = mActivity2.getMultiInstanceMangerForTesting();
+
+        // Ensure Activity 1 is resumed on the front.
+        Intent intent = new Intent(mActivity1, mActivity1.getClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        mActivity1.startActivity(intent);
+        waitForActivityStateChange(ActivityState.RESUMED, mActivity2, false);
+        waitForActivityStateChange(ActivityState.RESUMED, mActivity1, true);
+
+        m1.setCurrentDisplayIdForTesting(0);
+        m2.setCurrentDisplayIdForTesting(1);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            m1.getDisplayListenerForTesting().onDisplayRemoved(1);
+            m2.getDisplayListenerForTesting().onDisplayRemoved(1);
+        });
+
+        CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity1.getTabModelSelector().getTotalTabCount() == 7;
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria("CTA2 should be destroyed"
+                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity2State == ActivityState.DESTROYED
+                        && mActivity1State != ActivityState.DESTROYED;
+            }
+        });
+        mActivity1.finishAndRemoveTask();
+        mActivity2.finishAndRemoveTask();
     }
 }

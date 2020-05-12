@@ -418,7 +418,6 @@ TEST_P(LayerTreeHostReadbackPixelTest, MultipleReadbacksOnLayer) {
 // readback.
 ReadbackTestConfig const kTestConfigs[] = {
     ReadbackTestConfig{LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP},
-#if !defined(GL_NOT_ON_PLATFORM)
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
     // TODO(crbug.com/1046788): The skia readback path doesn't support
@@ -427,7 +426,6 @@ ReadbackTestConfig const kTestConfigs[] = {
     //
     // ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
-#endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS)
     ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_VK, READBACK_BITMAP},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
@@ -441,7 +439,6 @@ INSTANTIATE_TEST_SUITE_P(All,
 // MSan are used.
 ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
     ReadbackTestConfig{LayerTreeTest::RENDERER_SOFTWARE, READBACK_BITMAP},
-#if !defined(GL_NOT_ON_PLATFORM)
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_GL, READBACK_BITMAP},
     // TODO(crbug.com/1046788): The skia readback path doesn't support
@@ -450,7 +447,6 @@ ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
     //
     // ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_TEXTURE},
     ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_GL, READBACK_BITMAP},
-#endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS) && !defined(THREAD_SANITIZER) && \
     !defined(MEMORY_SANITIZER)
     ReadbackTestConfig{LayerTreeTest::RENDERER_SKIA_VK, READBACK_BITMAP},

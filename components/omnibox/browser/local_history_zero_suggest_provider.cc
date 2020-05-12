@@ -156,7 +156,7 @@ LocalHistoryZeroSuggestProvider::LocalHistoryZeroSuggestProvider(
     AutocompleteProviderListener* listener)
     : AutocompleteProvider(
           AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY),
-      max_matches_(AutocompleteResult::GetMaxMatches()),
+      max_matches_(AutocompleteResult::GetMaxMatches(true)),
       client_(client),
       listener_(listener) {}
 

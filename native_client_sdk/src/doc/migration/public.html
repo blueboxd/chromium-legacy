@@ -540,7 +540,7 @@
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">PaintImageData </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.putImageData </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.putImageData </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -548,15 +548,15 @@
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">Scroll </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.scrollIntoView, Canvas.drawImage </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - Can be implemented via canvas-to-canvas drawImage() An intermediate canvas can be created, then two drawImage() calls can be done.</td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.scrollIntoView, CanvasRenderingContext2D.drawImage </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - Can be implemented by drawing the canvas onto itself, with an offset, using drawImage, and then filling in the rest.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">ReplaceContents </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.drawImage </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.drawImage </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -565,14 +565,22 @@
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
     <td style="font-size: 11px; padding: 5px;">No direct equivalent </td>
-    <td style="font-size: 11px; padding: 5px;">Gap (partial) - There is always an implicit flush at the end of draw code; this is unlikely to change. </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) -
+    There is always an implicit flush at the end of draw code; this is unlikely
+    to change. However, the combination of 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-offscreencanvas-interface">
+      OffscreenCanvas
+    </a> and 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-imagebitmap-rendering-context">
+      ImageBitmapRenderingContext 
+    </a>provide similar functionality.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetScale </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.scale </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.scale </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -580,7 +588,7 @@
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetScale </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.currentTransform </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.currentTransform </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -588,9 +596,9 @@
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetLayerTransform </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.setTransform
-CanvasRenderingContext2d.scale
-CanvasRenderingContext2d.translate </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.setTransform
+CanvasRenderingContext2D.scale
+CanvasRenderingContext2D.translate </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -608,9 +616,9 @@ CanvasRenderingContext2d.translate </td>
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetAttribMaxValue </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP - Canvas.getContext lets you set booleans requesting depth / stencil buffers of certain sizes, but does not have a way to query what's possible (or get anything other than on or off for each); No changes planned to fill this gap.</td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">OpenGL ES 3.0 </td>
+    <td style="font-size: 11px; padding: 5px;">WebGL 2.0 </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - WebGL 2.0 and Emscripten's exposure of OpenGL ES 3.0 support user-defined multisampled framebuffers, in which all of the parameters configurable via PPAPI can be set.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
@@ -658,7 +666,15 @@ CanvasRenderingContext2d.translate </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
     <td style="font-size: 11px; padding: 5px;">No direct equivalent </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - There is always an implicit swap at the end of draw code; this is unlikely to change.</td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) -
+    There is always an implicit flush at the end of draw code; this is unlikely
+    to change. However, the combination of 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-offscreencanvas-interface">
+      OffscreenCanvas
+    </a> and 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-imagebitmap-rendering-context">
+      ImageBitmapRenderingContext
+    </a> provide similar functionality.</td>
   </tr>
 
 </table>

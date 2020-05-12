@@ -34,11 +34,5 @@
       var mappingQueries = ['supports', 'foo', 'body', 'color'];
       testCSSFormatter(css, mappingQueries, next);
     },
-
-    function testViewportRule(next) {
-      var css = '@viewport{zoom:0.75;min-zoom:0.5;max-zoom:0.9;}footer{position:fixed;bottom:0;}';
-      var mappingQueries = ['viewport', 'zoom', '0.5', '0.9'];
-      testCSSFormatter(css, mappingQueries, next);
-    },
   ]);
 })();

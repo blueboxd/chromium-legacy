@@ -264,6 +264,38 @@ TEST_P(SafeBrowsingTabHelperTest, RepeatedSafeSubFrameResponses) {
   EXPECT_TRUE(sub_frame_response_decision_3.ShouldAllowNavigation());
 }
 
+// Tests that a subframe navigation to a previously-allowed safe URL is still
+// allowed after a same-document navigation.
+TEST_P(SafeBrowsingTabHelperTest,
+       RepeatedSafeSubFrameResponseAfterSafeDocumentNavigation) {
+  GURL url("http://chromium_sub_frame.test");
+  SimulateSafeMainFrameLoad();
+
+  // Execute ShouldAllowRequest() for a safe subframe navigation.
+  auto sub_frame_request_decision =
+      ShouldAllowRequestUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_request_decision.ShouldAllowNavigation());
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  // Verify that the sub frame navigation is allowed.
+  web::WebStatePolicyDecider::PolicyDecision sub_frame_response_decision =
+      ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(sub_frame_response_decision.ShouldAllowNavigation());
+
+  // Simulate a same-document navigation.
+  web::FakeNavigationContext context;
+  context.SetHasCommitted(true);
+  context.SetIsSameDocument(true);
+  web_state_.OnNavigationFinished(&context);
+
+  // Verify that the sub frame navigation is still allowed.
+  web::WebStatePolicyDecider::PolicyDecision decision_after_navigation =
+      ShouldAllowResponseUrl(url, /*for_main_frame=*/false);
+  EXPECT_TRUE(decision_after_navigation.ShouldAllowNavigation());
+}
+
 // Tests the case of a single sub frame navigation request and response, for a
 // URL that is unsafe.
 TEST_P(SafeBrowsingTabHelperTest, UnsafeSubFrameRequestAndResponse) {

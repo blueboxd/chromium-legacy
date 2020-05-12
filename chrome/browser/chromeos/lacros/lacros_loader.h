@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LACROS_LACROS_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_LACROS_LACROS_LOADER_H_
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -24,6 +25,13 @@ class LacrosLoader {
 
   void Init();
 
+  // Returns true if the binary is ready to launch.
+  bool IsReady() const;
+
+  // Sets a callback to be called when the binary is ready. May never be called
+  // (for example, if there is a download error).
+  void SetReadyCallback(base::OnceClosure ready_callback);
+
   // Starts the lacros-chrome binary.
   void Start();
 
@@ -39,6 +47,9 @@ class LacrosLoader {
 
   // Path to the lacros-chrome disk image directory.
   base::FilePath lacros_path_;
+
+  // Called when the binary is ready.
+  base::OnceClosure ready_callback_;
 
   // Process handle for the lacros-chrome process.
   base::Process lacros_process_;

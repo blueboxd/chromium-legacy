@@ -8,7 +8,8 @@
 #include <list>
 #include <unordered_map>
 
-#include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
+#include "content/common/content_export.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/input/input_predictor.h"
 #include "third_party/blink/public/platform/input/predictor_factory.h"
 #include "ui/events/blink/blink_features.h"

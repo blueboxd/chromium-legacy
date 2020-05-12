@@ -50,6 +50,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/accessibility/floating_accessibility_controller.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
@@ -425,6 +426,18 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
 
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
+
+  if (Shell::Get()->session_controller()->IsRunningInAppMode()) {
+    // If floating accessibility menu is shown, focus on it instead of the
+    // shelf.
+    FloatingAccessibilityController* floating_menu =
+        Shell::Get()->accessibility_controller()->GetFloatingMenuController();
+    if (floating_menu) {
+      floating_menu->FocusOnMenu();
+    }
+    return;
+  }
+
   // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
   // Focus the home button.
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
@@ -1741,6 +1754,8 @@ void AcceleratorControllerImpl::Init() {
   }
   for (size_t i = 0; i < kActionsAllowedInPinnedModeLength; ++i)
     actions_allowed_in_pinned_mode_.insert(kActionsAllowedInPinnedMode[i]);
+  for (size_t i = 0; i < kActionsAllowedInAppModeLength; ++i)
+    actions_allowed_in_app_mode_.insert(kActionsAllowedInAppMode[i]);
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i)
     actions_needing_window_.insert(kActionsNeedingWindow[i]);
   for (size_t i = 0; i < kActionsKeepingMenuOpenLength; ++i)

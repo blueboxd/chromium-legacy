@@ -155,7 +155,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     } else if (_is_modern) {
       min_sdk_version = 21
     } else {
-      min_sdk_version = 19
+      min_sdk_version = 21
     }
     target_sdk_version = android_sdk_version
 

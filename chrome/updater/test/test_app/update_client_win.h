@@ -7,6 +7,14 @@
 
 #include "chrome/updater/test/test_app/update_client.h"
 
+#include <wrl/client.h>
+
+#include "chrome/updater/server/win/updater_idl.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace updater {
 
 class UpdateClientWin : public UpdateClient {
@@ -24,6 +32,18 @@ class UpdateClientWin : public UpdateClient {
                      UpdateService::Callback callback) override;
   void BeginUpdateCheck(UpdateService::StateChangeCallback state_change,
                         UpdateService::Callback callback) override;
+
+  void RegisterInternal(const std::string& brand_code,
+                        const std::string& tag,
+                        const std::string& version,
+                        UpdateService::Callback callback);
+  void UpdateCheckInternal(UpdateService::StateChangeCallback state_change,
+                           UpdateService::Callback callback);
+
+  // Task runner for update check & register.
+  scoped_refptr<base::SingleThreadTaskRunner> com_task_runner_;
+
+  Microsoft::WRL::ComPtr<IUpdater> updater_;
 };
 
 }  // namespace updater

@@ -33,11 +33,6 @@
 #include "base/strings/char_traits.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
-#include "build/build_config.h"
-
-#if !defined(OS_NACL)
-#include <string_view>
-#endif
 
 namespace base {
 
@@ -346,14 +341,6 @@ template <typename STRING_TYPE> class BasicStringPiece {
                           size_type n = BasicStringPiece::npos) const {
     return internal::substr(*this, pos, n);
   }
-
-#if !defined(OS_NACL)
-  constexpr operator std::basic_string_view<typename STRING_TYPE::value_type,
-                                            typename STRING_TYPE::traits_type>()
-      const {
-    return {ptr_, length_};
-  }
-#endif
 
  protected:
   const value_type* ptr_;

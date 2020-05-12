@@ -74,7 +74,7 @@ struct MatchGURLHash {
 };
 
 // static
-size_t AutocompleteResult::GetMaxMatches() {
+size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
 #if (defined(OS_ANDROID))
   constexpr size_t kDefaultMaxAutocompleteMatches = 5;
 #elif defined(OS_IOS)  // !defined(OS_ANDROID)
@@ -86,6 +86,19 @@ size_t AutocompleteResult::GetMaxMatches() {
                 "kMaxAutocompletePositionValue must be larger than the largest "
                 "possible autocomplete result size.");
 
+  // If we're interested in the zero suggest match limit, and one has been
+  // specified, return it.
+  if (input_from_omnibox_focus) {
+    size_t field_trial_value = base::GetFieldTrialParamByFeatureAsInt(
+        omnibox::kMaxZeroSuggestMatches,
+        OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, 0);
+    DCHECK(kMaxAutocompletePositionValue > field_trial_value);
+    if (field_trial_value > 0)
+      return field_trial_value;
+  }
+
+  //  Otherwise, i.e. if no zero suggest specific limit has been specified or
+  //  the input is not from omnibox focus, return the general max matches limit.
   size_t field_trial_value = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kUIExperimentMaxAutocompleteMatches,
       OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam,
@@ -96,7 +109,7 @@ size_t AutocompleteResult::GetMaxMatches() {
 
 AutocompleteResult::AutocompleteResult() {
   // Reserve space for the max number of matches we'll show.
-  matches_.reserve(GetMaxMatches());
+  matches_.reserve(std::max(GetMaxMatches(), GetMaxMatches(true)));
 }
 
 AutocompleteResult::~AutocompleteResult() {}
@@ -205,7 +218,7 @@ void AutocompleteResult::SortAndCull(
 
   DeduplicateMatches(&matches_);
 
-  // Sort and trim to the most relevant GetMaxMatches() matches.
+  // Sort the matches.
   std::sort(matches_.begin(), matches_.end(), comparing_object);
 
   // Find the best match and rotate it to the front to become the default match.
@@ -236,11 +249,15 @@ void AutocompleteResult::SortAndCull(
     DiscourageTopMatchFromBeingSearchEntity(&matches_);
   }
 
+  // Limit URL matches per OmniboxMaxURLMatches.
   size_t max_url_count = 0;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
       (max_url_count = OmniboxFieldTrial::GetMaxURLMatches()) != 0)
-    LimitNumberOfURLsShown(max_url_count, comparing_object);
+    LimitNumberOfURLsShown(GetMaxMatches(input.from_omnibox_focus()),
+                           max_url_count, comparing_object);
 
+  // Limit total matches per OmniboxUIExperimentMaxAutocompleteMatches &
+  // OmniboxMaxZeroSuggestMatches.
   const size_t num_matches = CalculateNumMatches(input.from_omnibox_focus(),
                                                  matches_, comparing_object);
   matches_.resize(num_matches);
@@ -583,7 +600,7 @@ size_t AutocompleteResult::CalculateNumMatches(
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
-  size_t max_matches_by_policy = GetMaxMatches();
+  size_t max_matches_by_policy = GetMaxMatches(input_from_omnibox_focus);
   size_t num_matches = 0;
   while (num_matches < matches.size() &&
          comparing_object.GetDemotedRelevance(matches[num_matches]) > 0) {
@@ -910,6 +927,7 @@ std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
 }
 
 void AutocompleteResult::LimitNumberOfURLsShown(
+    size_t max_matches,
     size_t max_url_count,
     const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
   size_t search_count = std::count_if(
@@ -920,9 +938,8 @@ void AutocompleteResult::LimitNumberOfURLsShown(
       });
   // Display more than GetMaxURLMatches() if there are no non-URL suggestions
   // to replace them. Avoid signed math.
-  if (GetMaxMatches() > search_count &&
-      GetMaxMatches() - search_count > max_url_count)
-    max_url_count = GetMaxMatches() - search_count;
+  if (max_matches > search_count && max_matches - search_count > max_url_count)
+    max_url_count = max_matches - search_count;
   size_t url_count = 0;
   // Erase URL suggestions past the count of allowed ones, or anything past
   // maximum.

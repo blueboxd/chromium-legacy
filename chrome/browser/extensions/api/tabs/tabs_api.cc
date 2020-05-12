@@ -479,16 +479,13 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
 
     // Second, resolve, validate and convert them to GURLs.
     for (auto i = url_strings.begin(); i != url_strings.end(); ++i) {
-      GURL url = ExtensionTabUtil::ResolvePossiblyRelativeURL(*i, extension());
-      if (!url.is_valid())
-        return RespondNow(Error(tabs_constants::kInvalidUrlError, *i));
-      // Don't let the extension crash the browser or renderers.
-      if (ExtensionTabUtil::IsKillURL(url))
-        return RespondNow(Error(tabs_constants::kNoCrashBrowserError));
+      GURL url;
+      std::string error;
+      if (!ExtensionTabUtil::PrepareURLForNavigation(*i, extension(), &url,
+                                                     &error)) {
+        return RespondNow(Error(std::move(error)));
+      }
       urls.push_back(url);
-
-      // Log if this navigation looks like it is to a devtools URL.
-      ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
     }
   }
 
@@ -1338,23 +1335,11 @@ ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
 bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
                                    int tab_id,
                                    std::string* error) {
-  GURL url =
-      ExtensionTabUtil::ResolvePossiblyRelativeURL(url_string, extension());
-
-  if (!url.is_valid()) {
-    *error = ErrorUtils::FormatErrorMessage(tabs_constants::kInvalidUrlError,
-                                            url_string);
+  GURL url;
+  if (!ExtensionTabUtil::PrepareURLForNavigation(url_string, extension(), &url,
+                                                 error)) {
     return false;
   }
-
-  // Don't let the extension crash the browser or renderers.
-  if (ExtensionTabUtil::IsKillURL(url)) {
-    *error = tabs_constants::kNoCrashBrowserError;
-    return false;
-  }
-
-  // Log if this navigation looks like it is to a devtools URL.
-  ExtensionTabUtil::LogPossibleDevtoolsSchemeNavigation(url);
 
   const bool is_javascript_scheme = url.SchemeIs(url::kJavaScriptScheme);
   UMA_HISTOGRAM_BOOLEAN("Extensions.ApiTabUpdateJavascript",

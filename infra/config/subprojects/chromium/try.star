@@ -394,10 +394,6 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = 'linux_arm',
-)
-
-try_.chromium_linux_builder(
     name = 'linux_chromium_analysis',
 )
 
@@ -581,6 +577,11 @@ try_.chromium_mac_ios_builder(
 
 try_.chromium_mac_ios_builder(
     name = 'ios-simulator-eg',
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios-simulator-multi-window',
+    executable = 'recipe:chromium_trybot',
 )
 
 try_.chromium_mac_ios_builder(

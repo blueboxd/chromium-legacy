@@ -53,6 +53,7 @@ class AppBrowserController : public TabStripModelObserver,
   // Convenience wrapper for checking IsForExperimentalWebAppBrowser() on
   // |browser|'s HostedAppBrowserController if it exists.
   static bool IsForWebAppBrowser(const Browser* browser);
+  static bool IsForWebAppBrowser(const Browser* browser, const AppId& app_id);
 
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);

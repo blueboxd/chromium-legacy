@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
-#include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::mojom::StorageType;

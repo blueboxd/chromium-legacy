@@ -208,7 +208,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetFloatingMenuPosition(FloatingMenuPosition position);
   FloatingMenuPosition GetFloatingMenuPosition();
-  FloatingAccessibilityController* GetFloatingMenuControllerForTesting();
+  FloatingAccessibilityController* GetFloatingMenuController();
 
   // Update the autoclick menu bounds if necessary. This may need to happen when
   // the display work area changes, or if system ui regions change (like the

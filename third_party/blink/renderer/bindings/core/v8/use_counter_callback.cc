@@ -158,6 +158,9 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kWasmThreadOpcodes:
       blink_feature = WebFeature::kV8WasmThreadOpcodes;
       break;
+    case v8::Isolate::kWasmSimdOpcodes:
+      blink_feature = WebFeature::kV8WasmSimdOpcodes;
+      break;
     case v8::Isolate::kAtomicsNotify:
       blink_feature = WebFeature::kV8AtomicsNotify;
       break;

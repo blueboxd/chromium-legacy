@@ -41,6 +41,9 @@ class ASH_EXPORT FloatingAccessibilityController
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
 
+  // Focuses on the first element in the floating menu.
+  void FocusOnMenu();
+
  private:
   friend class FloatingAccessibilityControllerTest;
   // FloatingAccessibilityView::Delegate:
@@ -51,6 +54,7 @@ class ASH_EXPORT FloatingAccessibilityController
   views::Widget* GetBubbleWidget() override;
   // TrayBubbleView::Delegate:
   void BubbleViewDestroyed() override;
+  base::string16 GetAccessibleNameForBubble() override;
   // LocaleChangeObserver:
   void OnLocaleChanged() override;
 

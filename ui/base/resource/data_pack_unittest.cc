@@ -36,8 +36,8 @@ TEST(DataPackTest, LoadFromPath) {
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
-            static_cast<int>(kSamplePakSizeV4));
+  ASSERT_TRUE(base::WriteFile(
+      data_path, base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4)));
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
@@ -72,8 +72,7 @@ TEST(DataPackTest, LoadFromPathCompressed) {
   std::string compressed;
   ASSERT_TRUE(compression::GzipCompress(
       base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4), &compressed));
-  ASSERT_EQ(base::WriteFile(data_path, compressed.c_str(), compressed.length()),
-            static_cast<int>(compressed.length()));
+  ASSERT_TRUE(base::WriteFile(data_path, compressed));
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
@@ -105,8 +104,8 @@ TEST(DataPackTest, LoadFromFile) {
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
-            static_cast<int>(kSamplePakSizeV4));
+  ASSERT_TRUE(base::WriteFile(
+      data_path, base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4)));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
@@ -142,9 +141,8 @@ TEST(DataPackTest, LoadFromFileRegion) {
 
   // Construct a file which has a non page-aligned zero-filled header followed
   // by the actual pak file content.
-  const char kPadding[5678] = {0};
-  ASSERT_EQ(static_cast<int>(sizeof(kPadding)),
-            base::WriteFile(data_path, kPadding, sizeof(kPadding)));
+  const uint8_t kPadding[5678] = {0};
+  ASSERT_TRUE(base::WriteFile(data_path, kPadding));
   ASSERT_TRUE(
       base::AppendToFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4));
 
@@ -344,8 +342,8 @@ TEST(DataPackTest, ModifiedWhileUsed) {
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV4, kSamplePakSizeV4),
-            static_cast<int>(kSamplePakSizeV4));
+  ASSERT_TRUE(base::WriteFile(
+      data_path, base::StringPiece(kSamplePakContentsV4, kSamplePakSizeV4)));
 
   base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file.IsValid());
@@ -358,9 +356,9 @@ TEST(DataPackTest, ModifiedWhileUsed) {
   ASSERT_TRUE(pack.HasResource(10));
   ASSERT_TRUE(pack.GetStringPiece(10, &data));
 
-  ASSERT_EQ(base::WriteFile(data_path, kSampleCorruptPakContents,
-                            kSampleCorruptPakSize),
-            static_cast<int>(kSampleCorruptPakSize));
+  ASSERT_TRUE(base::WriteFile(
+      data_path,
+      base::StringPiece(kSampleCorruptPakContents, kSampleCorruptPakSize)));
 
   // Reading asset #10 should now fail as it extends past the end of the file.
   ASSERT_TRUE(pack.HasResource(10));

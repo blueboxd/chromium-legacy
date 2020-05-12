@@ -743,6 +743,22 @@ bool SupportsOrientation(const ax::mojom::Role role) {
   }
 }
 
+bool SupportsSelected(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kCell:
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kRow:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kTab:
+    case ax::mojom::Role::kTreeItem:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool SupportsToggle(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kCheckBox:

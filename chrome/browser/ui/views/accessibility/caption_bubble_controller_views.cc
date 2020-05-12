@@ -56,12 +56,20 @@ void CaptionBubbleControllerViews::OnTranscription(
   if (!caption_bubble_)
     return;
 
-  caption_texts_[web_contents].partial_text =
-      transcription_result->transcription;
+  std::string& partial_text = caption_texts_[web_contents].partial_text;
+  std::string& final_text = caption_texts_[web_contents].final_text;
+  partial_text = transcription_result->transcription;
   SetCaptionBubbleText();
   if (transcription_result->is_final) {
-    caption_texts_[web_contents].final_text +=
-        caption_texts_[web_contents].partial_text;
+    // If the first character of partial text isn't a space, add a space before
+    // appending it to final text.
+    // TODO(crbug.com/1055150): This feature is launching for English first.
+    // Make sure spacing is correct for all languages.
+    final_text += partial_text;
+    if (partial_text.size() > 0 &&
+        partial_text.compare(partial_text.size() - 1, 1, " ") != 0) {
+      final_text += " ";
+    }
   }
   // TODO(1055150): Truncate final_text_ when it gets very long.
 }

@@ -472,9 +472,6 @@ extern const char kKeywordScoreForSufficientlyCompleteMatchRule[];
 extern const char kHQPAllowDupMatchesForScoringRule[];
 extern const char kEmphasizeTitlesRule[];
 
-// Parameter name used by the Omnibox match capping experiment.
-extern const char kOmniboxMaxURLMatchesParam[];
-
 // Parameter names used by the HUP new scoring experiments.
 extern const char kHUPNewScoringTypedCountRelevanceCapParam[];
 extern const char kHUPNewScoringTypedCountHalfLifeTimeParam[];
@@ -494,9 +491,11 @@ extern const char kHQPExperimentalScoringTopicalityThresholdParam[];
 extern const char kMaxNumHQPUrlsIndexedAtStartupOnLowEndDevicesParam[];
 extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 
-// Parameter names used by UI experiments.
-extern const char kUIMaxAutocompleteMatchesParam[];
+// Parameter names used by num suggestion experiments.
+extern const char kMaxZeroSuggestMatchesParam[];
+extern const char kOmniboxMaxURLMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
+extern const char kUIMaxAutocompleteMatchesParam[];
 
 // Parameter names used by on device head provider.
 // These four parameters are shared by both non-incognito and incognito.

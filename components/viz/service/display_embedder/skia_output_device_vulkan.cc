@@ -56,8 +56,8 @@ SkiaOutputDeviceVulkan::~SkiaOutputDeviceVulkan() {
   if (!vulkan_surface_)
     return;
 
-    vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
-    vulkan_surface_->Destroy();
+  vkQueueWaitIdle(context_provider_->GetDeviceQueue()->GetVulkanQueue());
+  vulkan_surface_->Destroy();
 }
 
 #if defined(OS_WIN)

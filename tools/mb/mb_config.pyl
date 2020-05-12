@@ -258,6 +258,7 @@
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
       'ios-simulator-cronet': 'ios_cronet',
+      'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window',
       'ios-webkit-tot': 'ios_simulator_debug_static_rbe_bot',
       'linux-annotator-rel': 'release_bot',
       'linux-autofill-captured-sites-rel': 'release_bot',
@@ -407,6 +408,8 @@
       'Android FYI 64 dEQP Vk Release (Pixel 2)': 'angle_deqp_android_vulkan_ndk_release_trybot_arm64',
       'Android FYI SkiaRenderer GL (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Android FYI SkiaRenderer Vulkan (Pixel 2)': 'gpu_tests_android_release_trybot',
+      'ChromeOS FYI Release (amd64-generic)': 'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off',
+      'ChromeOS FYI Release (kevin)': 'gpu_fyi_tests_chromeos_kevin_release_trybot_dcheck_off',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Linux Ozone Builder': 'angle_ozone_linux_system_gbm_libdrm_release_trybot',
       'GPU FYI Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
@@ -776,6 +779,8 @@
       'chromeos-arm-generic-rel': 'chromeos_arm-generic_dcheck_always_on',
       'chromeos-kevin-compile-rel': 'chromeos_kevin',
       'chromeos-kevin-rel': 'chromeos_kevin',
+      'gpu-fyi-try-chromeos-amd64-generic': 'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off',
+      'gpu-fyi-try-chromeos-kevin': 'gpu_fyi_tests_chromeos_kevin_release_trybot_dcheck_off',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
@@ -836,7 +841,6 @@
       'linux-viz-rel': 'release_trybot',
       'linux-wpt-fyi-rel': 'release_trybot',
       'linux-webkit-msan-rel': 'msan_release_bot',
-      'linux_arm': 'release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
@@ -895,6 +899,7 @@
       'ios-simulator-cronet': 'ios_cronet',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
+      'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.10': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.12_rel_ng': 'gpu_tests_release_trybot_deterministic_mac',
@@ -1401,19 +1406,19 @@
     ],
 
     'chromeos_amd64-generic': [
-      'chromeos_device', 'amd64-generic',
+      'chromeos_amd64-generic',
     ],
 
     'chromeos_amd64-generic_asan': [
-      'chromeos_device', 'amd64-generic', 'asan',
+      'chromeos_amd64-generic', 'asan',
     ],
 
     'chromeos_amd64-generic_cfi_thin_lto': [
-      'chromeos_device', 'amd64-generic', 'cfi_full', 'thin_lto',
+      'chromeos_amd64-generic', 'cfi_full', 'thin_lto',
     ],
 
     'chromeos_amd64-generic_dcheck_always_on': [
-      'chromeos_device', 'amd64-generic', 'dcheck_always_on',
+      'chromeos_amd64-generic', 'dcheck_always_on',
     ],
 
     'chromeos_amd64-generic_lacros_rel': [
@@ -1421,7 +1426,7 @@
     ],
 
     'chromeos_amd64-generic_dbg': [
-      'chromeos_device', 'amd64-generic', 'debug',
+      'chromeos_amd64-generic', 'debug',
     ],
 
     'chromeos_arm-generic': [
@@ -1468,11 +1473,11 @@
     ],
 
     'chromeos_kevin': [
-      'chromeos_device', 'kevin',
+      'chromeos_kevin'
     ],
 
     'chromeos_kevin_include_unwind_tables_official': [
-      'chromeos_device', 'kevin', 'include_unwind_tables', 'official',
+      'chromeos_kevin', 'include_unwind_tables', 'official',
     ],
 
     'chromeos_msan_release_bot': [
@@ -1665,6 +1670,14 @@
     'gpu_fyi_tests_android_vulkan_ndk_release_trybot_arm64': [
       'gpu_fyi_android_tests', 'vulkan_ndk', 'release_trybot', 'arm64',
       'static_angle',
+    ],
+
+    'gpu_fyi_tests_chromeos_amd64_release_trybot_dcheck_off': [
+      'gpu_fyi_tests', 'chromeos_amd64-generic', 'release_trybot_dcheck_off',
+    ],
+
+    'gpu_fyi_tests_chromeos_kevin_release_trybot_dcheck_off': [
+      'gpu_fyi_tests', 'chromeos_kevin', 'release_trybot_dcheck_off',
     ],
 
     'gpu_fyi_tests_debug_trybot': [
@@ -1871,6 +1884,10 @@
 
     'ios_simulator_debug_static_bot': [
         'debug_static_bot', 'ios_simulator',
+    ],
+
+    'ios_simulator_debug_static_bot_multi_window': [
+        'debug_static_bot', 'ios_enable_multi_window', 'ios_simulator',
     ],
 
     'ios_simulator_debug_static_rbe_bot': [
@@ -2118,11 +2135,7 @@
     ],
 
     'release_trybot_dcheck_off': [
-      'release_trybot', 'dcheck_off',
-    ],
-
-    'release_trybot_arm': [
-      'release_trybot', 'arm',
+      'release_trybot_dcheck_off',
     ],
 
     'release_trybot_enable_blink_heap_verification': [
@@ -2343,6 +2356,14 @@
       'mixins': ['goma'],
     },
 
+    'chromeos_amd64-generic': {
+      'mixins': ['chromeos_device', 'amd64-generic',]
+    },
+
+    'chromeos_kevin': {
+      'mixins': ['chromeos_device', 'kevin',]
+    },
+
     'chromeos_lto_link_jobs': {
       'gn_args': 'concurrent_links=2',
     },
@@ -2553,6 +2574,10 @@
       'gn_args': 'ios_enable_code_signing=false'
     },
 
+    'ios_enable_multi_window': {
+      'gn_args': 'ios_enable_multi_window=true'
+    },
+
     'ios_simulator': {
       'mixins': ['ios'],
       'gn_args': 'target_cpu="x64"',
@@ -2689,6 +2714,10 @@
 
     'release_trybot': {
       'mixins': ['release_bot', 'minimal_symbols', 'dcheck_always_on'],
+    },
+
+    'release_trybot_dcheck_off': {
+      'mixins': ['release_trybot', 'dcheck_off',],
     },
 
     'resource_whitelisting': {

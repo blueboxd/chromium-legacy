@@ -812,17 +812,17 @@ class FocuslessSpatialNavigationSimTest : public SimTest {
                            WebInputEvent::GetStaticTimeStampForTests()};
     event.dom_key = dom_key;
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(event));
+        WebCoalescedInputEvent(event, ui::LatencyInfo()));
 
     if (dom_key == ui::DomKey::ENTER) {
       event.SetType(WebInputEvent::Type::kChar);
       WebView().MainFrameWidget()->HandleInputEvent(
-          WebCoalescedInputEvent(event));
+          WebCoalescedInputEvent(event, ui::LatencyInfo()));
     }
 
     event.SetType(WebInputEvent::Type::kKeyUp);
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(event));
+        WebCoalescedInputEvent(event, ui::LatencyInfo()));
   }
 
   ScopedFocuslessSpatialNavigationForTest use_focusless_mode_;

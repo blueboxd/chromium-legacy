@@ -904,7 +904,6 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
       frame->GetTaskRunner(
           blink::TaskType::kInternalNavigationAssociatedUnfreezable));
 
-  scoped_refptr<PendingFrameCreate> create(it->second);
   frame->BindFrame(it->second->TakeFrameReceiver());
   pending_frame_creates_.erase(it);
 }
@@ -920,7 +919,7 @@ void RenderThreadImpl::RegisterPendingFrameCreate(
     mojo::PendingReceiver<mojom::Frame> frame_receiver) {
   std::pair<PendingFrameCreateMap::iterator, bool> result =
       pending_frame_creates_.insert(std::make_pair(
-          routing_id, base::MakeRefCounted<PendingFrameCreate>(
+          routing_id, std::make_unique<PendingFrameCreate>(
                           routing_id, std::move(frame_receiver))));
   CHECK(result.second) << "Inserting a duplicate item.";
 }

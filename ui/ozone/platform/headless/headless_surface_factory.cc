@@ -55,8 +55,7 @@ void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
   DCHECK(!location.empty());
   std::vector<unsigned char> png_data;
   gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, true, &png_data);
-  if (base::WriteFile(location, reinterpret_cast<const char*>(png_data.data()),
-                      png_data.size()) < 0) {
+  if (!base::WriteFile(location, png_data)) {
     static bool logged_once = false;
     LOG_IF(ERROR, !logged_once)
         << "Failed to write frame to file. "

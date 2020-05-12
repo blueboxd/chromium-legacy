@@ -208,12 +208,12 @@ class DatabaseTracker_TestHelper_Test {
 
     EXPECT_TRUE(base::CreateDirectory(tracker->GetOriginDirectory(kOrigin1)));
     EXPECT_TRUE(base::CreateDirectory(tracker->GetOriginDirectory(kOrigin2)));
-    EXPECT_EQ(
-        1, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
-    EXPECT_EQ(2, base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB2),
-                                 "aa", 2));
-    EXPECT_EQ(3, base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB3),
-                                 "aaa", 3));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a"));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa"));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB3), "aaa"));
     tracker->DatabaseModified(kOrigin1, kDB1);
     tracker->DatabaseModified(kOrigin2, kDB2);
     tracker->DatabaseModified(kOrigin2, kDB3);
@@ -236,8 +236,8 @@ class DatabaseTracker_TestHelper_Test {
     // Recreate db1.
     tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0, &database_size);
     EXPECT_TRUE(base::CreateDirectory(tracker->GetOriginDirectory(kOrigin1)));
-    EXPECT_EQ(
-        1, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a"));
     tracker->DatabaseModified(kOrigin1, kDB1);
 
     // Setup file modification times.  db1 and db2 are modified now, db3 three
@@ -321,12 +321,12 @@ class DatabaseTracker_TestHelper_Test {
     // called with the appropriate values.
     EXPECT_TRUE(base::CreateDirectory(tracker->GetOriginDirectory(kOrigin1)));
     EXPECT_TRUE(base::CreateDirectory(tracker->GetOriginDirectory(kOrigin2)));
-    EXPECT_EQ(
-        1, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
-    EXPECT_EQ(2, base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB2),
-                                 "aa", 2));
-    EXPECT_EQ(4, base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB3),
-                                 "aaaa", 4));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB1), "a"));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa"));
+    EXPECT_TRUE(
+        base::WriteFile(tracker->GetFullDBFilePath(kOrigin1, kDB3), "aaaa"));
     tracker->DatabaseModified(kOrigin1, kDB1);
     CheckNotificationReceived(&observer1, kOrigin1, kDB1, 1);
     CheckNotificationReceived(&observer2, kOrigin1, kDB1, 1);

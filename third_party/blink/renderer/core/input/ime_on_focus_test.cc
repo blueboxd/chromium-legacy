@@ -75,7 +75,7 @@ void ImeOnFocusTest::SendGestureTap(WebView* web_view, IntPoint client_point) {
   web_gesture_event.data.tap.height = 10;
 
   web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(web_gesture_event));
+      WebCoalescedInputEvent(web_gesture_event, ui::LatencyInfo()));
   RunPendingTasks();
 }
 

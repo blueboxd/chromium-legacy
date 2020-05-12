@@ -360,7 +360,7 @@ def chromium_mac_ios_builder(
     caches=None,
     executable='recipe:ios/try',
     goma_backend=builders.goma.backend.RBE_PROD,
-    os=builders.os.MAC_ANY,
+    os=builders.os.MAC_10_15,
     properties=None,
     **kwargs):
   if not caches:

@@ -245,14 +245,13 @@ class MainThreadEventQueueTest : public testing::Test,
 
   // MainThreadEventQueueClient overrides.
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
-                        const ui::LatencyInfo& latency,
                         HandledEventCallback callback) override {
     if (!handle_input_event_)
       return false;
     std::unique_ptr<HandledTask> handled_event(new HandledEvent(event));
     handled_tasks_.push_back(std::move(handled_event));
     std::move(callback).Run(blink::mojom::InputEventResultState::kNotConsumed,
-                            latency, nullptr, base::nullopt);
+                            event.latency_info(), nullptr, base::nullopt);
     return true;
   }
   void SetNeedsMainFrame() override { needs_main_frame_ = true; }
@@ -1149,10 +1148,9 @@ class MainThreadEventQueueInitializationTest
   MainThreadEventQueueInitializationTest() = default;
 
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& event,
-                        const ui::LatencyInfo& latency,
                         HandledEventCallback callback) override {
     std::move(callback).Run(blink::mojom::InputEventResultState::kNotConsumed,
-                            latency, nullptr, base::nullopt);
+                            event.latency_info(), nullptr, base::nullopt);
     return true;
   }
 

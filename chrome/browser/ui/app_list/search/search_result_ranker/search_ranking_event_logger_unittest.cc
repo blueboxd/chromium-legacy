@@ -103,7 +103,7 @@ int TestSearchResult::instantiation_count = 0;
 class SearchControllerFake : public SearchController {
  public:
   explicit SearchControllerFake(Profile* profile)
-      : SearchController(nullptr, nullptr, profile) {}
+      : SearchController(nullptr, nullptr, nullptr, profile) {}
 
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override {
     auto it = results_.find(result_id);

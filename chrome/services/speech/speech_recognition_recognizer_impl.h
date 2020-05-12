@@ -5,6 +5,9 @@
 #ifndef CHROME_SERVICES_SPEECH_SPEECH_RECOGNITION_RECOGNIZER_IMPL_H_
 #define CHROME_SERVICES_SPEECH_SPEECH_RECOGNITION_RECOGNIZER_IMPL_H_
 
+#include <memory>
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "build/branding_buildflags.h"
 #include "chrome/services/speech/buildflags.h"
@@ -22,7 +25,8 @@ class SpeechRecognitionRecognizerImpl
     : public media::mojom::SpeechRecognitionRecognizer {
  public:
   using OnRecognitionEventCallback =
-      base::RepeatingCallback<void(const std::string& result)>;
+      base::RepeatingCallback<void(const std::string& result,
+                                   const bool is_final)>;
 
   ~SpeechRecognitionRecognizerImpl() override;
 
@@ -47,7 +51,7 @@ class SpeechRecognitionRecognizerImpl
 
   // Return the transcribed audio from the recognition event back to the caller
   // via the recognition event client.
-  void OnRecognitionEvent(const std::string& result);
+  void OnRecognitionEvent(const std::string& result, const bool is_final);
 
   // The remote endpoint for the mojo pipe used to return transcribed audio from
   // the speech recognition service back to the renderer.

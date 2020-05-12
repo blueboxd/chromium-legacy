@@ -104,8 +104,9 @@ class SafeBrowsingTabHelper
 
     ~PolicyDecider() override;
 
-    // Notifies the policy decider that a new main frame has been committed.
-    void MainFrameWasCommitted();
+    // Notifies the policy decider that a new main frame document has been
+    // loaded.
+    void UpdateForMainFrameDocumentChange();
 
    private:
     // Represents a single Safe Browsing query URL, along with the corresponding

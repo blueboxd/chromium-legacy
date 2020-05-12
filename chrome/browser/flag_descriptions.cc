@@ -611,6 +611,13 @@ const char kDesktopPWAsTabStripDescription[] =
     "Experimental UI for exploring what PWA windows would look like with a tab "
     "strip.";
 
+const char kDesktopPWAsTabStripLinkCapturingName[] =
+    "Desktop PWA tab strip link capturing";
+const char kDesktopPWAsTabStripLinkCapturingDescription[] =
+    "Experimental behaviour for \"Desktop PWA tab strips\" to capture link "
+    "navigations within the app scope and bring them into the app's tabbed "
+    "window.";
+
 const char kDesktopPWAsWithoutExtensionsName[] =
     "Desktop PWAs without Extensions";
 const char kDesktopPWAsWithoutExtensionsDescription[] =
@@ -717,14 +724,6 @@ const char kEnableMediaSessionServiceName[] = "Media Session Service";
 const char kEnableMediaSessionServiceDescription[] =
     "Enables the media session mojo service and internal media session "
     "support.";
-
-const char kEnableNavigationTracingName[] = "Enable navigation tracing";
-const char kEnableNavigationTracingDescription[] =
-    "This is to be used in conjunction with the trace-upload-url flag. "
-    "WARNING: When enabled, Chrome will record performance data for every "
-    "navigation and upload it to the URL specified by the trace-upload-url "
-    "flag. The trace may include personally identifiable information (PII) "
-    "such as the titles and URLs of websites you visit.";
 
 const char kEnableNetworkLoggingToFileName[] = "Enable network logging to file";
 const char kEnableNetworkLoggingToFileDescription[] =
@@ -1226,6 +1225,11 @@ const char kNativeFileSystemAPIDescription[] =
 const char kNearbySharingName[] = "Nearby Sharing";
 const char kNearbySharingDescription[] =
     "Enables Nearby Sharing for sharing content between devices.";
+
+const char kNewCanvas2DAPIName[] = "Experimental canvas 2D API features";
+const char kNewCanvas2DAPIDescription[] =
+    "Enables in-progress features for the canvas 2D API. See "
+    "https://github.com/fserb/canvas2d.";
 
 const char kNewProfilePickerName[] = "New profile picker";
 const char kNewProfilePickerDescription[] =
@@ -2258,6 +2262,10 @@ const char kEnableVulkanDescription[] = "Use vulkan as the graphics backend.";
 const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
+
+const char kAndroidMultipleDisplayName[] = "Multiple Display";
+const char kAndroidMultipleDisplayDescription[] =
+    "When enabled, tabs can be moved to the secondary display.";
 
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";

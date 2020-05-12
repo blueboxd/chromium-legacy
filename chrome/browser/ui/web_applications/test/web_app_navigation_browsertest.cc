@@ -122,9 +122,9 @@ void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
       "link.rel = '%s';"
       // Make a click target that covers the whole viewport.
       "const click_target = document.createElement('textarea');"
-      "click_target.position = 'absolute';"
-      "click_target.top = 0;"
-      "click_target.left = 0;"
+      "click_target.style.position = 'absolute';"
+      "click_target.style.top = 0;"
+      "click_target.style.left = 0;"
       "click_target.style.height = '100vh';"
       "click_target.style.width = '100vw';"
       "link.appendChild(click_target);"

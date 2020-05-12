@@ -207,8 +207,9 @@ class InteractiveRenderWidget : public RenderWidget {
 
   void SendInputEvent(const blink::WebInputEvent& event,
                       HandledEventCallback callback) {
-    HandleInputEvent(blink::WebCoalescedInputEvent(event.Clone(), {}, {}),
-                     ui::LatencyInfo(), std::move(callback));
+    HandleInputEvent(
+        blink::WebCoalescedInputEvent(event.Clone(), {}, {}, ui::LatencyInfo()),
+        std::move(callback));
   }
 
   void set_always_overscroll(bool overscroll) {

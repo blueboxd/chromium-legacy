@@ -631,7 +631,7 @@ def fyi_ios_builder(
     caches = None,
     executable='recipe:ios/unified_builder_tester',
     goma_backend=builders.goma.backend.RBE_PROD,
-    os = builders.os.MAC_ANY,
+    os = builders.os.MAC_10_15,
     **kwargs):
 
   if not caches:
@@ -808,7 +808,7 @@ def mac_ios_builder(*,
       caches = caches,
       goma_backend = goma_backend,
       executable = executable,
-      os = builders.os.MAC_ANY,
+      os = builders.os.MAC_10_15,
       properties = properties,
       **kwargs
   )

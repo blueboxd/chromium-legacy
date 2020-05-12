@@ -291,6 +291,9 @@ interface PageHandler {
   // Logs that |tiles| were displayed / updated at |time|. The first instance of
   // this event is used as a proxy for when the NTP has finished loading.
   OnMostVisitedTilesRendered(array<MostVisitedTile> tiles, double time);
+  // Logs that the One Google Bar was added to the DOM / loaded in an iframe at
+  // |time|.
+  OnOneGoogleBarRendered(double time);
   // Logs that |tile| at position |index| was triggered to navigate to that
   // most visited entry.
   OnMostVisitedTileNavigation(MostVisitedTile tile, uint32 index);

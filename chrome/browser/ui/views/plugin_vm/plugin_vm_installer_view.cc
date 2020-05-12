@@ -156,6 +156,10 @@ PluginVmInstallerView* PluginVmInstallerView::GetActiveViewForTesting() {
   return g_plugin_vm_installer_view;
 }
 
+bool PluginVmInstallerView::ShouldShowCloseButton() const {
+  return true;
+}
+
 bool PluginVmInstallerView::ShouldShowWindowTitle() const {
   return false;
 }

@@ -21,7 +21,7 @@ class SequencedTaskRunner;
 
 namespace updater {
 
-class UpdateClient : public base::RefCounted<UpdateClient> {
+class UpdateClient : public base::RefCountedThreadSafe<UpdateClient> {
  public:
   using StatusCallback =
       base::RepeatingCallback<void(UpdateStatus status,
@@ -42,14 +42,14 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   void UpdateCompleted(UpdateService::Result result);
 
  protected:
-  friend class base::RefCounted<UpdateClient>;
+  friend class base::RefCountedThreadSafe<UpdateClient>;
   virtual ~UpdateClient();
 
-  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
+  scoped_refptr<base::SequencedTaskRunner> task_runner() {
+    return callback_task_runner_;
+  }
 
  private:
-  SEQUENCE_CHECKER(sequence_checker_);
-
   bool CanCheckForUpdate();
   virtual void BeginRegister(const std::string& brand_code,
                              const std::string& tag,

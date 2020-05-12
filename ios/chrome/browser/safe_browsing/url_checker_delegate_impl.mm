@@ -8,6 +8,9 @@
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/prerender/prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/chrome/browser/safe_browsing/unsafe_resource_util.h"
@@ -37,11 +40,10 @@ void HandleBlockingPageRequestOnUIThread(
     return;
   }
 
-  // The allow list is not created for prerender WebStates.  Send the do-not-
-  // proceed signal for unsafe prerender navigations.
-  SafeBrowsingUrlAllowList* allow_list =
-      SafeBrowsingUrlAllowList::FromWebState(web_state);
-  if (!allow_list) {
+  // Send do-not-proceed signal if the WebState is for a prerender tab.
+  if (PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()))
+          ->IsWebStatePrerendered(web_state)) {
     RunUnsafeResourceCallback(resource, /*proceed=*/false,
                               /*showed_interstitial=*/false);
     return;
@@ -52,6 +54,8 @@ void HandleBlockingPageRequestOnUIThread(
   std::set<safe_browsing::SBThreatType> allowed_threats;
   const GURL url = resource.url;
   safe_browsing::SBThreatType threat_type = resource.threat_type;
+  SafeBrowsingUrlAllowList* allow_list =
+      SafeBrowsingUrlAllowList::FromWebState(web_state);
   if (allow_list->AreUnsafeNavigationsAllowed(url, &allowed_threats)) {
     if (allowed_threats.find(threat_type) != allowed_threats.end()) {
       RunUnsafeResourceCallback(resource, /*proceed=*/true,

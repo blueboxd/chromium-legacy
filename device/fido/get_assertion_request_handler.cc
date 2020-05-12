@@ -79,6 +79,8 @@ base::Optional<GetAssertionStatus> ConvertDeviceResponseCode(
   }
 }
 
+// ResponseValid returns whether |response| is permissible for the given
+// |authenticator| and |request|.
 bool ResponseValid(const FidoAuthenticator& authenticator,
                    const CtapGetAssertionRequest& request,
                    const AuthenticatorGetAssertionResponse& response,
@@ -427,6 +429,16 @@ void GetAssertionRequestHandler::HandleResponse(
                base::nullopt, authenticator);
       return;
     }
+    if (!ResponseValid(*authenticator, request_, *response,
+                       android_client_data_ext_)) {
+      FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
+                      << authenticator->GetDisplayName();
+      std::move(completion_callback_)
+          .Run(GetAssertionStatus::kWinNotAllowedError, base::nullopt,
+               authenticator);
+      return;
+    }
+
     DCHECK(responses_.empty());
     responses_.emplace_back(std::move(*response));
     std::move(completion_callback_)

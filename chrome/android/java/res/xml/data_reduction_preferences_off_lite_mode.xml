@@ -16,6 +16,5 @@
 
     <org.chromium.chrome.browser.settings.LearnMorePreference
         android:key="data_reduction_learn_more"
-        app:helpContext="@string/help_context_data_reduction"
         app:allowDividerBelow="false" />
 </PreferenceScreen>

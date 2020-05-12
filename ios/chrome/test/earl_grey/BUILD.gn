@@ -72,6 +72,7 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
     "//ios/chrome/browser/ui/settings/google_services:eg_tests",
     "//ios/chrome/browser/ui/settings/language:eg_tests",
     "//ios/chrome/browser/ui/settings/password:eg_tests",
+    "//ios/chrome/browser/ui/settings/sync:eg_tests",
   ]
 
   executable_args = [

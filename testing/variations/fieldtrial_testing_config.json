@@ -6708,26 +6708,6 @@
             ]
         }
     ],
-    "WebProtectAlpha": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SafeBrowsingContentComplianceEnabled",
-                        "SafeBrowsingMalwareScanEnabled",
-                        "SafeBrowsingRealtimeReporting"
-                    ]
-                }
-            ]
-        }
-    ],
     "WebRTC-Audio-NetEqDecisionLogicSettings": [
         {
             "platforms": [

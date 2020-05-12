@@ -338,6 +338,14 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   base::Optional<LayoutUnit> CalculateQuirkyBodyMarginBlockSum(
       const NGMarginStrut& end_margin_strut);
 
+  // Returns true if |this| is a ruby segment (LayoutNGRubyRun) and the
+  // specified |child| is a ruby annotation box (LayoutNGRubyText).
+  bool IsRubyText(const NGLayoutInputNode& child) const;
+
+  // Layout |ruby_text_child| content, and decide the location of
+  // |ruby_text_child|. This is called only if IsRubyText() returns true.
+  void LayoutRubyText(NGLayoutInputNode* ruby_text_child);
+
   // Border + padding sum, resolved from the node's computed style.
   const NGBoxStrut border_padding_;
 

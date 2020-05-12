@@ -25,10 +25,8 @@ class LayerTreeHostMirrorPixelTest
 };
 
 const LayerTreeTest::RendererType kRendererTypes[] = {
-#if !defined(GL_NOT_ON_PLATFORM)
     LayerTreeTest::RENDERER_GL,
     LayerTreeTest::RENDERER_SKIA_GL,
-#endif  // !defined(GL_NOT_ON_PLATFORM)
     LayerTreeTest::RENDERER_SOFTWARE,
 #if defined(ENABLE_CC_VULKAN_TESTS)
     LayerTreeTest::RENDERER_SKIA_VK,

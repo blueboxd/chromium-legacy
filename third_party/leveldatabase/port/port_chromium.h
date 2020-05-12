@@ -20,9 +20,6 @@
 namespace leveldb {
 namespace port {
 
-// Chromium only supports little endian.
-static const bool kLittleEndian = true;
-
 class LOCKABLE Mutex {
  public:
   Mutex() = default;

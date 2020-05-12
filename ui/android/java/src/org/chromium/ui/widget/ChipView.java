@@ -8,7 +8,9 @@ import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -40,7 +42,7 @@ public class ChipView extends LinearLayout {
     private final int mEndIconWidth;
     private final int mEndIconHeight;
 
-    private ChromeImageView mEndIcon;
+    private ViewGroup mEndIconWrapper;
     private TextView mSecondaryText;
 
     /**
@@ -164,24 +166,33 @@ public class ChipView extends LinearLayout {
      * Adds a remove icon (X button) at the trailing end of the chip next to the primary text.
      */
     public void addRemoveIcon() {
-        if (mEndIcon != null) return;
+        if (mEndIconWrapper != null) return;
 
-        mEndIcon = new ChromeImageView(getContext());
-        mEndIcon.setId(R.id.chip_cancel_btn);
-        mEndIcon.setImageResource(R.drawable.btn_close);
-        ApiCompatibilityUtils.setImageTintList(mEndIcon, mPrimaryText.getTextColors());
-        LinearLayout.LayoutParams layoutParams =
-                new LinearLayout.LayoutParams(mEndIconWidth, mEndIconHeight);
+        ChromeImageView endIcon = new ChromeImageView(getContext());
+        endIcon.setImageResource(R.drawable.btn_close);
+        ApiCompatibilityUtils.setImageTintList(endIcon, mPrimaryText.getTextColors());
+
+        // Adding a wrapper view around the X icon to make the touch target larger, which would
+        // cover the start and end margin for the X icon, and full height of the chip.
+        mEndIconWrapper = new FrameLayout(getContext());
+        mEndIconWrapper.setId(R.id.chip_cancel_btn);
+
+        FrameLayout.LayoutParams layoutParams =
+                new FrameLayout.LayoutParams(mEndIconWidth, mEndIconHeight);
         layoutParams.setMarginStart(
                 getResources().getDimensionPixelSize(R.dimen.chip_end_icon_margin_start));
-        mEndIcon.setLayoutParams(layoutParams);
-        addView(mEndIcon);
+        layoutParams.setMarginEnd(
+                getResources().getDimensionPixelSize(R.dimen.chip_end_padding_with_end_icon));
+        layoutParams.gravity = Gravity.CENTER_VERTICAL;
+        mEndIconWrapper.addView(endIcon, layoutParams);
+        addView(mEndIconWrapper,
+                new LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        // Setting an end icon enforces 6dp padding at the end.
-        int chipPaddingEnd =
-                getResources().getDimensionPixelSize(R.dimen.chip_end_padding_with_end_icon);
+        // Remove the end padding from the chip to make X icon touch target extend till the end of
+        // the chip.
         ViewCompat.setPaddingRelative(
-                this, getPaddingStart(), getPaddingTop(), chipPaddingEnd, getPaddingBottom());
+                this, getPaddingStart(), getPaddingTop(), 0, getPaddingBottom());
     }
 
     /**
@@ -190,7 +201,7 @@ public class ChipView extends LinearLayout {
      * @param listener The listener to be invoked on click events.
      */
     public void setRemoveIconClickListener(OnClickListener listener) {
-        mEndIcon.setOnClickListener(listener);
+        mEndIconWrapper.setOnClickListener(listener);
     }
 
     /**

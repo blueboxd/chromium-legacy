@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -811,58 +810,5 @@ TEST(StringPieceTest, EndsWith) {
 
   static_assert(!piece.ends_with("abcd"), "");
 }
-
-#if !defined(OS_NACL)
-// Tests that base::StringPiece can be used directly with various std::string
-// APIs by being implicitly convertible to std::string_view.
-TEST(StringPieceTest, OperatorStringView) {
-  constexpr base::StringPiece kPiece = "Foo";
-
-  // std::basic_string::operator=
-  {
-    std::string str;
-    str = kPiece;
-    EXPECT_EQ("Foo", str);
-  }
-
-  // std::basic_string::operator+=
-  {
-    std::string str;
-    str += kPiece;
-    EXPECT_EQ("Foo", str);
-  }
-
-  // std::basic_string::append
-  {
-    std::string str;
-    str.append(kPiece);
-    EXPECT_EQ("Foo", str);
-  }
-
-  // std::basic_string::assign
-  {
-    std::string str;
-    str.assign(kPiece);
-    EXPECT_EQ("Foo", str);
-  }
-
-  // std::basic_string::insert
-  {
-    std::string str;
-    str.insert(0, kPiece);
-    EXPECT_EQ("Foo", str);
-  }
-
-  // std::basic_string::replace
-  {
-    std::string str;
-    str.replace(0, 0, kPiece);
-    EXPECT_EQ("Foo", str);
-
-    str.replace(str.begin(), str.end(), kPiece);
-    EXPECT_EQ("Foo", str);
-  }
-}
-#endif
 
 }  // namespace base

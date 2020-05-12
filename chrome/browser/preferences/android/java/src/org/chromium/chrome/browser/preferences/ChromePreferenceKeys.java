@@ -77,6 +77,12 @@ public final class ChromePreferenceKeys {
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
     /**
+     * Saves the feature status of conditional tab strip.
+     */
+    public static final String CONDITIONAL_TAB_STRIP_FEATURE_STATUS =
+            "Chrome.ConditionalTabStrip.FeatureStatus";
+
+    /**
      * Marks that the content suggestions surface has been shown.
      * Default value is false.
      */
@@ -291,6 +297,7 @@ public final class ChromePreferenceKeys {
      * Default value is true.
      */
     public static final String FLAGS_CACHED_ADAPTIVE_TOOLBAR_ENABLED = "adaptive_toolbar_enabled";
+
     /**
      * Whether or not the bottom toolbar is enabled.
      * Default value is false.
@@ -713,6 +720,7 @@ public final class ChromePreferenceKeys {
     static List<String> getKeysInUse() {
         // clang-format off
         return Arrays.asList(
+                CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,

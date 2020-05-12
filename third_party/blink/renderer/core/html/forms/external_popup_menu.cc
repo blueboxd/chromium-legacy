@@ -147,7 +147,8 @@ void ExternalPopupMenu::Show() {
 void ExternalPopupMenu::DispatchEvent(TimerBase*) {
   WebLocalFrameImpl::FromFrame(local_frame_->LocalFrameRoot())
       ->FrameWidgetImpl()
-      ->HandleInputEvent(blink::WebCoalescedInputEvent(*synthetic_event_));
+      ->HandleInputEvent(
+          blink::WebCoalescedInputEvent(*synthetic_event_, ui::LatencyInfo()));
   synthetic_event_.reset();
 }
 

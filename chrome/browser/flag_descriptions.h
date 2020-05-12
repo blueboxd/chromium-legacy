@@ -374,6 +374,9 @@ extern const char kDesktopPWAsAppIconShortcutsMenuDescription[];
 extern const char kDesktopPWAsTabStripName[];
 extern const char kDesktopPWAsTabStripDescription[];
 
+extern const char kDesktopPWAsTabStripLinkCapturingName[];
+extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
+
 extern const char kDesktopPWAsWithoutExtensionsName[];
 extern const char kDesktopPWAsWithoutExtensionsDescription[];
 
@@ -418,9 +421,6 @@ extern const char kEnableLazyImageLoadingDescription[];
 
 extern const char kEnableMediaSessionServiceName[];
 extern const char kEnableMediaSessionServiceDescription[];
-
-extern const char kEnableNavigationTracingName[];
-extern const char kEnableNavigationTracingDescription[];
 
 extern const char kEnableNetworkLoggingToFileName[];
 extern const char kEnableNetworkLoggingToFileDescription[];
@@ -740,6 +740,9 @@ extern const char kNearbySharingDescription[];
 
 extern const char kUsernameFirstFlowName[];
 extern const char kUsernameFirstFlowDescription[];
+
+extern const char kNewCanvas2DAPIName[];
+extern const char kNewCanvas2DAPIDescription[];
 
 extern const char kNewProfilePickerName[];
 extern const char kNewProfilePickerDescription[];
@@ -1317,6 +1320,9 @@ extern const char kEnableVulkanDescription[];
 
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
+
+extern const char kAndroidMultipleDisplayName[];
+extern const char kAndroidMultipleDisplayDescription[];
 
 extern const char kAndroidPartnerCustomizationPhenotypeName[];
 extern const char kAndroidPartnerCustomizationPhenotypeDescription[];

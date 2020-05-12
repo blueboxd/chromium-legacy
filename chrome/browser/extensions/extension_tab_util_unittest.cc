@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -128,6 +129,40 @@ TEST(ExtensionTabUtilTest, ResolvePossiblyRelativeURL) {
       GURL("chrome-extension://jpignaibiiemhngfjkcpokkamffknabf/path"));
   EXPECT_EQ(ExtensionTabUtil::ResolvePossiblyRelativeURL("path", nullptr),
             GURL("path"));
+}
+
+TEST(ExtensionTabUtilTest, PrepareURLForNavigation) {
+  auto extension = ExtensionBuilder("test").Build();
+  // A fully qualified URL should return the same URL.
+  {
+    const std::string kTestUrl("http://google.com");
+    std::string error;
+    GURL url;
+    EXPECT_TRUE(ExtensionTabUtil::PrepareURLForNavigation(
+        kTestUrl, extension.get(), &url, &error));
+    EXPECT_EQ(GURL(kTestUrl), url);
+    EXPECT_EQ("", error);
+  }
+  // A relative path should return a URL relative to the extension's base URL.
+  {
+    const std::string kTestPath("foo");
+    std::string error;
+    GURL url;
+    EXPECT_TRUE(ExtensionTabUtil::PrepareURLForNavigation(
+        kTestPath, extension.get(), &url, &error));
+    EXPECT_EQ(extension->GetResourceURL(kTestPath), url);
+    EXPECT_EQ("", error);
+  }
+  // A kill URL should return false and set the error. There are several
+  // different potential kill URLs and this just checks one of them.
+  {
+    const std::string kKillURL("chrome://crash");
+    std::string error;
+    GURL url;
+    EXPECT_FALSE(ExtensionTabUtil::PrepareURLForNavigation(
+        kKillURL, extension.get(), &url, &error));
+    EXPECT_EQ(tabs_constants::kNoCrashBrowserError, error);
+  }
 }
 
 }  // namespace extensions

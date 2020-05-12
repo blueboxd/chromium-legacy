@@ -208,8 +208,6 @@ blink_core_sources("css") {
     "css_variable_data.h",
     "css_variable_reference_value.cc",
     "css_variable_reference_value.h",
-    "css_viewport_rule.cc",
-    "css_viewport_rule.h",
     "cssom/computed_style_property_map.cc",
     "cssom/computed_style_property_map.h",
     "cssom/cross_thread_color_value.cc",

@@ -9,11 +9,6 @@
         <attr name="url" format="string" />
     </declare-styleable>
 
-    <declare-styleable name="LearnMorePreference">
-        <!-- The context that should be sent to HelpAndFeedback activity. -->
-        <attr name="helpContext" format="string" />
-    </declare-styleable>
-
     <declare-styleable name="BookmarkTextInputLayout">
         <attr name="emptyErrorMessage" format="string" />
     </declare-styleable>

@@ -72,6 +72,7 @@
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/browser/weblayer_security_blocking_page_factory.h"
+#include "weblayer/browser/weblayer_speech_recognition_manager_delegate.h"
 #include "weblayer/common/features.h"
 #include "weblayer/common/weblayer_paths.h"
 #include "weblayer/public/common/switches.h"
@@ -692,5 +693,10 @@ ContentBrowserClientImpl::GetWideColorGamutHeuristic() {
   return WideColorGamutHeuristic::kUseWindow;
 }
 #endif  // OS_ANDROID
+
+content::SpeechRecognitionManagerDelegate*
+ContentBrowserClientImpl::CreateSpeechRecognitionManagerDelegate() {
+  return new WebLayerSpeechRecognitionManagerDelegate();
+}
 
 }  // namespace weblayer

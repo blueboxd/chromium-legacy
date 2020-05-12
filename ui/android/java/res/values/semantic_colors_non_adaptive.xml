@@ -106,6 +106,10 @@
     <color name="ripple_color_blue_dark">@color/modern_blue_600</color>
     <color name="ripple_color_blue_light">@color/modern_blue_300</color>
 
+    <!-- Image loading colors -->
+    <color name="image_loading_color_dark">@color/modern_grey_300</color>
+    <color name="image_loading_color_light">@color/white_alpha_12</color>
+
     <!-- Illustration -->
     <color name="ntp_incognito_icon_color" tools:ignore="UnusedResources">@color/modern_grey_300</color>
     <color name="drag_handlebar_color">@color/modern_grey_300</color>

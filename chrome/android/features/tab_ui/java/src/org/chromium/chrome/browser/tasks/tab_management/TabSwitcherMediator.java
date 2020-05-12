@@ -24,7 +24,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -37,7 +36,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.init.FirstDrawDetector;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -50,8 +48,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
-import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -59,15 +55,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The Mediator that is responsible for resetting the tab grid or carousel based on visibility and
@@ -146,8 +134,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
     private FirstMeaningfulPaintRecorder mFirstMeaningfulPaintRecorder;
     private boolean mRegisteredFirstMeaningfulPaintRecorder;
-    private List<PseudoTab> mAllPseudoTabs;
-    private boolean mPseudoTabsRestored;
 
     /**
      * Interface to delegate resetting the tab grid.
@@ -545,10 +531,12 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                               .getCurrentTabModelFilter()
                               .getCount()
                     > 0;
-            mAllPseudoTabs = null;
         } else {
-            assert mPseudoTabsRestored;
-            hasTabs = mAllPseudoTabs != null && !mAllPseudoTabs.isEmpty();
+            List<PseudoTab> allTabs;
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                allTabs = PseudoTab.getAllPseudoTabsFromStateFile();
+            }
+            hasTabs = allTabs != null && !allTabs.isEmpty();
         }
 
         if (!hasTabs) {
@@ -598,6 +586,8 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     @Override
     public void showOverview(boolean animate) {
+        mHandler.removeCallbacks(mSoftClearTabListRunnable);
+        mHandler.removeCallbacks(mClearTabListRunnable);
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter() != null
                 && mTabModelSelector.getTabModelFilterProvider()
                            .getCurrentTabModelFilter()
@@ -606,14 +596,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                     TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
             recordTabCounts();
-            mAllPseudoTabs = null;
         } else if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+            List<PseudoTab> allTabs;
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-                mAllPseudoTabs = getAllPseudoTabsFromStateFile();
-                mPseudoTabsRestored = true;
+                allTabs = PseudoTab.getAllPseudoTabsFromStateFile();
             }
-            mResetHandler.resetWithTabs(mAllPseudoTabs,
-                    TabUiFeatureUtilities.isTabToGtsAnimationEnabled(), mShowTabsInMruOrder);
+            mResetHandler.resetWithTabs(allTabs, TabUiFeatureUtilities.isTabToGtsAnimationEnabled(),
+                    mShowTabsInMruOrder);
         }
 
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
@@ -621,59 +610,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();
         mTabIdWhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
-    }
-
-    private static List<PseudoTab> getAllPseudoTabsFromStateFile() {
-        long startMs = SystemClock.elapsedRealtime();
-        File stateFile =
-                new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
-                        TabbedModeTabPersistencePolicy.getStateFileName(0));
-        if (!stateFile.exists()) {
-            Log.i(TAG, "State file does not exist.");
-            return null;
-        }
-        FileInputStream stream = null;
-        byte[] data;
-        try {
-            stream = new FileInputStream(stateFile);
-            data = new byte[(int) stateFile.length()];
-            stream.read(data);
-        } catch (IOException exception) {
-            Log.e(TAG, "Could not read state file.", exception);
-            return null;
-        } finally {
-            StreamUtil.closeQuietly(stream);
-        }
-        Log.i(TAG, "Finished fetching tab list.");
-        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(data));
-
-        Set<Integer> seenRootId = new HashSet<>();
-        List<PseudoTab> allTabs = new ArrayList<>();
-        try {
-            TabPersistentStore.readSavedStateFile(dataStream,
-                    (index, id, url, isIncognito, isStandardActiveIndex, isIncognitoActiveIndex)
-                            -> {
-                        // Skip restoring of non-selected NTP to match the real restoration logic.
-                        if (NewTabPage.isNTPUrl(url) && !isStandardActiveIndex) return;
-                        PseudoTab tab = PseudoTab.fromTabId(id);
-                        int rootId = tab.getRootId();
-                        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
-                                && seenRootId.contains(rootId)) {
-                            return;
-                        }
-                        allTabs.add(tab);
-                        seenRootId.add(rootId);
-                    },
-                    null, false);
-        } catch (IOException exception) {
-            Log.e(TAG, "Could not read state file.", exception);
-            return null;
-        }
-
-        Log.d(TAG, "All pre-native tabs: " + allTabs);
-        Log.i(TAG, "getAllPseudoTabsFromStateFile() took %dms",
-                SystemClock.elapsedRealtime() - startMs);
-        return allTabs;
     }
 
     @Override

@@ -835,9 +835,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostImpl* render_frame_host,
-    NavigationEntryImpl* entry,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_renderer_initiated,
     bool is_same_document) {
   // TODO(clamy): Improve the *NavigationParams and *CommitParams to avoid
   // copying so many parameters here.
@@ -893,9 +891,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
-      std::move(commit_params), !is_renderer_initiated,
+      std::move(commit_params), false /* browser_initiated */,
       false /* from_begin_navigation */, true /* is_for_commit */,
-      entry ? entry->GetFrameEntry(frame_tree_node) : nullptr, entry,
+      nullptr /* frame_navigation_entry */, nullptr /* navitation_entry */,
       nullptr /* navigation_ui_data */, mojo::NullAssociatedRemote(),
       mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */));
 
@@ -1733,7 +1731,7 @@ void NavigationRequest::OnRequestRedirected(
 }
 
 void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
-  if (!IsOptInIsolationRequested(url))
+  if (IsOptInIsolationRequested(url) == OptInIsolationCheckResult::NONE)
     return;
 
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
@@ -1773,9 +1771,21 @@ bool NavigationRequest::HasCommittingOrigin(const url::Origin& origin) {
   return origin == url::Origin::Create(GetURL());
 }
 
-bool NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
+NavigationRequest::OptInIsolationCheckResult
+NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
   if (!response())
-    return false;
+    return OptInIsolationCheckResult::NONE;
+
+  // For now we only check for the presence of hints; we do not yet act on the
+  // specific hints.
+  const bool requests_via_origin_policy =
+      base::FeatureList::IsEnabled(features::kOriginPolicy) &&
+      response()->origin_policy &&
+      response()->origin_policy->state == network::OriginPolicyState::kLoaded &&
+      response()->origin_policy->contents->isolation_optin_hints.has_value();
+
+  if (requests_via_origin_policy)
+    return OptInIsolationCheckResult::ORIGIN_POLICY;
 
   // The header can be enabled via either a command-line flag or an origin
   // trial.
@@ -1786,14 +1796,6 @@ bool NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
                                   url, response()->headers.get(),
                                   "OriginIsolationHeader", base::Time::Now()));
 
-  // For now we only check for the presence of hints; we do not yet act on the
-  // specific hints.
-  const bool requests_via_origin_policy =
-      base::FeatureList::IsEnabled(features::kOriginPolicy) &&
-      response()->origin_policy &&
-      response()->origin_policy->state == network::OriginPolicyState::kLoaded &&
-      response()->origin_policy->contents->isolation_optin_hints.has_value();
-
   // TODO(https://crbug.com/1066930): For now we just check the presence of the
   // header; we do not parse/validate it. When we do, that will have to be
   // outside the browser process.
@@ -1801,7 +1803,10 @@ bool NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
       header_is_enabled && response()->headers &&
       response()->headers->HasHeader("origin-isolation");
 
-  return requests_via_header || requests_via_origin_policy;
+  if (requests_via_header)
+    return OptInIsolationCheckResult::HEADER;
+
+  return OptInIsolationCheckResult::NONE;
 }
 
 void NavigationRequest::OnResponseStarted(
@@ -1844,7 +1849,9 @@ void NavigationRequest::OnResponseStarted(
       ChildProcessSecurityPolicyImpl::ScopedOriginIsolationOptInRequest;
   std::unique_ptr<ScopedOriginIsolationOptInRequest>
       scoped_origin_isolation_opt_in_request;
-  if (IsOptInIsolationRequested(GetURL())) {
+  OptInIsolationCheckResult opt_in_isolation =
+      IsOptInIsolationRequested(GetURL());
+  if (opt_in_isolation != OptInIsolationCheckResult::NONE) {
     // This origin conversion won't be correct for about:blank, but origin
     // isolation shouldn't need to care about that case because a previous
     // instance of the origin would already have determined its isolation status
@@ -2028,7 +2035,6 @@ void NavigationRequest::OnResponseStarted(
     render_frame_host_ = controller->GetBackForwardCache()
                              .GetEntry(nav_entry_id_)
                              ->render_frame_host.get();
-
     // The only time GetEntry can return nullptr here, is if the document was
     // evicted from the BackForwardCache since this navigation started.
     //
@@ -2039,6 +2045,7 @@ void NavigationRequest::OnResponseStarted(
   } else if (response_should_be_rendered_) {
     render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+
     if (!NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
             render_frame_host_, common_params_->url,
             /* is_renderer_initiated_check */ false)) {
@@ -2051,10 +2058,15 @@ void NavigationRequest::OnResponseStarted(
   }
   DCHECK(render_frame_host_ || !response_should_be_rendered_);
 
-  // TODO(pmeuleman, ahemery): Only set COOP and COEP values on RenderFrameHost
-  // when the navigation commits. In the meantime, keep them in
-  // NavigationRequest.
   if (render_frame_host_) {
+    if (opt_in_isolation == OptInIsolationCheckResult::HEADER) {
+      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+          render_frame_host_, blink::mojom::WebFeature::kOriginIsolationHeader);
+    }
+
+    // TODO(pmeuleman, ahemery): Only set COOP and COEP values on
+    // RenderFrameHost when the navigation commits. In the meantime, keep them
+    // in NavigationRequest.
     render_frame_host_->set_cross_origin_embedder_policy(
         cross_origin_embedder_policy);
     render_frame_host_->set_cross_origin_opener_policy(

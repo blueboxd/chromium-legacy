@@ -118,6 +118,7 @@ source_set("prerequisites") {
     "//ui/display/mojom:mojom_blink",
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
+    "//ui/latency",
     "//ui/native_theme",
     "//url",
     "//v8",

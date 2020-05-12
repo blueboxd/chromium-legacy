@@ -27261,6 +27261,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3283" label="LocationFragmentDirectiveAccessed"/>
   <int value="3284" label="CanvasRenderingContext"/>
   <int value="3285" label="SchemefulSameSiteContextDowngrade"/>
+  <int value="3286" label="OriginIsolationHeader"/>
+  <int value="3287" label="V8WasmSimdOpcodes"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38739,6 +38741,7 @@ from previous Chrome versions.
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
+  <int value="-1443261188" label="DesktopPWAsTabStripLinkCapturing:disabled"/>
   <int value="-1441695001" label="OmniboxOnFocusSuggestions:enabled"/>
   <int value="-1441340278" label="NewTabPageIcons:enabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
@@ -39503,6 +39506,7 @@ from previous Chrome versions.
   <int value="-616508634" label="DisableCryptAuthV1DeviceSync:enabled"/>
   <int value="-614223913"
       label="ClickToCallContextMenuForSelectedText:enabled"/>
+  <int value="-613596048" label="new-canvas-2d-api"/>
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
@@ -40074,6 +40078,7 @@ from previous Chrome versions.
   <int value="57639188" label="SoundContentSetting:disabled"/>
   <int value="57791920" label="MemoryCoordinator:enabled"/>
   <int value="58099178" label="SecondaryUiMd:enabled"/>
+  <int value="58619646" label="AndroidMultipleDisplay:disabled"/>
   <int value="58695502" label="NTPButton:disabled"/>
   <int value="58727839" label="WebAssemblyLazyCompilation:enabled"/>
   <int value="59784035" label="ImeThread:disabled"/>
@@ -40561,6 +40566,7 @@ from previous Chrome versions.
   <int value="638845342"
       label="OmniboxUIExperimentShowSuffixOnAllSearchSuggestions:enabled"/>
   <int value="638865852" label="UsePreferredIntervalForVideo:disabled"/>
+  <int value="640174751" label="AndroidMultipleDisplay:enabled"/>
   <int value="642037198" label="SoleIntegration:disabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="644084236" label="CloseButtonsInactiveTabs:enabled"/>
@@ -40699,6 +40705,7 @@ from previous Chrome versions.
   <int value="805661595" label="ChromeosVideoDecoder:enabled"/>
   <int value="806035639" label="EnableNeuralPalmDetectionFilter:disabled"/>
   <int value="806334184" label="AndroidSpellChecker:enabled"/>
+  <int value="806783713" label="DesktopPWAsTabStripLinkCapturing:enabled"/>
   <int value="807447752" label="ChromeMemex:disabled"/>
   <int value="807734471" label="tab-management-experiment-type-disabled"/>
   <int value="809698565" label="WebRtcHybridAgc:enabled"/>
@@ -42509,7 +42516,7 @@ from previous Chrome versions.
   <int value="4" label="Scrollbar scrolling"/>
   <int value="5" label="Frame overlay"/>
   <int value="6" label="Non-fast scrollable region"/>
-  <int value="7" label="Event handlers"/>
+  <int value="7" label="Event handlers (obsolete)"/>
   <int value="8" label="Failed hit test"/>
   <int value="9" label="No scrolling layer"/>
   <int value="10" label="Not scrollable"/>
@@ -42517,14 +42524,14 @@ from previous Chrome versions.
   <int value="12" label="Non-invertible transform"/>
   <int value="13" label="Page based scrolling"/>
   <int value="14" label="Animating scroll on main thread"/>
-  <int value="15" label="Has sticky position objects"/>
-  <int value="16" label="Requires hit testing on custom scrollbars"/>
-  <int value="17" label="Has opacity"/>
+  <int value="15" label="Has sticky position objects (obsolete)"/>
+  <int value="16" label="Requires hit testing on custom scrollbars (obsolete)"/>
+  <int value="17" label="Has opacity (obsolete)"/>
   <int value="18" label="Has transform"/>
   <int value="19" label="Background not opaque in rect"/>
-  <int value="20" label="Has border radius"/>
+  <int value="20" label="Can't paint scrolling background"/>
   <int value="21" label="Has clip related property"/>
-  <int value="22" label="Has box shadow from non-root layer"/>
+  <int value="22" label="Has box shadow from non-root layer (obsolete)"/>
   <int value="23" label="Is not stacking context"/>
   <int value="24" label="Blocking wheel event handler region"/>
   <int value="25" label="Blocking touch event handler region"/>

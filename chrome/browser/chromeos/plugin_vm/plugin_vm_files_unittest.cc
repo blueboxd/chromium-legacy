@@ -14,7 +14,7 @@
 
 namespace plugin_vm {
 
-using EnsureDefaultSharedDirExistsCallback =
+using EnsureDefaultSharedDirsExistCallback =
     testing::StrictMock<base::MockCallback<
         base::OnceCallback<void(const base::FilePath& dir, bool result)>>>;
 
@@ -38,8 +38,8 @@ class PluginVmFilesTest : public testing::Test {
 };
 
 TEST_F(PluginVmFilesTest, DirNotExists) {
-  EnsureDefaultSharedDirExistsCallback callback;
-  EnsureDefaultSharedDirExists(&profile_, callback.Get());
+  EnsureDefaultSharedDirsExistCallback callback;
+  EnsureDefaultSharedDirsExist(&profile_, callback.Get());
   EXPECT_CALL(callback, Run(GetPvmDefaultPath(), true));
   task_environment_.RunUntilIdle();
 }
@@ -47,8 +47,8 @@ TEST_F(PluginVmFilesTest, DirNotExists) {
 TEST_F(PluginVmFilesTest, DirAlreadyExists) {
   EXPECT_TRUE(base::CreateDirectory(GetPvmDefaultPath()));
 
-  EnsureDefaultSharedDirExistsCallback callback;
-  EnsureDefaultSharedDirExists(&profile_, callback.Get());
+  EnsureDefaultSharedDirsExistCallback callback;
+  EnsureDefaultSharedDirsExist(&profile_, callback.Get());
   EXPECT_CALL(callback, Run(GetPvmDefaultPath(), true));
   task_environment_.RunUntilIdle();
 }
@@ -57,9 +57,32 @@ TEST_F(PluginVmFilesTest, FileAlreadyExists) {
   EXPECT_TRUE(base::CreateDirectory(GetMyFilesFolderPath()));
   EXPECT_TRUE(base::WriteFile(GetPvmDefaultPath(), ""));
 
-  EnsureDefaultSharedDirExistsCallback callback;
-  EnsureDefaultSharedDirExists(&profile_, callback.Get());
+  EnsureDefaultSharedDirsExistCallback callback;
+  EnsureDefaultSharedDirsExist(&profile_, callback.Get());
   EXPECT_CALL(callback, Run(GetPvmDefaultPath(), false));
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(PluginVmFilesTest, SubDirAlreadyExists) {
+  base::FilePath root = GetPvmDefaultPath();
+  base::FilePath sub_dir = root.Append("Documents");
+  EXPECT_TRUE(base::CreateDirectory(sub_dir));
+
+  EnsureDefaultSharedDirsExistCallback callback;
+  EnsureDefaultSharedDirsExist(&profile_, callback.Get());
+  EXPECT_CALL(callback, Run(GetPvmDefaultPath(), true));
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(PluginVmFilesTest, SubDirFileAlreadyExists) {
+  base::FilePath root = GetPvmDefaultPath();
+  base::FilePath sub_dir = root.Append("Documents");
+  EXPECT_TRUE(base::CreateDirectory(root));
+  EXPECT_TRUE(base::WriteFile(sub_dir, ""));
+
+  EnsureDefaultSharedDirsExistCallback callback;
+  EnsureDefaultSharedDirsExist(&profile_, callback.Get());
+  EXPECT_CALL(callback, Run(GetPvmDefaultPath(), true));
   task_environment_.RunUntilIdle();
 }
 

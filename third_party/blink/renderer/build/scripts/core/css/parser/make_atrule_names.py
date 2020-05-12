@@ -11,7 +11,7 @@ import template_expander
 class AtRuleNamesWriter(json5_generator.Writer):
     """
     Generates AtRuleNames. This class provides utility methods for parsing
-    @rules (e.g. @font-face, @viewport, etc)
+    @rules (e.g. @font-face, @keyframes, etc)
     """
 
     def __init__(self, json5_file_paths, output_dir):

@@ -11,7 +11,9 @@ import re
 import subprocess
 import sys
 
-_VULKAN_HEADER_FILE = "third_party/vulkan/include/vulkan/vulkan_core.h"
+# TODO(penghuang): use vulkan registry instead of parsing the vulkan header
+# file.
+_VULKAN_HEADER_FILE = "third_party/vulkan_headers/include/vulkan/vulkan_core.h"
 
 _STRUCTS = [
   "VkExtensionProperties",
@@ -167,7 +169,7 @@ def ParseStruct(line, header_file):
     array_len = None
     if '[' in field_name:
       assert ']' in field_name
-      field_name, array_len = field_name.rstrip(']').split('[')
+      field_name, array_len = field_name.rstrip(']').rsplit('[', 1)
       assert array_len.isdigit() or array_len in _defines
     fields.append((field_name, field_type, array_len))
   assert name not in _structs, "struct '%s' has been defined." % name

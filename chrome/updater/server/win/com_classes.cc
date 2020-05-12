@@ -49,7 +49,8 @@ HRESULT UpdaterImpl::Register(const base::char16* app_id,
   return E_NOTIMPL;
 }
 
-HRESULT UpdaterImpl::Update(const base::char16* app_id) {
+HRESULT UpdaterImpl::Update(const base::char16* app_id,
+                            IUpdaterObserver* observer) {
   return E_NOTIMPL;
 }
 

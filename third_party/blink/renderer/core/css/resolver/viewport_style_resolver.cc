@@ -385,8 +385,6 @@ void ViewportStyleResolver::UpdateViewport(
   if (needs_update_ == kCollectRules) {
     Reset();
     CollectViewportRulesFromUASheets();
-    if (RuntimeEnabledFeatures::CSSViewportEnabled())
-      collection.CollectViewportRules(*this);
   }
   Resolve();
   needs_update_ = kNoUpdate;

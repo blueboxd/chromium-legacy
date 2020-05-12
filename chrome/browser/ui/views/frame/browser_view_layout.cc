@@ -306,6 +306,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   bottom = LayoutDownloadShelf(bottom);
 
   // Layout the contents container in the remaining space.
+  const gfx::Rect old_contents_bounds = contents_container_->bounds();
   LayoutContentsContainerView(top, bottom);
 
   if (contents_border_widget_ && contents_border_widget_->IsVisible()) {
@@ -320,8 +321,16 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // code calls back into us to find the bounding box the find bar
   // must be laid out within, and that code depends on the
   // TabContentsContainer's bounds being up to date.
-  if (delegate_->HasFindBarController())
+  //
+  // Because Find Bar can be repositioned to keep from hiding find results, we
+  // don't want to reset its position on every layout, however - only if the
+  // geometry of the contents pane actually changes in a way that could affect
+  // the positioning of the bar.
+  if (delegate_->HasFindBarController() &&
+      (contents_container_->y() != old_contents_bounds.y() ||
+       contents_container_->width() != old_contents_bounds.width())) {
     delegate_->MoveWindowForFindBarIfNecessary();
+  }
 
   // Adjust the fullscreen exit bubble bounds for |top_container_|'s new bounds.
   // This makes the fullscreen exit bubble look like it animates with

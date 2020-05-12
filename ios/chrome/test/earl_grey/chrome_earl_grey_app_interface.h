@@ -353,6 +353,10 @@
                                           name:(NSString*)name
                                          count:(NSUInteger)count;
 
+// Adds a bookmark with a sync passphrase. The sync server will need the sync
+// passphrase to start.
++ (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript on current WebState, and waits for either the completion

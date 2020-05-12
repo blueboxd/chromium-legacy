@@ -31,8 +31,10 @@ class AutocompleteResult {
   typedef ACMatches::iterator iterator;
   using MatchDedupComparator = std::pair<GURL, bool>;
 
-  // Max number of matches we'll show from the various providers.
-  static size_t GetMaxMatches();
+  // Max number of matches we'll show from the various providers. This limit may
+  // be different for zero suggest (i.e. when |input_from_omnibox_focus| is
+  // true) and non zero suggest.
+  static size_t GetMaxMatches(bool input_from_omnibox_focus = false);
 
   AutocompleteResult();
   ~AutocompleteResult();
@@ -229,6 +231,7 @@ class AutocompleteResult {
   // |max_url_matches| but will allow more if there are no other types to
   // replace them.
   void LimitNumberOfURLsShown(
+      size_t max_matches,
       size_t max_url_count,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
  * Manages pref that can track the delay since the last stop of the tracked activity.
+ * TODO(crbug.com/1081453): Split ChromeInactivityTracker out from ChromeTabbedActivity.
  */
 public class ChromeInactivityTracker
         implements StartStopWithNativeObserver, PauseResumeWithNativeObserver, Destroyable {

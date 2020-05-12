@@ -17,9 +17,10 @@ function CallbackHelper(fixture) {
 CallbackHelper.prototype = {
   /**
    * @param {Function=} opt_callback
+   * @param {boolean=} opt_isAsync True if callback is async.
    * @return {Function}
    */
-  wrap(opt_callback) {
+  wrap(opt_callback, opt_isAsync) {
     const callback = opt_callback || function() {};
     const savedArgs = new SaveMockArguments();
     let lastCall = null;
@@ -29,9 +30,18 @@ CallbackHelper.prototype = {
       } else {
         lastCall = new Error().stack;
       }
-      callback.apply(this.fixture_, arguments);
-      if (--this.pendingCallbacks_ <= 0) {
-        CallbackHelper.testDone_();
+      const result = callback.apply(this.fixture_, arguments);
+      if (opt_isAsync) {
+        if (!result) {
+          throw new Error('Expected function to return a Promise.');
+        }
+        result.then(() => {
+          CallbackHelper.testDone_();
+        });
+      } else {
+        if (--this.pendingCallbacks_ <= 0) {
+          CallbackHelper.testDone_();
+        }
       }
     }.bind(this));
     // runAllActionsAsync catches exceptions and puts them in the test

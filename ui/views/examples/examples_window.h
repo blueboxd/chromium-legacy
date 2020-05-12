@@ -19,6 +19,8 @@
 namespace views {
 namespace examples {
 
+VIEWS_EXAMPLES_EXPORT extern const char kExamplesWidgetName[];
+
 // Shows a window with the views examples in it. |extra_examples| contains any
 // additional examples to add. |window_context| is used to determine where the
 // window should be created (see |Widget::InitParams::context| for details).

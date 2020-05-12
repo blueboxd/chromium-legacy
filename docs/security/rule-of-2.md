@@ -132,12 +132,30 @@ for an example.
 
 If you can be sure that the input comes from a trustworthy source, it can be OK
 to parse/evaluate it at high privilege in an unsafe language. A "trustworthy
-source" meets all of these criteria:
+source" means that Chromium can cryptographically prove that the data comes
+from a business entity that you can or do trust (e.g.
+for Chrome, an [Alphabet](https://abc.xyz) company).
+
+Such cryptographic proof can potentially be obtained by:
+
+  * Component Updater;
+  * The variations framework (on some platforms; see [1078056](https://crbug.com/1078056)
+    for Android and iOS limitations)
+  * Pinned TLS (see below).
+
+Pinned TLS needs to meet all these criteria to be effective:
 
   * communication happens via validly-authenticated TLS, HTTPS, or QUIC;
   * the peer's keys are [pinned in Chrome](https://cs.chromium.org/chromium/src/net/http/transport_security_state_static.json?sq=package:chromium&g=0); and
-  * the peer is operated by a business entity that you can or do trust (e.g.
-    for Chrome, an [Alphabet](https://abc.xyz) company).
+  * pinning is active on all platforms where the feature will launch.
+
+At present pinning is not enabled for all Chrome platforms. On other platforms,
+pinning may be disabled or rendered ineffective by enterprise security products.
+It is generally much better to use the Component Updater.
+
+One common pattern is to deliver a cryptographic hash of some content via such
+a trustworthy channel, but deliver the content itself via an untrustworthy
+channel. So long as the hash is properly verified, that's fine.
 
 ### Normalization {#normalization}
 

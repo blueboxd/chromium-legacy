@@ -2620,6 +2620,8 @@ enum WebFeature {
   kLocationFragmentDirectiveAccessed = 3283,
   kCanvasRenderingContext = 3284,
   kSchemefulSameSiteContextDowngrade = 3285,
+  kOriginIsolationHeader = 3286,
+  kV8WasmSimdOpcodes = 3287,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

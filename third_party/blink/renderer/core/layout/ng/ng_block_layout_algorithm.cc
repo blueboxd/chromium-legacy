@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
@@ -36,6 +37,98 @@
 
 namespace blink {
 namespace {
+
+// Returns the logical bottom offset of the last line text, relative to
+// |container| origin. This is used to decide ruby annotation box position.
+//
+// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
+// LayoutRubyRun. However its result is not good with some fonts/platforms.
+LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
+                                     LayoutUnit default_value) {
+  const ComputedStyle& container_style = container.Style();
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    if (!container.Items())
+      return default_value;
+    NGInlineCursor cursor(*container.Items());
+    cursor.MoveToLastLine();
+    const auto* line_item = cursor.CurrentItem();
+    if (!line_item)
+      return default_value;
+    DCHECK_EQ(line_item->Type(), NGFragmentItem::kLine);
+    DCHECK(line_item->LineBoxFragment());
+    PhysicalRect line_rect =
+        line_item->LineBoxFragment()->ScrollableOverflowForLine(
+            container, container_style, *line_item, cursor);
+    return line_rect
+        .ConvertToLogical(container_style.GetWritingMode(),
+                          container_style.Direction(), container.Size(),
+                          cursor.Current().Size())
+        .BlockEndOffset();
+  }
+
+  const NGPhysicalLineBoxFragment* last_line = nullptr;
+  PhysicalOffset last_line_offset;
+  for (const auto& child_link : container.PostLayoutChildren()) {
+    if (const auto* maybe_line =
+            DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
+      last_line = maybe_line;
+      last_line_offset = child_link.offset;
+    }
+  }
+  if (!last_line)
+    return default_value;
+  PhysicalRect line_rect =
+      last_line->ScrollableOverflow(container, container_style);
+  line_rect.Move(last_line_offset);
+  return line_rect
+      .ConvertToLogical(container_style.GetWritingMode(),
+                        container_style.Direction(), container.Size(),
+                        last_line->Size())
+      .BlockEndOffset();
+}
+
+// Returns the logical top offset of the first line text, relative to
+// |container| origin. This is used to decide ruby annotation box position.
+//
+// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
+// LayoutRubyRun. However its result is not good with some fonts/platforms.
+LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
+                                   LayoutUnit default_value) {
+  const ComputedStyle& container_style = container.Style();
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    if (!container.Items())
+      return default_value;
+    NGInlineCursor cursor(*container.Items());
+    cursor.MoveToFirstLine();
+    const auto* line_item = cursor.CurrentItem();
+    if (!line_item)
+      return default_value;
+    DCHECK_EQ(line_item->Type(), NGFragmentItem::kLine);
+    DCHECK(line_item->LineBoxFragment());
+    PhysicalRect line_rect =
+        line_item->LineBoxFragment()->ScrollableOverflowForLine(
+            container, container_style, *line_item, cursor);
+    return line_rect
+        .ConvertToLogical(container_style.GetWritingMode(),
+                          container_style.Direction(), container.Size(),
+                          cursor.Current().Size())
+        .offset.block_offset;
+  }
+
+  for (const auto& child_link : container.PostLayoutChildren()) {
+    if (const auto* line = DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
+      PhysicalRect line_rect =
+          line->ScrollableOverflow(container, container_style);
+      line_rect.Move(child_link.offset);
+      return line_rect
+          .ConvertToLogical(container_style.GetWritingMode(),
+                            container_style.Direction(), container.Size(),
+                            line->Size())
+          .offset.block_offset;
+    }
+  }
+  return default_value;
+}
 
 inline scoped_refptr<const NGLayoutResult> LayoutBlockChild(
     const NGConstraintSpace& space,
@@ -213,6 +306,8 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
 
   for (NGLayoutInputNode child = Node().FirstChild(); child;
        child = child.NextSibling()) {
+    // We don't check IsRubyText() here intentionally. RubyText width should
+    // affect this width.
     if (child.IsOutOfFlowPositioned() ||
         (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc()))
       continue;
@@ -575,6 +670,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   if (Node().LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     child_iterator = NGBlockChildIterator(NGBlockNode(nullptr), nullptr);
 
+  NGLayoutInputNode ruby_text_child(nullptr);
   for (auto entry = child_iterator.NextChild();
        NGLayoutInputNode child = entry.node;
        entry = child_iterator.NextChild(previous_inline_break_token.get())) {
@@ -609,6 +705,8 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
                                                /* is_forced_break */ true);
       }
       break;
+    } else if (IsRubyText(child)) {
+      ruby_text_child = child;
     } else {
       // If this is the child we had previously determined to break before, do
       // so now and finish layout.
@@ -668,6 +766,9 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       }
     }
   }
+
+  if (ruby_text_child)
+    LayoutRubyText(&ruby_text_child);
 
   if (UNLIKELY(ConstraintSpace().IsNewFormattingContext() &&
                force_truncate_at_line_clamp_ &&
@@ -2746,6 +2847,79 @@ bool NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes(
         std::max(marker_block_size, container_builder_.Size().block_size));
   }
   return true;
+}
+
+bool NGBlockLayoutAlgorithm::IsRubyText(const NGLayoutInputNode& child) const {
+  return Node().IsRubyRun() && child.IsRubyText();
+}
+
+void NGBlockLayoutAlgorithm::LayoutRubyText(
+    NGLayoutInputNode* ruby_text_child) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
+  DCHECK(Node().IsRubyRun());
+
+  scoped_refptr<const NGBlockBreakToken> break_token;
+  if (const auto* token = BreakToken()) {
+    for (const auto* child_token : token->ChildBreakTokens()) {
+      if (child_token->InputNode() == *ruby_text_child) {
+        break_token = To<NGBlockBreakToken>(child_token);
+        break;
+      }
+    }
+  }
+
+  NGConstraintSpaceBuilder builder(
+      ConstraintSpace(), ruby_text_child->Style().GetWritingMode(), true);
+  builder.SetAvailableSize(child_available_size_);
+
+  scoped_refptr<const NGLayoutResult> result =
+      To<NGBlockNode>(*ruby_text_child)
+          .Layout(builder.ToConstraintSpace(), break_token.get());
+
+  LayoutUnit ruby_text_top;
+  const NGPhysicalBoxFragment& ruby_text_fragment =
+      To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  if (Style().IsFlippedLinesWritingMode() ==
+      (Style().GetRubyPosition() == RubyPosition::kAfter)) {
+    LayoutUnit last_line_ruby_text_bottom = LastLineTextLogicalBottom(
+        ruby_text_fragment, result->IntrinsicBlockSize());
+
+    // Find a fragment for RubyBase, and get the top of text in it.
+    LayoutUnit first_line_top;
+    for (const auto& child : container_builder_.Children()) {
+      if (const auto* layout_object = child.fragment->GetLayoutObject()) {
+        if (layout_object->IsRubyBase()) {
+          first_line_top = FirstLineTextLogicalTop(
+              To<NGPhysicalBoxFragment>(*child.fragment), LayoutUnit());
+          first_line_top += child.offset.block_offset;
+          break;
+        }
+      }
+    }
+    ruby_text_top = first_line_top - last_line_ruby_text_bottom;
+  } else {
+    LayoutUnit first_line_ruby_text_top =
+        FirstLineTextLogicalTop(ruby_text_fragment, LayoutUnit());
+
+    // Find a fragment for RubyBase, and get the bottom of text in it.
+    LayoutUnit last_line_bottom;
+    for (const auto& child : container_builder_.Children()) {
+      if (const auto* layout_object = child.fragment->GetLayoutObject()) {
+        if (layout_object->IsRubyBase()) {
+          last_line_bottom = LastLineTextLogicalBottom(
+              To<NGPhysicalBoxFragment>(*child.fragment),
+              child.fragment->Size()
+                  .ConvertToLogical(Style().GetWritingMode())
+                  .block_size);
+          last_line_bottom += child.offset.block_offset;
+          break;
+        }
+      }
+    }
+    ruby_text_top = last_line_bottom - first_line_ruby_text_top;
+  }
+  container_builder_.AddResult(*result,
+                               LogicalOffset(LayoutUnit(), ruby_text_top));
 }
 
 }  // namespace blink

@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
 jumbo_component("views_examples_lib") {
@@ -118,31 +119,46 @@ jumbo_component("views_examples_lib") {
   }
 }
 
-executable("views_examples") {
+source_set("views_examples_proc") {
   testonly = true
 
-  sources = [ "examples_main.cc" ]
+  sources = [
+    "examples_exit_code.h",
+    "examples_main_proc.cc",
+    "examples_main_proc.h",
+  ]
 
   deps = [
     ":views_examples_lib",
     "//base",
-    "//base:i18n",
     "//base/test:test_support",
-    "//build/win:default_exe_manifest",
+    "//cc/paint",
     "//components/viz/host",
     "//components/viz/service",
     "//mojo/core/embedder",
+    "//skia",
     "//ui/base",
-    "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
     "//ui/gfx",
-    "//ui/gl",
-    "//ui/gl/init",
-    "//ui/resources:ui_test_pak",
     "//ui/views",
     "//ui/views:test_support",
   ]
+
+  if (is_win || is_mac || (is_linux && !is_chromeos)) {
+    sources += [
+      "examples_skia_gold_pixel_diff.cc",
+      "examples_skia_gold_pixel_diff.h",
+    ]
+    deps += [
+      "//ui/base:pixel_diff_test_support",
+      "//ui/snapshot",
+    ]
+  }
+
+  if (is_win) {
+    deps += [ "//build/win:default_exe_manifest" ]
+  }
 
   if (use_aura) {
     deps += [
@@ -153,6 +169,21 @@ executable("views_examples") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
+}
+
+executable("views_examples") {
+  testonly = true
+
+  sources = [ "examples_main.cc" ]
+
+  deps = [
+    ":views_examples_lib",
+    ":views_examples_proc",
+    "//base",
+    "//base/test:test_support",
+    "//build/win:default_exe_manifest",
+    "//ui/resources:ui_test_pak",
+  ]
 }
 
 jumbo_component("views_examples_with_content_lib") {
@@ -184,7 +215,7 @@ jumbo_component("views_examples_with_content_lib") {
 executable("views_examples_with_content") {
   testonly = true
 
-  sources = [ "examples_with_content_main_exe.cc" ]
+  sources = [ "examples_with_content_main.cc" ]
 
   defines = [ "VIEWS_EXAMPLES_WITH_CONTENT_IMPLEMENTATION" ]
 
@@ -229,4 +260,46 @@ copy("views_examples_resources_pak") {
   sources = [ "$target_gen_dir/views_examples_resources.pak" ]
   outputs = [ "$root_out_dir/views_examples_resources.pak" ]
   public_deps = [ ":views_examples_resources_grd" ]
+}
+
+test("views_examples_unittests") {
+  sources = [
+    "examples_unittest.cc",
+    "examples_unittest_main.cc",
+  ]
+
+  deps = [
+    ":views_examples_lib",
+    ":views_examples_proc",
+    "//base",
+    "//base/test:test_support",
+    "//components/viz/host",
+    "//components/viz/service",
+    "//mojo/core/embedder",
+    "//ui/base",
+    "//ui/base/ime/init",
+    "//ui/compositor",
+    "//ui/compositor:test_support",
+    "//ui/gfx",
+    "//ui/gl",
+    "//ui/gl/init",
+    "//ui/resources:ui_test_pak",
+    "//ui/snapshot",
+    "//ui/views",
+    "//ui/views:test_support",
+  ]
+
+  if (use_aura) {
+    deps += [
+      "//ui/aura",
+      "//ui/wm",
+    ]
+  }
+
+  data_deps = [
+    ":views_examples_resources_pak",
+    "//ui/resources:ui_test_pak_data",
+  ]
+
+  data = [ "$root_out_dir/views_examples_resources.pak" ]
 }

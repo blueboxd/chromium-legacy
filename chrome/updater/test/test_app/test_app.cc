@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -42,6 +43,8 @@ class TestApp : public App {
                        const std::string& version,
                        int64_t size,
                        const base::string16& message);
+
+  scoped_refptr<UpdateClient> update_client;
 };
 
 void TestApp::SetUpdateStatus(UpdateStatus status,
@@ -60,6 +63,10 @@ void TestApp::SetUpdateStatus(UpdateStatus status,
     case UpdateStatus::UPDATING:
       VLOG(1) << "Updating. Progress: " << progress;
       break;
+    case UpdateStatus::UPDATED:
+      VLOG(1) << "Current version is up to date.";
+      Shutdown(0);
+      break;
     case UpdateStatus::NEARLY_UPDATED:
       VLOG(1) << "Nearly updated. Needs restart.";
       Shutdown(0);
@@ -76,18 +83,19 @@ void TestApp::SetUpdateStatus(UpdateStatus status,
 }
 
 void TestApp::Register() {
-  UpdateClient::Create()->Register(
-      base::BindRepeating(&TestApp::Shutdown, this));
+  update_client->Register(base::BindRepeating(&TestApp::Shutdown, this));
 }
 
 void TestApp::DoForegroundUpdate() {
-  UpdateClient::Create()->CheckForUpdate(
+  update_client->CheckForUpdate(
       base::BindRepeating(&TestApp::SetUpdateStatus, this));
 }
 
 void TestApp::ParseCommandLine() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+  update_client = UpdateClient::Create();
+
   if (command_line->HasSwitch(kInstallUpdaterSwitch)) {
     InstallUpdater();
     Shutdown(0);
@@ -111,6 +119,8 @@ scoped_refptr<App> TestAppInstance() {
 }  // namespace
 
 int TestAppMain(int argc, const char** argv) {
+  base::AtExitManager exit_manager;
+
   base::CommandLine::Init(argc, argv);
   updater::InitLogging(FILE_PATH_LITERAL("test_app.log"));
 

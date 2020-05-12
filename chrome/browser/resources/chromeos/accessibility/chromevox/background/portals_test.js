@@ -84,8 +84,7 @@ ChromeVoxPortalsTest = class extends ChromeVoxNextE2ETest {
 
 TEST_F('ChromeVoxPortalsTest', 'ShouldFocusPortal', function() {
   this.runWithLoadedTree(
-      undefined,
-      function(root) {
+      undefined, function(root) {
         const portal = root.find({role: RoleType.PORTAL});
         const button = root.find({role: RoleType.BUTTON});
         assertEquals(RoleType.PORTAL, portal.role);
@@ -105,20 +104,22 @@ TEST_F('ChromeVoxPortalsTest', 'ShouldFocusPortal', function() {
         button.addEventListener(
             EventType.FOCUS,
             () => this.waitForPortal(portal).then(afterPortalIsReady));
-      }.bind(this),
-      `${testRunnerParams.testServerBaseUrl}portal/portal-and-button.html`);
+      }.bind(this), {
+        url:
+            `${testRunnerParams.testServerBaseUrl}portal/portal-and-button.html`
+      });
 });
 
 TEST_F('ChromeVoxPortalsTest', 'PortalName', function() {
   this.runWithLoadedTree(
-      undefined,
-      function(root) {
+      undefined, function(root) {
         const portal = root.find({role: RoleType.PORTAL});
         assertEquals(RoleType.PORTAL, portal.role);
         this.waitForPortal(portal).then(this.newCallback(() => {
           assertTrue(portal.firstChild.docLoaded);
           assertEquals(portal.name, 'some text');
         }));
-      }.bind(this),
-      `${testRunnerParams.testServerBaseUrl}portal/portal-with-text.html`);
+      }.bind(this), {
+        url: `${testRunnerParams.testServerBaseUrl}portal/portal-with-text.html`
+      });
 });

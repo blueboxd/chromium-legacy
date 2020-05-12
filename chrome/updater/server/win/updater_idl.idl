@@ -246,8 +246,9 @@ interface IUpdater : IUnknown {
                    [in, string] const WCHAR* tag,
                    [in, string] const WCHAR* version,
                    [in, string] const WCHAR* existence_checker_path);
-  HRESULT Update([in, string] const WCHAR* app_id);
-  HRESULT UpdateAll([in] IUpdaterObserver* observer);
+  HRESULT Update([ in, string ] const WCHAR* app_id,
+                 [in] IUpdaterObserver* observer);
+  HRESULT UpdateAll([in] IUpdaterObserver * observer);
 };
 
 [

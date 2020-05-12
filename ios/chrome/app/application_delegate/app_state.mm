@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
@@ -214,7 +215,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         ->OnApplicationDidEnterBackground();
   }
 
-  breakpad_helper::SetCurrentlyInBackground(true);
+  crash_keys::SetCurrentlyInBackground(true);
 
   if ([_browserLauncher browserInitializationStage] <
       INITIALIZATION_STAGE_FOREGROUND) {
@@ -328,7 +329,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   [_incognitoBlocker removeFromSuperview];
   _incognitoBlocker = nil;
 
-  breakpad_helper::SetCurrentlyInBackground(false);
+  crash_keys::SetCurrentlyInBackground(false);
 
   // Update the state of metrics and crash reporting, as the method of
   // communication may have changed while the app was in the background.

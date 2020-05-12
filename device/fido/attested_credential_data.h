@@ -34,11 +34,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
       base::span<const uint8_t> u2f_data,
       std::unique_ptr<PublicKey> public_key);
 
-  // Moveable.
   AttestedCredentialData(AttestedCredentialData&& other);
-  AttestedCredentialData& operator=(AttestedCredentialData&& other);
+
+  AttestedCredentialData(
+      base::span<const uint8_t, kAaguidLength> aaguid,
+      base::span<const uint8_t, kCredentialIdLengthLength> credential_id_length,
+      std::vector<uint8_t> credential_id,
+      std::unique_ptr<PublicKey> public_key);
 
   ~AttestedCredentialData();
+
+  AttestedCredentialData& operator=(AttestedCredentialData&& other);
 
   const std::vector<uint8_t>& credential_id() const { return credential_id_; }
 
@@ -56,11 +62,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {
   // * Credential Public Key.
   std::vector<uint8_t> SerializeAsBytes() const;
 
-  AttestedCredentialData(
-      base::span<const uint8_t, kAaguidLength> aaguid,
-      base::span<const uint8_t, kCredentialIdLengthLength> credential_id_length,
-      std::vector<uint8_t> credential_id,
-      std::unique_ptr<PublicKey> public_key);
+  const PublicKey* public_key() const;
 
  private:
   // The 16-byte AAGUID of the authenticator.

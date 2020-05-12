@@ -599,7 +599,7 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
 const Font& OffscreenCanvasRenderingContext2D::AccessFont() {
   if (!GetState().HasRealizedFont())
     setFont(GetState().UnparsedFont());
-  return ModifiableState().GetFont();
+  return GetState().GetFont();
 }
 
 bool OffscreenCanvasRenderingContext2D::IsCanvas2DBufferValid() const {

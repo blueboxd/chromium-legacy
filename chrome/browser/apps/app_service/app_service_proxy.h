@@ -61,6 +61,9 @@ struct PauseData {
 // proxy for a given Profile, and therefore share its caches.
 // Observe AppRegistryCache to delete the preferred app on app removed.
 //
+// On Chrome OS, an instance is created for the lock screen apps profile, but
+// not for the signin profile.
+//
 // See chrome/services/app_service/README.md.
 class AppServiceProxy : public KeyedService,
                         public apps::IconLoader,

@@ -27,6 +27,7 @@
 #include "chrome/browser/apps/app_service/lacros_apps.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limit_interface.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
@@ -146,7 +147,14 @@ void AppServiceProxy::Initialize() {
         &instance_registry_);
     plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
     if (chromeos::features::IsLacrosSupportEnabled()) {
-      lacros_apps_ = std::make_unique<LacrosApps>(app_service_);
+      // LacrosApps uses LacrosLoader, which is a singleton. Don't create an
+      // instance of LacrosApps for the lock screen app profile, as we want to
+      // maintain a single instance of LacrosApps.
+      // TODO(jamescook): Multiprofile support. Consider adding a list of
+      // "ready" callbacks to LacrosLoader.
+      if (!chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
+        lacros_apps_ = std::make_unique<LacrosApps>(app_service_);
+      }
     }
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
       web_apps_ = std::make_unique<WebAppsChromeOs>(app_service_, profile_,

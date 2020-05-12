@@ -173,7 +173,7 @@ class RootScrollerTest : public testing::Test,
       event.data.scroll_begin.delta_x_hint = delta_x;
       event.data.scroll_begin.delta_y_hint = delta_y;
     }
-    return WebCoalescedInputEvent(event);
+    return WebCoalescedInputEvent(event, ui::LatencyInfo());
   }
 
   WebViewImpl* InitializeInternal(

@@ -235,7 +235,7 @@ class ScrollbarsTest : public SimTest {
       event.data.scroll_begin.delta_x_hint = offset.Width();
       event.data.scroll_begin.delta_y_hint = offset.Height();
     }
-    return WebCoalescedInputEvent(event);
+    return WebCoalescedInputEvent(event, ui::LatencyInfo());
   }
 
  private:

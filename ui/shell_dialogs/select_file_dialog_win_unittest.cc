@@ -283,8 +283,7 @@ TEST_F(SelectFileDialogWinTest, SpecifyTitle) {
   // Create an existing file since it is required.
   base::FilePath default_path = scoped_temp_dir.GetPath().Append(L"foo.txt");
   std::string contents = "Hello test!";
-  ASSERT_EQ(base::WriteFile(default_path, contents.c_str(), contents.length()),
-            static_cast<int>(contents.length()));
+  ASSERT_TRUE(base::WriteFile(default_path, contents));
 
   scoped_refptr<ui::SelectFileDialog> dialog =
       ui::SelectFileDialog::Create(this, nullptr);
@@ -312,8 +311,7 @@ TEST_F(SelectFileDialogWinTest, TestSelectFile) {
   // Create an existing file since it is required.
   base::FilePath default_path = scoped_temp_dir.GetPath().Append(L"foo.txt");
   std::string contents = "Hello test!";
-  ASSERT_EQ(base::WriteFile(default_path, contents.c_str(), contents.length()),
-            static_cast<int>(contents.length()));
+  ASSERT_TRUE(base::WriteFile(default_path, contents));
 
   scoped_refptr<ui::SelectFileDialog> dialog =
       ui::SelectFileDialog::Create(this, nullptr);
@@ -415,8 +413,7 @@ TEST_F(SelectFileDialogWinTest, OpenFileDifferentExtension) {
 
   base::FilePath default_path = scoped_temp_dir.GetPath().Append(L"foo.txt");
   std::string contents = "Hello test!";
-  ASSERT_EQ(base::WriteFile(default_path, contents.c_str(), contents.length()),
-            static_cast<int>(contents.length()));
+  ASSERT_TRUE(base::WriteFile(default_path, contents));
 
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.push_back({L"exe"});
@@ -475,8 +472,7 @@ TEST_F(SelectFileDialogWinTest, SaveFileOverwritePrompt) {
 
   base::FilePath default_path = scoped_temp_dir.GetPath().Append(L"foo.txt");
   std::string contents = "Hello test!";
-  ASSERT_EQ(base::WriteFile(default_path, contents.c_str(), contents.length()),
-            static_cast<int>(contents.length()));
+  ASSERT_TRUE(base::WriteFile(default_path, contents));
 
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.push_back({L"txt"});

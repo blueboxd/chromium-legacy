@@ -2372,8 +2372,8 @@ Output.PRESSED_STATE_MAP = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: `$name $node(activeDescendant) $value $state
-          $if($selected, @aria_selected_true) $restriction $role $description`,
+      speak: `$name $node(activeDescendant) $value $state $restriction $role
+          $description`,
       braille: ``
     },
     abstractContainer: {
@@ -2440,10 +2440,8 @@ Output.RULES = {
     date: {enter: `$nameFromNode $role $state $restriction $description`},
     dialog: {enter: `$nameFromNode $role $description`},
     genericContainer: {
-      enter: `$nameFromNode $description $state
-          $if($selected, @aria_selected_true)`,
-      speak: `$nameOrTextContent $description $state
-          $if($selected, @aria_selected_true)`
+      enter: `$nameFromNode $description $state`,
+      speak: `$nameOrTextContent $description $state`
     },
     embeddedObject: {speak: `$name`},
     grid: {
@@ -2460,11 +2458,11 @@ Output.RULES = {
       enter: `!relativePitch(hierarchicalLevel)
           $nameFromNode=
           $if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state
-          $description $if($selected, @aria_selected_true)`,
+          $description`,
       speak: `!relativePitch(hierarchicalLevel)
           $nameOrDescendants=
           $if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state
-          $restriction $description $if($selected, @aria_selected_true)`
+          $restriction $description`
     },
     image: {
       speak: `$if($name, $name,
@@ -2550,7 +2548,7 @@ Output.RULES = {
       speak: `$nameOrTextContent $description $roleDescription
         $state $if($selected, @aria_selected_true)`
     },
-    staticText: {speak: `$name=`},
+    staticText: {speak: `$name= $description`},
     switch: {
       speak: `$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF))
           $if($checked, @describe_switch_on($name),

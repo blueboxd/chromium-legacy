@@ -181,12 +181,10 @@ class LayerTreeHostTilesTestPartialInvalidation
 
 std::vector<TilesTestConfig> const kTestCases = {
     {LayerTreeTest::RENDERER_SOFTWARE, BITMAP},
-#if !defined(GL_NOT_ON_PLATFORM)
     {LayerTreeTest::RENDERER_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_GL, GPU},
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
-#endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_VK, GPU},
@@ -211,10 +209,8 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
 }
 
 std::vector<TilesTestConfig> const kTestCasesMultiThread = {
-#if !defined(GL_NOT_ON_PLATFORM)
     {LayerTreeTest::RENDERER_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
-#endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)
@@ -255,14 +251,12 @@ using LayerTreeHostTilesTestPartialInvalidationLowBitDepth =
 // This test doesn't work on Vulkan because on our hardware we can't render to
 // RGBA4444 format using either SwiftShader or native Vulkan. See
 // crbug.com/987278 for details
-#if !defined(GL_NOT_ON_PLATFORM)
 INSTANTIATE_TEST_SUITE_P(
     All,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
     ::testing::Values(
         TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU_LOW_BIT_DEPTH},
         TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU_LOW_BIT_DEPTH}));
-#endif  // !defined(GL_NOT_ON_PLATFORM)
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
   use_partial_raster_ = true;

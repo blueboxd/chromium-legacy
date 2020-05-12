@@ -63,6 +63,8 @@ js_type_check("closure_compile") {
     ":advanced_page_test",
     ":search_page_test",
     ":settings_page_test_util",
+    ":site_list_tests",
+    ":site_settings_page_test",
     ":test_about_page_browser_proxy",
     ":test_lifetime_browser_proxy.m",
     ":test_local_data_browser_proxy",
@@ -71,28 +73,6 @@ js_type_check("closure_compile") {
     ":test_util",
 
     # TODO(crbug.com/1000989): Add targets for more files here.
-  ]
-}
-
-js_library("test_local_data_browser_proxy") {
-  deps = [
-    "..:test_browser_proxy.m",
-    "//chrome/browser/resources/settings:lazy_load",
-  ]
-}
-
-js_library("test_site_settings_prefs_browser_proxy") {
-  deps = [
-    ":test_util",
-    "..:test_browser_proxy.m",
-    "//chrome/browser/resources/settings:lazy_load",
-  ]
-}
-
-js_library("test_util") {
-  deps = [
-    "//chrome/browser/resources/settings:lazy_load",
-    "//chrome/browser/resources/settings:settings",
   ]
 }
 
@@ -116,8 +96,42 @@ js_library("advanced_page_test") {
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
+js_library("search_page_test") {
+  deps = [
+    ":test_search_engines_browser_proxy.m",
+    "..:chai_assert",
+    "//chrome/browser/resources/settings:settings",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
 js_library("settings_page_test_util") {
   deps = [ "..:chai_assert" ]
+}
+
+js_library("site_list_tests") {
+  deps = [
+    ":test_site_settings_prefs_browser_proxy",
+    ":test_util",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/settings:lazy_load",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("site_settings_page_test") {
+  deps = [
+    ":test_site_settings_prefs_browser_proxy",
+    ":test_util",
+    "..:chai_assert",
+    "//chrome/browser/resources/settings:lazy_load",
+    "//ui/webui/resources/cr_elements/cr_link_row:cr_link_row.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("test_about_page_browser_proxy") {
@@ -138,6 +152,13 @@ js_library("test_lifetime_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
+js_library("test_local_data_browser_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:lazy_load",
+  ]
+}
+
 js_library("test_search_engines_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/test/data/webui/settings/test_search_engines_browser_proxy.m.js" ]
   deps = [
@@ -147,11 +168,17 @@ js_library("test_search_engines_browser_proxy.m") {
   extra_deps = [ ":modulize" ]
 }
 
-js_library("search_page_test") {
+js_library("test_site_settings_prefs_browser_proxy") {
   deps = [
-    ":test_search_engines_browser_proxy.m",
-    "..:chai_assert",
+    ":test_util",
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:lazy_load",
+  ]
+}
+
+js_library("test_util") {
+  deps = [
+    "//chrome/browser/resources/settings:lazy_load",
     "//chrome/browser/resources/settings:settings",
   ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

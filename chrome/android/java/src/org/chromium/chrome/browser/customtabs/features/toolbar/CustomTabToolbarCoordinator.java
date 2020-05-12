@@ -9,7 +9,9 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -17,6 +19,8 @@ import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -24,7 +28,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
 import org.chromium.chrome.browser.customtabs.CustomButtonParams;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
-import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -57,7 +60,6 @@ import dagger.Lazy;
 @ActivityScope
 public class CustomTabToolbarCoordinator {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
-    private final @Nullable CustomTabUmaRecorder mUmaRecorder;
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabsConnection mConnection;
     private final ChromeActivity<?> mActivity;
@@ -80,9 +82,8 @@ public class CustomTabToolbarCoordinator {
 
     @Inject
     public CustomTabToolbarCoordinator(BrowserServicesIntentDataProvider intentDataProvider,
-            @Nullable CustomTabUmaRecorder umaRecorder, CustomTabActivityTabProvider tabProvider,
-            CustomTabsConnection connection, ChromeActivity<?> activity,
-            @Named(APP_CONTEXT) Context appContext,
+            CustomTabActivityTabProvider tabProvider, CustomTabsConnection connection,
+            ChromeActivity<?> activity, @Named(APP_CONTEXT) Context appContext,
             BrowserServicesActivityTabController tabController,
             Lazy<ChromeFullscreenManager> fullscreenManager,
             CustomTabActivityNavigationController navigationController,
@@ -91,7 +92,6 @@ public class CustomTabToolbarCoordinator {
             CustomTabCompositorContentInitializer compositorContentInitializer,
             CustomTabToolbarColorController toolbarColorController) {
         mIntentDataProvider = intentDataProvider;
-        mUmaRecorder = umaRecorder;
         mTabProvider = tabProvider;
         mConnection = connection;
         mActivity = activity;
@@ -145,8 +145,11 @@ public class CustomTabToolbarCoordinator {
 
         sendButtonPendingIntentWithUrlAndTitle(params, tab.getUrlString(), tab.getTitle());
 
-        if (mUmaRecorder != null) {
-            mUmaRecorder.recordCustomButtonClick(mActivity.getResources(), params);
+        RecordUserAction.record("CustomTabsCustomActionButtonClick");
+        Resources resources = mActivity.getResources();
+        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()
+                && TextUtils.equals(params.getDescription(), resources.getString(R.string.share))) {
+            RecordUserAction.record("CustomTabsCustomActionButtonClick.DownloadsUI.Share");
         }
     }
 
@@ -178,9 +181,11 @@ public class CustomTabToolbarCoordinator {
     }
 
     private void onCloseButtonClick() {
-        if (mUmaRecorder != null) {
-            mUmaRecorder.recordCloseButtonClick();
+        RecordUserAction.record("CustomTabs.CloseButtonClicked");
+        if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
+            RecordUserAction.record("CustomTabs.CloseButtonClicked.DownloadsUI");
         }
+
         mNavigationController.navigateOnClose();
     }
 

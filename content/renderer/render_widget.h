@@ -498,7 +498,6 @@ class CONTENT_EXPORT RenderWidget
 
   // MainThreadEventQueueClient overrides.
   bool HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
-                        const ui::LatencyInfo& latency_info,
                         HandledEventCallback callback) override;
   void SetNeedsMainFrame() override;
 

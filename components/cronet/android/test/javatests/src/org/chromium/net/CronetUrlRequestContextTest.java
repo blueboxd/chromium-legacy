@@ -1265,6 +1265,7 @@ public class CronetUrlRequestContextTest {
         // reflect the change.
         builder.enableQuic(false);
         builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
+        builder.setUserAgent("efgh");
         builder.setExperimentalOptions("ijkl");
         builder.setStoragePath(getTestStorage(getContext()));
         builder.enablePublicKeyPinningBypassForLocalTrustAnchors(false);

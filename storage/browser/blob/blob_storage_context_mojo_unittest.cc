@@ -122,9 +122,7 @@ class BlobStorageContextMojoTest : public testing::Test {
                   std::string data,
                   base::Optional<base::Time> modification_time) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    int size = base::WriteFile(path, data.data(), data.size());
-    ASSERT_GE(size, 0);
-    EXPECT_EQ(size, static_cast<int>(data.size()));
+    EXPECT_TRUE(base::WriteFile(path, data));
     if (modification_time) {
       ASSERT_TRUE(base::TouchFile(path, modification_time.value(),
                                   modification_time.value()));

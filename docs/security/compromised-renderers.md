@@ -1,4 +1,4 @@
-# Compromised Renderers
+# Threat Model And Defenses Against Compromised Renderers
 
 Given the complexity of the browser, our threat model must use a "defense
 in depth" approach to limit the damage that occurs if an attacker
@@ -8,12 +8,12 @@ For example, the combination of Chrome's sandbox, IPC security checks, and Site
 Isolation limit what an untrustworthy renderer process can do.  They
 protect Chrome users against attackers, even when such attackers are able to
 bypass security logic in the renderer process.
-For other motivations for the "defense in depth" approach and why our
-threat model covers compromised renderers, please see the
-[document here](https://www.chromium.org/Home/chromium-security/site-isolation#TOC-Motivation).
+For other arguments for the "defense in depth" approach and why our
+threat model covers compromised renderers, please see
+[the Site Isolation motivation](https://www.chromium.org/Home/chromium-security/site-isolation#TOC-Motivation).
 
 In a compromised renderer, an attacker is able to execute
-arbitrary native (i.e. non-Javascript) code within the renderer
+arbitrary native (i.e. non-JavaScript) code within the renderer
 process's sandbox.  A compromised renderer can forge
 malicious IPC messages, impersonate a Chrome Extension content script,
 or use other techniques to trick more privileged parts of the browser.
@@ -50,21 +50,23 @@ Yet another example is making security decisions based on trustworthy knowledge,
 calculated within the privileged browser process (e.g. using
 `RenderFrameHost::GetLastCommittedOrigin()`).
 
-Compromised renderers shouldn’t be able to commit an execution context into a
-renderer process hosting cross-site execution contexts.
-On desktop platforms all sites (eTLD+1) should be isolated from each other.
+Compromised renderers shouldn’t be able to commit an execution context
+(e.g. commit a navigation to a HTML document, or create a service worker)
+in a renderer process hosting other, cross-site execution contexts.
+On desktop platforms all sites (site = scheme plus eTLD+1) should be isolated
+from each other.
 On Android, sites where the user entered a password should be isolated
 from each other and from other sites.
 
 **Known gaps in protection**:
-- No form of Site Isolation is active in Android WebView
+- No form of Site Isolation is active in Android WebView.
   See also https://crbug.com/769449.
 - No form of Site Isolation is active in content hosted within
   `<webview>` HTML tags.  See also https://crbug.com/614463.
 - Frames with `<iframe sandbox>` attribute are not isolated
   from their non-opaque precursor origin.
   See also https://crbug.com/510122.
-- `file:` frames may share a process with other `file:` frame.
+- `file:` frames may share a process with other `file:` frames.
   See also https://crbug.com/780770.
 
 
@@ -109,8 +111,9 @@ Protection techniques:
 Compromised renderers shouldn't be able to read the contents of cross-site
 frames.  Examples:
 - Text or pixels of cross-site frames.
-- Full URL of cross-site frames.  Note that the origin part is okay
-  since it is already exposed via `window.origin`.
+- Full URL (e.g. URL path or query) of cross-site frames.
+  Note that the origin of other frames
+  needs to be exposed via `window.origin` for legacy reasons.
 
 Protection techniques:
 - Compositing tab contents (both for display and for printing)
@@ -205,11 +208,11 @@ Examples of protected storage technologies:
 - webSQL
 
 Protection techniques:
-- Using CanAccessDataForOrigin to verify IPCs sent by a renderer process
+- Using `CanAccessDataForOrigin` to verify IPCs sent by a renderer process
   (e.g. see `StoragePartitionImpl::OpenLocalStorage`).
-- Binding mojo interfaces to a single origin obtained from browser-side
+- Binding Mojo interfaces to a single origin obtained from browser-side
   information in `RenderFrameHost::GetLastCommittedOrigin()`
-  (e.g. see RenderFrameHostImpl::CreateIDBFactory).
+  (e.g. see `RenderFrameHostImpl::CreateIDBFactory`).
 
 **Known gaps in protection**:
 - https://crbug.com/917457: FileSystem API (deprecated, Chrome-only).
@@ -220,25 +223,25 @@ Protection techniques:
 Compromised renderers shouldn’t be able to:
 - Spoof the `MessageEvent.origin` seen by a recipient of a `postMessage`.
 - Bypass enforcement of the `targetOrigin` argument of `postMessage`.
-- Send or receive BroadcastChannel messages for another origin.
+- Send or receive `BroadcastChannel` messages for another origin.
 - Spoof the `MessageSender.origin` seen by a recipient of a
   `chrome.runtime.sendMessage`
   (see also [MessageSender documentation](https://developers.chrome.com/extensions/runtime#type-MessageSender) and [content script security guidance](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-extensions/0ei-UCHNm34)).
 
 Protection techniques:
-- Using CanAccessDataForOrigin to verify IPCs sent by a renderer process
+- Using `CanAccessDataForOrigin` to verify IPCs sent by a renderer process
   (e.g. in `RenderFrameProxyHost::OnRouteMessageEvent` or
   `BroadcastChannelProvider::ConnectToChannel`).
 
 **Known gaps in protection**:
 - Spoofing of `MessageSender.id` object
-  (see [here](https://developers.chrome.com/extensions/runtime#type-MessageSender)
+  (see [the MessageSender documentation](https://developers.chrome.com/extensions/runtime#type-MessageSender)
   and https://crbug.com/982361).
 
 
-## Javascript code cache
+## JavaScript code cache
 
-Compromised renderers shouldn't be able to poison the Javascript code cache
+Compromised renderers shouldn't be able to poison the JavaScript code cache
 used by scripts executed in cross-site execution contexts.
 
 Protection techniques:
@@ -250,7 +253,7 @@ Protection techniques:
 ## Cross-Origin-Resource-Policy response header
 
 A compromised renderer shouldn’t be able to bypass
-Cross-Origin-Resource-Policy (CORS),
+[Cross-Origin-Resource-Policy (CORP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cross-Origin_Resource_Policy_%28CORP%29),
 which prevents or allows responses from being requested cross-origin, more
 explicitly than CORB.
 
@@ -322,9 +325,17 @@ See also https://crbug.com/927967.
 ## (WIP) User gestures / activations.
 
 Compromised renderers shouldn't be able to spoof user gestures to perform
-actions requiring them.
+actions requiring them:
 
-**Work-in-progress / not protected today**.  See https://crbug.com/848778.
+- A compromised renderer should not be able to forge a gesture that affects
+  the trusted browser UI.  For example, a compromised renderer should not be
+  able to interact with the Omnibox or the WebBluetooth chooser.
+
+- A compromised renderer should not be able to forge a gesture that grants
+  extra capabilities to a web origin.   For example, a compromised renderer
+  should not be able to open an unlimited number of popup
+  windows by forging user gestures.
+  **Work-in-progress / not protected today** - see https://crbug.com/848778.
 
 
 ## Web Accessible Resources of Chrome Extensions

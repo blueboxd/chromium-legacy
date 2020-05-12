@@ -61,6 +61,7 @@ const char kClientID[] = "fake-client-id";
 const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
 const char kBrandCode[] = "fake-brand-code";
+const char kAttestedDeviceId[] = "fake-attested-device-id";
 const char kEthernetMacAddress[] = "fake-ethernet-mac-address";
 const char kDockMacAddress[] = "fake-dock-mac-address";
 const char kManufactureDate[] = "fake-manufacture-date";
@@ -138,6 +139,8 @@ class CloudPolicyClientTest : public testing::Test {
     register_request->set_machine_id(kMachineID);
     register_request->set_machine_model(kMachineModel);
     register_request->set_brand_code(kBrandCode);
+    register_request->mutable_device_register_identification()
+        ->set_attested_device_id(kAttestedDeviceId);
     register_request->set_ethernet_mac_address(kEthernetMacAddress);
     register_request->set_dock_mac_address(kDockMacAddress);
     register_request->set_manufacture_date(kManufactureDate);
@@ -152,6 +155,8 @@ class CloudPolicyClientTest : public testing::Test {
     reregister_request->set_machine_id(kMachineID);
     reregister_request->set_machine_model(kMachineModel);
     reregister_request->set_brand_code(kBrandCode);
+    reregister_request->mutable_device_register_identification()
+        ->set_attested_device_id(kAttestedDeviceId);
     reregister_request->set_ethernet_mac_address(kEthernetMacAddress);
     reregister_request->set_dock_mac_address(kDockMacAddress);
     reregister_request->set_manufacture_date(kManufactureDate);
@@ -172,6 +177,8 @@ class CloudPolicyClientTest : public testing::Test {
     request->set_machine_id(kMachineID);
     request->set_machine_model(kMachineModel);
     request->set_brand_code(kBrandCode);
+    request->mutable_device_register_identification()->set_attested_device_id(
+        kAttestedDeviceId);
     request->set_ethernet_mac_address(kEthernetMacAddress);
     request->set_dock_mac_address(kDockMacAddress);
     request->set_manufacture_date(kManufactureDate);
@@ -309,9 +316,9 @@ class CloudPolicyClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_ = std::make_unique<CloudPolicyClient>(
-        kMachineID, kMachineModel, kBrandCode, kEthernetMacAddress,
-        kDockMacAddress, kManufactureDate, &fake_signing_service_, &service_,
-        shared_url_loader_factory_,
+        kMachineID, kMachineModel, kBrandCode, kAttestedDeviceId,
+        kEthernetMacAddress, kDockMacAddress, kManufactureDate,
+        &fake_signing_service_, &service_, shared_url_loader_factory_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,
             base::Unretained(&device_dmtoken_callback_observer_)));

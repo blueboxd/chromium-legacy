@@ -54,7 +54,7 @@ class LocalFileStreamWriterTest : public testing::Test {
   base::FilePath CreateFileWithContent(const std::string& name,
                                        const std::string& data) {
     base::FilePath path = Path(name);
-    base::WriteFile(path, data.c_str(), data.size());
+    base::WriteFile(path, data);
     return path;
   }
 

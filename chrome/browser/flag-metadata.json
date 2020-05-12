@@ -98,6 +98,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "android-multiple-display",
+    "owners": [ "lazzzis@google.com", "twellington" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "android-partner-customization-phenotype",
     "owners": [ "bttk" ],
     "expiry_milestone": 90
@@ -938,7 +943,7 @@
   {
     "name": "dns-httpssvc",
     "owners": [ "dmcardle", "ericorth" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "dns-over-https",
@@ -1399,6 +1404,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-desktop-pwas-tab-strip-link-capturing",
+    "owners": [ "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "enable-desktop-pwas-without-extensions",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 88
@@ -1742,11 +1752,6 @@
     "name": "enable-navigation-predictor",
     "owners": [ "tbansal", "ryansturm", "instant-nav" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "enable-navigation-tracing",
-    "owners": [ "oysteine" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-network-logging-to-file",
@@ -2950,6 +2955,11 @@
     "name": "network-service-in-process",
     "owners": [ "network-service-dev" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "new-canvas-2d-api",
+    "owners": [ "aaronhk", "fserb", "juanmihd", "yiyix" ],
+    "expiry_milestone": 95
   },
   {
     "name": "new-net-error-page-ui",

@@ -801,7 +801,6 @@ interface CSSRule
     attribute PROPERTY_RULE
     attribute STYLE_RULE
     attribute SUPPORTS_RULE
-    attribute VIEWPORT_RULE
     getter cssText
     getter parentRule
     getter parentStyleSheet
@@ -936,10 +935,6 @@ interface CSSVariableReferenceValue
     getter variable
     method constructor
     setter variable
-interface CSSViewportRule : CSSRule
-    attribute @@toStringTag
-    getter style
-    method constructor
 interface Cache
     attribute @@toStringTag
     method add

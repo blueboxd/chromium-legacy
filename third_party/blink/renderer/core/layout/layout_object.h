@@ -675,6 +675,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutTableCol() const {
     return IsOfType(kLayoutObjectLayoutTableCol);
   }
+  bool IsLayoutNGTableCol() const {
+    return IsOfType(kLayoutObjectLayoutNGTableCol);
+  }
   bool IsListItem() const { return IsOfType(kLayoutObjectListItem); }
   bool IsMathML() const { return IsOfType(kLayoutObjectMathML); }
   bool IsMathMLRoot() const { return IsOfType(kLayoutObjectMathMLRoot); }
@@ -713,6 +716,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsTable() const { return IsOfType(kLayoutObjectTable); }
   bool IsTableCaption() const { return IsOfType(kLayoutObjectTableCaption); }
   bool IsTableCell() const { return IsOfType(kLayoutObjectTableCell); }
+  bool IsTableCellLegacy() const {
+    return IsOfType(kLayoutObjectTableCellLegacy);
+  }
   bool IsTableRow() const { return IsOfType(kLayoutObjectTableRow); }
   bool IsTableSection() const { return IsOfType(kLayoutObjectTableSection); }
   bool IsTextArea() const { return IsOfType(kLayoutObjectTextArea); }
@@ -1084,6 +1090,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.NormalChildNeedsLayout();
   }
   bool NeedsCollectInlines() const { return bitfields_.NeedsCollectInlines(); }
+
+  bool MaybeHasPercentHeightDescendant() const {
+    return bitfields_.MaybeHasPercentHeightDescendant();
+  }
+  void SetMaybeHasPercentHeightDescendant() {
+    bitfields_.SetMaybeHasPercentHeightDescendant(true);
+  }
 
   // Return true if the min/max intrinsic logical widths aren't up-to-date.
   // Note that for objects that *don't* need to calculate intrinsic logical
@@ -2587,6 +2600,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectFrameSet,
     kLayoutObjectInsideListMarker,
     kLayoutObjectLayoutTableCol,
+    kLayoutObjectLayoutNGTableCol,
     kLayoutObjectListItem,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,
@@ -2627,6 +2641,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectTable,
     kLayoutObjectTableCaption,
     kLayoutObjectTableCell,
+    kLayoutObjectTableCellLegacy,
     kLayoutObjectTableRow,
     kLayoutObjectTableSection,
     kLayoutObjectTextArea,
@@ -2921,6 +2936,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           intrinsic_logical_widths_child_depends_on_percentage_block_size_(
               true),
           needs_collect_inlines_(false),
+          maybe_has_percent_height_descendant_(false),
           should_check_for_paint_invalidation_(true),
           subtree_should_check_for_paint_invalidation_(false),
           should_delay_full_paint_invalidation_(false),
@@ -3052,6 +3068,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Pre-layout phase in LayoutNG. See NGInlineNode::CollectInlines().
     // Also maybe set to inline boxes to optimize the propagation.
     ADD_BOOLEAN_BITFIELD(needs_collect_inlines_, NeedsCollectInlines);
+
+    // This boolean tracks if a containing-block potentially has a percentage
+    // height descentant within its subtree. A relayout may be required if a
+    // %-block-size or definiteness changes. This flag is only set, and never
+    // cleared.
+    ADD_BOOLEAN_BITFIELD(maybe_has_percent_height_descendant_,
+                         MaybeHasPercentHeightDescendant);
 
     // Paint related dirty bits.
     ADD_BOOLEAN_BITFIELD(should_check_for_paint_invalidation_,

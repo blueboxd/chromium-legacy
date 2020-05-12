@@ -156,7 +156,7 @@ weblayer_instrumentation("weblayer_private_instrumentation_test_apk") {
 #   autoninja -C out/Release weblayer_instrumentation_test_versions_apk
 #   cipd install --root /tmp/M80 chromium/testing/weblayer-x86 m80
 #   out/Release/bin/run_weblayer_instrumentation_tests_versions_apk \
-#       --tests-outdir /tmp/M80/out/Release
+#       --test-runner-outdir out/Release
 #       --client-outdir /tmp/M80/out/Release
 #       --implementation-outdir out/Release
 copy("weblayer_instrumentation_test_versions_apk") {

@@ -46,3 +46,11 @@ are (or were) large and widely included.
 Try using forward declarations or otherwise restructuring your change to
 avoid growing the header beyond the limit. If that is infeasible, raise the
 limit.
+
+
+## Experiences
+
+- System headers on Chrome OS differ between boards and are not covered by the
+  commit queue. This means the token limits were not tailored to those builds,
+  causing build problems downstream. To avoid this, the -Wmax-tokens warning
+  was disabled for Chrome OS (see [crbug.com/1079053](https://crbug.com/1079053).

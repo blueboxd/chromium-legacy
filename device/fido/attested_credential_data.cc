@@ -113,7 +113,8 @@ AttestedCredentialData::ConsumeFromCtapResponse(
   }
 
   if (!public_key) {
-    public_key = std::make_unique<PublicKey>(algorithm, public_key_cbor_bytes);
+    public_key = std::make_unique<PublicKey>(algorithm, public_key_cbor_bytes,
+                                             base::nullopt);
   }
 
   return std::make_pair(
@@ -162,6 +163,17 @@ AttestedCredentialData::CreateFromU2fRegisterResponse(
 AttestedCredentialData::AttestedCredentialData(AttestedCredentialData&& other) =
     default;
 
+AttestedCredentialData::AttestedCredentialData(
+    base::span<const uint8_t, kAaguidLength> aaguid,
+    base::span<const uint8_t, kCredentialIdLengthLength> credential_id_length,
+    std::vector<uint8_t> credential_id,
+    std::unique_ptr<PublicKey> public_key)
+    : aaguid_(fido_parsing_utils::Materialize(aaguid)),
+      credential_id_length_(
+          fido_parsing_utils::Materialize(credential_id_length)),
+      credential_id_(std::move(credential_id)),
+      public_key_(std::move(public_key)) {}
+
 AttestedCredentialData& AttestedCredentialData::operator=(
     AttestedCredentialData&& other) = default;
 
@@ -185,15 +197,8 @@ std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {
   return attestation_data;
 }
 
-AttestedCredentialData::AttestedCredentialData(
-    base::span<const uint8_t, kAaguidLength> aaguid,
-    base::span<const uint8_t, kCredentialIdLengthLength> credential_id_length,
-    std::vector<uint8_t> credential_id,
-    std::unique_ptr<PublicKey> public_key)
-    : aaguid_(fido_parsing_utils::Materialize(aaguid)),
-      credential_id_length_(
-          fido_parsing_utils::Materialize(credential_id_length)),
-      credential_id_(std::move(credential_id)),
-      public_key_(std::move(public_key)) {}
+const PublicKey* AttestedCredentialData::public_key() const {
+  return public_key_.get();
+}
 
 }  // namespace device

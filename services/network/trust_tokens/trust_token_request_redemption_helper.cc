@@ -138,7 +138,7 @@ void TrustTokenRequestRedemptionHelper::OnGotKeyCommitment(
 
   if (!commitment_result->batch_size ||
       !cryptographer_->Initialize(
-          commitment_result->batch_size->value,
+          commitment_result->batch_size,
           commitment_result->signed_redemption_record_verification_key)) {
     LogOutcome(net_log_, kBegin,
                "Internal error initializing BoringSSL redemption state "

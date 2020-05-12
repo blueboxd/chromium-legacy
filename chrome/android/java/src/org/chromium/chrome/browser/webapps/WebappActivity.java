@@ -31,18 +31,15 @@ import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
-import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -112,7 +109,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         super.initializeState();
 
         mTabController.initializeState();
-        mTabObserverRegistrar.registerActivityTabObserver(createTabObserver());
     }
 
     @VisibleForTesting
@@ -261,21 +257,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 true /* is opened by Chrome */, true /* should show share */,
                 false /* should show star (bookmarking) */, false /* should show download */,
                 false /* is incognito */);
-    }
-
-    protected CustomTabTabObserver createTabObserver() {
-        return new CustomTabTabObserver() {
-            @Override
-            public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (navigation.hasCommitted() && navigation.isInMainFrame()
-                        && !navigation.isSameDocument()) {
-                    // Notify the renderer to permanently hide the top controls since they do
-                    // not apply to fullscreen content views.
-                    TabBrowserControlsConstraintsHelper.update(
-                            tab, TabBrowserControlsConstraintsHelper.getConstraints(tab), true);
-                }
-            }
-        };
     }
 
     @Override

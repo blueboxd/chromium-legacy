@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/lacros/lacros_loader.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -103,6 +105,14 @@ void LacrosLoader::Init() {
   }
 }
 
+bool LacrosLoader::IsReady() const {
+  return !lacros_path_.empty();
+}
+
+void LacrosLoader::SetReadyCallback(base::OnceClosure ready_callback) {
+  ready_callback_ = std::move(ready_callback);
+}
+
 void LacrosLoader::Start() {
   if (!IsLacrosAllowed())
     return;
@@ -147,6 +157,8 @@ void LacrosLoader::OnLoadComplete(
   }
   lacros_path_ = path;
   LOG(WARNING) << "Loaded lacros image at " << lacros_path_.MaybeAsASCII();
+  if (ready_callback_)
+    std::move(ready_callback_).Run();
 }
 
 void LacrosLoader::CleanUp(bool previously_installed) {

@@ -33,7 +33,7 @@
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "gpu/config/gpu_util.h"
-#include "third_party/vulkan/include/vulkan/vulkan.h"
+#include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 #include "ui/gl/direct_composition_surface_win.h"
 
 namespace gpu {
@@ -232,60 +232,12 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
   }
 }
 
-bool BadAMDVulkanDriverVersion() {
-  // Both 32-bit and 64-bit dll are broken. If 64-bit doesn't exist,
-  // 32-bit dll will be used to detect the AMD Vulkan driver.
-  const base::FilePath kAmdDriver64(FILE_PATH_LITERAL("amdvlk64.dll"));
-  const base::FilePath kAmdDriver32(FILE_PATH_LITERAL("amdvlk32.dll"));
-  std::unique_ptr<FileVersionInfoWin> file_version_info =
-      FileVersionInfoWin::CreateFileVersionInfoWin(kAmdDriver64);
-  if (!file_version_info) {
-    file_version_info =
-        FileVersionInfoWin::CreateFileVersionInfoWin(kAmdDriver32);
-    if (!file_version_info)
-      return false;
-  }
-
-  // From the Canary crash logs, the broken amdvlk64.dll versions
-  // are 1.0.39.0, 1.0.51.0 and 1.0.54.0. In the manual test, version
-  // 9.2.10.1 dated 12/6/2017 works and version 1.0.54.0 dated 11/2/1017
-  // crashes. All version numbers small than 1.0.54.0 will be marked as
-  // broken.
-  const base::Version kBadAMDVulkanDriverVersion("1.0.54.0");
-  return file_version_info->GetFileVersion() <= kBadAMDVulkanDriverVersion;
-}
-
-bool BadVulkanDllVersion() {
-  std::unique_ptr<FileVersionInfoWin> file_version_info =
-      FileVersionInfoWin::CreateFileVersionInfoWin(
-          base::FilePath(FILE_PATH_LITERAL("vulkan-1.dll")));
-  if (!file_version_info)
-    return false;
-
-  // From the logs, most vulkan-1.dll crashs are from the following versions.
-  // As of 7/23/2018.
-  // 0.0.0.0 -  # of crashes: 6556
-  // 1.0.26.0 - # of crashes: 5890
-  // 1.0.33.0 - # of crashes: 12271
-  // 1.0.42.0 - # of crashes: 35749
-  // 1.0.42.1 - # of crashes: 68214
-  // 1.0.51.0 - # of crashes: 5152
-  // The GPU could be from any vendor, but only some certain models would crash.
-  // For those that don't crash, they usually return failures upon GPU vulkan
-  // support querying even though the GPU drivers can support it.
-  base::Version fv = file_version_info->GetFileVersion();
-  const char* const kBadVulkanDllVersion[] = {
-      "0.0.0.0", "1.0.26.0", "1.0.33.0", "1.0.42.0", "1.0.42.1", "1.0.51.0"};
-  for (const char* bad_version : kBadVulkanDllVersion) {
-    if (fv == base::Version(bad_version))
-      return true;
-  }
-  return false;
-}
-
 bool InitVulkan(base::NativeLibrary* vulkan_library,
                 PFN_vkGetInstanceProcAddr* vkGetInstanceProcAddr,
-                PFN_vkCreateInstance* vkCreateInstance) {
+                PFN_vkCreateInstance* vkCreateInstance,
+                uint32_t* vulkan_version) {
+  *vulkan_version = 0;
+
   *vulkan_library =
       base::LoadNativeLibrary(base::FilePath(L"vulkan-1.dll"), nullptr);
 
@@ -294,14 +246,39 @@ bool InitVulkan(base::NativeLibrary* vulkan_library,
   }
 
   *vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-      GetProcAddress(*vulkan_library, "vkGetInstanceProcAddr"));
+      base::GetFunctionPointerFromNativeLibrary(*vulkan_library,
+                                                "vkGetInstanceProcAddr"));
 
   if (*vkGetInstanceProcAddr) {
+    *vulkan_version = VK_MAKE_VERSION(1, 0, 0);
+    PFN_vkEnumerateInstanceVersion vkEnumerateInstanceVersion;
+    vkEnumerateInstanceVersion =
+        reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
+            (*vkGetInstanceProcAddr)(nullptr, "vkEnumerateInstanceVersion"));
+
+    // If the vkGetInstanceProcAddr returns nullptr for
+    // vkEnumerateInstanceVersion, it is a Vulkan 1.0 implementation.
+    if (!vkEnumerateInstanceVersion) {
+      return false;
+    }
+
+    // Return value can be VK_SUCCESS or VK_ERROR_OUT_OF_HOST_MEMORY.
+    if (vkEnumerateInstanceVersion(vulkan_version) != VK_SUCCESS) {
+      return false;
+    }
+
+    // The minimum version required for Vulkan to be enabled is 1.1.0.
+    // No further queries will be called for early versions. They are unstable
+    // and might cause crashes.
+    if (*vulkan_version < VK_MAKE_VERSION(1, 1, 0)) {
+      return false;
+    }
+
     *vkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(
         (*vkGetInstanceProcAddr)(nullptr, "vkCreateInstance"));
-    if (*vkCreateInstance) {
+
+    if (*vkCreateInstance)
       return true;
-    }
   }
 
   // From the crash reports, unloading the library here might cause a crash in
@@ -351,19 +328,9 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   info->supports_vulkan = false;
   info->vulkan_version = 0;
 
-  // Skip if the system has an older AMD Vulkan driver amdvlk64.dll or
-  // amdvlk32.dll which crashes when vkCreateInstance() is called. This bug has
-  // been fixed in the latest AMD driver.
-  if (BadAMDVulkanDriverVersion()) {
-    return;
-  }
-
-  // Some early versions of vulkan-1.dll might crash
-  if (BadVulkanDllVersion()) {
-    return;
-  }
-
-  if (!InitVulkan(&vulkan_library, &vkGetInstanceProcAddr, &vkCreateInstance)) {
+  // Only supports a version >= 1.1.0.
+  if (!InitVulkan(&vulkan_library, &vkGetInstanceProcAddr, &vkCreateInstance,
+                  &info->vulkan_version)) {
     return;
   }
 
@@ -375,7 +342,9 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   create_info.pApplicationInfo = &app_info;
 
   // Get the Vulkan API version supported in the GPU driver
-  for (int minor_version = 2; minor_version >= 0; --minor_version) {
+  int highest_minor_version = VK_VERSION_MINOR(info->vulkan_version);
+  for (int minor_version = highest_minor_version; minor_version >= 1;
+       --minor_version) {
     app_info.apiVersion = VK_MAKE_VERSION(1, minor_version, 0);
     VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
     if (result == VK_SUCCESS && vk_instance &&
@@ -423,6 +392,8 @@ void GetGpuSupportedVulkanVersionAndExtensions(
         }
       }
     }
+  } else {
+    info->vulkan_version = VK_MAKE_VERSION(1, 0, 0);
   }
 
   // From the crash reports, calling the following two functions might cause a

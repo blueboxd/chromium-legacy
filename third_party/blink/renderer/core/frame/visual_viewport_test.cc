@@ -1157,14 +1157,14 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   // Do a sanity check with no scale applied.
   WebView()->MainFrameImpl()->SetClient(&mock_web_frame_client);
   WebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_down_event));
+      WebCoalescedInputEvent(mouse_down_event, ui::LatencyInfo()));
   WebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_up_event));
+      WebCoalescedInputEvent(mouse_up_event, ui::LatencyInfo()));
 
   Mock::VerifyAndClearExpectations(&mock_web_frame_client);
   mouse_down_event.button = WebMouseEvent::Button::kLeft;
   WebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_down_event));
+      WebCoalescedInputEvent(mouse_down_event, ui::LatencyInfo()));
 
   // Now pinch zoom into the page and move the visual viewport. The context menu
   // should still appear at the location of the event, relative to the WebView.
@@ -1179,9 +1179,9 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
 
   mouse_down_event.button = WebMouseEvent::Button::kRight;
   WebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_down_event));
+      WebCoalescedInputEvent(mouse_down_event, ui::LatencyInfo()));
   WebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_up_event));
+      WebCoalescedInputEvent(mouse_up_event, ui::LatencyInfo()));
 
   // Reset the old client so destruction can occur naturally.
   WebView()->MainFrameImpl()->SetClient(old_client);

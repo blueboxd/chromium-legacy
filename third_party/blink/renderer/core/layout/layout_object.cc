@@ -376,9 +376,9 @@ bool LayoutObject::RequiresAnonymousTableWrappers(
   // CSS 2.1 Tables: 17.2.1 Anonymous table objects
   // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
   if (new_child->IsLayoutTableCol()) {
-    const LayoutTableCol* new_table_column = ToLayoutTableCol(new_child);
     bool is_column_in_column_group =
-        new_table_column->IsTableColumn() && IsLayoutTableCol();
+        new_child->StyleRef().Display() == EDisplay::kTableColumn &&
+        IsLayoutTableCol();
     return !IsTable() && !is_column_in_column_group;
   }
   if (new_child->IsTableCaption())

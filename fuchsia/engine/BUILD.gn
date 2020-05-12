@@ -365,6 +365,7 @@ executable("web_engine_shell_exec") {
   deps = [
     "//base",
     "//fuchsia/base",
+    "//fuchsia/base:release_channel_buildflags",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",

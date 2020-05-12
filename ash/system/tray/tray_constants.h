@@ -106,6 +106,9 @@ constexpr gfx::Insets kUnifiedManagedDeviceViewPadding(4, 19, 4, 16);
 constexpr gfx::Insets kUnifiedSliderRowPadding(0, 16, 8, 16);
 constexpr gfx::Insets kUnifiedSliderBubblePadding(12, 0, 4, 0);
 constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
+constexpr gfx::Insets kMicGainSliderViewPadding(0, 52, 0, 0);
+constexpr gfx::Insets kMicGainSliderPadding(0, 0, 0, 48);
+constexpr int kMicGainSliderViewSpacing = 8;
 
 constexpr int kMessageCenterCollapseThreshold = 175;
 constexpr int kStackedNotificationBarHeight = 32;

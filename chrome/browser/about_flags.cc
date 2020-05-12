@@ -1456,6 +1456,17 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_TasksOnly), nullptr},
     {"Omnibox Only", kStartSurfaceAndroid_OmniboxOnly,
      base::size(kStartSurfaceAndroid_OmniboxOnly), nullptr}};
+
+const FeatureEntry::FeatureParam kConditionalTabStripAndroid_Immediate[] = {
+    {"conditional_tab_strip_session_time_ms", "0"}};
+const FeatureEntry::FeatureParam kConditionalTabStripAndroid_60Minutes[] = {
+    {"conditional_tab_strip_session_time_ms", "3600000"}};
+const FeatureEntry::FeatureVariation kConditionalTabStripAndroidVariations[] = {
+    {"Immediate", kConditionalTabStripAndroid_Immediate,
+     base::size(kConditionalTabStripAndroid_Immediate), nullptr},
+    {"60 minutes", kConditionalTabStripAndroid_60Minutes,
+     base::size(kConditionalTabStripAndroid_60Minutes), nullptr},
+};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -2413,10 +2424,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTouchSelectionStrategyDescription,
      kOsAndroid,  // TODO(mfomitchev): Add CrOS/Win/Linux support soon.
      MULTI_VALUE_TYPE(kTouchTextSelectionStrategyChoices)},
-    {"enable-navigation-tracing",
-     flag_descriptions::kEnableNavigationTracingName,
-     flag_descriptions::kEnableNavigationTracingDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableNavigationTracing)},
     {"trace-upload-url", flag_descriptions::kTraceUploadUrlName,
      flag_descriptions::kTraceUploadUrlDescription, kOsAll,
      MULTI_VALUE_TYPE(kTraceUploadURL)},
@@ -2687,6 +2694,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsTabStripName,
      flag_descriptions::kDesktopPWAsTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStrip)},
+    {"enable-desktop-pwas-tab-strip-link-capturing",
+     flag_descriptions::kDesktopPWAsTabStripLinkCapturingName,
+     flag_descriptions::kDesktopPWAsTabStripLinkCapturingDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStripLinkCapturing)},
     {"enable-desktop-pwas-without-extensions",
      flag_descriptions::kDesktopPWAsWithoutExtensionsName,
      flag_descriptions::kDesktopPWAsWithoutExtensionsDescription, kOsDesktop,
@@ -3891,7 +3903,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-conditional-tabstrip",
      flag_descriptions::kConditionalTabStripAndroidName,
      flag_descriptions::kConditionalTabStripAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kConditionalTabStripAndroid)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kConditionalTabStripAndroid,
+         kConditionalTabStripAndroidVariations,
+         "ConditioanlTabStrip")},
 #endif  // OS_ANDROID
 
     {"enable-layout-ng", flag_descriptions::kEnableLayoutNGName,
@@ -5434,6 +5449,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kNearbySharing)},
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"android-multiple-display", flag_descriptions::kAndroidMultipleDisplayName,
+     flag_descriptions::kAndroidMultipleDisplayDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidMultipleDisplay)},
+#endif  // defined(OS_ANDROID)
     {"autofill-enable-surfacing-server-card-nickname",
      flag_descriptions::kAutofillEnableSurfacingServerCardNicknameName,
      flag_descriptions::kAutofillEnableSurfacingServerCardNicknameDescription,
@@ -5508,6 +5528,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(kDiceWebSigninInterceptionFeature)},
 #endif  // ENABLE_DICE_SUPPORT
+    {"new-canvas-2d-api", flag_descriptions::kNewCanvas2DAPIName,
+     flag_descriptions::kNewCanvas2DAPIDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kEnableNewCanvas2DAPI)},
 
     {"enable-translate-sub-frames",
      flag_descriptions::kEnableTranslateSubFramesName,

@@ -362,7 +362,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
     mouseMove.SetPositionInWidget(start_x, start_y);
     CHECK(context->web_view()->MainFrameWidget());
     context->web_view()->MainFrameWidget()->HandleInputEvent(
-        blink::WebCoalescedInputEvent(mouseMove));
+        blink::WebCoalescedInputEvent(mouseMove, ui::LatencyInfo()));
     context->web_view()->MainFrameWidget()->SetCursorVisibilityState(
         cursor_visible);
   }

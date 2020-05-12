@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
-#import "ios/chrome/browser/crash_report/breakpad_helper.h"
+#import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,7 +35,7 @@ void UpdateMemoryValues() {
                                                 base::BlockingType::WILL_BLOCK);
   const int free_memory =
       static_cast<int>(base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024);
-  breakpad_helper::SetCurrentFreeMemoryInKB(free_memory);
+  crash_keys::SetCurrentFreeMemoryInKB(free_memory);
 
   NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:NSHomeDirectory()];
   NSDictionary* results = [fileURL resourceValuesForKeys:@[
@@ -48,7 +48,7 @@ void UpdateMemoryValues() {
         results[NSURLVolumeAvailableCapacityForImportantUsageKey];
     free_disk_space_kilobytes = [available_bytes integerValue] / 1024;
   }
-  breakpad_helper::SetCurrentFreeDiskInKB(free_disk_space_kilobytes);
+  crash_keys::SetCurrentFreeDiskInKB(free_disk_space_kilobytes);
   [[PreviousSessionInfo sharedInstance]
       updateAvailableDeviceStorage:(NSInteger)free_disk_space_kilobytes];
 }

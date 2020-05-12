@@ -42,7 +42,6 @@ Polymer({
      */
     contentSetting: String,
 
-    /** @private */
     hasIncognito: {
       type: Boolean,
       observer: 'hasIncognitoChanged_',

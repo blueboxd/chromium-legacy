@@ -691,7 +691,7 @@ TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
           test_data::kCtap2MakeCredentialCredentialId),
       std::make_unique<PublicKey>(
           static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
-          kCoseEncodedPublicKey));
+          kCoseEncodedPublicKey, base::nullopt));
   AuthenticatorData authenticator_data(application_parameter, flag,
                                        signature_counter,
                                        std::move(attested_credential_data));

@@ -69,6 +69,7 @@ std::string RemoveAppShortcutLabel(const std::string& id) {
 
 SearchController::SearchController(AppListModelUpdater* model_updater,
                                    AppListControllerDelegate* list_controller,
+                                   ash::AppListNotifier* notifier,
                                    Profile* profile)
     : profile_(profile),
       mixer_(std::make_unique<Mixer>(model_updater)),

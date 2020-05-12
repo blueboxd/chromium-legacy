@@ -44,11 +44,9 @@ void DidGetUsage(bool* done, int64_t* usage_out, int64_t usage) {
   *usage_out = usage;
 }
 
-}  // namespace
-
-class MockQuotaClient : public QuotaClient {
+class UsageTrackerTestQuotaClient : public QuotaClient {
  public:
-  MockQuotaClient() = default;
+  UsageTrackerTestQuotaClient() = default;
 
   QuotaClientType type() const override { return QuotaClientType::kFileSystem; }
 
@@ -120,18 +118,20 @@ class MockQuotaClient : public QuotaClient {
   }
 
  private:
-  ~MockQuotaClient() override = default;
+  ~UsageTrackerTestQuotaClient() override = default;
 
   std::map<url::Origin, int64_t> origin_usage_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockQuotaClient);
+  DISALLOW_COPY_AND_ASSIGN(UsageTrackerTestQuotaClient);
 };
+
+}  // namespace
 
 class UsageTrackerTest : public testing::Test {
  public:
   UsageTrackerTest()
       : storage_policy_(new MockSpecialStoragePolicy()),
-        quota_client_(base::MakeRefCounted<MockQuotaClient>()),
+        quota_client_(base::MakeRefCounted<UsageTrackerTestQuotaClient>()),
         usage_tracker_(GetUsageTrackerList(),
                        StorageType::kTemporary,
                        storage_policy_.get()) {}
@@ -236,7 +236,7 @@ class UsageTrackerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
-  scoped_refptr<MockQuotaClient> quota_client_;
+  scoped_refptr<UsageTrackerTestQuotaClient> quota_client_;
   UsageTracker usage_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(UsageTrackerTest);

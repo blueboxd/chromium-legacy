@@ -41,6 +41,8 @@ namespace blink {
 
 const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 
+// Changes to this list must be kept in sync with the browser-side checks in
+// /chrome/common/custom_handlers/protocol_handler.cc.
 static const HashSet<String>& SupportedSchemes() {
   DEFINE_STATIC_LOCAL(
       HashSet<String>, supported_schemes,
@@ -127,7 +129,7 @@ static bool VerifyCustomHandlerScheme(const String& scheme,
     return false;
   }
 
-  if (scheme.StartsWith("web+")) {
+  if (scheme.StartsWithIgnoringASCIICase("web+")) {
     if (IsValidWebSchemeName(scheme))
       return true;
     exception_state.ThrowSecurityError(

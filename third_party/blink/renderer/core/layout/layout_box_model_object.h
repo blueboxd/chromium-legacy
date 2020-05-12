@@ -187,12 +187,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // Returns which layers backgrounds should be painted into for a overflow
   // scrolling box if it uses composited scrolling.
-  // TODO(yigu): PaintLayerScrollableArea::ComputeNeedsCompositedScrolling
-  // calls this method to obtain main thread scrolling reasons due to
-  // background paint location. Once the cases get handled on compositor the
-  // parameter "reasons" could be removed.
-  BackgroundPaintLocation ComputeBackgroundPaintLocationIfComposited(
-      uint32_t* main_thread_scrolling_reasons = nullptr) const;
+  BackgroundPaintLocation ComputeBackgroundPaintLocationIfComposited() const;
 
   // These return the CSS computed padding values.
   LayoutUnit ComputedCSSPaddingTop() const {

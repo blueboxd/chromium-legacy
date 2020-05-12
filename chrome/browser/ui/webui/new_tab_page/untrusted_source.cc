@@ -21,6 +21,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/promos/promo_data.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
+#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/new_tab_page_resources.h"
 #include "content/public/common/url_constants.h"
@@ -103,6 +104,7 @@ void UntrustedSource::StartDataRequest(
         !wait_for_refresh) {
       OnOneGoogleBarDataUpdated();
     }
+    one_google_bar_load_start_time_ = base::TimeTicks::Now();
     one_google_bar_service_->Refresh();
     return;
   }
@@ -185,7 +187,7 @@ bool UntrustedSource::ShouldReplaceExistingSource() {
 
 bool UntrustedSource::ShouldServiceRequest(
     const GURL& url,
-    content::BrowserContext* browser_context,
+    content::ResourceContext* resource_context,
     int render_process_id) {
   if (!url.SchemeIs(content::kChromeUIUntrustedScheme) || !url.has_path()) {
     return false;
@@ -200,6 +202,14 @@ bool UntrustedSource::ShouldServiceRequest(
 void UntrustedSource::OnOneGoogleBarDataUpdated() {
   base::Optional<OneGoogleBarData> data =
       one_google_bar_service_->one_google_bar_data();
+
+  if (one_google_bar_load_start_time_.has_value()) {
+    NTPUserDataLogger::LogOneGoogleBarFetchDuration(
+        /*success=*/data.has_value(),
+        /*duration=*/base::TimeTicks::Now() - *one_google_bar_load_start_time_);
+    one_google_bar_load_start_time_ = base::nullopt;
+  }
+
   std::string html;
   if (data.has_value()) {
     ui::TemplateReplacements replacements;

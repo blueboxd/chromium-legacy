@@ -338,11 +338,21 @@ group("closure_compile") {
 }
 
 js_type_check("closure_compile_local") {
-  uses_js_modules = true
+  is_polymer3 = true
   deps = [
     ":chai_assert",
     ":test_browser_proxy.m",
+    ":test_util.m",
   ]
+}
+
+js_library("test_util.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/test_util.m.js" ]
+  deps = [
+    ":chai_assert",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":modulize_local" ]
 }
 
 js_library("chai_assert") {

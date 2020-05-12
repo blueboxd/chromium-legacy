@@ -166,9 +166,6 @@ public class ReturnToChromeTest {
             + "/start_surface_variation/single"})
     public void testTabSwitcherModeTriggeredWithinThreshold_NoTab() {
         // clang-format on
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         startMainActivityWithURLWithoutCurrentTab(null);
 
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
@@ -201,9 +198,6 @@ public class ReturnToChromeTest {
             + "/start_surface_variation/single"})
     public void testTabSwitcherModeTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         InstantStartTest.createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(UrlConstants.NTP_URL);
 
@@ -234,9 +228,6 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         InstantStartTest.createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(null);
 
@@ -262,9 +253,6 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_UMA() throws Exception {
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -296,9 +284,6 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart() throws Exception {
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         // Redo to trigger warm startup UMA.
@@ -329,9 +314,6 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart_UMA() throws Exception {
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         testTabSwitcherModeTriggeredBeyondThreshold_WarmStart();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -363,9 +345,6 @@ public class ReturnToChromeTest {
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() {
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         // Cannot use ChromeTabbedActivityTestRule.startMainActivityFromLauncher() because
         // there's no tab.
         startMainActivityWithURLWithoutCurrentTab(null);
@@ -392,9 +371,6 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @DisabledTest(message = "http://crbug.com/1027315")
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs_UMA() {
-        // TODO(crbug.com/1077627): Start surface should show with Instant start.
-        if (mUseInstantStart) return;
-
         testTabSwitcherModeTriggeredBeyondThreshold_NoTabs();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();

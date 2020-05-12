@@ -215,9 +215,31 @@ suite('NewTabPageCustomizeThemesTest', () => {
     assertStyle(customizeThemes.$.thirdPartyThemeContainer, 'display', 'block');
     assertEquals(
         customizeThemes.$.thirdPartyThemeName.textContent.trim(), 'bar');
-    assertEquals(
-        customizeThemes.$.thirdPartyLink.getAttribute('href'),
-        'https://chrome.google.com/webstore/detail/foo');
+  });
+
+  test('clicking third-party link opens theme page', async () => {
+    // Arrange.
+    const customizeThemes = createCustomizeThemes();
+    customizeThemes.theme = {
+      type: newTabPage.mojom.ThemeType.THIRD_PARTY,
+      info: {
+        thirdPartyThemeInfo: {
+          id: 'foo',
+          name: 'bar',
+        },
+      },
+      backgroundColor: {value: 0xffff0000},
+      shortcutBackgroundColor: {value: 0xff00ff00},
+      shortcutTextColor: {value: 0xff0000ff},
+    };
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+
+    // Act.
+    customizeThemes.$.thirdPartyLink.click();
+
+    // Assert.
+    const link = await testProxy.whenCalled('open');
+    assertEquals('https://chrome.google.com/webstore/detail/foo', link);
   });
 
   test('setting non-third-party theme hides uninstall UI', async () => {

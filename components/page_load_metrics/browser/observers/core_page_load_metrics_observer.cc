@@ -754,6 +754,9 @@ void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
 
 void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
     content::NavigationHandle* navigation_handle) {
+  // Record only main frame navigation.
+  DCHECK(navigation_handle->IsInMainFrame());
+
   // Record metrics for navigation only when all relevant milestones are
   // recorded and in the expected order. It is allowed that they have the same
   // value for some cases (e.g., internal redirection for HSTS).

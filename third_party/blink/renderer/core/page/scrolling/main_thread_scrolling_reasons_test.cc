@@ -390,9 +390,17 @@ TEST_F(NonCompositedMainThreadScrollingReasonsTest, BackgroundNotOpaqueTest) {
       cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
 }
 
+TEST_F(NonCompositedMainThreadScrollingReasonsTest,
+       CantPaintScrollingBackgroundTest) {
+  TestNonCompositedReasons(
+      "cant-paint-scrolling-background",
+      cc::MainThreadScrollingReason::kCantPaintScrollingBackground);
+}
+
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, ClipTest) {
   TestNonCompositedReasons(
-      "clip", cc::MainThreadScrollingReason::kHasClipRelatedProperty);
+      "clip", cc::MainThreadScrollingReason::kHasClipRelatedProperty |
+                  cc::MainThreadScrollingReason::kCantPaintScrollingBackground);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, ClipPathTest) {

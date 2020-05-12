@@ -22,6 +22,7 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.CONDITIONAL_TA
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.START_SURFACE_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
+import static org.chromium.chrome.browser.tasks.ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_SESSION_TIME_MS;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
@@ -78,6 +79,7 @@ import java.util.concurrent.ExecutionException;
 @Features.DisableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID, START_SURFACE_ANDROID})
 public class ConditionalTabStripTest {
     // clang-format on
+    private static final int TEST_SESSION_MS = 600000;
     private static final int SWIPE_TO_RIGHT_DIRECTION = 1;
     private static final int SWIPE_TO_LEFT_DIRECTION = -1;
     private SimulateTabSwipeOnMainThread mSwipeToNormal;
@@ -94,6 +96,10 @@ public class ConditionalTabStripTest {
 
     @Before
     public void setUp() {
+        // For this test suite, the session time is set to be 0 by default so that we can start a
+        // new session by restarting Chrome.
+        CONDITIONAL_TAB_STRIP_SESSION_TIME_MS.setForTesting(0);
+
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         CriteriaHelper.pollUiThread(cta.getTabModelSelector()
@@ -136,7 +142,8 @@ public class ConditionalTabStripTest {
         verifyShowingStrip(cta, false, 4);
 
         // Restart chrome to make the current tab strip session expire.
-        cta = resetFeatureSession();
+        cta = restartChrome();
+        verifyHidingStrip();
         verifyTabModelTabCount(cta, 4, 0);
 
         // Intentional tab creation from long-press context menu will trigger tab strip.
@@ -144,7 +151,8 @@ public class ConditionalTabStripTest {
         verifyShowingStrip(cta, false, 5);
 
         // Restart chrome to make the current tab strip session expire.
-        cta = resetFeatureSession();
+        cta = restartChrome();
+        verifyHidingStrip();
         verifyTabModelTabCount(cta, 5, 0);
 
         // Intentional tab creation from long-press tab switcher action menu will trigger tab strip.
@@ -196,7 +204,8 @@ public class ConditionalTabStripTest {
         verifyShowingStrip(cta, false, 4);
 
         // Restart chrome to make the current tab strip session expire.
-        cta = resetFeatureSession();
+        cta = restartChrome();
+        verifyHidingStrip();
         verifyTabModelTabCount(cta, 4, 0);
 
         // Tab selection through tab switcher should trigger tab strip, and tab selection will be
@@ -326,12 +335,7 @@ public class ConditionalTabStripTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         verifyHidingStrip();
 
-        createTabs(cta, false, 3);
-        verifyShowingStrip(cta, false, 3);
-
-        // Click the left button should dismiss the tab strip.
-        clickDismissButtonInStrip();
-        verifyHidingStrip();
+        triggerStripAndDismiss(cta);
 
         // Tab strip should keep hidden throughout this session.
         enterTabSwitcher(cta);
@@ -343,7 +347,61 @@ public class ConditionalTabStripTest {
         verifyHidingStrip();
     }
 
-    private ChromeTabbedActivity resetFeatureSession() throws Exception {
+    @Test
+    @MediumTest
+    public void testStrip_disabled_expired() throws Exception {
+        triggerStripAndDismiss(mActivityTestRule.getActivity());
+
+        ChromeTabbedActivity cta = restartChrome();
+        verifyHidingStrip();
+
+        createTabs(cta, false, 2);
+        verifyShowingStrip(cta, false, cta.getCurrentTabModel().getCount());
+    }
+
+    @Test
+    @MediumTest
+    public void testStrip_disabled_notExpired() throws Exception {
+        triggerStripAndDismiss(mActivityTestRule.getActivity());
+
+        // Update the session time so that the disabled state is not expired for next restart.
+        CONDITIONAL_TAB_STRIP_SESSION_TIME_MS.setForTesting(TEST_SESSION_MS);
+        ChromeTabbedActivity cta = restartChrome();
+        verifyHidingStrip();
+
+        createTabs(cta, false, 2);
+        verifyHidingStrip();
+    }
+
+    @Test
+    @MediumTest
+    public void testStrip_enabled_expired() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        for (int i = 0; i < 3; i++) {
+            createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        }
+        verifyShowingStrip(cta, false, 4);
+
+        restartChrome();
+        verifyHidingStrip();
+    }
+
+    @Test
+    @MediumTest
+    public void testStrip_enabled_notExpired() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        for (int i = 0; i < 3; i++) {
+            createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        }
+        verifyShowingStrip(cta, false, 4);
+
+        // Update the session time so that the disabled state is not expired for next restart.
+        CONDITIONAL_TAB_STRIP_SESSION_TIME_MS.setForTesting(TEST_SESSION_MS);
+        cta = restartChrome();
+        verifyShowingStrip(cta, false, 4);
+    }
+
+    private ChromeTabbedActivity restartChrome() throws Exception {
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
         // Wait for bottom controls to stabilize.
@@ -352,7 +410,6 @@ public class ConditionalTabStripTest {
                                                        .getFullscreenManager()
                                                        .getBottomControlOffset()
                         == 0);
-        verifyHidingStrip();
         return mActivityTestRule.getActivity();
     }
 
@@ -448,6 +505,16 @@ public class ConditionalTabStripTest {
     private void clickDismissButtonInStrip() {
         onView(allOf(withParent(withId(R.id.main_content)), withId(R.id.toolbar_left_button)))
                 .perform(click());
+    }
+
+    private void triggerStripAndDismiss(ChromeTabbedActivity cta) {
+        int normalTabCount = cta.getTabModelSelector().getModel(false).getCount();
+        createTabs(cta, false, 3);
+        verifyShowingStrip(cta, false, normalTabCount + 2);
+
+        // Click the left button should dismiss the tab strip.
+        clickDismissButtonInStrip();
+        verifyHidingStrip();
     }
 
     // Utility methods copied from TabsTest.java.

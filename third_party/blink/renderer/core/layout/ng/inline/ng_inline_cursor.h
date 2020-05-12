@@ -335,6 +335,10 @@ class CORE_EXPORT NGInlineCursor {
   // See also |TryToMoveToFirstChild()|.
   void MoveToLastChild();
 
+  // Move to the last line item. If there are no line items, the cursor becomes
+  // null.
+  void MoveToLastLine();
+
   // Move to last logical leaf of current line box. If current line box has
   // no children, curosr becomes null.
   void MoveToLastLogicalLeaf();

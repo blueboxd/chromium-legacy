@@ -125,4 +125,44 @@ public class TopControlsTest {
         CriteriaHelper.pollUiThread(Criteria.equals(
                 View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
     }
+
+    /**
+     * Makes sure that the top controls are shown when a js dialog is shown.
+     *
+     * Regression test for https://crbug.com/1078181.
+     *
+     * Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
+     */
+    @FlakyTest(message = "https://crbug.com/1074438")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @Test
+    @SmallTest
+    public void testAlertShowsTopControls() throws Exception {
+        final String url = UrlUtils.encodeHtmlDataUri("<body><p style='height:5000px'>");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
+
+        // Poll until the top view becomes visible.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTopControlsHeight = activity.getTopContentsContainer().getHeight();
+            Assert.assertTrue(mTopControlsHeight > 0);
+        });
+
+        // Move by the size of the top-controls.
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, -mTopControlsHeight);
+
+        // Wait till top controls are invisible.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                View.INVISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+
+        // Trigger an alert dialog.
+        mActivityTestRule.executeScriptSync(
+                "window.setTimeout(function() { alert('alert'); }, 1);", false);
+
+        // Top controls are shown.
+        CriteriaHelper.pollUiThread(Criteria.equals(
+                View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+    }
 }

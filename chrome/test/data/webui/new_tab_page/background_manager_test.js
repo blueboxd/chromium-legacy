@@ -18,6 +18,14 @@ suite('NewTabPageBackgroundManagerTest', () => {
    */
   let testProxy;
 
+  /**
+   * @param {string} url
+   * @return {string}
+   */
+  function wrapImageUrl(url) {
+    return `chrome-untrusted://new-tab-page/background_image?${url}`;
+  }
+
   setup(() => {
     PolymerTest.clearBody();
 
@@ -55,7 +63,7 @@ suite('NewTabPageBackgroundManagerTest', () => {
     backgroundManager.setBackgroundImageUrl('https://example.com');
 
     // Assert.
-    assertEquals('https://example.com', backgroundImage.src);
+    assertEquals(wrapImageUrl('https://example.com'), backgroundImage.src);
   });
 
   test('receiving load time resolves promise', async () => {
@@ -68,7 +76,7 @@ suite('NewTabPageBackgroundManagerTest', () => {
       data: {
         frameType: 'background-image',
         messageType: 'loaded',
-        url: 'https://example.com',
+        url: wrapImageUrl('https://example.com'),
         time: 123,
       }
     }));
@@ -91,7 +99,7 @@ suite('NewTabPageBackgroundManagerTest', () => {
       data: {
         frameType: 'background-image',
         messageType: 'loaded',
-        url: 'https://example.com',
+        url: wrapImageUrl('https://example.com'),
         time: 123,
       }
     }));

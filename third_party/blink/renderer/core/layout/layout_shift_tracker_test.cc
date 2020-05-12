@@ -240,7 +240,8 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
   event1.SetPositionInWidget(50, 150);
   event2.SetPositionInWidget(50, 160);
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event1));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event1, ui::LatencyInfo()));
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -251,7 +252,8 @@ void LayoutShiftTrackerPointerdownTest::RunTest(
   EXPECT_EQ(0u, perf.getBufferedEntriesByType("layout-shift").size());
   EXPECT_FLOAT_EQ(0.0, tracker.Score());
 
-  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event2));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event2, ui::LatencyInfo()));
 
   // region fraction 50%, distance fraction 1/8
   const double expected_shift = 0.5 * 0.125;

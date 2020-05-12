@@ -119,6 +119,8 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsFieldsetContainer() const {
     return IsBlock() && box_->IsLayoutNGFieldset();
   }
+  bool IsRubyRun() const { return IsBlock() && box_->IsRubyRun(); }
+  bool IsRubyText() const { return IsBlock() && box_->IsRubyText(); }
 
   // Return true if this is the legend child of a fieldset that gets special
   // treatment (i.e. placed over the block-start border).

@@ -25,6 +25,8 @@ enum Process {
   SANDBOX_HELPER_PROCESS = 6;
   PPAPI_PLUGIN_PROCESS = 7;
   PPAPI_BROKER_PROCESS = 8;
+  NETWORK_SERVICE_PROCESS = 10;
+
   // A Chrome process not identified by any other enum. Defined for the benefit
   // of Chrome OS. Do not use for the Chrome sampling profiler; define a new
   // enum instead.

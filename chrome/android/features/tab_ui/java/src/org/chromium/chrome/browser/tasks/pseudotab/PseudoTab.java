@@ -4,30 +4,50 @@
 
 package org.chromium.chrome.browser.tasks.pseudotab;
 
+import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
+import org.chromium.base.StreamUtil;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
+import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
+import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Representation of a Tab-like card in the Grid Tab Switcher.
  */
 public class PseudoTab {
+    private static final String TAG = "PseudoTab";
+
     private final Integer mTabId;
     private final WeakReference<Tab> mTab;
     private static final Map<Integer, PseudoTab> sAllTabs = new LinkedHashMap<>();
+    private static boolean sReadStateFile;
+    private static List<PseudoTab> sAllTabsFromStateFile;
 
     /**
      * An interface to get the title to be used for a tab.
@@ -247,5 +267,67 @@ public class PseudoTab {
             return related;
         }
         return null;
+    }
+
+    @Nullable
+    public static List<PseudoTab> getAllPseudoTabsFromStateFile() {
+        assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START);
+        readAllPseudoTabsFromStateFile();
+        return sAllTabsFromStateFile;
+    }
+
+    private static void readAllPseudoTabsFromStateFile() {
+        if (sReadStateFile) return;
+        sReadStateFile = true;
+
+        long startMs = SystemClock.elapsedRealtime();
+        File stateFile =
+                new File(TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(),
+                        TabbedModeTabPersistencePolicy.getStateFileName(0));
+        if (!stateFile.exists()) {
+            Log.i(TAG, "State file does not exist.");
+            return;
+        }
+        FileInputStream stream = null;
+        byte[] data;
+        try {
+            stream = new FileInputStream(stateFile);
+            data = new byte[(int) stateFile.length()];
+            stream.read(data);
+        } catch (IOException exception) {
+            Log.e(TAG, "Could not read state file.", exception);
+            return;
+        } finally {
+            StreamUtil.closeQuietly(stream);
+        }
+        Log.i(TAG, "Finished fetching tab list.");
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(data));
+
+        Set<Integer> seenRootId = new HashSet<>();
+        sAllTabsFromStateFile = new ArrayList<>();
+        try {
+            TabPersistentStore.readSavedStateFile(dataStream,
+                    (index, id, url, isIncognito, isStandardActiveIndex, isIncognitoActiveIndex)
+                            -> {
+                        // Skip restoring of non-selected NTP to match the real restoration logic.
+                        if (NewTabPage.isNTPUrl(url) && !isStandardActiveIndex) return;
+                        PseudoTab tab = PseudoTab.fromTabId(id);
+                        int rootId = tab.getRootId();
+                        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()
+                                && seenRootId.contains(rootId)) {
+                            return;
+                        }
+                        sAllTabsFromStateFile.add(tab);
+                        seenRootId.add(rootId);
+                    },
+                    null, false);
+        } catch (IOException exception) {
+            Log.e(TAG, "Could not read state file.", exception);
+            return;
+        }
+
+        Log.d(TAG, "All pre-native tabs: " + sAllTabsFromStateFile);
+        Log.i(TAG, "readAllPseudoTabsFromStateFile() took %dms",
+                SystemClock.elapsedRealtime() - startMs);
     }
 }

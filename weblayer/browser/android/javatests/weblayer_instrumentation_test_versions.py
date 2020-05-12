@@ -11,7 +11,7 @@
 #   autoninja -C out/Release weblayer_instrumentation_test_versions_apk
 #   cipd install --root /tmp/M80 chromium/testing/weblayer-x86 m80
 #   out/Release/bin/run_weblayer_instrumentation_tests_versions_apk \
-#       --tests-outdir /tmp/M80/out/Release
+#       --test-runner-outdir out/Release
 #       --client-outdir /tmp/M80/out/Release
 #       --implementation-outdir out/Release
 
@@ -122,19 +122,9 @@ def main():
   parser = argparse.ArgumentParser(
       description='Run weblayer instrumentation tests at different versions.')
   parser.add_argument(
-      '--tests-outdir',
+      '--test-runner-outdir',
       required=True,
-      help=('Build output directory from which to find tests and test ' +
-            'support files. Since test dependencies can reside in both ' +
-            'the build output directory and the source directory, this ' +
-            'script will look two directories up for source files unless ' +
-            '--test-srcdir is also set.'))
-  parser.add_argument(
-      '--tests-srcdir',
-      required=False,
-      default='',
-      help=('Source directory from which to find test data. If unset the ' +
-            'script will use two directories above --test-outdir.'))
+      help='Local build output directory for finding the test runner.')
   parser.add_argument(
       '--client-outdir',
       required=True,
@@ -166,32 +156,31 @@ def main():
   logging.basicConfig(level=logging.INFO)
 
   # The command line is derived from the resulting command line from
-  # run_weblayer_instrumentation_test_apk but with parameterized tests, client,
-  # and implementation.
-  if args.tests_srcdir:
-    tests_srcdir = args.tests_srcdir
-  else:
-    tests_srcdir = os.path.normpath(os.path.join(args.tests_outdir, '..', '..'))
-  executable_path = os.path.join(tests_srcdir, 'build/android/test_runner.py')
+  # run_weblayer_instrumentation_test_apk but with parameterized client and
+  # implementation.
+  test_runner_srcdir = os.path.normpath(
+      os.path.join(args.test_runner_outdir, '..', '..'))
+  executable_path = os.path.join(test_runner_srcdir,
+                                 'build/android/test_runner.py')
   executable_args = [
       'instrumentation',
       '--output-directory',
-      args.tests_outdir,
+      args.test_runner_outdir,
       '--runtime-deps-path',
-      os.path.join(args.tests_outdir,
+      os.path.join(args.client_outdir,
                    ('gen.runtime/weblayer/browser/android/javatests/' +
                     'weblayer_instrumentation_test_apk.runtime_deps')),
       '--test-apk',
-      os.path.join(args.tests_outdir, 'apks/WebLayerInstrumentationTest.apk'),
+      os.path.join(args.client_outdir, 'apks/WebLayerInstrumentationTest.apk'),
       '--test-jar',
-      os.path.join(args.tests_outdir,
+      os.path.join(args.client_outdir,
                    'test.lib.java/WebLayerInstrumentationTest.jar'),
       '--apk-under-test',
       os.path.join(args.client_outdir, 'apks/WebLayerShellSystemWebView.apk'),
       '--use-webview-provider',
       os.path.join(args.implementation_outdir, 'apks/SystemWebView.apk'),
       '--additional-apk',
-      os.path.join(args.tests_outdir, 'apks/ChromiumNetTestSupport.apk')]
+      os.path.join(args.client_outdir, 'apks/ChromiumNetTestSupport.apk')]
 
   cmd = [executable_path] + executable_args + remaining_args
   cmd = [sys.executable] + cmd

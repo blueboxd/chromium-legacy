@@ -621,6 +621,13 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return error;
 }
 
++ (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase {
+  chrome_test_util::AddBookmarkWithSyncPassphrase(
+      base::SysNSStringToUTF8(syncPassphrase));
+}
+
+#pragma mark - JavaScript Utilities (EG2)
+
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)outError {
   __block bool handlerCalled = false;
   __block id blockResult = nil;

@@ -551,16 +551,29 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         return mDestroyed || isFinishing();
     }
 
+    /**
+     * Every child class wanting to perform tasks on configuration changed should override
+     * {@link #performOnConfigurationChanged(Configuration)} instead.
+     * @param newConfig The new configuration.
+     */
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public final void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        performOnConfigurationChanged(newConfig);
         mLifecycleDispatcher.dispatchOnConfigurationChanged(newConfig);
     }
+
+    /**
+     * Handle an {@link #onConfigurationChanged(Configuration)} event.
+     * @param newConfig The new configuration.
+     */
+    @CallSuper
+    public void performOnConfigurationChanged(Configuration newConfig) {}
 
     @Override
     public void onMultiWindowModeChanged(boolean inMultiWindowMode) {
         super.onMultiWindowModeChanged(inMultiWindowMode);
-        mMultiWindowModeStateDispatcher.dipatchMultiWindowModeChanged(inMultiWindowMode);
+        mMultiWindowModeStateDispatcher.dispatchMultiWindowModeChanged(inMultiWindowMode);
     }
 
     @Override
@@ -671,6 +684,14 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         super.onWindowFocusChanged(hasFocus);
 
         mLifecycleDispatcher.dispatchOnWindowFocusChanged(hasFocus);
+    }
+
+    @CallSuper
+    @Override
+    public void recreate() {
+        super.recreate();
+
+        mLifecycleDispatcher.dispatchOnRecreate();
     }
 
     /**

@@ -92,7 +92,7 @@ class EventHandlerSimTest : public SimTest {
     gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
         element_id;
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(gesture_scroll_begin));
+        WebCoalescedInputEvent(gesture_scroll_begin, ui::LatencyInfo()));
 
     WebGestureEvent gesture_scroll_update{
         WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
@@ -101,14 +101,14 @@ class EventHandlerSimTest : public SimTest {
     gesture_scroll_update.data.scroll_update.delta_x = delta_x;
     gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(gesture_scroll_update));
+        WebCoalescedInputEvent(gesture_scroll_update, ui::LatencyInfo()));
 
     WebGestureEvent gesture_scroll_end{
         WebInputEvent::Type::kGestureScrollEnd, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests()};
     gesture_scroll_end.SetFrameScale(1);
     WebView().MainFrameWidget()->HandleInputEvent(
-        WebCoalescedInputEvent(gesture_scroll_end));
+        WebCoalescedInputEvent(gesture_scroll_end, ui::LatencyInfo()));
   }
 };
 
@@ -2412,11 +2412,11 @@ TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
   scroll_end_event.SetPositionInScreen(gfx::PointF(10, 10));
 
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_begin_event));
+      WebCoalescedInputEvent(scroll_begin_event, ui::LatencyInfo()));
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_update_event));
+      WebCoalescedInputEvent(scroll_update_event, ui::LatencyInfo()));
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_end_event));
+      WebCoalescedInputEvent(scroll_end_event, ui::LatencyInfo()));
 
   EXPECT_EQ(0, GetDocument().getElementById("outer")->scrollLeft());
 }
@@ -2474,7 +2474,7 @@ TEST_F(EventHandlerSimTest, GestureScrollUpdateModifiedScrollChain) {
   scroll_end_event.SetPositionInScreen(gfx::PointF(10, 10));
 
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_begin_event));
+      WebCoalescedInputEvent(scroll_begin_event, ui::LatencyInfo()));
 
   // Between the GSB (when the scroll chain is computed) and GSU, update the
   // scroller to be display:inline. Applying the scroll should handle this
@@ -2483,9 +2483,9 @@ TEST_F(EventHandlerSimTest, GestureScrollUpdateModifiedScrollChain) {
   scroller->setAttribute("class", "inline");
 
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_update_event));
+      WebCoalescedInputEvent(scroll_update_event, ui::LatencyInfo()));
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_end_event));
+      WebCoalescedInputEvent(scroll_end_event, ui::LatencyInfo()));
 
   EXPECT_EQ(scroller->scrollTop(), 0);
 
@@ -2800,7 +2800,7 @@ TEST_F(EventHandlerSimTest, MouseDragWithNoSubframeImplicitCapture) {
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_down_inside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_down_inside_event));
+      WebCoalescedInputEvent(mouse_down_inside_event, ui::LatencyInfo()));
 
   WebMouseEvent mouse_move_inside_event(
       WebInputEvent::Type::kMouseMove, gfx::PointF(100, 100),
@@ -2809,7 +2809,7 @@ TEST_F(EventHandlerSimTest, MouseDragWithNoSubframeImplicitCapture) {
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_inside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_move_inside_event));
+      WebCoalescedInputEvent(mouse_move_inside_event, ui::LatencyInfo()));
   auto* iframe_element =
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   Document* iframe_doc = iframe_element->contentDocument();
@@ -2830,7 +2830,7 @@ TEST_F(EventHandlerSimTest, MouseDragWithNoSubframeImplicitCapture) {
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_outside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_move_outside_event));
+      WebCoalescedInputEvent(mouse_move_outside_event, ui::LatencyInfo()));
 
   // Mouse is hovering the element in outer frame.
   EXPECT_FALSE(iframe_doc->HoverElement());
@@ -2892,7 +2892,7 @@ TEST_F(EventHandlerSimTest,
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_down_inside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_down_inside_event));
+      WebCoalescedInputEvent(mouse_down_inside_event, ui::LatencyInfo()));
 
   auto* iframe_element =
       To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
@@ -2912,7 +2912,7 @@ TEST_F(EventHandlerSimTest,
                                  WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_move_event));
+      WebCoalescedInputEvent(mouse_move_event, ui::LatencyInfo()));
 
   EXPECT_EQ(iframe_doc->GetFrame()
                 ->GetEventHandler()
@@ -2923,7 +2923,7 @@ TEST_F(EventHandlerSimTest,
   // Release capture and move event will be send to outer frame.
   target->releasePointerCapture(PointerEventFactory::kMouseId, exception);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_move_event));
+      WebCoalescedInputEvent(mouse_move_event, ui::LatencyInfo()));
 
   // iframe no longer gets mouse move events.
   EXPECT_FALSE(iframe_doc->HoverElement());
@@ -2969,7 +2969,7 @@ TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_down_outside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_down_outside_event));
+      WebCoalescedInputEvent(mouse_down_outside_event, ui::LatencyInfo()));
 
   WebMouseEvent mouse_move_outside_event(
       WebMouseEvent::Type::kMouseMove, gfx::PointF(300, 29),
@@ -2978,7 +2978,7 @@ TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_outside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_move_outside_event));
+      WebCoalescedInputEvent(mouse_move_outside_event, ui::LatencyInfo()));
 
   WebMouseEvent mouse_move_inside_event(
       WebMouseEvent::Type::kMouseMove, gfx::PointF(100, 229),
@@ -2987,7 +2987,7 @@ TEST_F(EventHandlerSimTest, MouseRightButtonDownMoveToIFrame) {
       WebInputEvent::GetStaticTimeStampForTests());
   mouse_move_inside_event.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(mouse_move_inside_event));
+      WebCoalescedInputEvent(mouse_move_inside_event, ui::LatencyInfo()));
   EXPECT_FALSE(
       GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
   EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
@@ -3022,7 +3022,7 @@ TEST_F(EventHandlerSimTest, PenDraggingOnElementActive) {
   pen_down.pointer_type = blink::WebPointerProperties::PointerType::kPen;
   pen_down.SetFrameScale(1);
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(pen_down));
+      WebCoalescedInputEvent(pen_down, ui::LatencyInfo()));
 
   WebMouseEvent pen_move(WebMouseEvent::Type::kMouseMove, gfx::PointF(100, 100),
                          gfx::PointF(100, 100),
@@ -3033,12 +3033,12 @@ TEST_F(EventHandlerSimTest, PenDraggingOnElementActive) {
   pen_move.SetFrameScale(1);
   // Send first mouse move to update mouse event sates.
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(pen_move));
+      WebCoalescedInputEvent(pen_move, ui::LatencyInfo()));
 
   // Send another mouse move again to update active element to verify mouse
   // event states.
   WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(pen_move));
+      WebCoalescedInputEvent(pen_move, ui::LatencyInfo()));
 
   EXPECT_EQ(GetDocument().GetActiveElement(),
             GetDocument().getElementById("target"));

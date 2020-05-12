@@ -493,6 +493,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_FLOATING_ACCESSIBILITY_DETAILED_MENU_OPEN" desc="The button to show the quick settings view of floating accessibility menu.">
         Open accessibility settings menu
       </message>
+      <message name="IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU" desc="The name of the floating accessibility menu.">
+        Floating accessibility menu
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_MIC_GAIN" desc="The accessible text for the toggle mic muted button in the tray audio settings">
         Toggle Mic. <ph name="STATE_TEXT">$1<ex>Mic is muted</ex></ph>

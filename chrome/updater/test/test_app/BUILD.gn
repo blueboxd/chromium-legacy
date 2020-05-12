@@ -76,6 +76,13 @@ source_set("app_sources") {
 
     libs = [ "CoreFoundation.framework" ]
   }
+
+  if (is_win) {
+    deps += [
+      "//chrome/updater/server/win:updater_idl_idl",
+      "//chrome/updater/win:base",
+    ]
+  }
 }
 
 if (is_win) {

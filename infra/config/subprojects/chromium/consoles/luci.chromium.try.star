@@ -109,7 +109,6 @@ luci.list_view(
         'try/linux_android_dbg_ng',
         'try/linux_angle_deqp_rel_ng',
         'try/linux_angle_ozone_rel_ng',
-        'try/linux_arm',
         'try/linux_chromium_analysis',
         'try/linux_chromium_archive_rel_ng',
         'try/linux_chromium_asan_rel_ng',

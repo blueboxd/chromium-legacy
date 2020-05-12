@@ -259,6 +259,7 @@ if (is_win || is_mac) {
     if (is_mac) {
       sources += [
         "external_constants_mac_unittest.mm",
+        "mac/update_service_out_of_process_test.mm",
         "test/integration_tests_mac.mm",
       ]
 
@@ -267,7 +268,10 @@ if (is_win || is_mac) {
         "//chrome/updater/mac:enterprise_tests",
         "//chrome/updater/mac:updater_bundle",
         "//chrome/updater/mac:updater_setup_tests",
+        "//chrome/updater/mac:updater_tests",
         "//chrome/updater/mac:xpc_names",
+        "//chrome/updater/server/mac:protocol",
+        "//third_party/ocmock",
       ]
 
       data_deps = [ "//chrome/updater/mac:updater_bundle" ]

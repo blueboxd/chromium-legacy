@@ -30,7 +30,7 @@ class MostVisitedIframeSource : public content::URLDataSource {
   bool AllowCaching() override;
   bool ShouldDenyXFrameOptions() override;
   bool ShouldServiceRequest(const GURL& url,
-                            content::BrowserContext* browser_context,
+                            content::ResourceContext* resource_context,
                             int render_process_id) override;
 
  protected:

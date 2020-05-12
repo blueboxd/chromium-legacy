@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/legacy_grid_to_visible_tab_animator.h"
 
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation_layout_providing.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
@@ -157,7 +157,7 @@
       NSStringFromClass([toViewController.presentedViewController class]);
   NSString* parentViewControllerName =
       NSStringFromClass([toViewController.parentViewController class]);
-  breakpad_helper::SetGridToVisibleTabAnimation(
+  crash_keys::SetGridToVisibleTabAnimation(
       toViewControllerName, presentingViewControllerName,
       presentedViewControllerName, parentViewControllerName);
 
@@ -165,7 +165,7 @@
   [self.transitionContext completeTransition:YES];
 
   // Remove the crash log since the presentation completed without a crash.
-  breakpad_helper::RemoveGridToVisibleTabAnimation();
+  crash_keys::RemoveGridToVisibleTabAnimation();
 }
 
 @end

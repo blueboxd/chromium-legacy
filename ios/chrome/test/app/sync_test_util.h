@@ -106,6 +106,10 @@ void DeleteTypedUrlFromClient(const GURL& url);
 // Deletes typed URL on FakeServer by injecting a tombstone.
 void DeleteTypedUrlFromFakeSyncServer(std::string url);
 
+// Adds a bookmark with a sync passphrase. The sync server will need the sync
+// passphrase to start.
+void AddBookmarkWithSyncPassphrase(const std::string& sync_passphrase);
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_APP_SYNC_TEST_UTIL_H_

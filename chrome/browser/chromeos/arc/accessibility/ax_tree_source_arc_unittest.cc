@@ -7,13 +7,16 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace arc {
 
@@ -824,6 +827,74 @@ TEST_F(AXTreeSourceArcTest, StateComputations) {
   GetSerializedNode(node, data);
   EXPECT_FALSE(data.HasState(ax::mojom::State::kCollapsed));
   EXPECT_TRUE(data.HasState(ax::mojom::State::kExpanded));
+}
+
+TEST_F(AXTreeSourceArcTest, SelectedStateComputations) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  // Window.
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 1;
+
+  // Node.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 1;
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({2, 3}));
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* grid = event->node_data.back().get();
+  grid->id = 2;
+  SetProperty(grid, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({10, 11, 12, 13}));
+  grid->collection_info = AXCollectionInfoData::New();
+  grid->collection_info->row_count = 2;
+  grid->collection_info->column_count = 2;
+
+  // Make child of grid have cell role, which supports selected state.
+  std::vector<AXNodeInfoData*> cells;
+  for (int i = 0; i < 4; i++) {
+    event->node_data.push_back(AXNodeInfoData::New());
+    AXNodeInfoData* node = event->node_data.back().get();
+    node->id = 10 + i;
+    node->collection_item_info = AXCollectionItemInfoData::New();
+    node->collection_item_info->row_index = i % 2;
+    node->collection_item_info->column_index = i / 2;
+    SetProperty(node, AXBooleanProperty::SELECTED, true);
+    cells.emplace_back(node);
+  }
+
+  // text_node is simple static text, which doesn't supports selected state in
+  // Chrome.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* text_node = event->node_data.back().get();
+  text_node->id = 3;
+  SetProperty(text_node, AXStringProperty::CONTENT_DESCRIPTION, "text.");
+  SetProperty(text_node, AXBooleanProperty::SELECTED, true);
+
+  CallNotifyAccessibilityEvent(event.get());
+
+  ui::AXNodeData data;
+  GetSerializedNode(cells[0], data);
+  ASSERT_EQ(ax::mojom::Role::kCell, data.role);
+  ASSERT_TRUE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  ASSERT_FALSE(
+      data.HasStringAttribute(ax::mojom::StringAttribute::kDescription));
+
+  std::string description;
+  GetSerializedNode(text_node, data);
+  ASSERT_FALSE(data.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                      &description));
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS),
+            description);
 }
 
 TEST_F(AXTreeSourceArcTest, RoleComputationEditText) {

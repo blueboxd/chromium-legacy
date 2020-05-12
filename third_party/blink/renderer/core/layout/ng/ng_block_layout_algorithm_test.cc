@@ -209,17 +209,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
         <div style="height: 20px;"></div>
         <div style="display: flex; height: 50%;"></div>
       </div>
-      <div id="box6">
-        <div style="height: 20px;"></div>
-        <div style="display: table;"></div>
-      </div>
-      <div id="box7" style="position: relative;">
+      <div id="box6" style="position: relative;">
         <div style="position: absolute; width: 10px; height: 100%;"></div>
       </div>
-      <div id="box8">
+      <div id="box7">
         <img />
       </div>
-      <div id="box9">
+      <div id="box8">
         <img style="height: 100%;" />
       </div>
     </div>
@@ -272,22 +268,17 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
   // behaviour, but is %-sized.
   EXPECT_EQ(run_test("box5"), nullptr);
 
-  // Test 6: A table (legacy descendant), which does use the quirks mode
-  // behaviour.
-  // NOTE: This test may fail when tables are converted to LayoutNG.
-  EXPECT_EQ(run_test("box6"), nullptr);
-
-  // Test 7: An OOF positioned descentant which has a %-height, should not
+  // Test 6: An OOF positioned descentant which has a %-height, should not
   // count as a percentage descendant.
+  EXPECT_NE(run_test("box6"), nullptr);
+
+  // Test 7: A replaced element (legacy descendant), shouldn't use the quirks
+  // mode behaviour.
   EXPECT_NE(run_test("box7"), nullptr);
 
   // Test 8: A replaced element (legacy descendant), shouldn't use the quirks
-  // mode behaviour.
-  EXPECT_NE(run_test("box8"), nullptr);
-
-  // Test 9: A replaced element (legacy descendant), shouldn't use the quirks
   // mode behaviour, but is %-sized.
-  EXPECT_EQ(run_test("box9"), nullptr);
+  EXPECT_EQ(run_test("box8"), nullptr);
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {

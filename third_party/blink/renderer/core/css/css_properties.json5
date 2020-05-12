@@ -83,8 +83,8 @@
 
     // - is_descriptor
     // Whether it is a CSS descriptor. Descriptors define the characteristics of
-    // an at-rule. E.g. @viewport is an at-rule, and width is a valid descriptor
-    // for @viewport. Descriptors and CSS properties with the same name are
+    // an at-rule. E.g. @font-face is an at-rule, and src is a valid descriptor
+    // for @font-face. Descriptors and CSS properties with the same name are
     // handled together in this file.
     // TODO(crbug.com/752745): Don't use CSSPropertyID for descriptors.
     // - is_property

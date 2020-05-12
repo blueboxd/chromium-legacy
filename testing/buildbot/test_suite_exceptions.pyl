@@ -1670,6 +1670,12 @@
       'android-code-coverage-native', # https://crbug.com/1018780
     ],
     'modifications': {
+      'Android CFI': {
+        'args': [
+          '--exclude-annotation',
+          'Feature=RenderTest', # https://crbug.com/1068294
+        ],
+      },
       'android-pie-x86-rel': {
         'args': [
           '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
@@ -1721,6 +1727,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.content_browsertests.filter',
         ],
+        'swarming': {
+          'shards': 10,
+        },
       },
       'android-pie-x86-rel': {
         'args': [

@@ -42,6 +42,11 @@ class NTPUserDataLogger
   static NTPUserDataLogger* GetOrCreateFromWebContents(
       content::WebContents* content);
 
+  // Called when a One Google Bar fetch has been completed after |duration|.
+  // |success| is true if the fetch was successful.
+  static void LogOneGoogleBarFetchDuration(bool success,
+                                           const base::TimeDelta& duration);
+
   // Called when an event occurs on the NTP that requires a counter to be
   // incremented. |time| is the delta time from navigation start until this
   // event happened. The NTP_ALL_TILES_LOADED event may be logged from all NTPs;

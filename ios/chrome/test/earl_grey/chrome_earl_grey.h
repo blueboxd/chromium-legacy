@@ -357,6 +357,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // calling this.
 - (std::string)syncCacheGUID;
 
+// Adds a bookmark with a sync passphrase. The sync server will need the sync
+// passphrase to start.
+- (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase;
+
 #pragma mark - WebState Utilities (EG2)
 
 // Taps html element with |elementID| in the current web state.

@@ -194,9 +194,7 @@ class CONTENT_EXPORT NavigationRequest
   static std::unique_ptr<NavigationRequest> CreateForCommit(
       FrameTreeNode* frame_tree_node,
       RenderFrameHostImpl* render_frame_host,
-      NavigationEntryImpl* entry,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool is_renderer_initiated,
       bool is_same_document);
 
   static NavigationRequest* From(NavigationHandle* handle);
@@ -206,9 +204,15 @@ class CONTENT_EXPORT NavigationRequest
   // Returns true if this request's URL matches |origin| and the request state
   // is at (or past) WILL_PROCESS_RESPONSE.
   bool HasCommittingOrigin(const url::Origin& origin);
-  // Returns true if this navigation request is requesting opt-in
-  // origin-isolation, via Origin Policy or headers.
-  bool IsOptInIsolationRequested(const GURL& url);
+
+  // Returns whether and how this navigation request is requesting opt-in
+  // origin-isolation.
+  enum class OptInIsolationCheckResult {
+    NONE,          // no isolation requested
+    HEADER,        // requested using the Origin-Isolation header
+    ORIGIN_POLICY  // requested using origin policy
+  };
+  OptInIsolationCheckResult IsOptInIsolationRequested(const GURL& url);
 
   // NavigationHandle implementation:
   int64_t GetNavigationId() override;

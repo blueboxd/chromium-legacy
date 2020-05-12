@@ -68,6 +68,34 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
     }.bind(this);
   }
 
+  async waitForMenu(menuMsg) {
+    // Menu and menu item updates occur in a different js context, so tests need
+    // to wait until an update has been made. Swap in our hook, wait, then
+    // restore after.
+    const makeAssertions = () => {
+      const menu = this.getPanel().activeMenu_;
+      assertEquals(menuMsg, menu.menuMsg);
+    };
+
+    return new Promise(resolve => {
+      const Panel = this.getPanel();
+      const original = Panel.activateMenu;
+      Panel.activateMenu = (menu, activateFirstItem) => {
+        original(menu, activateFirstItem);
+        makeAssertions();
+        Panel.activateMenu = original;
+        resolve();
+      };
+    });
+  }
+
+  assertActiveMenuItem(menuMsg, menuItemTitle) {
+    const menu = this.getPanel().activeMenu_;
+    const menuItem = menu.items_[menu.activeIndex_];
+    assertEquals(menuMsg, menu.menuMsg);
+    assertEquals(menuItemTitle, menuItem.menuItemTitle);
+  }
+
   get linksDoc() {
     return `
       <p>start</p>
@@ -79,67 +107,40 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
 };
 
 TEST_F('ChromeVoxPanelTest', 'ActivateMenu', function() {
-  const mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(this.linksDoc, function(root) {
-    const openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
-    mockFeedback.call(openMenus.send.bind(openMenus))
-        .expectSpeech('Search the menus', 'Search')
-        .call(this.fireMockEvent('ArrowRight'))
-        .expectSpeech(
-            'Jump', 'Menu',
-            'Go To Beginning Of Table Search+Alt+Shift+Left arrow',
-            / 1 of [0-9]{2} /)
-        .call(this.fireMockEvent('ArrowRight'))
-        .expectSpeech(
-            'Speech', 'Menu',
-            'Announce Current Battery Status Search+O, then B',
-            / 1 of [0-9]{2} /)
-        .replay();
-  });
+  this.runWithLoadedTree(this.linksDoc, async function(root) {
+    new PanelCommand(PanelCommandType.OPEN_MENUS).send();
+    await this.waitForMenu('panel_search_menu');
+    this.fireMockEvent('ArrowRight')();
+    this.assertActiveMenuItem('panel_menu_jump', 'Go To Beginning Of Table');
+    this.fireMockEvent('ArrowRight')();
+    this.assertActiveMenuItem(
+        'panel_menu_speech', 'Announce Current Battery Status');
+  }, {isAsync: true});
 });
 
-TEST_F('ChromeVoxPanelTest', 'DISABLED_LinkMenu', function() {
-  const mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(this.linksDoc, function(root) {
-    mockFeedback.call(() => CommandHandler.onCommand('showLinksList'))
-        .expectSpeech(
-            'Link',
-            'Menu',
-            'apple Link',
-            'Menu item',
-            ' 1 of 3 ',
-            )
-        .call(this.fireMockEvent('ArrowLeft'))
-        .expectSpeech('Landmark', 'Menu', 'No items', 'Menu item', ' 1 of 1 ')
-        .call(this.fireMockEvent('ArrowRight'))
-        .expectSpeech('Link', 'Menu', 'apple Link', 'Menu item', ' 1 of 3 ')
-        .call(this.fireMockEvent('ArrowUp'))
-        .expectSpeech('banana Link', 'Menu item', ' 3 of 3 ')
-        .clearPendingOutput()
-        .call(this.fireMockEvent('Enter'))
-        .expectSpeech('banana', 'Link')
-        .replay();
-  });
+TEST_F('ChromeVoxPanelTest', 'LinkMenu', function() {
+  this.runWithLoadedTree(this.linksDoc, async function(root) {
+    CommandHandler.onCommand('showLinksList');
+    await this.waitForMenu('role_link');
+    this.fireMockEvent('ArrowLeft')();
+    this.assertActiveMenuItem('role_landmark', 'No items');
+    this.fireMockEvent('ArrowRight')();
+    this.assertActiveMenuItem('role_link', 'apple Link');
+    this.fireMockEvent('ArrowUp')();
+    this.assertActiveMenuItem('role_link', 'banana Link');
+  }, {isAsync: true});
 });
 
 TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
-  const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
-      `<button>Cancel</button><button>OK</button>`, function(root) {
-        mockFeedback.call(() => CommandHandler.onCommand('nextObject'))
-            .expectSpeech('OK', 'Button')
-            .call(() => CommandHandler.onCommand('showFormsList'))
-            .expectSpeech(
-                'Form Controls',
-                'Menu',
-                'OK Button',
-                'Menu item',
-                /2 of /,
-                )
-            .call(this.fireMockEvent('ArrowUp'))
-            .expectSpeech('Cancel Button', 'Menu item', /1 of/)
-            .replay();
-      });
+      `<button>Cancel</button><button>OK</button>`, async function(root) {
+        CommandHandler.onCommand('showFormsList');
+        await this.waitForMenu('panel_menu_form_controls');
+        this.fireMockEvent('ArrowDown')();
+        this.assertActiveMenuItem('panel_menu_form_controls', 'OK Button');
+        this.fireMockEvent('ArrowUp')();
+        this.assertActiveMenuItem('panel_menu_form_controls', 'Cancel Button');
+      }, {isAsync: true});
 });
 
 TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
@@ -164,4 +165,31 @@ TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
         .expectSpeech(/announce/i, 'Menu item', /2 of [0-9]+/);
     mockFeedback.replay();
   });
+});
+
+TEST_F('ChromeVoxPanelTest', 'Gestures', function() {
+  const doGesture = async (gesture) => {
+    GestureCommandHandler.onAccessibilityGesture_(gesture);
+  };
+  this.runWithLoadedTree(
+      `<button>Cancel</button><button>OK</button>`, async function(root) {
+        doGesture('tap4');
+        await this.waitForMenu('panel_search_menu');
+        // GestureCommandHandler behaves in special ways only with range over
+        // the panel. Fake this out by setting range there.
+        const desktop = root.parent.root;
+        const panelNode = desktop.find(
+            {role: 'rootWebArea', attributes: {name: 'ChromeVox Panel'}});
+        ChromeVoxState.instance.setCurrentRange(
+            cursors.Range.fromNode(panelNode));
+
+        doGesture('swipeRight1');
+        await this.waitForMenu('panel_menu_jump');
+
+        doGesture('swipeRight1');
+        await this.waitForMenu('panel_menu_speech');
+
+        doGesture('swipeLeft1');
+        await this.waitForMenu('panel_menu_jump');
+      }, {isAsync: true});
 });

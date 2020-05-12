@@ -392,8 +392,8 @@ void AppListClientImpl::SetUpSearchUI() {
   search_resource_manager_ = std::make_unique<app_list::SearchResourceManager>(
       profile_, current_model_updater_);
 
-  search_controller_ =
-      app_list::CreateSearchController(profile_, current_model_updater_, this);
+  search_controller_ = app_list::CreateSearchController(
+      profile_, current_model_updater_, this, GetNotifier());
 
   // Refresh the results used for the suggestion chips with empty query.
   // This fixes crbug.com/999287.

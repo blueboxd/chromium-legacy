@@ -18,17 +18,9 @@ buildflag_header("buildflags") {
 if (enable_vulkan) {
   use_vulkan_xlib = use_x11 || ozone_platform_x11
   config("vulkan_config") {
+    defines = [ "VK_NO_PROTOTYPES" ]
     if (use_vulkan_xlib) {
-      defines = [ "USE_VULKAN_XLIB" ]
-    }
-    if (is_android) {
-      defines = [ "VK_USE_PLATFORM_ANDROID_KHR" ]
-    }
-    if (is_fuchsia) {
-      defines = [ "VK_USE_PLATFORM_FUCHSIA" ]
-    }
-    if (is_win) {
-      defines = [ "VK_USE_PLATFORM_WIN32_KHR" ]
+      defines += [ "USE_VULKAN_XLIB" ]
     }
   }
 
@@ -43,10 +35,7 @@ if (enable_vulkan) {
       "vulkan_function_pointers.h",
     ]
 
-    all_dependent_configs = [
-      ":vulkan_config",
-      "//third_party/vulkan:vulkan_config",
-    ]
+    all_dependent_configs = [ ":vulkan_config" ]
 
     defines = [ "IS_VULKAN_IMPL" ]
 
@@ -54,6 +43,8 @@ if (enable_vulkan) {
       "//base",
       "//ui/gfx",
     ]
+
+    public_deps = [ "//third_party/vulkan_headers" ]
 
     if (is_fuchsia) {
       sources += [ "fuchsia/vulkan_fuchsia_ext.h" ]

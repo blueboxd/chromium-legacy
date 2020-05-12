@@ -1632,6 +1632,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = O_MR1, message = "crbug.com/1077191")
     public void testActivityCanBeGarbageCollectedAfterFinished() throws Exception {
         prepareTabs(1, 0, "about:blank");
 

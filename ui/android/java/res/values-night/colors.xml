@@ -72,4 +72,5 @@
     <color name="filled_button_bg_color_disabled">@color/filled_button_bg_color_disabled_light</color>
     <color name="divider_line_bg_color">@color/divider_line_bg_color_light</color>
     <color name="omnibox_bg_color">@color/omnibox_bg_color_dark</color>
+    <color name="image_loading_color">@color/image_loading_color_light</color>
 </resources>

@@ -189,6 +189,7 @@ class FrameImpl : public fuchsia::web::Frame,
       const MediaPlayerInfo& video_type,
       const content::MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override;
+  void GetPrivateMemorySize(GetPrivateMemorySizeCallback callback) override;
 
   // content::WebContentsDelegate implementation.
   void CloseContents(content::WebContents* source) override;

@@ -4,10 +4,13 @@
 
 package org.chromium.components.browser_ui.widget.image_tiles;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 
 import org.chromium.components.browser_ui.widget.R;
@@ -33,12 +36,22 @@ class TileViewHolder extends ViewHolder {
         itemView.setOnClickListener(
                 v -> { properties.get(TileListProperties.CLICK_CALLBACK).onResult(tile); });
 
-        final ImageView thumbnail = itemView.findViewById(R.id.thumbnail);
-        thumbnail.setImageResource(0);
+        showBitmap(null);
         properties.get(TileListProperties.VISUALS_CALLBACK).getVisuals(tile, bitmaps -> {
-            thumbnail.setImageBitmap(
-                    (bitmaps == null || bitmaps.isEmpty()) ? null : bitmaps.get(0));
+            showBitmap(bitmaps != null && !bitmaps.isEmpty() ? bitmaps.get(0) : null);
         });
+    }
+
+    private void showBitmap(@Nullable Bitmap bitmap) {
+        final ImageView thumbnail = itemView.findViewById(R.id.thumbnail);
+        final ImageView overlay = itemView.findViewById(R.id.gradient_overlay);
+        if (bitmap == null) {
+            thumbnail.setImageDrawable(new ColorDrawable(
+                    thumbnail.getResources().getColor(R.color.image_loading_color)));
+        } else {
+            thumbnail.setImageBitmap(bitmap);
+        }
+        overlay.setVisibility(bitmap == null ? View.GONE : View.VISIBLE);
     }
 
     /**

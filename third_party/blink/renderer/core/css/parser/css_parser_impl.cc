@@ -718,9 +718,8 @@ StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
     CSSParserTokenStream& block) {
-  // Allow @viewport rules from UA stylesheets even if the feature is disabled.
-  if (!RuntimeEnabledFeatures::CSSViewportEnabled() &&
-      !IsUASheetBehavior(context_->Mode()))
+  // Allow @viewport rules from UA stylesheets only.
+  if (!IsUASheetBehavior(context_->Mode()))
     return nullptr;
 
   if (!prelude.AtEnd())

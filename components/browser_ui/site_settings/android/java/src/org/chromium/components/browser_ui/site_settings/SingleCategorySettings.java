@@ -1014,16 +1014,23 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         }
 
         // Only show the link that explains protected content settings when needed.
-        if (!mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
-            screen.removePreference(explainProtectedMediaKey);
-            mListView.setFocusable(true);
-        } else {
+        if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
+            explainProtectedMediaKey.setOnPreferenceClickListener(preference -> {
+                getSiteSettingsClient()
+                        .getSiteSettingsHelpClient()
+                        .launchProtectedContentHelpAndFeedbackActivity(getActivity());
+                return true;
+            });
+
             // On small screens with no touch input, nested focusable items inside a LinearLayout in
             // ListView cause focus problems when using a keyboard (crbug.com/974413).
             // TODO(chouinard): Verify on a small screen device whether this patch is still needed
             // now that we've migrated this fragment to Support Library (mListView is a RecyclerView
             // now).
             mListView.setFocusable(false);
+        } else {
+            screen.removePreference(explainProtectedMediaKey);
+            mListView.setFocusable(true);
         }
 
         // When this menu opens, make sure the Blocked list is collapsed.

@@ -93,7 +93,7 @@ export class BackgroundManager {
       this.loadTimeResolver_.reject();
       this.loadTimeResolver_ = null;
     }
-    this.backgroundImage_.src = url;
+    this.backgroundImage_.src = untrustedUrl;
   }
 
   /**

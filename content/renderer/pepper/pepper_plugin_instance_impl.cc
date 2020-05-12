@@ -2286,8 +2286,9 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
       CreateSimulatedWebInputEvents(
           input_event, view_data_.rect.point.x + view_data_.rect.size.width / 2,
           view_data_.rect.point.y + view_data_.rect.size.height / 2);
-  for (auto it = events.begin(); it != events.end(); ++it) {
-    widget->HandleInputEvent(blink::WebCoalescedInputEvent(*it->get()));
+  for (auto& event : events) {
+    widget->HandleInputEvent(
+        blink::WebCoalescedInputEvent(std::move(event), ui::LatencyInfo()));
   }
   if (input_event.event_type == PP_INPUTEVENT_TYPE_TOUCHSTART ||
       input_event.event_type == PP_INPUTEVENT_TYPE_TOUCHMOVE ||

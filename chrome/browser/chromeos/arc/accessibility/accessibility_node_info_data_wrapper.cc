@@ -8,10 +8,12 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace arc {
 
@@ -120,8 +122,8 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
     return;
   }
 
-  AXCollectionInfoData* collection_info = node_ptr_->collection_info.get();
-  if (collection_info) {
+  if (node_ptr_->collection_info) {
+    AXCollectionInfoData* collection_info = node_ptr_->collection_info.get();
     if (collection_info->row_count > 1 && collection_info->column_count > 1) {
       out_data->role = ax::mojom::Role::kGrid;
       out_data->AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount,
@@ -140,9 +142,9 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
     }
   }
 
-  AXCollectionItemInfoData* collection_item_info =
-      node_ptr_->collection_item_info.get();
-  if (collection_item_info) {
+  if (node_ptr_->collection_item_info) {
+    AXCollectionItemInfoData* collection_item_info =
+        node_ptr_->collection_item_info.get();
     if (collection_item_info->is_heading) {
       out_data->role = ax::mojom::Role::kHeading;
       return;
@@ -157,7 +159,7 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
          container;) {
       if (!container || !container->IsNode())
         break;
-      if (container->IsNode() && container->GetNode()->collection_info.get()) {
+      if (container->IsNode() && container->GetNode()->collection_info) {
         collection_info = container->GetNode()->collection_info.get();
         break;
       }
@@ -406,7 +408,13 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
   }
   if (GetProperty(AXBooleanProperty::SELECTED)) {
-    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+    if (ui::SupportsSelected(out_data->role)) {
+      out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+    } else {
+      out_data->AddStringAttribute(
+          ax::mojom::StringAttribute::kDescription,
+          l10n_util::GetStringUTF8(IDS_ARC_ACCESSIBILITY_SELECTED_STATUS));
+    }
   }
   if (GetProperty(AXBooleanProperty::SUPPORTS_TEXT_LOCATION)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSupportsTextLocation,

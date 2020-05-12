@@ -259,10 +259,8 @@ class LayerTreeHostBlendingPixelTest
 
 std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
-#if !defined(GL_NOT_ON_PLATFORM)
     {LayerTreeTest::RENDERER_GL, ZERO_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
-#endif  // !defined(GL_NOT_ON_PLATFORM)
 #if defined(ENABLE_CC_VULKAN_TESTS)
     {LayerTreeTest::RENDERER_SKIA_VK, GPU},
 #endif  // defined(ENABLE_CC_VULKAN_TESTS)

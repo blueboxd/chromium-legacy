@@ -1233,10 +1233,11 @@ TEST_F(NetworkServiceTestWithService, SetsTrustTokenKeyCommitments) {
   auto expectation = mojom::TrustTokenKeyCommitmentResult::New();
   ASSERT_TRUE(base::Base64Decode(
       "aaaa", &expectation->signed_redemption_record_verification_key));
+  expectation->batch_size = 5;
 
   base::RunLoop run_loop;
   network_service_->SetTrustTokenKeyCommitments(
-      R"( { "https://issuer.example": { "srrkey": "aaaa" } } )",
+      R"( { "https://issuer.example": { "batchsize": 5, "srrkey": "aaaa" } } )",
       run_loop.QuitClosure());
   run_loop.Run();
 

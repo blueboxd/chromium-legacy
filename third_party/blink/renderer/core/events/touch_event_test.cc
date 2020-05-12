@@ -68,9 +68,9 @@ class TouchEventTest : public PageTestBase {
     WebTouchEvent web_touch_event(WebInputEvent::Type::kTouchStart, 0,
                                   base::TimeTicks());
     web_touch_event.dispatch_type = dispatch_type;
-    return TouchEvent::Create(WebCoalescedInputEvent(web_touch_event), nullptr,
-                              nullptr, nullptr, "touchstart", &Window(),
-                              TouchAction::kAuto);
+    return TouchEvent::Create(
+        WebCoalescedInputEvent(web_touch_event, ui::LatencyInfo()), nullptr,
+        nullptr, nullptr, "touchstart", &Window(), TouchAction::kAuto);
   }
 
  private:

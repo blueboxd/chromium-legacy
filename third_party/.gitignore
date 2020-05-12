@@ -221,6 +221,7 @@
 /usrsctp/usrsctplib
 /v8-i18n
 /valgrind
+/vulkan_headers
 /vulkan_memory_allocator
 /wayland/src
 /wayland-protocols/src

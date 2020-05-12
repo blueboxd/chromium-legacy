@@ -33,7 +33,6 @@ import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.url.GURL;
 
 /**
@@ -100,8 +99,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * bottom sheet.
      */
     private void createThinWebView(int maxSheetHeight) {
-        mThinWebView = ThinWebViewFactory.create(
-                mContext, new ActivityWindowAndroid(mContext), new ThinWebViewConstraints());
+        mThinWebView = ThinWebViewFactory.create(mContext, new ThinWebViewConstraints());
 
         mSheetContentView = new FrameLayout(mContext);
         mThinWebView.getView().setLayoutParams(new FrameLayout.LayoutParams(

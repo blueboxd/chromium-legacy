@@ -21,8 +21,6 @@ namespace cronet {
 // Verifies that all the configuration options set by
 // CronetUrlRequestContextTest.testCronetEngineBuilderConfig
 // made it from the CronetEngine.Builder to the URLRequestContextConfig.
-// TODO(b/1078039): Make this function take an expected config instead of
-// comparing against a hardcoded one.
 static void JNI_CronetUrlRequestContextTest_VerifyUrlRequestContextConfig(
     JNIEnv* env,
     jlong jurl_request_context_config,
@@ -48,9 +46,8 @@ static void JNI_CronetUrlRequestContextTest_VerifyUrlRequestContextConfig(
 }
 
 // Verify that QUIC can be turned off in CronetEngine.Builder.
-// TODO(http://crbug.com/1078039): Make VerifyUrlRequestContextConfig() take an
-// expected config instead of hardcoded values so that this method can be
-// removed.
+// Note that the config expectation is hard coded here because it's very hard to
+// create an expected config in the JAVA package.
 static void
 JNI_CronetUrlRequestContextTest_VerifyUrlRequestContextQuicOffConfig(
     JNIEnv* env,

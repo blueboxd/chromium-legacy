@@ -21,6 +21,7 @@ ScenicWindowManager::~ScenicWindowManager() {
 
 void ScenicWindowManager::Shutdown() {
   DCHECK(windows_.IsEmpty());
+  scenic_ = nullptr;
 }
 
 std::unique_ptr<PlatformScreen> ScenicWindowManager::CreateScreen() {

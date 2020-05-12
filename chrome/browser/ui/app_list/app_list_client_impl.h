@@ -181,9 +181,9 @@ class AppListClientImpl
   std::map<int, AppListModelUpdater*> profile_model_mappings_;
 
   std::unique_ptr<app_list::SearchResourceManager> search_resource_manager_;
+  std::unique_ptr<AppListNotifierImpl> app_list_notifier_;
   std::unique_ptr<app_list::SearchController> search_controller_;
   std::unique_ptr<AppSyncUIStateWatcher> app_sync_ui_state_watcher_;
-  std::unique_ptr<AppListNotifierImpl> app_list_notifier_;
 
   ScopedObserver<TemplateURLService, TemplateURLServiceObserver>
       template_url_service_observer_{this};

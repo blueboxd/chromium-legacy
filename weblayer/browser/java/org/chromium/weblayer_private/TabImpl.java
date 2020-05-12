@@ -79,7 +79,7 @@ public final class TabImpl extends ITab.Stub {
     private NavigationControllerImpl mNavigationController;
     private ErrorPageCallbackProxy mErrorPageCallbackProxy;
     private FullscreenCallbackProxy mFullscreenCallbackProxy;
-    private ViewAndroidDelegate mViewAndroidDelegate;
+    private TabViewAndroidDelegate mViewAndroidDelegate;
     // BrowserImpl this TabImpl is in. This is only null during creation.
     private BrowserImpl mBrowser;
     /**
@@ -128,6 +128,40 @@ public final class TabImpl extends ITab.Stub {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
+    private class TabViewAndroidDelegate extends ViewAndroidDelegate {
+        private boolean mIgnoreRenderer;
+
+        TabViewAndroidDelegate() {
+            super(null);
+        }
+
+        /**
+         * Causes {@link onTopControlsChanged()} and {@link onBottomControlsChanged()} to be
+         * ignored.
+         * @param ignoreRenderer whether to ignore renderer-initiated updates to the controls state.
+         */
+        public void setIgnoreRendererUpdates(boolean ignoreRenderer) {
+            mIgnoreRenderer = ignoreRenderer;
+        }
+
+        @Override
+        public void onTopControlsChanged(
+                int topControlsOffsetY, int topContentOffsetY, int topControlsMinHeightOffsetY) {
+            BrowserViewController viewController = getViewController();
+            if (viewController != null && !mIgnoreRenderer) {
+                viewController.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
+            }
+        }
+        @Override
+        public void onBottomControlsChanged(
+                int bottomControlsOffsetY, int bottomControlsMinHeightOffsetY) {
+            BrowserViewController viewController = getViewController();
+            if (viewController != null && !mIgnoreRenderer) {
+                viewController.onBottomControlsChanged(bottomControlsOffsetY);
+            }
+        }
+    }
+
     public static TabImpl getTabById(int tabId) {
         return sTabMap.get(tabId);
     }
@@ -151,24 +185,7 @@ public final class TabImpl extends ITab.Stub {
         mProfile = profile;
         mNativeTab = nativeTab;
         mWebContents = TabImplJni.get().getWebContents(mNativeTab);
-        mViewAndroidDelegate = new ViewAndroidDelegate(null) {
-            @Override
-            public void onTopControlsChanged(int topControlsOffsetY, int topContentOffsetY,
-                    int topControlsMinHeightOffsetY) {
-                BrowserViewController viewController = getViewController();
-                if (viewController != null) {
-                    viewController.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
-                }
-            }
-            @Override
-            public void onBottomControlsChanged(
-                    int bottomControlsOffsetY, int bottomControlsMinHeightOffsetY) {
-                BrowserViewController viewController = getViewController();
-                if (viewController != null) {
-                    viewController.onBottomControlsChanged(bottomControlsOffsetY);
-                }
-            }
-        };
+        mViewAndroidDelegate = new TabViewAndroidDelegate();
         mWebContents.initialize("", mViewAndroidDelegate, new InternalAccessDelegateImpl(),
                 windowAndroid, WebContents.createDefaultInternalsHolder());
 
@@ -680,12 +697,30 @@ public final class TabImpl extends ITab.Stub {
     }
 
     private void onBrowserControlsStateUpdated(int state) {
-        TabImplJni.get().updateBrowserControlsState(mNativeTab, state);
         // If something has overridden the FIP's SHOWN constraint, cancel FIP. This causes FIP to
         // dismiss when entering fullscreen.
         if (state != BrowserControlsState.SHOWN) {
             hideFindInPageUiAndNotifyClient();
         }
+
+        // Don't animate when hiding the controls.
+        boolean animate = state != BrowserControlsState.HIDDEN;
+
+        // When a js dialog is shown, the renderer will not process updates to the controls state,
+        // so override the renderer. The renderer's update will come when the dialog is hidden, and
+        // since that animates from 0 height, it causes a flicker since the override is already set
+        // to fully show. Thus, disable animation.
+        if (state == BrowserControlsState.SHOWN
+                && mWebContents.getMainFrame().areInputEventsIgnored()
+                && mBrowser.getActiveTab() == this) {
+            mViewAndroidDelegate.setIgnoreRendererUpdates(true);
+            getViewController().showControls();
+            animate = false;
+        } else {
+            mViewAndroidDelegate.setIgnoreRendererUpdates(false);
+        }
+
+        TabImplJni.get().updateBrowserControlsState(mNativeTab, state, animate);
     }
 
     /**
@@ -708,7 +743,7 @@ public final class TabImpl extends ITab.Stub {
         WebContents getWebContents(long nativeTabImpl);
         void executeScript(long nativeTabImpl, String script, boolean useSeparateIsolate,
                 Callback<String> callback);
-        void updateBrowserControlsState(long nativeTabImpl, int newConstraint);
+        void updateBrowserControlsState(long nativeTabImpl, int newConstraint, boolean animate);
         String getGuid(long nativeTabImpl);
         void captureScreenShot(long nativeTabImpl, float scale,
                 ValueCallback<Pair<Bitmap, Integer>> valueCallback);

@@ -52,6 +52,8 @@ bool IsFullScreenRenderWidget(RenderWidgetHost* widget) {
 
 RenderFrameHostImpl* GetFocusedRenderFrameHostImpl(RenderWidgetHost* widget) {
   RenderViewHostImpl* rvhi = RenderViewHostImpl::From(widget);
+  if (!rvhi || !rvhi->GetDelegate()->GetFrameTree())
+    return nullptr;
   FrameTreeNode* frame_tree_node =
       rvhi->GetDelegate()->GetFrameTree()->GetFocusedFrame();
   return frame_tree_node ? frame_tree_node->current_frame_host() : nullptr;

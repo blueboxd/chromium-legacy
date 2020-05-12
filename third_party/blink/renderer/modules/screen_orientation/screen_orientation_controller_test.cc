@@ -8,6 +8,7 @@
 
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -201,6 +202,21 @@ TEST_F(ScreenOrientationControllerTest, RaceScenario) {
   EXPECT_FALSE(callback_results2.failed_);
 }
 
+class ScreenInfoWebWidgetClient
+    : public frame_test_helpers::TestWebWidgetClient {
+ public:
+  ScreenInfoWebWidgetClient() = default;
+  ~ScreenInfoWebWidgetClient() override = default;
+
+  // frame_test_helpers::TestWebWidgetClient:
+  WebScreenInfo GetScreenInfo() override { return screen_info_; }
+
+  void SetAngle(uint16_t angle) { screen_info_.orientation_angle = angle; }
+
+ private:
+  WebScreenInfo screen_info_;
+};
+
 TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
   std::string base_url("http://internal.test/");
   std::string test_url("single_iframe.html");
@@ -212,7 +228,9 @@ TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
       WebString::FromUTF8("visible_iframe.html"));
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(base_url + test_url);
+  ScreenInfoWebWidgetClient client;
+  web_view_helper.InitializeAndLoad(base_url + test_url, nullptr, nullptr,
+                                    &client);
 
   Page* page = web_view_helper.GetWebView()->GetPage();
   LocalFrame* frame = To<LocalFrame>(page->MainFrame());
@@ -222,12 +240,21 @@ TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
   // set to visible, propagating the orientation change events shouldn't crash
   // just because the ScreenOrientationController in the iframe was never
   // referenced before this.
-  auto* controller = ScreenOrientationController::From(*frame->DomWindow());
-  auto* orientation = ScreenOrientation::Create(frame->DomWindow());
-  controller->SetOrientation(orientation);
-  orientation->SetAngle(1234);
+  ScreenOrientation::Create(frame->DomWindow());
   page->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden, false);
+  client.SetAngle(1234);
+  web_view_helper.GetWebView()
+      ->MainFrame()
+      ->ToWebLocalFrame()
+      ->SendOrientationChangeEvent();
   page->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible, false);
+
+  // When the iframe's orientation is initialized, it should be properly synced.
+  auto* child_orientation = ScreenOrientation::Create(
+      To<LocalFrame>(frame->Tree().FirstChild())->DomWindow());
+  EXPECT_EQ(child_orientation->angle(), 1234);
+
+  web_view_helper.Reset();
 }
 
 }  // namespace blink

@@ -2795,20 +2795,6 @@ TEST_F(ViewportTest, viewportLegacyOrdering8) {
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
 
-TEST_F(ViewportTest, viewportLegacyEmptyAtViewportDoesntOverrideViewportMeta) {
-  RegisterMockedHttpURLLoad("viewport/viewport-legacy-ordering-10.html");
-
-  frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.InitializeAndLoad(
-      base_url_ + "viewport/viewport-legacy-ordering-10.html", nullptr, nullptr,
-      nullptr, SetViewportSettings);
-
-  Page* page = web_view_helper.GetWebView()->GetPage();
-  PageScaleConstraints constraints = RunViewportTest(page, 800, 600);
-
-  EXPECT_EQ(5000, constraints.layout_size.Width());
-}
-
 TEST_F(ViewportTest, viewportLegacyDefaultValueChangedByXHTMLMP) {
   RegisterMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
 

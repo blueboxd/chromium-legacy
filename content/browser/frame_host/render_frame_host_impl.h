@@ -1874,9 +1874,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // mojom::DomAutomationControllerHost:
   void DomOperationResponse(const std::string& json_string) override;
 
-  // Registers Mojo interfaces that this frame host makes available.
-  void RegisterMojoInterfaces();
-
   // Resets any waiting state of this RenderFrameHost that is no longer
   // relevant.
   void ResetWaitingState();
@@ -2013,8 +2010,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // when no appropriate NavigationRequest has been found.
   std::unique_ptr<NavigationRequest> CreateNavigationRequestForCommit(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool is_same_document,
-      NavigationEntryImpl* entry_for_request);
+      bool is_same_document);
 
   // Whether the |request| corresponds to a navigation to the pending
   // NavigationEntry. This is used at commit time, when the NavigationRequest

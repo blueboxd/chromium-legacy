@@ -142,19 +142,20 @@ class POLICY_EXPORT CloudPolicyClient {
   };
 
   // If non-empty, |machine_id|, |machine_model|, |brand_code|,
-  // |ethernet_mac_address|, |dock_mac_address| and |manufacture_date| are
-  // passed to the server verbatim. As these reveal machine identity, they must
-  // only be used where this is appropriate (i.e. device policy, but not user
-  // policy). |service| and |signing_service| are weak pointers and it's the
-  // caller's responsibility to keep them valid for the lifetime of
-  // CloudPolicyClient. The |signing_service| is used to sign sensitive
-  // requests. |device_dm_token_callback| is used to retrieve device DMToken for
-  // affiliated users. Could be null if it's not possible to use
+  // |attested_device_id|, |ethernet_mac_address|, |dock_mac_address| and
+  // |manufacture_date| are passed to the server verbatim. As these reveal
+  // machine identity, they must only be used where this is appropriate (i.e.
+  // device policy, but not user policy). |service| and |signing_service| are
+  // weak pointers and it's the caller's responsibility to keep them valid for
+  // the lifetime of CloudPolicyClient. The |signing_service| is used to sign
+  // sensitive requests. |device_dm_token_callback| is used to retrieve device
+  // DMToken for affiliated users. Could be null if it's not possible to use
   // device DMToken for user policy fetches.
   CloudPolicyClient(
       const std::string& machine_id,
       const std::string& machine_model,
       const std::string& brand_code,
+      const std::string& attested_device_id,
       const std::string& ethernet_mac_address,
       const std::string& dock_mac_address,
       const std::string& manufacture_date,
@@ -399,6 +400,7 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string& machine_id() const { return machine_id_; }
   const std::string& machine_model() const { return machine_model_; }
   const std::string& brand_code() const { return brand_code_; }
+  const std::string& attested_device_id() const { return attested_device_id_; }
   const std::string& ethernet_mac_address() const {
     return ethernet_mac_address_;
   }
@@ -623,6 +625,7 @@ class POLICY_EXPORT CloudPolicyClient {
   const std::string machine_id_;
   const std::string machine_model_;
   const std::string brand_code_;
+  const std::string attested_device_id_;
   const std::string ethernet_mac_address_;
   const std::string dock_mac_address_;
   const std::string manufacture_date_;

@@ -110,10 +110,9 @@ public class StatusIndicatorCoordinator {
      */
     public void show(@NonNull String statusText, Drawable statusIcon, @ColorInt int backgroundColor,
             @ColorInt int textColor, @ColorInt int iconTint) {
-        // TODO(sinansahin): Once we've moved the connectivity detection code to a separate class,
-        // we should make sure #show(), #updateContent(), and #hide() are called correctly there,
-        // e.g. show shouldn't be called if we're already showing. Then, we can turn these if checks
-        // into asserts.
+        // TODO(crbug.com/1081471): We should make sure #show, #hide, and #updateContent can't be
+        // called at the wrong time, or the call is ignored with a way to communicate this to the
+        // caller, e.g. returning a boolean.
         if (mIsShowing) return;
         mIsShowing = true;
 

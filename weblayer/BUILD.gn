@@ -226,6 +226,8 @@ source_set("weblayer_lib_base") {
     "browser/weblayer_field_trials.h",
     "browser/weblayer_security_blocking_page_factory.cc",
     "browser/weblayer_security_blocking_page_factory.h",
+    "browser/weblayer_speech_recognition_manager_delegate.cc",
+    "browser/weblayer_speech_recognition_manager_delegate.h",
     "browser/weblayer_variations_service_client.cc",
     "browser/weblayer_variations_service_client.h",
     "browser/webui/web_ui_controller_factory.cc",

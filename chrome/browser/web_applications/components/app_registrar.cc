@@ -107,6 +107,11 @@ GURL AppRegistrar::GetAppScope(const AppId& app_id) const {
   base::Optional<GURL> scope = GetAppScopeInternal(app_id);
   if (scope)
     return *scope;
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsTabStripLinkCapturing) &&
+      IsInExperimentalTabbedWindowMode(app_id)) {
+    return GetAppLaunchURL(app_id).GetOrigin();
+  }
   return GetAppLaunchURL(app_id).GetWithoutFilename();
 }
 

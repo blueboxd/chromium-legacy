@@ -160,7 +160,7 @@ void ReportMakeCredentialRequestTransport(FidoAuthenticator* authenticator) {
 // |CredProtect| value given the capabilities of a specific authenticator.
 CredProtect CredProtectForAuthenticator(
     CredProtectRequest request,
-    const FidoAuthenticator* authenticator) {
+    const FidoAuthenticator& authenticator) {
   switch (request) {
     case CredProtectRequest::kUVOptional:
       return CredProtect::kUVOptional;
@@ -169,8 +169,8 @@ CredProtect CredProtectForAuthenticator(
     case CredProtectRequest::kUVRequired:
       return CredProtect::kUVRequired;
     case CredProtectRequest::kUVOrCredIDRequiredOrBetter:
-      if (authenticator->Options() &&
-          authenticator->Options()->default_cred_protect ==
+      if (authenticator.Options() &&
+          authenticator.Options()->default_cred_protect ==
               CredProtect::kUVRequired) {
         return CredProtect::kUVRequired;
       }
@@ -184,7 +184,7 @@ CredProtect CredProtectForAuthenticator(
 bool ValidateResponseExtensions(
     const CtapMakeCredentialRequest& request,
     const MakeCredentialRequestHandler::Options& options,
-    const FidoAuthenticator* authenticator,
+    const FidoAuthenticator& authenticator,
     const cbor::Value& extensions) {
   if (!extensions.is_map()) {
     return false;
@@ -197,7 +197,7 @@ bool ValidateResponseExtensions(
     const std::string& ext_name = it.first.GetString();
 
     if (ext_name == kExtensionCredProtect) {
-      if (!authenticator->SupportsCredProtectExtension() ||
+      if (!authenticator.SupportsCredProtectExtension() ||
           !it.second.is_integer()) {
         return false;
       }
@@ -233,6 +233,41 @@ bool ValidateResponseExtensions(
   return true;
 }
 
+// ResponseValid returns whether |response| is permissible for the given
+// |authenticator| and |request|.
+bool ResponseValid(const FidoAuthenticator& authenticator,
+                   const CtapMakeCredentialRequest& request,
+                   const AuthenticatorMakeCredentialResponse& response,
+                   const MakeCredentialRequestHandler::Options& options) {
+  if (response.GetRpIdHash() !=
+      fido_parsing_utils::CreateSHA256Hash(request.rp.id)) {
+    FIDO_LOG(ERROR) << "Invalid RP ID hash";
+    return false;
+  }
+
+  const base::Optional<cbor::Value>& extensions =
+      response.attestation_object().authenticator_data().extensions();
+  if (extensions && !ValidateResponseExtensions(request, options, authenticator,
+                                                *extensions)) {
+    FIDO_LOG(ERROR) << "Invalid extensions block: "
+                    << cbor::DiagnosticWriter::Write(*extensions);
+    return false;
+  }
+
+  if (response.android_client_data_ext() &&
+      (!options.android_client_data_ext || !authenticator.Options() ||
+       !authenticator.Options()->supports_android_client_data_ext ||
+       !IsValidAndroidClientDataJSON(
+           *options.android_client_data_ext,
+           base::StringPiece(reinterpret_cast<const char*>(
+                                 response.android_client_data_ext()->data()),
+                             response.android_client_data_ext()->size())))) {
+    FIDO_LOG(ERROR) << "Invalid androidClientData extension";
+    return false;
+  }
+
+  return true;
+}
 }  // namespace
 
 MakeCredentialRequestHandler::Options::Options() = default;
@@ -431,10 +466,26 @@ void MakeCredentialRequestHandler::HandleResponse(
 #if defined(OS_WIN)
   if (authenticator->IsWinNativeApiAuthenticator()) {
     state_ = State::kFinished;
+    if (status != CtapDeviceResponseCode::kSuccess) {
+      std::move(completion_callback_)
+          .Run(WinCtapDeviceResponseCodeToMakeCredentialStatus(status),
+               base::nullopt, authenticator);
+      return;
+    }
+    if (!response ||
+        !ResponseValid(*authenticator, request_, *response, options_)) {
+      FIDO_LOG(ERROR)
+          << "Failing make credential request due to bad response from "
+          << authenticator->GetDisplayName();
+      std::move(completion_callback_)
+          .Run(MakeCredentialStatus::kWinNotAllowedError, base::nullopt,
+               authenticator);
+      return;
+    }
     CancelActiveAuthenticators(authenticator->GetId());
     std::move(completion_callback_)
         .Run(WinCtapDeviceResponseCodeToMakeCredentialStatus(status),
-             std::move(response), authenticator);
+             std::move(*response), authenticator);
     return;
   }
 #endif
@@ -488,40 +539,11 @@ void MakeCredentialRequestHandler::HandleResponse(
     return;
   }
 
-  const auto rp_id_hash = fido_parsing_utils::CreateSHA256Hash(request_.rp.id);
-
-  if (!response || response->GetRpIdHash() != rp_id_hash) {
+  if (!response ||
+      !ResponseValid(*authenticator, request_, *response, options_)) {
     FIDO_LOG(ERROR)
         << "Failing make credential request due to bad response from "
         << authenticator->GetDisplayName();
-    std::move(completion_callback_)
-        .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
-             authenticator);
-    return;
-  }
-
-  const base::Optional<cbor::Value>& extensions =
-      response->attestation_object().authenticator_data().extensions();
-  if (extensions && !ValidateResponseExtensions(request_, options_,
-                                                authenticator, *extensions)) {
-    FIDO_LOG(ERROR)
-        << "Failing make credential request due to extensions block: "
-        << cbor::DiagnosticWriter::Write(*extensions);
-    std::move(completion_callback_)
-        .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
-             authenticator);
-    return;
-  }
-
-  if (response->android_client_data_ext() &&
-      (!options_.android_client_data_ext || !authenticator->Options() ||
-       !authenticator->Options()->supports_android_client_data_ext ||
-       !IsValidAndroidClientDataJSON(
-           *options_.android_client_data_ext,
-           base::StringPiece(reinterpret_cast<const char*>(
-                                 response->android_client_data_ext()->data()),
-                             response->android_client_data_ext()->size())))) {
-    FIDO_LOG(ERROR) << "Invalid androidClientData extension";
     std::move(completion_callback_)
         .Run(MakeCredentialStatus::kAuthenticatorResponseInvalid, base::nullopt,
              authenticator);
@@ -535,7 +557,7 @@ void MakeCredentialRequestHandler::HandleResponse(
   }
 
   std::move(completion_callback_)
-      .Run(MakeCredentialStatus::kSuccess, std::move(response), authenticator);
+      .Run(MakeCredentialStatus::kSuccess, std::move(*response), authenticator);
 }
 
 void MakeCredentialRequestHandler::CollectPINThenSendRequest(
@@ -872,7 +894,7 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
   if (options_.cred_protect_request &&
       authenticator->SupportsCredProtectExtension()) {
     request->cred_protect = CredProtectForAuthenticator(
-        options_.cred_protect_request->first, authenticator);
+        options_.cred_protect_request->first, *authenticator);
     request->cred_protect_enforce = options_.cred_protect_request->second;
   }
 

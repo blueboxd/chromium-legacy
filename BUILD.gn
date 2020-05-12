@@ -270,6 +270,7 @@ group("gn_all") {
     deps += [
       "//ui/views:views_unittests",
       "//ui/views/examples:views_examples",
+      "//ui/views/examples:views_examples_unittests",
       "//ui/views/examples:views_examples_with_content",
     ]
   }

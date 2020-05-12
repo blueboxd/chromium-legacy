@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import './grid.js';
 import './theme_icon.js';
 
@@ -126,16 +127,11 @@ class CustomizeThemesElement extends PolymerElement {
     return this.theme.type === newTabPage.mojom.ThemeType.THIRD_PARTY;
   }
 
-  /**
-   * @return {string}
-   * @private
-   */
-  getThirdPartyLink_() {
-    if (!this.isThirdPartyTheme_()) {
-      return '';
-    }
-    return 'https://chrome.google.com/webstore/detail/' +
-        this.theme.info.thirdPartyThemeInfo.id;
+  /** @private */
+  onThirdPartyLinkButtonClick_() {
+    BrowserProxy.getInstance().open(
+        `https://chrome.google.com/webstore/detail/${
+            this.theme.info.thirdPartyThemeInfo.id}`);
   }
 
   /**

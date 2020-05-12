@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
-#include "third_party/blink/renderer/core/css/css_viewport_rule.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 #include "third_party/blink/renderer/core/css/style_rule_namespace.h"
@@ -213,12 +212,9 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
       rule = MakeGarbageCollected<CSSNamespaceRule>(
           To<StyleRuleNamespace>(self), parent_sheet);
       break;
-    case kViewport:
-      rule = MakeGarbageCollected<CSSViewportRule>(To<StyleRuleViewport>(self),
-                                                   parent_sheet);
-      break;
     case kKeyframe:
     case kCharset:
+    case kViewport:
       NOTREACHED();
       return nullptr;
   }

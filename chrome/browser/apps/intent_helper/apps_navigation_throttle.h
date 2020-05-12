@@ -214,7 +214,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url);
 
-  bool navigate_from_link();
+  bool navigate_from_link() const;
 
   // Keeps track of whether we already shown the UI or preferred app. Since
   // AppsNavigationThrottle cannot wait for the user (due to the non-blocking
@@ -233,6 +233,11 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
                            TestGetDestinationPlatform);
   FRIEND_TEST_ALL_PREFIXES(chromeos::ChromeOsAppsNavigationThrottleTest,
                            TestGetDestinationPlatform);
+
+  // Returns whether navigation to |url| was captured by a web app
+  bool CaptureExperimentalTabStripWebAppScopeNavigations(
+      content::WebContents* web_contents,
+      content::NavigationHandle* handle) const;
 
   content::NavigationThrottle::ThrottleCheckResult HandleRequest();
 

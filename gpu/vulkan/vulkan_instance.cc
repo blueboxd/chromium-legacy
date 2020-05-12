@@ -79,7 +79,7 @@ bool VulkanInstance::Initialize(
   if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
     return false;
 
-  if (vkEnumerateInstanceVersion)
+  if (vulkan_function_pointers->vkEnumerateInstanceVersionFn)
     vkEnumerateInstanceVersion(&vulkan_info_.api_version);
 
   if (vulkan_info_.api_version < VK_MAKE_VERSION(1, 1, 0))

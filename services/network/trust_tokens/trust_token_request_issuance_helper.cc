@@ -148,7 +148,7 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
   }
 
   if (!commitment_result->batch_size ||
-      !cryptographer_->Initialize(commitment_result->batch_size->value)) {
+      !cryptographer_->Initialize(commitment_result->batch_size)) {
     LogOutcome(net_log_, kBegin,
                "Internal error initializing cryptography delegate");
     std::move(done).Run(mojom::TrustTokenOperationStatus::kInternalError);
@@ -169,10 +169,8 @@ void TrustTokenRequestIssuanceHelper::OnGotKeyCommitment(
   // recent commitments.
   token_store_->PruneStaleIssuerState(*issuer_, commitment_result->keys);
 
-  int batch_size = commitment_result->batch_size
-                       ? std::min(commitment_result->batch_size->value,
-                                  kMaximumTrustTokenIssuanceBatchSize)
-                       : kDefaultTrustTokenIssuanceBatchSize;
+  int batch_size = std::min(commitment_result->batch_size,
+                            kMaximumTrustTokenIssuanceBatchSize);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,

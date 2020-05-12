@@ -1969,6 +1969,18 @@ ci.fyi_ios_builder(
 )
 
 ci.fyi_ios_builder(
+    name = 'ios-simulator-multi-window',
+    console_view_entry = ci.console_view_entry(
+        category = 'iOS',
+        short_name = 'mwd',
+    ),
+    executable = 'recipe:chromium',
+    properties = {
+        'xcode_build_version': '11c29',
+    },
+)
+
+ci.fyi_ios_builder(
     name = 'ios-webkit-tot',
     caches = [xcode_cache.x11n605cwk],
     console_view_entry = ci.console_view_entry(
@@ -2297,6 +2309,22 @@ ci.gpu_fyi_linux_builder(
     console_view_entry = ci.console_view_entry(
         category = 'Android|dqp|M64',
         short_name = 'N5X',
+    ),
+)
+
+ci.gpu_fyi_linux_builder(
+    name = 'ChromeOS FYI Release (amd64-generic)',
+    console_view_entry = ci.console_view_entry(
+        category = 'ChromeOS|amd64|generic',
+        short_name = 'x64'
+    ),
+)
+
+ci.gpu_fyi_linux_builder(
+    name = 'ChromeOS FYI Release (kevin)',
+    console_view_entry = ci.console_view_entry(
+        category = 'ChromeOS|arm|kevin',
+        short_name = 'kvn'
     ),
 )
 

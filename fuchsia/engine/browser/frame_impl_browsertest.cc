@@ -150,6 +150,40 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateFrame) {
                                                  url::kAboutBlankURL);
 }
 
+// Verifies that the renderer process consumes more memory for document
+// rendering.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationIncreasesMemoryUsage) {
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
+  GURL url(embedded_test_server()->GetURL(kPage1Path));
+
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  // Get the renderer size when no renderer process is active.
+  cr_fuchsia::ResultReceiver<uint64_t> before_nav_size(
+      base::DoNothing::Repeatedly());
+  frame->GetPrivateMemorySize(
+      cr_fuchsia::CallbackToFitFunction(before_nav_size.GetReceiveCallback()));
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), url.spec()));
+  navigation_listener_.RunUntilUrlAndTitleEquals(url, kPage1Title);
+
+  base::RunLoop after_nav_run_loop;
+  cr_fuchsia::ResultReceiver<uint64_t> after_nav_size(
+      after_nav_run_loop.QuitClosure());
+  frame->GetPrivateMemorySize(
+      cr_fuchsia::CallbackToFitFunction(after_nav_size.GetReceiveCallback()));
+  after_nav_run_loop.Run();
+
+  EXPECT_EQ(*before_nav_size, 0u);  // No render process - zero bytes.
+  EXPECT_GT(*after_nav_size, 0u);
+}
+
 IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigateDataFrame) {
   fuchsia::web::FramePtr frame = CreateFrame();
 

@@ -10,7 +10,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/window_cycle_controller.h"
-#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
@@ -18,8 +17,8 @@
 #include "ui/display/screen.h"
 
 namespace aura {
-class Window;
 class ScopedWindowTargeter;
+class Window;
 }
 
 namespace views {
@@ -38,14 +37,12 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   using WindowList = std::vector<aura::Window*>;
 
   explicit WindowCycleList(const WindowList& windows);
+  WindowCycleList(const WindowCycleList&) = delete;
+  WindowCycleList& operator=(const WindowCycleList&) = delete;
   ~WindowCycleList() override;
-
-  bool empty() const { return windows_.empty(); }
 
   // Cycles to the next or previous window based on |direction|.
   void Step(WindowCycleController::Direction direction);
-
-  int current_index() const { return current_index_; }
 
   void set_user_did_accept(bool user_did_accept) {
     user_did_accept_ = user_did_accept;
@@ -55,9 +52,9 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   friend class WindowCycleControllerTest;
 
   static void DisableInitialDelayForTesting();
-  const views::Widget* widget() const { return cycle_ui_widget_; }
 
   const WindowList& windows() const { return windows_; }
+  const views::Widget* widget() const { return cycle_ui_widget_; }
 
   // aura::WindowObserver overrides:
   // There is a chance a window is destroyed, for example by JS code. We need to
@@ -65,7 +62,7 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // while window cycling.
   void OnWindowDestroying(aura::Window* window) override;
 
-  // display::DisplayObserver overrides:
+  // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
@@ -113,8 +110,6 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
   // This is needed so that it won't leak keyboard events even if the widget is
   // not activatable.
   std::unique_ptr<aura::ScopedWindowTargeter> window_targeter_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowCycleList);
 };
 
 }  // namespace ash

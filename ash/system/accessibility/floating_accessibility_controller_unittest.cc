@@ -4,6 +4,7 @@
 
 #include "ash/system/accessibility/floating_accessibility_controller.h"
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/public/cpp/session/session_types.h"
@@ -38,13 +39,17 @@ class FloatingAccessibilityControllerTest : public AshTestBase {
   }
 
   FloatingAccessibilityController* controller() {
-    return accessibility_controller()->GetFloatingMenuControllerForTesting();
+    return accessibility_controller()->GetFloatingMenuController();
   }
 
   FloatingMenuPosition menu_position() { return controller()->position_; }
 
   FloatingAccessibilityView* menu_view() {
     return controller() ? controller()->menu_view_ : nullptr;
+  }
+
+  views::Widget* widget() {
+    return controller() ? controller()->bubble_widget_ : nullptr;
   }
 
   AutoclickMenuView* autoclick_menu_view() {
@@ -424,6 +429,41 @@ TEST_F(FloatingAccessibilityControllerTest, ActiveFeaturesButtons) {
     loop_disable.Run();
   }
   EXPECT_EQ(GetMenuViewBounds(), original_bounds);
+}
+
+TEST_F(FloatingAccessibilityControllerTest, AccelatorFocusMenu) {
+  SetUpVisibleMenu();
+
+  ASSERT_TRUE(widget());
+  views::FocusManager* focus_manager = widget()->GetFocusManager();
+
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::FOCUS_SHELF, {});
+  // If nothing else is enabled, it should focus on the detailed view button.
+  EXPECT_EQ(focus_manager->GetFocusedView(),
+            GetMenuButton(FloatingAccessibilityView::ButtonId::kSettingsList));
+
+  // Focus should be reset if advanced through the menu.
+  focus_manager->AdvanceFocus(false /* reverse */);
+  EXPECT_NE(focus_manager->GetFocusedView(),
+            GetMenuButton(FloatingAccessibilityView::ButtonId::kSettingsList));
+
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::FOCUS_SHELF, {});
+  // It should get back to the settings list button.
+  EXPECT_EQ(focus_manager->GetFocusedView(),
+            GetMenuButton(FloatingAccessibilityView::ButtonId::kSettingsList));
+
+  // Now, enable virtual keyboard and spoken feedback.
+  accessibility_controller()->virtual_keyboard().SetEnabled(true);
+  accessibility_controller()->select_to_speak().SetEnabled(true);
+
+  // We should be focused on the first button in the menu.
+  // Order: select to speak, virtual keyboard, settings menu, position.
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      AcceleratorAction::FOCUS_SHELF, {});
+  EXPECT_EQ(focus_manager->GetFocusedView(),
+            GetMenuButton(FloatingAccessibilityView::ButtonId::kSelectToSpeak));
 }
 
 }  // namespace ash

@@ -1431,7 +1431,6 @@ public class TabPersistentStore extends TabPersister {
         }.executeOnTaskRunner(taskRunner);
     }
 
-    @VisibleForTesting
     public void addObserver(TabPersistentStoreObserver observer) {
         mObservers.addObserver(observer);
     }

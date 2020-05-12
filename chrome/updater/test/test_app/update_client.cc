@@ -46,6 +46,10 @@ void UpdateClient::CheckForUpdate(StatusCallback callback) {
     BeginUpdateCheck(
         base::BindRepeating(&UpdateClient::HandleStatusUpdate, this),
         base::BindOnce(&UpdateClient::UpdateCompleted, this));
+  } else {
+    callback_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(callback_, UpdateStatus::FAILED, 0, false,
+                                  std::string(), 0, base::string16()));
   }
 }
 
@@ -102,10 +106,6 @@ void UpdateClient::UpdateCompleted(UpdateService::Result result) {
         FROM_HERE, base::BindOnce(callback_, UpdateStatus::FAILED, 0, false,
                                   std::string(), 0, error_message));
   }
-}
-
-scoped_refptr<base::SequencedTaskRunner> UpdateClient::GetTaskRunner() {
-  return callback_task_runner_;
 }
 
 }  // namespace updater

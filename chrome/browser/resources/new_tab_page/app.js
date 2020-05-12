@@ -320,6 +320,9 @@ class AppElement extends PolymerElement {
     endOfBodyScript.type = 'text/javascript';
     endOfBodyScript.appendChild(document.createTextNode(parts.endOfBodyScript));
     document.body.appendChild(endOfBodyScript);
+
+    BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
+        BrowserProxy.getInstance().now());
   }
 
   /** @private */
@@ -575,6 +578,8 @@ class AppElement extends PolymerElement {
   handleOneGoogleBarMessage_(data) {
     if (data.messageType === 'loaded') {
       this.oneGoogleBarLoaded_ = true;
+      BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
+          BrowserProxy.getInstance().now());
     } else if (data.messageType === 'activate') {
       $$(this, '#oneGoogleBar').style.zIndex = '1000';
     } else if (data.messageType === 'deactivate') {

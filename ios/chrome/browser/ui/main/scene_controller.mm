@@ -30,7 +30,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/main/browser.h"
@@ -1677,7 +1677,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)lastIncognitoTabClosed {
   // This seems the best place to mark the start of destroying the incognito
   // browser state.
-  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
+  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
       /*in_progress=*/true);
   DCHECK(self.mainController.mainBrowserState
              ->HasOffTheRecordChromeBrowserState());
@@ -1810,7 +1810,7 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
   // This seems the best place to deem the destroying and rebuilding the
   // incognito browser state to be completed.
-  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
+  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
       /*in_progress=*/false);
 }
 

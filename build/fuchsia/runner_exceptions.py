@@ -7,6 +7,9 @@
 This makes it easier to query build tables for particular error types as
 exit codes are visible to queries while exception stack traces are not."""
 
+import fcntl
+import logging
+import os
 import subprocess
 import sys
 import traceback
@@ -18,6 +21,19 @@ def _PrintException(value, trace):
 
   traceback.print_tb(trace)
   print(str(value))
+
+
+# TODO(crbug.com/1080858): Delete function when the stdout print bug is fixed.
+def _LogStdoutBlockingStatus():
+    """Log whether sys.stdout is blocking or non-blocking.
+
+    It should be blocking, but there are intermittent IO errors that suggest
+    that it is set to non-blocking at times during test runs."""
+
+    if fcntl.fcntl(sys.stdout, fcntl.F_GETFD) & os.O_NONBLOCK:
+        logging.error('sys.stdout is non-blocking')
+    else:
+        logging.info('sys.stdout is blocking')
 
 
 def HandleExceptionAndReturnExitCode():
@@ -37,25 +53,23 @@ def HandleExceptionAndReturnExitCode():
   Returns the mapped return code."""
 
   (type, value, trace) = sys.exc_info()
+  _PrintException(value, trace)
+
   if type is FuchsiaTargetException:
     if 'ssh' in str(value).lower():
-        print("Error: FuchsiaTargetException: SSH to Fuchsia target failed.")
+        print('Error: FuchsiaTargetException: SSH to Fuchsia target failed.')
         return 65
-    _PrintException(value, trace)
     return 64
   elif type is IOError:
     if value.errno == 11:
-        print("Error: IOError: [Errno 11] Resource temporarily unavailable.")
-        print("Info: Python print to stdout probably failed")
+        print('Info: Python print to sys.stdout probably failed')
+        _LogStdoutBlockingStatus()
         return 73
-    _PrintException(value, trace)
     return 72
   elif type is subprocess.CalledProcessError:
     if value.cmd[0] == 'scp':
-      print("Error: scp operation failed - %s" % str(value))
+      print('Error: scp operation failed - %s' % str(value))
       return 81
-    _PrintException(value, trace)
     return 80
   else:
-    _PrintException(value, trace)
     return 1

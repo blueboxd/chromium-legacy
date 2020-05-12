@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.os.Handler;
 import android.view.View;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -16,6 +15,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -28,6 +29,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
+import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils.FeatureStatus;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
@@ -37,8 +40,6 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,22 +47,6 @@ import java.util.List;
  * A mediator for the TabGroupUi. Responsible for managing the internal state of the component.
  */
 public class TabGroupUiMediator {
-    // TODO(yuezhanggg): move this to the feature-specific util class later.
-    /**
-     * A series of possible states of the conditional tab strip. FeatureStatus.DEFAULT is the
-     * initial state for the feature when the previous session has expired. The strip will not show
-     * in this state until being activated. FeatureStatus.ACTIVATED is the status when conditional
-     * tab strip is activated and strip will show in this state. FeatureStatus.FORBIDDEN is the
-     * state when user explicitly dismisses the strip, and the strip will never reshow in this
-     * state until returning to FeatureStatus.Default after session expiration.
-     */
-    @IntDef({FeatureStatus.FORBIDDEN, FeatureStatus.ACTIVATED, FeatureStatus.DEFAULT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FeatureStatus {
-        int FORBIDDEN = 0;
-        int ACTIVATED = 1;
-        int DEFAULT = 2;
-    }
     /**
      * An interface to control the TabGroupUi component.
      */
@@ -116,8 +101,9 @@ public class TabGroupUiMediator {
     private final ThemeColorProvider.TintObserver mTintObserver;
     private final TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
+    private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
-    private @FeatureStatus int mConditionalTabStripFeatureStatus = FeatureStatus.DEFAULT;
+    private PauseResumeWithNativeObserver mPauseResumeWithNativeObserver;
     private boolean mIsTabGroupUiVisible;
     private boolean mIsShowingOverViewMode;
 
@@ -126,7 +112,8 @@ public class TabGroupUiMediator {
             ResetHandler resetHandler, PropertyModel model, TabModelSelector tabModelSelector,
             TabCreatorManager tabCreatorManager, OverviewModeBehavior overviewModeBehavior,
             ThemeColorProvider themeColorProvider,
-            @Nullable TabGridDialogMediator.DialogController dialogController) {
+            @Nullable TabGridDialogMediator.DialogController dialogController,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mResetHandler = resetHandler;
         mModel = model;
         mTabModelSelector = tabModelSelector;
@@ -135,6 +122,7 @@ public class TabGroupUiMediator {
         mVisibilityController = visibilityController;
         mThemeColorProvider = themeColorProvider;
         mTabGridDialogController = dialogController;
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
 
         // register for tab model
         mTabModelObserver = new EmptyTabModelObserver() {
@@ -276,6 +264,21 @@ public class TabGroupUiMediator {
                     .addTabGroupObserver(mTabGroupModelFilterObserver);
         }
 
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            mPauseResumeWithNativeObserver = new PauseResumeWithNativeObserver() {
+                @Override
+                public void onResumeWithNative() {
+                    resetTabStripWithRelatedTabsForId(mTabModelSelector.getCurrentTabId());
+                }
+
+                @Override
+                public void onPauseWithNative() {
+                    resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
+                }
+            };
+            mActivityLifecycleDispatcher.register(mPauseResumeWithNativeObserver);
+        }
+
         mThemeColorObserver =
                 (color, shouldAnimate) -> mModel.set(TabGroupUiProperties.PRIMARY_COLOR, color);
         mTintObserver = (tint, useLight) -> mModel.set(TabGroupUiProperties.TINT, tint);
@@ -316,7 +319,7 @@ public class TabGroupUiMediator {
             // For conditional tab strip, the left button is to dismiss the strip.
             leftButtonOnClickListener = view -> {
                 resetTabStripWithRelatedTabsForId(Tab.INVALID_TAB_ID);
-                mConditionalTabStripFeatureStatus = FeatureStatus.FORBIDDEN;
+                ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.FORBIDDEN);
             };
             mModel.set(TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID, R.drawable.btn_close);
         }
@@ -349,7 +352,7 @@ public class TabGroupUiMediator {
         // When conditional tab strip feature is turned on but the feature is not activated (i.e.
         // forbidden or default), keep the tab strip hidden.
         if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
-                && mConditionalTabStripFeatureStatus != FeatureStatus.ACTIVATED) {
+                && ConditionalTabStripUtils.getFeatureStatus() != FeatureStatus.ACTIVATED) {
             id = Tab.INVALID_TAB_ID;
         }
         List<Tab> listOfTabs = getTabsToShowForId(id);
@@ -419,6 +422,9 @@ public class TabGroupUiMediator {
                         .removeTabGroupObserver(mTabGroupModelFilterObserver);
             }
         }
+        if (mPauseResumeWithNativeObserver != null) {
+            mActivityLifecycleDispatcher.unregister(mPauseResumeWithNativeObserver);
+        }
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         mThemeColorProvider.removeThemeColorObserver(mThemeColorObserver);
         mThemeColorProvider.removeTintObserver(mTintObserver);
@@ -426,9 +432,9 @@ public class TabGroupUiMediator {
     }
 
     private void maybeActivateConditionalTabStrip() {
-        if (mConditionalTabStripFeatureStatus == FeatureStatus.DEFAULT
+        if (ConditionalTabStripUtils.getFeatureStatus() == FeatureStatus.DEFAULT
                 && TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
-            mConditionalTabStripFeatureStatus = FeatureStatus.ACTIVATED;
+            ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);
         }
     }
 
@@ -439,6 +445,6 @@ public class TabGroupUiMediator {
 
     @VisibleForTesting
     int getConditionalTabStripFeatureStatusForTesting() {
-        return mConditionalTabStripFeatureStatus;
+        return ConditionalTabStripUtils.getFeatureStatus();
     }
 }

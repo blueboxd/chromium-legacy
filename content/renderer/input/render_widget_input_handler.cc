@@ -77,9 +77,7 @@ void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
 }
 
 void LogPassiveEventListenersUma(WebInputEventResult result,
-                                 WebInputEvent::DispatchType dispatch_type,
-                                 base::TimeTicks event_timestamp,
-                                 const ui::LatencyInfo& latency_info) {
+                                 WebInputEvent::DispatchType dispatch_type) {
   // This enum is backing a histogram. Do not remove or reorder members.
   enum ListenerEnum {
     PASSIVE_LISTENER_UMA_ENUM_PASSIVE,
@@ -121,8 +119,7 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
 }
 
 void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
-                                    WebInputEventResult result,
-                                    const ui::LatencyInfo& latency_info) {
+                                    WebInputEventResult result) {
   // TODO(dtapuska): Use the input_event.timeStampSeconds as the start
   // ideally this should be when the event was sent by the compositor to the
   // renderer. https://crbug.com/565348.
@@ -131,20 +128,19 @@ void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,
       input_event.GetType() == WebInputEvent::Type::kTouchEnd) {
     const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
 
-    LogPassiveEventListenersUma(result, touch.dispatch_type,
-                                input_event.TimeStamp(), latency_info);
+    LogPassiveEventListenersUma(result, touch.dispatch_type);
   } else if (input_event.GetType() == WebInputEvent::Type::kMouseWheel) {
     LogPassiveEventListenersUma(
         result,
-        static_cast<const WebMouseWheelEvent&>(input_event).dispatch_type,
-        input_event.TimeStamp(), latency_info);
+        static_cast<const WebMouseWheelEvent&>(input_event).dispatch_type);
   }
 }
 
 blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     const WebPointerEvent& pointer_event,
     const std::vector<std::unique_ptr<WebInputEvent>>& coalesced_events,
-    const std::vector<std::unique_ptr<WebInputEvent>>& predicted_events) {
+    const std::vector<std::unique_ptr<WebInputEvent>>& predicted_events,
+    const ui::LatencyInfo& latency) {
   std::vector<std::unique_ptr<WebInputEvent>> related_pointer_events;
   for (const std::unique_ptr<WebInputEvent>& event : coalesced_events) {
     DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
@@ -174,9 +170,9 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
     }
   }
 
-  return blink::WebCoalescedInputEvent(pointer_event.Clone(),
-                                       std::move(related_pointer_events),
-                                       std::move(predicted_pointer_events));
+  return blink::WebCoalescedInputEvent(
+      pointer_event.Clone(), std::move(related_pointer_events),
+      std::move(predicted_pointer_events), latency);
 }
 
 viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
@@ -313,7 +309,8 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
             blink::WebPointerProperties::PointerType::kUnknown,
             input_event.TimeStamp());
     return widget_->GetWebWidget()->HandleInputEvent(
-        blink::WebCoalescedInputEvent(pointer_event));
+        blink::WebCoalescedInputEvent(pointer_event,
+                                      coalesced_event.latency_info()));
   }
 
   const WebTouchEvent touch_event =
@@ -326,7 +323,8 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
       const blink::WebCoalescedInputEvent& coalesced_pointer_event =
           GetCoalescedWebPointerEventForTouch(
               pointer_event, coalesced_event.GetCoalescedEventsPointers(),
-              coalesced_event.GetPredictedEventsPointers());
+              coalesced_event.GetPredictedEventsPointers(),
+              coalesced_event.latency_info());
       widget_->GetWebWidget()->HandleInputEvent(coalesced_pointer_event);
     }
   }
@@ -335,7 +333,6 @@ WebInputEventResult RenderWidgetInputHandler::HandleTouchEvent(
 
 void RenderWidgetInputHandler::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
-    const ui::LatencyInfo& latency_info,
     HandledEventCallback callback) {
   const WebInputEvent& input_event = coalesced_event.Event();
 
@@ -356,14 +353,15 @@ void RenderWidgetInputHandler::HandleInputEvent(
   TRACE_EVENT1("renderer,benchmark,rail",
                "RenderWidgetInputHandler::OnHandleInputEvent", "event",
                WebInputEvent::GetName(input_event.GetType()));
+  int64_t trace_id = coalesced_event.latency_info().trace_id();
   TRACE_EVENT("input,benchmark", "LatencyInfo.Flow",
-              [&latency_info](perfetto::EventContext ctx) {
+              [trace_id](perfetto::EventContext ctx) {
                 ChromeLatencyInfo* info =
                     ctx.event()->set_chrome_latency_info();
-                info->set_trace_id(latency_info.trace_id());
+                info->set_trace_id(trace_id);
                 info->set_step(ChromeLatencyInfo::STEP_HANDLE_INPUT_EVENT_MAIN);
                 tracing::FillFlowEvent(ctx, TrackEvent::LegacyEvent::FLOW_INOUT,
-                                       latency_info.trace_id());
+                                       trace_id);
               });
 
   // If we don't have a high res timer, these metrics won't be accurate enough
@@ -371,7 +369,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (!start_time.is_null())
     LogInputEventLatencyUma(input_event, start_time);
 
-  ui::LatencyInfo swap_latency_info(latency_info);
+  ui::LatencyInfo swap_latency_info(coalesced_event.latency_info());
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
   cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
@@ -471,7 +469,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // |input_event| to avoid nested monitors.
   scoped_event_metrics_monitor = nullptr;
 
-  LogAllPassiveEventListenersUma(input_event, processed, latency_info);
+  LogAllPassiveEventListenersUma(input_event, processed);
 
   // If this RawKeyDown event corresponds to a browser keyboard shortcut and
   // it's not processed by webkit, then we need to suppress the upcoming Char
@@ -490,7 +488,7 @@ void RenderWidgetInputHandler::HandleInputEvent(
       handling_state.injected_scroll_params->size()) {
     HandleInjectedScrollGestures(
         std::move(*handling_state.injected_scroll_params), input_event,
-        latency_info);
+        coalesced_event.latency_info());
   }
 
   // Send gesture scroll events and their dispositions to the compositor thread,
@@ -705,8 +703,8 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
               {gesture_event->GetTypeAsUiEventType(),
                gesture_event->TimeStamp(),
                gesture_event->GetScrollInputType()});
-      widget_->GetWebWidget()->HandleInputEvent(
-          blink::WebCoalescedInputEvent(*gesture_event));
+      widget_->GetWebWidget()->HandleInputEvent(blink::WebCoalescedInputEvent(
+          *gesture_event, scrollbar_latency_info));
     }
   }
 }

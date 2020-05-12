@@ -36,7 +36,8 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     : ExecutionContextLifecycleObserver(context),
       characteristic_(std::move(characteristic)),
       service_(service),
-      device_(device) {
+      device_(device),
+      receivers_(this, context) {
   properties_ = MakeGarbageCollected<BluetoothCharacteristicProperties>(
       characteristic_->properties);
 }
@@ -51,14 +52,6 @@ void BluetoothRemoteGATTCharacteristic::RemoteCharacteristicValueChanged(
     return;
   this->SetValue(BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value));
   DispatchEvent(*Event::Create(event_type_names::kCharacteristicvaluechanged));
-}
-
-void BluetoothRemoteGATTCharacteristic::ContextDestroyed() {
-  Dispose();
-}
-
-void BluetoothRemoteGATTCharacteristic::Dispose() {
-  receivers_.Clear();
 }
 
 const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::InterfaceName()
@@ -277,7 +270,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::startNotifications(
       client;
   // See https://bit.ly/2S0zRAS for task types.
   receivers_.Add(
-      this, client.InitWithNewEndpointAndPassReceiver(),
+      client.InitWithNewEndpointAndPassReceiver(),
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
 
   service->RemoteCharacteristicStartNotifications(
@@ -458,6 +451,7 @@ void BluetoothRemoteGATTCharacteristic::Trace(Visitor* visitor) {
   visitor->Trace(properties_);
   visitor->Trace(value_);
   visitor->Trace(device_);
+  visitor->Trace(receivers_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
 }

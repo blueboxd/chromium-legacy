@@ -2471,8 +2471,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   auto old_background_paint_location = box->GetBackgroundPaintLocation();
   non_composited_main_thread_scrolling_reasons_ = 0;
   auto new_background_paint_location =
-      box->ComputeBackgroundPaintLocationIfComposited(
-          &non_composited_main_thread_scrolling_reasons_);
+      box->ComputeBackgroundPaintLocationIfComposited();
   bool needs_composited_scrolling = ComputeNeedsCompositedScrollingInternal(
       new_background_paint_location, force_prefer_compositing_to_lcd_text);
   if (!needs_composited_scrolling)
@@ -2519,38 +2518,39 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
 
   bool needs_composited_scrolling = true;
 
-  // TODO(flackr): Allow integer transforms as long as all of the ancestor
-  // transforms are also integer.
-  bool background_supports_lcd_text =
-      box->StyleRef().IsStackingContext() &&
-      (background_paint_location_if_composited &
-       kBackgroundPaintInScrollingContents) &&
-      layer_->BackgroundIsKnownToBeOpaqueInRect(box->PhysicalPaddingBoxRect(),
-                                                true) &&
-      !layer_->CompositesWithTransform();
-
   if (!force_prefer_compositing_to_lcd_text &&
       !box->GetDocument()
            .GetSettings()
-           ->GetPreferCompositingToLCDTextEnabled() &&
-      !background_supports_lcd_text) {
+           ->GetPreferCompositingToLCDTextEnabled()) {
+    // TODO(crbug.com/1025927): We may remove this condition.
     if (layer_->CompositesWithTransform()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;
+      needs_composited_scrolling = false;
     }
     if (!layer_->BackgroundIsKnownToBeOpaqueInRect(
             box->PhysicalPaddingBoxRect(), true)) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
+      needs_composited_scrolling = false;
     }
     if (!box->StyleRef().IsStackingContext()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
+      needs_composited_scrolling = false;
     }
-
-    needs_composited_scrolling = false;
+    if (!(background_paint_location_if_composited &
+          kBackgroundPaintInScrollingContents) &&
+        box->StyleRef().HasBackground()) {
+      non_composited_main_thread_scrolling_reasons_ |=
+          cc::MainThreadScrollingReason::kCantPaintScrollingBackground;
+      needs_composited_scrolling = false;
+    }
   }
 
+  // TODO(crbug.com/645957): We may remove this condition. This is also
+  // duplicate and inconsistent with the condition in
+  // LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited().
   if (box->HasClip() || layer_->HasDescendantWithClipPath() ||
       !!layer_->ClipPathAncestor()) {
     non_composited_main_thread_scrolling_reasons_ |=

@@ -21,6 +21,7 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Handling scroll from main thread, "
       "Has transform and LCD text, "
       "Background is not opaque in rect and LCD text, "
+      "Can't paint scrolling background, "
       "Has clip related property, "
       "Is not stacking context and LCD text, "
       "Non fast scrollable region, "

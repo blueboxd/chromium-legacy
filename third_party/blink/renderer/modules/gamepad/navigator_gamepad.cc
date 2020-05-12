@@ -194,16 +194,13 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
       PlatformEventController(*navigator.DomWindow()),
       gamepad_dispatcher_(
           MakeGarbageCollected<GamepadDispatcher>(navigator.DomWindow())) {
-  if (navigator.DomWindow())
-    navigator.DomWindow()->RegisterEventListenerObserver(this);
+  navigator.DomWindow()->RegisterEventListenerObserver(this);
 
   // Fetch |window.performance.timing.navigationStart|. Gamepad timestamps are
   // reported relative to this value.
-  if (GetFrame()) {
-    DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
-    if (loader)
-      navigation_start_ = loader->GetTiming().NavigationStart();
-  }
+  DocumentLoader* loader = GetFrame()->Loader().GetDocumentLoader();
+  if (loader)
+    navigation_start_ = loader->GetTiming().NavigationStart();
 
   vibration_actuators_.resize(device::Gamepads::kItemsLengthCap);
 }

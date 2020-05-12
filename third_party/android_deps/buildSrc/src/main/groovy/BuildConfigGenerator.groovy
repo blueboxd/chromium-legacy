@@ -421,15 +421,6 @@ class BuildConfigGenerator extends DefaultTask {
             case 'com_google_android_gms_play_services_basement':
                 // Deprecated deps jar but still needed by play services basement.
                 sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
-                // fall through.
-            case 'com_google_android_gms_play_services_auth':
-            case 'com_google_android_gms_play_services_base':
-            case 'com_google_android_gms_play_services_cast_framework':
-            case 'com_google_android_gms_play_services_gcm':
-            case 'com_google_android_gms_play_services_udc':
-            case 'com_google_android_gms_play_services_maps':
-            case 'com_google_android_gms_play_services_stats':
-                sb.append('  enable_jetify = true\n')
                 break
         }
     }

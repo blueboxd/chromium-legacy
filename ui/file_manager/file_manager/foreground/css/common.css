@@ -476,6 +476,30 @@ html[dir='rtl'] .entry-name {
   width: 40px;
 }
 
+.cr-dialog-container.files-ng .cr-dialog-close {
+  display: none;
+}
+
+.cr-dialog-container.files-ng #suggest-app-dialog .cr-dialog-close,
+.cr-dialog-container.files-ng #default-task-dialog .cr-dialog-close {
+  background: url(../images/common/ic_close.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  display: inline-block;
+  height: 32px;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 32px;
+}
+
+:root[dir='rtl'] .cr-dialog-container.files-ng .cr-dialog-close,
+:host-context(:root[dir='rtl']) .cr-dialog-container.files-ng .cr-dialog-close {
+  left: 6px;
+  right: unset !important;
+}
+
 html[dir='rtl'] .cr-dialog-container:not(.files-ng) .cr-dialog-close {
   left: 0;
   right: auto;

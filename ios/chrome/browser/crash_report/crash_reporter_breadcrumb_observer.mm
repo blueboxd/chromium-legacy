@@ -6,7 +6,7 @@
 
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -90,7 +90,7 @@ const NSUInteger kMaxBreadcrumbsDataLength = 1530;
     [_breadcrumbs deleteCharactersInRange:trimRange];
   }
 
-  breakpad_helper::SetBreadcrumbEvents(_breadcrumbs);
+  crash_keys::SetBreadcrumbEvents(_breadcrumbs);
 }
 
 @end

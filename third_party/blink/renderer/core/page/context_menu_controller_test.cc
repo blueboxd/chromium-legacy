@@ -567,7 +567,7 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
       base::TimeTicks::Now(), WebGestureDevice::kTouchscreen);
   gesture_event.SetPositionInWidget(gfx::PointF(rect->left(), rect->top()));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(gesture_event));
+      WebCoalescedInputEvent(gesture_event, ui::LatencyInfo()));
 
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();
@@ -612,7 +612,7 @@ TEST_F(ContextMenuControllerTest, SelectionRectClipped) {
       base::TimeTicks::Now(), WebGestureDevice::kTouchscreen);
   gesture_event.SetPositionInWidget(gfx::PointF(rect->left(), rect->top()));
   GetWebView()->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(gesture_event));
+      WebCoalescedInputEvent(gesture_event, ui::LatencyInfo()));
 
   WebContextMenuData context_menu_data =
       GetWebFrameClient().GetContextMenuData();

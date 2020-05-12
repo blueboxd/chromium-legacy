@@ -1320,7 +1320,8 @@ EXTERN_C const IID IID_IUpdater;
             /* [string][in] */ const WCHAR *existence_checker_path) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE Update( 
-            /* [string][in] */ const WCHAR *app_id) = 0;
+            /* [string][in] */ const WCHAR *app_id,
+            /* [in] */ IUpdaterObserver *observer) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE UpdateAll( 
             /* [in] */ IUpdaterObserver *observer) = 0;
@@ -1360,7 +1361,8 @@ EXTERN_C const IID IID_IUpdater;
         
         HRESULT ( STDMETHODCALLTYPE *Update )( 
             IUpdater * This,
-            /* [string][in] */ const WCHAR *app_id);
+            /* [string][in] */ const WCHAR *app_id,
+            /* [in] */ IUpdaterObserver *observer);
         
         HRESULT ( STDMETHODCALLTYPE *UpdateAll )( 
             IUpdater * This,
@@ -1395,8 +1397,8 @@ EXTERN_C const IID IID_IUpdater;
 #define IUpdater_Register(This,app_id,brand_code,tag,version,existence_checker_path)	\
     ( (This)->lpVtbl -> Register(This,app_id,brand_code,tag,version,existence_checker_path) ) 
 
-#define IUpdater_Update(This,app_id)	\
-    ( (This)->lpVtbl -> Update(This,app_id) ) 
+#define IUpdater_Update(This,app_id,observer)	\
+    ( (This)->lpVtbl -> Update(This,app_id,observer) ) 
 
 #define IUpdater_UpdateAll(This,observer)	\
     ( (This)->lpVtbl -> UpdateAll(This,observer) ) 

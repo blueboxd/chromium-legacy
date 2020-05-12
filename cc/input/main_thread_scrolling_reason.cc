@@ -46,6 +46,8 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Has transform and LCD text");
   if (reasons & kBackgroundNotOpaqueInRectAndLCDText)
     traced_value.AppendString("Background is not opaque in rect and LCD text");
+  if (reasons & kCantPaintScrollingBackground)
+    traced_value.AppendString("Can't paint scrolling background");
   if (reasons & kHasClipRelatedProperty)
     traced_value.AppendString("Has clip related property");
   if (reasons & kIsNotStackingContextAndLCDText)

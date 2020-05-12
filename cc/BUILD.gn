@@ -807,7 +807,6 @@ cc_test("cc_unittests") {
   defines = []
 
   if (is_fuchsia) {
-    defines += [ "GL_NOT_ON_PLATFORM" ]
     manifest = "//build/config/fuchsia/gfx_tests.cmx"
   }
 

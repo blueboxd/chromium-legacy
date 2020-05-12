@@ -97,8 +97,7 @@ bool LayoutBoxModelObject::UsesCompositedScrolling() const {
 }
 
 BackgroundPaintLocation
-LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited(
-    uint32_t* main_thread_scrolling_reasons) const {
+LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited() const {
   bool may_have_scrolling_layers_without_scrolling = IsA<LayoutView>(this);
   const auto* scrollable_area = GetScrollableArea();
   bool scrolls_overflow = scrollable_area && scrollable_area->ScrollsOverflow();

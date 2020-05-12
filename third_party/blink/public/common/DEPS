@@ -21,5 +21,6 @@ include_rules = [
     "+ui/events/event_constants.h",
     "+ui/events/types",
     "+ui/gfx/geometry",
+    "+ui/latency/latency_info.h",
     "+url",
 ]

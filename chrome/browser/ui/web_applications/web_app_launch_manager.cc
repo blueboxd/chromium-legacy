@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -132,7 +133,7 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 
-  Browser* browser;
+  Browser* browser = nullptr;
   WindowOpenDisposition disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   if (params.container == apps::mojom::LaunchContainer::kLaunchContainerTab) {
     browser = chrome::FindTabbedBrowser(
@@ -147,8 +148,21 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
                                             /*user_gesture=*/true));
     }
   } else {
-    browser =
-        CreateWebApplicationWindow(profile_, params.app_id, params.disposition);
+    if (params.disposition == WindowOpenDisposition::CURRENT_TAB &&
+        provider_->registrar().IsInExperimentalTabbedWindowMode(
+            params.app_id)) {
+      for (Browser* open_browser : *BrowserList::GetInstance()) {
+        if (AppBrowserController::IsForWebAppBrowser(open_browser,
+                                                     params.app_id)) {
+          browser = open_browser;
+          break;
+        }
+      }
+    }
+    if (!browser) {
+      browser = CreateWebApplicationWindow(profile_, params.app_id,
+                                           params.disposition);
+    }
   }
 
   content::WebContents* web_contents;

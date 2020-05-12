@@ -21,6 +21,10 @@ class AppListModelUpdater;
 class ChromeSearchResult;
 class Profile;
 
+namespace ash {
+class AppListNotifier;
+}
+
 namespace app_list {
 
 class SearchProvider;
@@ -33,6 +37,7 @@ class SearchController {
  public:
   SearchController(AppListModelUpdater* model_updater,
                    AppListControllerDelegate* list_controller,
+                   ash::AppListNotifier* notifier,
                    Profile* profile);
   virtual ~SearchController();
 

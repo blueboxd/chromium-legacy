@@ -1,11 +1,15 @@
-# Test expectations for skew tests between the WebLayer client at trunk and the
-# WebLayer implementation at previous release milestones.
+# Test expectations for skew tests between the WebLayer client and
+# implementation at combinations of trunk and previous release milestones.
 #
 # Lines tagged with "impl_lte_$VERSION" will be active when testing trunk client
 # with versions less than or equal to $VERSION of the implementation.
 #
-# tags: [ impl_lte_83 ]
+# tags: [ impl_lte_81 impl_lte_83 client_lte_83 ]
 # results: [ Skip ]
+
+# ---------------------------------------------
+# Tests against older WebLayer implementations.
+# ---------------------------------------------
 
 # ExternalNavigationTests are testing intent launching that changed after M83.
 [ impl_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInNewTabLaunchedOnLinkClick [ Skip ]
@@ -25,8 +29,73 @@
 # New API added in crbug.com/1033029.
 [ impl_lte_83 ] org.chromium.weblayer.test.WebLayerTest#getUserAgentString [ Skip ]
 
-# Replace was removed in https://crrev.com/c/2150968.
+# Replace was removed in https://crrev.com/c/2150968, see https://crbug.com/1070851.
 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
 
 # Fixed in https://crrev.com/c/2180022, see https://crbug.com/1077243.
 [ impl_lte_83 ] org.chromium.weblayer.test.FullscreenCallbackTest#testExitFullscreenWhenTabDestroyed [ Skip ]
+
+# Implemented in https://crrev.com/f933c913dd25657b0d6ed6201f14
+[ impl_lte_81 ] org.chromium.weblayer.test.FindInPageTest#testHideOnNavigate [ Skip ]
+
+# https://crbug.com/1079489.
+[ impl_lte_83 ] org.chromium.weblayer.test.BottomControlsTest#testBasic [ Skip ]
+[ impl_lte_83 ] org.chromium.weblayer.test.BottomControlsTest#testNoTopControl [ Skip ]
+
+# https://crbug.com/1079491.
+[ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
+
+# Many M81 tests are broken, see https://crbug.com/1081102.
+[ impl_lte_81 ] org.chromium.weblayer.test.BottomControlsTest#testBasic [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.BottomControlsTest#testNoTopControl [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreAfterRecreate [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreTabGuidAfterRecreate [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoresTabGuid [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChanged [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallback [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallbackAfterProfileDestroyed [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testGetCookie [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookie [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieInvalid [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNotSet [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNullCallback [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.CrashReporterTest#testCrashReporterLoading [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.DowngradeTest#testDowngradeDeletesData [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.DownloadCallbackTest#testBasic [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.DownloadCallbackTest#testInterceptDownloadByContentDisposition [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.DownloadCallbackTest#testInterceptDownloadByLinkAttribute [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentAfterRedirectLaunched [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInSameTabLaunchedOnLinkClick [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithFallbackUrlAfterRedirectLaunched [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlAfterRedirectGoesToFallbackUrl [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.FindInPageTest#testHideOnNavigate [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.InputTypesTest#testColorInput [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testRepostConfirmation [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderInRedirect [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderInStart [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderThrowsExceptionInCompleted [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderThrowsExceptionWithInvalidValue [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testStopFromOnNavigationStarted [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDisk [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDiskIncognito [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testEnumerateAllProfileNames [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testReuseProfile [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testDismissTransientUi [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testOnTitleUpdated [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenu [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenuImg [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlay [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlayOnBackgroundTab [ Skip ]
+[ impl_lte_81 ] org.chromium.weblayer.test.TabTest#testBeforeUnload [ Skip ]
+
+# -------------------------------------
+# Tests against older WebLayer clients.
+# -------------------------------------
+
+# https://crbug.com/1078973.
+[ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentLaunchedViaOnLoad [ Skip ]
+[ client_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlThatLaunchesIntentAfterRedirectLaunchesFallbackIntent [ Skip ]
+
+# Replace was removed in https://crrev.com/c/2150968, see https://crbug.com/1070851.
+[ client_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]

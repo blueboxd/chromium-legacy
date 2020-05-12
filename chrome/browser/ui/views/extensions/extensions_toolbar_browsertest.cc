@@ -17,8 +17,13 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 
-ExtensionsToolbarBrowserTest::ExtensionsToolbarBrowserTest() {
-  scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+ExtensionsToolbarBrowserTest::ExtensionsToolbarBrowserTest(bool enable_flag) {
+  if (enable_flag) {
+    scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+  } else {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kExtensionsToolbarMenu);
+  }
 }
 
 ExtensionsToolbarBrowserTest::~ExtensionsToolbarBrowserTest() = default;
@@ -38,10 +43,12 @@ ExtensionsToolbarBrowserTest::LoadTestExtension(const std::string& path,
       loader.LoadExtension(test_data_dir.AppendASCII(path));
   AppendExtension(extension);
 
-  // Loading an extension can result in the container changing visibility.
-  // Allow it to finish laying out appropriately.
-  auto* container = GetExtensionsToolbarContainer();
-  container->GetWidget()->LayoutRootViewIfNecessary();
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    // Loading an extension can result in the container changing visibility.
+    // Allow it to finish laying out appropriately.
+    auto* container = GetExtensionsToolbarContainer();
+    container->GetWidget()->LayoutRootViewIfNecessary();
+  }
 
   return extension;
 }
@@ -58,7 +65,8 @@ void ExtensionsToolbarBrowserTest::SetUpIncognitoBrowser() {
 void ExtensionsToolbarBrowserTest::SetUpOnMainThread() {
   DialogBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*", "127.0.0.1");
-  views::test::ReduceAnimationDuration(GetExtensionsToolbarContainer());
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    views::test::ReduceAnimationDuration(GetExtensionsToolbarContainer());
 }
 
 ExtensionsToolbarContainer*

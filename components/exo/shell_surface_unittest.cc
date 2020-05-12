@@ -147,6 +147,28 @@ TEST_F(ShellSurfaceTest, SetParent) {
   EXPECT_FALSE(shell_surface->CanActivate());
 }
 
+TEST_F(ShellSurfaceTest, DeleteShellSurfaceWithTransientChildren) {
+  gfx::Size buffer_size(256, 256);
+  auto parent_info = CreateShellSurfaceHolder(buffer_size, nullptr);
+  auto child1_info =
+      CreateShellSurfaceHolder(buffer_size, parent_info->shell_surface());
+  auto child2_info =
+      CreateShellSurfaceHolder(buffer_size, parent_info->shell_surface());
+  auto child3_info =
+      CreateShellSurfaceHolder(buffer_size, parent_info->shell_surface());
+  EXPECT_EQ(parent_info->shell_surface()->GetWidget()->GetNativeWindow(),
+            wm::GetTransientParent(
+                child1_info->shell_surface()->GetWidget()->GetNativeWindow()));
+  EXPECT_EQ(parent_info->shell_surface()->GetWidget()->GetNativeWindow(),
+            wm::GetTransientParent(
+                child2_info->shell_surface()->GetWidget()->GetNativeWindow()));
+  EXPECT_EQ(parent_info->shell_surface()->GetWidget()->GetNativeWindow(),
+            wm::GetTransientParent(
+                child3_info->shell_surface()->GetWidget()->GetNativeWindow()));
+
+  parent_info.reset();
+}
+
 TEST_F(ShellSurfaceTest, Maximize) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(

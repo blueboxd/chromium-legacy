@@ -32,6 +32,8 @@
 namespace views {
 namespace examples {
 
+const char kExamplesWidgetName[] = "ExamplesWidget";
+
 namespace {
 
 const char kEnableExamples[] = "enable-examples";
@@ -218,6 +220,7 @@ void ShowExamplesWindow(base::OnceClosure on_close,
     params.delegate =
         new ExamplesWindowContents(std::move(on_close), std::move(examples));
     params.context = window_context;
+    params.name = kExamplesWidgetName;
     widget->Init(std::move(params));
     widget->Show();
   }

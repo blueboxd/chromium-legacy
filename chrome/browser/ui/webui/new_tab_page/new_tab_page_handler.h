@@ -101,6 +101,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   void OnMostVisitedTilesRendered(
       std::vector<new_tab_page::mojom::MostVisitedTilePtr> tiles,
       double time) override;
+  void OnOneGoogleBarRendered(double time) override;
   void OnMostVisitedTileNavigation(new_tab_page::mojom::MostVisitedTilePtr tile,
                                    uint32_t index) override;
   void OnCustomizeDialogAction(
@@ -178,6 +179,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   OneGoogleBarService* one_google_bar_service_;
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_{this};
+  base::Optional<base::TimeTicks> one_google_bar_load_start_time_;
   mojo::Remote<new_tab_page::mojom::Page> page_;
   Profile* profile_;
   mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;

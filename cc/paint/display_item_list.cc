@@ -71,7 +71,7 @@ DisplayItemList::DisplayItemList(UsageHint usage_hint)
   if (usage_hint_ == kTopLevelDisplayItemList) {
     visual_rects_.reserve(1024);
     offsets_.reserve(1024);
-    begin_paired_indices_.reserve(32);
+    paired_begin_stack_.reserve(32);
   }
 }
 
@@ -112,6 +112,37 @@ double DisplayItemList::AreaOfDrawText(const gfx::Rect& rect) const {
   return area;
 }
 
+void DisplayItemList::EndPaintOfPairedEnd() {
+#if DCHECK_IS_ON()
+  DCHECK(IsPainting());
+  DCHECK_LT(current_range_start_, paint_op_buffer_.size());
+  current_range_start_ = kNotPainting;
+#endif
+  if (usage_hint_ == kToBeReleasedAsPaintOpBuffer)
+    return;
+
+  DCHECK(paired_begin_stack_.size());
+  size_t last_begin_index = paired_begin_stack_.back().first_index;
+  size_t last_begin_count = paired_begin_stack_.back().count;
+  DCHECK_GT(last_begin_count, 0u);
+
+  // Copy the visual rect at |last_begin_index| to all indices that constitute
+  // the begin item. Note that because we possibly reallocate the
+  // |visual_rects_| buffer below, we need an actual copy instead of a const
+  // reference which can become dangling.
+  auto visual_rect = visual_rects_[last_begin_index];
+  for (size_t i = 1; i < last_begin_count; ++i)
+    visual_rects_[i + last_begin_index] = visual_rect;
+  paired_begin_stack_.pop_back();
+
+  // Copy the visual rect of the matching begin item to the end item(s).
+  visual_rects_.resize(paint_op_buffer_.size(), visual_rect);
+
+  // The block that ended needs to be included in the bounds of the enclosing
+  // block.
+  GrowCurrentBeginItemVisualRect(visual_rect);
+}
+
 void DisplayItemList::Finalize() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "DisplayItemList::Finalize");
@@ -120,7 +151,7 @@ void DisplayItemList::Finalize() {
   DCHECK(!IsPainting());
   // If this fails we had more calls to EndPaintOfPairedBegin() than
   // to EndPaintOfPairedEnd().
-  DCHECK(begin_paired_indices_.empty());
+  DCHECK(paired_begin_stack_.empty());
   DCHECK_EQ(visual_rects_.size(), offsets_.size());
 #endif
 
@@ -141,7 +172,7 @@ void DisplayItemList::Finalize() {
   visual_rects_.shrink_to_fit();
   offsets_.clear();
   offsets_.shrink_to_fit();
-  begin_paired_indices_.shrink_to_fit();
+  paired_begin_stack_.shrink_to_fit();
 }
 
 size_t DisplayItemList::BytesUsed() const {
@@ -253,7 +284,7 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
 void DisplayItemList::Reset() {
 #if DCHECK_IS_ON()
   DCHECK(!IsPainting());
-  DCHECK(begin_paired_indices_.empty());
+  DCHECK(paired_begin_stack_.empty());
 #endif
 
   rtree_.Reset();
@@ -263,8 +294,8 @@ void DisplayItemList::Reset() {
   visual_rects_.shrink_to_fit();
   offsets_.clear();
   offsets_.shrink_to_fit();
-  begin_paired_indices_.clear();
-  begin_paired_indices_.shrink_to_fit();
+  paired_begin_stack_.clear();
+  paired_begin_stack_.shrink_to_fit();
   has_draw_ops_ = false;
 }
 

@@ -589,7 +589,7 @@ If you encounter one, please reach out to us on
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">PaintImageData </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.putImageData </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.putImageData </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -597,15 +597,15 @@ If you encounter one, please reach out to us on
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">Scroll </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.scrollIntoView, Canvas.drawImage </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - Can be implemented via canvas-to-canvas drawImage() An intermediate canvas can be created, then two drawImage() calls can be done.</td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.scrollIntoView, CanvasRenderingContext2D.drawImage </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - Can be implemented by drawing the canvas onto itself, with an offset, using drawImage, and then filling in the rest.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">ReplaceContents </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.drawImage </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.drawImage </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -614,14 +614,22 @@ If you encounter one, please reach out to us on
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
     <td style="font-size: 11px; padding: 5px;">No direct equivalent </td>
-    <td style="font-size: 11px; padding: 5px;">Gap (partial) - There is always an implicit flush at the end of draw code; this is unlikely to change. </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) -
+    There is always an implicit flush at the end of draw code; this is unlikely
+    to change. However, the combination of 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-offscreencanvas-interface">
+      OffscreenCanvas
+    </a> and 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-imagebitmap-rendering-context">
+      ImageBitmapRenderingContext 
+    </a>provide similar functionality.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetScale </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.scale </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.scale </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -629,7 +637,7 @@ If you encounter one, please reach out to us on
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetScale </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.currentTransform </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.currentTransform </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -637,9 +645,9 @@ If you encounter one, please reach out to us on
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetLayerTransform </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.setTransform
-CanvasRenderingContext2d.scale
-CanvasRenderingContext2d.translate </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.setTransform
+CanvasRenderingContext2D.scale
+CanvasRenderingContext2D.translate </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -657,9 +665,9 @@ CanvasRenderingContext2d.translate </td>
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetAttribMaxValue </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP - Canvas.getContext lets you set booleans requesting depth / stencil buffers of certain sizes, but does not have a way to query what's possible (or get anything other than on or off for each); No changes planned to fill this gap.</td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">OpenGL ES 3.0 </td>
+    <td style="font-size: 11px; padding: 5px;">WebGL 2.0 </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - WebGL 2.0 and Emscripten's exposure of OpenGL ES 3.0 support user-defined multisampled framebuffers, in which all of the parameters configurable via PPAPI can be set.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
@@ -707,7 +715,15 @@ CanvasRenderingContext2d.translate </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
     <td style="font-size: 11px; padding: 5px;">No direct equivalent </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - There is always an implicit swap at the end of draw code; this is unlikely to change.</td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) -
+    There is always an implicit flush at the end of draw code; this is unlikely
+    to change. However, the combination of 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-offscreencanvas-interface">
+      OffscreenCanvas
+    </a> and 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-imagebitmap-rendering-context">
+      ImageBitmapRenderingContext
+    </a> provide similar functionality.</td>
   </tr>
 
 </table>
@@ -3101,7 +3117,7 @@ Window 'message' Event </td>
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">PaintImageData </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.putImageData </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.putImageData </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -3109,15 +3125,15 @@ Window 'message' Event </td>
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">Scroll </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.scrollIntoView, Canvas.drawImage </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - Can be implemented via canvas-to-canvas drawImage() An intermediate canvas can be created, then two drawImage() calls can be done.</td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.scrollIntoView, CanvasRenderingContext2D.drawImage </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - Can be implemented by drawing the canvas onto itself, with an offset, using drawImage, and then filling in the rest.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">ReplaceContents </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.drawImage </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.drawImage </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -3126,14 +3142,22 @@ Window 'message' Event </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
     <td style="font-size: 11px; padding: 5px;">No direct equivalent </td>
-    <td style="font-size: 11px; padding: 5px;">Gap (partial) - There is always an implicit flush at the end of draw code; this is unlikely to change. </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) -
+    There is always an implicit flush at the end of draw code; this is unlikely
+    to change. However, the combination of 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-offscreencanvas-interface">
+      OffscreenCanvas
+    </a> and 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-imagebitmap-rendering-context">
+      ImageBitmapRenderingContext 
+    </a>provide similar functionality.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetScale </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.scale </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.scale </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -3141,7 +3165,7 @@ Window 'message' Event </td>
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetScale </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.currentTransform </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.currentTransform </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -3149,9 +3173,9 @@ Window 'message' Event </td>
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetLayerTransform </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td style="font-size: 11px; padding: 5px;">SDL </td>
-    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2d.setTransform
-CanvasRenderingContext2d.scale
-CanvasRenderingContext2d.translate </td>
+    <td style="font-size: 11px; padding: 5px;">CanvasRenderingContext2D.setTransform
+CanvasRenderingContext2D.scale
+CanvasRenderingContext2D.translate </td>
     <td style="font-size: 11px; padding: 5px;"> </td>
   </tr>
 
@@ -3169,9 +3193,9 @@ CanvasRenderingContext2d.translate </td>
   <tr bgcolor="#fcfcfc">
     <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetAttribMaxValue </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP - Canvas.getContext lets you set booleans requesting depth / stencil buffers of certain sizes, but does not have a way to query what's possible (or get anything other than on or off for each); No changes planned to fill this gap.</td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-size: 11px; padding: 5px;">OpenGL ES 3.0 </td>
+    <td style="font-size: 11px; padding: 5px;">WebGL 2.0 </td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - WebGL 2.0 and Emscripten's exposure of OpenGL ES 3.0 support user-defined multisampled framebuffers, in which all of the parameters configurable via PPAPI can be set.</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
@@ -3219,7 +3243,15 @@ CanvasRenderingContext2d.translate </td>
     <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;"> </td>
     <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
     <td style="font-size: 11px; padding: 5px;">No direct equivalent </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - There is always an implicit swap at the end of draw code; this is unlikely to change.</td>
+    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) -
+    There is always an implicit flush at the end of draw code; this is unlikely
+    to change. However, the combination of 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-offscreencanvas-interface">
+      OffscreenCanvas
+    </a> and 
+    <a href="https://html.spec.whatwg.org/multipage/canvas.html#the-imagebitmap-rendering-context">
+      ImageBitmapRenderingContext
+    </a> provide similar functionality.</td>
   </tr>
 
 </table>
@@ -5296,212 +5328,90 @@ Window 'message' Event </td>
   </tr>
 
 </table>
-<h3>PPB_TCPSocket</h3>
+<h3>PPB_TCPSocket and PPB_UDPSocket</h3>
+There is not a direct 1:1 mapping for migration. Instead, we have outlined some
+user scenarios below and what the recommended migration path is.
 <table>
   <tr bgcolor="#77ccff" style="color:white; font-weight: bold;">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">PPAPI Method </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">Assumes Threads </td>
-    <td style="font-size: 11px; padding: 5px;">Emscripten </td>
-    <td style="font-size: 11px; padding: 5px;">Web API </td>
-    <td style="font-size: 11px; padding: 5px;">Limitations </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Use Case</td>
+    <td style="font-size: 11px; padding: 5px;">Recommendations</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Create </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcp.create </td>
-    <td style="font-size: 11px; padding: 5px;">WebSockets / WebRTC closest practical equivalent on open Web. </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Screen sharing</td>
+    <td style="font-size: 11px; padding: 5px;">
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia">
+        getDisplayMedia</a> and 
+      <a href="https://webrtc.org/">WebRTC</a> (
+      <a href="https://webrtc.github.io/samples/src/content/getusermedia/getdisplaymedia/">
+        demo</a>)
+    </td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;"> </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcpServer.create </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Loading from a
+    local server to minimize bandwidth usage</td>
+    <td style="font-size: 11px; padding: 5px;">XHR, Fetch, Streams, Service Worker, Cache APIs</td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Bind </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcpServer.create </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Loading from a
+    local instance of a web app / Connecting to a local instance of a web app</td>
+    <td style="font-size: 11px; padding: 5px;"><a href="https://webrtc.org/">WebRTC</a></td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Connect </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcp.connect </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Chat</td>
+    <td style="font-size: 11px; padding: 5px;">
+      <a href="https://developer.mozilla.org/ja/docs/Web/API/WebSockets_API">WebSocket</a>*
+    </td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetLocalAddress </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.SocketInfo </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Realtime
+    audio/video communication</td>
+    <td style="font-size: 11px; padding: 5px;"><a href="https://webrtc.org/">WebRTC</a></td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetRemoteAddress </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.SocketInfo </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Collaboration</td>
+    <td style="font-size: 11px; padding: 5px;">
+      <a href="https://developer.mozilla.org/ja/docs/Web/API/WebSockets_API">WebSocket</a>*
+    </td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Read </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">onReceive* Events </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Realtime
+    multiplayer games</td>
+    <td style="font-size: 11px; padding: 5px;">
+      <a href="https://github.com/WICG/web-transport/blob/master/README.md">WebTransport</a>**
+      unless P2P in which case <a href="https://webrtc.org/">WebRTC</a> (or
+      WebTransport over RTCIceTransport)
+    </td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Write </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcp.send </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Realtime
+    interactive streaming</td>
+    <td style="font-size: 11px; padding: 5px;">
+      <a href="https://github.com/WICG/web-transport/blob/master/README.md">WebTransport</a>**
+    </td>
   </tr>
 
   <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Listen </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcpServer.listen </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Accept </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">onAccept* Events </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Close </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcp.close </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;"> </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcpServer.close </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetOption </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcp.update </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;"> </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.tcpServer.update </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
+    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Communicating
+    with legacy server</td>
+    <td style="font-size: 11px; padding: 5px;">
+      Proxy server or middleware to do protocol conversion. Feedback to
+      <a href="http://bit.ly/network-api-gaps">bit.ly/network-api-gaps</a>
+    </td>
   </tr>
 
 </table>
-<h3>PPB_UDPSocket</h3>
-<table>
-  <tr bgcolor="#77ccff" style="color:white; font-weight: bold;">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">PPAPI Method </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">Assumes Threads </td>
-    <td style="font-size: 11px; padding: 5px;">Emscripten </td>
-    <td style="font-size: 11px; padding: 5px;">Web API </td>
-    <td style="font-size: 11px; padding: 5px;">Limitations </td>
-  </tr>
 
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Create </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.create </td>
-    <td bgcolor="#ffeecc" style="font-size: 11px; padding: 5px;">GAP (partial) - WebRTC closest practical open Web equivalent</td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Bind </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.bind </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">GetBoundAddress </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.SocketInfo </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">RecvFrom </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">onReceive* Events </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">SendTo </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.send </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">Close </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.close </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">SetOption </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.update </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">JoinGroup </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.joinGroup </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-  <tr bgcolor="#fcfcfc">
-    <td style="font-weight: bold; font-size: 11px; padding: 5px;">LeaveGroup </td>
-    <td style="width: 50px; text-align: center; font-size: 11px; padding: 5px;">x </td>
-    <td bgcolor="#ffcccc" style="font-size: 11px; padding: 5px;">GAP</td>
-    <td style="font-size: 11px; padding: 5px;">chrome.sockets.udp.leaveGroup </td>
-    <td style="font-size: 11px; padding: 5px;"> </td>
-  </tr>
-
-</table>
+  <i>*: Or WebTransport in the future</i><br>
+  <i>**: See <a href="https://chromestatus.com/features#webtransport">chromestatus</a> for 
+    availability</i>
 </section>
 
 {{/partials.standard_nacl_article}}

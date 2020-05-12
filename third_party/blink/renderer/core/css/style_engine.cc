@@ -800,8 +800,6 @@ void StyleEngine::MarkTreeScopeDirty(TreeScope& scope) {
 void StyleEngine::MarkDocumentDirty() {
   document_scope_dirty_ = true;
   document_style_sheet_collection_->MarkSheetListDirty();
-  if (RuntimeEnabledFeatures::CSSViewportEnabled())
-    ViewportRulesChanged();
   if (GetDocument().ImportLoader())
     GetDocument().MasterDocument().GetStyleEngine().MarkDocumentDirty();
   else

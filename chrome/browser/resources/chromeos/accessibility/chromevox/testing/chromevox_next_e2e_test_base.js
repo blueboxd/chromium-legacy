@@ -52,12 +52,15 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
    * @param {function() : void} doc Snippet wrapped inside of a function.
    * @param {function(chrome.automation.AutomationNode)} callback
    *     Called once the document is ready.
-   * @param {string=} opt_url Optional url to wait for. Defaults to undefined.
+   * @param {{url: (boolean=), isAsync: (boolean=)}} opt_params
+   *           url Optional url to wait for. Defaults to undefined.
+   *           isAsync True if the callback is async.
    */
-  runWithLoadedTree(doc, callback, opt_url) {
-    callback = this.newCallback(callback);
+  runWithLoadedTree(doc, callback, opt_params) {
+    opt_params = opt_params || {};
+    callback = this.newCallback(callback, opt_params.isAsync);
     chrome.automation.getDesktop(function(r) {
-      const url = opt_url || TestUtils.createUrlForDoc(doc);
+      const url = opt_params.url || TestUtils.createUrlForDoc(doc);
       const listener = function(evt) {
         if (evt.target.root.url != url) {
           return;

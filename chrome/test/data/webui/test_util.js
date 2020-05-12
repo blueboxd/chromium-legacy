@@ -4,6 +4,7 @@
 
 // clang-format off
 // #import {afterNextRender, beforeNextRender, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {assertEquals} from './chai_assert.js';
 // clang-format on
 
 cr.define('test_util', function() {

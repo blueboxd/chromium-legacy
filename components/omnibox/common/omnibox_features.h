@@ -17,7 +17,6 @@ extern const base::Feature kHideSteadyStateUrlScheme;
 extern const base::Feature kHideSteadyStateUrlTrivialSubdomains;
 extern const base::Feature kHideSteadyStateUrlPathQueryAndRef;
 extern const base::Feature kOmniboxLocalEntitySuggestions;
-extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
@@ -29,7 +28,6 @@ extern const base::Feature kOmniboxSuggestionTransparencyOptions;
 extern const base::Feature kEnableClipboardProviderImageSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kDisplayTitleForCurrentUrl;
-extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
@@ -48,6 +46,12 @@ extern const base::Feature kOmniboxDemoteByType;
 // A special flag, enabled by default, that can be used to disable all new
 // search features (e.g. zero suggest).
 extern const base::Feature kNewSearchFeatures;
+
+// Num suggestions - these affect how many suggestions are shown based on e.g.
+// focus, page context, provider, or URL v non-URL.
+extern const base::Feature kMaxZeroSuggestMatches;
+extern const base::Feature kOmniboxMaxURLMatches;
+extern const base::Feature kUIExperimentMaxAutocompleteMatches;
 
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;

@@ -76,8 +76,8 @@ public class SearchBoxCoordinator {
         mModel.set(SearchBoxProperties.VOICE_SEARCH_VISIBILITY, visible);
     }
 
-    public void setVoiceSearchButtonClickListener(OnClickListener listener) {
-        mModel.set(SearchBoxProperties.VOICE_SEARCH_CLICK_CALLBACK, listener);
+    public void addVoiceSearchButtonClickListener(OnClickListener listener) {
+        mMediator.addVoiceSearchButtonClickListener(listener);
     }
 
     public void setChipText(String chipText) {

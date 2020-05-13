@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -382,10 +383,11 @@ bool IsConnected(network_config::mojom::ConnectionStateType connection_state) {
 
 }  // namespace
 
-InternetSection::InternetSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
+InternetSection::InternetSection(Profile* profile,
+                                 SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
   // General network search tags are always added.
-  delegate()->AddSearchTags(GetNetworkSearchConcepts());
+  registry()->AddSearchTags(GetNetworkSearchConcepts());
 
   // Receive updates when devices (e.g., Ethernet, Wi-Fi) go on/offline.
   ash::GetNetworkConfigService(
@@ -566,40 +568,40 @@ void InternetSection::OnDeviceList(
   using network_config::mojom::DeviceStateType;
   using network_config::mojom::NetworkType;
 
-  delegate()->RemoveSearchTags(GetWifiSearchConcepts());
-  delegate()->RemoveSearchTags(GetWifiOnSearchConcepts());
-  delegate()->RemoveSearchTags(GetWifiOffSearchConcepts());
-  delegate()->RemoveSearchTags(GetCellularSearchConcepts());
-  delegate()->RemoveSearchTags(GetCellularOnSearchConcepts());
-  delegate()->RemoveSearchTags(GetCellularOffSearchConcepts());
-  delegate()->RemoveSearchTags(GetInstantTetheringSearchConcepts());
-  delegate()->RemoveSearchTags(GetInstantTetheringOnSearchConcepts());
-  delegate()->RemoveSearchTags(GetInstantTetheringOffSearchConcepts());
+  registry()->RemoveSearchTags(GetWifiSearchConcepts());
+  registry()->RemoveSearchTags(GetWifiOnSearchConcepts());
+  registry()->RemoveSearchTags(GetWifiOffSearchConcepts());
+  registry()->RemoveSearchTags(GetCellularSearchConcepts());
+  registry()->RemoveSearchTags(GetCellularOnSearchConcepts());
+  registry()->RemoveSearchTags(GetCellularOffSearchConcepts());
+  registry()->RemoveSearchTags(GetInstantTetheringSearchConcepts());
+  registry()->RemoveSearchTags(GetInstantTetheringOnSearchConcepts());
+  registry()->RemoveSearchTags(GetInstantTetheringOffSearchConcepts());
 
   for (const auto& device : devices) {
     switch (device->type) {
       case NetworkType::kWiFi:
-        delegate()->AddSearchTags(GetWifiSearchConcepts());
+        registry()->AddSearchTags(GetWifiSearchConcepts());
         if (device->device_state == DeviceStateType::kEnabled)
-          delegate()->AddSearchTags(GetWifiOnSearchConcepts());
+          registry()->AddSearchTags(GetWifiOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
-          delegate()->AddSearchTags(GetWifiOffSearchConcepts());
+          registry()->AddSearchTags(GetWifiOffSearchConcepts());
         break;
 
       case NetworkType::kCellular:
-        delegate()->AddSearchTags(GetCellularSearchConcepts());
+        registry()->AddSearchTags(GetCellularSearchConcepts());
         if (device->device_state == DeviceStateType::kEnabled)
-          delegate()->AddSearchTags(GetCellularOnSearchConcepts());
+          registry()->AddSearchTags(GetCellularOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
-          delegate()->AddSearchTags(GetCellularOffSearchConcepts());
+          registry()->AddSearchTags(GetCellularOffSearchConcepts());
         break;
 
       case NetworkType::kTether:
-        delegate()->AddSearchTags(GetInstantTetheringSearchConcepts());
+        registry()->AddSearchTags(GetInstantTetheringSearchConcepts());
         if (device->device_state == DeviceStateType::kEnabled)
-          delegate()->AddSearchTags(GetInstantTetheringOnSearchConcepts());
+          registry()->AddSearchTags(GetInstantTetheringOnSearchConcepts());
         else if (device->device_state == DeviceStateType::kDisabled)
-          delegate()->AddSearchTags(GetInstantTetheringOffSearchConcepts());
+          registry()->AddSearchTags(GetInstantTetheringOffSearchConcepts());
         break;
 
       default:
@@ -623,11 +625,11 @@ void InternetSection::OnActiveNetworks(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
   using network_config::mojom::NetworkType;
 
-  delegate()->RemoveSearchTags(GetEthernetConnectedSearchConcepts());
-  delegate()->RemoveSearchTags(GetWifiConnectedSearchConcepts());
-  delegate()->RemoveSearchTags(GetCellularConnectedSearchConcepts());
-  delegate()->RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
-  delegate()->RemoveSearchTags(GetVpnConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetEthernetConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetWifiConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetCellularConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
+  registry()->RemoveSearchTags(GetVpnConnectedSearchConcepts());
 
   for (const auto& network : networks) {
     if (!IsConnected(network->connection_state))
@@ -635,23 +637,23 @@ void InternetSection::OnActiveNetworks(
 
     switch (network->type) {
       case NetworkType::kEthernet:
-        delegate()->AddSearchTags(GetEthernetConnectedSearchConcepts());
+        registry()->AddSearchTags(GetEthernetConnectedSearchConcepts());
         break;
 
       case NetworkType::kWiFi:
-        delegate()->AddSearchTags(GetWifiConnectedSearchConcepts());
+        registry()->AddSearchTags(GetWifiConnectedSearchConcepts());
         break;
 
       case NetworkType::kCellular:
-        delegate()->AddSearchTags(GetCellularConnectedSearchConcepts());
+        registry()->AddSearchTags(GetCellularConnectedSearchConcepts());
         break;
 
       case NetworkType::kTether:
-        delegate()->AddSearchTags(GetInstantTetheringConnectedSearchConcepts());
+        registry()->AddSearchTags(GetInstantTetheringConnectedSearchConcepts());
         break;
 
       case NetworkType::kVPN:
-        delegate()->AddSearchTags(GetVpnConnectedSearchConcepts());
+        registry()->AddSearchTags(GetVpnConnectedSearchConcepts());
         break;
 
       default:

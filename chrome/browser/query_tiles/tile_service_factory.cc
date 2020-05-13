@@ -17,6 +17,7 @@
 #include "components/background_task_scheduler/background_task_scheduler_factory.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/language/core/browser/locale_util.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_tiles/switches.h"
@@ -96,9 +97,8 @@ std::unique_ptr<KeyedService> TileServiceFactory::BuildServiceInstanceFor(
   auto* background_task_scheduler =
       background_task::BackgroundTaskSchedulerFactory::GetForKey(key);
 
-  std::string accept_languanges =
-      ProfileKey::FromSimpleFactoryKey(key)->GetPrefs()->GetString(
-          language::prefs::kAcceptLanguages);
+  std::string accept_languanges = language::GetApplicationLocale(
+      ProfileKey::FromSimpleFactoryKey(key)->GetPrefs());
 
   auto url_loader_factory =
       SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();

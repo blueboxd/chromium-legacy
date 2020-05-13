@@ -11,7 +11,8 @@
 enum class DownloadPromptStatus {
   SHOW_INITIAL,     // Show the prompt because it hasn't been shown before.
   SHOW_PREFERENCE,  // Show the prompt because user indicated preference.
-  DONT_SHOW         // Don't show the prompt because user indicated preference.
+  DONT_SHOW,        // Don't show the prompt because user indicated preference.
+  MAX_VALUE
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PROMPT_STATUS_H_

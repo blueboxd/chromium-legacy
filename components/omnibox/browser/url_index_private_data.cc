@@ -508,7 +508,10 @@ size_t URLIndexPrivateData::EstimateMemoryUsage() const {
   return res;
 }
 
-URLIndexPrivateData::~URLIndexPrivateData() {}
+// Note that when running Chrome normally this destructor isn't called during
+// shutdown because these objects are intentionally leaked. See
+// InMemoryURLIndex::Shutdown for details.
+URLIndexPrivateData::~URLIndexPrivateData() = default;
 
 HistoryIDVector URLIndexPrivateData::HistoryIDsFromWords(
     const String16Vector& unsorted_words) {

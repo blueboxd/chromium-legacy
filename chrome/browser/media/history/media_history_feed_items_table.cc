@@ -146,13 +146,6 @@ void FillLiveDetails(const media_feeds::mojom::LiveDetailsPtr& live_details,
         live_details->end_time->ToDeltaSinceWindowsEpoch().InSeconds());
 }
 
-void FillImage(const media_feeds::mojom::MediaImagePtr& image,
-               media_feeds::Image* proto) {
-  proto->set_url(image->src.spec());
-  proto->set_width(image->size.width());
-  proto->set_height(image->size.height());
-}
-
 }  // namespace
 
 const char MediaHistoryFeedItemsTable::kTableName[] = "mediaFeedItem";
@@ -383,7 +376,7 @@ bool MediaHistoryFeedItemsTable::SaveItem(
       FillIdentifier(identifier, play_next_candidate.add_identifier());
 
     for (auto& image : item->play_next_candidate->images)
-      FillImage(image, play_next_candidate.add_image());
+      media_feeds::MediaImageToProto(play_next_candidate.add_image(), image);
 
     BindProto(statement, 19, play_next_candidate);
   } else {

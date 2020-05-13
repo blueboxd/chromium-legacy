@@ -14,12 +14,14 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Reset settings. Note that search tags
 // are only added when powerwashing is allowed, since currently this is the only
 // setting in the Reset section.
 class ResetSection : public OsSettingsSection {
  public:
-  ResetSection(Profile* profile, Delegate* per_page_delegate);
+  ResetSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~ResetSection() override;
 
  private:

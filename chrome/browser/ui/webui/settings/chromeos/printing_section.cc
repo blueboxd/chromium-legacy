@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -51,11 +52,11 @@ const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
 }  // namespace
 
 PrintingSection::PrintingSection(Profile* profile,
-                                 Delegate* per_page_delegate,
+                                 SearchTagRegistry* search_tag_registry,
                                  CupsPrintersManager* printers_manager)
-    : OsSettingsSection(profile, per_page_delegate),
+    : OsSettingsSection(profile, search_tag_registry),
       printers_manager_(printers_manager) {
-  delegate()->AddSearchTags(GetPrintingSearchConcepts());
+  registry()->AddSearchTags(GetPrintingSearchConcepts());
 }
 
 PrintingSection::~PrintingSection() = default;

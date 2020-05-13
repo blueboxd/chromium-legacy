@@ -71,7 +71,8 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
                                  IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION,
                                  false /* flip_for_rtl */,
                                  kPanelPositionButtonSize,
-                                 false /* no highlight */)) {
+                                 false /* no highlight */,
+                                 false /* is_a11y_togglable */)) {
   // Set view IDs for testing.
   left_click_button_->SetId(static_cast<int>(ButtonId::kLeftClick));
   right_click_button_->SetId(static_cast<int>(ButtonId::kRightClick));

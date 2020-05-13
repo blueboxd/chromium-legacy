@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/chromium_strings.h"
@@ -52,10 +53,11 @@ bool IsPowerwashAllowed() {
 
 }  // namespace
 
-ResetSection::ResetSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
+ResetSection::ResetSection(Profile* profile,
+                           SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
   if (IsPowerwashAllowed())
-    delegate()->AddSearchTags(GetResetSearchConcepts());
+    registry()->AddSearchTags(GetResetSearchConcepts());
 }
 
 ResetSection::~ResetSection() = default;

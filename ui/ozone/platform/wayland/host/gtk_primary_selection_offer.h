@@ -6,30 +6,29 @@
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_GTK_PRIMARY_SELECTION_OFFER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/internal/wayland_data_offer_base.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_offer_base.h"
 
 struct gtk_primary_selection_offer;
 
 namespace ui {
 
-// This class represents a piece of data offered for transfer by another
-// client, the source client (see GtkPrimarySelectionSource for more).
-// It is used by the primary selection mechanism.
+// This class represents a piece of data offered for transfer by another client,
+// the source client (see GtkPrimarySelectionSource for more). It is used by the
+// primary selection mechanism.
 //
 // The offer describes MIME types that the data can be converted to and provides
 // the mechanism for transferring the data directly from the source client.
-class GtkPrimarySelectionOffer : public internal::WaylandDataOfferBase {
+class GtkPrimarySelectionOffer : public WaylandDataOfferBase {
  public:
   // Takes ownership of data_offer.
   explicit GtkPrimarySelectionOffer(gtk_primary_selection_offer* data_offer);
   ~GtkPrimarySelectionOffer() override;
 
-  // internal::WaylandDataOfferBase overrides:
+  // WaylandDataOfferBase overrides:
   base::ScopedFD Receive(const std::string& mime_type) override;
 
  private:

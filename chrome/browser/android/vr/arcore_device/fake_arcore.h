@@ -70,7 +70,8 @@ class FakeArCore : public ArCore {
 
   void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,
-      const std::vector<mojom::XRInputSourceStatePtr>& input_state) override;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state,
+      const base::TimeTicks& frame_time) override;
 
   void DetachAnchor(uint64_t anchor_id) override;
 

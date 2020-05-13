@@ -14,10 +14,13 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_layout_observer.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/display/display.h"
+#include "ui/display/display_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -32,6 +35,16 @@ namespace {
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";
 
 bool g_use_timer = true;
+
+base::string16 ConvertRefreshRateToString16(float refresh_rate) {
+  std::string str = base::StringPrintf("%.2f", refresh_rate);
+
+  // Remove the mantissa for whole numbers.
+  if (EndsWith(str, ".00", base::CompareCase::INSENSITIVE_ASCII))
+    str.erase(str.length() - 3);
+
+  return base::UTF8ToUTF16(str);
+}
 
 }  // namespace
 
@@ -206,15 +219,43 @@ void ResolutionNotificationController::CreateOrReplaceModalDialog() {
   // timer tick.
   constexpr char kTimeoutPlaceHolder[] = "$1";
 
-  base::string16 timeout_message_with_placeholder =
-      actual_display_size == requested_display_size
-          ? l10n_util::GetStringFUTF16(IDS_ASH_RESOLUTION_CHANGE_DIALOG_CHANGED,
-                                       display_name, actual_display_size,
-                                       base::UTF8ToUTF16(kTimeoutPlaceHolder))
-          : l10n_util::GetStringFUTF16(
-                IDS_ASH_RESOLUTION_CHANGE_DIALOG_FALLBACK, display_name,
-                requested_display_size, actual_display_size,
-                base::UTF8ToUTF16(kTimeoutPlaceHolder));
+  base::string16 timeout_message_with_placeholder;
+  if (display::features::IsListAllDisplayModesEnabled()) {
+    dialog_title = l10n_util::GetStringUTF16(
+        IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_TITLE);
+
+    const base::string16 actual_refresh_rate = ConvertRefreshRateToString16(
+        change_info_->current_resolution.refresh_rate());
+    const base::string16 requested_refresh_rate = ConvertRefreshRateToString16(
+        change_info_->new_resolution.refresh_rate());
+
+    const bool no_fallback = actual_display_size == requested_display_size &&
+                             actual_refresh_rate == requested_refresh_rate;
+
+    timeout_message_with_placeholder =
+        no_fallback
+            ? l10n_util::GetStringFUTF16(
+                  IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_CHANGED,
+                  display_name, actual_display_size, actual_refresh_rate,
+                  base::UTF8ToUTF16(kTimeoutPlaceHolder))
+            : l10n_util::GetStringFUTF16(
+                  IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_FALLBACK,
+                  {display_name, requested_display_size, requested_refresh_rate,
+                   actual_display_size, actual_refresh_rate,
+                   base::UTF8ToUTF16(kTimeoutPlaceHolder)},
+                  /*offsets=*/nullptr);
+
+  } else {
+    timeout_message_with_placeholder =
+        actual_display_size == requested_display_size
+            ? l10n_util::GetStringFUTF16(
+                  IDS_ASH_RESOLUTION_CHANGE_DIALOG_CHANGED, display_name,
+                  actual_display_size, base::UTF8ToUTF16(kTimeoutPlaceHolder))
+            : l10n_util::GetStringFUTF16(
+                  IDS_ASH_RESOLUTION_CHANGE_DIALOG_FALLBACK, display_name,
+                  requested_display_size, actual_display_size,
+                  base::UTF8ToUTF16(kTimeoutPlaceHolder));
+  }
 
   DisplayChangeDialog* dialog = new DisplayChangeDialog(
       std::move(dialog_title), std::move(timeout_message_with_placeholder),

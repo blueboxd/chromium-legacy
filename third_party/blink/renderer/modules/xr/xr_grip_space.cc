@@ -39,6 +39,12 @@ base::Optional<XRNativeOriginInformation> XRGripSpace::NativeOrigin() const {
   return input_source_->nativeOrigin();
 }
 
+bool XRGripSpace::IsStationary() const {
+  // Grip space is a space derived off of input source, so it is not considered
+  // stationary.
+  return false;
+}
+
 void XRGripSpace::Trace(Visitor* visitor) {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);

@@ -241,6 +241,7 @@ class ContextSupportStub : public ContextSupport {
   void WillCallGLFromSkia() override {}
   void DidCallGLFromSkia() override {}
   void SetDisplayTransform(gfx::OverlayTransform transform) override {}
+  void SetFrameRate(float frame_rate) override {}
 
  private:
   std::unique_ptr<char[]> mapped_transfer_cache_entry_;

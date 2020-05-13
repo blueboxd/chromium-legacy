@@ -16,8 +16,6 @@
 @class FindInPageModel;
 @protocol FindInPageResponseDelegate;
 
-typedef void (^FindInPageCompletionBlock)(FindInPageModel*);
-
 // Names for Find In Page UMA actions (Find, FindNext, FindPrevious).
 extern const char kFindActionName[];
 extern const char kFindNextActionName[];
@@ -41,18 +39,16 @@ class FindTabHelper : public web::WebStateObserver,
   // Starts an asynchronous Find operation that will call the given completion
   // handler with results.  Highlights matches on the current page.  Always
   // searches in the FORWARD direction.
-  void StartFinding(NSString* search_string,
-                    FindInPageCompletionBlock completion);
+  void StartFinding(NSString* search_string);
 
   // Runs an asynchronous Find operation that will call the given completion
   // handler with results.  Highlights matches on the current page.  Uses the
   // previously remembered search string and searches in the given |direction|.
-  void ContinueFinding(FindDirection direction,
-                       FindInPageCompletionBlock completion);
+  void ContinueFinding(FindDirection direction);
 
   // Stops any running find operations and runs the given completion block.
   // Removes any highlighting from the current page.
-  void StopFinding(ProceduralBlock completion);
+  void StopFinding();
 
   // Returns the FindInPageModel that contains the latest find results.
   FindInPageModel* GetFindResult() const;

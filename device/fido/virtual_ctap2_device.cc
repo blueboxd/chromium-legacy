@@ -99,23 +99,6 @@ bool AreMakeCredentialParamsValid(const CtapMakeCredentialRequest& request) {
       });
 }
 
-std::unique_ptr<PublicKey> ConstructP256PublicKey(
-    std::string public_key_string) {
-  DCHECK_EQ(64u, public_key_string.size());
-
-  std::vector<uint8_t> x962_public_key;
-  x962_public_key.push_back(0x04);  // uncompressed
-
-  const uint8_t* public_key_data =
-      reinterpret_cast<const uint8_t*>(public_key_string.data());
-  x962_public_key.insert(x962_public_key.end(), public_key_data,
-                         public_key_data + public_key_string.size());
-
-  return P256PublicKey::ParseX962Uncompressed(
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
-      x962_public_key);
-}
-
 std::vector<uint8_t> ConstructSignatureBuffer(
     const AuthenticatorData& authenticator_data,
     base::span<const uint8_t, kClientDataHashLength> client_data_hash) {
@@ -791,17 +774,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   if (!user_verified && !SimulatePress()) {
     return base::nullopt;
   }
+
   // Create key to register.
   // Note: Non-deterministic, you need to mock this out if you rely on
   // deterministic behavior.
-  auto private_key = crypto::ECPrivateKey::Create();
-  std::string public_key;
-  bool status = private_key->ExportRawPublicKey(&public_key);
-  DCHECK(status);
+  std::unique_ptr<PrivateKey> private_key(FreshP256Key());
+  std::unique_ptr<PublicKey> public_key(private_key->GetPublicKey());
 
   // Our key handles are simple hashes of the public key.
-  auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
-  std::vector<uint8_t> key_handle(hash.begin(), hash.end());
+  const auto key_handle = crypto::SHA256Hash(public_key->cose_key_bytes());
 
   base::Optional<cbor::Value> extensions;
   cbor::Value::MapValue extensions_map;
@@ -834,8 +815,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
   auto authenticator_data = ConstructAuthenticatorData(
       rp_id_hash, user_verified, 01ul,
-      ConstructAttestedCredentialData(key_handle,
-                                      ConstructP256PublicKey(public_key)),
+      ConstructAttestedCredentialData(key_handle, std::move(public_key)),
       std::move(extensions));
 
   base::Optional<std::string> opt_android_client_data_json;
@@ -857,7 +837,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   std::vector<uint8_t> sig;
   std::unique_ptr<crypto::ECPrivateKey> attestation_private_key =
       crypto::ECPrivateKey::CreateFromPrivateKeyInfo(GetAttestationKey());
-  status = Sign(attestation_private_key.get(), std::move(sign_buffer), &sig);
+  bool status =
+      Sign(attestation_private_key.get(), std::move(sign_buffer), &sig);
   DCHECK(status);
 
   base::Optional<std::vector<uint8_t>> attestation_cert;
@@ -1067,17 +1048,12 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
   for (const auto& registration : found_registrations) {
     registration.second->counter++;
 
-    auto* private_key = registration.second->private_key.get();
-    std::string public_key;
-    bool status = private_key->ExportRawPublicKey(&public_key);
-    DCHECK(status);
-
-    base::Optional<AttestedCredentialData> opt_attested_cred_data =
-        config_.return_attested_cred_data_in_get_assertion_response
-            ? base::make_optional(ConstructAttestedCredentialData(
-                  fido_parsing_utils::Materialize(registration.first),
-                  ConstructP256PublicKey(public_key)))
-            : base::nullopt;
+    base::Optional<AttestedCredentialData> opt_attested_cred_data;
+    if (config_.return_attested_cred_data_in_get_assertion_response) {
+      opt_attested_cred_data.emplace(ConstructAttestedCredentialData(
+          registration.first,
+          registration.second->private_key->GetPublicKey()));
+    }
 
     auto authenticator_data = ConstructAuthenticatorData(
         rp_id_hash, user_verified, registration.second->counter,
@@ -1097,9 +1073,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
                                       *opt_android_client_data_json)
                                 : request.client_data_hash);
 
-    std::vector<uint8_t> signature;
-    status = Sign(private_key, std::move(signature_buffer), &signature);
-    DCHECK(status);
+    std::vector<uint8_t> signature =
+        registration.second->private_key->Sign(signature_buffer);
 
     AuthenticatorGetAssertionResponse assertion(
         std::move(authenticator_data),
@@ -1851,13 +1826,12 @@ void VirtualCtap2Device::InitPendingRegistrations(
         static_cast<int>(CredentialManagementResponseKey::kCredentialID),
         AsCBOR(PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
                                              registration.first)));
-    std::string public_key;
-    EC_KEY* ec_key =
-        EVP_PKEY_get0_EC_KEY(registration.second.private_key->key());
-    CHECK(ec_key != nullptr);
+
+    base::Optional<cbor::Value> cose_key = cbor::Reader::Read(
+        registration.second.private_key->GetPublicKey()->cose_key_bytes());
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kPublicKey),
-        pin::EncodeCOSEPublicKey(ec_key));
+        cose_key->GetMap());
     mutable_state()->pending_registrations.emplace_back(
         std::move(response_map));
   }
@@ -1883,7 +1857,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnAuthenticatorGetInfo(
 }
 
 AttestedCredentialData VirtualCtap2Device::ConstructAttestedCredentialData(
-    std::vector<uint8_t> key_handle,
+    base::span<const uint8_t> key_handle,
     std::unique_ptr<PublicKey> public_key) {
   constexpr std::array<uint8_t, 2> sha256_length = {0, crypto::kSHA256Length};
   constexpr std::array<uint8_t, 16> kZeroAaguid = {0, 0, 0, 0, 0, 0, 0, 0,
@@ -1893,7 +1867,8 @@ AttestedCredentialData VirtualCtap2Device::ConstructAttestedCredentialData(
       !mutable_state()->non_zero_aaguid_with_self_attestation) {
     aaguid = kZeroAaguid;
   }
-  return AttestedCredentialData(aaguid, sha256_length, std::move(key_handle),
+  return AttestedCredentialData(aaguid, sha256_length,
+                                fido_parsing_utils::Materialize(key_handle),
                                 std::move(public_key));
 }
 

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
+#include "chrome/browser/chromeos/web_applications/crosh_loader_factory.h"
 
 #if defined(USE_CUPS)
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
@@ -45,6 +46,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   arc::ArcAccessibilityHelperBridge::CreateFactory();
   AuthPolicyCredentialsManagerFactory::GetInstance();
   bluetooth::DebugLogsManagerFactory::GetInstance();
+  CroshLoaderFactory::GetInstance();
 #if defined(USE_CUPS)
   CupsProxyServiceManagerFactory::GetInstance();
 #endif

@@ -47,6 +47,9 @@ class CONTENT_EXPORT CacheStorage {
   virtual void AddHandleRef() = 0;
   virtual void DropHandleRef() = 0;
 
+  // Explicitly begin initialization if it has not already been triggered.
+  virtual void Init() = 0;
+
   // Get the cache for the given key. If the cache is not found it is
   // created. The CacheStorgeCacheHandle in the callback prolongs the lifetime
   // of the cache. Once all handles to a cache are deleted the cache is deleted.

@@ -23,4 +23,5 @@ public @interface OmniboxSuggestionUiType {
     int TAIL_SUGGESTION = 4;
     int CLIPBOARD_SUGGESTION = 5;
     int TILE_SUGGESTION = 6;
+    int HEADER = 7;
 }

@@ -162,8 +162,9 @@ void MetalayerMode::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void MetalayerMode::OnAssistantStatusChanged(mojom::AssistantState state) {
-  assistant_state_ = state;
+void MetalayerMode::OnAssistantStatusChanged(
+    chromeos::assistant::AssistantStatus status) {
+  assistant_status_ = status;
   UpdateState();
 }
 
@@ -178,7 +179,7 @@ void MetalayerMode::OnAssistantContextEnabled(bool enabled) {
 }
 
 void MetalayerMode::OnAssistantFeatureAllowedChanged(
-    mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   assistant_allowed_state_ = state;
   UpdateState();
 }

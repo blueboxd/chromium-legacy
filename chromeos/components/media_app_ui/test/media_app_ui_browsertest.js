@@ -254,10 +254,12 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
 // Tests the IPC behind the loadNext and loadPrev functions on the received file
 // list in the untrusted context.
 TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
-  await loadMultipleFiles([
-    {file: await createTestImageFile(), handle: new FakeFileSystemFileHandle()},
-    {file: await createTestImageFile(), handle: new FakeFileSystemFileHandle()}
-  ]);
+  async function fakeEntry() {
+    const file = await createTestImageFile();
+    const handle = new FakeFileSystemFileHandle(file.name, file.type, file);
+    return {file, handle};
+  }
+  await loadMultipleFiles([await fakeEntry(), await fakeEntry()]);
   assertEquals(entryIndex, 0);
 
   let result = await guestMessagePipe.sendMessage('test', {navigate: 'next'});

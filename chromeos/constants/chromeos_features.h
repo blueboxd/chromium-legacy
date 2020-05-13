@@ -131,6 +131,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kQuickAnswersDogfood;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kQuickAnswersRichUi;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kQuickAnswersTextAnnotator;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kRar2Fs;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotes;
@@ -197,6 +199,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersDogfood();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersRichUiEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersSettingToggleEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+bool IsQuickAnswersTextAnnotatorEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsSyncEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSyncConsentEnabled();
 

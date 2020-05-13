@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/assistant/assistant_client.h"
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
@@ -56,7 +55,8 @@ class AssistantClientImpl : public ash::AssistantClient,
                const content::NotificationDetails& details) override;
 
   // chromeos::assistant::AssisantClient overrides:
-  void OnAssistantStatusChanged(ash::mojom::AssistantState new_state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus new_status) override;
   void RequestAssistantAlarmTimerController(
       mojo::PendingReceiver<ash::mojom::AssistantAlarmTimerController> receiver)
       override;
@@ -68,9 +68,6 @@ class AssistantClientImpl : public ash::AssistantClient,
           receiver) override;
   void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver)
-      override;
-  void RequestAssistantStateController(
-      mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override;
   void RequestBatteryMonitor(
       mojo::PendingReceiver<device::mojom::BatteryMonitor> receiver) override;

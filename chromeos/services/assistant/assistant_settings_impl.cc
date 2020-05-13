@@ -174,7 +174,7 @@ void AssistantSettingsImpl::SyncSpeakerIdEnrollmentStatus() {
   DCHECK(main_task_runner()->RunsTasksInCurrentSequence());
 
   if (assistant_state()->allowed_state() !=
-          ash::mojom::AssistantAllowedState::ALLOWED ||
+          chromeos::assistant::AssistantAllowedState::ALLOWED ||
       features::IsVoiceMatchDisabled()) {
     return;
   }

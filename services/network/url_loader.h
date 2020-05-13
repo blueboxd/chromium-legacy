@@ -483,7 +483,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // enabled).
   //
   // TODO(lukasza): https://crbug.com/920638: Remove
-  // |isolated_world_origin_| once we gather enough UMA and Rappor data.
+  // |isolated_world_origin_| once we gather enough UMA and UKM data.
   const base::Optional<url::Origin> isolated_world_origin_;
 
   // Observer listening to all cookie reads and writes made by this request.

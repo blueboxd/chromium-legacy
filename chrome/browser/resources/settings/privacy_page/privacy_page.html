@@ -767,4 +767,22 @@
           </settings-subpage>
         </template>
       </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <template is="dom-if" route-path="/content/windowPlacement" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsWindowPlacement}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsWindowPlacementBlock}"
+                toggle-on-label="$i18n{siteSettingsWindowPlacementAsk}"
+                category="{{ContentSettingsTypes.WINDOW_PLACEMENT}}">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="{{ContentSettingsTypes.WINDOW_PLACEMENT}}"
+                block-header="$i18n{siteSettingsBlock}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
     </settings-animated-pages>

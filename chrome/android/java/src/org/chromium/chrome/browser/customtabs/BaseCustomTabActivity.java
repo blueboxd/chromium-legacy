@@ -22,13 +22,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
@@ -59,12 +59,12 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
     protected CustomTabActivityTabProvider mTabProvider;
-    protected CustomTabToolbarColorController mToolbarColorController;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
     protected CustomTabIntentHandler mCustomTabIntentHandler;
     protected CustomTabNightModeStateController mNightModeStateController;
     protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
+    protected @Nullable TrustedWebActivityCoordinator mTwaCoordinator;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -137,7 +137,6 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
         mTabProvider = component.resolveTabProvider();
-        mToolbarColorController = component.resolveToolbarColorController();
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
         mCustomTabIntentHandler = component.resolveIntentHandler();
@@ -395,5 +394,13 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     public WebContentsDelegateAndroid getWebContentsDelegate() {
         assert mDelegateFactory != null;
         return mDelegateFactory.getWebContentsDelegate();
+    }
+
+    /**
+     * @return Whether the app is running in the "Trusted Web Activity" mode, where the TWA-specific
+     *         UI is shown.
+     */
+    public boolean isInTwaMode() {
+        return mTwaCoordinator == null ? false : mTwaCoordinator.shouldUseAppModeUi();
     }
 }

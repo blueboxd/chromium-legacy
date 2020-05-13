@@ -1849,6 +1849,12 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsVrAskRecommended",
      IDS_SETTINGS_SITE_SETTINGS_VR_ASK_RECOMMENDED},
     {"siteSettingsVrBlock", IDS_SETTINGS_SITE_SETTINGS_VR_BLOCK},
+    {"siteSettingsWindowPlacement",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT},
+    {"siteSettingsWindowPlacementAsk",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK},
+    {"siteSettingsWindowPlacementBlock",
+     IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCK},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 

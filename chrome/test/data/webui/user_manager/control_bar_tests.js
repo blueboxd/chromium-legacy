@@ -48,7 +48,7 @@ cr.define('user_manager.control_bar_tests', function() {
         return new Promise(function(resolve, reject) {
           // We expect to go to the 'create-profile' page.
           listenOnce(controlBarElement, 'change-page', function(event) {
-            if (event.detail.page == 'create-user-page') {
+            if (event.detail.page === 'create-user-page') {
               resolve();
             }
           });
@@ -123,7 +123,7 @@ cr.define('user_manager.control_bar_tests', function() {
         return new Promise(function(resolve, reject) {
           // We expect to go to the 'create-profile' page.
           listenOnce(controlBarElement, 'change-page', function(event) {
-            if (event.detail.page == 'create-user-page') {
+            if (event.detail.page === 'create-user-page') {
               resolve();
             }
           });

@@ -21,21 +21,15 @@ namespace storage {
 
 MockQuotaClient::MockQuotaClient(
     scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
-    const MockOriginData* mock_data,
-    storage::QuotaClientType id,
-    size_t mock_data_size)
+    base::span<const MockOriginData> mock_data,
+    QuotaClientType client_type)
     : quota_manager_proxy_(std::move(quota_manager_proxy)),
-      id_(id),
+      client_type_(client_type),
       mock_time_counter_(0) {
-  Populate(mock_data, mock_data_size);
-}
-
-void MockQuotaClient::Populate(const MockOriginData* mock_data,
-                               size_t mock_data_size) {
-  for (size_t i = 0; i < mock_data_size; ++i) {
+  for (const MockOriginData& mock_origin_data : mock_data) {
     // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
-    origin_data_[std::make_pair(url::Origin::Create(GURL(mock_data[i].origin)),
-                                mock_data[i].type)] = mock_data[i].usage;
+    origin_data_[{url::Origin::Create(GURL(mock_origin_data.origin)),
+                  mock_origin_data.type}] = mock_origin_data.usage;
   }
 }
 
@@ -44,10 +38,9 @@ MockQuotaClient::~MockQuotaClient() = default;
 void MockQuotaClient::AddOriginAndNotify(const url::Origin& origin,
                                          blink::mojom::StorageType storage_type,
                                          int64_t size) {
-  DCHECK(origin_data_.find(std::make_pair(origin, storage_type)) ==
-         origin_data_.end());
+  DCHECK(origin_data_.find({origin, storage_type}) == origin_data_.end());
   DCHECK_GE(size, 0);
-  origin_data_[std::make_pair(origin, storage_type)] = size;
+  origin_data_[{origin, storage_type}] = size;
   quota_manager_proxy_->quota_manager()->NotifyStorageModifiedInternal(
       type(), origin, storage_type, size, IncrementMockTime());
 }
@@ -56,7 +49,7 @@ void MockQuotaClient::ModifyOriginAndNotify(
     const url::Origin& origin,
     blink::mojom::StorageType storage_type,
     int64_t delta) {
-  auto it = origin_data_.find(std::make_pair(origin, storage_type));
+  auto it = origin_data_.find({origin, storage_type});
   DCHECK(it != origin_data_.end());
   it->second += delta;
   DCHECK_GE(it->second, 0);
@@ -84,8 +77,8 @@ base::Time MockQuotaClient::IncrementMockTime() {
   return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
 }
 
-storage::QuotaClientType MockQuotaClient::type() const {
-  return id_;
+QuotaClientType MockQuotaClient::type() const {
+  return client_type_;
 }
 
 void MockQuotaClient::OnQuotaManagerDestroyed() {}

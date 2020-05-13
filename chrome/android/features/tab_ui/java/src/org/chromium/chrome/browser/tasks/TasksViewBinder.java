@@ -81,7 +81,7 @@ class TasksViewBinder {
         } else if (propertyKey == MV_TILES_VISIBLE) {
             view.setMostVisitedVisibility(model.get(MV_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (propertyKey == VOICE_SEARCH_BUTTON_CLICK_LISTENER) {
-            view.getSearchBoxCoordinator().setVoiceSearchButtonClickListener(
+            view.getSearchBoxCoordinator().addVoiceSearchButtonClickListener(
                     model.get(VOICE_SEARCH_BUTTON_CLICK_LISTENER));
         }
     }

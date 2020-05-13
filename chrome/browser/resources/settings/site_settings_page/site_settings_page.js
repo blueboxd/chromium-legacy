@@ -302,6 +302,16 @@ function getCategoryItemMap() {
       shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
     },
     {
+      route: routes.SITE_SETTINGS_WINDOW_PLACEMENT,
+      id: Id.WINDOW_PLACEMENT,
+      label: 'siteSettingsWindowPlacement',
+      icon: 'settings:window-placement',
+      enabledLabel: 'siteSettingsWindowPlacementAsk',
+      disabledLabel: 'siteSettingsWindowPlacementBlock',
+      shouldShow: () =>
+          loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures'),
+    },
+    {
       route: routes.SITE_SETTINGS_ZOOM_LEVELS,
       id: Id.ZOOM_LEVELS,
       label: 'siteSettingsZoomLevels',
@@ -381,6 +391,7 @@ Polymer({
               Id.BLUETOOTH_SCANNING,
               Id.AR,
               Id.VR,
+              Id.WINDOW_PLACEMENT,
             ]),
           };
         }
@@ -409,6 +420,7 @@ Polymer({
             Id.BLUETOOTH_SCANNING,
             Id.AR,
             Id.VR,
+            Id.WINDOW_PLACEMENT,
           ]),
           contentBasic: buildItemListFromIds([
             Id.COOKIES,

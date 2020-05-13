@@ -328,8 +328,9 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // data across NetworkIsolationKeys and allow same-site cookies to be sent in
   // cross-site contexts. Fix this.
   WorkerScriptFetchInitiator::Start(
-      worker_process_host->GetID(), host->instance().url(),
-      creator_render_frame_host, net::SiteForCookies::FromOrigin(worker_origin),
+      worker_process_host->GetID(), DedicatedWorkerId(), host->id(),
+      host->instance().url(), creator_render_frame_host,
+      net::SiteForCookies::FromOrigin(worker_origin),
       host->instance().constructor_origin(),
       net::IsolationInfo::Create(
           net::IsolationInfo::RedirectMode::kUpdateNothing, worker_origin,

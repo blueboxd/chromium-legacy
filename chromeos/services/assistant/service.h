@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
@@ -22,7 +23,6 @@
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
-#include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -33,7 +33,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 
 class GoogleServiceAuthError;
-class PrefService;
 
 namespace base {
 class OneShotTimer;
@@ -75,8 +74,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
  public:
   Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
               pending_url_loader_factory,
-          signin::IdentityManager* identity_manager,
-          PrefService* profile_prefs);
+          signin::IdentityManager* identity_manager);
   ~Service() override;
 
   // Allows tests to override the S3 server URI used by the service.
@@ -91,8 +89,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void SetAssistantManagerServiceForTesting(
       std::unique_ptr<AssistantManagerService> assistant_manager_service);
-
-  AssistantStateProxy* GetAssistantStateProxyForTesting();
 
   // AssistantService overrides:
   void Init() override;
@@ -196,7 +192,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       assistant_notification_controller_;
   mojo::Remote<ash::mojom::AssistantScreenContextController>
       assistant_screen_context_controller_;
-  AssistantStateProxy assistant_state_;
 
   // |ServiceContext| object passed to child classes so they can access some of
   // our functionality without depending on us.
@@ -205,9 +200,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::PendingSharedURLLoaderFactory>
       pending_url_loader_factory_;
-
-  // User profile preferences.
-  PrefService* const profile_prefs_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
 

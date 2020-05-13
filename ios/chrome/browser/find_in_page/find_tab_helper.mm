@@ -30,40 +30,28 @@ void FindTabHelper::SetResponseDelegate(
   controller_.responseDelegate = response_delegate;
 }
 
-void FindTabHelper::StartFinding(NSString* search_term,
-                                 FindInPageCompletionBlock completion) {
+void FindTabHelper::StartFinding(NSString* search_term) {
   base::RecordAction(base::UserMetricsAction(kFindActionName));
-  [controller_ findStringInPage:search_term
-              completionHandler:^{
-                FindInPageModel* model = controller_.findInPageModel;
-                completion(model);
-              }];
+  [controller_ findStringInPage:search_term];
 }
 
-void FindTabHelper::ContinueFinding(FindDirection direction,
-                                    FindInPageCompletionBlock completion) {
-  FindInPageModel* model = controller_.findInPageModel;
-
+void FindTabHelper::ContinueFinding(FindDirection direction) {
   if (direction == FORWARD) {
     base::RecordAction(base::UserMetricsAction(kFindNextActionName));
-    [controller_ findNextStringInPageWithCompletionHandler:^{
-      completion(model);
-    }];
+    [controller_ findNextStringInPage];
 
   } else if (direction == REVERSE) {
     base::RecordAction(base::UserMetricsAction(kFindPreviousActionName));
-    [controller_ findPreviousStringInPageWithCompletionHandler:^{
-      completion(model);
-    }];
+    [controller_ findPreviousStringInPage];
 
   } else {
     NOTREACHED();
   }
 }
 
-void FindTabHelper::StopFinding(ProceduralBlock completion) {
+void FindTabHelper::StopFinding() {
   SetFindUIActive(false);
-  [controller_ disableFindInPageWithCompletionHandler:completion];
+  [controller_ disableFindInPage];
 }
 
 FindInPageModel* FindTabHelper::GetFindResult() const {
@@ -99,7 +87,7 @@ void FindTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (IsFindUIActive()) {
-    StopFinding(nil);
+    StopFinding();
   }
 }
 

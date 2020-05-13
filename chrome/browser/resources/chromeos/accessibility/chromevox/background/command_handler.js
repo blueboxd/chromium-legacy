@@ -619,10 +619,11 @@ CommandHandler.onCommand = function(command) {
         let actionNode = ChromeVoxState.instance.currentRange.start.node;
         // Scan for a clickable, which overrides the |actionNode|.
         let clickable = actionNode;
-        while (clickable && !clickable.clickable) {
+        while (clickable && !clickable.clickable &&
+               actionNode.root == clickable.root) {
           clickable = clickable.parent;
         }
-        if (clickable) {
+        if (clickable && actionNode.root == clickable.root) {
           clickable.doDefault();
           return false;
         }

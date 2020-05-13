@@ -31,6 +31,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewB
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
+import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderView;
+import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.tiles.TileSuggestionViewBinder;
@@ -169,6 +171,10 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                         parent -> mQueryTileCoordinator.createView(parent.getContext()),
                         TileSuggestionViewBinder::bind);
 
+                adapter.registerType(
+                        OmniboxSuggestionUiType.HEADER,
+                        parent -> new HeaderView(parent.getContext()),
+                        HeaderViewBinder::bind);
                 // clang-format on
 
                 mHolder = new SuggestionListViewHolder(container, dropdown);

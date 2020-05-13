@@ -16,6 +16,8 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings for Plugin VM settings. This class class does not provide
 // search tags, since this section will be removed eventually.
 //
@@ -24,7 +26,7 @@ namespace settings {
 class PluginVmSection : public OsSettingsSection {
  public:
   PluginVmSection(Profile* profile,
-                  Delegate* per_page_delegate,
+                  SearchTagRegistry* search_tag_registry,
                   PrefService* pref_service);
   ~PluginVmSection() override;
 

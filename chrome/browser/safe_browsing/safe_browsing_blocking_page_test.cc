@@ -1918,6 +1918,16 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
   }
 
  protected:
+  // Initiates a download and waits for it to be completed or cancelled.
+  static void DownloadAndWaitForNavigation(Browser* browser) {
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver observer(contents);
+    ui_test_utils::NavigateToURL(
+        browser, GURL("data:application/octet-stream;base64,SGVsbG8="));
+    observer.WaitForNavigationFinished();
+  }
+
   void NavigateAndAssertNoInterstitial() {
     // Use a page that contains an iframe so that we can test both top frame
     // and subresource warnings.
@@ -2078,6 +2088,28 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
                                DelayedWarningEvent::kWarningShownOnMouseClick,
                                1);
+}
+
+// This test initiates a download when a warning is delayed. The download should
+// be cancelled and the interstitial should not be shown.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       Download_CancelledWithNoInterstitial) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  DownloadAndWaitForNavigation(browser());
+  AssertNoInterstitial(browser(), false);
+
+  // Navigate away to "flush" the metrics.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 3);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningNotShown, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kDownloadCancelled, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

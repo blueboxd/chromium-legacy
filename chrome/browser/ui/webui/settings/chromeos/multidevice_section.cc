@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -112,11 +113,11 @@ bool IsOptedIn(multidevice_setup::mojom::HostStatus host_status) {
 
 MultiDeviceSection::MultiDeviceSection(
     Profile* profile,
-    Delegate* per_page_delegate,
+    SearchTagRegistry* search_tag_registry,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     android_sms::AndroidSmsService* android_sms_service,
     PrefService* pref_service)
-    : OsSettingsSection(profile, per_page_delegate),
+    : OsSettingsSection(profile, search_tag_registry),
       multidevice_setup_client_(multidevice_setup_client),
       android_sms_service_(android_sms_service),
       pref_service_(pref_service) {
@@ -126,7 +127,7 @@ MultiDeviceSection::MultiDeviceSection(
     return;
 
   multidevice_setup_client_->AddObserver(this);
-  delegate()->AddSearchTags(GetMultiDeviceSearchConcepts());
+  registry()->AddSearchTags(GetMultiDeviceSearchConcepts());
   OnHostStatusChanged(multidevice_setup_client_->GetHostStatus());
 }
 
@@ -234,11 +235,11 @@ void MultiDeviceSection::OnHostStatusChanged(
     const multidevice_setup::MultiDeviceSetupClient::HostStatusWithDevice&
         host_status_with_device) {
   if (IsOptedIn(host_status_with_device.first)) {
-    delegate()->RemoveSearchTags(GetMultiDeviceOptedOutSearchConcepts());
-    delegate()->AddSearchTags(GetMultiDeviceOptedInSearchConcepts());
+    registry()->RemoveSearchTags(GetMultiDeviceOptedOutSearchConcepts());
+    registry()->AddSearchTags(GetMultiDeviceOptedInSearchConcepts());
   } else {
-    delegate()->RemoveSearchTags(GetMultiDeviceOptedInSearchConcepts());
-    delegate()->AddSearchTags(GetMultiDeviceOptedOutSearchConcepts());
+    registry()->RemoveSearchTags(GetMultiDeviceOptedInSearchConcepts());
+    registry()->AddSearchTags(GetMultiDeviceOptedOutSearchConcepts());
   }
 }
 

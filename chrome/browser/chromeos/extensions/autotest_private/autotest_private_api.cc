@@ -408,9 +408,9 @@ std::string SetWhitelistedPref(Profile* profile,
   if (pref_name == chromeos::assistant::prefs::kAssistantEnabled) {
     DCHECK(value.is_bool());
     // Validate the Assistant service allowed state.
-    ash::mojom::AssistantAllowedState allowed_state =
+    chromeos::assistant::AssistantAllowedState allowed_state =
         assistant::IsAssistantAllowedForProfile(profile);
-    if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
+    if (allowed_state != chromeos::assistant::AssistantAllowedState::ALLOWED) {
       return base::StringPrintf("Assistant not allowed - state: %d",
                                 allowed_state);
     }
@@ -2299,8 +2299,8 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
     return RespondNow(Error(err_msg));
 
   // Any state that's not |NOT_READY| would be considered a ready state.
-  const bool not_ready = (ash::AssistantState::Get()->assistant_state() ==
-                          ash::mojom::AssistantState::NOT_READY);
+  const bool not_ready = (ash::AssistantState::Get()->assistant_status() ==
+                          chromeos::assistant::AssistantStatus::NOT_READY);
   const bool success = (params->enabled != not_ready);
   if (success)
     return RespondNow(NoArguments());
@@ -2317,7 +2317,7 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
 }
 
 void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
-    ash::mojom::AssistantState state) {
+    chromeos::assistant::AssistantStatus status) {
   // Must check if the Optional contains value first to avoid possible
   // segmentation fault caused by Respond() below being called before
   // RespondLater() in Run(). This will happen due to AddObserver() call
@@ -2325,7 +2325,8 @@ void AutotestPrivateSetAssistantEnabledFunction::OnAssistantStatusChanged(
   if (!enabled_.has_value())
     return;
 
-  const bool not_ready = (state == ash::mojom::AssistantState::NOT_READY);
+  const bool not_ready =
+      (status == chromeos::assistant::AssistantStatus::NOT_READY);
   const bool success = (enabled_.value() != not_ready);
   if (!success)
     return;
@@ -2385,8 +2386,8 @@ void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
 }
 
 void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
-    OnAssistantStatusChanged(ash::mojom::AssistantState state) {
-  if (state == ash::mojom::AssistantState::NEW_READY) {
+    OnAssistantStatusChanged(chromeos::assistant::AssistantStatus status) {
+  if (status == chromeos::assistant::AssistantStatus::NEW_READY) {
     Respond(NoArguments());
     self_.reset();
   }
@@ -2519,9 +2520,9 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  ash::mojom::AssistantAllowedState allowed_state =
+  chromeos::assistant::AssistantAllowedState allowed_state =
       assistant::IsAssistantAllowedForProfile(profile);
-  if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
+  if (allowed_state != chromeos::assistant::AssistantAllowedState::ALLOWED) {
     return RespondNow(Error(base::StringPrintf(
         "Assistant not allowed - state: %d", allowed_state)));
   }
@@ -2583,9 +2584,9 @@ AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  ash::mojom::AssistantAllowedState allowed_state =
+  chromeos::assistant::AssistantAllowedState allowed_state =
       assistant::IsAssistantAllowedForProfile(profile);
-  if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
+  if (allowed_state != chromeos::assistant::AssistantAllowedState::ALLOWED) {
     return RespondNow(Error(base::StringPrintf(
         "Assistant not allowed - state: %d", allowed_state)));
   }

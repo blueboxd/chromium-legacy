@@ -17,13 +17,15 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Personalization settings. Search tags
 // are only added when not in guest mode, and Ambient mode settings are added
 // depending on whether the feature is allowed and enabled.
 class PersonalizationSection : public OsSettingsSection {
  public:
   PersonalizationSection(Profile* profile,
-                         Delegate* per_page_delegate,
+                         SearchTagRegistry* search_tag_registry,
                          PrefService* pref_service);
   ~PersonalizationSection() override;
 

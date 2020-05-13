@@ -4,9 +4,6 @@
 
 const oneGoogleBarHeightInPixels = 64;
 
-let darkThemeEnabled = false;
-let shouldUndoDarkTheme = false;
-
 /**
  * @param {boolean} enabled
  * @return {!Promise}
@@ -15,36 +12,81 @@ async function enableDarkTheme(enabled) {
   if (!window.gbar) {
     return;
   }
-  darkThemeEnabled = enabled;
   const ogb = await window.gbar.a.bf();
   ogb.pc.call(ogb, enabled ? 1 : 0);
 }
 
 /**
  * The following |messageType|'s are sent to the parent frame:
- *  - loaded: initial load
- *  - activate/deactivate: When an overlay is open, 'activate' is sent to the
- *        to ntp-app so it can layer the OneGoogleBar over the NTP content. When
- *        no overlays are open, 'deactivate' is sent to ntp-app so the NTP
- *        content can be on top. The top bar of the OneGoogleBar is always on
- *        top.
+ *  - loaded: sent on initial load.
+ *  - overlaysUpdated: sent when an overlay is updated. The overlay bounding
+ *       rects are included in the |data|.
  * @param {string} messageType
+ * @param {Object} data
  */
-function postMessage(messageType) {
+function postMessage(messageType, data) {
   if (window === window.parent) {
     return;
   }
   window.parent.postMessage(
-      {frameType: 'one-google-bar', messageType}, 'chrome://new-tab-page');
+      {frameType: 'one-google-bar', messageType, data},
+      'chrome://new-tab-page');
+}
+
+const overlays = new Set();
+
+function sendOverlayUpdate() {
+  // Remove overlays detached from DOM or elements in a parent overlay.
+  Array.from(overlays).forEach(overlay => {
+    if (!overlay.parentElement) {
+      overlays.delete(overlay);
+      return;
+    }
+    let parent = overlay.parentElement;
+    while (parent) {
+      if (overlays.has(parent)) {
+        overlays.delete(overlay);
+        return;
+      }
+      parent = parent.parentElement;
+    }
+  });
+  // Check if an overlay and its parents are visible.
+  const overlayRects =
+      Array.from(overlays)
+          .filter(overlay => {
+            if (window.getComputedStyle(overlay).visibility === 'hidden') {
+              return false;
+            }
+            let current = overlay;
+            while (current) {
+              if (window.getComputedStyle(current).display === 'none') {
+                return false;
+              }
+              current = current.parentElement;
+            }
+            return true;
+          })
+          .map(el => el.getBoundingClientRect());
+  postMessage('overlaysUpdated', overlayRects);
 }
 
 function trackOverlayState() {
-  const overlays = new Set();
   const observer = new MutationObserver(mutations => {
+    // After loaded, there could exist overlays that are shown, but not mutated.
+    // Add all elements that could be an overlay. The children of the actual
+    // overlay element are removed before sending any overlay update message.
+    if (overlays.size === 0) {
+      Array.from(document.body.querySelectorAll('*')).forEach(el => {
+        if (el.offsetTop + el.offsetHeight > oneGoogleBarHeightInPixels) {
+          overlays.add(el);
+        }
+      });
+    }
     // Add any mutated element that is an overlay to |overlays|.
     mutations.forEach(({target}) => {
       if (target.id === 'gb' || target.tagName === 'BODY' ||
-          target.parentElement && target.parentElement.tagName === 'BODY') {
+          overlays.has(target)) {
         return;
       }
       if (target.offsetTop + target.offsetHeight > oneGoogleBarHeightInPixels) {
@@ -61,50 +103,7 @@ function trackOverlayState() {
         });
       }
     });
-    // Remove overlays detached from DOM.
-    Array.from(overlays).forEach(overlay => {
-      if (!overlay.parentElement) {
-        overlays.delete(overlay);
-      }
-    });
-    // Check if an overlay and its parents are visible.
-    const overlayShown = Array.from(overlays).some(overlay => {
-      if (window.getComputedStyle(overlay).visibility === 'hidden') {
-        return false;
-      }
-      let current = overlay;
-      while (current) {
-        if (window.getComputedStyle(current).display === 'none') {
-          return false;
-        }
-        current = current.parentElement;
-      }
-      return true;
-    });
-    const backdropElement = document.querySelector('#overlayBackdrop');
-    if (!overlayShown) {
-      // Hide backdrop before z-level update so NTP content cannot appear above
-      // backdrop.
-      backdropElement.toggleAttribute('show', false);
-      if (shouldUndoDarkTheme) {
-        shouldUndoDarkTheme = false;
-        enableDarkTheme(false);
-      }
-    }
-    postMessage(overlayShown ? 'activate' : 'deactivate');
-    if (overlayShown) {
-      // Allow the iframe z-level update to take effect before updating the
-      // backdrop.
-      setTimeout(() => {
-        backdropElement.toggleAttribute('show', true);
-        // When showing the backdrop, turn on dark theme for better visibility
-        // if it is off.
-        if (!darkThemeEnabled) {
-          shouldUndoDarkTheme = true;
-          enableDarkTheme(true);
-        }
-      });
-    }
+    sendOverlayUpdate();
   });
   observer.observe(
       document, {attributes: true, childList: true, subtree: true});
@@ -115,6 +114,10 @@ window.addEventListener('message', ({data}) => {
     enableDarkTheme(data.enabled);
   }
 });
+
+// Need to send overlay updates on resize because overlay bounding rects are
+// absolutely positioned.
+window.addEventListener('resize', sendOverlayUpdate);
 
 document.addEventListener('DOMContentLoaded', () => {
   // TODO(crbug.com/1039913): remove after OneGoogleBar links are updated.

@@ -90,7 +90,8 @@ void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
   }
 
   // TODO(dmblack): Show a more helpful message to the user.
-  if (assistant_state->assistant_state() == mojom::AssistantState::NOT_READY) {
+  if (assistant_state->assistant_status() ==
+      chromeos::assistant::AssistantStatus::NOT_READY) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;
   }

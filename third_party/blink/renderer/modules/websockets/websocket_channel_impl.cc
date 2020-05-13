@@ -193,7 +193,9 @@ WebSocketChannelImpl::WebSocketChannelImpl(
       message_chunks_(execution_context->GetTaskRunner(TaskType::kNetworking)),
       execution_context_(execution_context),
       location_at_construction_(std::move(location)),
-      client_receiver_(this),
+      websocket_(execution_context),
+      handshake_client_receiver_(this, execution_context),
+      client_receiver_(this, execution_context),
       readable_watcher_(
           FROM_HERE,
           mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -481,7 +483,7 @@ void WebSocketChannelImpl::OnConnectionEstablished(
       WTF::Bind(&WebSocketChannelImpl::OnConnectionError,
                 WrapWeakPersistent(this), FROM_HERE));
 
-  DCHECK(!websocket_);
+  DCHECK(!websocket_.is_bound());
   websocket_.Bind(std::move(websocket),
                   execution_context_->GetTaskRunner(TaskType::kNetworking));
   readable_ = std::move(readable);
@@ -557,6 +559,9 @@ void WebSocketChannelImpl::Trace(Visitor* visitor) {
   visitor->Trace(messages_);
   visitor->Trace(client_);
   visitor->Trace(execution_context_);
+  visitor->Trace(websocket_);
+  visitor->Trace(handshake_client_receiver_);
+  visitor->Trace(client_receiver_);
   WebSocketChannel::Trace(visitor);
 }
 

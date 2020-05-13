@@ -20,8 +20,13 @@ namespace {
 
 class TileManagerImpl : public TileManager {
  public:
-  TileManagerImpl(std::unique_ptr<TileStore> store, base::Clock* clock)
-      : initialized_(false), store_(std::move(store)), clock_(clock) {}
+  TileManagerImpl(std::unique_ptr<TileStore> store,
+                  base::Clock* clock,
+                  const std::string& locale)
+      : initialized_(false),
+        store_(std::move(store)),
+        clock_(clock),
+        locale_(locale) {}
 
   TileManagerImpl(const TileManagerImpl& other) = delete;
   TileManagerImpl& operator=(const TileManagerImpl& other) = delete;
@@ -48,6 +53,12 @@ class TileManagerImpl : public TileManager {
   }
 
   void GetTiles(GetTilesCallback callback) override {
+    if (!tile_group_ || !ValidateLocale(tile_group_.get())) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), std::vector<Tile>()));
+      return;
+    }
+
     std::vector<Tile> tiles;
     if (tile_group_ && ValidateGroup(tile_group_.get())) {
       for (const auto& tile : tile_group_->tiles)
@@ -74,6 +85,10 @@ class TileManagerImpl : public TileManager {
     auto result_tile = result ? base::make_optional(*result) : base::nullopt;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), result_tile));
+  }
+
+  void SetLocaleForTesting(const std::string& locale) override {
+    locale_ = locale;
   }
 
   void OnTileStoreInitialized(
@@ -125,6 +140,20 @@ class TileManagerImpl : public TileManager {
            TileConfig::GetExpireDuration();
   }
 
+  // Check whether |locale_| matches with that of the |group|.
+  bool ValidateLocale(const TileGroup* group) const {
+    if (locale_.empty() || group->locale.empty())
+      return false;
+
+    // In case the language is en-GB or en-IN, consider
+    // those are matching.
+    std::string primary = locale_.substr(0, locale_.find("-"));
+    std::string group_primary =
+        group->locale.substr(0, group->locale.find("-"));
+
+    return primary == group_primary;
+  }
+
   void OnGroupSaved(std::unique_ptr<TileGroup> group,
                     TileGroupStatusCallback callback,
                     bool success) {
@@ -162,6 +191,9 @@ class TileManagerImpl : public TileManager {
   // Clock object.
   base::Clock* clock_;
 
+  // Device locale,  used to check if tiles stored are of the same language.
+  std::string locale_;
+
   base::WeakPtrFactory<TileManagerImpl> weak_ptr_factory_{this};
 };
 
@@ -171,8 +203,10 @@ TileManager::TileManager() = default;
 
 std::unique_ptr<TileManager> TileManager::Create(
     std::unique_ptr<TileStore> tile_store,
-    base::Clock* clock) {
-  return std::make_unique<TileManagerImpl>(std::move(tile_store), clock);
+    base::Clock* clock,
+    const std::string& locale) {
+  return std::make_unique<TileManagerImpl>(std::move(tile_store), clock,
+                                           locale);
 }
 
 }  // namespace upboarding

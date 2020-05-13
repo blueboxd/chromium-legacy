@@ -12,41 +12,16 @@
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/lacros/lacros_util.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
-#include "components/user_manager/user_type.h"
 
 using component_updater::CrOSComponentManager;
 
 namespace {
 
 LacrosLoader* g_instance = nullptr;
-
-// Some account types require features that aren't yet supported by lacros.
-// See https://crbug.com/1080693
-bool IsLacrosAllowed() {
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!user)
-    return false;
-  switch (user->GetType()) {
-    case user_manager::USER_TYPE_REGULAR:
-      return true;
-    case user_manager::USER_TYPE_GUEST:
-    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-    case user_manager::USER_TYPE_SUPERVISED:
-    case user_manager::USER_TYPE_KIOSK_APP:
-    case user_manager::USER_TYPE_CHILD:
-    case user_manager::USER_TYPE_ARC_KIOSK_APP:
-    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
-    case user_manager::USER_TYPE_WEB_KIOSK_APP:
-    case user_manager::NUM_USER_TYPES:
-      return false;
-  }
-}
 
 const char kLacrosComponentName[] = "lacros-fishfood";
 const char kUserDataDir[] = "/home/chronos/user/lacros";
@@ -86,7 +61,7 @@ LacrosLoader::~LacrosLoader() {
 }
 
 void LacrosLoader::Init() {
-  if (!IsLacrosAllowed())
+  if (!lacros_util::IsLacrosAllowed())
     return;
 
   if (chromeos::features::IsLacrosComponentUpdaterEnabled()) {
@@ -109,12 +84,12 @@ bool LacrosLoader::IsReady() const {
   return !lacros_path_.empty();
 }
 
-void LacrosLoader::SetReadyCallback(base::OnceClosure ready_callback) {
-  ready_callback_ = std::move(ready_callback);
+void LacrosLoader::SetLoadCompleteCallback(LoadCompleteCallback callback) {
+  load_complete_callback_ = std::move(callback);
 }
 
 void LacrosLoader::Start() {
-  if (!IsLacrosAllowed())
+  if (!lacros_util::IsLacrosAllowed())
     return;
 
   std::string chrome_path;
@@ -150,15 +125,16 @@ void LacrosLoader::Start() {
 void LacrosLoader::OnLoadComplete(
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& path) {
-  if (error != CrOSComponentManager::Error::NONE) {
+  bool success = (error == CrOSComponentManager::Error::NONE);
+  if (success) {
+    lacros_path_ = path;
+    LOG(WARNING) << "Loaded lacros image at " << lacros_path_.MaybeAsASCII();
+  } else {
     LOG(WARNING) << "Error loading lacros component image: "
                  << static_cast<int>(error);
-    return;
   }
-  lacros_path_ = path;
-  LOG(WARNING) << "Loaded lacros image at " << lacros_path_.MaybeAsASCII();
-  if (ready_callback_)
-    std::move(ready_callback_).Run();
+  if (load_complete_callback_)
+    std::move(load_complete_callback_).Run(success);
 }
 
 void LacrosLoader::CleanUp(bool previously_installed) {

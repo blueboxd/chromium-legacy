@@ -29,7 +29,7 @@ namespace media {
 // Helper class for suspending AudioRenderSink instances after silence has been
 // detected for some time. When this is detected, the provided |sink_| is paused
 // and a fake sink is injected to black hole the silent audio data and avoid
-// physical hardwasre usage. Note: The transition from real to fake audio output
+// physical hardware usage. Note: The transition from real to fake audio output
 // and vice versa may result in some irregular Render() callbacks.
 class MEDIA_EXPORT SilentSinkSuspender
     : public AudioRendererSink::RenderCallback {
@@ -38,12 +38,11 @@ class MEDIA_EXPORT SilentSinkSuspender
   // used to initialize |sink|, |sink| is the sink to monitor for idle, and
   // |worker| is the task runner to run the fake Render() callbacks on. The
   // amount of silence to allow before suspension is |silence_timeout|.
-  SilentSinkSuspender(
-      AudioRendererSink::RenderCallback* callback,
-      base::TimeDelta silence_timeout,
-      const AudioParameters& params,
-      const scoped_refptr<AudioRendererSink>& sink,
-      const scoped_refptr<base::SingleThreadTaskRunner>& worker);
+  SilentSinkSuspender(AudioRendererSink::RenderCallback* callback,
+                      base::TimeDelta silence_timeout,
+                      const AudioParameters& params,
+                      scoped_refptr<AudioRendererSink> sink,
+                      scoped_refptr<base::SingleThreadTaskRunner> worker);
   ~SilentSinkSuspender() override;
 
   // AudioRendererSink::RenderCallback implementation.
@@ -52,6 +51,16 @@ class MEDIA_EXPORT SilentSinkSuspender
              int prior_frames_skipped,
              AudioBus* dest) override;
   void OnRenderError() override;
+
+  // Cancels any outstanding callbacks and transitions. Subsequent playback will
+  // be through the real sink until the suspend conditions are met again.
+  void OnPaused();
+
+  // Enables or disables silence detection. If disabled, |silence_timeout| will
+  // be ignored and we will never transition to the fake sink. If we're already
+  // on the fake sink when SetDetectSilence(false) is called, we'll transition
+  // back to the real sink.
+  void SetDetectSilence(bool detect_silence);
 
   bool IsUsingFakeSinkForTesting();
 
@@ -95,6 +104,10 @@ class MEDIA_EXPORT SilentSinkSuspender
   // only be used when |transition_lock_| is held or both sinks are stopped.
   bool is_transition_pending_ GUARDED_BY(transition_lock_) = false;
 
+  // Whether we should detect silence and transition to the fake sink or not if
+  // |silence_timeout_| elapses.
+  bool detect_silence_ GUARDED_BY(transition_lock_) = true;
+
   // Buffers accumulated during the transition from |fake_sink_| to |sink_|.
   base::circular_deque<std::unique_ptr<AudioBus>> buffers_after_silence_;
 
@@ -105,9 +118,11 @@ class MEDIA_EXPORT SilentSinkSuspender
 
   // Audio output delay at the moment when transition to |fake_sink_| starts.
   base::TimeDelta latest_output_delay_;
+
   // Audio output delay timestamp at the moment when transition to |fake_sink_|
   // starts.
   base::TimeTicks latest_output_delay_timestamp_;
+
   // Time when transition to |fake_sink_| starts.
   base::TimeTicks fake_sink_transition_time_;
 

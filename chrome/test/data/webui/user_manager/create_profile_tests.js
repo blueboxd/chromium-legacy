@@ -66,7 +66,7 @@ cr.define('user_manager.create_profile_tests', function() {
         // Create shortcut checkbox is invisible.
         const createShortcutCheckbox =
             createProfileElement.$.createShortcutCheckbox;
-        assertTrue(createShortcutCheckbox.clientHeight == 0);
+        assertTrue(createShortcutCheckbox.clientHeight === 0);
 
         // Enter a profile name.
         createProfileElement.$.nameInput.value = 'profile name';
@@ -85,7 +85,7 @@ cr.define('user_manager.create_profile_tests', function() {
         return new Promise(function(resolve, reject) {
           // Create is not in progress. We expect to leave the page.
           createProfileElement.addEventListener('change-page', function(event) {
-            if (event.detail.page == 'user-pods-page') {
+            if (event.detail.page === 'user-pods-page') {
               resolve();
             }
           });
@@ -99,7 +99,7 @@ cr.define('user_manager.create_profile_tests', function() {
         return new Promise(function(resolve, reject) {
           // Create was successful. We expect to leave the page.
           createProfileElement.addEventListener('change-page', function(event) {
-            if (event.detail.page == 'user-pods-page') {
+            if (event.detail.page === 'user-pods-page') {
               resolve();
             }
           });

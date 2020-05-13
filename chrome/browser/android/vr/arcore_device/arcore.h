@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "ui/display/display.h"
 #include "ui/gfx/transform.h"
@@ -122,10 +123,13 @@ class ArCore {
   // called when ARCore is in appropriate state. This method must be called on a
   // regular basis (once per ARCore update is sufficient), otherwise the anchor
   // creation requests may be deferred for longer than they need to.
-  // sufficient here.
+  // sufficient here. |frame_time| should contain the timestamp of the currently
+  // processed frame and will be used to determine whether some anchor creation
+  // requests are outdated and should be failed.
   virtual void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,
-      const std::vector<mojom::XRInputSourceStatePtr>& input_state) = 0;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state,
+      const base::TimeTicks& frame_time) = 0;
 
   virtual void DetachAnchor(uint64_t anchor_id) = 0;
 

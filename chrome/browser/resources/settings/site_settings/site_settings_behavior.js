@@ -236,6 +236,9 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         ContentSettingsTypes.BLUETOOTH_DEVICES,
         'enableWebBluetoothNewPermissionsBackend');
+    addOrRemoveSettingWithFlag(
+        ContentSettingsTypes.WINDOW_PLACEMENT,
+        'enableExperimentalWebPlatformFeatures');
     return this.contentTypes_.slice(0);
   },
 

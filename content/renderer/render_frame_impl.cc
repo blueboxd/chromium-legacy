@@ -3004,13 +3004,6 @@ void RenderFrameImpl::CancelBlockedRequests() {
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
-  // TODO(nasko): WebUIExtensionsData might be useful to be registered for
-  // subframes as well, though at this time there is no such usage.
-  if (IsMainFrame() && (enabled_bindings_flags & BINDINGS_POLICY_WEB_UI) &&
-      !(enabled_bindings_ & BINDINGS_POLICY_WEB_UI)) {
-    new WebUIExtensionData(this);
-  }
-
   enabled_bindings_ |= enabled_bindings_flags;
 }
 
@@ -6372,6 +6365,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   registry_.AddInterface(base::BindRepeating(&RenderFrameImpl::BindWidget,
                                              weak_factory_.GetWeakPtr()));
 
+  registry_.AddInterface(base::BindRepeating(
+      &RenderFrameImpl::BindWebUIReceiver, weak_factory_.GetWeakPtr()));
+
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
 
@@ -6612,6 +6608,11 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
 void RenderFrameImpl::BindWidget(
     mojo::PendingReceiver<mojom::Widget> receiver) {
   GetLocalRootRenderWidget()->SetWidgetReceiver(std::move(receiver));
+}
+
+void RenderFrameImpl::BindWebUIReceiver(
+    mojo::PendingReceiver<mojom::WebUI> receiver) {
+  WebUIExtensionData::Create(this, std::move(receiver));
 }
 
 blink::WebComputedAXTree* RenderFrameImpl::GetOrCreateWebComputedAXTree() {

@@ -17,6 +17,9 @@ group("closure_compile") {
 js_library("annotation_tool") {
 }
 
+js_library("bookmark_type") {
+}
+
 js_library("browser_api") {
   deps = [ "//ui/webui/resources/js:assert.m" ]
   externs_list = [
@@ -95,6 +98,7 @@ js_library("controller") {
 
 js_library("pdf_viewer") {
   deps = [
+    ":bookmark_type",
     ":constants",
     ":controller",
     ":metrics",
@@ -103,7 +107,6 @@ js_library("pdf_viewer") {
     ":toolbar_manager",
     ":viewport",
     ":viewport_scroller",
-    "elements:viewer-bookmark",
     "elements:viewer-error-screen",
     "elements:viewer-page-indicator",
     "elements:viewer-password-screen",
@@ -118,11 +121,19 @@ js_library("pdf_viewer") {
   externs_list = [ "$externs_path/resources_private.js" ]
 }
 
-js_library("main") {
+js_library("main_util") {
   deps = [
     ":browser_api",
     ":pdf_viewer",
   ]
+}
+
+js_library("main") {
+  deps = [ ":main_util" ]
+}
+
+js_library("main_pp") {
+  deps = [ ":main_util" ]
 }
 
 js_type_check("pdf_resources") {
@@ -134,6 +145,8 @@ js_type_check("pdf_resources") {
     ":controller",
     ":gesture_detector",
     ":main",
+    ":main_pp",
+    ":main_util",
     ":metrics",
     ":navigator",
     ":open_pdf_params_parser",

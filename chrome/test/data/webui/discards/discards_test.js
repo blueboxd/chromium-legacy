@@ -41,8 +41,8 @@ suite('discards', function() {
         .forEach((sortKey) => {
           assertTrue(compareTabDiscardsInfos(sortKey, dummy1, dummy2) < 0);
           assertTrue(compareTabDiscardsInfos(sortKey, dummy2, dummy1) > 0);
-          assertTrue(compareTabDiscardsInfos(sortKey, dummy1, dummy1) == 0);
-          assertTrue(compareTabDiscardsInfos(sortKey, dummy2, dummy2) == 0);
+          assertTrue(compareTabDiscardsInfos(sortKey, dummy1, dummy1) === 0);
+          assertTrue(compareTabDiscardsInfos(sortKey, dummy2, dummy2) === 0);
         });
   });
 

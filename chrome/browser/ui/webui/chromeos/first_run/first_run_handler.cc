@@ -16,7 +16,7 @@
 namespace {
 
 bool IsAssistantAllowed() {
-  return ash::mojom::AssistantAllowedState::ALLOWED ==
+  return chromeos::assistant::AssistantAllowedState::ALLOWED ==
          assistant::IsAssistantAllowedForProfile(
              ProfileManager::GetActiveUserProfile());
 }

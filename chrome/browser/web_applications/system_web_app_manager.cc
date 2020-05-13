@@ -324,9 +324,8 @@ void SystemWebAppManager::Start() {
 #endif  // DCHECK_IS_ON()
 
 #if defined(OS_CHROMEOS)
-  // Set up crosh/terminal data sources. Terminal source is needed for install.
+  // Set up terminal data source. Terminal source is needed for install.
   // TODO(crbug.com/1080384): Move once chrome-untrusted has WebUIControllers.
-  content::URLDataSource::Add(profile_, TerminalSource::ForCrosh(profile_));
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     content::URLDataSource::Add(profile_,
                                 TerminalSource::ForTerminal(profile_));

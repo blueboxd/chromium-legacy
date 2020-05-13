@@ -8,6 +8,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -103,13 +104,13 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
 }  // namespace
 
 LanguagesSection::LanguagesSection(Profile* profile,
-                                   Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
-  delegate()->AddSearchTags(GetLanguagesSearchConcepts());
+                                   SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
+  registry()->AddSearchTags(GetLanguagesSearchConcepts());
 
   if (IsAssistivePersonalInfoAllowed()) {
-    delegate()->AddSearchTags(GetSmartInputsSearchConcepts());
-    delegate()->AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
+    registry()->AddSearchTags(GetSmartInputsSearchConcepts());
+    registry()->AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
   }
 }
 

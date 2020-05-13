@@ -135,6 +135,9 @@ void RealTimeUrlLookupService::SendRequest(
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.Request.UserPopulation",
+                            request->population().user_population(),
+                            ChromeUserPopulation::UserPopulation_MAX + 1);
   std::string req_data;
   request->SerializeToString(&req_data);
   net::NetworkTrafficAnnotationTag traffic_annotation =

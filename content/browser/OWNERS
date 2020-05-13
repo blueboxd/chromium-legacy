@@ -32,6 +32,9 @@ per-file sandbox_host_linux.*=file://sandbox/linux/OWNERS
 per-file sandbox_ipc_linux.*=file://sandbox/linux/OWNERS
 per-file utility_process_sandbox_browsertest.cc=file://sandbox/linux/OWNERS
 
+# Service sandbox mappings require security review
+per-file service_sandbox_type.h=file://ipc/SECURITY_OWNERS
+
 # Service manifests provided by content require security review
 per-file builtin_service_manifests.*=set noparent
 per-file builtin_service_manifests.*=file://ipc/SECURITY_OWNERS

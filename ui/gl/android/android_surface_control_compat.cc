@@ -37,6 +37,12 @@ enum {
   ASURFACE_TRANSACTION_TRANSPARENCY_OPAQUE = 2,
 };
 
+// ANativeWindow_FrameRateCompatibility enums
+enum {
+  ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_DEFAULT = 0,
+  ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE = 1
+};
+
 // ASurfaceTransaction
 using pASurfaceTransaction_create = ASurfaceTransaction* (*)(void);
 using pASurfaceTransaction_delete = void (*)(ASurfaceTransaction*);
@@ -75,6 +81,11 @@ using pASurfaceTransaction_setBufferDataSpace =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface,
              uint64_t data_space);
+using pASurfaceTransaction_setFrameRate =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface_control,
+             float frameRate,
+             int8_t compatibility);
 
 // ASurfaceTransactionStats
 using pASurfaceTransactionStats_getPresentFenceFd =
@@ -105,6 +116,11 @@ uint64_t g_agb_required_usage_bits = AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
       supported = false;                                     \
       LOG(ERROR) << "Unable to load function " << #func;     \
     }                                                        \
+  } while (0)
+
+#define LOAD_FUNCTION_MAYBE(lib, func)                       \
+  do {                                                       \
+    func##Fn = reinterpret_cast<p##func>(dlsym(lib, #func)); \
   } while (0)
 
 struct SurfaceControlMethods {
@@ -138,6 +154,7 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferTransparency);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setDamageRegion);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
+    LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setFrameRate);
 
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getPresentFenceFd);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransactionStats_getLatchTime);
@@ -171,6 +188,7 @@ struct SurfaceControlMethods {
   pASurfaceTransaction_setDamageRegion ASurfaceTransaction_setDamageRegionFn;
   pASurfaceTransaction_setBufferDataSpace
       ASurfaceTransaction_setBufferDataSpaceFn;
+  pASurfaceTransaction_setFrameRate ASurfaceTransaction_setFrameRateFn;
 
   // TransactionStats methods.
   pASurfaceTransactionStats_getPresentFenceFd
@@ -317,6 +335,13 @@ void SurfaceControl::EnableQualcommUBWC() {
   g_agb_required_usage_bits |= AHARDWAREBUFFER_USAGE_VENDOR_0;
 }
 
+bool SurfaceControl::SupportsSetFrameRate() {
+  // TODO(khushalsagar): Assert that this function is always available on R.
+  return IsSupported() &&
+         SurfaceControlMethods::Get().ASurfaceTransaction_setFrameRateFn !=
+             nullptr;
+}
+
 SurfaceControl::Surface::Surface() = default;
 
 SurfaceControl::Surface::Surface(const Surface& parent, const char* name) {
@@ -446,6 +471,17 @@ void SurfaceControl::Transaction::SetColorSpace(
 
   SurfaceControlMethods::Get().ASurfaceTransaction_setBufferDataSpaceFn(
       transaction_, surface.surface(), data_space);
+}
+
+void SurfaceControl::Transaction::SetFrameRate(const Surface& surface,
+                                               float frame_rate) {
+  DCHECK(SupportsSetFrameRate());
+
+  // We always used fixed source here since a non-default value is only used for
+  // videos which have a fixed playback rate.
+  SurfaceControlMethods::Get().ASurfaceTransaction_setFrameRateFn(
+      transaction_, surface.surface(), frame_rate,
+      ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
 }
 
 void SurfaceControl::Transaction::SetOnCompleteCb(

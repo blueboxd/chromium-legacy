@@ -64,6 +64,8 @@ namespace {
 // static
 void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
+    DedicatedWorkerId dedicated_worker_id,
+    SharedWorkerId shared_worker_id,
     const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,
     const net::SiteForCookies& site_for_cookies,
@@ -175,9 +177,9 @@ void WorkerScriptFetchInitiator::Start(
   AddAdditionalRequestHeaders(resource_request.get(), browser_context);
 
   CreateScriptLoader(
-      worker_process_id, initial_request_url, creator_render_frame_host,
-      trusted_isolation_info, std::move(resource_request),
-      std::move(factory_bundle_for_browser),
+      worker_process_id, dedicated_worker_id, shared_worker_id,
+      initial_request_url, creator_render_frame_host, trusted_isolation_info,
+      std::move(resource_request), std::move(factory_bundle_for_browser),
       std::move(subresource_loader_factories),
       std::move(service_worker_context), service_worker_handle,
       std::move(appcache_host), std::move(blob_url_loader_factory),
@@ -279,6 +281,8 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
 
 void WorkerScriptFetchInitiator::CreateScriptLoader(
     int worker_process_id,
+    DedicatedWorkerId dedicated_worker_id,
+    SharedWorkerId shared_worker_id,
     const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,
     const net::IsolationInfo& trusted_isolation_info,
@@ -371,7 +375,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
 
   WorkerScriptFetcher::CreateAndStart(
       std::make_unique<WorkerScriptLoaderFactory>(
-          worker_process_id, service_worker_handle, std::move(appcache_host),
+          worker_process_id, dedicated_worker_id, shared_worker_id,
+          service_worker_handle, std::move(appcache_host),
           browser_context_getter, std::move(url_loader_factory)),
       std::move(throttles), std::move(resource_request),
       base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoader,

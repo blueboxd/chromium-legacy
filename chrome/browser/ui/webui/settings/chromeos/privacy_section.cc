@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -64,11 +65,12 @@ const std::vector<SearchConcept>& GetPrivacyGoogleChromeSearchConcepts() {
 
 }  // namespace
 
-PrivacySection::PrivacySection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
-  delegate()->AddSearchTags(GetPrivacySearchConcepts());
+PrivacySection::PrivacySection(Profile* profile,
+                               SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
+  registry()->AddSearchTags(GetPrivacySearchConcepts());
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  delegate()->AddSearchTags(GetPrivacyGoogleChromeSearchConcepts());
+  registry()->AddSearchTags(GetPrivacyGoogleChromeSearchConcepts());
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 

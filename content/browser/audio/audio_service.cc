@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/service_sandbox_type.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -124,7 +125,6 @@ void LaunchAudioServiceOutOfProcess(
       std::move(receiver),
       ServiceProcessHost::Options()
           .WithDisplayName("Audio Service")
-          .WithSandboxType(service_manager::SandboxType::kAudio)
 #if defined(OS_MACOSX)
           // On Mac, the audio service requires a CFRunLoop provided by a
           // UI MessageLoop type, to run AVFoundation and CoreAudio code.

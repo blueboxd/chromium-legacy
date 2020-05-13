@@ -9,6 +9,17 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 
 namespace viz {
+namespace {
+
+bool AreAlmostEqual(base::TimeDelta a, base::TimeDelta b) {
+  if (a.is_min() || b.is_min() || a.is_max() || b.is_max())
+    return a == b;
+
+  constexpr auto kMaxDelta = base::TimeDelta::FromMillisecondsD(0.5);
+  return (a - b).magnitude() < kMaxDelta;
+}
+
+}  // namespace
 
 FrameRateDecider::ScopedAggregate::ScopedAggregate(FrameRateDecider* decider)
     : decider_(decider) {
@@ -21,11 +32,13 @@ FrameRateDecider::ScopedAggregate::~ScopedAggregate() {
 
 FrameRateDecider::FrameRateDecider(SurfaceManager* surface_manager,
                                    Client* client,
-                                   bool using_synthetic_bfs)
+                                   bool using_synthetic_bfs,
+                                   bool supports_set_frame_rate)
     : supported_intervals_{BeginFrameArgs::DefaultInterval()},
       surface_manager_(surface_manager),
       client_(client),
-      using_synthetic_bfs_(using_synthetic_bfs) {
+      using_synthetic_bfs_(using_synthetic_bfs),
+      supports_set_frame_rate_(supports_set_frame_rate) {
   surface_manager_->AddObserver(this);
 }
 
@@ -147,29 +160,45 @@ void FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded() {
   // animating. This ensures that, for instance, if we're currently displaying
   // a video while the rest of the page is static, we choose the frame interval
   // optimal for the video.
-  base::TimeDelta min_frame_sink_interval =
-      frame_sinks_updated_in_previous_frame_.empty()
-          ? BeginFrameArgs::MinInterval()
-          : base::TimeDelta::Max();
+  base::Optional<base::TimeDelta> min_frame_sink_interval;
+  bool all_frame_sinks_have_same_interval = true;
   for (const auto& frame_sink_id : frame_sinks_updated_in_previous_frame_) {
-    min_frame_sink_interval = std::min(
-        min_frame_sink_interval,
-        client_->GetPreferredFrameIntervalForFrameSinkId(frame_sink_id));
+    auto interval =
+        client_->GetPreferredFrameIntervalForFrameSinkId(frame_sink_id);
+    if (!min_frame_sink_interval) {
+      min_frame_sink_interval = interval;
+      continue;
+    }
+
+    if (!AreAlmostEqual(*min_frame_sink_interval, interval))
+      all_frame_sinks_have_same_interval = false;
+    min_frame_sink_interval = std::min(*min_frame_sink_interval, interval);
   }
+  if (!min_frame_sink_interval)
+    min_frame_sink_interval = BeginFrameArgs::MinInterval();
+
   TRACE_EVENT_INSTANT1("viz",
                        "FrameRateDecider::UpdatePreferredFrameIntervalIfNeeded",
                        TRACE_EVENT_SCOPE_THREAD, "min_frame_sink_interval",
-                       min_frame_sink_interval.InMillisecondsF());
+                       min_frame_sink_interval->InMillisecondsF());
+
+  // If only one frame sink is being updated and its frame rate can be directly
+  // forwarded to the system, then prefer that over choosing one of the refresh
+  // rates advertised by the system.
+  if (all_frame_sinks_have_same_interval && supports_set_frame_rate_) {
+    SetPreferredInterval(*min_frame_sink_interval);
+    return;
+  }
 
   // If we don't have an explicit preference from the active frame sinks, then
   // we use a 0 value for preferred frame interval to let the framework pick the
   // ideal refresh rate.
   base::TimeDelta new_preferred_interval = UnspecifiedFrameInterval();
-  if (min_frame_sink_interval != BeginFrameArgs::MinInterval()) {
+  if (*min_frame_sink_interval != BeginFrameArgs::MinInterval()) {
     for (auto supported_interval : supported_intervals_) {
       // Pick the display interval which is closest to the preferred interval.
-      if ((min_frame_sink_interval - supported_interval).magnitude() <
-          (min_frame_sink_interval - new_preferred_interval).magnitude()) {
+      if ((*min_frame_sink_interval - supported_interval).magnitude() <
+          (*min_frame_sink_interval - new_preferred_interval).magnitude()) {
         new_preferred_interval = supported_interval;
       }
     }
@@ -184,14 +213,15 @@ void FrameRateDecider::SetPreferredInterval(
                        TRACE_EVENT_SCOPE_THREAD, "new_preferred_interval",
                        new_preferred_interval.InMillisecondsF());
 
-  if (new_preferred_interval == last_computed_preferred_frame_interval_) {
+  if (AreAlmostEqual(new_preferred_interval,
+                     last_computed_preferred_frame_interval_)) {
     num_of_frames_since_preferred_interval_changed_++;
   } else {
     num_of_frames_since_preferred_interval_changed_ = 0u;
   }
   last_computed_preferred_frame_interval_ = new_preferred_interval;
 
-  if (current_preferred_frame_interval_ == new_preferred_interval)
+  if (AreAlmostEqual(current_preferred_frame_interval_, new_preferred_interval))
     return;
 
   // The min num of frames heuristic is to ensure we see a constant pattern

@@ -11,6 +11,7 @@ component("cpp") {
   sources = [
     "assistant_client.cc",
     "assistant_client.h",
+    "assistant_enums.h",
     "assistant_prefs.cc",
     "assistant_prefs.h",
     "assistant_service.cc",

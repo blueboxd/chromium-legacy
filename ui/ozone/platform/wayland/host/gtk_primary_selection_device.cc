@@ -15,7 +15,7 @@ namespace ui {
 GtkPrimarySelectionDevice::GtkPrimarySelectionDevice(
     WaylandConnection* connection,
     gtk_primary_selection_device* data_device)
-    : internal::WaylandDataDeviceBase(connection), data_device_(data_device) {
+    : WaylandDataDeviceBase(connection), data_device_(data_device) {
   static const struct gtk_primary_selection_device_listener kListener = {
       GtkPrimarySelectionDevice::OnDataOffer,
       GtkPrimarySelectionDevice::OnSelection};

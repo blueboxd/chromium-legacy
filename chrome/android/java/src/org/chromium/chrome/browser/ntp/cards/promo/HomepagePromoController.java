@@ -150,34 +150,47 @@ public class HomepagePromoController implements HomepageStateListener {
     private PropertyModel buildModel(@LayoutStyle int layoutStyle) {
         Resources r = mContext.getResources();
 
-        Drawable homeIcon = AppCompatResources.getDrawable(mContext, R.drawable.btn_toolbar_home);
-        ColorStateList tint =
-                AppCompatResources.getColorStateList(mContext, R.color.default_icon_color_blue);
-
         PropertyModel.Builder builder = new PropertyModel.Builder(PromoCardProperties.ALL_KEYS);
 
-        builder.with(PromoCardProperties.IMAGE, homeIcon)
-                .with(PromoCardProperties.ICON_TINT, tint)
-                .with(PromoCardProperties.HAS_CLOSE_BUTTON, false)
-                .with(PromoCardProperties.PRIMARY_BUTTON_CALLBACK, (v) -> onPrimaryButtonClicked());
+        builder.with(PromoCardProperties.PRIMARY_BUTTON_CALLBACK, (v) -> onPrimaryButtonClicked());
 
         if (layoutStyle == LayoutStyle.SLIM) {
-            builder.with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title_slim))
+            Drawable homeIcon =
+                    AppCompatResources.getDrawable(mContext, R.drawable.btn_toolbar_home);
+            ColorStateList tint =
+                    AppCompatResources.getColorStateList(mContext, R.color.default_icon_color_blue);
+
+            builder.with(PromoCardProperties.IMAGE, homeIcon)
+                    .with(PromoCardProperties.ICON_TINT, tint)
+                    .with(PromoCardProperties.TITLE,
+                            r.getString(R.string.homepage_promo_title_slim))
                     .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,
-                            r.getString(R.string.homepage_promo_primary_button))
-                    .with(PromoCardProperties.HAS_SECONDARY_BUTTON, false);
+                            r.getString(R.string.homepage_promo_primary_button_slim));
 
         } else if (layoutStyle == LayoutStyle.LARGE) {
-            builder.with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
+            Drawable illustration = AppCompatResources.getDrawable(
+                    mContext, R.drawable.homepage_promo_illustration_vector);
+
+            builder.with(PromoCardProperties.IMAGE, illustration)
+                    .with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
                     .with(PromoCardProperties.DESCRIPTION,
                             r.getString(R.string.homepage_promo_description))
                     .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,
                             r.getString(R.string.homepage_promo_primary_button))
-                    .with(PromoCardProperties.HAS_SECONDARY_BUTTON, false)
-                    .with(PromoCardProperties.CLOSE_BUTTON_CALLBACK, (v) -> dismissPromo());
+                    .with(PromoCardProperties.HAS_SECONDARY_BUTTON, true)
+                    .with(PromoCardProperties.SECONDARY_BUTTON_TEXT,
+                            r.getString(R.string.no_thanks))
+                    .with(PromoCardProperties.SECONDARY_BUTTON_CALLBACK, (v) -> dismissPromo());
 
         } else { // layoutStyle == LayoutStyle.COMPACT
-            builder.with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
+            Drawable homeIcon =
+                    AppCompatResources.getDrawable(mContext, R.drawable.btn_toolbar_home);
+            ColorStateList tint =
+                    AppCompatResources.getColorStateList(mContext, R.color.default_icon_color_blue);
+
+            builder.with(PromoCardProperties.IMAGE, homeIcon)
+                    .with(PromoCardProperties.ICON_TINT, tint)
+                    .with(PromoCardProperties.TITLE, r.getString(R.string.homepage_promo_title))
                     .with(PromoCardProperties.DESCRIPTION,
                             r.getString(R.string.homepage_promo_description))
                     .with(PromoCardProperties.PRIMARY_BUTTON_TEXT,

@@ -24,7 +24,9 @@
 #include "content/browser/service_worker/service_worker_registry.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/dedicated_worker_id.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -215,7 +217,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       int process_id,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote,
-      blink::mojom::ServiceWorkerClientType client_type);
+      blink::mojom::ServiceWorkerClientType client_type,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id);
 
   // Updates the client UUID of an existing container host.
   void UpdateContainerHostClientID(const std::string& current_client_uuid,

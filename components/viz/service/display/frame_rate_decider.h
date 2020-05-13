@@ -56,11 +56,13 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
 
   FrameRateDecider(SurfaceManager* surface_manager,
                    Client* client,
-                   bool using_synthetic_bfs);
+                   bool using_synthetic_bfs,
+                   bool supports_set_frame_rate);
   ~FrameRateDecider() override;
 
   void SetSupportedFrameIntervals(
       std::vector<base::TimeDelta> supported_intervals);
+  bool supports_set_frame_rate() const { return supports_set_frame_rate_; }
 
   void set_min_num_of_frames_to_toggle_interval_for_testing(size_t num) {
     min_num_of_frames_to_toggle_interval_ = num;
@@ -95,6 +97,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   SurfaceManager* const surface_manager_;
   Client* const client_;
   const bool using_synthetic_bfs_;
+  const bool supports_set_frame_rate_;
 };
 
 }  // namespace viz

@@ -43,6 +43,9 @@ class GL_EXPORT SurfaceControl {
   // called early at process startup, before any buffer allocations are made.
   static void EnableQualcommUBWC();
 
+  // Returns true if tagging a surface with a frame rate value is supported.
+  static bool SupportsSetFrameRate();
+
   class GL_EXPORT Surface : public base::RefCounted<Surface> {
    public:
     Surface();
@@ -113,6 +116,7 @@ class GL_EXPORT SurfaceControl {
     void SetDamageRect(const Surface& surface, const gfx::Rect& rect);
     void SetColorSpace(const Surface& surface,
                        const gfx::ColorSpace& color_space);
+    void SetFrameRate(const Surface& surface, float frame_rate);
 
     // Sets the callback which will be dispatched when the transaction is acked
     // by the framework.

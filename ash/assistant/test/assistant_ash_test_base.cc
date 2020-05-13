@@ -120,7 +120,7 @@ void AssistantAshTestBase::SetUp() {
 
   // Set AssistantAllowedState to ALLOWED.
   test_api_->GetAssistantState()->NotifyFeatureAllowed(
-      mojom::AssistantAllowedState::ALLOWED);
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
 
   // Set user consent so the suggestion chips are displayed.
   SetConsentStatus(ConsentStatus::kActivityControlAccepted);
@@ -128,7 +128,7 @@ void AssistantAshTestBase::SetUp() {
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to READY.
   test_api_->GetAssistantState()->NotifyStatusChanged(
-      mojom::AssistantState::READY);
+      chromeos::assistant::AssistantStatus::READY);
 
   test_api_->DisableAnimations();
 

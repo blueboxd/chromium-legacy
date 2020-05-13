@@ -56,7 +56,6 @@ public class PromoCardCoordinatorTest {
         Assert.assertNotNull("Large promo should have image view.", mView.mPromoImage);
         Assert.assertNotNull("Large promo should have title.", mView.mTitle);
         Assert.assertNotNull("Large promo should have description.", mView.mDescription);
-        Assert.assertNotNull("Large promo should have dismiss button.", mView.mDismissButton);
         Assert.assertNotNull("Large promo should have primary button.", mView.mPrimaryButton);
         Assert.assertNotNull("Large promo should have secondary button.", mView.mSecondaryButton);
     }
@@ -71,8 +70,6 @@ public class PromoCardCoordinatorTest {
         Assert.assertNotNull("Compact promo should have description.", mView.mDescription);
         Assert.assertNotNull("Compact promo should have primary button.", mView.mPrimaryButton);
         Assert.assertNotNull("Compact promo should have secondary button.", mView.mSecondaryButton);
-
-        Assert.assertNull("Compact promo should not have dismiss button.", mView.mDismissButton);
     }
 
     @Test
@@ -86,7 +83,6 @@ public class PromoCardCoordinatorTest {
 
         Assert.assertNull("Slim promo should not have description.", mView.mDescription);
         Assert.assertNull("Slim promo should not have secondary button.", mView.mSecondaryButton);
-        Assert.assertNull("Slim promo should not have dismiss button.", mView.mDismissButton);
     }
 
     @Test
@@ -145,14 +141,11 @@ public class PromoCardCoordinatorTest {
         setupCoordinator(LayoutStyle.LARGE);
         final CallbackHelper primaryClickCallback = new CallbackHelper();
         final CallbackHelper secondaryClickCallback = new CallbackHelper();
-        final CallbackHelper dismissClickCallback = new CallbackHelper();
 
         mModel.set(PromoCardProperties.PRIMARY_BUTTON_CALLBACK,
                 (v) -> primaryClickCallback.notifyCalled());
         mModel.set(PromoCardProperties.SECONDARY_BUTTON_CALLBACK,
                 (v) -> secondaryClickCallback.notifyCalled());
-        mModel.set(PromoCardProperties.CLOSE_BUTTON_CALLBACK,
-                (v) -> dismissClickCallback.notifyCalled());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mView.mPrimaryButton.performClick());
         primaryClickCallback.waitForCallback("Primary button callback is never called.", 0);
@@ -163,10 +156,5 @@ public class PromoCardCoordinatorTest {
         secondaryClickCallback.waitForCallback("Secondary button callback is never called.", 0);
         Assert.assertEquals("Secondary button should be clicked once.", 1,
                 secondaryClickCallback.getCallCount());
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> mView.mDismissButton.performClick());
-        dismissClickCallback.waitForCallback("Close button callback is never called.", 0);
-        Assert.assertEquals(
-                "Dismissed button should be clicked once.", 1, dismissClickCallback.getCallCount());
     }
 }

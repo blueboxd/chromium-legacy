@@ -18,10 +18,12 @@
   }
 
   #oneGoogleBar {
+    clip-path: url(#oneGoogleBarClipPath);
     height: 100%;
     position: absolute;
     top: 0;
     width: 100%;
+    z-index: 1000;
   }
 
   #content {
@@ -266,3 +268,10 @@
     </ntp-customize-dialog>
   </template>
 </dom-if>
+<svg hidden>
+  <defs>
+    <clipPath id="oneGoogleBarClipPath">
+      <rect x="0" y="0" width="100vw" height="56"></rect>
+    </clipPath>
+  </defs>
+</svg>

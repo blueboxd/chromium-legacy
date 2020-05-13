@@ -4,7 +4,10 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
+#include <vector>
+
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"

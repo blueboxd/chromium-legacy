@@ -52,7 +52,8 @@ NSString* GetMachServiceName() {
         initWithMachServiceName:GetMachServiceName()
                         options:0]);
 
-    _xpcConnection.get().remoteObjectInterface = updater::GetXpcInterface();
+    _xpcConnection.get().remoteObjectInterface =
+        updater::GetXPCUpdateCheckingInterface();
 
     _xpcConnection.get().interruptionHandler = ^{
       LOG(WARNING)
@@ -123,6 +124,19 @@ NSString* GetMachServiceName() {
                      priority:priority
                   updateState:updateState
                         reply:reply];
+}
+
+- (void)haltForUpdateToVersion:(NSString* _Nonnull)version
+                         reply:(void (^_Nonnull)(bool shouldUpdate))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(NO);
+  };
+
+  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      haltForUpdateToVersion:version
+                       reply:reply];
 }
 
 - (BOOL)CanDialIPC {

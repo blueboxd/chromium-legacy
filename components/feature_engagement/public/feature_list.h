@@ -100,6 +100,7 @@ DEFINE_VARIATION_PARAM(kIPHTabGroupsDragAndDropFeature,
 DEFINE_VARIATION_PARAM(kIPHTranslateMenuButtonFeature,
                        "IPH_TranslateMenuButton");
 DEFINE_VARIATION_PARAM(kIPHExploreSitesTileFeature, "IPH_ExploreSitesTile");
+DEFINE_VARIATION_PARAM(kIPHFeedHeaderMenuFeature, "IPH_FeedHeaderMenu");
 #endif  // defined(OS_ANDROID)
 #if defined(OS_IOS)
 DEFINE_VARIATION_PARAM(kIPHBottomToolbarTipFeature, "IPH_BottomToolbarTip");
@@ -167,6 +168,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHTabGroupsDragAndDropFeature),
         VARIATION_ENTRY(kIPHTranslateMenuButtonFeature),
         VARIATION_ENTRY(kIPHExploreSitesTileFeature),
+        VARIATION_ENTRY(kIPHFeedHeaderMenuFeature),
 #elif defined(OS_IOS)
         VARIATION_ENTRY(kIPHBottomToolbarTipFeature),
         VARIATION_ENTRY(kIPHLongPressToolbarTipFeature),

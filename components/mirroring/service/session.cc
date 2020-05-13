@@ -172,10 +172,16 @@ void AddSenderConfig(int32_t sender_ssrc,
                      FrameSenderConfig config,
                      const std::string& aes_key,
                      const std::string& aes_iv,
+                     const mojom::SessionParameters& session_params,
                      std::vector<FrameSenderConfig>* config_list) {
   config.aes_key = aes_key;
   config.aes_iv_mask = aes_iv;
   config.sender_ssrc = sender_ssrc;
+  if (session_params.target_playout_delay) {
+    config.animated_playout_delay = session_params.target_playout_delay.value();
+    config.min_playout_delay = session_params.target_playout_delay.value();
+    config.max_playout_delay = session_params.target_playout_delay.value();
+  }
   config_list->emplace_back(config);
 }
 
@@ -824,13 +830,15 @@ void Session::CreateAndSendOffer() {
     if (state_ == MIRRORING) {
       FrameSenderConfig config = MirrorSettings::GetDefaultAudioConfig(
           RtpPayloadType::AUDIO_OPUS, Codec::CODEC_AUDIO_OPUS);
-      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, &audio_configs);
+      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, session_params_,
+                      &audio_configs);
       AddStreamObject(stream_index++, "OPUS", audio_configs.back(),
                       mirror_settings_, &stream_list);
     } else /* REMOTING */ {
       FrameSenderConfig config = MirrorSettings::GetDefaultAudioConfig(
           RtpPayloadType::REMOTE_AUDIO, Codec::CODEC_AUDIO_REMOTE);
-      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, &audio_configs);
+      AddSenderConfig(audio_ssrc, config, aes_key, aes_iv, session_params_,
+                      &audio_configs);
       AddStreamObject(stream_index++, "REMOTE_AUDIO", audio_configs.back(),
                       mirror_settings_, &stream_list);
     }
@@ -842,7 +850,8 @@ void Session::CreateAndSendOffer() {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_VP8, Codec::CODEC_VIDEO_VP8);
         config.use_external_encoder = true;
-        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                        &video_configs);
         AddStreamObject(stream_index++, "VP8", video_configs.back(),
                         mirror_settings_, &stream_list);
       }
@@ -850,21 +859,24 @@ void Session::CreateAndSendOffer() {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_H264, Codec::CODEC_VIDEO_H264);
         config.use_external_encoder = true;
-        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                        &video_configs);
         AddStreamObject(stream_index++, "H264", video_configs.back(),
                         mirror_settings_, &stream_list);
       }
       if (video_configs.empty()) {
         FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
             RtpPayloadType::VIDEO_VP8, Codec::CODEC_VIDEO_VP8);
-        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+        AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                        &video_configs);
         AddStreamObject(stream_index++, "VP8", video_configs.back(),
                         mirror_settings_, &stream_list);
       }
     } else /* REMOTING */ {
       FrameSenderConfig config = MirrorSettings::GetDefaultVideoConfig(
           RtpPayloadType::REMOTE_VIDEO, Codec::CODEC_VIDEO_REMOTE);
-      AddSenderConfig(video_ssrc, config, aes_key, aes_iv, &video_configs);
+      AddSenderConfig(video_ssrc, config, aes_key, aes_iv, session_params_,
+                      &video_configs);
       AddStreamObject(stream_index++, "REMOTE_VIDEO", video_configs.back(),
                       mirror_settings_, &stream_list);
     }

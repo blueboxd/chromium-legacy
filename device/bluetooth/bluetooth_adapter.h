@@ -384,6 +384,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // The name of the adapter.
   virtual std::string GetName() const = 0;
 
+  // The Bluetooth system name. Implementations may return an informational name
+  // "BlueZ 5.54" on Chrome OS.
+  virtual std::string GetSystemName() const;
+
   // Set the human-readable name of the adapter to |name|. On success,
   // |callback| will be called. On failure, |error_callback| will be called.
   virtual void SetName(const std::string& name,

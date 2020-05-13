@@ -20,8 +20,6 @@ public class PromoCardProperties {
     // Visible related properties
     public static final WritableBooleanPropertyKey HAS_SECONDARY_BUTTON =
             new WritableBooleanPropertyKey();
-    public static final WritableBooleanPropertyKey HAS_CLOSE_BUTTON =
-            new WritableBooleanPropertyKey();
 
     // View related properties
     public static final WritableObjectPropertyKey<Drawable> IMAGE =
@@ -48,14 +46,10 @@ public class PromoCardProperties {
     public static final WritableObjectPropertyKey<Callback<View>> SECONDARY_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
-    public static final WritableObjectPropertyKey<Callback<View>> CLOSE_BUTTON_CALLBACK =
-            new WritableObjectPropertyKey<>();
-
     /**
      * All the property keys needed to create the model for {@link PromoCardView}.
      */
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {HAS_SECONDARY_BUTTON, HAS_CLOSE_BUTTON, IMAGE, ICON_TINT, TITLE,
-                    DESCRIPTION, PRIMARY_BUTTON_TEXT, SECONDARY_BUTTON_TEXT,
-                    PRIMARY_BUTTON_CALLBACK, SECONDARY_BUTTON_CALLBACK, CLOSE_BUTTON_CALLBACK};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {HAS_SECONDARY_BUTTON, IMAGE,
+            ICON_TINT, TITLE, DESCRIPTION, PRIMARY_BUTTON_TEXT, SECONDARY_BUTTON_TEXT,
+            PRIMARY_BUTTON_CALLBACK, SECONDARY_BUTTON_CALLBACK};
 }

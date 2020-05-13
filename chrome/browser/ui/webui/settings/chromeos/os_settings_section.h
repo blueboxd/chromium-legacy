@@ -21,6 +21,8 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Represents one top-level section of the settings app (i.e., one item on the
 // settings UI navigation).
 //
@@ -36,15 +38,6 @@ namespace settings {
 // (i.e., browser to JS IPC mechanisms) to the page.
 class OsSettingsSection {
  public:
-  class Delegate {
-   public:
-    ~Delegate() = default;
-    virtual void AddSearchTags(
-        const std::vector<SearchConcept>& tags_group) = 0;
-    virtual void RemoveSearchTags(
-        const std::vector<SearchConcept>& tags_group) = 0;
-  };
-
   virtual ~OsSettingsSection();
 
   OsSettingsSection(const OsSettingsSection& other) = delete;
@@ -61,14 +54,14 @@ class OsSettingsSection {
  protected:
   static base::string16 GetHelpUrlWithBoard(const std::string& original_url);
 
-  OsSettingsSection(Profile* profile, Delegate* delegate);
+  OsSettingsSection(Profile* profile, SearchTagRegistry* search_tag_registry);
 
   Profile* profile() { return profile_; }
-  Delegate* delegate() { return delegate_; }
+  SearchTagRegistry* registry() { return search_tag_registry_; }
 
  private:
   Profile* profile_;
-  Delegate* delegate_;
+  SearchTagRegistry* search_tag_registry_;
 };
 
 }  // namespace settings

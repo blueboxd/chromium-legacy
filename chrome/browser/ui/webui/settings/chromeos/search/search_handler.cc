@@ -7,9 +7,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -34,9 +34,9 @@ std::vector<base::string16> GenerateDummySettingsHierarchy(
 const size_t SearchHandler::kNumMaxResults = 5;
 
 SearchHandler::SearchHandler(
-    OsSettingsManager* strings_provider,
+    SearchTagRegistry* search_tag_registry,
     local_search_service::LocalSearchService* local_search_service)
-    : strings_provider_(strings_provider),
+    : search_tag_registry_(search_tag_registry),
       index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {}
 
@@ -94,7 +94,7 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
     return nullptr;
 
   const SearchConcept* concept =
-      strings_provider_->GetCanonicalTagMetadata(message_id);
+      search_tag_registry_->GetCanonicalTagMetadata(message_id);
 
   // If the concept was not registered, no metadata is available. This can occur
   // if the search tag was dynamically unregistered during the asynchronous
@@ -125,12 +125,6 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
       concept->icon, result.score,
       GenerateDummySettingsHierarchy(concept->url_path_with_parameters),
       concept->default_rank, concept->type, std::move(result_id));
-}
-
-void SearchHandler::Shutdown() {
-  strings_provider_ = nullptr;
-  index_ = nullptr;
-  receivers_.Clear();
 }
 
 }  // namespace settings

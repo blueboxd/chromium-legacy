@@ -1386,6 +1386,17 @@ void InProcessCommandBuffer::SetDisplayTransformOnGpuThread(
   surface_->SetDisplayTransform(transform);
 }
 
+void InProcessCommandBuffer::SetFrameRate(float frame_rate) {
+  ScheduleGpuTask(
+      base::BindOnce(&InProcessCommandBuffer::SetFrameRateOnGpuThread,
+                     gpu_thread_weak_ptr_factory_.GetWeakPtr(), frame_rate));
+}
+
+void InProcessCommandBuffer::SetFrameRateOnGpuThread(float frame_rate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  surface_->SetFrameRate(frame_rate);
+}
+
 #if defined(OS_WIN)
 void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
     SurfaceHandle parent_window,

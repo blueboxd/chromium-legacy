@@ -56,7 +56,8 @@ std::unique_ptr<TileService> CreateTileService(
       leveldb_proto::ProtoDbType::UPBOARDING_QUERY_TILE_STORE, tile_store_dir,
       task_runner);
   auto tile_store = std::make_unique<TileStore>(std::move(tile_db));
-  auto tile_manager = TileManager::Create(std::move(tile_store), clock);
+  auto tile_manager =
+      TileManager::Create(std::move(tile_store), clock, accepted_language);
 
   // Create fetcher.
   auto tile_fetcher = TileFetcher::Create(

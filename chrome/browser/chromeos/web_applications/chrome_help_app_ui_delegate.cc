@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/web_applications/chrome_help_app_ui_delegate.h"
 
+#include <string>
+
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
@@ -83,11 +84,11 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
       !ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices().empty());
   // Checks if the Google Assistant is allowed on this device by going through
   // policies.
-  ash::mojom::AssistantAllowedState assistant_allowed_state =
+  chromeos::assistant::AssistantAllowedState assistant_allowed_state =
       assistant::IsAssistantAllowedForProfile(profile);
-  source->AddBoolean(
-      "assistantAllowed",
-      assistant_allowed_state == ash::mojom::AssistantAllowedState::ALLOWED);
+  source->AddBoolean("assistantAllowed",
+                     assistant_allowed_state ==
+                         chromeos::assistant::AssistantAllowedState::ALLOWED);
   source->AddBoolean(
       "assistantEnabled",
       ash::AssistantState::Get()->settings_enabled().value_or(false));

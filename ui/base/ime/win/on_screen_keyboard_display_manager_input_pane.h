@@ -18,6 +18,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_types.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
+#include "ui/base/ime/virtual_keyboard_visibility_request.h"
+#include "ui/base/ime/win/virtual_keyboard_debounce_timer.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -43,6 +45,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN)
   void SetInputPaneForTesting(
       Microsoft::WRL::ComPtr<ABI::Windows::UI::ViewManagement::IInputPane>
           pane);
+  // Returns whether show/hide VK API is called from
+  // InputMethodKeyboardController or not.
+  VirtualKeyboardVisibilityRequest GetLastVirtualKeyboardVisibilityRequest()
+      const {
+    return last_vk_visibility_request_;
+  }
 
  private:
   class VirtualKeyboardInputPane;
@@ -50,6 +58,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN)
 
   void NotifyObserversOnKeyboardShown(gfx::Rect rect);
   void NotifyObserversOnKeyboardHidden();
+  // This executes when the debounce timer expires.
+  void Run();
 
   // The main window which displays the on screen keyboard.
   const HWND hwnd_;
@@ -59,6 +69,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN)
   const scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
   scoped_refptr<VirtualKeyboardInputPane> virtual_keyboard_input_pane_;
   bool is_keyboard_visible_;
+  VirtualKeyboardVisibilityRequest last_vk_visibility_request_ =
+      VirtualKeyboardVisibilityRequest::NONE;
+  std::unique_ptr<VirtualKeyboardDebounceTimer> debouncer_;
   base::WeakPtrFactory<OnScreenKeyboardDisplayManagerInputPane> weak_factory_{
       this};
 

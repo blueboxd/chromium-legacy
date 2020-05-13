@@ -60,6 +60,7 @@
 
       cr-icon-button {
         --cr-icon-button-fill-color: currentColor;
+        --cr-icon-button-fill-color-focus: var(--cros-default-toolbar-bg-color);
         --cr-icon-button-size: 32px;
         min-width: 32px;
       }
@@ -131,6 +132,9 @@
             showing-search="{{showingSearch_}}">
         </os-settings-search-box>
       </template>
+      <iron-media-query query="(max-width: [[narrowThreshold]]px)"
+          query-matches="{{narrow}}">
+      </iron-media-query>
     </div>
 
     <div id="rightContent">

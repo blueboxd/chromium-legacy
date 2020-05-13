@@ -59,11 +59,13 @@ class ReputationWebContentsObserver
 
   // Possibly show a Safety Tip. Called on visibility changes and page load.
   void MaybeShowSafetyTip(ukm::SourceId navigation_source_id,
+                          bool called_from_visibility_check,
                           bool record_ukm_if_tip_not_shown);
 
   // A ReputationCheckCallback. Called by the reputation service when a
   // reputation result is available.
   void HandleReputationCheckResult(ukm::SourceId navigation_source_id,
+                                   bool called_from_visibility_check,
                                    bool record_ukm_if_tip_not_shown,
                                    ReputationCheckResult result);
 

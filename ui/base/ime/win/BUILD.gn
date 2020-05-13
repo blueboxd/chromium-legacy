@@ -29,6 +29,8 @@ jumbo_component("win") {
     "tsf_input_scope.h",
     "tsf_text_store.cc",
     "tsf_text_store.h",
+    "virtual_keyboard_debounce_timer.cc",
+    "virtual_keyboard_debounce_timer.h",
   ]
 
   defines = [ "IS_UI_BASE_IME_WIN_IMPL" ]

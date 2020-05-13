@@ -28,6 +28,8 @@ blink_core_sources("inspector") {
     "dom_editor.h",
     "dom_patch_support.cc",
     "dom_patch_support.h",
+    "dom_traversal_utils.cc",
+    "dom_traversal_utils.h",
     "identifiers_factory.cc",
     "identifiers_factory.h",
     "inspect_tools.cc",

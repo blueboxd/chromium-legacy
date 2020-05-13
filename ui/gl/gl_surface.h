@@ -297,6 +297,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   virtual void SetGpuVSyncEnabled(bool enabled);
 
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+  virtual void SetFrameRate(float frame_rate) {}
 
   static GLSurface* GetCurrent();
 
@@ -394,6 +395,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
+  void SetFrameRate(float frame_rate) override;
   void SetCurrent() override;
   bool IsCurrent() override;
 

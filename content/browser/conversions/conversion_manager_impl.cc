@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -47,14 +49,17 @@ ConversionManagerImpl::ConversionManagerImpl(
     StoragePartition* storage_partition,
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : ConversionManagerImpl(std::make_unique<ConversionReporterImpl>(
-                                storage_partition,
-                                this,
-                                base::DefaultClock::GetInstance()),
-                            std::make_unique<ConversionPolicy>(),
-                            base::DefaultClock::GetInstance(),
-                            user_data_directory,
-                            std::move(task_runner)) {}
+    : ConversionManagerImpl(
+          std::make_unique<ConversionReporterImpl>(
+              storage_partition,
+              this,
+              base::DefaultClock::GetInstance()),
+          std::make_unique<ConversionPolicy>(
+              base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kConversionsDebugMode)),
+          base::DefaultClock::GetInstance(),
+          user_data_directory,
+          std::move(task_runner)) {}
 
 ConversionManagerImpl::ConversionManagerImpl(
     std::unique_ptr<ConversionReporter> reporter,
@@ -62,12 +67,14 @@ ConversionManagerImpl::ConversionManagerImpl(
     const base::Clock* clock,
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> storage_task_runner)
-    : storage_task_runner_(std::move(storage_task_runner)),
+    : debug_mode_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kConversionsDebugMode)),
+      storage_task_runner_(std::move(storage_task_runner)),
       clock_(clock),
       reporter_(std::move(reporter)),
       storage_(new ConversionStorageSql(
                    user_data_directory,
-                   std::make_unique<ConversionStorageDelegateImpl>(),
+                   std::make_unique<ConversionStorageDelegateImpl>(debug_mode_),
                    clock_),
                base::OnTaskRunnerDeleter(storage_task_runner_)),
       conversion_policy_(std::move(policy)),
@@ -110,6 +117,11 @@ void ConversionManagerImpl::HandleConversion(
           base::IgnoreResult(
               &ConversionStorage::MaybeCreateAndStoreConversionReports),
           base::Unretained(storage_.get()), conversion));
+
+  // If we are running in debug mode, we should also schedule a task to
+  // gather and send any new reports.
+  if (debug_mode_)
+    GetAndQueueReportsForNextInterval();
 }
 
 void ConversionManagerImpl::HandleSentReport(int64_t conversion_id) {
@@ -209,9 +221,11 @@ void ConversionManagerImpl::HandleReportsExpiredAtStartup(
   for (ConversionReport& report : reports) {
     if (report.report_time > current_time)
       continue;
+
     base::Time updated_report_time =
         conversion_policy_->GetReportTimeForExpiredReportAtStartup(
             current_time);
+
     report.extra_delay = updated_report_time - report.report_time;
     report.report_time = updated_report_time;
   }

@@ -197,10 +197,6 @@ extern const char kEnableSyncTrustedVaultDescription[];
 extern const char kEnableSyncUSSNigoriName[];
 extern const char kEnableSyncUSSNigoriDescription[];
 
-// Title and description for the flag to search in iFrames in Find In Page.
-extern const char kFindInPageiFrameName[];
-extern const char kFindInPageiFrameDescription[];
-
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];

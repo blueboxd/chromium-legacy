@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ASSISTANT_ASSISTANT_UTIL_H_
 
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
+#include "ash/public/cpp/assistant/assistant_state_base.h"
 
 class Profile;
 
 namespace assistant {
 
 // Returns whether Google Assistant feature is allowed for given |profile|.
-ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
+chromeos::assistant::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile);
 
 void OverrideIsGoogleDeviceForTesting(bool is_google_device);

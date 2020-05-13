@@ -45,6 +45,8 @@ class XRReferenceSpace : public XRSpace {
   // of NativeFromMojo
   base::Optional<TransformationMatrix> MojoFromNative() final;
 
+  bool IsStationary() const override;
+
   TransformationMatrix NativeFromOffsetMatrix() override;
   TransformationMatrix OffsetFromNativeMatrix() override;
 

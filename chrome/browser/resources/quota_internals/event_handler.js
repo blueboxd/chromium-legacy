@@ -253,7 +253,7 @@ function getOriginObject(type, host, origin) {
  */
 function handleAvailableSpace(event) {
   availableSpace = event.detail;
-  $('diskspace-entry').innerHTML = numBytesToText_(availableSpace);
+  $('diskspace-entry').textContent = numBytesToText_(availableSpace);
 }
 
 /**
@@ -378,13 +378,15 @@ function handleStatistics(event) {
   for (const key in data) {
     let entry = statistics[key];
     if (!entry) {
-      entry = document.createElement('tr');
+      const template = document.querySelector('#table-row-template');
+      entry = template.content.cloneNode(true).querySelector('tr');
       $('stat-entries').appendChild(entry);
       statistics[key] = entry;
     }
     entry.detail = data[key];
-    entry.innerHTML = '<td>' + stringToText_(key) + '</td>' +
-        '<td>' + stringToText_(entry.detail) + '</td>';
+
+    entry.querySelectorAll('td')[0].textContent = stringToText_(key);
+    entry.querySelectorAll('td')[1].textContent = stringToText_(entry.detail);
   }
 }
 
@@ -395,7 +397,7 @@ function handleStatistics(event) {
 function updateDescription() {
   const item = getTreeViewObject().selectedItem;
   const tbody = $('tree-item-description');
-  tbody.innerHTML = '';
+  tbody.innerHTML = trustedTypes.emptyHTML;
 
   if (item) {
     const keyAndLabel = [
@@ -417,9 +419,10 @@ function updateDescription() {
 
       const normalize = keyAndLabel[i][2] || stringToText_;
 
-      const row = document.createElement('tr');
-      row.innerHTML = '<td>' + label + '</td>' +
-          '<td>' + normalize(entry) + '</td>';
+      const template = document.querySelector('#table-row-template');
+      const row = template.content.cloneNode(true).querySelector('tr');
+      row.querySelectorAll('td')[0].textContent = label;
+      row.querySelectorAll('td')[1].textContent = normalize(entry);
       tbody.appendChild(row);
     }
   }

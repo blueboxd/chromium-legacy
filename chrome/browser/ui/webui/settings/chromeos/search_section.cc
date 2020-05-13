@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search_section.h"
 
+#include <memory>
+#include <vector>
+
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -11,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/google_assistant_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -187,13 +191,14 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
-SearchSection::SearchSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
-  delegate()->AddSearchTags(GetSearchPageSearchConcepts());
+SearchSection::SearchSection(Profile* profile,
+                             SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
+  registry()->AddSearchTags(GetSearchPageSearchConcepts());
 
   ash::AssistantState* assistant_state = ash::AssistantState::Get();
   if (IsAssistantAllowed() && assistant_state) {
-    delegate()->AddSearchTags(GetAssistantSearchConcepts());
+    registry()->AddSearchTags(GetAssistantSearchConcepts());
 
     assistant_state->AddObserver(this);
     UpdateAssistantSearchTags();
@@ -262,16 +267,16 @@ void SearchSection::OnAssistantHotwordEnabled(bool enabled) {
 bool SearchSection::IsAssistantAllowed() {
   // NOTE: This will be false when the flag is disabled.
   return ::assistant::IsAssistantAllowedForProfile(profile()) ==
-         ash::mojom::AssistantAllowedState::ALLOWED;
+         chromeos::assistant::AssistantAllowedState::ALLOWED;
 }
 
 void SearchSection::UpdateAssistantSearchTags() {
   // Start without any Assistant search concepts, then add if needed below.
-  delegate()->RemoveSearchTags(GetAssistantOnSearchConcepts());
-  delegate()->RemoveSearchTags(GetAssistantOffSearchConcepts());
-  delegate()->RemoveSearchTags(GetAssistantQuickAnswersSearchConcepts());
-  delegate()->RemoveSearchTags(GetAssistantHotwordDspSearchConcepts());
-  delegate()->RemoveSearchTags(GetAssistantVoiceMatchSearchConcepts());
+  registry()->RemoveSearchTags(GetAssistantOnSearchConcepts());
+  registry()->RemoveSearchTags(GetAssistantOffSearchConcepts());
+  registry()->RemoveSearchTags(GetAssistantQuickAnswersSearchConcepts());
+  registry()->RemoveSearchTags(GetAssistantHotwordDspSearchConcepts());
+  registry()->RemoveSearchTags(GetAssistantVoiceMatchSearchConcepts());
 
   ash::AssistantState* assistant_state = ash::AssistantState::Get();
 
@@ -279,26 +284,26 @@ void SearchSection::UpdateAssistantSearchTags() {
   // off, none of the sub-features are enabled.
   if (!assistant_state->settings_enabled() ||
       !assistant_state->settings_enabled().value()) {
-    delegate()->AddSearchTags(GetAssistantOffSearchConcepts());
+    registry()->AddSearchTags(GetAssistantOffSearchConcepts());
     return;
   }
 
-  delegate()->AddSearchTags(GetAssistantOnSearchConcepts());
+  registry()->AddSearchTags(GetAssistantOnSearchConcepts());
 
   if (AreQuickAnswersAllowed() && assistant_state->context_enabled() &&
       assistant_state->context_enabled().value()) {
-    delegate()->AddSearchTags(GetAssistantQuickAnswersSearchConcepts());
+    registry()->AddSearchTags(GetAssistantQuickAnswersSearchConcepts());
   }
 
   if (IsHotwordDspAvailable())
-    delegate()->AddSearchTags(GetAssistantHotwordDspSearchConcepts());
+    registry()->AddSearchTags(GetAssistantHotwordDspSearchConcepts());
 
   if (IsVoiceMatchAllowed() && assistant_state->hotword_enabled() &&
       assistant_state->hotword_enabled().value() &&
       assistant_state->consent_status() &&
       assistant_state->consent_status().value() ==
           assistant::prefs::ConsentStatus::kActivityControlAccepted) {
-    delegate()->AddSearchTags(GetAssistantVoiceMatchSearchConcepts());
+    registry()->AddSearchTags(GetAssistantVoiceMatchSearchConcepts());
   }
 }
 

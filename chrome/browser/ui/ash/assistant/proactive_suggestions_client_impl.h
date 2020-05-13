@@ -54,7 +54,7 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
 
   // AssistantStateObserver:
   void OnAssistantFeatureAllowedChanged(
-      ash::mojom::AssistantAllowedState state) override;
+      chromeos::assistant::AssistantAllowedState state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
 

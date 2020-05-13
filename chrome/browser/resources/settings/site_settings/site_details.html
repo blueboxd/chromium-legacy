@@ -258,4 +258,11 @@
             label="$i18n{siteSettingsVr}">
         </site-details-permission>
       </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.WINDOW_PLACEMENT}}"
+            icon="settings:window-placement" id="windowPlacement"
+            label="$i18n{siteSettingsWindowPlacement}">
+        </site-details-permission>
+      </template>
     </div>

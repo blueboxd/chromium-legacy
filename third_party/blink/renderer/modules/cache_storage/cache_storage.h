@@ -54,6 +54,8 @@ class CacheStorage final : public ScriptWrappable,
 
   bool IsAllowed(ScriptState*);
 
+  void MaybeInit();
+
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
   Member<CacheStorageBlobClientList> blob_client_list_;
 

@@ -47,14 +47,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return type_;
   }
-  ClientUsageTracker* GetClientTracker(QuotaClientType client_id);
 
   void GetGlobalLimitedUsage(UsageCallback callback);
   void GetGlobalUsage(GlobalUsageCallback callback);
   void GetHostUsage(const std::string& host, UsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  UsageWithBreakdownCallback callback);
-  void UpdateUsageCache(QuotaClientType client_id,
+  void UpdateUsageCache(QuotaClientType client_type,
                         const url::Origin& origin,
                         int64_t delta);
   int64_t GetCachedUsage() const;
@@ -66,7 +65,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
     return !global_usage_callbacks_.empty() || !host_usage_callbacks_.empty();
   }
 
-  void SetUsageCacheEnabled(QuotaClientType client_id,
+  void SetUsageCacheEnabled(QuotaClientType client_type,
                             const url::Origin& origin,
                             bool enabled);
 

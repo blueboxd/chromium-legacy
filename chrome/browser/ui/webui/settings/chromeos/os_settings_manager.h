@@ -6,13 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_OS_SETTINGS_MANAGER_H_
 
 #include <memory>
-#include <unordered_map>
-#include <vector>
 
-#include "chrome/browser/chromeos/local_search_service/index.h"
-#include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
+#include "base/gtest_prod_util.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/remote.h"
 
 class ArcAppListPrefs;
 class Profile;
@@ -50,7 +46,9 @@ class MultiDeviceSetupClient;
 
 namespace settings {
 
-struct SearchConcept;
+class OsSettingsSections;
+class SearchHandler;
+class SearchTagRegistry;
 
 // Manager for the Chrome OS settings page. This class is implemented as a
 // KeyedService, so one instance of the class is intended to be active for the
@@ -77,8 +75,7 @@ struct SearchConcept;
 //
 // (3) Add logic supporting message-passing between the browser process (C++)
 //     and the settings app (JS), via SettingsPageUIHandler objects.
-class OsSettingsManager : public KeyedService,
-                          public OsSettingsSection::Delegate {
+class OsSettingsManager : public KeyedService {
  public:
   OsSettingsManager(
       Profile* profile,
@@ -104,23 +101,18 @@ class OsSettingsManager : public KeyedService,
   // Adds SettingsPageUIHandlers to an OS settings instance.
   void AddHandlers(content::WebUI* web_ui);
 
-  // Returns the tag metadata associated with |canonical_message_id|, which must
-  // be one of the canonical IDS_SETTINGS_TAG_* identifiers used for a search
-  // tag. If no metadata is available or if |canonical_message_id| instead
-  // refers to an alternate tag's ID, null is returned.
-  const SearchConcept* GetCanonicalTagMetadata(int canonical_message_id) const;
+  // Note: Returns null when the kNewOsSettingsSearch flag is disabled.
+  SearchHandler* search_handler() { return search_handler_.get(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OsSettingsManagerTest, Sections);
+
   // KeyedService:
   void Shutdown() override;
 
-  // OsSettingsSection::Delegate:
-  void AddSearchTags(const std::vector<SearchConcept>& tags_group) override;
-  void RemoveSearchTags(const std::vector<SearchConcept>& tags_group) override;
-
-  std::vector<std::unique_ptr<OsSettingsSection>> sections_;
-  local_search_service::Index* index_;
-  std::unordered_map<int, const SearchConcept*> canonical_id_to_metadata_map_;
+  std::unique_ptr<SearchTagRegistry> search_tag_registry_;
+  std::unique_ptr<OsSettingsSections> sections_;
+  std::unique_ptr<SearchHandler> search_handler_;
 };
 
 }  // namespace settings

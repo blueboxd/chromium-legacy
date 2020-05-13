@@ -509,4 +509,15 @@ TEST_P(LayoutFlexibleBoxTest, ResizedFlexChildRequiresVisualOverflowRecalc) {
             PhysicalRect(0, 0, 105, 960));
 }
 
+TEST_P(LayoutFlexibleBoxTest, RowGapUseCounter) {
+  SetBodyInnerHTML(CommonStyle() + R"HTML(
+    <div id="flex-box" style="gap: 20%;"></div>
+  )HTML");
+  RunDocumentLifecycle();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercent));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercentIndefinite));
+}
+
 }  // namespace blink

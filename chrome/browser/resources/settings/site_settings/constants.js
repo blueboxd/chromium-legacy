@@ -41,6 +41,7 @@ export const ContentSettingsTypes = {
   HID_DEVICES: 'hid-devices',
   AR: 'ar',
   VR: 'vr',
+  WINDOW_PLACEMENT: 'window-placement',
 };
 
 /**

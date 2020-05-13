@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_ASSISTANT_SEARCH_PROVIDER_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_ASSISTANT_SEARCH_PROVIDER_H_
 
+#include <vector>
+
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
@@ -32,7 +34,7 @@ class AssistantSearchProvider : public SearchProvider,
 
   // ash::AssistantStateObserver:
   void OnAssistantFeatureAllowedChanged(
-      ash::mojom::AssistantAllowedState allowed_state) override;
+      chromeos::assistant::AssistantAllowedState allowed_state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
 
   // ash::AssistantSuggestionsModelObserver:

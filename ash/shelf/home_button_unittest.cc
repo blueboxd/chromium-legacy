@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -532,8 +534,9 @@ TEST_P(HomeButtonTest, LongPressGesture) {
   // Enable the Assistant in system settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   assistant_state()->NotifyFeatureAllowed(
-      mojom::AssistantAllowedState::ALLOWED);
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
+  assistant_state()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::READY);
 
   ShelfNavigationWidget::TestApi test_api(
       GetPrimaryShelf()->navigation_widget());
@@ -563,8 +566,9 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
   // Enable the Assistant in system settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   assistant_state()->NotifyFeatureAllowed(
-      mojom::AssistantAllowedState::ALLOWED);
-  assistant_state()->NotifyStatusChanged(mojom::AssistantState::READY);
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
+  assistant_state()->NotifyStatusChanged(
+      chromeos::assistant::AssistantStatus::READY);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
@@ -609,7 +613,8 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
 TEST_P(HomeButtonTest, LongPressGestureWithSecondaryUser) {
   // Disallowed by secondary user.
   assistant_state()->NotifyFeatureAllowed(
-      mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
+      chromeos::assistant::AssistantAllowedState::
+          DISALLOWED_BY_NONPRIMARY_USER);
 
   // Enable the Assistant in system settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
@@ -640,7 +645,7 @@ TEST_P(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
   // Assistant in settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   assistant_state()->NotifyFeatureAllowed(
-      mojom::AssistantAllowedState::ALLOWED);
+      chromeos::assistant::AssistantAllowedState::ALLOWED);
 
   ShelfNavigationWidget::TestApi test_api(
       GetPrimaryShelf()->navigation_widget());

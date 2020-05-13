@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -19,9 +20,9 @@ namespace chromeos {
 namespace settings {
 
 PluginVmSection::PluginVmSection(Profile* profile,
-                                 Delegate* per_page_delegate,
+                                 SearchTagRegistry* search_tag_registry,
                                  PrefService* pref_service)
-    : OsSettingsSection(profile, per_page_delegate),
+    : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service) {}
 
 PluginVmSection::~PluginVmSection() = default;

@@ -168,6 +168,10 @@ class ContextSupport {
   // from the client.
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) = 0;
 
+  // Notifies the onscreen surface of the rate at which content is being
+  // updated.
+  virtual void SetFrameRate(float frame_rate) = 0;
+
  protected:
   ContextSupport() = default;
   virtual ~ContextSupport() = default;

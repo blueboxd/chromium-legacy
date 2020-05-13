@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -117,7 +116,8 @@ void OSSettingsUI::BindInterface(
   if (!base::FeatureList::IsEnabled(::chromeos::features::kNewOsSettingsSearch))
     return;
 
-  SearchHandlerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
+  OsSettingsManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
+      ->search_handler()
       ->BindInterface(std::move(receiver));
 }
 

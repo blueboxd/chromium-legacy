@@ -851,8 +851,9 @@ void ArCoreGl::ProcessFrame(
         arcore_->GetHitTestSubscriptionResults(mojo_from_viewer,
                                                *frame_data->input_state);
 
-    arcore_->ProcessAnchorCreationRequests(mojo_from_viewer,
-                                           *frame_data->input_state);
+    arcore_->ProcessAnchorCreationRequests(
+        mojo_from_viewer, *frame_data->input_state,
+        frame_data->time_delta + base::TimeTicks());
   }
 
   // Get anchors data, including anchors created this frame.

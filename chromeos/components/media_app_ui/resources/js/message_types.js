@@ -46,11 +46,11 @@ let DeleteFileMessage;
 let DeleteFileResponse;
 
 /**
- * Message sent by the privileged context to the unprivileged context on launch
- * indicating the initial files available to open.
+ * Message sent by the privileged context to the unprivileged context indicating
+ * the files available to open.
  * @typedef {{
  *    writableFileIndex: number,
- *    files: !Array<{token: number, file: !File}>
+ *    files: !Array<{token: number, file: ?File, name: string, error: string}>
  * }}
  */
 let LoadFilesMessage;

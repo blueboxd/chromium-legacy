@@ -15,13 +15,15 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Search & Assistant settings. Search
 // tags for Assistant settings are added/removed depending on whether the
 // feature and relevant flags are enabled/disabled.
 class SearchSection : public OsSettingsSection,
                       public ash::AssistantStateObserver {
  public:
-  SearchSection(Profile* profile, Delegate* per_page_delegate);
+  SearchSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~SearchSection() override;
 
  private:

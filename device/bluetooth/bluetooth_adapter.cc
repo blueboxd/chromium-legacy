@@ -55,6 +55,11 @@ void BluetoothAdapter::RemoveObserver(BluetoothAdapter::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+std::string BluetoothAdapter::GetSystemName() const {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
 bool BluetoothAdapter::HasObserver(BluetoothAdapter::Observer* observer) {
   DCHECK(observer);
   return observers_.HasObserver(observer);

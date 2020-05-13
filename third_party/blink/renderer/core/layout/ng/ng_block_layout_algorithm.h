@@ -152,6 +152,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       NGInlineNode child,
       NGPreviousInflowPosition*,
       bool* abort_out);
+  bool TryReuseFragmentsFromCache(
+      NGInlineNode child,
+      NGPreviousInflowPosition*,
+      scoped_refptr<const NGInlineBreakToken>* inline_break_token_out);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
@@ -356,6 +360,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   LogicalSize child_available_size_;
   LogicalSize child_percentage_size_;
   LogicalSize replaced_child_percentage_size_;
+
+  scoped_refptr<const NGLayoutResult> previous_result_;
 
   // Intrinsic block size based on child layout and containment.
   LayoutUnit intrinsic_block_size_;

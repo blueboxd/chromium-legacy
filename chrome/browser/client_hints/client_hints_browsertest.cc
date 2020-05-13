@@ -879,6 +879,81 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
+  const GURL gurl = accept_ch_with_lifetime_url();
+
+  base::HistogramTester histogram_tester;
+  ContentSettingsForOneType host_settings;
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  // Fetching |gurl| should persist the request for client hints iff using
+  // headers and not http-equiv.
+  ui_test_utils::NavigateToURL(browser(), gurl);
+
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize",
+                                      expected_client_hints_number, 1);
+  // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
+  // seconds.
+  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
+                                      3600 * 1000, 1);
+
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ui_test_utils::NavigateToURL(browser(),
+                               without_accept_ch_without_lifetime_url());
+
+  // The user agent hint is attached to all three requests:
+  EXPECT_EQ(3u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(3u, count_ua_mobile_client_hints_headers_seen());
+
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(expected_client_hints_number * 2,
+            count_client_hints_headers_seen());
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsClearSession) {
+  const GURL gurl = accept_ch_with_lifetime_url();
+
+  base::HistogramTester histogram_tester;
+  ContentSettingsForOneType host_settings;
+
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(ContentSettingsType::CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ui_test_utils::NavigateToURL(browser(),
+                               without_accept_ch_without_lifetime_url());
+
+  // The user agent hint is attached to all three requests:
+  EXPECT_EQ(2u, count_user_agent_hint_headers_seen());
+  EXPECT_EQ(2u, count_ua_mobile_client_hints_headers_seen());
+
+  // Expected number of hints attached to the image request, and the same number
+  // to the main frame request.
+  EXPECT_EQ(0u, count_client_hints_headers_seen());
+}
+
 // Test that client hints are attached to subresources only if they belong
 // to the same host as document host.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,

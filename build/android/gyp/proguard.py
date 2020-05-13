@@ -112,8 +112,10 @@ def _ParseOptions():
   group.add_argument('--r8-path', help='Path to the R8.jar to use.')
   parser.add_argument(
       '--desugar-jdk-libs-json', help='Path to desugar_jdk_libs.json.')
-  parser.add_argument(
-      '--input-paths', required=True, help='GN-list of .jar files to optimize.')
+  parser.add_argument('--input-paths',
+                      action='append',
+                      required=True,
+                      help='GN-list of .jar files to optimize.')
   parser.add_argument('--output-path', help='Path to the generated .jar file.')
   parser.add_argument(
       '--proguard-configs',
@@ -349,20 +351,21 @@ def _OptimizeWithR8(options,
       for main_dex_rule in options.main_dex_rules_path:
         cmd += ['--main-dex-rules', main_dex_rule]
 
-    input_jars = set(base_dex_context.input_paths)
+    module_input_jars = set(base_dex_context.input_paths)
     for feature in feature_contexts:
       feature_input_jars = [
-          p for p in feature.input_paths if p not in input_jars
+          p for p in feature.input_paths if p not in module_input_jars
       ]
-      input_jars.update(feature_input_jars)
+      module_input_jars.update(feature_input_jars)
       cmd += [
           '--feature-jar',
           feature.staging_dir + ':' + ':'.join(feature_input_jars)
       ]
 
-    assert input_jars == set(options.input_paths), (
-        'Sum of feature input jars not equal to expected runtime classpath.')
     cmd += base_dex_context.input_paths
+    # Add any extra input jars to the base module (e.g. desugar runtime).
+    extra_jars = set(options.input_paths) - module_input_jars
+    cmd += sorted(extra_jars)
 
     env = os.environ.copy()
     stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)

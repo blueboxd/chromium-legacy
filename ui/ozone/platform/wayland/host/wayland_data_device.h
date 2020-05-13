@@ -10,16 +10,12 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/internal/wayland_data_device_base.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
-#include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device_base.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
 class SkBitmap;
@@ -29,11 +25,12 @@ namespace ui {
 class OSExchangeData;
 class WaylandDataOffer;
 class WaylandConnection;
+class WaylandShmBuffer;
 class WaylandWindow;
 
 // This class provides access to inter-client data transfer mechanisms
 // such as copy-and-paste and drag-and-drop mechanisms.
-class WaylandDataDevice : public internal::WaylandDataDeviceBase {
+class WaylandDataDevice : public WaylandDataDeviceBase {
  public:
   WaylandDataDevice(WaylandConnection* connection, wl_data_device* data_device);
   ~WaylandDataDevice() override;
@@ -144,7 +141,7 @@ class WaylandDataDevice : public internal::WaylandDataDeviceBase {
   bool is_handling_dropped_data_ = false;
   bool is_leaving_ = false;
 
-  std::unique_ptr<WaylandShmBuffer> shm_buffer_ = nullptr;
+  std::unique_ptr<WaylandShmBuffer> shm_buffer_;
   wl::Object<wl_surface> icon_surface_;
 
   // Mime types to be handled.

@@ -634,13 +634,10 @@
   web::WebState* currentWebState =
       self.browser->GetWebStateList()->GetActiveWebState();
 
-  __weak __typeof(self) weakSelf = self;
   if (currentWebState) {
     FindTabHelper* findTabHelper = FindTabHelper::FromWebState(currentWebState);
     if (findTabHelper->IsFindUIActive()) {
-      findTabHelper->StopFinding(^{
-        [weakSelf.findBarCoordinator stop];
-      });
+      findTabHelper->StopFinding();
     } else {
       [self.findBarCoordinator stop];
     }
@@ -670,12 +667,7 @@
       self.browser->GetWebStateList()->GetActiveWebState();
   DCHECK(currentWebState);
   FindTabHelper* helper = FindTabHelper::FromWebState(currentWebState);
-  __weak __typeof(self) weakSelf = self;
-  helper->StartFinding([self.findBarCoordinator.findBarController searchTerm],
-                       ^(FindInPageModel* model) {
-                         [weakSelf.findBarCoordinator.findBarController
-                             updateResultsCount:model];
-                       });
+  helper->StartFinding([self.findBarCoordinator.findBarController searchTerm]);
 
   if (!self.browser->GetBrowserState()->IsOffTheRecord())
     helper->PersistSearchTerm();
@@ -687,9 +679,7 @@
   DCHECK(currentWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
   FindTabHelper::FromWebState(currentWebState)
-      ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
-        [self.findBarCoordinator.findBarController updateResultsCount:model];
-      });
+      ->ContinueFinding(FindTabHelper::FORWARD);
 }
 
 - (void)findPreviousStringInPage {
@@ -698,9 +688,7 @@
   DCHECK(currentWebState);
   // TODO(crbug.com/603524): Reshow find bar if necessary.
   FindTabHelper::FromWebState(currentWebState)
-      ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
-        [self.findBarCoordinator.findBarController updateResultsCount:model];
-      });
+      ->ContinueFinding(FindTabHelper::REVERSE);
 }
 
 #pragma mark - FindInPageCommands Helpers

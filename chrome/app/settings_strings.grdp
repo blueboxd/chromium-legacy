@@ -1860,6 +1860,15 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS_BLOCK" desc="The block label for unsandboxed plugins in site settings.">
     Do not allow any site to use a plugin to access your computer
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT" desc="Label for the window placement site settings.">
+    Window placement
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_ASK" desc="The ask label for the window placement site settings.">
+    Ask when a site wants to open and place windows on your screens
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_WINDOW_PLACEMENT_BLOCK" desc="The block label for the window placement site settings.">
+    Block sites from opening and placing windows on your screens
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOWED" desc="A generic Allowed label to show in Site Settings when Allow is NOT the recommended option.">
     Allowed
   </message>

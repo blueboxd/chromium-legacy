@@ -127,32 +127,17 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
     }
   }
 
-  // Although the Cookie Store API spec always defaults the "secure" cookie
-  // attribute to true, we only default to true on cryptographically secure
-  // origins, where only secure cookies may be written, and to false otherwise,
-  // where only insecure cookies may be written. As a result,
-  // cookieStore.set("name", "value") sets a cookie and
-  // cookieStore.delete("name") deletes a cookie on both http://localhost and
-  // secure origins, without having to specify "secure: false" on
-  // http://localhost.
-  const bool secure = options->hasSecure()
-                          ? options->secure()
-                          : SecurityOrigin::IsSecure(cookie_url);
-  // If attempting to set/delete a secure cookie on an insecure origin, throw an
-  // exception, rather than failing silently as document.cookie does.
-  network::mojom::CookieSourceScheme source_scheme_enum =
-      SecurityOrigin::IsSecure(cookie_url)
-          ? network::mojom::CookieSourceScheme::kSecure
-          : network::mojom::CookieSourceScheme::kNonSecure;
-  if (secure &&
-      source_scheme_enum != network::mojom::CookieSourceScheme::kSecure) {
+  // The Cookie Store API will only write secure cookies but will read insecure
+  // cookies. As a result,
+  // cookieStore.get("name", "value") can get an insecure cookie, but when
+  // modifying a retrieved insecure cookie via the Cookie Store API, it will
+  // automatically turn it into a secure cookie without any warning.
+  //
+  // The Cookie Store API can only set secure cookies, so it is unusable on
+  // insecure origins.
+  if (!SecurityOrigin::IsSecure(cookie_url)) {
     exception_state.ThrowTypeError(
         "Cannot modify a secure cookie on insecure origin");
-    return base::nullopt;
-  }
-  if (!secure && (name.StartsWith("__Secure-") || name.StartsWith("__Host-"))) {
-    exception_state.ThrowTypeError(
-        "__Secure- and __Host- cookies must be secure");
     return base::nullopt;
   }
 
@@ -168,8 +153,9 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
 
   return CanonicalCookie::Create(
       name, value, domain, path, base::Time() /*creation*/, expires,
-      base::Time() /*last_access*/, secure, false /*http_only*/, same_site,
-      CanonicalCookie::kDefaultPriority, source_scheme_enum);
+      base::Time() /*last_access*/, true /*secure*/, false /*http_only*/,
+      same_site, CanonicalCookie::kDefaultPriority,
+      network::mojom::CookieSourceScheme::kSecure);
 }
 
 const KURL DefaultCookieURL(ExecutionContext* execution_context) {
@@ -306,8 +292,6 @@ ScriptPromise CookieStore::set(ScriptState* script_state,
     set_options->setExpires(options->expires());
   set_options->setDomain(options->domain());
   set_options->setPath(options->path());
-  if (options->hasSecure())
-    set_options->setSecure(options->secure());
   set_options->setSameSite(options->sameSite());
   return set(script_state, set_options, exception_state);
 }

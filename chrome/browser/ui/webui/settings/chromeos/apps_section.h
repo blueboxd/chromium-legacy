@@ -18,11 +18,13 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Apps settings.
 class AppsSection : public OsSettingsSection, public ArcAppListPrefs::Observer {
  public:
   AppsSection(Profile* profile,
-              Delegate* per_page_delegate,
+              SearchTagRegistry* search_tag_registry,
               PrefService* pref_service,
               ArcAppListPrefs* arc_app_list_prefs);
   ~AppsSection() override;

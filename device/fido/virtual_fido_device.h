@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
-#include "crypto/ec_private_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -29,9 +28,11 @@
 
 namespace crypto {
 class ECPrivateKey;
-}  // namespace crypto
+}
 
 namespace device {
+
+class PublicKey;
 
 constexpr size_t kMaxPinRetries = 8;
 
@@ -39,12 +40,39 @@ constexpr size_t kMaxUvRetries = 5;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
  public:
+  // PrivateKey abstracts over the private key types supported by the virtual
+  // authenticator.
+  class COMPONENT_EXPORT(DEVICE_FIDO) PrivateKey {
+   public:
+    // FromPKCS8 attempts to parse |pkcs8_private_key| as an ASN.1, DER, PKCS#8
+    // private key of a supported type and returns a |PrivateKey| instance
+    // representing that key.
+    static base::Optional<std::unique_ptr<PrivateKey>> FromPKCS8(
+        base::span<const uint8_t> pkcs8_private_key);
+
+    virtual ~PrivateKey();
+
+    // Sign returns a signature over |message|.
+    virtual std::vector<uint8_t> Sign(base::span<const uint8_t> message) = 0;
+
+    // GetX962PublicKey returns the elliptic-curve public key encoded in X9.62
+    // format. Only elliptic-curve based private keys can be represented in this
+    // format and calling this function on other types of keys will crash.
+    virtual std::vector<uint8_t> GetX962PublicKey() const;
+
+    // GetPKCS8PrivateKey returns the private key encoded in ASN.1, DER, PKCS#8
+    // format.
+    virtual std::vector<uint8_t> GetPKCS8PrivateKey() const = 0;
+
+    virtual std::unique_ptr<PublicKey> GetPublicKey() const = 0;
+  };
+
   // Encapsulates information corresponding to one registered key on the virtual
   // authenticator device.
   struct COMPONENT_EXPORT(DEVICE_FIDO) RegistrationData {
     RegistrationData();
     RegistrationData(
-        std::unique_ptr<crypto::ECPrivateKey> private_key,
+        std::unique_ptr<PrivateKey> private_key,
         base::span<const uint8_t, kRpIdHashLength> application_parameter,
         uint32_t counter);
 
@@ -53,7 +81,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
     ~RegistrationData();
 
-    std::unique_ptr<crypto::ECPrivateKey> private_key;
+    std::unique_ptr<PrivateKey> private_key;
     std::array<uint8_t, kRpIdHashLength> application_parameter;
     uint32_t counter = 0;
     bool is_resident = false;
@@ -187,7 +215,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
                            device::PublicKeyCredentialRpEntity rp,
                            device::PublicKeyCredentialUserEntity user,
                            int32_t signature_counter,
-                           std::unique_ptr<crypto::ECPrivateKey> private_key);
+                           std::unique_ptr<PrivateKey> private_key);
 
     // Adds a resident credential with the specified values, creating a new
     // private key.
@@ -230,6 +258,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
   scoped_refptr<State> NewReferenceToState() const { return state_; }
 
+  static std::unique_ptr<PrivateKey> FreshP256Key();
   static bool Sign(crypto::ECPrivateKey* private_key,
                    base::span<const uint8_t> sign_buffer,
                    std::vector<uint8_t>* signature);

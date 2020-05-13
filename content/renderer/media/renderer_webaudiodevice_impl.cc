@@ -195,6 +195,8 @@ void RendererWebAudioDeviceImpl::Pause() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (sink_)
     sink_->Pause();
+  if (webaudio_suspender_)
+    webaudio_suspender_->OnPaused();
 }
 
 void RendererWebAudioDeviceImpl::Resume() {

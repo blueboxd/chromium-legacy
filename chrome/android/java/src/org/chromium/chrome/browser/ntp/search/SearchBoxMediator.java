@@ -27,11 +27,15 @@ import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class SearchBoxMediator
         implements Destroyable, NativeInitObserver, AssistantVoiceSearchService.Observer {
     private final Context mContext;
     private final PropertyModel mModel;
     private final ViewGroup mView;
+    private final List<OnClickListener> mVoiceSearchClickListeners = new ArrayList<>();
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private AssistantVoiceSearchService mAssistantVoiceSearchService;
     private SearchBoxChipDelegate mChipDelegate;
@@ -106,6 +110,20 @@ class SearchBoxMediator
                 mChipDelegate.onCancelClicked();
             }
             listener.onClick(v);
+        });
+    }
+
+    /**
+     * Called to add a click listener for the voice search button.
+     */
+    void addVoiceSearchButtonClickListener(OnClickListener listener) {
+        boolean hasExistingListeners = !mVoiceSearchClickListeners.isEmpty();
+        mVoiceSearchClickListeners.add(listener);
+        if (hasExistingListeners) return;
+        mModel.set(SearchBoxProperties.VOICE_SEARCH_CLICK_CALLBACK, v -> {
+            for (OnClickListener clickListener : mVoiceSearchClickListeners) {
+                clickListener.onClick(v);
+            }
         });
     }
 

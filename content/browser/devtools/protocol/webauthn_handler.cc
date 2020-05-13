@@ -66,13 +66,11 @@ std::unique_ptr<WebAuthn::Credential> BuildCredentialFromRegistration(
     const std::pair<const std::vector<uint8_t>,
                     device::VirtualFidoDevice::RegistrationData>&
         registration) {
-  std::vector<uint8_t> private_key;
-  registration.second.private_key->ExportPrivateKey(&private_key);
-
   auto credential =
       WebAuthn::Credential::Create()
           .SetCredentialId(Binary::fromVector(registration.first))
-          .SetPrivateKey(Binary::fromVector(std::move(private_key)))
+          .SetPrivateKey(Binary::fromVector(
+              registration.second.private_key->GetPKCS8PrivateKey()))
           .SetSignCount(registration.second.counter)
           .SetIsResidentCredential(registration.second.is_resident)
           .Build();

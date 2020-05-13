@@ -60,8 +60,9 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
 
 }  // namespace
 
-MainSection::MainSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {}
+MainSection::MainSection(Profile* profile,
+                         SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {}
 
 MainSection::~MainSection() = default;
 
@@ -115,9 +116,6 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isOSSettings", true);
 
   html_source->AddBoolean("isGuest", features::IsGuestModeActive());
-  html_source->AddBoolean(
-      "isKioskModeActive",
-      user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
   html_source->AddBoolean("isSupervised", profile()->IsSupervised());
 
   // Add the System Web App resources for Settings.

@@ -8,5 +8,4 @@ import("//build/config/android/rules.gni")
 java_prebuilt("desugar_runtime_java") {
   supports_android = true
   jar_path = "Desugar_runtime.jar"
-  no_desugar_dep = true
 }

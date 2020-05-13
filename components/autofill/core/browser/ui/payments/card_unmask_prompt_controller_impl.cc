@@ -135,9 +135,10 @@ void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
     pending_details_.should_store_pan = false;
   }
 
-  // The FIDO authentication checkbox is only shown when the local storage
-  // checkbox is not shown and the flag is turned on. If it is shown, then
-  // remember the last choice the user made on this device.
+  // On Android, the FIDO authentication checkbox is only shown when the local
+  // storage checkbox is not shown and the flag is turned on. If it is shown,
+  // then remember the last choice the user made on this device.
+#if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           features::kAutofillCreditCardAuthentication) &&
       !CanStoreLocally()) {
@@ -145,6 +146,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
     pref_service_->SetBoolean(
         prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, enable_fido_auth);
   }
+#endif
 
   // There is a chance the delegate has disappeared (i.e. tab closed) before the
   // unmask response came in. Avoid a crash.

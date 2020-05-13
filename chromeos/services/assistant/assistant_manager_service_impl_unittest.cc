@@ -175,6 +175,9 @@ class AssistantManagerServiceImplTest : public testing::Test {
 
   void CreateAssistantManagerServiceImpl(
       base::Optional<std::string> s3_server_uri_override = base::nullopt) {
+    assistant_manager_service_.reset();
+    delegate_ = nullptr;
+
     auto delegate = std::make_unique<FakeAssistantManagerServiceDelegate>();
     delegate_ = delegate.get();
 

@@ -178,6 +178,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 #endif
   void SetGpuVSyncEnabled(bool enabled);
 
+  void SetFrameRate(float frame_rate);
   bool was_context_lost() { return context_state_->context_lost(); }
 
   void SetCapabilitiesForTesting(

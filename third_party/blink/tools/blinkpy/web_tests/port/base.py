@@ -357,6 +357,8 @@ class Port(object):
                 ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
                 '--user-data-dir'
             ]
+            if self.get_option('nocheck_sys_deps', False):
+                flags.append('--disable-system-font-check')
 
         # If we're already repeating the tests more than once, then we're not
         # particularly concerned with speed. Resetting the shell between tests

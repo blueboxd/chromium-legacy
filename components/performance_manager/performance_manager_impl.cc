@@ -35,10 +35,14 @@ namespace {
 PerformanceManagerImpl* g_performance_manager = nullptr;
 
 // The performance manager TaskRunner. Thread-safe.
+//
+// NOTE: This task runner has to block shutdown as some of the tasks posted to
+// it should be guaranteed to run before shutdown (e.g. removing some entries
+// from the site data store).
 base::LazyThreadPoolSequencedTaskRunner g_performance_manager_task_runner =
     LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(
         base::TaskTraits(base::TaskPriority::USER_VISIBLE,
-                         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
                          base::MayBlock()));
 
 // Indicates if a task posted to |g_performance_manager_task_runner| will have

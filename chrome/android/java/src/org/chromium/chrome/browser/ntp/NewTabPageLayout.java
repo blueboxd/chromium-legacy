@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.query_tiles.QueryTileSection;
+import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.tile.SiteSection;
@@ -266,7 +267,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         setSearchProviderInfo(searchProviderHasLogo, searchProviderIsGoogle);
         mSearchProviderLogoView.showSearchProviderInitialView();
 
-        if (searchProviderIsGoogle) {
+        if (searchProviderIsGoogle && QueryTileUtils.isFeatureEnabled()) {
             mQueryTileSection = new QueryTileSection(findViewById(R.id.query_tiles),
                     mSearchBoxCoordinator, profile, mManager::performSearchQuery);
         }
@@ -329,7 +330,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
     private void initializeVoiceSearchButton() {
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
-        mSearchBoxCoordinator.setVoiceSearchButtonClickListener(
+        mSearchBoxCoordinator.addVoiceSearchButtonClickListener(
                 v -> mManager.focusSearchBox(true, null));
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // View is 48dp, image is 24dp. Increasing the padding from 4dp -> 8dp will split the
@@ -601,6 +602,11 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
                         - mSearchBoxBoundsVerticalInset);
 
         setTranslationY(percent * (basePosition - target));
+        if (mQueryTileSection != null) mQueryTileSection.onUrlFocusAnimationChanged(percent);
+    }
+
+    void onLoadUrl() {
+        if (mQueryTileSection != null) mQueryTileSection.reloadTiles();
     }
 
     /**

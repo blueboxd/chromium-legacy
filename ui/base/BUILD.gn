@@ -770,6 +770,8 @@ jumbo_static_library("test_support") {
     sources += [
       "accelerators/test_accelerator_target.cc",
       "accelerators/test_accelerator_target.h",
+      "test/mock_base_window.cc",
+      "test/mock_base_window.h",
       "test/ui_controls.h",
       "test/view_tree_validator.h",
     ]

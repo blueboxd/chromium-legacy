@@ -10,6 +10,7 @@ cr.define('adapter_page', function() {
   const PROPERTY_NAMES = {
     address: 'Address',
     name: 'Name',
+    systemName: 'System Name',
     initialized: 'Initialized',
     present: 'Present',
     powered: 'Powered',
@@ -40,6 +41,12 @@ cr.define('adapter_page', function() {
      * @param {!bluetooth.mojom.AdapterInfo} info
      */
     setAdapterInfo(info) {
+      if (info.hasOwnProperty('systemName') && !info.systemName) {
+        // The adapter might not implement 'systemName'. In that case, delete
+        // this property so that it's not displayed on adapterFieldSet.
+        delete info.systemName;
+      }
+
       this.adapterFieldSet.setObject(info);
       this.refreshBtn_.disabled = false;
     }

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
@@ -106,7 +107,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
      * client implementation.
      */
-    public FeedStreamSurface(TabModelSelector tabModelSelector, Supplier<Tab> tabProvider) {
+    public FeedStreamSurface(TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
+            Activity activityContext) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mTabModelSelector = tabModelSelector;
         mTabProvider = tabProvider;
@@ -115,7 +117,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         ProcessScope processScope = xSurfaceProcessScope();
         if (processScope != null) {
-            mSurfaceScope = xSurfaceProcessScope().obtainSurfaceScope();
+            mSurfaceScope = xSurfaceProcessScope().obtainSurfaceScope(activityContext);
         } else {
             mSurfaceScope = null;
         }

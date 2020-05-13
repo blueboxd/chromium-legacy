@@ -46,8 +46,8 @@ class TabSpecificContentSettingsTest
     RenderViewHostTestHarness::SetUp();
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
     security_state::RegisterProfilePrefs(prefs_.registry());
-    settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(&prefs_, false,
-                                                                 false, false);
+    settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(
+        &prefs_, false, false, false, false);
     TabSpecificContentSettings::CreateForWebContents(
         web_contents(), std::make_unique<TestDelegate>(this));
   }

@@ -323,7 +323,8 @@ void FakeArCore::CreateAnchor(
 
 void FakeArCore::ProcessAnchorCreationRequests(
     const gfx::Transform& mojo_from_viewer,
-    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state,
+    const base::TimeTicks& frame_time) {
   // No-op - nothing gets deferred so far.
 }
 

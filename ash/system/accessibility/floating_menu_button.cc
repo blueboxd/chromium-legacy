@@ -22,13 +22,27 @@ const SkColor kFloatingMenuButtonIconColorActive = SkColorSetRGB(32, 33, 36);
 FloatingMenuButton::FloatingMenuButton(views::ButtonListener* listener,
                                        const gfx::VectorIcon& icon,
                                        int accessible_name_id,
+                                       bool flip_for_rtl)
+    : FloatingMenuButton(listener,
+                         icon,
+                         accessible_name_id,
+                         flip_for_rtl,
+                         /*size=*/kTrayItemSize,
+                         /*draw_highlight=*/true,
+                         /*is_a11y_togglable=*/true) {}
+
+FloatingMenuButton::FloatingMenuButton(views::ButtonListener* listener,
+                                       const gfx::VectorIcon& icon,
+                                       int accessible_name_id,
                                        bool flip_for_rtl,
                                        int size,
-                                       bool draw_highlight)
+                                       bool draw_highlight,
+                                       bool is_a11y_togglable)
     : TopShortcutButton(listener, accessible_name_id),
       icon_(&icon),
       size_(size),
-      draw_highlight_(draw_highlight) {
+      draw_highlight_(draw_highlight),
+      is_a11y_togglable_(is_a11y_togglable) {
   EnableCanvasFlippingForRTLUI(flip_for_rtl);
   SetPreferredSize(gfx::Size(size_, size_));
   UpdateImage();
@@ -80,6 +94,8 @@ void FloatingMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!GetEnabled())
     return;
   TopShortcutButton::GetAccessibleNodeData(node_data);
+  if (!is_a11y_togglable_)
+    return;
   node_data->role = ax::mojom::Role::kToggleButton;
   node_data->SetCheckedState(toggled_ ? ax::mojom::CheckedState::kTrue
                                       : ax::mojom::CheckedState::kFalse);

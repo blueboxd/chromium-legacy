@@ -734,7 +734,7 @@ void AppListControllerImpl::OnKeyboardVisibilityChanged(const bool is_visible) {
 }
 
 void AppListControllerImpl::OnAssistantStatusChanged(
-    mojom::AssistantState state) {
+    chromeos::assistant::AssistantStatus status) {
   UpdateAssistantVisibility();
 }
 
@@ -743,7 +743,7 @@ void AppListControllerImpl::OnAssistantSettingsEnabled(bool enabled) {
 }
 
 void AppListControllerImpl::OnAssistantFeatureAllowedChanged(
-    mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   UpdateAssistantVisibility();
 }
 
@@ -1337,8 +1337,10 @@ bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
 
   auto* state = AssistantState::Get();
   return state->settings_enabled().value_or(false) &&
-         state->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
-         state->assistant_state() != mojom::AssistantState::NOT_READY;
+         state->allowed_state() ==
+             chromeos::assistant::AssistantAllowedState::ALLOWED &&
+         state->assistant_status() !=
+             chromeos::assistant::AssistantStatus::NOT_READY;
 }
 
 bool AppListControllerImpl::ShouldShowAssistantPrivacyInfo() const {

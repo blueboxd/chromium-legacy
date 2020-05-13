@@ -243,7 +243,8 @@ HostContentSettingsMap::HostContentSettingsMap(
     PrefService* prefs,
     bool is_off_the_record,
     bool store_last_modified,
-    bool migrate_requesting_and_top_level_origin_settings)
+    bool migrate_requesting_and_top_level_origin_settings,
+    bool restore_session)
     : RefcountedKeyedService(base::ThreadTaskRunnerHandle::Get()),
 #ifndef NDEBUG
       used_from_thread_id_(base::PlatformThread::CurrentId()),
@@ -260,7 +261,7 @@ HostContentSettingsMap::HostContentSettingsMap(
   policy_provider->AddObserver(this);
 
   auto pref_provider_ptr = std::make_unique<content_settings::PrefProvider>(
-      prefs_, is_off_the_record_, store_last_modified_);
+      prefs_, is_off_the_record_, store_last_modified_, restore_session);
   pref_provider_ = pref_provider_ptr.get();
   content_settings_providers_[PREF_PROVIDER] = std::move(pref_provider_ptr);
   user_modifiable_providers_.push_back(pref_provider_);

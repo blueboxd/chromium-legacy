@@ -44,7 +44,7 @@ public class CastWebContentsIntentUtils {
      * Action type of intent from Android to cast app to notify the visibility change
      * of cast app in an Android app.
      */
-    static final String ACTION_ON_VISIBILITY_CHANGE =
+    public static final String ACTION_ON_VISIBILITY_CHANGE =
             "com.google.android.apps.castshell.intent.action.ON_VISIBILITY_CHANGE";
 
     /**

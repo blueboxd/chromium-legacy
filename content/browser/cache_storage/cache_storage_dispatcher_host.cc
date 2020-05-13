@@ -503,6 +503,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   CacheStorageImpl(
       CacheStorageDispatcherHost* owner,
       const url::Origin& origin,
+      bool incognito,
       const CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter)
@@ -510,9 +511,18 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
         origin_(origin),
         cross_origin_embedder_policy_(cross_origin_embedder_policy),
         coep_reporter_(std::move(coep_reporter)) {
-    // The CacheStorageHandle is empty to start and lazy initialized on first
-    // use via GetOrCreateCacheStorage().  In the future we could eagerly create
-    // the backend when the mojo connection is created.
+    // Eagerly initialize the backend when the mojo connection is bound.
+    //
+    // Note, we only do this for non-incognito mode.  The memory cache mode
+    // will incorrectly report cache file usage and break tests if we eagerly
+    // initialize it here.  Also, eagerly initializing memory cache mode does
+    // not really provide any performance benefit.
+    if (!incognito) {
+      content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+      if (cache_storage) {
+        cache_storage->Init();
+      }
+    }
   }
 
   ~CacheStorageImpl() override {
@@ -844,8 +854,10 @@ void CacheStorageDispatcherHost::AddReceiver(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto impl = std::make_unique<CacheStorageImpl>(
-      this, origin, cross_origin_embedder_policy, std::move(coep_reporter));
+  bool incognito = context_ ? context_->is_incognito() : false;
+  auto impl = std::make_unique<CacheStorageImpl>(this, origin, incognito,
+                                                 cross_origin_embedder_policy,
+                                                 std::move(coep_reporter));
   receivers_.Add(std::move(impl), std::move(receiver));
 }
 

@@ -248,10 +248,11 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void OnWallpaperColorsChanged() override;
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::AssistantState state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantFeatureAllowedChanged(
-      mojom::AssistantAllowedState state) override;
+      chromeos::assistant::AssistantAllowedState state) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "device/bluetooth/adapter.h"
 #include "device/bluetooth/device.h"
 #include "device/bluetooth/discovery_session.h"
@@ -62,6 +63,9 @@ void Adapter::GetInfo(GetInfoCallback callback) {
   mojom::AdapterInfoPtr adapter_info = mojom::AdapterInfo::New();
   adapter_info->address = adapter_->GetAddress();
   adapter_info->name = adapter_->GetName();
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  adapter_info->system_name = adapter_->GetSystemName();
+#endif
   adapter_info->initialized = adapter_->IsInitialized();
   adapter_info->present = adapter_->IsPresent();
   adapter_info->powered = adapter_->IsPowered();

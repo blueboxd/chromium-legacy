@@ -5,6 +5,7 @@
 package org.chromium.chromecast.shell;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -20,6 +21,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
@@ -173,6 +175,20 @@ public class CastWebContentsActivity extends Activity {
             mSurfaceHelperState.reset();
             finish();
         }));
+
+        mStartedState.subscribe(x -> {
+            Context ctx = getApplicationContext();
+            Intent intent = getIntent();
+            String instanceId = CastWebContentsIntentUtils.getSessionId(intent.getExtras());
+            Intent visible = CastWebContentsIntentUtils.onVisibilityChange(
+                    instanceId, CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN);
+            LocalBroadcastManager.getInstance(ctx).sendBroadcastSync(visible);
+            return () -> {
+                Intent hidden = CastWebContentsIntentUtils.onVisibilityChange(
+                        instanceId, CastWebContentsIntentUtils.VISIBITY_TYPE_HIDDEN);
+                LocalBroadcastManager.getInstance(ctx).sendBroadcastSync(hidden);
+            };
+        });
 
         // If a new Intent arrives after finishing, start a new Activity instead of recycling this.
         gotIntentAfterFinishingState.subscribe(Observers.onEnter((Intent intent) -> {

@@ -9,7 +9,6 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -69,19 +68,8 @@ class BottomControlsMediator implements ChromeFullscreenManager.FullscreenListen
         mBottomControlsHeight = bottomControlsHeight;
     }
 
-    /**
-     * @param swipeHandler The handler that controls the bottom toolbar's swipe behavior.
-     */
-    void setToolbarSwipeHandler(EdgeSwipeHandler swipeHandler) {
-        mModel.set(BottomControlsProperties.TOOLBAR_SWIPE_HANDLER, swipeHandler);
-    }
-
     void setResourceManager(ResourceManager resourceManager) {
         mModel.set(BottomControlsProperties.RESOURCE_MANAGER, resourceManager);
-    }
-
-    void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
-        mModel.set(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT, layout);
     }
 
     void setWindowAndroid(WindowAndroid windowAndroid) {

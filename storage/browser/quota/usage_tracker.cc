@@ -61,15 +61,6 @@ UsageTracker::~UsageTracker() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-ClientUsageTracker* UsageTracker::GetClientTracker(
-    QuotaClientType client_type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = client_tracker_map_.find(client_type);
-  if (it != client_tracker_map_.end())
-    return it->second.get();
-  return nullptr;
-}
-
 void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!global_usage_callbacks_.empty()) {
@@ -95,8 +86,8 @@ void UsageTracker::GetGlobalLimitedUsage(UsageCallback callback) {
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalLimitedUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetGlobalLimitedUsage(accumulator);
+  for (const auto& client_type_and_tracker : client_tracker_map_)
+    client_type_and_tracker.second->GetGlobalLimitedUsage(accumulator);
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0);
@@ -121,8 +112,8 @@ void UsageTracker::GetGlobalUsage(GlobalUsageCallback callback) {
       base::BindRepeating(&UsageTracker::AccumulateClientGlobalUsage,
                           weak_factory_.GetWeakPtr(), base::Owned(info));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetGlobalUsage(accumulator);
+  for (const auto& client_type_and_tracker : client_tracker_map_)
+    client_type_and_tracker.second->GetGlobalUsage(accumulator);
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0, 0);
@@ -153,37 +144,37 @@ void UsageTracker::GetHostUsageWithBreakdown(
       base::BindOnce(&UsageTracker::FinallySendHostUsageWithBreakdown,
                      weak_factory_.GetWeakPtr(), base::Owned(info), host));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_) {
-    client_id_and_tracker.second->GetHostUsage(
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
+    client_type_and_tracker.second->GetHostUsage(
         host, base::BindOnce(&UsageTracker::AccumulateClientHostUsage,
                              weak_factory_.GetWeakPtr(), barrier, info, host,
-                             client_id_and_tracker.first));
+                             client_type_and_tracker.first));
   }
 }
 
-void UsageTracker::UpdateUsageCache(QuotaClientType client_id,
+void UsageTracker::UpdateUsageCache(QuotaClientType client_type,
                                     const url::Origin& origin,
                                     int64_t delta) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClientUsageTracker* client_tracker = GetClientTracker(client_id);
-  DCHECK(client_tracker);
+  DCHECK(client_tracker_map_.count(client_type));
+  ClientUsageTracker* client_tracker = client_tracker_map_[client_type].get();
   client_tracker->UpdateUsageCache(origin, delta);
 }
 
 int64_t UsageTracker::GetCachedUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int64_t usage = 0;
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    usage += client_id_and_tracker.second->GetCachedUsage();
+  for (const auto& client_type_and_tracker : client_tracker_map_)
+    usage += client_type_and_tracker.second->GetCachedUsage();
   return usage;
 }
 
 std::map<std::string, int64_t> UsageTracker::GetCachedHostsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::map<std::string, int64_t> host_usage;
-  for (const auto& client_id_and_tracker : client_tracker_map_) {
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
     std::map<std::string, int64_t> client_host_usage =
-        client_id_and_tracker.second->GetCachedHostsUsage();
+        client_type_and_tracker.second->GetCachedHostsUsage();
     for (const auto& host_and_usage : client_host_usage)
       host_usage[host_and_usage.first] += host_and_usage.second;
   }
@@ -193,9 +184,9 @@ std::map<std::string, int64_t> UsageTracker::GetCachedHostsUsage() const {
 std::map<url::Origin, int64_t> UsageTracker::GetCachedOriginsUsage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::map<url::Origin, int64_t> origin_usage;
-  for (const auto& client_id_and_tracker : client_tracker_map_) {
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
     std::map<url::Origin, int64_t> client_origin_usage =
-        client_id_and_tracker.second->GetCachedOriginsUsage();
+        client_type_and_tracker.second->GetCachedOriginsUsage();
     for (const auto& origin_and_usage : client_origin_usage)
       origin_usage[origin_and_usage.first] += origin_and_usage.second;
   }
@@ -205,21 +196,21 @@ std::map<url::Origin, int64_t> UsageTracker::GetCachedOriginsUsage() const {
 std::set<url::Origin> UsageTracker::GetCachedOrigins() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::set<url::Origin> origins;
-  for (const auto& client_id_and_tracker : client_tracker_map_) {
+  for (const auto& client_type_and_tracker : client_tracker_map_) {
     std::set<url::Origin> client_origins =
-        client_id_and_tracker.second->GetCachedOrigins();
+        client_type_and_tracker.second->GetCachedOrigins();
     for (const auto& client_origin : client_origins)
       origins.insert(client_origin);
   }
   return origins;
 }
 
-void UsageTracker::SetUsageCacheEnabled(QuotaClientType client_id,
+void UsageTracker::SetUsageCacheEnabled(QuotaClientType client_type,
                                         const url::Origin& origin,
                                         bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  ClientUsageTracker* client_tracker = GetClientTracker(client_id);
-  DCHECK(client_tracker);
+  DCHECK(client_tracker_map_.count(client_type));
+  ClientUsageTracker* client_tracker = client_tracker_map_[client_type].get();
 
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }

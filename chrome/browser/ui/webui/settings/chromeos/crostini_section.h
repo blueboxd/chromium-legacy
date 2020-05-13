@@ -15,13 +15,15 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Crostini settings. Search tags are
 // only added if Crostini is available, and subpage search tags are added only
 // when those subpages are available.
 class CrostiniSection : public OsSettingsSection {
  public:
   CrostiniSection(Profile* profile,
-                  Delegate* per_page_delegate,
+                  SearchTagRegistry* search_tag_registry,
                   PrefService* pref_service);
   ~CrostiniSection() override;
 

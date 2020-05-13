@@ -59,6 +59,12 @@ base::Optional<XRNativeOriginInformation> XRTargetRaySpace::NativeOrigin()
   return input_source_->nativeOrigin();
 }
 
+bool XRTargetRaySpace::IsStationary() const {
+  // Target ray space is a space derived off of input source, so it is not
+  // considered stationary.
+  return false;
+}
+
 void XRTargetRaySpace::Trace(Visitor* visitor) {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);

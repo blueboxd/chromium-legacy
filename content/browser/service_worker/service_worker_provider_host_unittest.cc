@@ -998,7 +998,8 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     base::WeakPtr<ServiceWorkerContainerHost> container_host =
         context_->CreateContainerHostForWorker(
             std::move(host_receiver), helper_->mock_render_process_id(),
-            std::move(client_remote), client_type);
+            std::move(client_remote), client_type, DedicatedWorkerId(),
+            SharedWorkerId());
     container_host->UpdateUrls(url, net::SiteForCookies::FromUrl(url),
                                url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientContainerHost(container_host.get()));
@@ -1084,7 +1085,8 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   base::WeakPtr<ServiceWorkerContainerHost> container_host =
       helper_->context()->CreateContainerHostForWorker(
           std::move(host_receiver), helper_->mock_render_process_id(),
-          std::move(client_remote), client_type);
+          std::move(client_remote), client_type, DedicatedWorkerId(),
+          SharedWorkerId());
   EXPECT_FALSE(container_host->is_response_committed());
   EXPECT_FALSE(container_host->is_execution_ready());
 

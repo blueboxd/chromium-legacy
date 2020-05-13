@@ -272,6 +272,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
                       params.fragment_geometry.padding),
       border_scrollbar_padding_(border_padding_ +
                                 params.fragment_geometry.scrollbar),
+      previous_result_(params.previous_result),
       is_resuming_(IsResumingLayout(params.break_token)),
       exclusion_space_(params.space.ExclusionSpace()),
       lines_until_clamp_(params.space.LinesUntilClamp()),
@@ -989,6 +990,50 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   return container_builder_.ToBoxFragment();
 }
 
+bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
+    NGInlineNode inline_node,
+    NGPreviousInflowPosition* previous_inflow_position,
+    scoped_refptr<const NGInlineBreakToken>* inline_break_token_out) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DCHECK(previous_result_);
+  DCHECK(!inline_node.IsEmptyInline());
+  DCHECK(container_builder_.BfcBlockOffset());
+  DCHECK(previous_inflow_position->margin_strut.IsEmpty());
+  DCHECK(!previous_inflow_position->self_collapsing_child_had_clearance);
+
+  const auto& previous_fragment =
+      To<NGPhysicalBoxFragment>(previous_result_->PhysicalFragment());
+  const NGFragmentItems* previous_items = previous_fragment.Items();
+  DCHECK(previous_items);
+  previous_items->DirtyLinesFromNeedsLayout(inline_node.GetLayoutBlockFlow());
+
+  const auto& children = container_builder_.Children();
+  const wtf_size_t children_before = children.size();
+  const NGConstraintSpace& space = ConstraintSpace();
+  const auto result = container_builder_.ItemsBuilder()->AddPreviousItems(
+      *previous_items, space.GetWritingMode(), space.Direction(),
+      previous_fragment.Size(), &container_builder_, /* stop_at_dirty */ true);
+
+  if (UNLIKELY(!result.succeeded)) {
+    DCHECK_EQ(children.size(), children_before);
+    DCHECK(!result.used_block_size);
+    DCHECK(!result.inline_break_token);
+    return false;
+  }
+
+  // |AddPreviousItems| may have added more than one lines. Propagate baselines
+  // from them.
+  for (const auto& child : base::make_span(children).subspan(children_before)) {
+    DCHECK(child.fragment->IsLineBox());
+    PropagateBaselineFromChild(To<NGPhysicalContainerFragment>(*child.fragment),
+                               child.offset.block_offset);
+  }
+
+  previous_inflow_position->logical_block_offset += result.used_block_size;
+  *inline_break_token_out = result.inline_break_token;
+  return true;
+}
+
 const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     NGInlineNode inline_node,
     NGPreviousInflowPosition* previous_inflow_position,
@@ -1597,21 +1642,37 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleInflow(
   DCHECK(!child.IsOutOfFlowPositioned());
   DCHECK(!child.CreatesNewFormattingContext());
 
+  bool is_non_empty_inline = false;
   auto* child_inline_node = DynamicTo<NGInlineNode>(child);
-  if (child_inline_node && !child_break_token &&
-      RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
-    DCHECK(!*previous_inline_break_token);
-    bool aborted = false;
-    *previous_inline_break_token = TryReuseFragmentsFromCache(
-        *child_inline_node, previous_inflow_position, &aborted);
-    if (*previous_inline_break_token)
-      return NGLayoutResult::kSuccess;
-    if (aborted)
-      return NGLayoutResult::kBfcBlockOffsetResolved;
+  if (child_inline_node) {
+    is_non_empty_inline = !child_inline_node->IsEmptyInline();
+
+    // Add reusable line boxes from |previous_result_| if any.
+    if (is_non_empty_inline && !child_break_token) {
+      if (previous_result_ &&
+          RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+        if (!ResolveBfcBlockOffset(previous_inflow_position))
+          return NGLayoutResult::kBfcBlockOffsetResolved;
+        DCHECK(container_builder_.BfcBlockOffset());
+
+        DCHECK(!*previous_inline_break_token);
+        if (TryReuseFragmentsFromCache(*child_inline_node,
+                                       previous_inflow_position,
+                                       previous_inline_break_token))
+          return NGLayoutResult::kSuccess;
+      } else if (RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
+        DCHECK(!*previous_inline_break_token);
+        bool aborted = false;
+        *previous_inline_break_token = TryReuseFragmentsFromCache(
+            *child_inline_node, previous_inflow_position, &aborted);
+        if (*previous_inline_break_token)
+          return NGLayoutResult::kSuccess;
+        if (aborted)
+          return NGLayoutResult::kBfcBlockOffsetResolved;
+      }
+    }
   }
 
-  bool is_non_empty_inline =
-      child_inline_node && !child_inline_node->IsEmptyInline();
   bool has_clearance_past_adjoining_floats =
       !container_builder_.BfcBlockOffset() && child.IsBlock() &&
       HasClearancePastAdjoiningFloats(container_builder_.AdjoiningObjectTypes(),

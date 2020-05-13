@@ -22,6 +22,8 @@ class AndroidSmsService;
 
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for MultiDevice settings. Different
 // search tags are registered depending on whether MultiDevice features are
 // allowed and whether the user has opted into the suite of features.
@@ -31,7 +33,7 @@ class MultiDeviceSection
  public:
   MultiDeviceSection(
       Profile* profile,
-      Delegate* per_page_delegate,
+      SearchTagRegistry* search_tag_registry,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       android_sms::AndroidSmsService* android_sms_service,
       PrefService* pref_service);

@@ -433,9 +433,12 @@ ServiceWorkerContextCore::CreateContainerHostForWorker(
     int process_id,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         container_remote,
-    blink::mojom::ServiceWorkerClientType client_type) {
+    blink::mojom::ServiceWorkerClientType client_type,
+    DedicatedWorkerId dedicated_worker_id,
+    SharedWorkerId shared_worker_id) {
   auto container_host = std::make_unique<ServiceWorkerContainerHost>(
-      AsWeakPtr(), process_id, std::move(container_remote), client_type);
+      AsWeakPtr(), process_id, std::move(container_remote), client_type,
+      dedicated_worker_id, shared_worker_id);
 
   ServiceWorkerContainerHost* container_host_ptr = container_host.get();
 

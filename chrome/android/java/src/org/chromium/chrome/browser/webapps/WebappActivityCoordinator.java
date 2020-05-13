@@ -11,14 +11,9 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.ui.SharedActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
-import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
-import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -39,47 +34,29 @@ public class WebappActivityCoordinator
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final WebappInfo mWebappInfo;
     private final ChromeActivity<?> mActivity;
-    private final CurrentPageVerifier mCurrentPageVerifier;
-    private TrustedWebActivityBrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
-    private final CustomTabToolbarColorController mToolbarColorController;
-    private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final WebappDeferredStartupWithStorageHandler mDeferredStartupWithStorageHandler;
 
     // Whether the current page is within the webapp's scope.
     private boolean mInScope = true;
 
     @Inject
-    public WebappActivityCoordinator(ChromeActivity<?> activity,
-            BrowserServicesIntentDataProvider intentDataProvider,
+    public WebappActivityCoordinator(SharedActivityCoordinator sharedActivityCoordinator,
+            ChromeActivity<?> activity, BrowserServicesIntentDataProvider intentDataProvider,
             ActivityTabProvider activityTabProvider, CurrentPageVerifier currentPageVerifier,
-            Verifier verifier, CustomTabActivityNavigationController navigationController,
-            ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
             CustomTabOrientationController orientationController, SplashController splashController,
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappActionsNotificationManager actionsNotificationManager,
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
-            CustomTabToolbarColorController toolbarColorController,
-            CustomTabStatusBarColorProvider statusBarColorProvider) {
-        // We don't need to do anything with |actionsNotificationManager|. We just need to resolve
-        // it so that it starts working.
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
+        // We don't need to do anything with |sharedActivityCoordinator| or
+        // |actionsNotificationManager|. We just need to resolve it so that it starts working.
 
         mIntentDataProvider = intentDataProvider;
         mWebappInfo = WebappInfo.create(mIntentDataProvider);
         mActivity = activity;
-        mCurrentPageVerifier = currentPageVerifier;
         mDeferredStartupWithStorageHandler = deferredStartupWithStorageHandler;
-        mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
-        mToolbarColorController = toolbarColorController;
-        mStatusBarColorProvider = statusBarColorProvider;
 
         // WebappActiveTabUmaTracker sets itself as an observer of |activityTabProvider|.
-        new WebappActiveTabUmaTracker(
-                activityTabProvider, intentDataProvider, mCurrentPageVerifier);
-
-        navigationController.setLandingPageOnCloseCriterion(verifier::wasPreviouslyVerified);
-        externalIntentsPolicyProvider.setPolicyCriteria(
-                verifier::shouldIgnoreExternalIntentHandlers);
+        new WebappActiveTabUmaTracker(activityTabProvider, intentDataProvider, currentPageVerifier);
 
         mDeferredStartupWithStorageHandler.addTask((storage, didCreateStorage) -> {
             if (activity.isActivityFinishingOrDestroyed()) return;
@@ -92,7 +69,6 @@ public class WebappActivityCoordinator
         orientationController.delayOrientationRequestsIfNeeded(
                 splashController, BaseCustomTabActivity.isWindowInitiallyTranslucent(activity));
 
-        currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);
 
         // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
@@ -117,12 +93,7 @@ public class WebappActivityCoordinator
     }
 
     @Override
-    public void onPostInflationStartup() {
-        // Before verification completes, optimistically expect it to be successful.
-        if (mCurrentPageVerifier.getState() == null) {
-            updateUi(true);
-        }
-    }
+    public void onPostInflationStartup() {}
 
     @Override
     public void onStartWithNative() {
@@ -144,23 +115,6 @@ public class WebappActivityCoordinator
             AndroidTaskUtils.finishOtherTasksWithData(
                     mActivity.getIntent().getData(), mActivity.getTaskId());
         }
-    }
-
-    private void onVerificationUpdate() {
-        CurrentPageVerifier.VerificationState state = mCurrentPageVerifier.getState();
-        // Consider null |state| to be 'in scope' to mimic TWA logic. |state| should never be null
-        // for webapps.
-        boolean inScope =
-                state == null || state.status != CurrentPageVerifier.VerificationStatus.FAILURE;
-        if (inScope == mInScope) return;
-        mInScope = inScope;
-        updateUi(inScope);
-    }
-
-    private void updateUi(boolean inScope) {
-        mBrowserControlsVisibilityManager.updateIsInTwaMode(inScope);
-        mToolbarColorController.setUseTabThemeColor(inScope);
-        mStatusBarColorProvider.setUseTabThemeColor(inScope);
     }
 
     private void updateStorage(@NonNull WebappDataStorage storage) {

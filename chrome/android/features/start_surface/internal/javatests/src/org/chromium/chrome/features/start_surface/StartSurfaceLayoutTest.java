@@ -1632,6 +1632,60 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
+    @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    public void testTabGroupManualSelection_AfterReviewTabSuggestion() throws InterruptedException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
+        createTabs(cta, false, 3);
+
+        // Review closing tab suggestion.
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+        CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
+
+        // Entering GTS with thumbnail checking here is trying to reduce flakiness that is caused by
+        // the TabContextObserver. TabContextObserver listens to
+        // TabObserver#didFirstVisuallyNonEmptyPaint and invalidates the suggestion. Do the
+        // thumbnail checking here is to ensure the suggestion is valid when entering tab switcher.
+        enterGTSWithThumbnailChecking();
+        CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
+                .perform(click());
+
+        robot.resultRobot.verifyTabSelectionEditorIsVisible()
+                .verifyToolbarActionButtonWithResourceId(
+                        R.string.tab_suggestion_close_tab_action_button);
+
+        robot.actionRobot.clickToolbarActionButton();
+        robot.resultRobot.verifyTabSelectionEditorIsHidden();
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(0, mActivityTestRule.getActivity().getCurrentTabModel()::getCount));
+
+        // Show Manual Selection Mode.
+        createTabs(cta, false, 3);
+
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        enterTabGroupManualSelection(cta);
+        robot.resultRobot.verifyTabSelectionEditorIsVisible()
+                .verifyToolbarActionButtonWithResourceId(R.string.tab_selection_editor_group);
+
+        // Group first two tabs.
+        robot.actionRobot.clickItemAtAdapterPosition(0);
+        robot.actionRobot.clickItemAtAdapterPosition(1);
+        robot.actionRobot.clickToolbarActionButton();
+
+        // Exit manual selection mode, back to tab switcher.
+        robot.resultRobot.verifyTabSelectionEditorIsHidden();
+        onViewWaiting(withText("2 tabs grouped"));
+    }
+
+    @Test
+    @MediumTest
     @DisableIf.Build(sdk_is_greater_than = O_MR1, message = "crbug.com/1077191")
     public void testActivityCanBeGarbageCollectedAfterFinished() throws Exception {
         prepareTabs(1, 0, "about:blank");

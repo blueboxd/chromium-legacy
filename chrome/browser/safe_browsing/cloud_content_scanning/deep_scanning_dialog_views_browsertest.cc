@@ -315,23 +315,9 @@ class DeepScanningDialogViewsAppearanceBrowserTest
     // The dialog initially shows the pending message for the appropriate access
     // point and scan type.
     base::string16 pending_message = views->GetMessageForTesting()->GetText();
-    int expected_message_id = 0;
-    switch (access_point()) {
-      case DeepScanAccessPoint::UPLOAD:
-        expected_message_id = IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE;
-        break;
-      case DeepScanAccessPoint::DRAG_AND_DROP:
-        expected_message_id =
-            file_scan() ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_PENDING_MESSAGE
-                        : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_PENDING_MESSAGE;
-        break;
-      case DeepScanAccessPoint::PASTE:
-        expected_message_id = IDS_DEEP_SCANNING_DIALOG_PASTE_PENDING_MESSAGE;
-        break;
-      case DeepScanAccessPoint::DOWNLOAD:
-        NOTREACHED();
-    }
-    ASSERT_EQ(pending_message, l10n_util::GetStringUTF16(expected_message_id));
+    base::string16 expected_message = l10n_util::GetPluralStringFUTF16(
+        IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE, file_scan() ? 1 : 0);
+    ASSERT_EQ(pending_message, expected_message);
 
     // The top image is the pending one corresponding to the access point.
     const gfx::ImageSkia& actual_image =
@@ -366,27 +352,14 @@ class DeepScanningDialogViewsAppearanceBrowserTest
     // The dialog shows the failure or success message for the appropriate
     // access point and scan type.
     base::string16 final_message = views->GetMessageForTesting()->GetText();
-    int expected_message_id = 0;
-    if (success()) {
-      expected_message_id = IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE;
-    } else {
-      switch (access_point()) {
-        case DeepScanAccessPoint::UPLOAD:
-          expected_message_id = IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE;
-          break;
-        case DeepScanAccessPoint::DRAG_AND_DROP:
-          expected_message_id =
-              file_scan() ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE
-                          : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_FAILURE_MESSAGE;
-          break;
-        case DeepScanAccessPoint::PASTE:
-          expected_message_id = IDS_DEEP_SCANNING_DIALOG_PASTE_FAILURE_MESSAGE;
-          break;
-        case DeepScanAccessPoint::DOWNLOAD:
-          NOTREACHED();
-      }
-    }
-    ASSERT_EQ(final_message, l10n_util::GetStringUTF16(expected_message_id));
+    int files_count = file_scan() ? 1 : 0;
+    base::string16 expected_message =
+        success()
+            ? l10n_util::GetPluralStringFUTF16(
+                  IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE, files_count)
+            : l10n_util::GetPluralStringFUTF16(
+                  IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE, files_count);
+    ASSERT_EQ(final_message, expected_message);
 
     // The top image is the failure/success one corresponding to the access
     // point and scan type.

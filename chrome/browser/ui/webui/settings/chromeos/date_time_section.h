@@ -14,10 +14,12 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Date and Time settings.
 class DateTimeSection : public OsSettingsSection {
  public:
-  DateTimeSection(Profile* profile, Delegate* per_page_delegate);
+  DateTimeSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~DateTimeSection() override;
 
  private:

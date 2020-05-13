@@ -32,10 +32,11 @@ class LacrosApps : public apps::PublisherBase {
   apps::mojom::AppPtr GetLacrosApp(bool is_ready);
 
   // Returns an IconKey with appropriate effects for the binary ready state.
-  apps::mojom::IconKeyPtr NewIconKey(bool is_ready);
+  enum class State { kLoading, kError, kReady };
+  apps::mojom::IconKeyPtr NewIconKey(State state);
 
-  // Callback when the binary is ready.
-  void OnLacrosReady();
+  // Callback when the binary download completes.
+  void OnLoadComplete(bool success);
 
   // apps::PublisherBase:
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,

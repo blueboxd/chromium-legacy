@@ -2655,11 +2655,12 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     NGLayoutCacheStatus* out_cache_status) {
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
 
-  const NGLayoutResult* cached_layout_result =
+  const bool use_layout_cache_slot =
       new_space.CacheSlot() == NGCacheSlot::kLayout &&
-              !layout_results_.IsEmpty()
-          ? GetCachedLayoutResult()
-          : GetCachedMeasureResult();
+      !layout_results_.IsEmpty();
+  const NGLayoutResult* cached_layout_result = use_layout_cache_slot
+                                                   ? GetCachedLayoutResult()
+                                                   : GetCachedMeasureResult();
 
   if (!cached_layout_result)
     return nullptr;
@@ -2683,27 +2684,57 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
       !LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren) &&
       (PosChildNeedsLayout() || NormalChildNeedsLayout());
 
+  const NGPhysicalBoxFragment& physical_fragment =
+      To<NGPhysicalBoxFragment>(cached_layout_result->PhysicalFragment());
   if (SelfNeedsLayoutForStyle() || child_needs_layout_unless_locked ||
       NeedsSimplifiedNormalFlowLayout() ||
       (NeedsPositionedMovementLayout() &&
        !NeedsPositionedMovementLayoutOnly())) {
-    // Check if we only need "simplified" layout. We don't abort yet, as we
-    // need to check if other things (like floats) will require us to perform a
-    // full layout.
-    if (!NeedsSimplifiedLayoutOnly())
-      return nullptr;
+    if (!ChildrenInline()) {
+      // Check if we only need "simplified" layout. We don't abort yet, as we
+      // need to check if other things (like floats) will require us to perform
+      // a full layout.
+      if (!NeedsSimplifiedLayoutOnly())
+        return nullptr;
 
-    // We don't regenerate any lineboxes during our "simplified" layout pass.
-    // If something needs "simplified" layout within a linebox, (e.g. an
-    // atomic-inline) we miss the cache.
-    if (ChildrenInline() && NeedsSimplifiedNormalFlowLayout())
-      return nullptr;
+      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
+    } else if (!NeedsSimplifiedLayoutOnly() ||
+               NeedsSimplifiedNormalFlowLayout()) {
+      // We don't regenerate any lineboxes during our "simplified" layout pass.
+      // If something needs "simplified" layout within a linebox, (e.g. an
+      // atomic-inline) we miss the cache.
 
-    cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
+      if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+        return nullptr;
+
+      // Check if some of line boxes are reusable.
+
+      // Only for the layout cache slot. Measure has several special
+      // optimizations that makes reusing lines complicated.
+      if (!use_layout_cache_slot)
+        return nullptr;
+
+      if (SelfNeedsLayout())
+        return nullptr;
+
+      if (!physical_fragment.HasItems())
+        return nullptr;
+
+      // Propagating OOF needs re-layout.
+      if (physical_fragment.HasOutOfFlowPositionedDescendants())
+        return nullptr;
+
+      // Any floats might need to move, causing lines to wrap differently,
+      // needing re-layout, either in cached result or in new constraint space.
+      if (!cached_layout_result->ExclusionSpace().IsEmpty() ||
+          new_space.HasFloats())
+        return nullptr;
+
+      cache_status = NGLayoutCacheStatus::kCanReuseLines;
+    } else {
+      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
+    }
   }
-
-  const NGPhysicalContainerFragment& physical_fragment =
-      cached_layout_result->PhysicalFragment();
 
   DCHECK(!physical_fragment.BreakToken());
 
@@ -2778,7 +2809,8 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     // sibling.
     // The "simplified" layout algorithm doesn't have the required logic to
     // shift any added exclusions within the output exclusion space.
-    if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+    if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
+        cache_status == NGLayoutCacheStatus::kCanReuseLines)
       return nullptr;
 
     DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
@@ -2792,7 +2824,8 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   // We've performed all of the cache checks at this point. If we need
   // "simplified" layout then abort now.
   *out_cache_status = cache_status;
-  if (*out_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+  if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
+      cache_status == NGLayoutCacheStatus::kCanReuseLines)
     return cached_layout_result;
 
   physical_fragment.CheckType();

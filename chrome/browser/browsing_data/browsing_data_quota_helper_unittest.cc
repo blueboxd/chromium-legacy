@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
@@ -65,10 +66,10 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
                        weak_factory_.GetWeakPtr()));
   }
 
-  void RegisterClient(const MockOriginData* data, std::size_t data_len) {
+  void RegisterClient(base::span<const MockOriginData> origin_data) {
     MockQuotaClient* client =
-        new MockQuotaClient(quota_manager_->proxy(), data,
-                            storage::QuotaClientType::kFileSystem, data_len);
+        new MockQuotaClient(quota_manager_->proxy(), origin_data,
+                            storage::QuotaClientType::kFileSystem);
     quota_manager_->proxy()->RegisterClient(client);
     client->TouchAllOriginsAndNotify();
   }
@@ -137,7 +138,7 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
       {"http://example2.com/", StorageType::kTemporary, 1000},
   };
 
-  RegisterClient(kOrigins, base::size(kOrigins));
+  RegisterClient(kOrigins);
   StartFetching();
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());
@@ -166,7 +167,7 @@ TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensionsAndDevTools) {
        100000},
   };
 
-  RegisterClient(kOrigins, base::size(kOrigins));
+  RegisterClient(kOrigins);
   StartFetching();
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(fetching_completed());

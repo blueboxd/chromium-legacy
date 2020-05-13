@@ -247,6 +247,9 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   GetGpuTaskSchedulerHelper() = 0;
   virtual gpu::MemoryTracker* GetMemoryTracker() = 0;
 
+  // Notifies the OutputSurface of rate of content updates in frames per second.
+  virtual void SetFrameRate(float frame_rate) {}
+
  protected:
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;

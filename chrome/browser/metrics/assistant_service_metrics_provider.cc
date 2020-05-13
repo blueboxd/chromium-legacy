@@ -17,7 +17,7 @@ void AssistantServiceMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto_unused) {
   if (assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
     return;
   }
 

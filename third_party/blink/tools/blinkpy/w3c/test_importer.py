@@ -282,7 +282,8 @@ class TestImporter(object):
 
     def blink_try_bots(self):
         """Returns the collection of builders used for updating expectations."""
-        return self.host.builders.all_try_builder_names()
+        return self.host.builders.filter_builders(
+            is_try=True, exclude_specifiers={'android'})
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser()

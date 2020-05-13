@@ -8,11 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
+#include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 
 class PrefChangeRegistrar;
@@ -21,9 +22,7 @@ class PrefService;
 namespace ash {
 
 // A checked observer which receives Assistant state change.
-class ASH_PUBLIC_EXPORT AssistantStateObserver
-    : public mojom::AssistantStateObserver,
-      public base::CheckedObserver {
+class ASH_PUBLIC_EXPORT AssistantStateObserver : public base::CheckedObserver {
  public:
   AssistantStateObserver() = default;
   ~AssistantStateObserver() override = default;
@@ -37,14 +36,13 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
   virtual void OnAssistantStateDestroyed() {}
   virtual void OnAssistantQuickAnswersEnabled(bool quick_answers_enabled) {}
-
-  // mojom::AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::AssistantState state) override {}
-  void OnAssistantFeatureAllowedChanged(
-      mojom::AssistantAllowedState state) override {}
-  void OnArcPlayStoreEnabledChanged(bool enabled) override {}
-  void OnLocaleChanged(const std::string& locale) override {}
-  void OnLockedFullScreenStateChanged(bool enabled) override {}
+  virtual void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) {}
+  virtual void OnAssistantFeatureAllowedChanged(
+      chromeos::assistant::AssistantAllowedState state) {}
+  virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}
+  virtual void OnLocaleChanged(const std::string& locale) {}
+  virtual void OnLockedFullScreenStateChanged(bool enabled) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantStateObserver);
@@ -60,7 +58,9 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   AssistantStateBase();
   virtual ~AssistantStateBase();
 
-  mojom::AssistantState assistant_state() const { return assistant_state_; }
+  chromeos::assistant::AssistantStatus assistant_status() const {
+    return assistant_status_;
+  }
 
   const base::Optional<bool>& settings_enabled() const {
     return settings_enabled_;
@@ -88,7 +88,8 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return notification_enabled_;
   }
 
-  const base::Optional<mojom::AssistantAllowedState>& allowed_state() const {
+  const base::Optional<chromeos::assistant::AssistantAllowedState>&
+  allowed_state() const {
     return allowed_state_;
   }
 
@@ -113,7 +114,6 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
  protected:
   void InitializeObserver(AssistantStateObserver* observer);
-  void InitializeObserverMojom(mojom::AssistantStateObserver* observer);
 
   // Called when the related preferences are obtained from the pref service.
   void UpdateConsentStatus();
@@ -126,13 +126,15 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   void UpdateQuickAnswersEnabled();
 
   // Called when new values of the listened states are received.
-  void UpdateAssistantStatus(mojom::AssistantState state);
-  void UpdateFeatureAllowedState(mojom::AssistantAllowedState state);
+  void UpdateAssistantStatus(chromeos::assistant::AssistantStatus status);
+  void UpdateFeatureAllowedState(
+      chromeos::assistant::AssistantAllowedState state);
   void UpdateLocale(const std::string& locale);
   void UpdateArcPlayStoreEnabled(bool enabled);
   void UpdateLockedFullScreenState(bool enabled);
 
-  mojom::AssistantState assistant_state_ = mojom::AssistantState::NOT_READY;
+  chromeos::assistant::AssistantStatus assistant_status_ =
+      chromeos::assistant::AssistantStatus::NOT_READY;
 
   // TODO(b/138679823): Maybe remove Optional for preference values.
   // Whether the Assistant is enabled in system settings. nullopt if the
@@ -161,7 +163,7 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
 
   // Whether the Assistant feature is allowed or disallowed for what reason.
   // nullopt if the data is not available yet.
-  base::Optional<mojom::AssistantAllowedState> allowed_state_;
+  base::Optional<chromeos::assistant::AssistantAllowedState> allowed_state_;
 
   base::Optional<std::string> locale_;
 

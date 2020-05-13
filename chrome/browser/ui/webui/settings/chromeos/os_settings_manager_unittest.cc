@@ -4,30 +4,45 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 
-#include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service.h"
-#include "chrome/browser/chromeos/local_search_service/local_search_service_factory.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
-#include "chrome/common/webui_url_constants.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/network/network_state_test_helper.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 namespace settings {
+namespace {
 
+const std::vector<mojom::Section>& AllSections() {
+  static const base::NoDestructor<std::vector<mojom::Section>> all_sections([] {
+    int32_t min_section_value = static_cast<int32_t>(mojom::Section::kMinValue);
+    int32_t max_section_value = static_cast<int32_t>(mojom::Section::kMaxValue);
+
+    std::vector<mojom::Section> all_sections;
+    for (int32_t i = min_section_value; i < max_section_value; ++i) {
+      mojom::Section section = static_cast<mojom::Section>(i);
+
+      // Not every value between the min and max values is a section, since some
+      // sections have been deprecated.
+      if (mojom::IsKnownEnumValue(section))
+        all_sections.push_back(section);
+    }
+
+    return all_sections;
+  }());
+
+  return *all_sections;
+}
+
+}  // namespace
+
+// Verifies the OsSettingsManager initialization flow. Behavioral functionality
+// is tested via unit tests on the sub-elements owned by OsSettingsManager.
 class OsSettingsManagerTest : public testing::Test {
  protected:
   OsSettingsManagerTest()
@@ -36,75 +51,26 @@ class OsSettingsManagerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kNewOsSettingsSearch);
-
     ASSERT_TRUE(profile_manager_.SetUp());
     TestingProfile* profile =
         profile_manager_.CreateTestingProfile("TestingProfile");
 
     manager_ = OsSettingsManagerFactory::GetForProfile(profile);
-
-    index_ =
-        local_search_service::LocalSearchServiceFactory::GetForProfile(profile)
-            ->GetIndex(local_search_service::IndexId::kCrosSettings);
-
-    // Allow asynchronous networking code to complete (networking functionality
-    // is tested below).
-    base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
-  chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
-  local_search_service::Index* index_;
   OsSettingsManager* manager_;
 };
 
-// To prevent this from becoming a change-detector test, this test simply
-// verifies that when the provider starts up, it adds *some* strings without
-// checking the exact number. It also checks one specific canonical tag.
-TEST_F(OsSettingsManagerTest, NetworkTags) {
-  uint64_t initial_num_items = index_->GetSize();
-  EXPECT_GT(initial_num_items, 0u);
-
-  const SearchConcept* network_settings_concept =
-      manager_->GetCanonicalTagMetadata(IDS_OS_SETTINGS_TAG_NETWORK_SETTINGS);
-  ASSERT_TRUE(network_settings_concept);
-  EXPECT_EQ(chromeos::settings::mojom::kNetworkSectionPath,
-            network_settings_concept->url_path_with_parameters);
-  EXPECT_EQ(mojom::SearchResultIcon::kWifi, network_settings_concept->icon);
-
-  // Ethernet is not present by default, so no Ethernet concepts have yet been
-  // added.
-  const SearchConcept* ethernet_settings_concept =
-      manager_->GetCanonicalTagMetadata(IDS_OS_SETTINGS_TAG_ETHERNET_CONFIGURE);
-  ASSERT_FALSE(ethernet_settings_concept);
-
-  // Add Ethernet and let asynchronous handlers run. This should cause Ethernet
-  // tags to be added.
-  network_config_helper_.network_state_helper().device_test()->AddDevice(
-      "/device/stub_eth_device", shill::kTypeEthernet, "stub_eth_device");
-  network_config_helper_.network_state_helper().ConfigureService(
-      R"({"GUID": "eth_guid", "Type": "ethernet", "State": "online"})");
-  base::RunLoop().RunUntilIdle();
-
-  uint64_t num_items_after_adding_ethernet = index_->GetSize();
-  EXPECT_GT(num_items_after_adding_ethernet, initial_num_items);
-
-  ethernet_settings_concept =
-      manager_->GetCanonicalTagMetadata(IDS_OS_SETTINGS_TAG_ETHERNET_CONFIGURE);
-  ASSERT_TRUE(ethernet_settings_concept);
-  EXPECT_EQ(chromeos::settings::mojom::kEthernetDetailsSubpagePath,
-            ethernet_settings_concept->url_path_with_parameters);
-  EXPECT_EQ(mojom::SearchResultIcon::kEthernet,
-            ethernet_settings_concept->icon);
+TEST_F(OsSettingsManagerTest, Sections) {
+  // For each mojom::Section value, there should be an associated
+  // OsSettingsSection class registered.
+  for (const auto& section : AllSections()) {
+    EXPECT_TRUE(manager_->sections_->GetSection(section))
+        << "No OsSettingsSection instance created for " << section << ".";
+  }
 }
-
-// Note that other tests do not need to be added for different group of tags,
-// since these tests would only be verifying the contents of
-// os_settings_localized_strings_provider.cc.
 
 }  // namespace settings
 }  // namespace chromeos

@@ -124,6 +124,11 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
       ConversionManagerImpl* manager,
       base::Time max_report_time);
 
+  // Whether the API is running in debug mode, meaning that there should be
+  // no delays or noise added to reports. This is used by end to end tests to
+  // verify functionality without mocking out any implementations.
+  const bool debug_mode_;
+
   // Task runner used to perform operations on |storage_|. Runs with
   // base::TaskPriority::BEST_EFFORT.
   scoped_refptr<base::SequencedTaskRunner> storage_task_runner_;

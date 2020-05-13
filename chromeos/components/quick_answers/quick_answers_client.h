@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/public/cpp/assistant/assistant_state.h"
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "chromeos/components/quick_answers/result_loader.h"
 
 namespace network {
@@ -72,7 +71,7 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
 
   // AssistantStateObserver:
   void OnAssistantFeatureAllowedChanged(
-      ash::mojom::AssistantAllowedState state) override;
+      chromeos::assistant::AssistantAllowedState state) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
   void OnLocaleChanged(const std::string& locale) override;
@@ -114,8 +113,8 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   bool assistant_context_enabled_ = false;
   bool quick_answers_settings_enabled_ = false;
   bool locale_supported_ = false;
-  ash::mojom::AssistantAllowedState assistant_allowed_state_ =
-      ash::mojom::AssistantAllowedState::ALLOWED;
+  chromeos::assistant::AssistantAllowedState assistant_allowed_state_ =
+      chromeos::assistant::AssistantAllowedState::ALLOWED;
   bool is_eligible_ = false;
   // Time when the quick answer is received.
   base::TimeTicks quick_answer_received_time_;

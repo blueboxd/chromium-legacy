@@ -17,11 +17,13 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Accessibility settings.
 class AccessibilitySection : public OsSettingsSection {
  public:
   AccessibilitySection(Profile* profile,
-                       Delegate* per_page_delegate,
+                       SearchTagRegistry* search_tag_registry,
                        PrefService* pref_service);
   ~AccessibilitySection() override;
 

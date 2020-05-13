@@ -37,7 +37,7 @@ PrefService* Prefs() {
 AssistantSetup::AssistantSetup() {
   DCHECK(assistant::IsAssistantAllowedForProfile(
              ProfileManager::GetActiveUserProfile()) ==
-         ash::mojom::AssistantAllowedState::ALLOWED);
+         chromeos::assistant::AssistantAllowedState::ALLOWED);
   ash::AssistantState::Get()->AddObserver(this);
 
   search_and_assistant_enabled_checker_ =
@@ -93,8 +93,8 @@ void AssistantSetup::OnSearchAndAssistantStateReceived(bool is_disabled) {
 }
 
 void AssistantSetup::OnAssistantStatusChanged(
-    ash::mojom::AssistantState state) {
-  if (state == ash::mojom::AssistantState::NOT_READY)
+    chromeos::assistant::AssistantStatus status) {
+  if (status == chromeos::assistant::AssistantStatus::NOT_READY)
     return;
 
   SyncSettingsState();

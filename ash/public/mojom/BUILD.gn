@@ -9,7 +9,6 @@ mojom("mojom") {
 
   sources = [
     "assistant_controller.mojom",
-    "assistant_state_controller.mojom",
     "assistant_volume_control.mojom",
     "cros_display_config.mojom",
     "tray_action.mojom",

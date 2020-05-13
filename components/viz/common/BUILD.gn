@@ -36,6 +36,9 @@ viz_component("resource_format_utils") {
     "//ui/gfx:buffer_types",
     "//ui/gfx/geometry:geometry",
   ]
+  if (enable_vulkan) {
+    deps += [ "//third_party/vulkan_headers" ]
+  }
 }
 
 # TODO(sgilhuly): To reduce link times, merge these context provider components
@@ -91,7 +94,6 @@ if (enable_vulkan) {
       "gpu/vulkan_in_process_context_provider.h",
       "viz_vulkan_context_provider_export.h",
     ]
-    configs = [ "//third_party/vulkan:vulkan_config" ]
 
     public_deps = [ "//skia" ]
 

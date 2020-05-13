@@ -5,12 +5,7 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_FLOATING_MENU_BUTTON_H_
 #define ASH_SYSTEM_ACCESSIBILITY_FLOATING_MENU_BUTTON_H_
 
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
-
-namespace views {
-class InkDropMask;
-}
 
 namespace gfx {
 struct VectorIcon;
@@ -26,9 +21,15 @@ class FloatingMenuButton : public TopShortcutButton {
   FloatingMenuButton(views::ButtonListener* listener,
                      const gfx::VectorIcon& icon,
                      int accessible_name_id,
+                     bool flip_for_rtl);
+
+  FloatingMenuButton(views::ButtonListener* listener,
+                     const gfx::VectorIcon& icon,
+                     int accessible_name_id,
                      bool flip_for_rtl,
-                     int size = kTrayItemSize,
-                     bool draw_highlight = true);
+                     int size,
+                     bool draw_highlight,
+                     bool is_a11y_togglable);
 
   ~FloatingMenuButton() override;
 
@@ -59,6 +60,8 @@ class FloatingMenuButton : public TopShortcutButton {
   bool toggled_ = false;
   int size_;
   const bool draw_highlight_;
+  // Whether this button will be described as togglable to screen reading tools.
+  const bool is_a11y_togglable_;
 
   DISALLOW_COPY_AND_ASSIGN(FloatingMenuButton);
 };

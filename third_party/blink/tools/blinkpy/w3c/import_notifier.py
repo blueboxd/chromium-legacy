@@ -20,13 +20,12 @@ from blinkpy.common.path_finder import PathFinder
 from blinkpy.w3c.common import WPT_GH_URL
 from blinkpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from blinkpy.w3c.monorail import MonorailAPI, MonorailIssue
-from blinkpy.w3c.wpt_expectations_updater import UMBRELLA_BUG
+from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 
 _log = logging.getLogger(__name__)
 
 GITHUB_COMMIT_PREFIX = WPT_GH_URL + 'commit/'
 SHORT_GERRIT_PREFIX = 'https://crrev.com/c/'
-
 
 class ImportNotifier(object):
     def __init__(self, host, chromium_git, local_wpt):
@@ -355,6 +354,6 @@ class TestFailure(object):
         assert self.failure_type == self.NEW_EXPECTATION
         # TODO(robertma): Are there saner ways to remove the link to the umbrella bug?
         line = self.expectation_line
-        if line.startswith(UMBRELLA_BUG):
-            line = line[len(UMBRELLA_BUG):].lstrip()
+        if line.startswith(WPTExpectationsUpdater.UMBRELLA_BUG):
+            line = line[len(WPTExpectationsUpdater.UMBRELLA_BUG):].lstrip()
         return line

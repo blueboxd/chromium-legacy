@@ -18,9 +18,10 @@
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/search_handler_factory.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -75,7 +76,8 @@ ash::SearchResultType OsSettingsResult::GetSearchResultType() const {
 OsSettingsProvider::OsSettingsProvider(Profile* profile)
     : profile_(profile),
       search_handler_(
-          chromeos::settings::SearchHandlerFactory::GetForProfile(profile)) {
+          chromeos::settings::OsSettingsManagerFactory::GetForProfile(profile)
+              ->search_handler()) {
   DCHECK(profile_);
 
   // |search_handler_| can be nullptr in the case that the new OS settings

@@ -18,6 +18,8 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/dedicated_worker_id.h"
+#include "content/public/browser/shared_worker_id.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -111,7 +113,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       int process_id,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote,
-      blink::mojom::ServiceWorkerClientType client_type);
+      blink::mojom::ServiceWorkerClientType client_type,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id);
 
   ~ServiceWorkerContainerHost() override;
 
@@ -684,6 +688,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
   // and RenderFrameHost have the same lifetime.
   bool is_in_back_forward_cache_ = false;
+
+  // For worker clients only ---------------------------------------------------
+
+  // The ID of the client, if the client is a dedicated worker.
+  DedicatedWorkerId dedicated_worker_id_;
+
+  // The ID of the client, if the client is a shared worker.
+  SharedWorkerId shared_worker_id_;
 
   // For service worker execution contexts -------------------------------------
 

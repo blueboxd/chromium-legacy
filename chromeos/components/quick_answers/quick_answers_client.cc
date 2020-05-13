@@ -73,7 +73,7 @@ QuickAnswersClient::~QuickAnswersClient() {
 }
 
 void QuickAnswersClient::OnAssistantFeatureAllowedChanged(
-    ash::mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   assistant_allowed_state_ = state;
   NotifyEligibilityChanged();
 }
@@ -138,7 +138,8 @@ void QuickAnswersClient::NotifyEligibilityChanged() {
       (chromeos::features::IsQuickAnswersEnabled() && assistant_state_ &&
        assistant_enabled_ && locale_supported_ && assistant_context_enabled_ &&
        quick_answers_settings_enabled_ &&
-       assistant_allowed_state_ == ash::mojom::AssistantAllowedState::ALLOWED);
+       assistant_allowed_state_ ==
+           chromeos::assistant::AssistantAllowedState::ALLOWED);
 
   if (is_eligible_ != is_eligible) {
     is_eligible_ = is_eligible;

@@ -14,6 +14,8 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/dedicated_worker_id.h"
+#include "content/public/browser/shared_worker_id.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -47,6 +49,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
       const network::ResourceRequest& resource_request,
       int process_id,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id,
       base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle);
 
   ~ServiceWorkerNavigationLoaderInterceptor() override;
@@ -85,7 +89,9 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
       bool skip_service_worker,
       bool are_ancestors_secure,
       int frame_tree_node_id,
-      int process_id);
+      int process_id,
+      DedicatedWorkerId dedicated_worker_id,
+      SharedWorkerId shared_worker_id);
 
   // Returns true if a ServiceWorkerNavigationLoaderInterceptor should be
   // created for a navigation to |url|.
@@ -107,17 +113,19 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
   const base::WeakPtr<ServiceWorkerMainResourceHandle> handle_;
 
   // For all clients:
-  blink::mojom::ResourceType resource_type_;
-  bool skip_service_worker_;
+  const blink::mojom::ResourceType resource_type_;
+  const bool skip_service_worker_;
 
   // For windows:
   // Whether all ancestor frames of the frame that is navigating have a secure
   // origin. True for main frames.
-  bool are_ancestors_secure_;
-  int frame_tree_node_id_;
+  const bool are_ancestors_secure_;
+  const int frame_tree_node_id_;
 
   // For web workers:
-  int process_id_;
+  const int process_id_;
+  const DedicatedWorkerId dedicated_worker_id_;
+  const SharedWorkerId shared_worker_id_;
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 

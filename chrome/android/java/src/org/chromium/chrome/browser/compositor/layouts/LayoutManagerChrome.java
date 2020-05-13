@@ -34,8 +34,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -173,16 +171,6 @@ public class LayoutManagerChrome
         super.setTabModelSelector(selector);
         if (mOverviewLayout != null) {
             mOverviewLayout.setTabModelSelector(selector, null);
-        }
-    }
-
-    /**
-     * Set the toolbar manager for layouts that need draw to different toolbars.
-     * @param manager The {@link ToolbarManager} for accessing toolbar textures.
-     */
-    public void setToolbarManager(ToolbarManager manager) {
-        if (BottomToolbarConfiguration.isBottomToolbarEnabled()) {
-            manager.getBottomToolbarCoordinator().setToolbarSwipeLayout(mToolbarSwipeLayout);
         }
     }
 

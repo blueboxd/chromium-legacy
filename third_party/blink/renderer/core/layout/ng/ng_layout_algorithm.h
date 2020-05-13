@@ -57,6 +57,7 @@ struct NGLayoutAlgorithmParams {
   const NGConstraintSpace& space;
   const NGBlockBreakToken* break_token;
   const NGEarlyBreak* early_break;
+  const NGLayoutResult* previous_result = nullptr;
 };
 
 // Base class for all LayoutNG algorithms.

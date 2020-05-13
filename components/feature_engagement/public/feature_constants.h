@@ -72,6 +72,7 @@ extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;
 extern const base::Feature kIPHTabGroupsDragAndDropFeature;
 extern const base::Feature kIPHTranslateMenuButtonFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
+extern const base::Feature kIPHFeedHeaderMenuFeature;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

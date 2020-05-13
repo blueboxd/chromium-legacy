@@ -159,6 +159,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void WaitSyncToken(const SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
+  void SetFrameRate(float frame_rate) override;
 
   // CommandBufferServiceClient implementation (called on gpu thread):
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
@@ -322,6 +323,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       uint32_t gpu_fence_id,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
   void SetDisplayTransformOnGpuThread(gfx::OverlayTransform transform);
+  void SetFrameRateOnGpuThread(float frame_rate);
 
   // Sets |active_url_| as the active GPU process URL. Should be called on GPU
   // thread only.

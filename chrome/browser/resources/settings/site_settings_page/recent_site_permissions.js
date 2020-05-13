@@ -171,6 +171,8 @@ Polymer({
         return this.i18n('siteSettingsAr');
       case 'vr':
         return this.i18n('siteSettingsVr');
+      case 'window-placement':
+        return this.i18n('siteSettingsWindowPlacement');
       default:
         return '';
     }

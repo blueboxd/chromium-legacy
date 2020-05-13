@@ -1592,6 +1592,13 @@ void LayoutInline::DirtyLinesFromChangedChild(
     LayoutObject* child,
     MarkingBehavior marking_behavior) {
   if (IsInLayoutNGInlineFormattingContext()) {
+    if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
+      if (const LayoutBlockFlow* container = FragmentItemsContainer()) {
+        if (const NGFragmentItems* items = container->FragmentItems())
+          items->DirtyLinesFromChangedChild(child);
+      }
+      return;
+    }
     // TODO(yosin): We should move |SetAncestorLineBoxDirty()| into
     // |DirtyLinesFromChangedChild()| like legacy layout.
     SetAncestorLineBoxDirty();

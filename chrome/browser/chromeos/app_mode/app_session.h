@@ -46,7 +46,7 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   void SetAttemptUserExitForTesting(base::OnceClosure closure);
 
   Browser* GetSettingsBrowserForTesting() { return settings_browser_; }
-  void SetOnHandleBrowserCallbackForTesting(base::OnceClosure closure);
+  void SetOnHandleBrowserCallbackForTesting(base::RepeatingClosure closure);
 
  private:
   // AppWindowHandler watches for app window and exits the session when the
@@ -76,10 +76,12 @@ class AppSession : public KioskSessionPluginHandlerDelegate {
   // KioskSettingsNavigationThrottle.
   Browser* settings_browser_ = nullptr;
 
+  Profile* profile_ = nullptr;
+
   base::OnceClosure attempt_user_exit_;
   // Is called whenever a new browser creation was handled by the
   // BrowserWindowHandler.
-  base::OnceClosure on_handle_browser_callback_;
+  base::RepeatingClosure on_handle_browser_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSession);
 };

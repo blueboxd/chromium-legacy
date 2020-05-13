@@ -98,7 +98,7 @@ public class BaseSuggestionViewTest {
         mView.setDelegate(mMockDelegate);
 
         mActionIconWidthPx = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_refine_width);
+                R.dimen.omnibox_suggestion_action_icon_width);
 
         mRefineView = mView.getRefineView();
         mDecoratedView = mView.getDecoratedView();

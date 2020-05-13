@@ -20,10 +20,11 @@ base::string16 OsSettingsSection::GetHelpUrlWithBoard(
 
 OsSettingsSection::~OsSettingsSection() = default;
 
-OsSettingsSection::OsSettingsSection(Profile* profile, Delegate* delegate)
-    : profile_(profile), delegate_(delegate) {
+OsSettingsSection::OsSettingsSection(Profile* profile,
+                                     SearchTagRegistry* search_tag_registry)
+    : profile_(profile), search_tag_registry_(search_tag_registry) {
   DCHECK(profile);
-  DCHECK(delegate);
+  DCHECK(search_tag_registry);
 }
 
 }  // namespace settings

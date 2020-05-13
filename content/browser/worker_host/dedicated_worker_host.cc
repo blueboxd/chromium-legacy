@@ -207,7 +207,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       storage_partition_impl->GetServiceWorkerContext(), base::DoNothing());
 
   WorkerScriptFetchInitiator::Start(
-      worker_process_host_->GetID(), script_url, creator_render_frame_host,
+      worker_process_host_->GetID(), id_, SharedWorkerId(), script_url,
+      creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       creator_origin_, isolation_info_, credentials_mode,
       std::move(outside_fetch_client_settings_object),

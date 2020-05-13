@@ -2622,6 +2622,10 @@ enum WebFeature {
   kSchemefulSameSiteContextDowngrade = 3285,
   kOriginIsolationHeader = 3286,
   kV8WasmSimdOpcodes = 3287,
+  kGridRowGapPercent = 3288,
+  kGridRowGapPercentIndefinite = 3289,
+  kFlexRowGapPercent = 3290,
+  kFlexRowGapPercentIndefinite = 3291,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -149,17 +149,12 @@ void VideoEncoderClient::RequireBitstreamBuffers(
   output_buffer_size_ = output_buffer_size;
 
   // Create output buffers.
-  // TODO(dstaessens): Replace with hiroh@'s upcoming bitstream buffer manager.
   for (unsigned int i = 0; i < input_count; ++i) {
-    auto shm = std::make_unique<base::UnsafeSharedMemoryRegion>();
-    *shm = base::UnsafeSharedMemoryRegion::Create(output_buffer_size_);
-    LOG_ASSERT(shm->IsValid());
+    auto shm = base::UnsafeSharedMemoryRegion::Create(output_buffer_size_);
+    LOG_ASSERT(shm.IsValid());
 
-    BitstreamBuffer bitstream_buffer(
-        GetNextBitstreamBufferId(),
-        base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-            shm->Duplicate()),
-        output_buffer_size_);
+    BitstreamBuffer bitstream_buffer(GetNextBitstreamBufferId(),
+                                     shm.Duplicate(), output_buffer_size_);
 
     bitstream_buffers_.insert(
         std::make_pair(bitstream_buffer.id(), std::move(shm)));
@@ -180,10 +175,7 @@ void VideoEncoderClient::BitstreamBufferReady(
   auto it = bitstream_buffers_.find(bitstream_buffer_id);
   ASSERT_NE(it, bitstream_buffers_.end());
 
-  for (auto& bitstream_processor : bitstream_processors_) {
-    bitstream_processor->ProcessBitstreamBuffer(bitstream_buffer_id, metadata,
-                                                it->second.get());
-  }
+  // TODO(hiroh): Execute bitstream buffers processors.
 
   // Notify the test an encoded bitstream buffer is ready. We should only do
   // this after scheduling the bitstream to be processed, so calling
@@ -193,11 +185,8 @@ void VideoEncoderClient::BitstreamBufferReady(
 
   // Currently output buffers are returned immediately to the encoder.
   // TODO(dstaessens): Add support for asynchronous bitstream buffer processing.
-  BitstreamBuffer bitstream_buffer(
-      bitstream_buffer_id,
-      base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
-          it->second->Duplicate()),
-      output_buffer_size_);
+  BitstreamBuffer bitstream_buffer(bitstream_buffer_id, it->second.Duplicate(),
+                                   output_buffer_size_);
   encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
 }
 

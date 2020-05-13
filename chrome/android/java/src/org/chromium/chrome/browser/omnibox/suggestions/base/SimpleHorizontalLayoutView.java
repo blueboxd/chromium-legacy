@@ -19,32 +19,32 @@ import android.view.ViewGroup;
  * - The dynamically-sized view must have LayoutParams structure unset.
  * - The height of the view will be the result of measurement of the dynamically sized view.
  */
-class SimpleHorizontalLayoutView extends ViewGroup {
+public class SimpleHorizontalLayoutView extends ViewGroup {
     /**
      * SimpleHorizontalLayoutView's LayoutParams.
      *
      * These parameters introduce additional value to be used with |width| parameter
      * that identifies object that should occupy remaining space.
      */
-    static class LayoutParams extends ViewGroup.LayoutParams {
+    public static class LayoutParams extends ViewGroup.LayoutParams {
         /** Indicates a resizable view. */
         public boolean dynamic;
 
-        LayoutParams(int width, int height) {
+        public LayoutParams(int width, int height) {
             super(width, height);
         }
 
         /**
          * Create LayoutParams for a dynamic, resizeable view.
          */
-        static LayoutParams forDynamicView() {
+        public static LayoutParams forDynamicView() {
             LayoutParams res = new LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
             res.dynamic = true;
             return res;
         }
     }
 
-    SimpleHorizontalLayoutView(Context context) {
+    public SimpleHorizontalLayoutView(Context context) {
         super(context);
     }
 

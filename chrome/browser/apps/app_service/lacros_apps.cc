@@ -31,7 +31,7 @@ apps::mojom::AppPtr LacrosApps::GetLacrosApp(bool is_ready) {
       apps::mojom::Readiness::kReady,
       "LaCrOS",  // TODO(jamescook): Localized name.
       apps::mojom::InstallSource::kSystem);
-  app->icon_key = NewIconKey(is_ready);
+  app->icon_key = NewIconKey(is_ready ? State::kReady : State::kLoading);
   app->searchable = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = apps::mojom::OptionalBool::kTrue;
   app->show_in_search = apps::mojom::OptionalBool::kTrue;
@@ -39,10 +39,22 @@ apps::mojom::AppPtr LacrosApps::GetLacrosApp(bool is_ready) {
   return app;
 }
 
-apps::mojom::IconKeyPtr LacrosApps::NewIconKey(bool is_ready) {
-  // Show as "paused" until the download is done.
-  apps::mojom::IconKeyPtr icon_key = icon_key_factory_.MakeIconKey(
-      is_ready ? apps::IconEffects::kNone : apps::IconEffects::kPaused);
+apps::mojom::IconKeyPtr LacrosApps::NewIconKey(State state) {
+  // Show different icons based on download state.
+  apps::IconEffects icon_effects;
+  switch (state) {
+    case State::kLoading:
+      icon_effects = apps::IconEffects::kPaused;
+      break;
+    case State::kError:
+      icon_effects = apps::IconEffects::kBlocked;
+      break;
+    case State::kReady:
+      icon_effects = apps::IconEffects::kNone;
+      break;
+  }
+  apps::mojom::IconKeyPtr icon_key =
+      icon_key_factory_.MakeIconKey(icon_effects);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Canary icon only exists in branded builds.
   icon_key->resource_id = IDR_PRODUCT_LOGO_256_CANARY;
@@ -57,8 +69,8 @@ void LacrosApps::Connect(
     apps::mojom::ConnectOptionsPtr opts) {
   bool is_ready = LacrosLoader::Get()->IsReady();
   if (!is_ready) {
-    LacrosLoader::Get()->SetReadyCallback(
-        base::BindOnce(&LacrosApps::OnLacrosReady, weak_factory_.GetWeakPtr()));
+    LacrosLoader::Get()->SetLoadCompleteCallback(base::BindOnce(
+        &LacrosApps::OnLoadComplete, weak_factory_.GetWeakPtr()));
   }
   std::vector<apps::mojom::AppPtr> apps;
   apps.push_back(GetLacrosApp(is_ready));
@@ -103,11 +115,11 @@ void LacrosApps::GetMenuModel(const std::string& app_id,
   std::move(callback).Run(apps::mojom::MenuItems::New());
 }
 
-void LacrosApps::OnLacrosReady() {
+void LacrosApps::OnLoadComplete(bool success) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kLacros;
   app->app_id = extension_misc::kLacrosAppId;
-  app->icon_key = NewIconKey(/*is_ready=*/true);
+  app->icon_key = NewIconKey(success ? State::kReady : State::kError);
   Publish(std::move(app), subscribers_);
 }
 

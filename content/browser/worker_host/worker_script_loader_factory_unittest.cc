@@ -96,9 +96,9 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
 TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, service_worker_handle_.get(),
-      /*appcache_host=*/nullptr, browser_context_getter_,
-      network_loader_factory_);
+      kProcessId, DedicatedWorkerId(), SharedWorkerId(),
+      service_worker_handle_.get(), /*appcache_host=*/nullptr,
+      browser_context_getter_, network_loader_factory_);
 
   // Load the script.
   GURL url("https://www.example.com/worker.js");
@@ -121,7 +121,8 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
 TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, service_worker_handle_.get(), nullptr /* appcache_host */,
+      kProcessId, DedicatedWorkerId(), SharedWorkerId(),
+      service_worker_handle_.get(), nullptr /* appcache_host */,
       browser_context_getter_, network_loader_factory_);
 
   // Destroy the handle.
@@ -144,7 +145,8 @@ TEST_F(WorkerScriptLoaderFactoryTest, NullServiceWorkerHandle) {
 TEST_F(WorkerScriptLoaderFactoryTest, NullBrowserContext) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
-      kProcessId, service_worker_handle_.get(), nullptr /* appcache_host */,
+      kProcessId, DedicatedWorkerId(), SharedWorkerId(),
+      service_worker_handle_.get(), nullptr /* appcache_host */,
       browser_context_getter_, network_loader_factory_);
 
   // Set a null browser context.

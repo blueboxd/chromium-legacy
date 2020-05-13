@@ -139,7 +139,7 @@ class FakeNetworkConfig {
 
     const networkState = OncMojo.managedPropertiesToNetworkState(network);
     const idx = this.networkStates_.findIndex(state => {
-      return state.guid == network.guid;
+      return state.guid === network.guid;
     });
     if (idx >= 0) {
       this.networkStates_[idx] = networkState;
@@ -154,7 +154,7 @@ class FakeNetworkConfig {
    */
   setNetworkConnectionStateForTest(guid, state) {
     const network = this.networkStates_.find(state => {
-      return state.guid == guid;
+      return state.guid === guid;
     });
     assertTrue(!!network, 'Network not found: ' + guid);
     network.connectionState = state;
@@ -211,7 +211,7 @@ class FakeNetworkConfig {
           state.connectRequested === undefined) {
         console.error('BAD STATE: ' + JSON.stringify(state));
       }
-      return state.connectionState !=
+      return state.connectionState !==
           chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
     });
     this.observers_.forEach(o => o.onActiveNetworksChanged(activeNetworks));
@@ -251,7 +251,7 @@ class FakeNetworkConfig {
   getNetworkState(guid) {
     return new Promise(resolve => {
       const result = this.networkStates_.find(state => {
-        return state.guid == guid;
+        return state.guid === guid;
       });
       this.methodCalled('getNetworkState');
       resolve({result: result || null});
@@ -267,10 +267,10 @@ class FakeNetworkConfig {
     return new Promise(resolve => {
       const type = filter.networkType;
       let result;
-      if (type == chromeos.networkConfig.mojom.NetworkType.kAll) {
+      if (type === chromeos.networkConfig.mojom.NetworkType.kAll) {
         result = this.networkStates_.slice();
       } else {
-        result = this.networkStates_.filter(state => state.type == type);
+        result = this.networkStates_.filter(state => state.type === type);
       }
       this.methodCalled('getNetworkStateList');
       resolve({result: result});
@@ -285,7 +285,7 @@ class FakeNetworkConfig {
     return new Promise(resolve => {
       const devices = [];
       this.deviceStates_.forEach((state, type) => {
-        if (state.deviceState !=
+        if (state.deviceState !==
             chromeos.networkConfig.mojom.DeviceStateType.kUninitialized) {
           devices.push(state);
         }
@@ -305,7 +305,7 @@ class FakeNetworkConfig {
       let result = this.managedProperties_.get(guid);
       if (!result) {
         const foundState = this.networkStates_.find(state => {
-          return state.guid == guid;
+          return state.guid === guid;
         });
         if (foundState) {
           result = OncMojo.getDefaultManagedProperties(

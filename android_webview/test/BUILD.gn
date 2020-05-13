@@ -178,6 +178,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//net/android:net_javatests",
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
+    "//third_party/android_deps:com_google_guava_failureaccess_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/espresso:espresso_all_java",

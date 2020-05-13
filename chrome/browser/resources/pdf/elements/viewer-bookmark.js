@@ -11,29 +11,7 @@ import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-/**
- * The |title| is the text label displayed for the bookmark.
- *
- * The bookmark may point at a location in the PDF or a URI.
- * If it points at a location, |page| indicates which 0-based page it leads to.
- * Optionally, |x| is the x position in that page, |y| is the y position in that
- * page, in pixel coordinates and |zoom| is the new zoom value. If it points at
- * an URI, |uri| is the target for that bookmark.
- *
- * |children| is an array of the |Bookmark|s that are below this in a table of
- * contents tree
- * structure.
- * @typedef {{
- *   title: string,
- *   page: (number | undefined),
- *   x: (number | undefined),
- *   y: (number | undefined),
- *   zoom: (number | undefined),
- *   uri: (string | undefined),
- *   children: !Array<!Bookmark>
- * }}
- */
-export let Bookmark;
+import {Bookmark} from '../bookmark_type.js';
 
 /** Amount that each level of bookmarks is indented by (px). */
 const BOOKMARK_INDENT = 20;

@@ -37,6 +37,7 @@
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
@@ -47,6 +48,9 @@
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
 
+#if defined(OS_ANDROID)
+#include "ui/gl/android/android_surface_control_compat.h"
+#endif
 namespace viz {
 
 namespace {
@@ -208,6 +212,14 @@ bool ReduceComplexity(const cc::Region& region,
   return true;
 }
 
+bool SupportsSetFrameRate(const OutputSurface* output_surface) {
+#if defined(OS_ANDROID)
+  return output_surface->capabilities().supports_surfaceless &&
+         gl::SurfaceControl::SupportsSetFrameRate();
+#endif
+  return false;
+}
+
 }  // namespace
 
 constexpr base::TimeDelta Display::kDrawToSwapMin;
@@ -330,7 +342,8 @@ void Display::Initialize(DisplayClient* client,
     output_surface_->software_device()->BindToClient(this);
 
   frame_rate_decider_ = std::make_unique<FrameRateDecider>(
-      surface_manager_, this, using_synthetic_bfs);
+      surface_manager_, this, using_synthetic_bfs,
+      SupportsSetFrameRate(output_surface_.get()));
 
   InitializeRenderer(enable_shared_images);
 
@@ -1144,6 +1157,13 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
 }
 
 void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
+  if (frame_rate_decider_->supports_set_frame_rate()) {
+    float frame_rate =
+        interval.InSecondsF() == 0 ? 0 : (1 / interval.InSecondsF());
+    output_surface_->SetFrameRate(frame_rate);
+    return;
+  }
+
   client_->SetPreferredFrameInterval(interval);
 }
 

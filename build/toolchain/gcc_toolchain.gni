@@ -165,7 +165,7 @@ template("gcc_toolchain") {
     } else {
       compiler_prefix = "${toolchain_cc_wrapper} "
     }
-    if (use_goma_thin_lto && toolchain_uses_goma) {
+    if (use_goma_thin_lto && toolchain_uses_goma && use_thin_lto) {
       # goma_ld.py uses autoninja in an attempt to set a reasonable
       # number of jobs, but this results in too low a value on
       # Chrome OS builders. So we pass in an explicit value.

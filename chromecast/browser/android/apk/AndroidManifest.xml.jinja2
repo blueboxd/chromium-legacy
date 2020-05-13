@@ -8,8 +8,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.chromium.chromecast.shell">
 
-    <uses-sdk android:minSdkVersion="21" />
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
@@ -19,9 +17,7 @@
       <uses-permission android:name="com.google.android.things.permission.READ_FACTORY_DATA"/>
     {% endif %}
 
-    <application android:name="org.chromium.chromecast.shell.CastApplication"
-                 android:icon="@mipmap/app_icon"
-                 android:label="@string/app_name">
+    <application android:icon="@mipmap/app_icon">
         <activity android:name="org.chromium.chromecast.shell.CastWebContentsActivity"
                   android:theme="@style/CastShellTheme"
                   android:exported="true"

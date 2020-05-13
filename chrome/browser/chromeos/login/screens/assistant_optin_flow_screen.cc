@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 
+#include <memory>
+
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
@@ -69,7 +71,7 @@ bool AssistantOptInFlowScreen::MaybeSkip() {
 
   if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) ==
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
     return false;
   }
 

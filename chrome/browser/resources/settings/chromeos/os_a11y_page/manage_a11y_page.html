@@ -38,22 +38,19 @@
         padding-inline-start: 0;
       }
     </style>
-    <template is="dom-if" if="[[!isKioskModeActive_]]">
-      <div class="settings-box row first">
-        <settings-localized-link
-            localized-string="$i18n{a11yExplanation}"
-            link-url="$i18nRaw{a11yLearnMoreUrl}">
-        </settings-localized-link>
-      </div>
-    </template>
+    <div class="settings-box row first">
+      <settings-localized-link
+          localized-string="$i18n{a11yExplanation}"
+          link-url="$i18nRaw{a11yLearnMoreUrl}">
+      </settings-localized-link>
+    </div>
     <h2>$i18n{textToSpeechHeading}</h2>
     <settings-toggle-button
         pref="{{prefs.settings.accessibility}}"
         label="$i18n{chromeVoxLabel}">
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.accessibility.value]]">
-      <cr-link-row id="chromeVoxSubpageButton"
-          class="settings-box" on-click="onChromeVoxSettingsTap_"
+      <cr-link-row class="settings-box" on-click="onChromeVoxSettingsTap_"
           label="$i18n{chromeVoxOptionsLabel}" external></cr-link-row>
     </iron-collapse>
     <settings-toggle-button
@@ -67,8 +64,7 @@
             '$i18nPolymer{selectToSpeakDescriptionWithoutKeyboard}')]]">
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.a11y.select_to_speak.value]]">
-      <cr-link-row id="selectToSpeakSubpageButton"
-          class="settings-box" on-click="onSelectToSpeakSettingsTap_"
+      <cr-link-row class="settings-box" on-click="onSelectToSpeakSettingsTap_"
           label="$i18n{selectToSpeakOptionsLabel}" external></cr-link-row>
     </iron-collapse>
 
@@ -119,17 +115,15 @@
         </settings-dropdown-menu>
       </div>
     </template>
-    <template is="dom-if" if="[[!isKioskModeActive_]]">
-      <cr-link-row id="displaySubpageButton" class="hr"
-          label="$i18n{displaySettingsTitle}" on-click="onDisplayTap_"
-          sub-label="$i18n{displaySettingsDescription}"
-          role-description="$i18n{subpageArrowRoleDescription}" embedded>
-      </cr-link-row>
-      <cr-link-row id="appearanceSubpageButton" class="hr"
-          label="$i18n{appearanceSettingsTitle}" on-click="onAppearanceTap_"
-          sub-label="$i18n{appearanceSettingsDescription}" external
-          embedded></cr-link-row>
-    </template>
+    <cr-link-row id="displaySubpageButton" class="hr"
+        label="$i18n{displaySettingsTitle}" on-click="onDisplayTap_"
+        sub-label="$i18n{displaySettingsDescription}"
+        role-description="$i18n{subpageArrowRoleDescription}" embedded>
+    </cr-link-row>
+    <cr-link-row id="appearanceSubpageButton" class="hr"
+        label="$i18n{appearanceSettingsTitle}" on-click="onAppearanceTap_"
+        sub-label="$i18n{appearanceSettingsDescription}" external
+        embedded></cr-link-row>
 
     <h2>$i18n{keyboardAndTextInputHeading}</h2>
     <settings-toggle-button
@@ -157,7 +151,7 @@
         pref="{{prefs.settings.a11y.caret_highlight}}"
         label="$i18n{caretHighlightLabel}">
     </settings-toggle-button>
-    <template is="dom-if" if="[[shouldShowExperimentalSwitchAccess_]]">
+    <template is="dom-if" if="[[showExperimentalSwitchAccess_]]">
       <settings-toggle-button
           class="hr"
           pref="{{prefs.settings.a11y.switch_access.enabled}}"
@@ -172,13 +166,11 @@
         </cr-link-row>
       </iron-collapse>
     </template>
-    <template is="dom-if" if="[[!isKioskModeActive_]]">
-      <cr-link-row id="keyboardSubpageButton" class="hr"
-          label="$i18n{keyboardSettingsTitle}" on-click="onKeyboardTap_"
-          sub-label="$i18n{keyboardSettingsDescription}"
-          role-description="$i18n{subpageArrowRoleDescription}" embedded>
-      </cr-link-row>
-    </template>
+    <cr-link-row id="keyboardSubpageButton" class="hr"
+        label="$i18n{keyboardSettingsTitle}" on-click="onKeyboardTap_"
+        sub-label="$i18n{keyboardSettingsDescription}"
+        role-description="$i18n{subpageArrowRoleDescription}" embedded>
+    </cr-link-row>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
     <settings-toggle-button
@@ -272,11 +264,9 @@
     </settings-toggle-button>
 
     <h2>$i18n{audioAndCaptionsHeading}</h2>
-    <template is="dom-if" if="[[!isKioskModeActive_]]">
-      <cr-link-row id="captionsSubpageButton" class="first"
-          label="$i18n{captionsTitle}" on-click="onCaptionsClick_"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-    </template>
+    <cr-link-row id="captionsSubpageButton" class="first"
+        label="$i18n{captionsTitle}" on-click="onCaptionsClick_"
+        role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
     <settings-toggle-button
         class="hr"
         pref="{{prefs.settings.a11y.mono_audio}}"
@@ -289,10 +279,9 @@
         label="$i18n{startupSoundLabel}">
     </settings-toggle-button>
 
-    <template is="dom-if"
-        if="[[shouldShowAdditionalFeaturesLink_(isGuest_, isKioskModeActive_)]]">
+    <template is="dom-if" if="[[!isGuest_]]">
       <a class="settings-box inherit-color no-outline" tabindex="-1"
-          id="additionalFeaturesLink" target="_blank"
+          target="_blank"
           href="https://chrome.google.com/webstore/category/collection/accessibility">
         <div class="start settings-box-text">
           $i18n{additionalFeaturesTitle}

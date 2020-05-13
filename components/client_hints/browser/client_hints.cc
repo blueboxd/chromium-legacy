@@ -9,6 +9,7 @@
 #include "components/client_hints/browser/client_hints.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "components/client_hints/common/client_hints.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -137,7 +138,8 @@ void ClientHints::PersistClientHints(
   // when cookies are disabled for |primary_origin|.
   settings_map_->SetWebsiteSettingDefaultScope(
       primary_url, GURL(), ContentSettingsType::CLIENT_HINTS, std::string(),
-      std::move(expiration_times_dictionary));
+      std::move(expiration_times_dictionary),
+      {base::Time(), content_settings::SessionModel::UserSession});
 
   UMA_HISTOGRAM_EXACT_LINEAR("ClientHints.UpdateEventCount", 1, 2);
 }

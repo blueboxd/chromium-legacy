@@ -24,6 +24,11 @@ using base::android::JavaRef;
 
 namespace {
 
+// Anchor creation requests that are older than 3 seconds are considered
+// outdated and should be failed.
+constexpr base::TimeDelta kOutdatedAnchorCreationRequestThreshold =
+    base::TimeDelta::FromSeconds(3);
+
 // Helper, returns new VRPosePtr with position and orientation set to match the
 // position and orientation of passed in |pose|.
 device::mojom::VRPosePtr GetMojomVRPoseFromArPose(const ArSession* session,
@@ -1053,19 +1058,22 @@ void ArCoreImpl::CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
 
 void ArCoreImpl::ProcessAnchorCreationRequests(
     const gfx::Transform& mojo_from_viewer,
-    const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
-  DVLOG(2) << __func__;
-
+    const std::vector<mojom::XRInputSourceStatePtr>& input_state,
+    const base::TimeTicks& frame_time) {
+  DVLOG(2) << __func__ << ": Processing free-floating anchor creation requests";
   ProcessAnchorCreationRequestsHelper(
-      mojo_from_viewer, input_state, &create_anchor_requests_,
+      mojo_from_viewer, input_state, &create_anchor_requests_, frame_time,
       [this](const CreateAnchorRequest& create_anchor_request,
              const gfx::Point3F& position, const gfx::Quaternion& orientation) {
         return anchor_manager_->CreateAnchor(
             device::mojom::Pose(orientation, position));
       });
 
+  DVLOG(2) << __func__
+           << ": Processing plane-attached anchor creation requests";
   ProcessAnchorCreationRequestsHelper(
       mojo_from_viewer, input_state, &create_plane_attached_anchor_requests_,
+      frame_time,
       [this](const CreatePlaneAttachedAnchorRequest& create_anchor_request,
              const gfx::Point3F& position, const gfx::Quaternion& orientation) {
         PlaneId plane_id = PlaneId(create_anchor_request.GetPlaneId());
@@ -1080,6 +1088,7 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
     const gfx::Transform& mojo_from_viewer,
     const std::vector<mojom::XRInputSourceStatePtr>& input_state,
     std::vector<T>* anchor_creation_requests,
+    const base::TimeTicks& frame_time,
     FunctionType&& create_anchor_function) {
   DCHECK(anchor_creation_requests);
 
@@ -1093,12 +1102,26 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
   // coming from ARCore SDK are real failures we won't be able to recover from.
   std::vector<T> postponed_requests;
   for (auto& create_anchor : *anchor_creation_requests) {
+    auto anchor_creation_age = frame_time - create_anchor.GetRequestStartTime();
+
+    if (anchor_creation_age > kOutdatedAnchorCreationRequestThreshold) {
+      DVLOG(3)
+          << __func__
+          << ": failing outdated anchor creation request, anchor_creation_age="
+          << anchor_creation_age;
+      create_anchor.TakeCallback().Run(
+          device::mojom::CreateAnchorResult::FAILURE, 0);
+      continue;
+    }
+
     mojom::XRNativeOriginInformation native_origin_information =
         create_anchor.GetNativeOriginInformation();
 
     if (!NativeOriginExists(native_origin_information, mojo_from_viewer,
                             input_state)) {
-      // Native origin does not exist / is no longer tracked, fail the call.
+      DVLOG(3) << __func__
+               << ": failing anchor creation request, native origin does not "
+                  "exist";
       create_anchor.TakeCallback().Run(
           device::mojom::CreateAnchorResult::FAILURE, 0);
       continue;
@@ -1111,6 +1134,9 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
     if (!maybe_mojo_from_native_origin) {
       // We don't know where the native origin currently is (but we know it is
       // still tracked), so let's postpone the request & try again later.
+      DVLOG(3) << __func__
+               << ": postponing anchor creation request, native origin is not "
+                  "currently localizable";
       postponed_requests.emplace_back(std::move(create_anchor));
       continue;
     }
@@ -1124,6 +1150,9 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
     if (!gfx::DecomposeTransform(&decomposed_mojo_from_anchor,
                                  mojo_from_anchor)) {
       // Fail the call now, failure to decompose is unlikely to resolve itself.
+      DVLOG(3)
+          << __func__
+          << ": failing anchor creation request, unable to decompose a matrix";
       create_anchor.TakeCallback().Run(
           device::mojom::CreateAnchorResult::FAILURE, 0);
       continue;
@@ -1138,13 +1167,18 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
             decomposed_mojo_from_anchor.quaternion);
 
     if (!maybe_anchor_id) {
-      // Fail the call, failure to create anchor in ARCore SDK is unlikely to
-      // resolve itself.
+      // Fail the call now, failure to create anchor in ARCore SDK is unlikely
+      // to resolve itself.
+      DVLOG(3) << __func__
+               << ": failing anchor creation request, anchor creation "
+                  "function did not return an anchor id";
       create_anchor.TakeCallback().Run(
           device::mojom::CreateAnchorResult::FAILURE, 0);
       continue;
     }
 
+    DVLOG(3) << __func__ << ": anchor creation request succeeded, time taken: "
+             << anchor_creation_age;
     create_anchor.TakeCallback().Run(device::mojom::CreateAnchorResult::SUCCESS,
                                      maybe_anchor_id->GetUnsafeValue());
   }
@@ -1174,6 +1208,7 @@ CreateAnchorRequest::CreateAnchorRequest(
     ArCore::CreateAnchorCallback callback)
     : native_origin_information_(native_origin_information),
       native_origin_from_anchor_(native_origin_from_anchor),
+      request_start_time_(base::TimeTicks::Now()),
       callback_(std::move(callback)) {}
 CreateAnchorRequest::CreateAnchorRequest(CreateAnchorRequest&& other) = default;
 CreateAnchorRequest::~CreateAnchorRequest() = default;
@@ -1187,6 +1222,10 @@ gfx::Transform CreateAnchorRequest::GetNativeOriginFromAnchor() const {
   return native_origin_from_anchor_;
 }
 
+base::TimeTicks CreateAnchorRequest::GetRequestStartTime() const {
+  return request_start_time_;
+}
+
 ArCore::CreateAnchorCallback CreateAnchorRequest::TakeCallback() {
   return std::move(callback_);
 }
@@ -1197,6 +1236,7 @@ CreatePlaneAttachedAnchorRequest::CreatePlaneAttachedAnchorRequest(
     ArCore::CreateAnchorCallback callback)
     : plane_from_anchor_(plane_from_anchor),
       plane_id_(plane_id),
+      request_start_time_(base::TimeTicks::Now()),
       callback_(std::move(callback)) {}
 CreatePlaneAttachedAnchorRequest::CreatePlaneAttachedAnchorRequest(
     CreatePlaneAttachedAnchorRequest&& other) = default;
@@ -1216,6 +1256,10 @@ uint64_t CreatePlaneAttachedAnchorRequest::GetPlaneId() const {
 gfx::Transform CreatePlaneAttachedAnchorRequest::GetNativeOriginFromAnchor()
     const {
   return plane_from_anchor_;
+}
+
+base::TimeTicks CreatePlaneAttachedAnchorRequest::GetRequestStartTime() const {
+  return request_start_time_;
 }
 
 ArCore::CreateAnchorCallback CreatePlaneAttachedAnchorRequest::TakeCallback() {

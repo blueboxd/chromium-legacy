@@ -118,7 +118,7 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
       tray_button_container->AddChildView(std::make_unique<FloatingMenuButton>(
           this, kUnifiedMenuAccessibilityIcon,
           IDS_ASH_FLOATING_ACCESSIBILITY_DETAILED_MENU_OPEN,
-          /*flip_for_rtl*/ true, kTrayItemSize));
+          /*flip_for_rtl*/ true));
 
   std::unique_ptr<views::View> position_button_container =
       CreateButtonRowContainer(kPanelPositionButtonPadding);
@@ -126,7 +126,7 @@ FloatingAccessibilityView::FloatingAccessibilityView(Delegate* delegate)
       std::make_unique<FloatingMenuButton>(
           this, kAutoclickPositionBottomLeftIcon,
           IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION, /*flip_for_rtl*/ false,
-          kPanelPositionButtonSize, false));
+          kPanelPositionButtonSize, false, /* is_a11y_togglable */ false));
 
   AddChildView(std::move(feature_buttons_container));
   AddChildView(std::move(tray_button_container));

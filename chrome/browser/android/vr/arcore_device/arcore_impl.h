@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/util/type_safety/id_type.h"
 #include "chrome/browser/android/vr/arcore_device/arcore.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_anchor_manager.h"
@@ -53,6 +54,7 @@ class CreateAnchorRequest {
  public:
   mojom::XRNativeOriginInformation GetNativeOriginInformation() const;
   gfx::Transform GetNativeOriginFromAnchor() const;
+  base::TimeTicks GetRequestStartTime() const;
 
   ArCore::CreateAnchorCallback TakeCallback();
 
@@ -66,6 +68,7 @@ class CreateAnchorRequest {
  private:
   const mojom::XRNativeOriginInformation native_origin_information_;
   const gfx::Transform native_origin_from_anchor_;
+  const base::TimeTicks request_start_time_;
 
   ArCore::CreateAnchorCallback callback_;
 };
@@ -75,6 +78,7 @@ class CreatePlaneAttachedAnchorRequest {
   uint64_t GetPlaneId() const;
   mojom::XRNativeOriginInformation GetNativeOriginInformation() const;
   gfx::Transform GetNativeOriginFromAnchor() const;
+  base::TimeTicks GetRequestStartTime() const;
 
   ArCore::CreateAnchorCallback TakeCallback();
 
@@ -87,6 +91,7 @@ class CreatePlaneAttachedAnchorRequest {
  private:
   const gfx::Transform plane_from_anchor_;
   const uint64_t plane_id_;
+  const base::TimeTicks request_start_time_;
 
   ArCore::CreateAnchorCallback callback_;
 };
@@ -154,7 +159,8 @@ class ArCoreImpl : public ArCore {
 
   void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,
-      const std::vector<mojom::XRInputSourceStatePtr>& input_state) override;
+      const std::vector<mojom::XRInputSourceStatePtr>& input_state,
+      const base::TimeTicks& frame_time) override;
 
   void DetachAnchor(uint64_t anchor_id) override;
 
@@ -263,6 +269,7 @@ class ArCoreImpl : public ArCore {
       const gfx::Transform& mojo_from_viewer,
       const std::vector<mojom::XRInputSourceStatePtr>& input_state,
       std::vector<T>* anchor_creation_requests,
+      const base::TimeTicks& frame_time,
       FunctionType&& create_anchor_function);
 
   // Must be last.

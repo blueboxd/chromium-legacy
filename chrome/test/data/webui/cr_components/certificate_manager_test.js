@@ -943,7 +943,7 @@ import {eventToPromise} from '../test_util.m.js';
       importButton.click();
       return browserProxy.whenCalled(proxyMethodName)
           .then(function(arg) {
-            if (proxyMethodName == 'importPersonalCertificate') {
+            if (proxyMethodName === 'importPersonalCertificate') {
               assertNotEquals(arg, undefined);
               assertEquals(arg, bindBtn);
             }

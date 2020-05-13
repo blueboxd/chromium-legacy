@@ -62,6 +62,8 @@ class CONTENT_EXPORT WebUI {
   virtual const base::string16& GetOverriddenTitle() = 0;
   virtual void OverrideTitle(const base::string16& title) = 0;
 
+  virtual void SetProperty(const std::string& name, const std::string& value) {}
+
   // Allows a controller to override the BindingsPolicy that should be enabled
   // for this page.
   virtual int GetBindings() = 0;

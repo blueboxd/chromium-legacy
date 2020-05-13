@@ -125,12 +125,14 @@ void ReputationWebContentsObserver::DidFinishNavigation(
   MaybeShowSafetyTip(
       ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                              ukm::SourceIdType::NAVIGATION_ID),
+      /*called_from_visibility_check=*/false,
       /*record_ukm_if_tip_not_shown=*/true);
 }
 
 void ReputationWebContentsObserver::OnVisibilityChanged(
     content::Visibility visibility) {
   MaybeShowSafetyTip(ukm::GetSourceIdForWebContentsDocument(web_contents()),
+                     /*called_from_visibility_check=*/true,
                      /*record_ukm_if_tip_not_shown=*/false);
 }
 
@@ -163,6 +165,7 @@ ReputationWebContentsObserver::ReputationWebContentsObserver(
 
 void ReputationWebContentsObserver::MaybeShowSafetyTip(
     ukm::SourceId navigation_source_id,
+    bool called_from_visibility_check,
     bool record_ukm_if_tip_not_shown) {
   if (web_contents()->GetMainFrame()->GetVisibilityState() !=
       content::PageVisibilityState::kVisible) {
@@ -181,15 +184,21 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip(
       url, base::BindOnce(
                &ReputationWebContentsObserver::HandleReputationCheckResult,
                weak_factory_.GetWeakPtr(), navigation_source_id,
-               record_ukm_if_tip_not_shown));
+               called_from_visibility_check, record_ukm_if_tip_not_shown));
 }
 
 void ReputationWebContentsObserver::HandleReputationCheckResult(
     ukm::SourceId navigation_source_id,
+    bool called_from_visibility_check,
     bool record_ukm_if_tip_not_shown,
     ReputationCheckResult result) {
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
                             result.safety_tip_status);
+  base::UmaHistogramEnumeration(
+      called_from_visibility_check
+          ? "Security.SafetyTips.ReputationCheckComplete.VisibilityChanged"
+          : "Security.SafetyTips.ReputationCheckComplete.DidFinishNavigation",
+      result.safety_tip_status);
 
   // Set this field independent of whether the feature to show the UI is
   // enabled/disabled. Metrics code uses this field and we want to record

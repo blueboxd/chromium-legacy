@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/internal/wayland_data_source_base.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source_base.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
 struct gtk_primary_selection_source;
@@ -16,7 +16,7 @@ namespace ui {
 
 class WaylandConnection;
 
-class GtkPrimarySelectionSource : public internal::WaylandDataSourceBase {
+class GtkPrimarySelectionSource : public WaylandDataSourceBase {
  public:
   // Takes ownership of data_source.
   GtkPrimarySelectionSource(gtk_primary_selection_source* data_source,

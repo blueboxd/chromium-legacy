@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
@@ -101,6 +102,9 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     // Used when Feed is disabled by policy.
     private @Nullable ScrollView mScrollViewForPolicy;
     private @Nullable ViewResizer mScrollViewResizer;
+
+    // Used for the feed header menu.
+    private UserEducationHelper mUserEducationHelper;
 
     private static class BasicSnackbarApi implements SnackbarApi {
         private final SnackbarManager mManager;
@@ -332,9 +336,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
             // TODO(jianli): Temporary: simulate opening the feed V2 surface. This should probably
             // move to FeedSurfaceMediator.
-            mFeedStreamSurface = new FeedStreamSurface(tabModelSelector, tabProvider);
+            mFeedStreamSurface = new FeedStreamSurface(tabModelSelector, tabProvider, mActivity);
             mFeedStreamSurface.surfaceOpened();
         }
+
+        mUserEducationHelper = new UserEducationHelper(mActivity);
     }
 
     @Override
@@ -556,6 +562,36 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         }
 
         mStream.setHeaderViews(headers);
+    }
+
+    /**
+     * Determines whether the feed header position in the recycler view is suitable for IPH.
+     *
+     * @param maxPosFraction The maximal fraction of the recycler view height starting from the top
+     *                       within which the top position of the feed header can be. The value has
+     *                       to be within the range [0.0, 1.0], where at 0.0 the feed header is at
+     *                       the very top of the recycler view and at 1.0 is at the very bottom and
+     *                       hidden.
+     * @return True If the feed header is at a position that is suitable to show the IPH.
+     */
+    boolean isFeedHeaderPositionInRecyclerViewSuitableForIPH(float maxPosFraction) {
+        assert maxPosFraction >= 0.0f
+                && maxPosFraction <= 1.0f
+            : "Max position fraction should be ranging between 0.0 and 1.0";
+
+        int sectionHeaderTop = mSectionHeaderView.getTop();
+        if (sectionHeaderTop < 0) return false;
+        if (sectionHeaderTop > maxPosFraction * mRootView.getHeight()) return false;
+
+        return true;
+    }
+
+    Tracker getFeatureEngagementTracker() {
+        return mTracker;
+    }
+
+    UserEducationHelper getUserEducationHelper() {
+        return mUserEducationHelper;
     }
 
     @VisibleForTesting

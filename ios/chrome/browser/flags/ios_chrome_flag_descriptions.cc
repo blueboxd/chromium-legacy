@@ -229,10 +229,6 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
-const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
-const char kFindInPageiFrameDescription[] =
-    "When enabled, Find In Page will search in iFrames.";
-
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "

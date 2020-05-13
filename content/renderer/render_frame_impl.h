@@ -40,6 +40,7 @@
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
+#include "content/common/web_ui.mojom.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
@@ -1175,6 +1176,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
 
   void BindWidget(mojo::PendingReceiver<mojom::Widget> receiver);
+
+  void BindWebUIReceiver(mojo::PendingReceiver<mojom::WebUI> receiver);
 
   void ShowDeferredContextMenu(const UntrustworthyContextMenuParams& params);
 

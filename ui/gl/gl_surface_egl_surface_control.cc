@@ -240,6 +240,7 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   // them after receiving read fences from the framework.
   surface_list_.resize(pending_surfaces_count_);
   pending_surfaces_count_ = 0u;
+  frame_rate_update_pending_ = false;
 
   if (transaction_ack_pending_) {
     pending_transaction_queue_.push(std::move(pending_transaction_).value());
@@ -375,6 +376,9 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     pending_transaction_->SetColorSpace(*surface_state.surface,
                                         image_color_space);
   }
+
+  if (frame_rate_update_pending_)
+    pending_transaction_->SetFrameRate(*surface_state.surface, frame_rate_);
 
   return true;
 }
@@ -518,6 +522,14 @@ gfx::SurfaceOrigin GLSurfaceEGLSurfaceControl::GetOrigin() const {
   // GLSurfaceEGLSurfaceControl's y-axis is flipped compare to GL - (0,0) is at
   // top left corner.
   return gfx::SurfaceOrigin::kTopLeft;
+}
+
+void GLSurfaceEGLSurfaceControl::SetFrameRate(float frame_rate) {
+  if (frame_rate_ == frame_rate)
+    return;
+
+  frame_rate_ = frame_rate;
+  frame_rate_update_pending_ = true;
 }
 
 gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(

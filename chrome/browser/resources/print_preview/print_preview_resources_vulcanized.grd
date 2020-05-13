@@ -23,6 +23,16 @@
                preprocess="true"
                compress="gzip"
                type="BINDATA" />
+      <include name="IDR_PRINT_PREVIEW_PDF_INDEX_PP_HTML"
+               file="../pdf/index_pp.html"
+               type="BINDATA" />
+      <include name="IDR_PRINT_PREVIEW_PDF_MAIN_PP_JS"
+               file="../pdf/main_pp.js"
+               type="BINDATA" />
+      <include name="IDR_PRINT_PREVIEW_PDF_VIEWER_PAGE_INDICATOR_JS"
+               file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-page-indicator.js"
+               use_base_dir="false"
+               type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -30,13 +30,14 @@ class TileManager {
   // Creates the instance.
   static std::unique_ptr<TileManager> Create(
       std::unique_ptr<TileStore> tile_store,
-      base::Clock* clock);
+      base::Clock* clock,
+      const std::string& locale);
 
   // Initializes the query tile store, loading them into memory after
   // validating.
   virtual void Init(TileGroupStatusCallback callback) = 0;
 
-  // Returns tiles to the caller.
+  // Returns tiles to the caller in the given |locale|.
   virtual void GetTiles(GetTilesCallback callback) = 0;
 
   // Returns the tile associated with |tile_id| to the caller.
@@ -45,6 +46,8 @@ class TileManager {
   // Save the query tiles into database.
   virtual void SaveTiles(std::unique_ptr<TileGroup> tile_group,
                          TileGroupStatusCallback callback) = 0;
+
+  virtual void SetLocaleForTesting(const std::string& locale) = 0;
 
   TileManager();
   virtual ~TileManager() = default;

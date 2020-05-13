@@ -614,7 +614,17 @@ TEST_F(SchemaOrgExtractorTest, EnforceMaxNestingDepth) {
       "    \"addressCountry\": {"
       "      \"containedInPlace\": {"
       "        \"containedInPlace\": {"
-      "          \"name\": \"matroska\""
+      "          \"containedInPlace\": {"
+      "            \"containedInPlace\": {"
+      "              \"containedInPlace\": {"
+      "                \"containedInPlace\": {"
+      "                  \"containedInPlace\": {"
+      "                    \"name\": \"matroska\""
+      "                  }"
+      "                }"
+      "              }"
+      "            }"
+      "          }"
       "        }"
       "      }"
       "    }"
@@ -634,7 +644,27 @@ TEST_F(SchemaOrgExtractorTest, EnforceMaxNestingDepth) {
   entity3->type = "Thing";
   EntityPtr entity4 = Entity::New();
   entity4->type = "Thing";
+  EntityPtr entity5 = Entity::New();
+  entity5->type = "Thing";
+  EntityPtr entity6 = Entity::New();
+  entity6->type = "Thing";
+  EntityPtr entity7 = Entity::New();
+  entity7->type = "Thing";
+  EntityPtr entity8 = Entity::New();
+  entity8->type = "Thing";
+  EntityPtr entity9 = Entity::New();
+  entity9->type = "Thing";
 
+  entity8->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity9)));
+  entity7->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity8)));
+  entity6->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity7)));
+  entity5->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity6)));
+  entity4->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity5)));
   entity3->properties.push_back(
       CreateEntityProperty("containedInPlace", std::move(entity4)));
   entity2->properties.push_back(
@@ -655,11 +685,21 @@ TEST_F(SchemaOrgExtractorTest, MaxNestingDepthWithTerminalProperty) {
       "  \"address\": {"
       "    \"addressCountry\": {"
       "      \"containedInPlace\": {"
-      "        \"name\": \"matroska\""
-      "         }"
+      "        \"containedInPlace\": {"
+      "          \"containedInPlace\": {"
+      "            \"containedInPlace\": {"
+      "              \"containedInPlace\": {"
+      "                \"containedInPlace\": {"
+      "                   \"name\": \"matroska\""
+      "                }"
+      "              }"
+      "            }"
+      "          }"
+      "        }"
       "      }"
       "    }"
       "  }"
+      "}"
       "}");
   ASSERT_FALSE(extracted.is_null());
 
@@ -674,15 +714,34 @@ TEST_F(SchemaOrgExtractorTest, MaxNestingDepthWithTerminalProperty) {
   entity3->type = "Thing";
   EntityPtr entity4 = Entity::New();
   entity4->type = "Thing";
+  EntityPtr entity5 = Entity::New();
+  entity5->type = "Thing";
+  EntityPtr entity6 = Entity::New();
+  entity6->type = "Thing";
+  EntityPtr entity7 = Entity::New();
+  entity7->type = "Thing";
+  EntityPtr entity8 = Entity::New();
+  entity8->type = "Thing";
+  EntityPtr entity9 = Entity::New();
+  entity9->type = "Thing";
 
-  entity4->properties.push_back(CreateStringProperty("name", "matroska"));
+  entity9->properties.push_back(CreateStringProperty("name", "matroska"));
+  entity8->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity9)));
+  entity7->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity8)));
+  entity6->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity7)));
+  entity5->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity6)));
+  entity4->properties.push_back(
+      CreateEntityProperty("containedInPlace", std::move(entity5)));
   entity3->properties.push_back(
       CreateEntityProperty("containedInPlace", std::move(entity4)));
   entity2->properties.push_back(
       CreateEntityProperty("addressCountry", std::move(entity3)));
   entity1->properties.push_back(
       CreateEntityProperty("address", std::move(entity2)));
-
   expected->properties.push_back(
       CreateEntityProperty("actor", std::move(entity1)));
   expected->properties.push_back(CreateStringProperty("name", "a video!"));

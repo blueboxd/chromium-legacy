@@ -27,6 +27,7 @@ class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
   ~SelectToSpeakTray() override;
 
   // TrayBackgroundView:
+  void Initialize() override;
   base::string16 GetAccessibleNameForTray() override;
   const char* GetClassName() const override;
   bool PerformAction(const ui::Event& event) override;

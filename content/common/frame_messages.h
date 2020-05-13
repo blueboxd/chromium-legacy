@@ -531,12 +531,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SetPepperVolume,
 IPC_MESSAGE_ROUTED1(FrameMsg_MixedContentFound,
                     FrameMsg_MixedContentFound_Params)
 
-// Tell the renderer to add a property to the WebUI binding object.  This
-// only works if we allowed WebUI bindings.
-IPC_MESSAGE_ROUTED2(FrameMsg_SetWebUIProperty,
-                    std::string /* property_name */,
-                    std::string /* property_value_json */)
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -808,12 +802,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
 IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
                     blink::mojom::FocusType /* type */,
                     int32_t /* source_routing_id */)
-
-// A message from HTML-based UI.  When (trusted) Javascript calls
-// send(message, args), this message is sent to the browser.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_WebUISend,
-                    std::string /* message */,
-                    base::ListValue /* args */)
 
 // Sent to notify that a frame called |window.focus()|.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)

@@ -36,8 +36,10 @@ enum class DelayedWarningEvent {
   kWarningShownOnMouseClick = 4,
   // The page tried to enter fullscreen mode.
   kWarningShownOnFullscreenAttempt = 5,
-
-  kMaxValue = kWarningShownOnFullscreenAttempt,
+  // The page tried to initiate a download and we cancelled it. This doesn't
+  // show an interstitial.
+  kDownloadCancelled = 6,
+  kMaxValue = kDownloadCancelled,
 };
 
 // Name of the histogram.
@@ -62,6 +64,9 @@ class SafeBrowsingUserInteractionObserver
       bool is_main_frame,
       scoped_refptr<SafeBrowsingUIManager> ui_manager);
 
+  static SafeBrowsingUserInteractionObserver* FromWebContents(
+      content::WebContents* web_contents);
+
   // See CreateForWebContents() for parameters. These need to be public.
   SafeBrowsingUserInteractionObserver(
       content::WebContents* web_contents,
@@ -74,19 +79,17 @@ class SafeBrowsingUserInteractionObserver
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void WebContentsDestroyed() override;
-  void DidStartNavigation(content::NavigationHandle* handle) override;
+  void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
 
  private:
-  static SafeBrowsingUserInteractionObserver* FromWebContents(
-      content::WebContents* web_contents);
-
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
 
   void ShowInterstitial(DelayedWarningEvent event);
   void CleanUp();
+  void Detach();
 
   content::RenderWidgetHost::KeyPressEventCallback key_press_callback_;
   content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
@@ -96,6 +99,12 @@ class SafeBrowsingUserInteractionObserver
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   bool interstitial_shown_ = false;
   bool mouse_click_with_no_warning_recorded_ = false;
+  // This will be set to true if the initial navigation that caused this
+  // observer to be created has finished. We need this extra bit because
+  // observers can only detect download navigations in DidFinishNavigation.
+  // However, this hook is also called for the initial navigation, so we ignore
+  // it the first time the hook is called.
+  bool initial_navigation_finished_ = false;
 };
 
 }  // namespace safe_browsing

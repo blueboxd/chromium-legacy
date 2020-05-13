@@ -967,7 +967,8 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   FlexLayoutAlgorithm flex_algorithm(
       Style(), line_break_length,
       LogicalSize{ContentLogicalWidth(),
-                  AvailableLogicalHeightForPercentageComputation()});
+                  AvailableLogicalHeightForPercentageComputation()},
+      &GetDocument());
   order_iterator_.First();
   for (LayoutBox* child = order_iterator_.CurrentChild(); child;
        child = order_iterator_.Next()) {

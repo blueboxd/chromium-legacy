@@ -63,7 +63,7 @@ declare_args() {
                             (target_os == "android" ||
                              (target_os == "chromeos" && is_chromeos_device)))
 
-  # Performs ThinLTO code generation on Goma.
+  # If true, use Goma for ThinLTO code generation where applicable.
   use_goma_thin_lto = false
 
   # Limit the number of jobs (threads/processes) the linker is allowed
@@ -93,9 +93,6 @@ declare_args() {
 }
 
 assert(!is_cfi || use_thin_lto, "CFI requires ThinLTO")
-assert(
-    !use_goma_thin_lto || (use_goma && use_thin_lto),
-    "use_goma_thin_lto requires both use_goma and use_thin_lto to be enabled")
 
 # If true, optimize for size. Does not affect windows builds.
 # Linux & Mac favor speed over size.

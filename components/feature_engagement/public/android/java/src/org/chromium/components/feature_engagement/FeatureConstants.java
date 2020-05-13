@@ -39,7 +39,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.FEED_CARD_MENU_FEATURE, FeatureConstants.IDENTITY_DISC_FEATURE,
         FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE,
         FeatureConstants.QUIET_NOTIFICATION_PROMPTS_FEATURE,
-        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE})
+        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, FeatureConstants.FEED_HEADER_MENU_FEATURE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeatureConstants {
     String DOWNLOAD_PAGE_FEATURE = "IPH_DownloadPage";
@@ -142,4 +142,9 @@ public @interface FeatureConstants {
      * tab page as their homepage.
      */
     String HOMEPAGE_PROMO_CARD_FEATURE = "IPH_HomepagePromoCard";
+
+    /**
+     * An IPH feature to show on the feed header menu button of the FeedNewTabPage.
+     */
+    String FEED_HEADER_MENU_FEATURE = "IPH_FeedHeaderMenu";
 }

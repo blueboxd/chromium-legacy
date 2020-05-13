@@ -339,6 +339,19 @@ std::string BluetoothAdapterBlueZ::GetName() const {
   return properties->alias.value();
 }
 
+std::string BluetoothAdapterBlueZ::GetSystemName() const {
+  if (!IsPresent())
+    return std::string();
+
+  bluez::BluetoothAdapterClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothAdapterClient()
+          ->GetProperties(object_path_);
+  DCHECK(properties);
+
+  return properties ? properties->name.value() : std::string();
+}
+
 void BluetoothAdapterBlueZ::SetName(const std::string& name,
                                     const base::Closure& callback,
                                     const ErrorCallback& error_callback) {

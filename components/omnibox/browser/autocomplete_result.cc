@@ -108,7 +108,8 @@ size_t AutocompleteResult::GetMaxMatches(bool input_from_omnibox_focus) {
 }
 
 AutocompleteResult::AutocompleteResult() {
-  // Reserve space for the max number of matches we'll show.
+  // Reserve enough space for the maximum number of matches we'll show in either
+  // on-focus or prefix-suggest mode.
   matches_.reserve(std::max(GetMaxMatches(), GetMaxMatches(true)));
 }
 

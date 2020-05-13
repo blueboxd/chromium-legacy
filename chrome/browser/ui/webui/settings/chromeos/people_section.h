@@ -29,6 +29,8 @@ namespace chromeos {
 
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for People settings. Search tags are only
 // added for non-guest sessions.
 //
@@ -40,7 +42,7 @@ class PeopleSection : public OsSettingsSection,
                       public KerberosCredentialsManager::Observer {
  public:
   PeopleSection(Profile* profile,
-                Delegate* per_page_delegate,
+                SearchTagRegistry* search_tag_registry,
                 syncer::SyncService* sync_service,
                 SupervisedUserService* supervised_user_service,
                 KerberosCredentialsManager* kerberos_credentials_manager,

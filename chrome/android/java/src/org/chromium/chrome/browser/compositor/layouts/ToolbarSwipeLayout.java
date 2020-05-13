@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.BlackHoleEvent
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
-import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -66,18 +65,10 @@ public class ToolbarSwipeLayout extends Layout {
     private final BlackHoleEventFilter mBlackHoleEventFilter;
     private final TabListSceneLayer mSceneLayer;
 
-    /** The left and right scene layer responsible for drawing bottom toolbars for each tab. */
-    private ScrollingBottomViewSceneLayer mLeftBottomToolbarSceneLayer;
-    private ScrollingBottomViewSceneLayer mRightBottomToolbarSceneLayer;
-
-    /** Whether the bottom bar scene layers should be shown. */
-    private boolean mShowBottomToolbarSceneLayers;
-
     /**
      * @param context             The current Android's context.
      * @param updateHost          The {@link LayoutUpdateHost} view for this layout.
      * @param renderHost          The {@link LayoutRenderHost} view for this layout.
-     * @param eventFilter         The {@link EventFilter} that is needed for this view.
      */
     public ToolbarSwipeLayout(
             Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
@@ -308,52 +299,14 @@ public class ToolbarSwipeLayout extends Layout {
         if (mLeftTab != null) {
             mLeftTab.setX(leftX);
             needUpdate = mLeftTab.updateSnap(dt) || needUpdate;
-            if (mLeftBottomToolbarSceneLayer != null) {
-                if (mShowBottomToolbarSceneLayers) {
-                    mLeftBottomToolbarSceneLayer.setIsVisible(true);
-                    mLeftBottomToolbarSceneLayer.setXOffset((int) (mLeftTab.getX() * mDpToPx));
-                } else {
-                    mLeftBottomToolbarSceneLayer.setIsVisible(false);
-                }
-            }
-        } else if (mLeftBottomToolbarSceneLayer != null) {
-            mLeftBottomToolbarSceneLayer.setIsVisible(false);
         }
 
         if (mRightTab != null) {
             mRightTab.setX(rightX);
             needUpdate = mRightTab.updateSnap(dt) || needUpdate;
-            if (mRightBottomToolbarSceneLayer != null) {
-                if (mShowBottomToolbarSceneLayers) {
-                    mRightBottomToolbarSceneLayer.setIsVisible(true);
-                    mRightBottomToolbarSceneLayer.setXOffset((int) (mRightTab.getX() * mDpToPx));
-                } else {
-                    mRightBottomToolbarSceneLayer.setIsVisible(false);
-                }
-            }
-        } else if (mRightBottomToolbarSceneLayer != null) {
-            mRightBottomToolbarSceneLayer.setIsVisible(false);
         }
 
         if (needUpdate) requestUpdate();
-    }
-
-    /**
-     * Provide this layout access to two {@link ScrollingBottomViewSceneLayer}s to draw for each tab
-     * in this layout.
-     * @param left The toolbar to draw with the left tab.
-     * @param right The toolbar to draw with the right tab.
-     * @param showBottomToolbarSceneLayers Whether to show the bottom bar scene layers.
-     */
-    public void setBottomToolbarSceneLayers(ScrollingBottomViewSceneLayer left,
-            ScrollingBottomViewSceneLayer right, boolean showBottomToolbarSceneLayers) {
-        mShowBottomToolbarSceneLayers = showBottomToolbarSceneLayers;
-        mLeftBottomToolbarSceneLayer = left;
-        mLeftBottomToolbarSceneLayer.setIsVisible(showBottomToolbarSceneLayers);
-        addSceneOverlay(mLeftBottomToolbarSceneLayer);
-        mRightBottomToolbarSceneLayer = right;
-        mRightBottomToolbarSceneLayer.setIsVisible(showBottomToolbarSceneLayers);
-        addSceneOverlay(mRightBottomToolbarSceneLayer);
     }
 
     /**
@@ -405,12 +358,5 @@ public class ToolbarSwipeLayout extends Layout {
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
                 SceneLayer.INVALID_RESOURCE_ID, 0, 0);
-    }
-
-    /**
-     * @param showBottomToolbarSceneLayers Whether the bottom toolbar scene layers should be shown.
-     */
-    public void setBottomToolbarSceneLayersVisibility(boolean showBottomToolbarSceneLayers) {
-        mShowBottomToolbarSceneLayers = showBottomToolbarSceneLayers;
     }
 }

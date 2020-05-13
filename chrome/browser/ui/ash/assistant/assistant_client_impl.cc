@@ -52,7 +52,7 @@ AssistantClientImpl::~AssistantClientImpl() {
 
 void AssistantClientImpl::MaybeInit(Profile* profile) {
   if (assistant::IsAssistantAllowedForProfile(profile) !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
     return;
   }
 
@@ -74,7 +74,7 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
 
   service_ = std::make_unique<chromeos::assistant::Service>(
       profile->GetURLLoaderFactory()->Clone(),
-      IdentityManagerFactory::GetForProfile(profile), profile->GetPrefs());
+      IdentityManagerFactory::GetForProfile(profile));
   service_->Init();
 
   assistant_setup_ = std::make_unique<AssistantSetup>();
@@ -130,8 +130,8 @@ void AssistantClientImpl::RequestAssistantStructure(
 }
 
 void AssistantClientImpl::OnAssistantStatusChanged(
-    ash::mojom::AssistantState new_state) {
-  ash::AssistantState::Get()->NotifyStatusChanged(new_state);
+    chromeos::assistant::AssistantStatus new_status) {
+  ash::AssistantState::Get()->NotifyStatusChanged(new_status);
 }
 
 void AssistantClientImpl::RequestAssistantAlarmTimerController(
@@ -157,12 +157,6 @@ void AssistantClientImpl::RequestAssistantScreenContextController(
 void AssistantClientImpl::RequestAssistantVolumeControl(
     mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver) {
   ash::AssistantInterfaceBinder::GetInstance()->BindVolumeControl(
-      std::move(receiver));
-}
-
-void AssistantClientImpl::RequestAssistantStateController(
-    mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver) {
-  ash::AssistantInterfaceBinder::GetInstance()->BindStateController(
       std::move(receiver));
 }
 

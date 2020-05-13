@@ -1916,7 +1916,7 @@ TEST_F(HostContentSettingsMapTest,
 void ReloadProviders(PrefService* pref_service,
                      HostContentSettingsMap* host_content_settings_map) {
   auto pref_provider = std::make_unique<content_settings::PrefProvider>(
-      pref_service, false, true);
+      pref_service, false, true, false);
   content_settings::TestUtils::OverrideProvider(
       host_content_settings_map, std::move(pref_provider),
       HostContentSettingsMap::PREF_PROVIDER);
@@ -2112,7 +2112,8 @@ TEST_F(HostContentSettingsMapTest, EphemeralTypeDoesntReadFromPrefProvider) {
 
   map->SetDefaultContentSetting(ephemeral_type, CONTENT_SETTING_ASK);
 
-  content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true);
+  content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true,
+                                               false);
   pref_provider.SetWebsiteSetting(
       pattern, pattern, ephemeral_type, std::string(),
       std::make_unique<base::Value>(CONTENT_SETTING_ALLOW), {});

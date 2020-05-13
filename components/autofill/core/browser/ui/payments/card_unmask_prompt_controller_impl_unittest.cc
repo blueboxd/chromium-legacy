@@ -158,14 +158,17 @@ class CardUnmaskPromptControllerImplTest
     CardUnmaskPromptControllerImplGenericTest::SetUp();
     pref_service_->registry()->RegisterBooleanPref(
         prefs::kAutofillWalletImportStorageCheckboxState, false);
+#if defined(OS_ANDROID)
     pref_service_->registry()->RegisterBooleanPref(
         prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, true);
+#endif
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImplTest);
 };
 
+#if defined(OS_ANDROID)
 TEST_F(CardUnmaskPromptControllerImplTest,
        FidoAuthOfferCheckboxStatePersistent) {
   scoped_feature_list_.InitAndEnableFeature(
@@ -192,6 +195,7 @@ TEST_F(CardUnmaskPromptControllerImplTest,
 
   EXPECT_TRUE(delegate_->details().enable_fido_auth);
 }
+#endif
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {
   ShowPromptAndSimulateResponse(/*should_store_pan=*/false,

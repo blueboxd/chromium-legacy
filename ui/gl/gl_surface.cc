@@ -509,6 +509,10 @@ void GLSurfaceAdapter::SetDisplayTransform(gfx::OverlayTransform transform) {
   return surface_->SetDisplayTransform(transform);
 }
 
+void GLSurfaceAdapter::SetFrameRate(float frame_rate) {
+  surface_->SetFrameRate(frame_rate);
+}
+
 void GLSurfaceAdapter::SetCurrent() {
   surface_->SetCurrent();
 }

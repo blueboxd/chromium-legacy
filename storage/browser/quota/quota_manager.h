@@ -228,16 +228,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   void GetHostUsage(const std::string& host,
                     blink::mojom::StorageType type,
                     UsageCallback callback);
-  void GetHostUsage(const std::string& host,
-                    blink::mojom::StorageType type,
-                    QuotaClientType client_id,
-                    UsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  blink::mojom::StorageType type,
                                  UsageWithBreakdownCallback callback);
-
-  bool IsTrackingHostUsage(blink::mojom::StorageType type,
-                           QuotaClientType client_id) const;
 
   std::map<std::string, std::string> GetStatistics();
 

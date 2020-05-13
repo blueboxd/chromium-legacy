@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -72,15 +73,16 @@ const std::vector<SearchConcept>& GetNoFineGrainedTimeZoneSearchConcepts() {
 
 }  // namespace
 
-DateTimeSection::DateTimeSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
-  delegate()->AddSearchTags(GetDateTimeSearchConcepts());
+DateTimeSection::DateTimeSection(Profile* profile,
+                                 SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
+  registry()->AddSearchTags(GetDateTimeSearchConcepts());
 
   SystemSettingsProvider provider;
   if (provider.Get(chromeos::kFineGrainedTimeZoneResolveEnabled)->GetBool())
-    delegate()->AddSearchTags(GetFineGrainedTimeZoneSearchConcepts());
+    registry()->AddSearchTags(GetFineGrainedTimeZoneSearchConcepts());
   else
-    delegate()->AddSearchTags(GetNoFineGrainedTimeZoneSearchConcepts());
+    registry()->AddSearchTags(GetNoFineGrainedTimeZoneSearchConcepts());
 }
 
 DateTimeSection::~DateTimeSection() = default;

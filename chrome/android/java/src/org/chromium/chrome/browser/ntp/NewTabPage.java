@@ -77,6 +77,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -340,6 +341,11 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             @Override
             public void onHidden(Tab tab, @TabHidingType int type) {
                 if (mIsLoaded) recordNTPHidden();
+            }
+
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                mNewTabPageLayout.onLoadUrl();
             }
         };
         mTab.addObserver(mTabObserver);

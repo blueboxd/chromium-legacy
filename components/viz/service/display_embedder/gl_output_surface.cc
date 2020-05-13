@@ -254,4 +254,9 @@ GLOutputSurface::GetGpuTaskSchedulerHelper() {
 gpu::MemoryTracker* GLOutputSurface::GetMemoryTracker() {
   return viz_context_provider_->GetMemoryTracker();
 }
+
+void GLOutputSurface::SetFrameRate(float frame_rate) {
+  viz_context_provider_->ContextSupport()->SetFrameRate(frame_rate);
+}
+
 }  // namespace viz

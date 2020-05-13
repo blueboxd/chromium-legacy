@@ -26,6 +26,28 @@ TEST(UdevTest, Loader) {
   ASSERT_NE(nullptr, UdevLoader::Get());
 }
 
+TEST(UdevTest, GetPropertyWithNone) {
+  testing::FakeUdevLoader fake_udev;
+  udev_device* device = fake_udev.AddFakeDevice("Foo", "/device/foo", {}, {});
+
+  const std::string attr_value = UdevDeviceGetPropertyValue(device, "prop");
+  EXPECT_TRUE(attr_value.empty());
+}
+
+TEST(UdevTest, GetSysPropSimple) {
+  testing::FakeUdevLoader fake_udev;
+  std::map<std::string, std::string> props;
+  props.emplace("prop", "prop value");
+  udev_device* device =
+      fake_udev.AddFakeDevice("Foo", "/device/foo", {}, std::move(props));
+
+  std::string attr_value = UdevDeviceGetPropertyValue(device, "prop");
+  EXPECT_EQ("prop value", attr_value);
+
+  attr_value = UdevDeviceGetPropertyValue(device, "unknown prop");
+  EXPECT_TRUE(attr_value.empty());
+}
+
 TEST(UdevTest, GetSysAttrNoAttrs) {
   testing::FakeUdevLoader fake_udev;
   udev_device* device = fake_udev.AddFakeDevice("Foo", "/device/foo", {}, {});

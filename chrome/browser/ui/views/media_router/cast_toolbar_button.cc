@@ -47,7 +47,7 @@ CastToolbarButton::CastToolbarButton(
     MediaRouter* media_router,
     std::unique_ptr<MediaRouterContextualMenu> context_menu)
     : ToolbarButton(this,
-                    context_menu->TakeMenuModel(),
+                    context_menu->CreateMenuModel(),
                     /** tab_strip_model*/ nullptr,
                     /** trigger_menu_on_long_press */ false),
       IssuesObserver(media_router->GetIssueManager()),

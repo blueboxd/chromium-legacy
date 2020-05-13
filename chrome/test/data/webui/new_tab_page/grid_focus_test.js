@@ -158,7 +158,7 @@ suite('NewTabPageGridFocusTest', () => {
 
       // Assert.
       const focusedIndex =
-          (param.size % param.columns == 0 ? param.size : param.columns) - 1;
+          (param.size % param.columns === 0 ? param.size : param.columns) - 1;
       assertFocus(grid.children[focusedIndex]);
     });
 
@@ -184,7 +184,7 @@ suite('NewTabPageGridFocusTest', () => {
 
       // Assert.
       const focusedIndex =
-          (param.size % param.columns == 0 ? param.size : param.columns) - 1;
+          (param.size % param.columns === 0 ? param.size : param.columns) - 1;
       assertFocus(grid.children[focusedIndex]);
     });
 

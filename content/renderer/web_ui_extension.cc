@@ -127,9 +127,12 @@ void WebUIExtension::Send(gin::Arguments* args) {
     }
   }
 
+  auto* webui = WebUIExtensionData::Get(render_frame);
+  if (!webui)
+    return;
+
   // Send the message up to the browser.
-  render_frame->Send(new FrameHostMsg_WebUISend(render_frame->GetRoutingID(),
-                                                message, *content));
+  webui->SendMessage(message, std::move(content));
 }
 
 // static
@@ -139,7 +142,11 @@ std::string WebUIExtension::GetVariableValue(const std::string& name) {
   if (!ShouldRespondToRequest(&frame, &render_frame))
     return std::string();
 
-  return WebUIExtensionData::Get(render_frame)->GetValue(name);
+  auto* webui = WebUIExtensionData::Get(render_frame);
+  if (!webui)
+    return std::string();
+
+  return webui->GetValue(name);
 }
 
 }  // namespace content

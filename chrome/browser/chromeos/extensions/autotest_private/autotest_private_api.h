@@ -551,7 +551,8 @@ class AutotestPrivateSetAssistantEnabledFunction
   ResponseAction Run() override;
 
   // ash::AssistantStateObserver overrides:
-  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
 
   // Called when the Assistant service does not respond in a timely fashion. We
   // will respond with an error.
@@ -577,7 +578,8 @@ class AutotestPrivateEnableAssistantAndWaitForReadyFunction
   void SubscribeToStatusChanges();
 
   // ash::AssistantStateObserver overrides:
-  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
 
   // A reference to keep |this| alive while waiting for the Assistant to
   // respond.

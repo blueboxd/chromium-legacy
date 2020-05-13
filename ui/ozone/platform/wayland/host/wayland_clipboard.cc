@@ -9,9 +9,9 @@
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_source.h"
-#include "ui/ozone/platform/wayland/host/internal/wayland_data_source_base.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source_base.h"
 
 namespace ui {
 
@@ -34,7 +34,7 @@ void WaylandClipboard::OfferClipboardData(
     ClipboardBuffer buffer,
     const PlatformClipboard::DataMap& data_map,
     PlatformClipboard::OfferDataClosure callback) {
-  internal::WaylandDataSourceBase* data_source = nullptr;
+  WaylandDataSourceBase* data_source = nullptr;
   if (buffer == ClipboardBuffer::kCopyPaste) {
     if (!clipboard_data_source_)
       clipboard_data_source_ = data_device_manager_->CreateSource();

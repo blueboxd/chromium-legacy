@@ -24,6 +24,7 @@ enum ConnectResult {
 struct AdapterInfo {
   string address;
   string name;
+  string system_name;
   bool initialized;
   bool present;
   bool powered;

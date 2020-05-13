@@ -55,7 +55,6 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
-#include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/policy/policy_features.h"
@@ -404,9 +403,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"infobar-ui-reboot", flag_descriptions::kInfobarUIRebootName,
      flag_descriptions::kInfobarUIRebootDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSInfobarUIReboot)},
-    {"find-in-page-iframe", flag_descriptions::kFindInPageiFrameName,
-     flag_descriptions::kFindInPageiFrameDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kFindInPageiFrame)},
     {"enable-clipboard-provider-image-suggestions",
      flag_descriptions::kEnableClipboardProviderImageSuggestionsName,
      flag_descriptions::kEnableClipboardProviderImageSuggestionsDescription,

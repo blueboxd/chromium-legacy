@@ -17,6 +17,7 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/crostini_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -217,9 +218,9 @@ bool IsMicSettingAllowed() {
 }  // namespace
 
 CrostiniSection::CrostiniSection(Profile* profile,
-                                 Delegate* per_page_delegate,
+                                 SearchTagRegistry* search_tag_registry,
                                  PrefService* pref_service)
-    : OsSettingsSection(profile, per_page_delegate),
+    : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service) {
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -447,47 +448,47 @@ bool CrostiniSection::IsContainerUpgradeAllowed() {
 }
 
 void CrostiniSection::UpdateSearchTags() {
-  delegate()->RemoveSearchTags(GetCrostiniSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
-  delegate()->RemoveSearchTags(GetCrostiniMicSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniOptedInSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniOptedOutSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniExportImportSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniPortForwardingSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniDiskResizingSearchConcepts());
+  registry()->RemoveSearchTags(GetCrostiniMicSearchConcepts());
 
   if (!IsCrostiniAllowed())
     return;
 
-  delegate()->AddSearchTags(GetCrostiniSearchConcepts());
+  registry()->AddSearchTags(GetCrostiniSearchConcepts());
 
   if (!pref_service_->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
-    delegate()->AddSearchTags(GetCrostiniOptedOutSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniOptedOutSearchConcepts());
     return;
   }
 
-  delegate()->AddSearchTags(GetCrostiniOptedInSearchConcepts());
+  registry()->AddSearchTags(GetCrostiniOptedInSearchConcepts());
 
   if (IsExportImportAllowed())
-    delegate()->AddSearchTags(GetCrostiniExportImportSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniExportImportSearchConcepts());
 
   if (IsAdbSideloadingAllowed() &&
       pref_service_->GetBoolean(arc::prefs::kArcEnabled)) {
-    delegate()->AddSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniAdbSideloadingSearchConcepts());
   }
 
   if (IsPortForwardingAllowed())
-    delegate()->AddSearchTags(GetCrostiniPortForwardingSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniPortForwardingSearchConcepts());
 
   if (IsContainerUpgradeAllowed())
-    delegate()->AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniContainerUpgradeSearchConcepts());
 
   if (IsDiskResizingAllowed())
-    delegate()->AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniDiskResizingSearchConcepts());
 
   if (IsMicSettingAllowed())
-    delegate()->AddSearchTags(GetCrostiniMicSearchConcepts());
+    registry()->AddSearchTags(GetCrostiniMicSearchConcepts());
 }
 
 }  // namespace settings

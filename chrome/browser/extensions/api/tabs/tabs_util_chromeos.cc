@@ -61,7 +61,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
   }
 
   if (assistant::IsAssistantAllowedForProfile(profile) ==
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
     ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
   }
 }

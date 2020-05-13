@@ -45,7 +45,7 @@ class TileManagerTest : public testing::Test {
     base::Time fake_now;
     EXPECT_TRUE(base::Time::FromString("03/18/20 01:00:00 AM", &fake_now));
     clock_.SetNow(fake_now);
-    manager_ = TileManager::Create(std::move(tile_store), &clock_);
+    manager_ = TileManager::Create(std::move(tile_store), &clock_, "en-US");
   }
 
   // Initial and load entries from store_, compare the |expected_status| to the
@@ -94,6 +94,7 @@ class TileManagerTest : public testing::Test {
                  TileGroupStatus expected_status) {
     base::RunLoop loop;
     auto group = std::make_unique<TileGroup>();
+    group->locale = "en-US";
     group->last_updated_ts = clock_.Now();
     group->tiles = std::move(tiles);
     manager()->SaveTiles(
@@ -353,6 +354,16 @@ TEST_F(TileManagerTest, GetTileById) {
   InitWithData(TileGroupStatus::kSuccess, {group});
   GetSingleTile("guid-1-1", *group.tiles[0]);
   GetSingleTile("id_not_exist", base::nullopt);
+}
+
+// Verify that GetTiles will return empty result if non-stored locale
+// is passed.
+TEST_F(TileManagerTest, GetTilesForNonStoredLocale) {
+  manager()->SetLocaleForTesting("zh");
+  TileGroup group;
+  test::ResetTestGroup(&group);
+  InitWithData(TileGroupStatus::kSuccess, {group});
+  GetTiles(std::vector<Tile>());
 }
 
 }  // namespace

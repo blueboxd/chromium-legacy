@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_readiness_tracker.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -105,6 +106,9 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
   TabStateTracker(ThumbnailTabHelper* thumbnail_tab_helper,
                   content::WebContents* contents)
       : content::WebContentsObserver(contents),
+        readiness_tracker_(contents,
+                           base::Bind(&TabStateTracker::PageReadinessChanged,
+                                      base::Unretained(this))),
         thumbnail_tab_helper_(thumbnail_tab_helper) {
     visible_ =
         (web_contents()->GetVisibility() == content::Visibility::VISIBLE);
@@ -133,22 +137,7 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
   }
 
  private:
-  // The loading states of a page relevant to thumbnail readiness. This is
-  // determined solely by the loading updates we receive through
-  // WebContentsObserver.
-  enum class PageState : int {
-    // We start here. Nothing can happen in this state.
-    kNoPage = 0,
-    // The WebContents is navigating to a new page.
-    kNavigating,
-    // Navigation is complete. We can at any point request a renderer by
-    // incrementing the capture count.
-    kNavigationComplete,
-    // This page is done loading.
-    kPageLoaded,
-
-    kMaxValue = kPageLoaded,
-  };
+  using PageReadiness = ThumbnailReadinessTracker::Readiness;
 
   // Our thumbnail capturing state. Our domain logic determines this
   // based on the page loading state, page visibility, and whether our
@@ -177,37 +166,13 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
       return;
 
     visible_ = new_visible;
-    if (!visible_ && page_state_ == PageState::kPageLoaded)
+    if (!visible_ && page_readiness_ == PageReadiness::kReadyForFinalCapture)
       thumbnail_tab_helper_->CaptureThumbnailOnTabHidden();
     else
-      UpdateCaptureState(page_state_);
+      UpdateCaptureState();
   }
 
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    if (!navigation_handle->IsInMainFrame())
-      return;
-    UpdateCaptureState(PageState::kNavigating);
-  }
-
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    if (!navigation_handle->IsInMainFrame())
-      return;
-    if (page_state_ >= PageState::kNavigationComplete)
-      return;
-    UpdateCaptureState(PageState::kNavigationComplete);
-  }
-
-  void RenderViewReady() override { UpdateCaptureState(page_state_); }
-
-  void DocumentOnLoadCompletedInMainFrame() override {
-    UpdateCaptureState(PageState::kPageLoaded);
-  }
-
-  void WebContentsDestroyed() override {
-    UpdateCaptureState(PageState::kNoPage);
-  }
+  void RenderViewReady() override { UpdateCaptureState(); }
 
   // ThumbnailImage::Delegate:
   void ThumbnailImageBeingObservedChanged(bool is_being_observed) override {
@@ -215,20 +180,20 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
       return;
 
     is_being_observed_ = is_being_observed;
-    UpdateCaptureState(page_state_);
+    UpdateCaptureState();
+  }
+
+  void PageReadinessChanged(PageReadiness readiness) {
+    page_readiness_ = readiness;
+    UpdateCaptureState();
   }
 
   // Transitions the state tracker to the correct state any time after
   // navigation is complete, given the tab's observed state, visibility, loading
   // status, etc.
-  void UpdateCaptureState(PageState new_page_state) {
-    if (web_contents()->IsBeingDestroyed())
-      return;
-
-    page_state_ = new_page_state;
-
+  void UpdateCaptureState() {
     // Stop any existing capture and return if the page is not ready.
-    if (page_state_ < PageState::kNavigationComplete) {
+    if (page_readiness_ == PageReadiness::kNotReady) {
       StopCapture();
       capture_state_ = CaptureState::kNoCapture;
       return;
@@ -258,12 +223,12 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
       return;
     }
 
-    // Now we know the page has navigated and is ready to render, and the
-    // thumbnail is observed.
+    // Now we know the page is ready for capture and the thumbnail is
+    // observed.
 
-    // If the page is loaded and we already have a good thumbnail, we don't need
-    // to anything.
-    if (page_state_ == PageState::kPageLoaded &&
+    // If the page is in its final state and we already have a good
+    // thumbnail, don't need to anything.
+    if (page_readiness_ == PageReadiness::kReadyForFinalCapture &&
         capture_state_ == CaptureState::kHaveFinalCapture) {
       DCHECK(!scoped_capture_);
       return;
@@ -300,17 +265,17 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
 
     DCHECK(thumbnail_tab_helper_->video_capturer_);
 
-    // If the page is loaded, enter cooldown if we haven't yet.
-    if (page_state_ == PageState::kPageLoaded &&
+    // If the page is finalized, enter cooldown if we haven't yet.
+    if (page_readiness_ == PageReadiness::kReadyForFinalCapture &&
         capture_state_ == CaptureState::kCapturingVideo) {
       StartCooldown();
       return;
     }
 
-    // If the page is loaded and we are in cooldown capture mode, we
+    // If the page is finalized and we are in cooldown capture mode, we
     // don't need to do anything. The cooldown timer callback will
     // finalize everything.
-    if (page_state_ == PageState::kPageLoaded &&
+    if (page_readiness_ == PageReadiness::kReadyForFinalCapture &&
         capture_state_ == CaptureState::kCaptureCooldown)
       return;
 
@@ -321,12 +286,12 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
     }
 
     // All possible states must be handled above.
-    NOTREACHED() << "page_state_ = " << static_cast<int>(page_state_)
+    NOTREACHED() << "page_readiness_ = " << static_cast<int>(page_readiness_)
                  << ", capture_state_ = " << static_cast<int>(capture_state_);
   }
 
   void StartCooldown() {
-    DCHECK_EQ(page_state_, PageState::kPageLoaded);
+    DCHECK_EQ(page_readiness_, PageReadiness::kReadyForFinalCapture);
     DCHECK_EQ(capture_state_, CaptureState::kCapturingVideo);
 
     captured_cooldown_frame_ = false;
@@ -346,7 +311,7 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
   }
 
   void OnCooldownEnded() {
-    if (page_state_ < PageState::kPageLoaded ||
+    if (page_readiness_ < PageReadiness::kReadyForFinalCapture ||
         capture_state_ != CaptureState::kCaptureCooldown)
       return;
 
@@ -372,6 +337,8 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
     scoped_capture_.reset();
   }
 
+  ThumbnailReadinessTracker readiness_tracker_;
+
   // The last known visibility WebContents visibility.
   bool visible_;
 
@@ -383,7 +350,7 @@ class ThumbnailTabHelper::TabStateTracker : public content::WebContentsObserver,
   size_t cooldown_retry_count_ = 0U;
 
   // Where we are in the page lifecycle.
-  PageState page_state_ = PageState::kNoPage;
+  PageReadiness page_readiness_ = PageReadiness::kNotReady;
   CaptureState capture_state_ = CaptureState::kNoCapture;
 
   // Scoped request for video capture. Ensures we always decrement the counter

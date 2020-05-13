@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/assistant_search_provider.h"
 
+#include <memory>
+#include <vector>
+
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -23,7 +26,7 @@ namespace app_list {
 namespace {
 
 // Aliases.
-using ash::mojom::AssistantAllowedState;
+using chromeos::assistant::AssistantAllowedState;
 using chromeos::assistant::mojom::AssistantEntryPoint;
 using chromeos::assistant::mojom::AssistantQuerySource;
 using chromeos::assistant::mojom::AssistantSuggestion;
@@ -122,7 +125,7 @@ AssistantSearchProvider::AssistantSearchProvider() {
 AssistantSearchProvider::~AssistantSearchProvider() = default;
 
 void AssistantSearchProvider::OnAssistantFeatureAllowedChanged(
-    ash::mojom::AssistantAllowedState allowed_state) {
+    chromeos::assistant::AssistantAllowedState allowed_state) {
   UpdateResults();
 }
 

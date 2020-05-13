@@ -44,7 +44,7 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
       ConstraintSpace(), Node(), content_box_size_);
 
   algorithm_.emplace(&Style(), MainAxisContentExtent(LayoutUnit::Max()),
-                     child_percentage_size_);
+                     child_percentage_size_, &Node().GetDocument());
 }
 
 bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(

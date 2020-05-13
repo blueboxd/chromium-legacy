@@ -393,10 +393,16 @@ if (enable_print_preview) {
 
     if (optimize_webui) {
       source = "print_preview/print_preview_resources_vulcanized.grd"
-      deps = [ "//chrome/browser/resources/print_preview:build" ]
+      deps = [
+        "//chrome/browser/resources/pdf/elements:web_components",
+        "//chrome/browser/resources/print_preview:build",
+      ]
     } else {
       source = "print_preview/print_preview_resources.grd"
-      deps = [ "//chrome/browser/resources/print_preview/ui:web_components" ]
+      deps = [
+        "//chrome/browser/resources/pdf/elements:web_components",
+        "//chrome/browser/resources/print_preview/ui:web_components",
+      ]
     }
 
     defines = chrome_grit_defines

@@ -20,6 +20,8 @@ class XRGripSpace : public XRSpace {
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
+  bool IsStationary() const override;
+
   void Trace(Visitor*) override;
 
  private:

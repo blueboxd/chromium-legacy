@@ -170,8 +170,7 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // Size of the output buffer requested by the encoder.
   size_t output_buffer_size_ = 0u;
   // Maps bitstream buffer Id's on the associated memory.
-  std::map<int32_t, std::unique_ptr<base::UnsafeSharedMemoryRegion>>
-      bitstream_buffers_;
+  std::map<int32_t, base::UnsafeSharedMemoryRegion> bitstream_buffers_;
 
   // Id to be used for the the next bitstream buffer.
   int32_t next_bitstream_buffer_id_ = 0;

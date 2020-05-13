@@ -622,12 +622,20 @@ LayoutUnit FlexLayoutAlgorithm::GapBetweenLines(
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
                                          LayoutUnit line_break_length,
-                                         LogicalSize percent_resolution_sizes)
+                                         LogicalSize percent_resolution_sizes,
+                                         Document* document)
     : gap_between_items_(GapBetweenItems(*style, percent_resolution_sizes)),
       gap_between_lines_(GapBetweenLines(*style, percent_resolution_sizes)),
       style_(style),
       line_break_length_(line_break_length),
-      next_item_index_(0) {}
+      next_item_index_(0) {
+  const auto& row_gap = style->RowGap();
+  if (!row_gap.IsNormal() && row_gap.GetLength().IsPercentOrCalc()) {
+    UseCounter::Count(document, WebFeature::kFlexRowGapPercent);
+    if (percent_resolution_sizes.block_size == LayoutUnit(-1))
+      UseCounter::Count(document, WebFeature::kFlexRowGapPercentIndefinite);
+  }
+}
 
 FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
     LayoutUnit container_logical_width) {

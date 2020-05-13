@@ -19,7 +19,7 @@ namespace settings {
 // since they only apply to specific pages/settings.
 class MainSection : public OsSettingsSection {
  public:
-  MainSection(Profile* profile, Delegate* per_page_delegate);
+  MainSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~MainSection() override;
 
  private:

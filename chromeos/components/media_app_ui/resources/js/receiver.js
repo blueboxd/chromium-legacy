@@ -11,14 +11,15 @@ const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
  */
 class ReceivedFile {
   /**
-   * @param {!File} file The received file.
+   * @param {?File} file The received file.
    * @param {number} token A token that identifies the file.
+   * @param {string} fallbackName The name to use when `file` is null/empty.
    */
-  constructor(file, token) {
-    this.blob = file;
-    this.name = file.name;
-    this.size = file.size;
-    this.mimeType = file.type;
+  constructor(file, token, fallbackName) {
+    this.blob = file || new File([], fallbackName);
+    this.name = this.blob.name;
+    this.size = this.blob.size;
+    this.mimeType = this.blob.type;
     this.token = token;
   }
 
@@ -93,7 +94,7 @@ class ReceivedFileList {
 
     this.length = files.length;
     /** @type {!Array<!ReceivedFile>} */
-    this.files = files.map(f => new ReceivedFile(f.file, f.token));
+    this.files = files.map(f => new ReceivedFile(f.file, f.token, f.name));
     /** @type {number} */
     this.writableFileIndex = 0;
   }

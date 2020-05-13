@@ -432,6 +432,9 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
           *previous_result, /* check_same_block_size */ !block_flow);
     }
 #endif
+  } else if (cache_status == NGLayoutCacheStatus::kCanReuseLines) {
+    params.previous_result = layout_result.get();
+    layout_result = nullptr;
   } else {
     layout_result = nullptr;
   }
@@ -463,6 +466,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     // We need to clear any previous results when scrollbars change. For
     // example - we may have stored a "measure" layout result which will be
     // incorrect if we try and reuse it.
+    params.previous_result = nullptr;
     box_->ClearLayoutResults();
 
 #if DCHECK_IS_ON()

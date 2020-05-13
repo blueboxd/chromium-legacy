@@ -102,6 +102,24 @@ content_settings::SessionModel GetSessionModel(
   return session_model;
 }
 
+bool ShouldRemoveSetting(bool off_the_record,
+                         base::Time expiration,
+                         bool restore_session,
+                         content_settings::SessionModel session_model) {
+  // Delete if an expriation date is set and in the past.
+  if (!expiration.is_null() && (expiration < base::Time::Now()))
+    return true;
+
+  // Off the Record preferences are inherited from the parent profile, which
+  // has already been culled.
+  if (off_the_record)
+    return false;
+
+  // Clear non-Durable settings when no restoring a previous session.
+  return ((session_model != content_settings::SessionModel::Durable) &&
+          !restore_session);
+}
+
 }  // namespace
 
 namespace content_settings {
@@ -112,12 +130,14 @@ ContentSettingsPref::ContentSettingsPref(
     PrefChangeRegistrar* registrar,
     const std::string& pref_name,
     bool off_the_record,
+    bool restore_session,
     NotifyObserversCallback notify_callback)
     : content_type_(content_type),
       prefs_(prefs),
       registrar_(registrar),
       pref_name_(pref_name),
       off_the_record_(off_the_record),
+      restore_session_(restore_session),
       updating_preferences_(false),
       notify_callback_(notify_callback),
       allow_resource_identifiers_(false) {
@@ -320,8 +340,8 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
     // expiration date or a SessionModel of UserSession.
     base::Time expiration = GetExpiration(settings_dictionary);
     SessionModel session_model = GetSessionModel(settings_dictionary);
-    if ((!off_the_record_ && (session_model != SessionModel::Durable)) ||
-        (!expiration.is_null() && (expiration < base::Time::Now()))) {
+    if (ShouldRemoveSetting(off_the_record_, expiration, restore_session_,
+                            session_model)) {
       expired_patterns_to_remove.push_back(pattern_str);
       continue;
     }

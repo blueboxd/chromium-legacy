@@ -14,12 +14,14 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Languages & Input settings. Search
 // tags for some input features (e.g., Smart Inputs) are used only when
 // the relevant features are enabled.
 class LanguagesSection : public OsSettingsSection {
  public:
-  LanguagesSection(Profile* profile, Delegate* per_page_delegate);
+  LanguagesSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~LanguagesSection() override;
 
  private:

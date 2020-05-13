@@ -761,8 +761,6 @@ public class ChromeTabbedActivity
                     mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
                     bookmarkClickHandler, null, showStartSurfaceSupplier);
 
-            mLayoutManager.setToolbarManager(getToolbarManager());
-
             if (!TabUiFeatureUtilities.supportInstantStart(isTablet())) {
                 assert !mOverviewModeController.overviewVisible();
             }

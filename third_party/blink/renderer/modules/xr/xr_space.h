@@ -70,6 +70,15 @@ class XRSpace : public EventTargetWithInlineData {
   // a transform is not possible.
   base::Optional<TransformationMatrix> MojoFromOffsetMatrix();
 
+  // Returns true when invoked on a space that is deemed stationary, false
+  // otherwise (this means that the space is considered dynamic). Stationary
+  // spaces are the spaces that should remain stable relative to the environment
+  // over longer periods (i.e. longer than a single frame). Examples of
+  // stationary spaces are for XRReferenceSpaces (with the exception of "viewer"
+  // space), anchor spaces, plane spaces. Examples of dynamic spaces are input
+  // source spaces and XRReference space of type "viewer".
+  virtual bool IsStationary() const = 0;
+
   // Indicates whether or not the position portion of the native origin of this
   // space is emulated.
   virtual bool EmulatedPosition() const;
@@ -78,6 +87,7 @@ class XRSpace : public EventTargetWithInlineData {
   // that maps from this space to the other's space, or in other words:
   // other_from_this.
   virtual XRPose* getPose(XRSpace* other_space);
+
   XRSession* session() const { return session_; }
 
   // EventTarget overrides.

@@ -86,6 +86,7 @@ void WebAppMenuModel::Build() {
 }
 
 void WebAppMenuModel::LogMenuAction(AppMenuAction action_id) {
+  AppMenuModel::LogMenuAction(action_id);
   UMA_HISTOGRAM_ENUMERATION("HostedAppFrame.WrenchMenu.MenuAction", action_id,
                             LIMIT_MENU_ACTION);
 }

@@ -65,3 +65,10 @@ void RecordDownloadShelfDragEvent(DownloadShelfDragEvent drag_event) {
                             DownloadShelfDragEvent::COUNT);
 }
 
+#ifdef OS_ANDROID
+// Records whether the download dialog is shown to the user.
+void RecordDownloadPromptStatus(DownloadPromptStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("MobileDownload.DownloadPromptStatus", status,
+                            DownloadPromptStatus::MAX_VALUE);
+}
+#endif  // OS_ANDROID

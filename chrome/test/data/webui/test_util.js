@@ -19,14 +19,14 @@ cr.define('test_util', function() {
   /* #export */ function whenAttributeIs(
       target, attributeName, attributeValue) {
     function isDone() {
-      return target.getAttribute(attributeName) == attributeValue;
+      return target.getAttribute(attributeName) === attributeValue;
     }
 
     return isDone() ? Promise.resolve() : new Promise(function(resolve) {
       new MutationObserver(function(mutations, observer) {
         for (const mutation of mutations) {
           assertEquals('attributes', mutation.type);
-          if (mutation.attributeName == attributeName && isDone()) {
+          if (mutation.attributeName === attributeName && isDone()) {
             observer.disconnect();
             resolve();
             return;

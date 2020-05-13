@@ -33,10 +33,11 @@ class AnswerSuggestionViewProperties {
     /** The accessibility description to be announced with this line. */
     public static final WritableObjectPropertyKey<String> TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION =
             new WritableObjectPropertyKey<>();
+    public static final WritableIntPropertyKey ANSWER_TYPE = new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {TEXT_LINE_1_TEXT,
             TEXT_LINE_1_MAX_LINES, TEXT_LINE_1_ACCESSIBILITY_DESCRIPTION, TEXT_LINE_2_TEXT,
-            TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION};
+            TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_ACCESSIBILITY_DESCRIPTION, ANSWER_TYPE};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, BaseSuggestionViewProperties.ALL_KEYS);

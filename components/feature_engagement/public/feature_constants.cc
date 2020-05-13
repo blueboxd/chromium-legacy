@@ -103,6 +103,8 @@ const base::Feature kIPHTranslateMenuButtonFeature{
     "IPH_TranslateMenuButton", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHExploreSitesTileFeature{
     "IPH_ExploreSitesTile", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHFeedHeaderMenuFeature{
+    "IPH_FeedHeaderMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

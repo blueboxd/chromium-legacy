@@ -627,6 +627,11 @@ void LegacyCacheStorage::DropHandleRef() {
   }
 }
 
+void LegacyCacheStorage::Init() {
+  if (!initialized_)
+    LazyInit();
+}
+
 void LegacyCacheStorage::OpenCache(const std::string& cache_name,
                                    int64_t trace_id,
                                    CacheAndErrorCallback callback) {

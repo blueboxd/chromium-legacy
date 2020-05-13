@@ -91,7 +91,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
+    public void recordItemPresented(PropertyModel model) {
         // SuggestionUsed bookkeeping handled in C++:
         // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
         int decorationType = model.get(EntitySuggestionViewProperties.DECORATION_TYPE);

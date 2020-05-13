@@ -115,10 +115,6 @@ class ASH_EXPORT AssistantControllerImpl
     return &assistant_setup_controller_;
   }
 
-  AssistantStateController* state_controller() {
-    return &assistant_state_controller_;
-  }
-
   AssistantWebUiController* web_ui_controller() {
     return &assistant_web_ui_controller_;
   }
@@ -135,7 +131,8 @@ class ASH_EXPORT AssistantControllerImpl
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::AssistantState state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   // AssistantInterfaceBinder implementation:
@@ -148,8 +145,6 @@ class ASH_EXPORT AssistantControllerImpl
   void BindScreenContextController(
       mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver)
       override;
-  void BindStateController(
-      mojo::PendingReceiver<mojom::AssistantStateController> receiver) override;
   void BindVolumeControl(
       mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) override;
 

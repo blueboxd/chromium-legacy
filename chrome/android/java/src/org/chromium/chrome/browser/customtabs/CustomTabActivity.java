@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
@@ -63,7 +62,6 @@ import org.chromium.content_public.browser.WebContents;
 public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityComponent> {
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
-    private TrustedWebActivityCoordinator mTwaCoordinator;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
@@ -337,14 +335,5 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     @Nullable
     public String getTwaPackage() {
         return mTwaCoordinator == null ? null : mTwaCoordinator.getTwaPackage();
-    }
-
-    /**
-     * @return Whether the app is running in the "Trusted Web Activity" mode, where the TWA-specific
-     *         UI is shown.
-     */
-    @Nullable
-    public Boolean isInTwaMode() {
-        return mTwaCoordinator == null ? false : mTwaCoordinator.isInTwaMode();
     }
 }

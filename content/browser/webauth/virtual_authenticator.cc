@@ -48,16 +48,17 @@ bool VirtualAuthenticator::AddRegistration(
     const std::string& rp_id,
     const std::vector<uint8_t>& private_key,
     int32_t counter) {
-  auto ec_private_key =
-      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
-  if (!ec_private_key)
+  base::Optional<std::unique_ptr<device::VirtualFidoDevice::PrivateKey>>
+      fido_private_key =
+          device::VirtualFidoDevice::PrivateKey::FromPKCS8(private_key);
+  if (!fido_private_key)
     return false;
 
   return state_->registrations
       .emplace(
           std::move(key_handle),
           ::device::VirtualFidoDevice::RegistrationData(
-              std::move(ec_private_key),
+              std::move(*fido_private_key),
               ::device::fido_parsing_utils::CreateSHA256Hash(rp_id), counter))
       .second;
 }
@@ -68,16 +69,17 @@ bool VirtualAuthenticator::AddResidentRegistration(
     const std::vector<uint8_t>& private_key,
     int32_t counter,
     std::vector<uint8_t> user_handle) {
-  auto ec_private_key =
-      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
-  if (!ec_private_key)
+  base::Optional<std::unique_ptr<device::VirtualFidoDevice::PrivateKey>>
+      fido_private_key =
+          device::VirtualFidoDevice::PrivateKey::FromPKCS8(private_key);
+  if (!fido_private_key)
     return false;
 
   return state_->InjectResidentKey(
       std::move(key_handle),
       device::PublicKeyCredentialRpEntity(std::move(rp_id)),
       device::PublicKeyCredentialUserEntity(std::move(user_handle)), counter,
-      std::move(ec_private_key));
+      std::move(*fido_private_key));
 }
 
 void VirtualAuthenticator::ClearRegistrations() {
@@ -129,8 +131,8 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
     mojo_registered_key->counter = registration.second.counter;
     mojo_registered_key->rp_id =
         registration.second.rp ? registration.second.rp->id : "";
-    registration.second.private_key->ExportPrivateKey(
-        &mojo_registered_key->private_key);
+    mojo_registered_key->private_key =
+        registration.second.private_key->GetPKCS8PrivateKey();
     mojo_registered_keys.push_back(std::move(mojo_registered_key));
   }
   std::move(callback).Run(std::move(mojo_registered_keys));

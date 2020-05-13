@@ -41,6 +41,7 @@ class ContentSettingsPref {
                       PrefChangeRegistrar* registrar,
                       const std::string& pref_name,
                       bool off_the_record,
+                      bool restore_session,
                       NotifyObserversCallback notify_callback);
   ~ContentSettingsPref();
 
@@ -114,6 +115,8 @@ class ContentSettingsPref {
   const std::string& pref_name_;
 
   bool off_the_record_;
+
+  bool restore_session_;
 
   // Whether we are currently updating preferences, this is used to ignore
   // notifications from the preferences service that we triggered ourself.

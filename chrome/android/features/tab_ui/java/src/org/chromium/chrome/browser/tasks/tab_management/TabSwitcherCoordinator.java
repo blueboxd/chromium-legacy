@@ -62,6 +62,24 @@ public class TabSwitcherCoordinator
         void showIph();
     }
 
+    private class TabGroupManualSelectionMode {
+        public final String actionString;
+        public final int enablingThreshold;
+        public final TabSelectionEditorActionProvider actionProvider;
+        public final TabSelectionEditorCoordinator
+                .TabSelectionEditorNavigationProvider navigationProvider;
+
+        TabGroupManualSelectionMode(String actionString, int enablingThreshold,
+                TabSelectionEditorActionProvider actionProvider,
+                TabSelectionEditorCoordinator
+                        .TabSelectionEditorNavigationProvider navigationProvider) {
+            this.actionString = actionString;
+            this.enablingThreshold = enablingThreshold;
+            this.actionProvider = actionProvider;
+            this.navigationProvider = navigationProvider;
+        }
+    }
+
     // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
     // tab switcher.
     static final String COMPONENT_NAME = "GridTabSwitcher";
@@ -78,6 +96,7 @@ public class TabSwitcherCoordinator
     private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
 
     private TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
+    private TabGroupManualSelectionMode mTabGroupManualSelectionMode;
     private UndoGroupSnackbarController mUndoGroupSnackbarController;
     private TabSuggestionsOrchestrator mTabSuggestionsOrchestrator;
     private NewTabTileCoordinator mNewTabTileCoordinator;
@@ -92,6 +111,14 @@ public class TabSwitcherCoordinator
                 @Override
                 public boolean handleMenuOrKeyboardAction(int id, boolean fromMenu) {
                     if (id == R.id.menu_group_tabs) {
+                        assert mTabGroupManualSelectionMode != null;
+
+                        mTabSelectionEditorCoordinator.getController().configureToolbar(
+                                mTabGroupManualSelectionMode.actionString,
+                                mTabGroupManualSelectionMode.actionProvider,
+                                mTabGroupManualSelectionMode.enablingThreshold,
+                                mTabGroupManualSelectionMode.navigationProvider);
+
                         mTabSelectionEditorCoordinator.getController().show(
                                 mTabModelSelector.getTabModelFilterProvider()
                                         .getCurrentTabModelFilter()
@@ -194,13 +221,7 @@ public class TabSwitcherCoordinator
             ModalDialogManager modalDialogManager) {
         if (mIsInitialized) return;
 
-        // For tab switcher in carousel mode, the selection editor should still follow grid style.
-        int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
-                ? TabListCoordinator.TabListMode.GRID
-                : mMode;
-        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(context, mContainer,
-                mTabModelSelector, tabContentManager, null, selectionEditorMode);
-        mMediator.initWithNative(mTabSelectionEditorCoordinator.getController());
+        setUpTabGroupManualSelectionMode(context, tabContentManager);
 
         mTabListCoordinator.initWithNative(dynamicResourceLoader);
         if (mTabGridDialogCoordinator != null) {
@@ -244,6 +265,24 @@ public class TabSwitcherCoordinator
             }
         }
         mIsInitialized = true;
+    }
+
+    private void setUpTabGroupManualSelectionMode(
+            Context context, TabContentManager tabContentManager) {
+        // For tab switcher in carousel mode, the selection editor should still follow grid style.
+        int selectionEditorMode = mMode == TabListCoordinator.TabListMode.CAROUSEL
+                ? TabListCoordinator.TabListMode.GRID
+                : mMode;
+        mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(context, mContainer,
+                mTabModelSelector, tabContentManager, null, selectionEditorMode);
+        mMediator.initWithNative(mTabSelectionEditorCoordinator.getController());
+
+        mTabGroupManualSelectionMode = new TabGroupManualSelectionMode(
+                context.getString(R.string.tab_selection_editor_group), 2,
+                new TabSelectionEditorActionProvider(mTabSelectionEditorCoordinator.getController(),
+                        TabSelectionEditorActionProvider.TabSelectionEditorAction.GROUP),
+                new TabSelectionEditorCoordinator.TabSelectionEditorNavigationProvider(
+                        mTabSelectionEditorCoordinator.getController()));
     }
 
     // TabSwitcher implementation.

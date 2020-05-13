@@ -1924,6 +1924,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "enable-quick-answers-text-annotator",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "enable-reader-mode",
     "owners": [ "gilmanmh@google.com" ],
     "expiry_milestone": 85
@@ -4305,6 +4310,11 @@
     "name": "webpage-text-accessibility",
     "owners": [ "rkgibson" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "webui-a11y-enhancements",
+    "owners": [ "aee" ],
+    "expiry_milestone": 82
   },
   {
     "name": "webui-tab-strip",

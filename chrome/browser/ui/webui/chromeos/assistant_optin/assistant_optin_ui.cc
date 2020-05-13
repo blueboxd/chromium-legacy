@@ -143,7 +143,7 @@ void AssistantOptInDialog::Show(
   // Check Assistant allowed state.
   if (::assistant::IsAssistantAllowedForProfile(
           ProfileManager::GetActiveUserProfile()) !=
-      ash::mojom::AssistantAllowedState::ALLOWED) {
+      chromeos::assistant::AssistantAllowedState::ALLOWED) {
     std::move(callback).Run(false);
     return;
   }

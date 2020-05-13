@@ -117,13 +117,6 @@ class MostVisitedElement extends PolymerElement {
       /** @private */
       dialogTitle_: String,
 
-      /** @private */
-      isRtl_: {
-        type: Boolean,
-        value: false,
-        reflectToAttribute: true,
-      },
-
       /**
        * Used to hide hover style and cr-icon-button of tiles while the tiles
        * are being reordered.

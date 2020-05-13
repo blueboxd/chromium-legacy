@@ -45,6 +45,8 @@ namespace mirroring {
 
 namespace {
 
+constexpr int kDefaultPlayoutDelay = 400;  // ms
+
 class MockRemotingSource final : public media::mojom::RemotingSource {
  public:
   MockRemotingSource() {}
@@ -104,6 +106,16 @@ class SessionTest : public mojom::ResourceProvider,
     EXPECT_TRUE(GetString(*value, "type", &message_type));
     if (message_type == "OFFER") {
       EXPECT_TRUE(GetInt(*value, "seqNum", &offer_sequence_number_));
+      auto* offer = value->FindKey("offer");
+      ASSERT_TRUE(offer);
+      auto* raw_streams = offer->FindKey("supportedStreams");
+      if (raw_streams) {
+        base::Value::ListView streams = raw_streams->GetList();
+        for (auto it = streams.begin(); it != streams.end(); ++it) {
+          EXPECT_EQ(it->FindKey("targetDelay")->GetInt(),
+                    target_playout_delay_ms_);
+        }
+      }
     } else if (message_type == "GET_CAPABILITIES") {
       EXPECT_TRUE(GetInt(*value, "seqNum", &capability_sequence_number_));
     }
@@ -197,6 +209,10 @@ class SessionTest : public mojom::ResourceProvider,
     session_params->receiver_address = receiver_endpoint_.address();
     session_params->type = session_type_;
     session_params->receiver_model_name = "Chromecast";
+    if (target_playout_delay_ms_ != kDefaultPlayoutDelay) {
+      session_params->target_playout_delay =
+          base::TimeDelta::FromMilliseconds(target_playout_delay_ms_);
+    }
     cast_mode_ = "mirroring";
     mojo::PendingRemote<mojom::ResourceProvider> resource_provider_remote;
     mojo::PendingRemote<mojom::SessionObserver> session_observer_remote;
@@ -336,6 +352,10 @@ class SessionTest : public mojom::ResourceProvider,
     Mock::VerifyAndClear(&remoting_source_);
   }
 
+  void SetTargetPlayoutDelay(int target_playout_delay_ms) {
+    target_playout_delay_ms_ = target_playout_delay_ms;
+  }
+
  private:
   base::test::TaskEnvironment task_environment_;
   const net::IPEndPoint receiver_endpoint_;
@@ -349,6 +369,7 @@ class SessionTest : public mojom::ResourceProvider,
   std::string cast_mode_;
   int32_t offer_sequence_number_ = -1;
   int32_t capability_sequence_number_ = -1;
+  int32_t target_playout_delay_ms_ = kDefaultPlayoutDelay;
 
   std::unique_ptr<Session> session_;
   std::unique_ptr<FakeVideoCaptureHost> video_host_;
@@ -364,6 +385,7 @@ TEST_F(SessionTest, AudioOnlyMirroring) {
 }
 
 TEST_F(SessionTest, VideoOnlyMirroring) {
+  SetTargetPlayoutDelay(1000);
   CreateSession(SessionType::VIDEO_ONLY);
   StartSession();
   CaptureOneVideoFrame();
@@ -371,6 +393,7 @@ TEST_F(SessionTest, VideoOnlyMirroring) {
 }
 
 TEST_F(SessionTest, AudioAndVideoMirroring) {
+  SetTargetPlayoutDelay(150);
   CreateSession(SessionType::AUDIO_AND_VIDEO);
   StartSession();
   StopSession();

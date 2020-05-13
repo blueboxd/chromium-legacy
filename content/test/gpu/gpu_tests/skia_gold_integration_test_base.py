@@ -525,10 +525,8 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     if parsed_options.no_skia_gold_failure:
       return False
     # Don't surface if the test was recently added and we're still within its
-    # grace period. However, fail if we're on a trybot so that as many images
-    # can be triaged as possible before a new test is committed.
-    if (page.grace_period_end and date.today() <= page.grace_period_end
-        and not parsed_options.gerrit_issue):
+    # grace period.
+    if page.grace_period_end and date.today() <= page.grace_period_end:
       return False
     return True
 

@@ -17,9 +17,12 @@
 #include "base/time/time.h"
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
+#include "components/cbor/reader.h"
+#include "components/cbor/values.h"
 #include "crypto/ec_private_key.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/public_key.h"
 
 namespace device {
 
@@ -140,27 +143,21 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   // Create key to register.
   // Note: Non-deterministic, you need to mock this out if you rely on
   // deterministic behavior.
-  auto private_key = crypto::ECPrivateKey::Create();
-  std::string public_key;
-  bool status = private_key->ExportRawPublicKey(&public_key);
-  DCHECK(status);
-  public_key.insert(0, 1, 0x04);
-  DCHECK_EQ(public_key.size(), 65ul);
+  std::unique_ptr<PrivateKey> private_key(FreshP256Key());
+  const std::vector<uint8_t> x962 = private_key->GetX962PublicKey();
 
   // Our key handles are simple hashes of the public key.
-  auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
-  std::vector<uint8_t> key_handle(hash.begin(), hash.end());
+  const auto key_handle = crypto::SHA256Hash(x962);
 
   // Data to be signed.
   std::vector<uint8_t> sign_buffer;
   sign_buffer.reserve(1 + application_parameter.size() +
-                      challenge_param.size() + key_handle.size() +
-                      public_key.size());
+                      challenge_param.size() + key_handle.size() + x962.size());
   sign_buffer.push_back(0x00);
   Append(&sign_buffer, application_parameter);
   Append(&sign_buffer, challenge_param);
   Append(&sign_buffer, key_handle);
-  Append(&sign_buffer, base::as_bytes(base::make_span(public_key)));
+  Append(&sign_buffer, x962);
 
   // Sign with attestation key.
   // Note: Non-deterministic, you need to mock this out if you rely on
@@ -168,7 +165,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   std::vector<uint8_t> sig;
   std::unique_ptr<crypto::ECPrivateKey> attestation_private_key =
       crypto::ECPrivateKey::CreateFromPrivateKeyInfo(GetAttestationKey());
-  status = Sign(attestation_private_key.get(), sign_buffer, &sig);
+  bool status = Sign(attestation_private_key.get(), sign_buffer, &sig);
   DCHECK(status);
 
   // The spec says that the other bits of P1 should be zero. However, Chrome
@@ -181,10 +178,10 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
 
   // U2F response data.
   std::vector<uint8_t> response;
-  response.reserve(1 + public_key.size() + 1 + key_handle.size() +
+  response.reserve(1 + x962.size() + 1 + key_handle.size() +
                    attestation_cert->size() + sig.size());
   response.push_back(kU2fRegistrationResponseHeader);
-  Append(&response, base::as_bytes(base::make_span(public_key)));
+  Append(&response, base::as_bytes(base::make_span(x962)));
   response.push_back(key_handle.size());
   Append(&response, key_handle);
   Append(&response, *attestation_cert);
@@ -246,9 +243,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   Append(&sign_buffer, challenge_param);
 
   // Sign with credential key.
-  std::vector<uint8_t> sig;
-  bool status = Sign(registration->private_key.get(), sign_buffer, &sig);
-  DCHECK(status);
+  std::vector<uint8_t> sig = registration->private_key->Sign(sign_buffer);
 
   // Add signature for full response.
   Append(&response, sig);

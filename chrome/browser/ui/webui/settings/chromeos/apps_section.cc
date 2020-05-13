@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -125,13 +126,13 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
 }  // namespace
 
 AppsSection::AppsSection(Profile* profile,
-                         Delegate* per_page_delegate,
+                         SearchTagRegistry* search_tag_registry,
                          PrefService* pref_service,
                          ArcAppListPrefs* arc_app_list_prefs)
-    : OsSettingsSection(profile, per_page_delegate),
+    : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service),
       arc_app_list_prefs_(arc_app_list_prefs) {
-  delegate()->AddSearchTags(GetAppsSearchConcepts());
+  registry()->AddSearchTags(GetAppsSearchConcepts());
 
   if (arc::IsArcAllowedForProfile(profile)) {
     pref_change_registrar_.Init(pref_service_);
@@ -235,26 +236,26 @@ void AppsSection::AddAndroidAppStrings(content::WebUIDataSource* html_source) {
 }
 
 void AppsSection::UpdateAndroidSearchTags() {
-  delegate()->RemoveSearchTags(GetAndroidNoPlayStoreSearchConcepts());
-  delegate()->RemoveSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
-  delegate()->RemoveSearchTags(GetAndroidPlayStoreSearchConcepts());
-  delegate()->RemoveSearchTags(GetAndroidSettingsSearchConcepts());
+  registry()->RemoveSearchTags(GetAndroidNoPlayStoreSearchConcepts());
+  registry()->RemoveSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
+  registry()->RemoveSearchTags(GetAndroidPlayStoreSearchConcepts());
+  registry()->RemoveSearchTags(GetAndroidSettingsSearchConcepts());
 
   if (!arc::IsPlayStoreAvailable()) {
-    delegate()->AddSearchTags(GetAndroidNoPlayStoreSearchConcepts());
+    registry()->AddSearchTags(GetAndroidNoPlayStoreSearchConcepts());
     return;
   }
 
   if (!arc::IsArcPlayStoreEnabledForProfile(profile())) {
-    delegate()->AddSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
+    registry()->AddSearchTags(GetAndroidPlayStoreDisabledSearchConcepts());
     return;
   }
 
-  delegate()->AddSearchTags(GetAndroidPlayStoreSearchConcepts());
+  registry()->AddSearchTags(GetAndroidPlayStoreSearchConcepts());
 
   if (arc_app_list_prefs_ &&
       arc_app_list_prefs_->IsRegistered(arc::kSettingsAppId)) {
-    delegate()->AddSearchTags(GetAndroidSettingsSearchConcepts());
+    registry()->AddSearchTags(GetAndroidSettingsSearchConcepts());
   }
 }
 

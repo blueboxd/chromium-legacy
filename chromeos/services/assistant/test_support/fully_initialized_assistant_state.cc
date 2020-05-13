@@ -13,14 +13,13 @@ FullyInitializedAssistantState::FullyInitializedAssistantState() {
 
 void FullyInitializedAssistantState::InitializeAllValues() {
   settings_enabled_ = true;
-  consent_status_ =
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
+  consent_status_ = prefs::ConsentStatus::kActivityControlAccepted;
   context_enabled_ = true;
   hotword_enabled_ = true;
   hotword_always_on_ = true;
   launch_with_mic_open_ = true;
   notification_enabled_ = true;
-  allowed_state_ = ash::mojom::AssistantAllowedState::ALLOWED;
+  allowed_state_ = AssistantAllowedState::ALLOWED;
   locale_ = "en_US";
   arc_play_store_enabled_ = true;
   locked_full_screen_enabled_ = true;

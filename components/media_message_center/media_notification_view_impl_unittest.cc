@@ -105,13 +105,11 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
   MOCK_METHOD2(OnColorsChanged, void(SkColor foreground, SkColor background));
   MOCK_METHOD0(OnHeaderClicked, void());
 
-  MediaNotificationViewImpl* view() const { return view_.get(); }
-  void SetView(std::unique_ptr<MediaNotificationViewImpl> view) {
-    view_ = std::move(view);
-  }
+  MediaNotificationViewImpl* view() const { return view_; }
+  void SetView(MediaNotificationViewImpl* view) { view_ = view; }
 
  private:
-  std::unique_ptr<MediaNotificationViewImpl> view_;
+  MediaNotificationViewImpl* view_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationContainer);
 };
@@ -171,6 +169,7 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
   }
 
   void TearDown() override {
+    container_.SetView(nullptr);
     widget_.reset();
 
     actions_.clear();
@@ -324,13 +323,13 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
         base::ASCIIToUTF16(kTestDefaultAppName), kViewWidth,
         /*should_show_icon=*/true);
     view->SetSize(kViewSize);
-    view->set_owned_by_client();
 
-    // Display it in |widget_|.
-    widget_->SetContentsView(view.get());
+    // Display it in |widget_|. Widget now owns |view|.
+    auto* view_ptr = view.get();
+    widget_->SetContentsView(view.release());
 
     // Associate it with |container_|.
-    container_.SetView(std::move(view));
+    container_.SetView(view_ptr);
   }
 
   base::UnguessableToken request_id_;

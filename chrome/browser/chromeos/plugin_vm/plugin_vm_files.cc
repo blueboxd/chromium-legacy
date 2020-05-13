@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/shelf_model.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -20,11 +21,14 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/base_window.h"
 
 namespace plugin_vm {
 
@@ -69,6 +73,21 @@ void EnsureDirExists(
 base::FilePath GetDefaultSharedDir(Profile* profile) {
   return file_manager::util::GetMyFilesFolderForProfile(profile).Append(
       kPluginVmName);
+}
+
+void FocusAllPluginVmWindows() {
+  ash::ShelfModel* shelf_model =
+      ChromeLauncherController::instance()->shelf_model();
+  DCHECK(shelf_model);
+  AppWindowLauncherItemController* launcher_item_controller =
+      shelf_model->GetAppWindowLauncherItemController(
+          ash::ShelfID(kPluginVmAppId));
+  if (!launcher_item_controller) {
+    return;
+  }
+  for (ui::BaseWindow* app_window : launcher_item_controller->windows()) {
+    app_window->Activate();
+  }
 }
 
 // LaunchPluginVmApp will run before this and try to start Plugin VM.
@@ -130,6 +149,8 @@ void LaunchPluginVmAppImpl(Profile* profile,
                                           "Failed to launch " + app_id);
                   return;
                 }
+
+                FocusAllPluginVmWindows();
 
                 std::move(callback).Run(/*success=*/true, "");
               },

@@ -17429,6 +17429,12 @@ Called by update_document_policy_enum.py.-->
   <int value="4" label="Same as source"/>
 </enum>
 
+<enum name="DownloadPromptStatus">
+  <int value="0" label="Show initial"/>
+  <int value="1" label="Show prompt"/>
+  <int value="2" label="Don't show prompt"/>
+</enum>
+
 <enum name="DownloadResumptionRestartCountType">
   <int value="0" label="Requested by server response"/>
   <int value="1" label="Strong validators changed"/>
@@ -27290,6 +27296,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3285" label="SchemefulSameSiteContextDowngrade"/>
   <int value="3286" label="OriginIsolationHeader"/>
   <int value="3287" label="V8WasmSimdOpcodes"/>
+  <int value="3288" label="GridRowGapPercent"/>
+  <int value="3289" label="GridRowGapPercentIndefinite"/>
+  <int value="3290" label="FlexRowGapPercent"/>
+  <int value="3291" label="FlexRowGapPercentIndefinite"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40026,6 +40036,7 @@ from previous Chrome versions.
   <int value="-29507521" label="ContextualNudges:disabled"/>
   <int value="-28295905" label="AutofillEnableAccountWalletStorage:enabled"/>
   <int value="-27213807" label="GlobalMediaControls:enabled"/>
+  <int value="-24217468" label="QuickAnswersTextAnnotator:enabled"/>
   <int value="-23804418"
       label="NTPArticleSuggestionsExpandableHeader:disabled"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
@@ -41322,6 +41333,7 @@ from previous Chrome versions.
   <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
   <int value="1475210901" label="AvatarToolbarButton:disabled"/>
+  <int value="1478075250" label="QuickAnswersTextAnnotator:disabled"/>
   <int value="1478461926" label="GlobalMediaControlsPictureInPicture:enabled"/>
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1480607006" label="MixBrowserTypeTabs:enabled"/>
@@ -48162,6 +48174,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Regular menu option"/>
   <int value="2" label="Tab strip menu option"/>
   <int value="3" label="New tab button in toolbar for touch"/>
+  <int value="4" label="New tab button in the WebUI tab strip"/>
 </enum>
 
 <enum name="NewTabURLState">
@@ -58616,6 +58629,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="User clicked on the page and the warning was shown."/>
   <int value="5"
       label="Page tried to enter fullscreen mode and the warning was shown."/>
+  <int value="6"
+      label="Page initiated a download and it was silently cancelled."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">
@@ -58673,6 +58688,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="User has opted-out"/>
   <int value="1" label="User has opted-in"/>
   <int value="2" label="Unable to determine user opt-in"/>
+</enum>
+
+<enum name="SafeBrowsingUserPopulation">
+  <int value="0" label="Unknown user"/>
+  <int value="1" label="Safe browsing user"/>
+  <int value="2" label="Extended reporting user"/>
+  <int value="3" label="Enhanced protection user"/>
 </enum>
 
 <enum name="SafeBrowsingV4ApplyUpdateResult">

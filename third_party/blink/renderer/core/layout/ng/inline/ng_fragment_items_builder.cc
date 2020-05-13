@@ -132,10 +132,24 @@ void NGFragmentItemsBuilder::AddListMarker(
       offset);
 }
 
-void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
-                                      WritingMode writing_mode,
-                                      TextDirection direction,
-                                      const PhysicalSize& container_size) {
+NGFragmentItemsBuilder::AddPreviousItemsResult
+NGFragmentItemsBuilder::AddPreviousItems(
+    const NGFragmentItems& items,
+    WritingMode writing_mode,
+    TextDirection direction,
+    const PhysicalSize& container_size,
+    NGBoxFragmentBuilder* container_builder,
+    bool stop_at_dirty) {
+  AddPreviousItemsResult result;
+  if (stop_at_dirty) {
+    DCHECK(container_builder);
+    DCHECK(text_content_);
+  } else {
+    DCHECK(!text_content_);
+    text_content_ = items.Text(false);
+    first_line_text_content_ = items.Text(true);
+  }
+
   DCHECK(items_.IsEmpty());
   const NGFragmentItems::Span source_items = items.Items();
   const wtf_size_t estimated_size = source_items.size();
@@ -146,18 +160,30 @@ void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
   // the physical offsets are different when `writing-mode: vertial-rl`.
   DCHECK(!is_converted_to_physical_);
   const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
+
+  const NGFragmentItem* const end_item =
+      stop_at_dirty ? items.EndOfReusableItems() : nullptr;
+  const NGFragmentItem* last_line_start_item = nullptr;
+  LayoutUnit used_block_size;
+
   for (NGInlineCursor cursor(items); cursor;) {
     DCHECK(cursor.Current().Item());
     const NGFragmentItem& item = *cursor.Current().Item();
-    items_.emplace_back(
-        &item, item.OffsetInContainerBlock().ConvertToLogical(
-                   writing_mode, direction, container_size, item.Size()));
+    if (&item == end_item)
+      break;
+    DCHECK(!item.IsDirty());
+
+    const LogicalOffset item_offset =
+        item.OffsetInContainerBlock().ConvertToLogical(
+            writing_mode, direction, container_size, item.Size());
+    items_.emplace_back(&item, item_offset);
 
     if (item.Type() == NGFragmentItem::kLine) {
       const PhysicalRect line_box_bounds = item.RectInContainerBlock();
-      for (NGInlineCursor line_children = cursor.CursorForDescendants();
-           line_children; line_children.MoveToNext()) {
-        const NGFragmentItem& line_child = *line_children.Current().Item();
+      for (NGInlineCursor line = cursor.CursorForDescendants(); line;
+           line.MoveToNext()) {
+        const NGFragmentItem& line_child = *line.Current().Item();
+        DCHECK(line_child.CanReuse());
         items_.emplace_back(
             &line_child,
             (line_child.OffsetInContainerBlock() - line_box_bounds.offset)
@@ -165,16 +191,31 @@ void NGFragmentItemsBuilder::AddItems(const NGFragmentItems& items,
                                   line_box_bounds.size, line_child.Size()));
       }
       cursor.MoveToNextSkippingChildren();
+      DCHECK(item.LineBoxFragment());
+      if (stop_at_dirty) {
+        container_builder->AddChild(*item.LineBoxFragment(), item_offset);
+        last_line_start_item = &item;
+        used_block_size +=
+            item.Size().ConvertToLogical(writing_mode).block_size;
+      }
       continue;
     }
 
+    DCHECK_NE(item.Type(), NGFragmentItem::kLine);
+    DCHECK(!stop_at_dirty);
     cursor.MoveToNext();
   }
-  DCHECK_LE(items_.size(), estimated_size);
 
-  DCHECK(!text_content_);
-  text_content_ = items.Text(false);
-  first_line_text_content_ = items.Text(true);
+  if (stop_at_dirty && last_line_start_item) {
+    result.inline_break_token = last_line_start_item->InlineBreakToken();
+    DCHECK(result.inline_break_token);
+    DCHECK(!result.inline_break_token->IsFinished());
+    result.used_block_size = used_block_size;
+    result.succeeded = true;
+  }
+
+  DCHECK_LE(items_.size(), estimated_size);
+  return result;
 }
 
 const NGFragmentItemsBuilder::ItemWithOffsetList& NGFragmentItemsBuilder::Items(

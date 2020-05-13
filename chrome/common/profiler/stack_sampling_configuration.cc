@@ -15,6 +15,10 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/android/modules/stack_unwinder/public/module.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/static_constants.h"
 #endif
@@ -33,7 +37,8 @@ base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
     LAZY_INSTANCE_INITIALIZER;
 
 // The profiler is currently only implemented for Windows x64 and Mac x64.
-bool IsProfilerSupported() {
+// TODO(https://crbug.com/1004855): enable for Android arm.
+bool IsProfilerSupportedForPlatformAndChannel() {
 #if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MACOSX)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Only run on canary and dev.
@@ -126,7 +131,7 @@ bool StackSamplingConfiguration::GetSyntheticFieldTrial(
     std::string* group_name) const {
   DCHECK(IsBrowserProcess());
 
-  if (!IsProfilerSupported())
+  if (!IsProfilerSupportedForPlatformAndChannel())
     return false;
 
   *trial_name = "SyntheticStackProfilingConfiguration";
@@ -134,6 +139,10 @@ bool StackSamplingConfiguration::GetSyntheticFieldTrial(
   switch (configuration_) {
     case PROFILE_DISABLED:
       *group_name = "Disabled";
+      break;
+
+    case PROFILE_DISABLED_MODULE_NOT_INSTALLED:
+      *group_name = "DisabledModuleNotInstalled";
       break;
 
     case PROFILE_CONTROL:
@@ -210,8 +219,31 @@ StackSamplingConfiguration::GenerateConfiguration() {
   if (!IsBrowserProcess())
     return PROFILE_FROM_COMMAND_LINE;
 
-  if (!IsProfilerSupported())
+  if (!IsProfilerSupportedForPlatformAndChannel())
     return PROFILE_DISABLED;
+
+#if defined(OS_ANDROID)
+  // Allow profiling if the Android Java/native unwinder module is available at
+  // initialization time. Otherwise request that it be installed for use on the
+  // next run of Chrome and disable profiling.
+  if (!stack_unwinder::Module::IsInstalled()) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    // We only want to incur the cost of universally downloading the module in
+    // early channels, where profiling will occur over substantially all of the
+    // population. When supporting later channels in the future we will enable
+    // profiling for only a fraction of users and only download for those users.
+    const version_info::Channel channel = chrome::GetChannel();
+    if (channel == version_info::Channel::CANARY ||
+        channel == version_info::Channel::DEV) {
+      stack_unwinder::Module::RequestInstallation();
+    }
+#else
+    // This is a development build. The module is only available in the Play
+    // Store for releases so don't try to install it.
+#endif
+    return PROFILE_DISABLED_MODULE_NOT_INSTALLED;
+  }
+#endif
 
 #if defined(OS_WIN)
   // Do not start the profiler when Application Verifier is in use; running them

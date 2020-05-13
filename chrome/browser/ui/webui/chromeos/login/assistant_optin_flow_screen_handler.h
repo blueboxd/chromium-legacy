@@ -99,7 +99,8 @@ class AssistantOptInFlowScreenHandler
 
   // ash::AssistantStateObserver:
   void OnAssistantSettingsEnabled(bool enabled) override;
-  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
 
   // Send GetSettings request for the opt-in UI.
   void SendGetSettingsRequest();

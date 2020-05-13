@@ -293,6 +293,7 @@ android_library("chrome_java") {
     "//chrome/android/modules/cablev2_authenticator/public:java",
     "//chrome/android/modules/image_editor/provider:java",
     "//chrome/android/modules/image_editor/public:java",
+    "//chrome/android/modules/stack_unwinder/provider:java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",

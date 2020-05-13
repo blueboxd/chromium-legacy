@@ -340,6 +340,13 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   unsigned TextOffsetForPoint(const PhysicalOffset& point,
                               const NGFragmentItems& items) const;
 
+  // Whether this item was marked dirty for reuse or not.
+  bool IsDirty() const { return is_dirty_; }
+  void SetDirty() const { is_dirty_ = true; }
+
+  // Returns true if this item is reusable.
+  bool CanReuse() const;
+
  private:
   // Create a text item.
   NGFragmentItem(NGInlineItemResult&& item_result, const PhysicalSize& size);
@@ -383,9 +390,20 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   // Used only when |IsText()| to avoid re-computing ink overflow.
   unsigned ink_overflow_computed_ : 1;
 
+  mutable unsigned is_dirty_ : 1;
+
   mutable unsigned is_first_for_node_ : 1;
   mutable unsigned is_last_for_node_ : 1;
 };
+
+inline bool NGFragmentItem::CanReuse() const {
+  DCHECK_NE(Type(), kLine);
+  if (IsDirty())
+    return false;
+  if (const LayoutObject* layout_object = GetLayoutObject())
+    return !layout_object->SelfNeedsLayout();
+  return false;
+}
 
 }  // namespace blink
 

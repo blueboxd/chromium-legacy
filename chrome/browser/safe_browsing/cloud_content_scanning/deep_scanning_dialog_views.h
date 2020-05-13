@@ -111,7 +111,7 @@ class DeepScanningDialogViews : public views::DialogDelegate,
   DeepScanningDialogViews(std::unique_ptr<DeepScanningDialogDelegate> delegate,
                           content::WebContents* web_contents,
                           DeepScanAccessPoint access_point,
-                          bool is_file_scan);
+                          int files_count);
 
   // views::DialogDelegate:
   base::string16 GetWindowTitle() const override;
@@ -193,17 +193,18 @@ class DeepScanningDialogViews : public views::DialogDelegate,
   // Returns the appropriate upload top image ID depending on |dialog_status_|.
   int GetUploadImageId(bool use_dark) const;
 
-  // Returns the appropriate pending message ID depending on |access_point_| and
-  // |is_file_scan_|.
-  int GetPendingMessageId() const;
+  // Returns the appropriate pending message depending on |files_count_|.
+  base::string16 GetPendingMessage() const;
 
-  // Returns the appropriate failure message ID depending on |access_point_| and
-  // |is_file_scan_|.
-  int GetFailureMessageId() const;
+  // Returns the appropriate failure message depending on |final_result_| and
+  // |files_count_|.
+  base::string16 GetFailureMessage() const;
 
-  // Returns the appropriate warning message ID depending on |access_point_| and
-  // |is_file_scan_|.
-  int GetWarningMessageId() const;
+  // Returns the appropriate warning message depending on |files_count_|.
+  base::string16 GetWarningMessage() const;
+
+  // Returns the appropriate success message depending on |files_count_|.
+  base::string16 GetSuccessMessage() const;
 
   // Show the dialog. Sets |shown_| to true.
   void Show();
@@ -240,9 +241,10 @@ class DeepScanningDialogViews : public views::DialogDelegate,
   // and top image are shown to the user.
   DeepScanAccessPoint access_point_;
 
-  // Indicates whether the scan being done is for files or for text. This
-  // changes what text and top image are shown to the user.
-  bool is_file_scan_;
+  // Indicates whether the scan being done is for files (files_count_>0) or for
+  // text (files_count_==0). This changes what text and top image are shown to
+  // the user.
+  int files_count_;
 
   base::WeakPtrFactory<DeepScanningDialogViews> weak_ptr_factory_{this};
 };

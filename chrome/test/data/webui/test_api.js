@@ -79,7 +79,7 @@ Test.disableAnimationsAndTransitions = function() {
 
   var realElementAnimate = Element.prototype.animate;
   Element.prototype.animate = function(keyframes, opt_options) {
-    if (typeof opt_options == 'object') {
+    if (typeof opt_options === 'object') {
       opt_options.duration = 0;
     } else {
       opt_options = 0;
@@ -247,7 +247,7 @@ Test.prototype = {
    * @type {Function}
    */
   tearDown: function() {
-    if (typeof document != 'undefined') {
+    if (typeof document !== 'undefined') {
       var noAnimationStyle = document.getElementById('no-animation');
       if (noAnimationStyle) {
         noAnimationStyle.parentNode.removeChild(noAnimationStyle);
@@ -536,7 +536,7 @@ function makeMockFunctions(functionNames) {
  */
 function send(messageName) {
   var callback = sendCallbacks[messageName];
-  if (callback != undefined) {
+  if (callback !== undefined) {
     callback[1].apply(callback[0], Array.prototype.slice.call(arguments, 1));
   } else {
     this.__proto__.send.apply(this.__proto__, arguments);
@@ -855,7 +855,7 @@ function runTest(isAsync, testFunction, testArguments) {
 
   // Depending on how we were called, |this| might not resolve to the global
   // context.
-  if (testName == 'RUN_TEST_F' && testBody === undefined) {
+  if (testName === 'RUN_TEST_F' && testBody === undefined) {
     testBody = RUN_TEST_F;
   }
 
@@ -863,7 +863,7 @@ function runTest(isAsync, testFunction, testArguments) {
     testBody = /** @type{Function} */ (eval(testFunction));
     testName = testBody.toString();
   }
-  if (testBody != RUN_TEST_F) {
+  if (testBody !== RUN_TEST_F) {
     console.log('Running test ' + testName);
   }
 
@@ -1321,8 +1321,8 @@ RunAllAction.prototype = {
         result = this.actions_[i].invoke();
       }
 
-      if ((this.whenTestDone_ == WhenTestDone.EXPECT && errors.length) ||
-          this.whenTestDone_ == WhenTestDone.ALWAYS) {
+      if ((this.whenTestDone_ === WhenTestDone.EXPECT && errors.length) ||
+          this.whenTestDone_ === WhenTestDone.ALWAYS) {
         testDone();
       }
 
@@ -1337,7 +1337,7 @@ RunAllAction.prototype = {
       }
 
       errors.push(e);
-      if (this.whenTestDone_ != WhenTestDone.NEVER) {
+      if (this.whenTestDone_ !== WhenTestDone.NEVER) {
         testDone();
       }
     }

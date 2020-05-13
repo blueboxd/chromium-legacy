@@ -96,6 +96,8 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
     return promise;
   }
 
+  MaybeInit();
+
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
   if (!cache_storage_remote_.is_bound()) {
@@ -169,6 +171,8 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
     return promise;
   }
 
+  MaybeInit();
+
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
   if (!cache_storage_remote_.is_bound()) {
@@ -229,6 +233,8 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
     return promise;
   }
 
+  MaybeInit();
+
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
   if (!cache_storage_remote_.is_bound()) {
@@ -288,6 +294,8 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
     return promise;
   }
+
+  MaybeInit();
 
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
@@ -366,16 +374,18 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
+  if (request->method() != http_names::kGET && !options->ignoreMethod()) {
+    resolver->Resolve();
+    return promise;
+  }
+
+  MaybeInit();
+
   // The context may be destroyed and the mojo connection unbound. However the
   // object may live on, reject any requests after the context is destroyed.
   if (!cache_storage_remote_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError));
-    return promise;
-  }
-
-  if (request->method() != http_names::kGET && !options->ignoreMethod()) {
-    resolver->Resolve();
     return promise;
   }
 
@@ -472,8 +482,7 @@ CacheStorage::CacheStorage(ExecutionContext* context,
     }
   }
 
-  context->GetBrowserInterfaceBroker().GetInterface(
-      cache_storage_remote_.BindNewPipeAndPassReceiver(task_runner));
+  // Otherwise wait for MaybeInit() to bind a new mojo connection.
 }
 
 CacheStorage::~CacheStorage() = default;
@@ -503,6 +512,21 @@ bool CacheStorage::IsAllowed(ScriptState* script_state) {
     allowed_.emplace(IsCacheStorageAllowed(script_state));
   }
   return allowed_.value();
+}
+
+void CacheStorage::MaybeInit() {
+  if (cache_storage_remote_.is_bound())
+    return;
+
+  auto* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed())
+    return;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      context->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
+
+  context->GetBrowserInterfaceBroker().GetInterface(
+      cache_storage_remote_.BindNewPipeAndPassReceiver(task_runner));
 }
 
 }  // namespace blink

@@ -1293,6 +1293,11 @@ if (enable_java_templates) {
           "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
           "--min-api=$_min_sdk_version",
         ]
+        if (enable_bazel_desugar) {
+          deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
+          inputs += [ "$root_build_dir/lib.java/third_party/bazel/desugar/Desugar_runtime.jar" ]
+          args += [ "--input-paths=lib.java/third_party/bazel/desugar/Desugar_runtime.jar" ]
+        }
         if (defined(invoker.proguard_args)) {
           args += invoker.proguard_args
         }
@@ -1348,6 +1353,17 @@ if (enable_java_templates) {
       if (_proguard_enabled) {
         _input_class_jars += [ _proguard_output_path ]
       }
+      _deps = invoker.deps
+      if (_proguard_enabled) {
+        _deps += [ ":${_proguard_target_name}" ]
+      }
+
+      if (_is_dex_merging && enable_bazel_desugar) {
+        # It would be more efficient to use the pre-dex'ed copy of the runtime,
+        # but it's easier to add it in this way.
+        _deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
+        _input_class_jars += [ "$root_build_dir/lib.java/third_party/bazel/desugar/Desugar_runtime.jar" ]
+      }
       if (_input_class_jars != []) {
         _rebased_input_class_jars =
             rebase_path(_input_class_jars, root_build_dir)
@@ -1357,14 +1373,11 @@ if (enable_java_templates) {
         _main_dex_list_path = invoker.output + ".main_dex_list"
         _main_dex_list_target_name = "${target_name}__main_dex_list"
         action_with_pydeps(_main_dex_list_target_name) {
-          forward_variables_from(invoker,
-                                 [
-                                   "deps",
-                                   "testonly",
-                                 ])
+          forward_variables_from(invoker, [ "testonly" ])
 
           script = "//build/android/gyp/main_dex_list.py"
           depfile = "$target_gen_dir/$target_name.d"
+          deps = _deps
 
           # http://crbug.com/725224. Fix for bots running out of memory.
           pool = "//build/toolchain:link_pool($default_toolchain)"
@@ -1405,10 +1418,6 @@ if (enable_java_templates) {
             ]
           }
 
-          if (_proguard_enabled) {
-            deps += [ ":${_proguard_target_name}" ]
-          }
-
           if (defined(invoker.negative_main_dex_globs)) {
             args += [
               "--negative-main-dex-globs=${invoker.negative_main_dex_globs}",
@@ -1431,12 +1440,9 @@ if (enable_java_templates) {
       }
 
       action_with_pydeps(target_name) {
-        forward_variables_from(invoker,
-                               [
-                                 "deps",
-                                 "testonly",
-                               ])
+        forward_variables_from(invoker, [ "testonly" ])
         script = "//build/android/gyp/dex.py"
+        deps = _deps
         depfile = "$target_gen_dir/$target_name.d"
         outputs = [ invoker.output ]
         inputs = [ _r8_path ]
@@ -1451,11 +1457,9 @@ if (enable_java_templates) {
           rebase_path(_r8_path, root_build_dir),
         ]
 
-        if (_proguard_enabled) {
-          deps += [ ":${_proguard_target_name}" ]
-        } else if (enable_incremental_d8 &&
-                   !(defined(invoker.disable_incremental) &&
-                     invoker.disable_incremental)) {
+        if (!_proguard_enabled && enable_incremental_d8 &&
+            !(defined(invoker.disable_incremental) &&
+              invoker.disable_incremental)) {
           # Don't use incremental dexing for ProGuarded inputs as a precaution.
           args += [
             "--incremental-dir",
@@ -3431,16 +3435,10 @@ if (enable_java_templates) {
       }
     }
 
-    # TODO(agrieve): We should add in this dep during apk step rather than
-    #     adding a dep from every library to trim down dependency graph.
-    if (_supports_android &&
-        (!defined(invoker.no_desugar_dep) || !invoker.no_desugar_dep)) {
-      # Android targets that are desugared rely on the desugar runtime library.
-      _java_full_deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
-      _java_header_deps +=
-          [ "//third_party/bazel/desugar:desugar_runtime_java__header" ]
-      _java_impl_deps +=
-          [ "//third_party/bazel/desugar:desugar_runtime_java__impl" ]
+    # TODO(crbug.com/1078484): Don't use desugared .jar files for java binaries.
+    if (_is_java_binary && enable_bazel_desugar) {
+      _accumulated_deps +=
+          [ "//third_party/bazel/desugar:desugar_runtime_java" ]
     }
 
     if (defined(_final_jar_path)) {

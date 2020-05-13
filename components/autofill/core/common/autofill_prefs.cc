@@ -51,9 +51,11 @@ const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
 const char kAutofillCreditCardFidoAuthEnabled[] =
     "autofill.credit_card_fido_auth_enabled";
 
+#if defined(OS_ANDROID)
 // Boolean that is true if FIDO Authentication is enabled for card unmasking.
 const char kAutofillCreditCardFidoAuthOfferCheckboxState[] =
     "autofill.credit_card_fido_auth_offer_checkbox_state";
+#endif
 
 // Number of times the credit card signin promo has been shown.
 const char kAutofillCreditCardSigninPromoImpressionCount[] =
@@ -157,8 +159,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Non-synced prefs. Used for per-device choices, e.g., signin promo.
   registry->RegisterBooleanPref(prefs::kAutofillCreditCardFidoAuthEnabled,
                                 false);
+#if defined(OS_ANDROID)
   registry->RegisterBooleanPref(
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState, true);
+#endif
   registry->RegisterIntegerPref(
       prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
   registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);

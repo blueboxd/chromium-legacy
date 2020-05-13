@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.toolbar.bottom;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
-import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
@@ -35,19 +33,11 @@ class BottomControlsProperties {
     static final WritableObjectPropertyKey<LayoutManager> LAYOUT_MANAGER =
             new WritableObjectPropertyKey<>();
 
-    /** The browser's {@link ToolbarSwipeLayout}. */
-    static final WritableObjectPropertyKey<ToolbarSwipeLayout> TOOLBAR_SWIPE_LAYOUT =
-            new WritableObjectPropertyKey<>();
-
     /** A {@link ResourceManager} for loading textures into the compositor. */
     static final WritableObjectPropertyKey<ResourceManager> RESOURCE_MANAGER =
             new WritableObjectPropertyKey<>();
 
-    /** A handler for swipe events on the toolbar. */
-    static final WritableObjectPropertyKey<EdgeSwipeHandler> TOOLBAR_SWIPE_HANDLER =
-            new WritableObjectPropertyKey<>();
-
     static final PropertyKey[] ALL_KEYS = new PropertyKey[] {BOTTOM_CONTROLS_CONTAINER_HEIGHT_PX,
             BOTTOM_CONTROLS_HEIGHT_PX, Y_OFFSET, ANDROID_VIEW_VISIBLE, COMPOSITED_VIEW_VISIBLE,
-            LAYOUT_MANAGER, TOOLBAR_SWIPE_LAYOUT, RESOURCE_MANAGER, TOOLBAR_SWIPE_HANDLER};
+            LAYOUT_MANAGER, RESOURCE_MANAGER};
 }

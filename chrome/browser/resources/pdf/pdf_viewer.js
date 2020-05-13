@@ -8,10 +8,10 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {$, hasKeyModifiers, isRTL} from 'chrome://resources/js/util.m.js';
 
+import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
 import {FittingType, TwoUpViewAction} from './constants.js';
 import {ContentController, InkController, MessageData, PluginController, PrintPreviewParams} from './controller.js';
-import {Bookmark} from './elements/viewer-bookmark.js';
 import {FitToChangedEvent} from './elements/viewer-zoom-toolbar.js';
 import {GestureDetector} from './gesture_detector.js';
 import {PDFMetrics} from './metrics.js';
@@ -221,11 +221,13 @@ export class PDFViewer {
 
     /** @private {?ViewerPasswordScreenElement} */
     this.passwordScreen_ =
-        /** @type {!ViewerPasswordScreenElement} */ ($('password-screen'));
-    this.passwordScreen_.addEventListener('password-submitted', e => {
-      this.onPasswordSubmitted_(
-          /** @type {!CustomEvent<{password: string}>} */ (e));
-    });
+        /** @type {?ViewerPasswordScreenElement} */ ($('password-screen'));
+    if (this.passwordScreen_) {
+      this.passwordScreen_.addEventListener('password-submitted', e => {
+        this.onPasswordSubmitted_(
+            /** @type {!CustomEvent<{password: string}>} */ (e));
+      });
+    }
 
     /** @private {?ViewerErrorScreenElement} */
     this.errorScreen_ =
@@ -879,7 +881,7 @@ export class PDFViewer {
       // Document load failed.
       this.errorScreen_.show();
       this.sizer_.style.display = 'none';
-      if (this.passwordScreen_.active) {
+      if (this.passwordScreen_ && this.passwordScreen_.active) {
         this.passwordScreen_.deny();
         this.passwordScreen_.close();
       }
@@ -934,19 +936,21 @@ export class PDFViewer {
 
     if (this.isPrintPreview_) {
       this.sendBackgroundColorForPrintPreview_();
+    } else {
+      $('toolbar').strings = strings;
+      $('toolbar').pdfAnnotationsEnabled =
+          loadTimeData.getBoolean('pdfAnnotationsEnabled');
+      $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
     }
-
-    $('toolbar').strings = strings;
-    $('toolbar').pdfAnnotationsEnabled =
-        loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
     $('zoom-toolbar').setStrings(strings);
     $('zoom-toolbar').twoUpViewEnabled =
         loadTimeData.getBoolean('pdfTwoUpViewEnabled') && !this.isPrintPreview_;
     // Display the zoom toolbar after the UI text direction is set, to ensure it
     // appears on the correct side of the PDF viewer.
     $('zoom-toolbar').hidden = false;
-    $('password-screen').strings = strings;
+    if (this.passwordScreen_) {
+      $('password-screen').strings = strings;
+    }
     $('error-screen').strings = strings;
     if ($('form-warning')) {
       $('form-warning').strings = strings;
@@ -1294,7 +1298,7 @@ export class PDFViewer {
     this.isUserInitiatedEvent_ = true;
     // If we received the document dimensions, the password was good so we
     // can dismiss the password screen.
-    if (this.passwordScreen_.active) {
+    if (this.passwordScreen_ && this.passwordScreen_.active) {
       this.passwordScreen_.close();
     }
 
@@ -1319,6 +1323,7 @@ export class PDFViewer {
   handlePasswordRequest_() {
     // If the password screen isn't up, put it up. Otherwise we're
     // responding to an incorrect password so deny it.
+    assert(!!this.passwordScreen_);
     if (!this.passwordScreen_.active) {
       this.hadPassword_ = true;
       this.updateAnnotationAvailable_();

@@ -34,6 +34,8 @@ import org.chromium.base.annotations.NativeJavaTestFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.DropdownItemViewInfo;
+import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderViewProperties;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -95,7 +97,7 @@ public class AutocompleteMediatorUnitTest {
         when(mMockProcessor.doesProcessSuggestion(any())).thenReturn(true);
         when(mMockProcessor.createModel())
                 .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
-        when(mMockProcessor.getMinimumSuggestionViewHeight()).thenReturn(SUGGESTION_MIN_HEIGHT);
+        when(mMockProcessor.getMinimumViewHeight()).thenReturn(SUGGESTION_MIN_HEIGHT);
 
         when(mHandler.sendMessageAtTime(any(Message.class), anyLong()))
                 .thenAnswer(new Answer<Void>() {
@@ -235,6 +237,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onNativeInitialized();
 
         mMediator.setNewSuggestions(new AutocompleteResult(mSuggestionsList, null));
+
         mMediator.updateSuggestionsList(SUGGESTION_MIN_HEIGHT * 5);
 
         // Verify that processor has only been initialized once.
@@ -256,7 +259,10 @@ public class AutocompleteMediatorUnitTest {
         // Verify that previous suggestions have not been re-initialized.
         verify(mMockProcessor, times(1))
                 .populateModel(eq(mSuggestionsList.get(5)), anyObject(), eq(5));
-        verify(mMockProcessor, times(6)).populateModel(anyObject(), anyObject(), anyInt());
+
+        // Check that all suggestions have been initialized exactly once.
+        verify(mMockProcessor, times(mSuggestionsList.size()))
+                .populateModel(anyObject(), anyObject(), anyInt());
 
         Assert.assertEquals(6, mSuggestionModels.size());
         Assert.assertTrue(mListModel.get(SuggestionListProperties.VISIBLE));
@@ -384,6 +390,98 @@ public class AutocompleteMediatorUnitTest {
 
         mMediator.setNewSuggestions(new AutocompleteResult(list, headers1));
         Assert.assertFalse(mMediator.setNewSuggestions(new AutocompleteResult(list, headers2)));
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_buildsHeaderForFirstSuggestion() {
+        mMediator.onNativeInitialized();
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers = buildDummyGroupHeaders(1, 1, "Header");
+
+        OmniboxSuggestion suggestion =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(1)
+                        .build();
+
+        list.add(suggestion);
+        list.add(suggestion);
+
+        when(mMockProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.DEFAULT);
+
+        mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
+        final ModelList model = mMediator.getSuggestionModelList();
+        Assert.assertEquals(2 /* suggestions */ + 1 /* group headers */, model.size());
+
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(0)).type, OmniboxSuggestionUiType.HEADER);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(1)).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(2)).type, OmniboxSuggestionUiType.DEFAULT);
+
+        DropdownItemViewInfo header = (DropdownItemViewInfo) model.get(0);
+        Assert.assertEquals(
+                header.model.get(HeaderViewProperties.TITLE), headers.get(1).toUpperCase());
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_buildsHeadersOnlyWhenGroupChanges() {
+        mMediator.onNativeInitialized();
+        final List<OmniboxSuggestion> list = new ArrayList<>();
+        final SparseArray<String> headers = buildDummyGroupHeaders(2, 1, "Header");
+
+        OmniboxSuggestion suggestionWithNoGroup =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .build();
+        OmniboxSuggestion suggestionForGroup1 =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(1)
+                        .build();
+        OmniboxSuggestion suggestionForGroup2 =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(2)
+                        .build();
+
+        list.add(suggestionWithNoGroup);
+        list.add(suggestionForGroup1);
+        list.add(suggestionForGroup1);
+        list.add(suggestionForGroup2);
+        list.add(suggestionForGroup2);
+
+        when(mMockProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.DEFAULT);
+
+        mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
+        final ModelList model = mMediator.getSuggestionModelList();
+        Assert.assertEquals(5 /* suggestions */ + 2 /* group headers */, model.size());
+
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(0)).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(1)).type, OmniboxSuggestionUiType.HEADER);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(2)).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(3)).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(4)).type, OmniboxSuggestionUiType.HEADER);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(5)).type, OmniboxSuggestionUiType.DEFAULT);
+        Assert.assertEquals(
+                ((DropdownItemViewInfo) model.get(6)).type, OmniboxSuggestionUiType.DEFAULT);
+
+        DropdownItemViewInfo header1 = (DropdownItemViewInfo) model.get(1);
+        DropdownItemViewInfo header2 = (DropdownItemViewInfo) model.get(4);
+
+        Assert.assertEquals(
+                header1.model.get(HeaderViewProperties.TITLE), headers.get(1).toUpperCase());
+        Assert.assertEquals(
+                header2.model.get(HeaderViewProperties.TITLE), headers.get(2).toUpperCase());
     }
 
     @CalledByNativeJavaTest

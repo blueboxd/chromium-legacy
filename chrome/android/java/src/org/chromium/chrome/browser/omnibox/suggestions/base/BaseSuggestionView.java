@@ -66,7 +66,7 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
         mActionView.setImageResource(R.drawable.btn_suggestion_refine);
 
         mActionView.setLayoutParams(new LayoutParams(
-                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_refine_width),
+                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_action_icon_width),
                 LayoutParams.MATCH_PARENT));
         addView(mActionView);
         setContentView(view);

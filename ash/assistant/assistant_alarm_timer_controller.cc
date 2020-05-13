@@ -198,11 +198,11 @@ void AssistantAlarmTimerController::SetAssistant(
 }
 
 void AssistantAlarmTimerController::OnAssistantControllerConstructed() {
-  assistant_controller_->state_controller()->AddObserver(this);
+  AssistantState::Get()->AddObserver(this);
 }
 
 void AssistantAlarmTimerController::OnAssistantControllerDestroying() {
-  assistant_controller_->state_controller()->RemoveObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
 }
 
 void AssistantAlarmTimerController::OnDeepLinkReceived(
@@ -233,10 +233,10 @@ void AssistantAlarmTimerController::OnDeepLinkReceived(
 }
 
 void AssistantAlarmTimerController::OnAssistantStatusChanged(
-    mojom::AssistantState state) {
+    chromeos::assistant::AssistantStatus status) {
   // If LibAssistant is no longer running we need to clear our cache to
   // accurately reflect LibAssistant alarm/timer state.
-  if (state == mojom::AssistantState::NOT_READY)
+  if (status == chromeos::assistant::AssistantStatus::NOT_READY)
     model_.RemoveAllTimers();
 }
 

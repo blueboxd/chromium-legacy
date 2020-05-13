@@ -361,7 +361,8 @@ class FlexLayoutAlgorithm {
  public:
   FlexLayoutAlgorithm(const ComputedStyle*,
                       LayoutUnit line_break_length,
-                      LogicalSize percent_resolution_sizes);
+                      LogicalSize percent_resolution_sizes,
+                      Document*);
 
   template <typename... Args>
   FlexItem& emplace_back(Args&&... args) {

@@ -187,12 +187,12 @@ DeepScanningDialogViews::DeepScanningDialogViews(
     std::unique_ptr<DeepScanningDialogDelegate> delegate,
     content::WebContents* web_contents,
     DeepScanAccessPoint access_point,
-    bool is_file_scan)
+    int files_count)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
       web_contents_(web_contents),
       access_point_(std::move(access_point)),
-      is_file_scan_(is_file_scan) {
+      files_count_(files_count) {
   if (observer_for_testing)
     observer_for_testing->ConstructorCalled(this, base::TimeTicks::Now());
 
@@ -471,22 +471,16 @@ void DeepScanningDialogViews::SetupButtons() {
 }
 
 base::string16 DeepScanningDialogViews::GetDialogMessage() const {
-  int text_id;
   switch (dialog_status_) {
     case DeepScanningDialogStatus::PENDING:
-      text_id = GetPendingMessageId();
-      break;
+      return GetPendingMessage();
     case DeepScanningDialogStatus::FAILURE:
-      text_id = GetFailureMessageId();
-      break;
+      return GetFailureMessage();
     case DeepScanningDialogStatus::SUCCESS:
-      text_id = IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE;
-      break;
+      return GetSuccessMessage();
     case DeepScanningDialogStatus::WARNING:
-      text_id = GetWarningMessageId();
-      break;
+      return GetWarningMessage();
   }
-  return l10n_util::GetStringUTF16(text_id);
 }
 
 base::string16 DeepScanningDialogViews::GetCancelButtonText() const {
@@ -589,76 +583,49 @@ int DeepScanningDialogViews::GetUploadImageId(bool use_dark) const {
   return use_dark ? IDR_UPLOAD_VIOLATION_DARK : IDR_UPLOAD_VIOLATION;
 }
 
-int DeepScanningDialogViews::GetPendingMessageId() const {
+base::string16 DeepScanningDialogViews::GetPendingMessage() const {
   DCHECK(is_pending());
-  switch (access_point_) {
-    case DeepScanAccessPoint::DOWNLOAD:
-      // This dialog should not appear on the download path. If it somehow does,
-      // treat it as an upload.
-      NOTREACHED();
-      FALLTHROUGH;
-    case DeepScanAccessPoint::UPLOAD:
-      return IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE;
-    case DeepScanAccessPoint::PASTE:
-      return IDS_DEEP_SCANNING_DIALOG_PASTE_PENDING_MESSAGE;
-    case DeepScanAccessPoint::DRAG_AND_DROP:
-      return is_file_scan_ ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_PENDING_MESSAGE
-                           : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_PENDING_MESSAGE;
-  }
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE, files_count_);
 }
 
-int DeepScanningDialogViews::GetFailureMessageId() const {
+base::string16 DeepScanningDialogViews::GetFailureMessage() const {
   DCHECK(is_failure());
 
   if (final_result_ ==
       DeepScanningDialogDelegate::DeepScanningFinalResult::LARGE_FILES) {
-    return IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE;
+    return l10n_util::GetPluralStringFUTF16(
+        IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE, files_count_);
   }
 
   if (final_result_ ==
       DeepScanningDialogDelegate::DeepScanningFinalResult::ENCRYPTED_FILES) {
-    return IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE;
+    return l10n_util::GetPluralStringFUTF16(
+        IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE, files_count_);
   }
 
-  switch (access_point_) {
-    case DeepScanAccessPoint::DOWNLOAD:
-      // This dialog should not appear on the download path. If it somehow does,
-      // treat it as an upload.
-      NOTREACHED();
-      FALLTHROUGH;
-    case DeepScanAccessPoint::UPLOAD:
-      return IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE;
-    case DeepScanAccessPoint::PASTE:
-      return IDS_DEEP_SCANNING_DIALOG_PASTE_FAILURE_MESSAGE;
-    case DeepScanAccessPoint::DRAG_AND_DROP:
-      return is_file_scan_ ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE
-                           : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_FAILURE_MESSAGE;
-  }
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE, files_count_);
 }
 
-int DeepScanningDialogViews::GetWarningMessageId() const {
+base::string16 DeepScanningDialogViews::GetWarningMessage() const {
   DCHECK(is_warning());
-  switch (access_point_) {
-    case DeepScanAccessPoint::DOWNLOAD:
-      // This dialog should not appear on the download path. If it somehow does,
-      // treat it as an upload.
-      NOTREACHED();
-      FALLTHROUGH;
-    case DeepScanAccessPoint::UPLOAD:
-      return IDS_DEEP_SCANNING_DIALOG_UPLOAD_WARNING_MESSAGE;
-    case DeepScanAccessPoint::PASTE:
-      return IDS_DEEP_SCANNING_DIALOG_PASTE_WARNING_MESSAGE;
-    case DeepScanAccessPoint::DRAG_AND_DROP:
-      return is_file_scan_ ? IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_WARNING_MESSAGE
-                           : IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_WARNING_MESSAGE;
-  }
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_DEEP_SCANNING_DIALOG_UPLOAD_WARNING_MESSAGE, files_count_);
+}
+
+base::string16 DeepScanningDialogViews::GetSuccessMessage() const {
+  DCHECK(is_success());
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE, files_count_);
 }
 
 const gfx::ImageSkia* DeepScanningDialogViews::GetTopImage() const {
   const bool use_dark = color_utils::IsDark(GetBackgroundColor(GetWidget()));
   const bool treat_as_text_paste =
       access_point_ == DeepScanAccessPoint::PASTE ||
-      (access_point_ == DeepScanAccessPoint::DRAG_AND_DROP && !is_file_scan_);
+      (access_point_ == DeepScanAccessPoint::DRAG_AND_DROP &&
+       files_count_ == 0);
 
   int image_id = treat_as_text_paste ? GetPasteImageId(use_dark)
                                      : GetUploadImageId(use_dark);

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/strings/string16.h"
@@ -20,6 +21,8 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
+#include "ui/ozone/platform/wayland/host/wayland_shm_buffer.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -191,7 +194,7 @@ void AddToOSExchangeData(const PlatformClipboard::Data& data,
 // static
 WaylandDataDevice::WaylandDataDevice(WaylandConnection* connection,
                                      wl_data_device* data_device)
-    : internal::WaylandDataDeviceBase(connection), data_device_(data_device) {
+    : WaylandDataDeviceBase(connection), data_device_(data_device) {
   static const struct wl_data_device_listener kDataDeviceListener = {
       WaylandDataDevice::OnDataOffer, WaylandDataDevice::OnEnter,
       WaylandDataDevice::OnLeave,     WaylandDataDevice::OnMotion,

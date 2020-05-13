@@ -202,15 +202,20 @@ class EventRewriterTest : public ChromeAshTestBase {
     int_pref->SetValue(static_cast<int>(modifierKey));
   }
 
-  void TestKeyboard(const std::string& name,
-                    const std::string& layout,
-                    ui::InputDeviceType type,
-                    const std::vector<KeyTestCase>& tests) {
+  void SetupKeyboard(const std::string& name,
+                     const std::string& layout = "",
+                     ui::InputDeviceType type = ui::INPUT_DEVICE_INTERNAL) {
     rewriter_->ResetStateForTesting();
     rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, name, layout,
                                              type);
     rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
+  }
 
+  void TestKeyboard(const std::string& name,
+                    const std::string& layout,
+                    ui::InputDeviceType type,
+                    const std::vector<KeyTestCase>& tests) {
+    SetupKeyboard(name, layout, type);
     for (const auto& test : tests)
       CheckKeyTestCase(rewriter(), test);
   }
@@ -1177,8 +1182,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                       ui::chromeos::ModifierKey::kCapsLockKey);
 
   chromeos::input_method::FakeImeKeyboard ime_keyboard;
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId,
-                                           "Internal Keyboard");
+  SetupKeyboard("Internal Keyboard");
   rewriter_->set_ime_keyboard_for_testing(&ime_keyboard);
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
@@ -1220,9 +1224,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Do the same on external Chrome OS keyboard.
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "External Chrome Keyboard", kKbdTopRowLayout1Tag,
-      ui::INPUT_DEVICE_UNKNOWN);
+  SetupKeyboard("External Chrome Keyboard", kKbdTopRowLayout1Tag,
+                ui::INPUT_DEVICE_UNKNOWN);
 
   // Press Search.
   EXPECT_EQ(GetExpectedResultAsString(
@@ -1262,9 +1265,8 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Try external keyboard with Caps Lock.
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "External Generic Keyboard",
-      kKbdTopRowLayoutUnspecified, ui::INPUT_DEVICE_UNKNOWN);
+  SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
+                ui::INPUT_DEVICE_UNKNOWN);
 
   // Press Caps Lock.
   EXPECT_EQ(GetExpectedResultAsString(
@@ -1290,11 +1292,8 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
 
   chromeos::input_method::FakeImeKeyboard ime_keyboard;
-  // rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Internal
-  // Keyboard");
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "External Generic Keyboard",
-      kKbdTopRowLayoutUnspecified, ui::INPUT_DEVICE_UNKNOWN);
+  SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
+                ui::INPUT_DEVICE_UNKNOWN);
   rewriter_->set_ime_keyboard_for_testing(&ime_keyboard);
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
@@ -1379,9 +1378,8 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   InitModifierKeyPref(&control, prefs::kLanguageRemapCapsLockKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
 
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "External Generic Keyboard",
-      kKbdTopRowLayoutUnspecified, ui::INPUT_DEVICE_UNKNOWN);
+  SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
+                ui::INPUT_DEVICE_UNKNOWN);
   input_method_manager_mock_->set_mod3_used(true);
 
   // Press CapsLock+a. Confirm that Mod3Mask is NOT rewritten to ControlMask
@@ -2293,16 +2291,14 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
         ui::EF_NONE, ui::DomKey::F12}};
 
   // Set keyboard layout to Wilco 1.0
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Wilco Keyboard",
-                                           kKbdTopRowLayoutWilcoTag);
+  SetupKeyboard("Wilco Keyboard", kKbdTopRowLayoutWilcoTag);
   // Standard key tests using Wilco 1.0 keyboard
   for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
   CheckKeyTestCase(rewriter(), wilco_1_test);
 
   // Set keyboard layout to Drallion (Wilco 1.5)
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
+  SetupKeyboard("Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
 
   // Run key tests using Drallion keyboard layout (no privacy screen)
   rewriter_->set_privacy_screen_for_testing(false);
@@ -2489,8 +2485,7 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
         ui::DomKey::UNIDENTIFIED}}};
 
   // Set keyboard layout to Wilco 1.0
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Wilco Keyboard",
-                                           kKbdTopRowLayoutWilcoTag);
+  SetupKeyboard("Wilco Keyboard", kKbdTopRowLayoutWilcoTag);
   // Standard key tests using Wilco 1.0 keyboard
   for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
@@ -2499,8 +2494,7 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
     CheckKeyTestCase(rewriter(), test);
 
   // Set keyboard layout to Drallion (Wilco 1.5)
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
+  SetupKeyboard("Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
 
   // Standard key tests using Drallion keyboard layout
   for (const auto& test : wilco_standard_tests)
@@ -2684,8 +2678,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
         ui::EF_NONE, ui::DomKey::UNIDENTIFIED}}};
 
   // Run key test cases for Wilco 1.0 keyboard layout
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "Wilco Keyboard",
-                                           kKbdTopRowLayoutWilcoTag);
+  SetupKeyboard("Wilco Keyboard", kKbdTopRowLayoutWilcoTag);
   // Standard key tests using Wilco 1.0 keyboard
   for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
@@ -2694,8 +2687,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
     CheckKeyTestCase(rewriter(), test);
 
   // Run key test cases for Drallion (Wilco 1.5) keyboard layout
-  rewriter_->KeyboardDeviceAddedForTesting(
-      kKeyboardDeviceId, "Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
+  SetupKeyboard("Drallion Keyboard", kKbdTopRowLayoutDrallionTag);
   // Standard key tests using Drallion keyboard layout
   for (const auto& test : wilco_standard_tests)
     CheckKeyTestCase(rewriter(), test);
@@ -2801,8 +2793,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
 
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId,
-                                           "Internal Keyboard");
+  SetupKeyboard("Internal Keyboard");
 
   // Send left control press.
   {
@@ -2828,8 +2819,7 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
   InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
 
-  rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId,
-                                           "Internal Keyboard");
+  SetupKeyboard("Internal Keyboard");
 
   const int kTouchId = 2;
   gfx::Point location(0, 0);

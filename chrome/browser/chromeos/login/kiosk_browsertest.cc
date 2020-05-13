@@ -10,6 +10,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
@@ -63,6 +64,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
@@ -1419,6 +1421,28 @@ IN_PROC_BROWSER_TEST_F(KioskTest, SettingsWindow) {
   // Try navigating to a disallowed page.
   NavigateToURLBlockUntilNavigationsComplete(web_contents, page3, 1);
   EXPECT_EQ(web_contents->GetLastCommittedURL(), page2);
+
+  // Close settings browser, expect the value to be cleared.
+  CloseBrowserSynchronously(settings_browser);
+  EXPECT_EQ(app_session->GetSettingsBrowserForTesting(), nullptr);
+
+  {
+    // Open another browser with url page2, but now of type TYPE_NORMAL.
+    // This should create a new browser of app type, and close the non-app one.
+    NavigateParams params(profile, page2, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    Navigate(&params);
+
+    // Wait for two browser handlings -- for non-app and app browser.
+    base::RunLoop waiter;
+    app_session->SetOnHandleBrowserCallbackForTesting(
+        base::BarrierClosure(2, waiter.QuitClosure()));
+    waiter.Run();
+
+    // One browser should be created.
+    Browser* settings_browser = app_session->GetSettingsBrowserForTesting();
+    ASSERT_TRUE(settings_browser);
+    EXPECT_FALSE(params.browser == settings_browser);
+  }
 }
 
 // Verifies that an enterprise device does not auto-launch kiosk mode when cros

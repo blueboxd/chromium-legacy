@@ -74,6 +74,8 @@ static_library("safe_browsing") {
       "certificate_reporting_service_factory.h",
       "chrome_password_protection_service.cc",
       "chrome_password_protection_service.h",
+      "delayed_warning_navigation_throttle.cc",
+      "delayed_warning_navigation_throttle.h",
       "safe_browsing_blocking_page.cc",
       "safe_browsing_blocking_page.h",
       "safe_browsing_navigation_observer.cc",

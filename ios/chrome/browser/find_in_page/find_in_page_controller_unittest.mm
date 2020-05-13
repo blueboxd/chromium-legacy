@@ -68,9 +68,7 @@ class FindInPageControllerTest : public ChromeWebTest {
 TEST_F(FindInPageControllerTest, VerifyUKMLoggedTrue) {
   test_ukm_recorder_.Purge();
   LoadHtml(@"<html><p>some string</p></html>");
-  [find_in_page_controller_ findStringInPage:@"some string"
-                           completionHandler:^{
-                           }];
+  [find_in_page_controller_ findStringInPage:@"some string"];
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return delegate_.model != nil;
@@ -89,9 +87,7 @@ TEST_F(FindInPageControllerTest, VerifyUKMLoggedTrue) {
 TEST_F(FindInPageControllerTest, VerifyUKMLoggedFalse) {
   test_ukm_recorder_.Purge();
   LoadHtml(@"<html><p>some string</p></html>");
-  [find_in_page_controller_ findStringInPage:@"nothing"
-                           completionHandler:^{
-                           }];
+  [find_in_page_controller_ findStringInPage:@"nothing"];
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return delegate_.model != nil;

@@ -8,5 +8,6 @@ module.exports = {
     'no-restricted-properties': 'off',
     'no-var': 'off',
     'prefer-const': 'off',
+    'eqeqeq': ['error', 'always', {'null': 'ignore'}],
   },
 };

@@ -14,10 +14,12 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Files settings.
 class FilesSection : public OsSettingsSection {
  public:
-  FilesSection(Profile* profile, Delegate* per_page_delegate);
+  FilesSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~FilesSection() override;
 
  private:

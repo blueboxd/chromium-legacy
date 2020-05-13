@@ -7,6 +7,7 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import './icons.js';
+import './viewer-bookmark.js';
 import './viewer-page-selector.js';
 import './viewer-toolbar-dropdown.js';
 
@@ -15,7 +16,7 @@ import './viewer-pen-options.js';
 // </if>
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {Bookmark} from './viewer-bookmark.js';
+import {Bookmark} from '../bookmark_type.js';
 
 Polymer({
   is: 'viewer-pdf-toolbar',

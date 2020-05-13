@@ -111,6 +111,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::BLUETOOTH_GUARD, "bluetooth-devices"},
     {ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
      kBluetoothChooserDataGroupType},
+    {ContentSettingsType::WINDOW_PLACEMENT, "window-placement"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in
@@ -144,7 +145,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, nullptr},
     {ContentSettingsType::STORAGE_ACCESS, nullptr},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, nullptr},
-    {ContentSettingsType::WINDOW_PLACEMENT, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

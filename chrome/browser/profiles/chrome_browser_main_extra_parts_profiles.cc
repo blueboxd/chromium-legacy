@@ -44,6 +44,7 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_keyed_service_factory.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_service_factory.h"
@@ -304,6 +305,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   metrics::DesktopProfileSessionDurationsServiceFactory::GetInstance();
 #endif
   ModelTypeStoreServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  NearbySharingServiceFactory::GetInstance();
+#endif
   NotifierStateTrackerFactory::GetInstance();
 #if !defined(OS_ANDROID)
   NTPResourceCacheFactory::GetInstance();

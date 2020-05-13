@@ -54,7 +54,8 @@ class HomeButtonController : public AppListControllerObserver,
   void OnTabletModeStarted() override;
 
   // AssistantStateObserver:
-  void OnAssistantFeatureAllowedChanged(mojom::AssistantAllowedState) override;
+  void OnAssistantFeatureAllowedChanged(
+      chromeos::assistant::AssistantAllowedState) override;
   void OnAssistantSettingsEnabled(bool enabled) override;
 
   // AssistantUiModelObserver:

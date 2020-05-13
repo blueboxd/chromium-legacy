@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
@@ -603,13 +604,13 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source,
 
 PeopleSection::PeopleSection(
     Profile* profile,
-    Delegate* per_page_delegate,
+    SearchTagRegistry* search_tag_registry,
     syncer::SyncService* sync_service,
     SupervisedUserService* supervised_user_service,
     KerberosCredentialsManager* kerberos_credentials_manager,
     signin::IdentityManager* identity_manager,
     PrefService* pref_service)
-    : OsSettingsSection(profile, per_page_delegate),
+    : OsSettingsSection(profile, search_tag_registry),
       sync_service_(sync_service),
       supervised_user_service_(supervised_user_service),
       kerberos_credentials_manager_(kerberos_credentials_manager),
@@ -619,7 +620,7 @@ PeopleSection::PeopleSection(
   if (features::IsGuestModeActive())
     return;
 
-  delegate()->AddSearchTags(GetPeopleSearchConcepts());
+  registry()->AddSearchTags(GetPeopleSearchConcepts());
 
   if (kerberos_credentials_manager_) {
     // Kerberos search tags are added/removed dynamically.
@@ -636,12 +637,12 @@ PeopleSection::PeopleSection(
   // Parental control search tags are added if necessary and do not update
   // dynamically during a user session.
   if (features::ShouldShowParentalControlSettings(profile))
-    delegate()->AddSearchTags(GetParentalSearchConcepts());
+    registry()->AddSearchTags(GetParentalSearchConcepts());
 
   // Fingerprint search tags are added if necessary and do not update
   // dynamically during a user session.
   if (AreFingerprintSettingsAllowed())
-    delegate()->AddSearchTags(GetFingerprintSearchConcepts());
+    registry()->AddSearchTags(GetFingerprintSearchConcepts());
 }
 
 PeopleSection::~PeopleSection() {
@@ -784,19 +785,19 @@ void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
   DCHECK_EQ(sync_service, sync_service_);
   if (sync_service_->IsEngineInitialized() &&
       sync_service_->GetUserSettings()->IsOsSyncFeatureEnabled()) {
-    delegate()->AddSearchTags(GetSyncOnSearchConcepts());
-    delegate()->RemoveSearchTags(GetSyncOffSearchConcepts());
+    registry()->AddSearchTags(GetSyncOnSearchConcepts());
+    registry()->RemoveSearchTags(GetSyncOffSearchConcepts());
   } else {
-    delegate()->RemoveSearchTags(GetSyncOnSearchConcepts());
-    delegate()->AddSearchTags(GetSyncOffSearchConcepts());
+    registry()->RemoveSearchTags(GetSyncOnSearchConcepts());
+    registry()->AddSearchTags(GetSyncOffSearchConcepts());
   }
 }
 
 void PeopleSection::OnKerberosEnabledStateChanged() {
   if (kerberos_credentials_manager_->IsKerberosEnabled())
-    delegate()->AddSearchTags(GetKerberosSearchConcepts());
+    registry()->AddSearchTags(GetKerberosSearchConcepts());
   else
-    delegate()->RemoveSearchTags(GetKerberosSearchConcepts());
+    registry()->RemoveSearchTags(GetKerberosSearchConcepts());
 }
 
 void PeopleSection::AddKerberosAccountsPageStrings(

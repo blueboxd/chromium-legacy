@@ -17,11 +17,13 @@ class CupsPrintersManager;
 
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Printing settings.
 class PrintingSection : public OsSettingsSection {
  public:
   PrintingSection(Profile* profile,
-                  Delegate* per_page_delegate,
+                  SearchTagRegistry* search_tag_registry,
                   CupsPrintersManager* printers_manager);
   ~PrintingSection() override;
 

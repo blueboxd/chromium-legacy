@@ -46,7 +46,7 @@ suite('I18nBehaviorModuleTest', function() {
     I18nBehavior.i18nAdvanced('customAttr', {
       attrs: {
         is: function(el, val) {
-          return el.tagName == 'A' && val == 'action-link';
+          return el.tagName === 'A' && val === 'action-link';
         },
       },
     });

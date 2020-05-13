@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactor
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.webapps.SplashController;
@@ -35,7 +34,6 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     CustomTabDelegateFactory resolveTabDelegateFactory();
     CustomTabIntentHandler resolveIntentHandler();
     CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
-    CustomTabToolbarColorController resolveToolbarColorController();
     CustomTabTaskDescriptionHelper resolveTaskDescriptionHelper();
     CustomTabToolbarCoordinator resolveToolbarCoordinator();
     SplashController resolveSplashController();

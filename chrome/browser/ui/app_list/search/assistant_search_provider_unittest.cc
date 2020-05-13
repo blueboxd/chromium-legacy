@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
@@ -27,7 +29,7 @@
 namespace app_list {
 namespace test {
 
-using ash::mojom::AssistantAllowedState;
+using chromeos::assistant::AssistantAllowedState;
 using chromeos::assistant::mojom::AssistantEntryPoint;
 using chromeos::assistant::mojom::AssistantQuerySource;
 using chromeos::assistant::mojom::AssistantSuggestion;
@@ -115,7 +117,7 @@ class ConversationStarterBuilder {
 class TestAssistantState : public ash::AssistantState {
  public:
   TestAssistantState() {
-    allowed_state_ = ash::mojom::AssistantAllowedState::ALLOWED;
+    allowed_state_ = chromeos::assistant::AssistantAllowedState::ALLOWED;
     settings_enabled_ = true;
   }
 
@@ -238,7 +240,7 @@ TEST_F(AssistantSearchProviderTest,
   EXPECT_EQ(1u, search_provider().results().size());
 
   // Test all possible Assistant allowed states.
-  for (int i = 0; i < static_cast<int>(AssistantAllowedState::kMaxValue); ++i) {
+  for (int i = 0; i < static_cast<int>(AssistantAllowedState::MAX_VALUE); ++i) {
     if (i == static_cast<int>(AssistantAllowedState::ALLOWED))
       continue;
 

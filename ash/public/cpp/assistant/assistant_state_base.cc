@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "ash/public/cpp/accelerators.h"
+#include "base/bind.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -37,8 +38,8 @@ AssistantStateBase::~AssistantStateBase() {
 
 std::string AssistantStateBase::ToString() const {
   std::stringstream result;
-  result << "AssistantState:";
-  result << assistant_state_;
+  result << "AssistantStatus:";
+  result << assistant_status_;
   PRINT_VALUE(settings_enabled);
   PRINT_VALUE(context_enabled);
   PRINT_VALUE(hotword_enabled);
@@ -111,7 +112,8 @@ void AssistantStateBase::RegisterPrefChanges(PrefService* pref_service) {
 }
 
 bool AssistantStateBase::IsScreenContextAllowed() const {
-  return allowed_state() == ash::mojom::AssistantAllowedState::ALLOWED &&
+  return allowed_state() ==
+             chromeos::assistant::AssistantAllowedState::ALLOWED &&
          settings_enabled().value_or(false) &&
          context_enabled().value_or(false);
 }
@@ -134,12 +136,7 @@ void AssistantStateBase::InitializeObserver(AssistantStateObserver* observer) {
   if (quick_answers_enabled_.has_value())
     observer->OnAssistantQuickAnswersEnabled(quick_answers_enabled_.value());
 
-  InitializeObserverMojom(observer);
-}
-
-void AssistantStateBase::InitializeObserverMojom(
-    mojom::AssistantStateObserver* observer) {
-  observer->OnAssistantStatusChanged(assistant_state_);
+  observer->OnAssistantStatusChanged(assistant_status_);
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())
@@ -232,14 +229,15 @@ void AssistantStateBase::UpdateNotificationEnabled() {
     observer.OnAssistantNotificationEnabled(notification_enabled_.value());
 }
 
-void AssistantStateBase::UpdateAssistantStatus(mojom::AssistantState state) {
-  assistant_state_ = state;
+void AssistantStateBase::UpdateAssistantStatus(
+    chromeos::assistant::AssistantStatus status) {
+  assistant_status_ = status;
   for (auto& observer : observers_)
-    observer.OnAssistantStatusChanged(assistant_state_);
+    observer.OnAssistantStatusChanged(assistant_status_);
 }
 
 void AssistantStateBase::UpdateFeatureAllowedState(
-    mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   allowed_state_ = state;
   for (auto& observer : observers_)
     observer.OnAssistantFeatureAllowedChanged(allowed_state_.value());

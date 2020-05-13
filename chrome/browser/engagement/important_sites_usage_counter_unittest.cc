@@ -55,8 +55,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
 
   void RegisterClient(const std::vector<storage::MockOriginData>& data) {
     auto* client = new storage::MockQuotaClient(
-        quota_manager_->proxy(), data.data(),
-        storage::QuotaClientType::kFileSystem, data.size());
+        quota_manager_->proxy(), data, storage::QuotaClientType::kFileSystem);
     quota_manager_->proxy()->RegisterClient(client);
     client->TouchAllOriginsAndNotify();
   }

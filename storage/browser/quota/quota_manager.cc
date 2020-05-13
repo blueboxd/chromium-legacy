@@ -1156,22 +1156,6 @@ void QuotaManager::GetHostUsage(const std::string& host,
   GetUsageTracker(type)->GetHostUsage(host, std::move(callback));
 }
 
-void QuotaManager::GetHostUsage(const std::string& host,
-                                StorageType type,
-                                QuotaClientType client_id,
-                                UsageCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  LazyInitialize();
-  DCHECK(GetUsageTracker(type));
-  ClientUsageTracker* tracker =
-      GetUsageTracker(type)->GetClientTracker(client_id);
-  if (!tracker) {
-    std::move(callback).Run(0);
-    return;
-  }
-  tracker->GetHostUsage(host, std::move(callback));
-}
-
 void QuotaManager::GetHostUsageWithBreakdown(
     const std::string& host,
     StorageType type,
@@ -1180,13 +1164,6 @@ void QuotaManager::GetHostUsageWithBreakdown(
   LazyInitialize();
   DCHECK(GetUsageTracker(type));
   GetUsageTracker(type)->GetHostUsageWithBreakdown(host, std::move(callback));
-}
-
-bool QuotaManager::IsTrackingHostUsage(StorageType type,
-                                       QuotaClientType client_id) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  UsageTracker* tracker = GetUsageTracker(type);
-  return tracker && tracker->GetClientTracker(client_id);
 }
 
 std::map<std::string, std::string> QuotaManager::GetStatistics() {

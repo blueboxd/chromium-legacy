@@ -11,7 +11,7 @@
     var fn = function() {
       var args = Array.prototype.slice.call(arguments);
       var callbacks = args.filter(function(arg) {
-        return (typeof arg == 'function');
+        return (typeof arg === 'function');
       });
 
       if (callbacks.length > 1) {
@@ -21,7 +21,7 @@
       }
 
       fn.recordCall(args);
-      if (callbacks.length == 1) {
+      if (callbacks.length === 1) {
         callbacks[0].apply(undefined, fn.callbackData);
         return;
       }
@@ -109,7 +109,7 @@
    * @return True if arg is not function type.
    */
   notFunction_(arg) {
-    return typeof arg != 'function';
+    return typeof arg !== 'function';
   }
 }
 

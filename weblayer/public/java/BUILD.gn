@@ -58,6 +58,7 @@ android_library("java") {
     "org/chromium/weblayer/NewTabType.java",
     "org/chromium/weblayer/ObserverList.java",
     "org/chromium/weblayer/Profile.java",
+    "org/chromium/weblayer/RemoteFragment.java",
     "org/chromium/weblayer/Tab.java",
     "org/chromium/weblayer/TabCallback.java",
     "org/chromium/weblayer/TabListCallback.java",

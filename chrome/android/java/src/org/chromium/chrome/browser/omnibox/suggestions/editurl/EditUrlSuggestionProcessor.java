@@ -126,7 +126,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     }
 
     @Override
-    public int getMinimumSuggestionViewHeight() {
+    public int getMinimumViewHeight() {
         return mMinViewHeight;
     }
 
@@ -193,10 +193,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     public void onNativeInitialized() {}
 
     @Override
-    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {}
-
-    @Override
-    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {}
+    public void recordItemPresented(PropertyModel model) {}
 
     @Override
     public void onSuggestionsReceived() {}

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <tuple>
+#include <vector>
+
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -93,9 +97,9 @@ class HotseatWidgetTest
     if (is_assistant_enabled_) {
       assistant_test_api_->SetAssistantEnabled(true);
       assistant_test_api_->GetAssistantState()->NotifyFeatureAllowed(
-          mojom::AssistantAllowedState::ALLOWED);
+          chromeos::assistant::AssistantAllowedState::ALLOWED);
       assistant_test_api_->GetAssistantState()->NotifyStatusChanged(
-          mojom::AssistantState::READY);
+          chromeos::assistant::AssistantStatus::READY);
 
       assistant_test_api_->WaitUntilIdle();
     }

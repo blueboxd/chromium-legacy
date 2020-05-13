@@ -137,6 +137,11 @@ content::EvalJsResult WaitForImageAlt(content::WebContents* web_ui,
       web_ui, base::ReplaceStringPlaceholders(kScript, {alt}, nullptr));
 }
 
+void TouchFileSync(const base::FilePath& path, const base::Time& time) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::TouchFile(path, time, time));
+}
+
 }  // namespace
 
 // Test that the Media App installs and launches correctly. Runs some spot
@@ -272,7 +277,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
 }
 
 // Test that the MediaApp can navigate other files in the directory of a file
-// that was opened.
+// that was opened, even if those files have changed since launch.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
                        FileOpenCanTraverseDirectory) {
   WaitForTestSystemAppInstall();
@@ -288,6 +293,11 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   });
 
   const base::FilePath copied_jpeg_640x480 = folder.files()[0];
+
+  // Stamp the file with a time far in the past, so it can be "updated".
+  // Note: Add a bit to the epoch to workaround https://crbug.com/1080434.
+  TouchFileSync(copied_jpeg_640x480,
+                base::Time::UnixEpoch() + base::TimeDelta::FromDays(1));
 
   // Sent an open request using only the 640x480 JPEG file.
   OpenPathWithPlatformUtil(profile(), copied_jpeg_640x480);
@@ -306,6 +316,13 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   // Navigate backwards.
   EXPECT_EQ(true, ExecuteScript(web_ui, "advance(-1)"));
   EXPECT_EQ("800x600", WaitForImageAlt(web_ui, kFilePng800x600));
+
+  // Update the Jpeg, which invalidates open DOM File objects.
+  TouchFileSync(copied_jpeg_640x480, base::Time::Now());
+
+  // We should still be able to open the updated file.
+  EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));
+  EXPECT_EQ("640x480", WaitForImageAlt(web_ui, kFileJpeg640x480));
 
   // TODO(tapted): Test mixed file types. We used to test here with a file of a
   // different type in the list of files to open. Navigating would skip over it.

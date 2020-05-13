@@ -9,13 +9,12 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/internal/wayland_data_source_base.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source_base.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
 namespace ui {
@@ -29,7 +28,7 @@ class WaylandWindow;
 // transfer and provides a way to describe the offered data
 // (wl_data_source_offer) // and a way to respond to requests to
 // transfer the data (OnSend listener).
-class WaylandDataSource : public internal::WaylandDataSourceBase {
+class WaylandDataSource : public WaylandDataSourceBase {
  public:
   using DragDataMap = std::map<std::string, std::string>;
 

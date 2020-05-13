@@ -49,14 +49,6 @@ Polymer({
     },
 
     /**
-     * Whether we should hide the "close" button to get to the previous page.
-     */
-    hideCloseButton: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Indicates which element triggers this subpage. Used by the searching
      * algorithm to show search bubbles. It is |null| for subpages that are
      * skipped during searching.
@@ -99,9 +91,6 @@ Polymer({
 
   /** Focuses the back button when page is loaded. */
   initialFocus() {
-    if (this.hideCloseButton) {
-      return;
-    }
     Polymer.RenderStatus.afterNextRender(
         this, () => cr.ui.focusWithoutInk(this.$.closeButton));
   },

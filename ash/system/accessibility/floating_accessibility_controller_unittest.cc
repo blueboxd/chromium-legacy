@@ -466,4 +466,20 @@ TEST_F(FloatingAccessibilityControllerTest, AccelatorFocusMenu) {
             GetMenuButton(FloatingAccessibilityView::ButtonId::kSelectToSpeak));
 }
 
+TEST_F(FloatingAccessibilityControllerTest, ShowingAlreadyEnabledFeatures) {
+  accessibility_controller()->SetDictationAcceleratorDialogAccepted();
+  accessibility_controller()->select_to_speak().SetEnabled(true);
+  accessibility_controller()->dictation().SetEnabled(true);
+  accessibility_controller()->virtual_keyboard().SetEnabled(true);
+  SetUpVisibleMenu();
+
+  EXPECT_TRUE(GetMenuButton(FloatingAccessibilityView::ButtonId::kSelectToSpeak)
+                  ->GetVisible());
+  EXPECT_TRUE(GetMenuButton(FloatingAccessibilityView::ButtonId::kDictation)
+                  ->GetVisible());
+  EXPECT_TRUE(
+      GetMenuButton(FloatingAccessibilityView::ButtonId::kVirtualKeyboard)
+          ->GetVisible());
+}
+
 }  // namespace ash

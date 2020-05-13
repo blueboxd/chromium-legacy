@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 
+#include <utility>
+
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -125,7 +127,7 @@ void ProactiveSuggestionsClientImpl::DidChangeVerticalScrollDirection(
 }
 
 void ProactiveSuggestionsClientImpl::OnAssistantFeatureAllowedChanged(
-    ash::mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   // When the Assistant feature is allowed/disallowed we may need to resume/
   // pause observation of the browser. We accomplish this by updating active
   // state.
@@ -231,7 +233,7 @@ void ProactiveSuggestionsClientImpl::UpdateActiveState() {
   // or when the user has disabled history sync or is using a sync passphrase.
   if (active_browser_->profile()->IsOffTheRecord() ||
       ash::AssistantState::Get()->allowed_state() !=
-          ash::mojom::AssistantAllowedState::ALLOWED ||
+          chromeos::assistant::AssistantAllowedState::ALLOWED ||
       !ash::AssistantState::Get()->settings_enabled().value_or(false) ||
       !ash::AssistantState::Get()->context_enabled().value_or(false) ||
       !IsHistorySyncEnabledWithoutPassphrase(profile_)) {

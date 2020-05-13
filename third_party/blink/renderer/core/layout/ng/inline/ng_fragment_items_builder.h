@@ -60,11 +60,27 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   void AddListMarker(const NGPhysicalBoxFragment& marker_fragment,
                      const LogicalOffset& offset);
 
+  // See |AddPreviousItems| below.
+  struct AddPreviousItemsResult {
+    STACK_ALLOCATED();
+
+   public:
+    const NGInlineBreakToken* inline_break_token = nullptr;
+    LayoutUnit used_block_size;
+    bool succeeded = false;
+  };
+
   // Add previously laid out |NGFragmentItems|.
-  void AddItems(const NGFragmentItems& items,
-                WritingMode writing_mode,
-                TextDirection direction,
-                const PhysicalSize& container_size);
+  //
+  // When |stop_at_dirty| is true, this function checks reusability of previous
+  // items and stops copying before the first dirty line.
+  AddPreviousItemsResult AddPreviousItems(
+      const NGFragmentItems& items,
+      WritingMode writing_mode,
+      TextDirection direction,
+      const PhysicalSize& container_size,
+      NGBoxFragmentBuilder* container_builder = nullptr,
+      bool stop_at_dirty = false);
 
   struct ItemWithOffset {
     DISALLOW_NEW();

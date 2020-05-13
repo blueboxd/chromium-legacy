@@ -11,43 +11,26 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:background="@drawable/hairline_border_card_background"
-    android:padding="@dimen/promo_padding">
+    android:paddingTop="1dp">
 
-  <!-- Promo Header-->
-  <FrameLayout
-      android:id="@+id/promo_header"
+  <!-- Promo Illustration-->
+  <ImageView
+      android:id="@+id/promo_image"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="@dimen/promo_header_margin_vertical">
+      android:layout_marginBottom="@dimen/promo_large_illustration_margin_bottom"
+      android:adjustViewBounds="true"
+      android:layout_gravity="center"
+      android:scaleType="fitCenter"
+      android:importantForAccessibility="no"/>
 
-    <ImageView
-        android:id="@+id/promo_image"
-        android:layout_width="@dimen/promo_image_size"
-        android:layout_height="@dimen/promo_image_size"
-        android:layout_gravity="center"
-        android:scaleType="fitCenter"
-        android:importantForAccessibility="no" />
-
-    <org.chromium.ui.widget.ChromeImageButton
-        android:id="@+id/promo_close_button"
-        android:layout_width="@dimen/promo_close_btn_size"
-        android:layout_height="@dimen/promo_close_btn_size"
-        android:layout_gravity="top|end"
-        android:contentDescription="@string/close"
-        android:background="?android:attr/selectableItemBackground"
-        android:scaleType="fitCenter"
-        android:src="@drawable/btn_close"
-        app:tint="@color/default_icon_color" />
-  </FrameLayout>
-
+  <!-- Promo body -->
   <LinearLayout
-      android:id="@+id/promo_text_group"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/promo_text_group_margin_horizontal"
-      android:layout_marginStart="@dimen/promo_text_group_margin_horizontal"
-      android:layout_marginBottom="@dimen/promo_text_group_margin_vertical"
-      android:orientation="vertical">
+      android:layout_height="match_parent"
+      android:orientation="vertical"
+      android:paddingHorizontal="@dimen/promo_large_padding_horizontal"
+      android:paddingBottom="@dimen/promo_large_padding_bottom">
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/promo_title"
@@ -62,19 +45,11 @@
         android:id="@+id/promo_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/promo_large_text_group_bottom_margin"
         android:gravity="center"
         android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
         app:leading="@dimen/text_size_small_leading" />
-  </LinearLayout>
 
-  <LinearLayout
-      android:id="@+id/promo_button_group"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/promo_buttons_margin_horizontal"
-      android:layout_marginStart="@dimen/promo_buttons_margin_horizontal"
-      android:gravity="end"
-      android:orientation="vertical">
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/promo_primary_button"
         android:layout_width="match_parent"
@@ -89,6 +64,6 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:singleLine="true"/>
-  </LinearLayout>
 
+  </LinearLayout>
 </org.chromium.components.browser_ui.widget.promo.PromoCardView>

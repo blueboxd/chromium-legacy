@@ -65,7 +65,6 @@ public class QueryTileSection {
         mQueryTileSectionView = queryTileSectionView;
         mSearchBoxCoordinator = searchBoxCoordinator;
         mSubmitQueryCallback = performSearchQueryCallback;
-        if (!QueryTileUtils.isFeatureEnabled()) return;
 
         mTileProvider = TileProviderFactory.getForProfile(profile);
         TileConfig tileConfig = new TileConfig.Builder().setUmaPrefix(UMA_PREFIX).build();
@@ -77,7 +76,24 @@ public class QueryTileSection {
         mImageFetcher =
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
                         GlobalDiscardableReferencePool.getReferencePool());
+        mSearchBoxCoordinator.addVoiceSearchButtonClickListener(v -> reloadTiles());
         reloadTiles();
+    }
+
+    /**
+     * Called to notify the animation progress for transition between fake search box and omnibox.
+     * @param percent The animation progress.
+     */
+    public void onUrlFocusAnimationChanged(float percent) {
+        if (percent == 0) reloadTiles();
+    }
+
+    /**
+     * Called to clear the state and reload the top level tiles. Any chip selected will be cleared.
+     */
+    public void reloadTiles() {
+        mTileProvider.getQueryTiles(this::setTiles);
+        mSearchBoxCoordinator.setChipText(null);
     }
 
     private void onTileClicked(ImageTile tile) {
@@ -123,10 +139,6 @@ public class QueryTileSection {
         });
     }
 
-    private void reloadTiles() {
-        mTileProvider.getQueryTiles(this::setTiles);
-    }
-
     private void setTiles(List<QueryTile> tiles) {
         mTileUmaLogger.recordTilesLoaded(tiles);
         mTileCoordinator.setTiles(new ArrayList<>(tiles));
@@ -163,8 +175,6 @@ public class QueryTileSection {
      *         tiles section on NTP is shortened so that feed is still visible above the fold.
      */
     public Integer getMaxRowsForMostVisitedTiles() {
-        if (!QueryTileUtils.isFeatureEnabled()) return null;
-
         DisplayAndroid display =
                 DisplayAndroid.getNonMultiDisplay(mQueryTileSectionView.getContext());
         int screenHeightDp = DisplayUtil.pxToDp(display, display.getDisplayHeight());
@@ -173,9 +183,5 @@ public class QueryTileSection {
                 isSmallScreen ? MOST_VISITED_MAX_ROWS_SMALL_SCREEN
                               : MOST_VISITED_MAX_ROWS_NORMAL_SCREEN,
                 2);
-    }
-
-    private static boolean isFeatureEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.QUERY_TILES);
     }
 }

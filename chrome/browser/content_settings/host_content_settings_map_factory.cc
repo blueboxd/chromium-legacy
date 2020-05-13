@@ -87,7 +87,8 @@ scoped_refptr<RefcountedKeyedService>
       profile->IsIncognitoProfile() || profile->IsGuestSession(),
       /*store_last_modified=*/true,
       base::FeatureList::IsEnabled(
-          permissions::features::kPermissionDelegation)));
+          permissions::features::kPermissionDelegation),
+      profile->ShouldRestoreOldSessionCookies()));
 
   auto allowlist_provider = std::make_unique<WebUIAllowlistProvider>(
       WebUIAllowlist::GetOrCreate(profile));

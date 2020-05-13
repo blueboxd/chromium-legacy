@@ -556,6 +556,9 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) CrasAudioHandler
 
   void BindMediaControllerObserver();
 
+  // Handle null Metadata from MediaSession.
+  void HandleMediaSessionMetadataReset();
+
   mojo::Remote<media_session::mojom::MediaControllerManager>
       media_controller_manager_;
 

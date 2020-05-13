@@ -1435,6 +1435,11 @@ void SkiaOutputSurfaceImplOnGpu::SetGpuVSyncEnabled(bool enabled) {
   output_device_->SetGpuVSyncEnabled(enabled);
 }
 
+void SkiaOutputSurfaceImplOnGpu::SetFrameRate(float frame_rate) {
+  if (gl_surface_)
+    gl_surface_->SetFrameRate(frame_rate);
+}
+
 void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
     const OutputSurface::Capabilities& capabilities) {
   MakeCurrent(false /* need_fbo0 */);

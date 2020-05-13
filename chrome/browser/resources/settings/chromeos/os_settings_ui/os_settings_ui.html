@@ -107,42 +107,20 @@
       }
     </style>
     <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
-    <iron-media-query query="(max-width: [[narrowThreshold_]]px)"
-        query-matches="{{isNarrow}}">
-    </iron-media-query>
-    <template is="dom-if" if="[[showToolbar_]]">
-      <os-toolbar on-os-toolbar-menu-tap="onMenuButtonTap_"
-          spinner-active="[[toolbarSpinnerActive_]]"
-          on-search-changed="onSearchChanged_"
-          role="banner"
-          narrow="[[isNarrow]]"
-          narrow-threshold="980"
-          show-menu="[[isNarrow]]">
-      </os-toolbar>
-    </template>
-    <template is="dom-if" if="[[showNavMenu_]]">
-      <cr-drawer id="drawer" on-close="onMenuClose_" heading="$i18n{settings}"
-          align="$i18n{textdirection}" icon-name="cr20:menu"
-          icon-title="$i18n{close}">
-        <div class="drawer-content">
-          <template is="dom-if" id="drawerTemplate">
-            <os-settings-menu
-                show-apps="[[showApps_]]"
-                show-crostini="[[showCrostini_]]"
-                show-plugin-vm="[[showPluginVm_]]"
-                show-reset="[[showReset_]]"
-                have-play-store-app="[[havePlayStoreApp_]]"
-                on-iron-activate="onIronActivate_"
-                advanced-opened="{{advancedOpenedInMenu_}}">
-            </os-settings-menu>
-          </template>
-        </div>
-      </cr-drawer>
-    </template>
-    <div id="container" class="no-outline">
-      <div id="left">
-        <template is="dom-if" if="[[showNavMenu_]]">
-          <os-settings-menu page-visibility="[[pageVisibility_]]"
+    <os-toolbar on-os-toolbar-menu-tap="onMenuButtonTap_"
+        spinner-active="[[toolbarSpinnerActive_]]"
+        on-search-changed="onSearchChanged_"
+        role="banner"
+        narrow="{{isNarrow}}"
+        narrow-threshold="980"
+        show-menu="[[isNarrow]]">
+    </os-toolbar>
+    <cr-drawer id="drawer" on-close="onMenuClose_" heading="$i18n{settings}"
+        align="$i18n{textdirection}" icon-name="cr20:menu"
+        icon-title="$i18n{close}">
+      <div class="drawer-content">
+        <template is="dom-if" id="drawerTemplate">
+          <os-settings-menu
               show-crostini="[[showCrostini_]]"
               show-plugin-vm="[[showPluginVm_]]"
               show-reset="[[showReset_]]"
@@ -151,6 +129,18 @@
               advanced-opened="{{advancedOpenedInMenu_}}">
           </os-settings-menu>
         </template>
+      </div>
+    </cr-drawer>
+    <div id="container" class="no-outline">
+      <div id="left">
+        <os-settings-menu page-visibility="[[pageVisibility_]]"
+            show-crostini="[[showCrostini_]]"
+            show-plugin-vm="[[showPluginVm_]]"
+            show-reset="[[showReset_]]"
+            have-play-store-app="[[havePlayStoreApp_]]"
+            on-iron-activate="onIronActivate_"
+            advanced-opened="{{advancedOpenedInMenu_}}">
+        </os-settings-menu>
       </div>
       <os-settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"

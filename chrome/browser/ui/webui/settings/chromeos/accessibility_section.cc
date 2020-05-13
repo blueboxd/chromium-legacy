@@ -12,6 +12,7 @@
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/font_handler.h"
 #include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/tts_handler.h"
@@ -278,12 +279,13 @@ bool IsSwitchAccessTextAllowed() {
 
 }  // namespace
 
-AccessibilitySection::AccessibilitySection(Profile* profile,
-                                           Delegate* per_page_delegate,
-                                           PrefService* pref_service)
-    : OsSettingsSection(profile, per_page_delegate),
+AccessibilitySection::AccessibilitySection(
+    Profile* profile,
+    SearchTagRegistry* search_tag_registry,
+    PrefService* pref_service)
+    : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service) {
-  delegate()->AddSearchTags(GetA11ySearchConcepts());
+  registry()->AddSearchTags(GetA11ySearchConcepts());
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -511,30 +513,30 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
 void AccessibilitySection::UpdateSearchTags() {
   if (accessibility_state_utils::IsScreenReaderEnabled() &&
       AreExperimentalA11yLabelsAllowed()) {
-    delegate()->AddSearchTags(GetA11yLabelsSearchConcepts());
+    registry()->AddSearchTags(GetA11yLabelsSearchConcepts());
   } else {
-    delegate()->RemoveSearchTags(GetA11yLabelsSearchConcepts());
+    registry()->RemoveSearchTags(GetA11yLabelsSearchConcepts());
   }
 
-  delegate()->RemoveSearchTags(GetA11ySwitchAccessSearchConcepts());
-  delegate()->RemoveSearchTags(GetA11ySwitchAccessOnSearchConcepts());
-  delegate()->RemoveSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
+  registry()->RemoveSearchTags(GetA11ySwitchAccessSearchConcepts());
+  registry()->RemoveSearchTags(GetA11ySwitchAccessOnSearchConcepts());
+  registry()->RemoveSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
 
   if (!IsSwitchAccessAllowed())
     return;
 
-  delegate()->AddSearchTags(GetA11ySwitchAccessSearchConcepts());
+  registry()->AddSearchTags(GetA11ySwitchAccessSearchConcepts());
 
   if (!pref_service_->GetBoolean(
           ash::prefs::kAccessibilitySwitchAccessEnabled)) {
     return;
   }
 
-  delegate()->AddSearchTags(GetA11ySwitchAccessOnSearchConcepts());
+  registry()->AddSearchTags(GetA11ySwitchAccessOnSearchConcepts());
 
   if (pref_service_->GetBoolean(
           ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled)) {
-    delegate()->AddSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
+    registry()->AddSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
   }
 }
 

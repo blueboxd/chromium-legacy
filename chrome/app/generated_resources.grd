@@ -1689,7 +1689,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_PROMPT_DEEP_SCANNING_DOWNLOAD"
         desc="Message shown in the download shelf when a download is being scanned">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is being scanned.
+        Checking <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> with your organization's security policies...
       </message>
       <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
         desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
@@ -1697,27 +1697,27 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE"
         desc="Message shown in the download shelf when a download is blocked for being too large">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is too large for cloud scanning and has been blocked from opening.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is too big for a security check. You can open files up to 50 MB.
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_PASSWORD_PROTECTED"
         desc="Message shown in the download shelf when a download is blocked for being encrypted">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is encrypted and has been blocked from opening.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is encrypted. Ask its owner to decrypt.
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_SAFE"
         desc="Message shown in the download shelf when a download is finished being scanned, and no issues were found">
-        Scan complete, no issues identified.
+        Security checks are done
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_WARNING"
         desc="Message shown in the download shelf when a download contains sensitive content, and the admin has chosen to warn the user">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> contains sensitive content.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> has sensitive content
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_BLOCKED"
         desc="Message shown in the download shelf when a download contains sensitive content, and the admin has chosen to block the file">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> contains sensitive content, and has been blocked.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> has sensitive or dangerous content. Ask its owner to fix.
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_DEEP_SCANNED_OPENED_DANGEROUS"
         desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
-        Download contains malware.
+        This file is dangerous
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING"
         desc="Message shown in the download shelf when a download is mixed content, and Chrome needs to show a warning.">
@@ -1753,23 +1753,23 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DEEP_SCANNED_SAFE_DESCRIPTION"
         desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be safe.">
-        Scan complete, no issues identified.
+        Security checks are done
       </message>
       <message name="IDS_DEEP_SCANNED_OPENED_DANGEROUS_DESCRIPTION"
         desc="Message shown to the user on chrome://downloads page to explain this this download was deep scanned, and found to be malicious.">
-        Download contains malware.
+        This file is dangerous
       </message>
       <message name="IDS_BLOCK_REASON_SENSITIVE_CONTENT_WARNING" desc="Message shown to the user on chrome://downloads page to explain this download is showing a warning because it contains sensitive content">
-        This file contains sensitive content.
+        This file has sensitive content
       </message>
       <message name="IDS_SENSITIVE_CONTENT_BLOCKED_DESCRIPTION" desc="Message shown to the user on chrome://downloads page to explain this download is blocked because it contains sensitive content">
-        This file has been blocked because it contains sensitive content.
+        This file has sensitive or dangerous content. Ask its owner to fix.
       </message>
       <message name="IDS_BLOCKED_TOO_LARGE_DESCRIPTION" desc="Message shown to the user on chrome://downloads page to explain this download is blocked because it is too large for deep scanning">
-        This file is too large for cloud scanning and has been blocked from opening.
+        This file is too big for a security check. You can open files up to 50 MB.
       </message>
       <message name="IDS_BLOCKED_PASSWORD_PROTECTED_DESCRIPTION" desc="Message shown to the user on chrome://downloads page to explain this download is blocked because it is password protected">
-        This file is encrypted and has been blocked from opening.
+        This file is encrypted. Ask its owner to decrypt.
       </message>
 
       <if expr="chromeos">
@@ -10354,61 +10354,50 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Scanning
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of uploaded data to see if it complies with enterprise policies">
-      Your organization is scanning this upload for security approval.
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_PASTE_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of pasted data to see if it complies with enterprise policies">
-      Your organization is scanning the pasted data for security approval.
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of dragged data to see if it complies with enterprise policies">
-      Your organization is scanning the dragged data for security approval.
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of dragged files to see if they complies with enterprise policies">
-      Your organization is scanning the dragged files for security approval.
+      {NUM_FILES, plural,
+        =0 {Checking this data with your organization's security policies...}
+        =1 {Checking this file with your organization's security policies...}
+      other {Checking these files with your organization's security policies...}}
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of data when it complies with enterprise policies">
-      Scan complete, everything's good to go.
+      {NUM_FILES, plural,
+        =0 {Security checks are done. Your data will be uploaded.}
+        =1 {Security checks are done. Your file will be uploaded.}
+      other {Security checks are done. Your files will be uploaded.}}
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it doesn't comply with enterprise security policies">
-      This upload violates your organization's security policies and can't be completed.
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_PASTE_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of pasted data when it doesn't comply with enterprise security policies">
-      This data violates your organization's security policies and can't be pasted.
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged data when it doesn't comply with enterprise security policies">
-      This data violates your organization's security policies and can't be dropped.
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged files when they doesn't comply with enterprise security policies">
-      These files violate your organization's security policies and can't be dropped.
+      {NUM_FILES, plural,
+        =0 {This data has sensitive or dangerous content. Remove this content and try again.}
+        =1 {This file has sensitive or dangerous content. Remove this content and try again.}
+       other {These files have sensitive or dangerous content. Remove this content and try again.}}
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
-      This upload violates your organization's security policies. Do you want to proceed anyway?
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_PASTE_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of pasted data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
-      This pasted data violates your organization's security policies. Do you want to proceed anyway?
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_DATA_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged data when it doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
-      This dropped data violates your organization's security policies. Do you want to proceed anyway?
-    </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_DRAG_FILES_WARNING_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of dragged files when they doesn't comply with enterprise security policies to warn the user and allow them to proceed or not">
-      These dropped files violate your organization's security policies. Do you want to proceed anyway?
+      {NUM_FILES, plural,
+        =0 {This data has sensitive or dangerous content}
+        =1 {This file has sensitive or dangerous content}
+      other {These files have sensitive or dangerous content}}
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_TIMEOUT_MESSAGE" desc="Message shown in tab modal dialog after a deep scan times out.">
       Something went wrong. Scanning could not be completed. Please try again.
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_PROCEED_BUTTON" desc="Text shown in the proceed button of a tab modal dialog after performing a deep scan of data to ignore the obtained warning and proceed with the upload.">
-      Proceed anyway
+      Continue anyway
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_WARNING_BUTTON" desc="Text shown in the cancel button of a tab modal dialog after performing a deep scan of data to acknowledge the obtained warning and close the dialog.">
       Cancel
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON" desc="Text shown in the cancel button of a tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
-      Cancel upload
+      Cancel
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_LARGE_FILE_FAILURE_MESSAGE" desc="Message shown in the tab modal dialog when the file to be scanned is too large according to the enterprise policies">
-      Your organization can scan files up to 50 MB. Try uploading a smaller file.
+      {NUM_FILES, plural,
+        =1 {This file is too big for a security check. You can upload files up to 50 MB.}
+      other {Some of these files are too big for a security check. You can upload files up to 50 MB.}}
     </message>
     <message name="IDS_DEEP_SCANNING_DIALOG_ENCRYPTED_FILE_FAILURE_MESSAGE" desc="Message shown in the tab modal dialog when the uploaded file to be scanned is encrypted and when this is not allowed by enterprise policies">
-      This upload is encrypted and violates your organization's security policies.
+      {NUM_FILES, plural,
+        =1 {This file is encrypted. Ask its owner to decrypt.}
+      other {Some of these files are encrypted. Ask their owner to decrypt.}}
     </message>
 
 

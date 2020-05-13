@@ -16,7 +16,6 @@
 #include "ui/gfx/image/image.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF8;
 
 namespace upboarding {
 

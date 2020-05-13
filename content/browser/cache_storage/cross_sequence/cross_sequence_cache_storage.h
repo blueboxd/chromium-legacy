@@ -37,6 +37,7 @@ class CrossSequenceCacheStorage
   CacheStorageHandle CreateHandle() override;
   void AddHandleRef() override;
   void DropHandleRef() override;
+  void Init() override;
   void OpenCache(const std::string& cache_name,
                  int64_t trace_id,
                  CacheAndErrorCallback callback) override;

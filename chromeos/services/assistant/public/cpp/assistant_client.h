@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_CLIENT_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_CLIENT_H_
 
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/component_export.h"
+#include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
@@ -25,8 +25,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantClient {
   static AssistantClient* Get();
 
   // Notifies assistant client that assistant running status has changed.
-  virtual void OnAssistantStatusChanged(
-      ash::mojom::AssistantState new_state) = 0;
+  virtual void OnAssistantStatusChanged(AssistantStatus new_status) = 0;
 
   // Requests Ash's AssistantAlarmTimerController interface from the browser.
   virtual void RequestAssistantAlarmTimerController(
@@ -46,10 +45,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantClient {
   // Requests Ash's AssistantVolumeControl interface from the browser.
   virtual void RequestAssistantVolumeControl(
       mojo::PendingReceiver<ash::mojom::AssistantVolumeControl> receiver) = 0;
-
-  // Requests Ash's AssistantStateController interface from the browser.
-  virtual void RequestAssistantStateController(
-      mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver) = 0;
 
   // Requests a BatteryMonitor from the browser.
   virtual void RequestBatteryMonitor(

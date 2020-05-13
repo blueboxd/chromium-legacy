@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.ui.SharedActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
@@ -124,6 +125,8 @@ public class WebApkInitializationTest {
                 WebApkActivityLifecycleUmaTracker.class.getName()));
         assertTrue(registeredObserverClassNames.contains(
                 CustomTabOrientationController.class.getName()));
+        assertTrue(
+                registeredObserverClassNames.contains(SharedActivityCoordinator.class.getName()));
 
         // Test that WebappActiveTabUmaTracker is hooked up.
         assertTrue(0 < RecordHistogram.getHistogramTotalCountForTesting(

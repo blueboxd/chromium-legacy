@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -48,9 +49,10 @@ const std::vector<SearchConcept>& GetFilesSearchConcepts() {
 
 }  // namespace
 
-FilesSection::FilesSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
-  delegate()->AddSearchTags(GetFilesSearchConcepts());
+FilesSection::FilesSection(Profile* profile,
+                           SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
+  registry()->AddSearchTags(GetFilesSearchConcepts());
 }
 
 FilesSection::~FilesSection() = default;

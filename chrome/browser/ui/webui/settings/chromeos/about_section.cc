@@ -16,6 +16,7 @@
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
@@ -98,9 +99,10 @@ bool IsDeviceManaged() {
 
 }  // namespace
 
-AboutSection::AboutSection(Profile* profile, Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
-  delegate()->AddSearchTags(GetAboutSearchConcepts());
+AboutSection::AboutSection(Profile* profile,
+                           SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
+  registry()->AddSearchTags(GetAboutSearchConcepts());
 }
 
 AboutSection::~AboutSection() = default;

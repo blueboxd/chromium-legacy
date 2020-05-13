@@ -2,7 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @typedef {{token: number, file: !File, handle: !FileSystemFileHandle}} */
+/**
+ * Wrapper around a file handle that allows the privileged context to arbitrate
+ * read and write access as well as file navigation. `token` uniquely identifies
+ * the file, `file` temporarily holds the object passed over postMessage, and
+ * `handle` allows it to be reopened upon navigation.
+ * @typedef {{
+ *     token: number,
+ *     file: ?File,
+ *     handle: !FileSystemFileHandle,
+ * }}
+ */
 let FileDescriptor;
 
 /**
@@ -179,6 +189,29 @@ async function loadSingleFile(fileHandle) {
 }
 
 /**
+ * If `fd.file` is null, re-opens the file handle in `fd`.
+ * @param {!FileDescriptor} fd
+ */
+async function refreshFile(fd) {
+  if (fd.file) {
+    return;
+  }
+  try {
+    fd.file = (await getFileFromHandle(fd.handle)).file;
+  } catch (/** @type{DOMException} */ e) {
+    // A failure here is only a problem for the "current" file (and that needs
+    // to be handled in the unprivileged context), so ignore known errors.
+    // TODO(b/156049174): Pin down the UX for this case and implement something
+    // similar in the mock app to test it.
+    if (e.name === 'NotFoundError') {
+      return;
+    }
+    console.error(fd.handle.name, e.message);
+    throw new Error(`${e.message} (${e.name})`);
+  }
+}
+
+/**
  * Loads the current file list into the guest.
  * @return {!Promise<undefined>}
  */
@@ -191,12 +224,27 @@ async function sendFilesToGuest() {
   currentlyWritableFile = currentFiles[entryIndex];
   currentlyWritableFile.token = ++fileToken;
 
+  // On first launch, files are opened to determine navigation candidates. Don't
+  // reopen in that case. Otherwise, attempt to reopen here. Some files may be
+  // assigned null, e.g., if they have been moved to a different folder.
+  await Promise.all(currentFiles.map(refreshFile));
+
   /** @type {!LoadFilesMessage} */
   const loadFilesMessage = {
     writableFileIndex: entryIndex,
     // Handle can't be passed through a message pipe.
-    files: currentFiles.map(fd => ({token: fd.token, file: fd.file}))
+    files: currentFiles.map(fd => ({
+                              token: fd.token,
+                              file: fd.file,
+                              name: fd.handle.name,
+                            }))
   };
+  // Clear handles to the open files in the privileged context so they are
+  // refreshed on a navigation request. The refcount to the File will be alive
+  // in the postMessage object until the guest takes its own reference.
+  for (const fd of currentFiles) {
+    fd.file = null;
+  }
   await guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
 }
 

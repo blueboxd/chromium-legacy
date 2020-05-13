@@ -23,7 +23,18 @@ with host_paths.SysPath(
   import symbol
 
 
-_RE_ASAN = re.compile(r'(.*?)(#\S*?)\s+(\S*?)\s+\((.*?)\+(.*?)\)')
+_RE_ASAN = re.compile(
+    r"""
+    (?P<prefix>.*?)
+    (?P<pos>\#\S*?)          # position of the call in stack.
+                             # escape the char "#" due to the VERBOSE flag.
+    \s+(\S*?)\s+
+    \(                       # match the char "(".
+        (?P<lib>.*?)         # library path.
+        \+0[xX](?P<addr>.*?) # address of the symbol in hex.
+                             # the prefix "0x" is skipped.
+    \)                       # match the char ")".
+    """, re.VERBOSE)
 
 # This named tuple models a parsed Asan log line.
 AsanParsedLine = collections.namedtuple('AsanParsedLine',
@@ -38,10 +49,11 @@ def _ParseAsanLogLine(line):
   m = re.match(_RE_ASAN, line)
   if not m:
     return None
-  return AsanParsedLine(prefix=m.group(1),
-                        library=m.group(4),
-                        pos=m.group(2),
-                        rel_address='%08x' % int(m.group(5), 16))
+  return AsanParsedLine(prefix=m.group('prefix'),
+                        library=m.group('lib'),
+                        pos=m.group('pos'),
+                        rel_address='%08x' % int(m.group('addr'), 16))
+
 
 def _FindASanLibraries():
   asan_lib_dir = os.path.join(host_paths.DIR_SOURCE_ROOT,

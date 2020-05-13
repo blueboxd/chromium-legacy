@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -92,8 +93,8 @@ const std::vector<SearchConcept>& GetBluetoothOffSearchConcepts() {
 }  // namespace
 
 BluetoothSection::BluetoothSection(Profile* profile,
-                                   Delegate* per_page_delegate)
-    : OsSettingsSection(profile, per_page_delegate) {
+                                   SearchTagRegistry* search_tag_registry)
+    : OsSettingsSection(profile, search_tag_registry) {
   // Note: May be uninitialized in tests.
   if (bluez::BluezDBusManager::IsInitialized()) {
     device::BluetoothAdapterFactory::Get()->GetAdapter(
@@ -183,19 +184,19 @@ void BluetoothSection::OnFetchBluetoothAdapter(
 
 void BluetoothSection::UpdateSearchTags() {
   // Start with no search tags, then add them below if appropriate.
-  delegate()->RemoveSearchTags(GetBluetoothSearchConcepts());
-  delegate()->RemoveSearchTags(GetBluetoothOnSearchConcepts());
-  delegate()->RemoveSearchTags(GetBluetoothOffSearchConcepts());
+  registry()->RemoveSearchTags(GetBluetoothSearchConcepts());
+  registry()->RemoveSearchTags(GetBluetoothOnSearchConcepts());
+  registry()->RemoveSearchTags(GetBluetoothOffSearchConcepts());
 
   if (!bluetooth_adapter_->IsPresent())
     return;
 
-  delegate()->AddSearchTags(GetBluetoothSearchConcepts());
+  registry()->AddSearchTags(GetBluetoothSearchConcepts());
 
   if (bluetooth_adapter_->IsPowered())
-    delegate()->AddSearchTags(GetBluetoothOnSearchConcepts());
+    registry()->AddSearchTags(GetBluetoothOnSearchConcepts());
   else
-    delegate()->AddSearchTags(GetBluetoothOffSearchConcepts());
+    registry()->AddSearchTags(GetBluetoothOffSearchConcepts());
 }
 
 }  // namespace settings

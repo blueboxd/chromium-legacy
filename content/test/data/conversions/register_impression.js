@@ -28,6 +28,13 @@ function createImpressionTagWithReportingAndExpiry(
   anchor.setAttribute("impressionexpiry", expiry);
 }
 
+function createImpressionTagWithReporting(
+    id, url, data, destination, report_origin) {
+  let anchor = createImpressionTagWithTarget(
+      id, url, data, destination, "_top");
+  anchor.setAttribute("reportingorigin", report_origin);
+}
+
 function createImpressionTagWithTarget(id, url, data, destination, target) {
   let anchor = document.createElement("a");
   anchor.href = url;

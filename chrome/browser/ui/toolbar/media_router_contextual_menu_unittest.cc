@@ -127,7 +127,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
   int expected_number_items = 9;
 
   MediaRouterContextualMenu menu(browser(), kShownByUser, &observer_);
-  ui::SimpleMenuModel* model = menu.menu_model();
+  std::unique_ptr<ui::SimpleMenuModel> model = menu.CreateMenuModel();
   // Verify the number of menu items, including separators.
   EXPECT_EQ(model->GetItemCount(), expected_number_items);
 
@@ -157,7 +157,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, Basic) {
 // incognito.
 TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
   MediaRouterContextualMenu menu(browser(), kShownByPolicy, &observer_);
-  EXPECT_NE(-1, menu.menu_model()->GetIndexOfCommandId(
+  EXPECT_NE(-1, menu.CreateMenuModel()->GetIndexOfCommandId(
                     IDC_MEDIA_ROUTER_REPORT_ISSUE));
 
   std::unique_ptr<BrowserWindow> window(CreateBrowserWindow());
@@ -167,7 +167,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, EnableAndDisableReportIssue) {
 
   MediaRouterContextualMenu incognito_menu(incognito_browser.get(),
                                            kShownByPolicy, &observer_);
-  EXPECT_EQ(-1, incognito_menu.menu_model()->GetIndexOfCommandId(
+  EXPECT_EQ(-1, incognito_menu.CreateMenuModel()->GetIndexOfCommandId(
                     IDC_MEDIA_ROUTER_REPORT_ISSUE));
 }
 
@@ -249,7 +249,7 @@ TEST_F(MediaRouterContextualMenuUnitTest, ActionShownByPolicy) {
   EXPECT_FALSE(menu.IsCommandIdEnabled(IDC_MEDIA_ROUTER_SHOWN_BY_POLICY));
 
   // The checkbox item "Always show icon" should not be shown.
-  EXPECT_FALSE(HasCommandId(menu.menu_model(),
+  EXPECT_FALSE(HasCommandId(menu.CreateMenuModel().get(),
                             IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION));
 }
 
@@ -257,9 +257,10 @@ TEST_F(MediaRouterContextualMenuUnitTest, NotifyActionController) {
   EXPECT_CALL(observer_, OnContextMenuShown());
   auto menu = std::make_unique<MediaRouterContextualMenu>(
       browser(), kShownByUser, &observer_);
-  menu->OnMenuWillShow(menu->menu_model());
+  std::unique_ptr<ui::SimpleMenuModel> model = menu->CreateMenuModel();
+  menu->OnMenuWillShow(model.get());
 
   EXPECT_CALL(observer_, OnContextMenuHidden());
-  menu->MenuClosed(menu->menu_model());
+  menu->MenuClosed(model.get());
   menu.reset();
 }

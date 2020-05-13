@@ -6,9 +6,9 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/public/cpp/assistant/assistant_state.h"
-#include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
@@ -82,7 +82,7 @@ class QuickAnswersClientTest : public testing::Test {
       bool setting_enabled,
       bool context_enabled,
       bool quick_answers_enabled,
-      ash::mojom::AssistantAllowedState assistant_state,
+      chromeos::assistant::AssistantAllowedState assistant_state,
       const std::string& locale) {
     client_->OnAssistantSettingsEnabled(setting_enabled);
     client_->OnAssistantContextEnabled(context_enabled);
@@ -117,7 +117,7 @@ TEST_F(QuickAnswersClientTest, FeatureEligible) {
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
 
@@ -133,14 +133,14 @@ TEST_F(QuickAnswersClientTest, FeatureIneligibleAfterContextDisabled) {
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 
   NotifyAssistantStateChange(
       /*setting_enabled=*/true,
       /*context_enabled=*/false,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
 
@@ -156,7 +156,7 @@ TEST_F(QuickAnswersClientTest, FeatureDisabled) {
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
 
@@ -172,7 +172,7 @@ TEST_F(QuickAnswersClientTest, AssistantSettingDisabled) {
       /*setting_enabled=*/false,
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
 
@@ -188,7 +188,7 @@ TEST_F(QuickAnswersClientTest, AssistantContextDisabled) {
       /*setting_enabled=*/true,
       /*context_enabled=*/false,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
 
@@ -205,7 +205,7 @@ TEST_F(QuickAnswersClientTest, AssistantNotAllowed) {
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/true,
       /*assistant_state=*/
-      ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY,
+      chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_POLICY,
       /*locale=*/"en-US");
 }
 
@@ -218,7 +218,7 @@ TEST_F(QuickAnswersClientTest, UnsupportedLocale) {
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/true,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-GB");
 }
 
@@ -231,7 +231,7 @@ TEST_F(QuickAnswersClientTest, SettingToggleDisabled) {
       /*setting_enabled=*/true,
       /*context_enabled=*/true,
       /*quick_answers_enabled=*/false,
-      /*assistant_state=*/ash::mojom::AssistantAllowedState::ALLOWED,
+      /*assistant_state=*/chromeos::assistant::AssistantAllowedState::ALLOWED,
       /*locale=*/"en-US");
 }
 

@@ -1179,7 +1179,7 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
         "SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript",
         is_cors_blocking_expected_);
 
-    // Ask the browser process to log Rappor and UKM metrics.
+    // Ask the browser process to log a UKM event.
     if (network_service_client_ && is_cors_blocking_expected_) {
       network_service_client_->LogCrossOriginFetchFromContentScript3(
           isolated_world_origin_->host());

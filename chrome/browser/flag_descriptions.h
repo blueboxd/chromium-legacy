@@ -1702,6 +1702,9 @@ extern const char kPasswordCheckDescription[];
 extern const char kTabFreezeName[];
 extern const char kTabFreezeDescription[];
 
+extern const char kWebUIA11yEnhancementsName[];
+extern const char kWebUIA11yEnhancementsDescription[];
+
 extern const char kSyncSetupFriendlySettingsName[];
 extern const char kSyncSetupFriendlySettingsDescription[];
 
@@ -2046,6 +2049,9 @@ extern const char kEnableQuickAnswersDescription[];
 
 extern const char kEnableQuickAnswersRichUiName[];
 extern const char kEnableQuickAnswersRichUiDescription[];
+
+extern const char kEnableQuickAnswersTextAnnotatorName[];
+extern const char kEnableQuickAnswersTextAnnotatorDescription[];
 
 extern const char kEnableVideoPlayerNativeControlsName[];
 extern const char kEnableVideoPlayerNativeControlsDescription[];

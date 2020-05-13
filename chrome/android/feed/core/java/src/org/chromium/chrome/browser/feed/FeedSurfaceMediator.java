@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -52,6 +53,10 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 class FeedSurfaceMediator
         implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate,
                    TemplateUrlServiceObserver, ListMenu.Delegate, HomepagePromoStateListener {
+    private static final float IPH_TRIGGER_BAR_TRANSITION_FRACTION = 1.0f;
+    private static final float IPH_STREAM_MIN_SCROLL_FRACTION = 0.10f;
+    private static final float IPH_FEED_HEADER_MAX_POS_FRACTION = 0.35f;
+
     private final FeedSurfaceCoordinator mCoordinator;
     private final @Nullable SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
@@ -186,6 +191,41 @@ class FeedSurfaceMediator
             if (mHasHeaderMenu) {
                 mSectionHeader.setMenuModelList(buildMenuItems());
                 mSectionHeader.setListMenuDelegate(this::onItemSelected);
+                FeedSurfaceMediator mediator = this;
+                HeaderIphScrollListener.Delegate delegate = new HeaderIphScrollListener.Delegate() {
+                    @Override
+                    public Tracker getFeatureEngagementTracker() {
+                        return mCoordinator.getFeatureEngagementTracker();
+                    }
+                    @Override
+                    public Stream getStream() {
+                        return mCoordinator.getStream();
+                    }
+                    @Override
+                    public boolean isFeedHeaderPositionInRecyclerViewSuitableForIPH(
+                            float headerMaxPosFraction) {
+                        return mCoordinator.isFeedHeaderPositionInRecyclerViewSuitableForIPH(
+                                headerMaxPosFraction);
+                    }
+                    @Override
+                    public void showMenuIph() {
+                        mCoordinator.getSectionHeaderView().showMenuIph(
+                                mCoordinator.getUserEducationHelper());
+                    }
+                    @Override
+                    public int getVerticalScrollOffset() {
+                        return mediator.getVerticalScrollOffset();
+                    }
+                    @Override
+                    public boolean isFeedExpanded() {
+                        return mSectionHeader.isExpanded();
+                    }
+                    @Override
+                    public int getRootViewHeight() {
+                        return mCoordinator.getView().getHeight();
+                    }
+                };
+                mCoordinator.getStream().addScrollListener(new HeaderIphScrollListener(delegate));
             }
         }
         // Show feed if there is no header that would allow user to hide feed.

@@ -31,7 +31,9 @@ SwitchAccessBackButtonView::SwitchAccessBackButtonView(int diameter)
                                  kSwitchAccessBackIcon,
                                  IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION,
                                  /*flip_for_rtl=*/false,
-                                 diameter)) {
+                                 diameter,
+                                 /*draw_highlight=*/true,
+                                 /*is_a11y_togglable=*/false)) {
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets());
   SetLayoutManager(std::move(layout));

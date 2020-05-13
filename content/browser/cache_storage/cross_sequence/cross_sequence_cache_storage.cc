@@ -30,6 +30,12 @@ class CrossSequenceCacheStorage::Inner {
       handle_ = manager->OpenCacheStorage(origin, owner);
   }
 
+  void Init() {
+    if (!handle_.value())
+      return;
+    handle_.value()->Init();
+  }
+
   void OpenCache(scoped_refptr<CrossSequenceCacheStorageCache> cache_wrapper,
                  const std::string& cache_name,
                  int64_t trace_id,
@@ -180,6 +186,11 @@ void CrossSequenceCacheStorage::DropHandleRef() {
   handle_ref_count_ -= 1;
   if (handle_ref_count_ == 0)
     self_ref_.reset();
+}
+
+void CrossSequenceCacheStorage::Init() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  inner_.Post(FROM_HERE, &Inner::Init);
 }
 
 void CrossSequenceCacheStorage::OpenCache(const std::string& cache_name,

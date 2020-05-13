@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
-
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
@@ -30,7 +28,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
-import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -158,13 +155,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     public void performPreInflationStartup() {
         super.performPreInflationStartup();
-
-        WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
-        if (webappExtras.displayMode == WebDisplayMode.FULLSCREEN) {
-            new ImmersiveModeController(getLifecycleDispatcher(), this)
-                    .enterImmersiveMode(LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT, false /*sticky*/);
-        }
-
         initSplash();
     }
 

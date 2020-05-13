@@ -33,15 +33,22 @@ using Microsoft::WRL::ComPtr;
 void InitializeShortcutInterfaces(const wchar_t* shortcut,
                                   ComPtr<IShellLink>* i_shell_link,
                                   ComPtr<IPersistFile>* i_persist_file) {
-  i_shell_link->Reset();
+  // Reset in the inverse order of acquisition.
   i_persist_file->Reset();
+  i_shell_link->Reset();
+
+  ComPtr<IShellLink> shell_link;
   if (FAILED(::CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
-                                IID_PPV_ARGS(i_shell_link->GetAddressOf()))) ||
-      FAILED(i_shell_link->CopyTo(i_persist_file->GetAddressOf())) ||
-      (shortcut && FAILED((*i_persist_file)->Load(shortcut, STGM_READWRITE)))) {
-    i_shell_link->Reset();
-    i_persist_file->Reset();
+                                IID_PPV_ARGS(&shell_link)))) {
+    return;
   }
+  ComPtr<IPersistFile> persist_file;
+  if (FAILED(shell_link.As(&persist_file)))
+    return;
+  if (shortcut && FAILED(persist_file->Load(shortcut, STGM_READWRITE)))
+    return;
+  i_shell_link->Swap(shell_link);
+  i_persist_file->Swap(persist_file);
 }
 
 }  // namespace

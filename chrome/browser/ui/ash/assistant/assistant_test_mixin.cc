@@ -13,7 +13,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
-#include "ash/public/mojom/assistant_state_controller.mojom-shared.h"
 #include "base/auto_reset.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_run_loop_timeout.h"
@@ -49,13 +48,13 @@ bool Equals(const char* left, const char* right) {
   return strcmp(left, right) == 0;
 }
 
-// Waiter that blocks in the |Wait| method until a given |mojom::AssistantState|
+// Waiter that blocks in the |Wait| method until a given |AssistantStatus|
 // is reached, or until a timeout is hit.
 // On timeout this will abort the test with a useful error message.
 class AssistantStatusWaiter : private ash::AssistantStateObserver {
  public:
   AssistantStatusWaiter(ash::AssistantState* state,
-                        ash::mojom::AssistantState expected_status)
+                        chromeos::assistant::AssistantStatus expected_status)
       : state_(state), expected_status_(expected_status) {
     state_->AddObserver(this);
   }
@@ -63,7 +62,7 @@ class AssistantStatusWaiter : private ash::AssistantStateObserver {
   ~AssistantStatusWaiter() override { state_->RemoveObserver(this); }
 
   void RunUntilExpectedStatus() {
-    if (state_->assistant_state() == expected_status_)
+    if (state_->assistant_status() == expected_status_)
       return;
 
     // Wait until we're ready or we hit the timeout.
@@ -72,18 +71,19 @@ class AssistantStatusWaiter : private ash::AssistantStateObserver {
                                                  run_loop.QuitClosure());
     EXPECT_NO_FATAL_FAILURE(run_loop.Run())
         << "Failed waiting for AssistantStatus |" << expected_status_ << "|. "
-        << "Current status is |" << state_->assistant_state() << "|. "
+        << "Current status is |" << state_->assistant_status() << "|. "
         << "One possible cause is that you're using an expired access token.";
   }
 
  private:
-  void OnAssistantStatusChanged(ash::mojom::AssistantState status) override {
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override {
     if (status == expected_status_ && quit_loop_)
       std::move(quit_loop_).Run();
   }
 
   ash::AssistantState* const state_;
-  ash::mojom::AssistantState const expected_status_;
+  chromeos::assistant::AssistantStatus const expected_status_;
 
   base::OnceClosure quit_loop_;
 };
@@ -398,7 +398,7 @@ void AssistantTestMixin::StartAssistantAndWaitForReady(
   SetPreferVoice(false);
 
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
-                               ash::mojom::AssistantState::NEW_READY);
+                               chromeos::assistant::AssistantStatus::NEW_READY);
   waiter.RunUntilExpectedStatus();
 
   // With the warmer welcome enabled the Assistant service will start an
@@ -562,7 +562,7 @@ void AssistantTestMixin::DisableAssistant() {
 
   // Then wait for the Service to shutdown.
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
-                               ash::mojom::AssistantState::NOT_READY);
+                               chromeos::assistant::AssistantStatus::NOT_READY);
   waiter.RunUntilExpectedStatus();
 }
 

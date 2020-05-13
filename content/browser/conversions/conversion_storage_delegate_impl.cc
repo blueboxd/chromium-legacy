@@ -6,7 +6,8 @@
 
 namespace content {
 
-ConversionStorageDelegateImpl::ConversionStorageDelegateImpl() {
+ConversionStorageDelegateImpl::ConversionStorageDelegateImpl(bool debug_mode)
+    : debug_mode_(debug_mode) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -39,6 +40,11 @@ int ConversionStorageDelegateImpl::GetMaxConversionsPerImpression() const {
 base::Time ConversionStorageDelegateImpl::GetReportTimeForConversion(
     const ConversionReport& report) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  //  |report.report_time| is roughly ~now, for newly created conversion
+  //  reports. If in debug mode, the report should be sent immediately.
+  if (debug_mode_)
+    return report.report_time;
+
   // After the initial impression, a schedule of reporting windows and deadlines
   // associated with that impression begins. The time between impression time
   // and impression expiry is split into multiple reporting windows. At the end

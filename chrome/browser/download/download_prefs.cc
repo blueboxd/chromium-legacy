@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/download/download_dir_util.h"
 #include "chrome/browser/download/download_prompt_status.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/trusted_sources_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -294,6 +295,7 @@ void DownloadPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kShowMissingSdCardErrorAndroid,
       base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
+  RecordDownloadPromptStatus(download_prompt_status);
 #endif
 }
 

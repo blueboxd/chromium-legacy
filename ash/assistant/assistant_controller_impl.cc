@@ -303,8 +303,8 @@ void AssistantControllerImpl::NotifyUrlOpened(const GURL& url,
 }
 
 void AssistantControllerImpl::OnAssistantStatusChanged(
-    mojom::AssistantState state) {
-  if (state == mojom::AssistantState::NOT_READY)
+    chromeos::assistant::AssistantStatus status) {
+  if (status == chromeos::assistant::AssistantStatus::NOT_READY)
     assistant_ui_controller_.CloseUi(
         chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 }
@@ -333,11 +333,6 @@ void AssistantControllerImpl::BindScreenContextController(
       ->assistant_controller()
       ->screen_context_controller()
       ->BindReceiver(std::move(receiver));
-}
-
-void AssistantControllerImpl::BindStateController(
-    mojo::PendingReceiver<mojom::AssistantStateController> receiver) {
-  assistant_state_controller_.BindReceiver(std::move(receiver));
 }
 
 void AssistantControllerImpl::BindVolumeControl(

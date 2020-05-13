@@ -190,9 +190,13 @@ int main(int argc, const char* argv[]) {
   //   struct S {
   //     int* y;
   //   };
-  // matches |int* y|.
+  // matches |int* y|.  Doesn't match:
+  // - non-pointer types
+  // - fields of lambda-supporting classes
   auto field_decl_matcher =
-      fieldDecl(hasType(supported_pointer_types_matcher)).bind("fieldDecl");
+      fieldDecl(allOf(hasType(supported_pointer_types_matcher),
+                      unless(hasParent(cxxRecordDecl(isLambda())))))
+          .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
 

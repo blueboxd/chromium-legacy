@@ -298,6 +298,15 @@ void InMemoryURLIndex::Shutdown() {
       base::BindOnce(base::IgnoreResult(
                          &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
                      private_data_, path));
+#ifndef LEAK_SANITIZER
+  // Intentionally allocate and then leak a scoped_refptr to private_data_. This
+  // permanently raises the reference count so that the URLIndexPrivateData
+  // destructor won't run during browser shutdown. This saves having to walk the
+  // maps to free their memory, which saves time and avoids shutdown hangs,
+  // especially if some of the memory has been paged out.
+  auto* leak_pointer = new scoped_refptr<URLIndexPrivateData>(private_data_);
+  ANALYZER_ALLOW_UNUSED(leak_pointer);
+#endif
   needs_to_be_cached_ = false;
 }
 

@@ -247,7 +247,7 @@ var defaultTests = [
     });
   },
   // The state dumped in Assistant API error message is AssistantAllowedState
-  // defined in ash/public/mojom/assistant_state_controller.mojom.
+  // defined in ash/public/cpp/assistant/assistant_state_base.h
   // 3 is DISALLOWED_BY_NONPRIMARY_USER from IsAssistantAllowedForProfile when
   // running under test without setting up a primary account.
   function setAssistantEnabled() {

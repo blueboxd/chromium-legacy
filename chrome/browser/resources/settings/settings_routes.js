@@ -79,6 +79,7 @@ import {Route} from './router.m.js';
  *   SITE_SETTINGS_USB_DEVICES: !Route,
  *   SITE_SETTINGS_SERIAL_PORTS: !Route,
  *   SITE_SETTINGS_VR: !Route,
+ *   SITE_SETTINGS_WINDOW_PLACEMENT: !Route,
  *   SITE_SETTINGS_ZOOM_LEVELS: !Route,
  *   SYNC: !Route,
  *   SYNC_ADVANCED: !Route,

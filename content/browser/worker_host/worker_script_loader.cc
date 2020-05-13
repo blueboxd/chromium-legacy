@@ -21,6 +21,8 @@ namespace content {
 
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
+    DedicatedWorkerId dedicated_worker_id,
+    SharedWorkerId shared_worker_id,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -49,7 +51,8 @@ WorkerScriptLoader::WorkerScriptLoader(
   }
   auto service_worker_interceptor =
       ServiceWorkerNavigationLoaderInterceptor::CreateForWorker(
-          resource_request_, process_id, service_worker_handle_);
+          resource_request_, process_id, dedicated_worker_id, shared_worker_id,
+          service_worker_handle_);
 
   if (service_worker_interceptor)
     interceptors_.push_back(std::move(service_worker_interceptor));

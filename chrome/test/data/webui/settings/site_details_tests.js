@@ -155,7 +155,9 @@ suite('SiteDetails', function() {
           createContentSettingTypeToValuePair(
               ContentSettingsTypes.VR,
               [createRawSiteException('https://foo.com:443')]),
-
+          createContentSettingTypeToValuePair(
+              ContentSettingsTypes.WINDOW_PLACEMENT,
+              [createRawSiteException('https://foo.com:443')]),
         ],
         [
           createContentSettingTypeToValuePair(
@@ -205,40 +207,41 @@ suite('SiteDetails', function() {
     // flag string.
     const optionalSiteDetailsContentSettingsTypes =
         /** @type {!ContentSettingsType : string} */ ({});
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.ADS] =
-        'enableSafeBrowsingSubresourceFilter';
-
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
-                                                .PAYMENT_HANDLER] =
-        'enablePaymentHandlerContentSetting';
-
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
-                                                .NATIVE_FILE_SYSTEM_WRITE] =
-        'enableNativeFileSystemWriteContentSetting';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.MIXEDSCRIPT] =
-        'enableInsecureContentContentSetting';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .BLUETOOTH_SCANNING] =
         'enableExperimentalWebPlatformFeatures';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.HID_DEVICES] =
         'enableExperimentalWebPlatformFeatures';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
+                                                .WINDOW_PLACEMENT] =
+        'enableExperimentalWebPlatformFeatures';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.MIXEDSCRIPT] =
+        'enableInsecureContentContentSetting';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
+                                                .NATIVE_FILE_SYSTEM_WRITE] =
+        'enableNativeFileSystemWriteContentSetting';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
+                                                .PAYMENT_HANDLER] =
+        'enablePaymentHandlerContentSetting';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.ADS] =
+        'enableSafeBrowsingSubresourceFilter';
+    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
+                                                .BLUETOOTH_DEVICES] =
+        'enableWebBluetoothNewPermissionsBackend';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.AR] =
         'enableWebXrContentSetting';
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.VR] =
         'enableWebXrContentSetting';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
-                                                .BLUETOOTH_DEVICES] =
-        'enableWebBluetoothNewPermissionsBackend';
 
     const controlledSettingsCount = /** @type{string : int } */ ({});
 
-    controlledSettingsCount['enableSafeBrowsingSubresourceFilter'] = 1;
-    controlledSettingsCount['enablePaymentHandlerContentSetting'] = 1;
-    controlledSettingsCount['enableNativeFileSystemWriteContentSetting'] = 1;
+    controlledSettingsCount['enableExperimentalWebPlatformFeatures'] = 3;
     controlledSettingsCount['enableInsecureContentContentSetting'] = 1;
-    controlledSettingsCount['enableWebXrContentSetting'] = 2;
-    controlledSettingsCount['enableExperimentalWebPlatformFeatures'] = 2;
+    controlledSettingsCount['enableNativeFileSystemWriteContentSetting'] = 1;
+    controlledSettingsCount['enablePaymentHandlerContentSetting'] = 1;
+    controlledSettingsCount['enableSafeBrowsingSubresourceFilter'] = 1;
     controlledSettingsCount['enableWebBluetoothNewPermissionsBackend'] = 1;
+    controlledSettingsCount['enableWebXrContentSetting'] = 2;
 
     browserProxy.setPrefs(prefs);
 
@@ -363,11 +366,15 @@ suite('SiteDetails', function() {
   test('correct pref settings are shown', function() {
     browserProxy.setPrefs(prefs);
     // Make sure all the possible content settings are shown for this test.
-    loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
-    loadTimeData.overrideValues({enablePaymentHandlerContentSetting: true});
-    loadTimeData.overrideValues(
-        {enableNativeFileSystemWriteContentSetting: true});
-    loadTimeData.overrideValues({enableWebXrContentSetting: true});
+    loadTimeData.overrideValues({
+      enableExperimentalWebPlatformFeatures: true,
+      enableInsecureContentContentSetting: true,
+      enableNativeFileSystemWriteContentSetting: true,
+      enablePaymentHandlerContentSetting: true,
+      enableSafeBrowsingSubresourceFilter: true,
+      enableWebBluetoothNewPermissionsBackend: true,
+      enableWebXrContentSetting: true,
+    });
     testElement = createSiteDetails('https://foo.com:443');
 
     return browserProxy.whenCalled('isOriginValid')

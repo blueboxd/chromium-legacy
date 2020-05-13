@@ -283,10 +283,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
 
     // State used for calculating the
     // SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript UMA
-    // and Extensions.CrossOriginFetchFromContentScript3 Rappor data.
+    // and Extensions.CrossOriginFetchFromContentScript3 UKM data.
     //
     // TODO(lukasza): https://crbug.com/920638: Remove the fields below once we
-    // gather enough UMA data.
+    // gather enough UMA and UKM data.
     const base::Optional<url::Origin> isolated_world_origin_;
     bool is_cors_blocking_expected_ = false;
     mojom::NetworkServiceClient* const network_service_client_;

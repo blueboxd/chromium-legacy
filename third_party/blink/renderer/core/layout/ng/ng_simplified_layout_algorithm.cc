@@ -193,8 +193,9 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     if (const NGFragmentItems* previous_items = previous_fragment.Items()) {
       auto* items_builder = container_builder_.ItemsBuilder();
       DCHECK(items_builder);
-      items_builder->AddItems(*previous_items, writing_mode_, direction_,
-                              previous_physical_container_size_);
+      items_builder->AddPreviousItems(*previous_items, writing_mode_,
+                                      direction_,
+                                      previous_physical_container_size_);
     }
   }
 

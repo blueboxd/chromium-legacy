@@ -11,6 +11,7 @@ import android.view.View;
 import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
+import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 
 /**
  * Builder for (@see IPHCommand.java). Use this instead of constructing an IPHCommand directly.
@@ -33,6 +34,7 @@ public class IPHCommandBuilder {
     private Runnable mOnShowCallback;
     private Runnable mOnDismissCallback;
     private Rect mInsetRect;
+    private long mAutoDismissTimeout = TextBubble.NO_TIMEOUT;
 
     /**
      * Constructor for IPHCommandBuilder when you would like your strings to be resolved for you.
@@ -131,6 +133,15 @@ public class IPHCommandBuilder {
 
     /**
      *
+     * @param timeout Timeout in milliseconds to auto-dismiss the IPH bubble.
+     */
+    public IPHCommandBuilder setAutoDismissTimeout(int timeout) {
+        mAutoDismissTimeout = timeout;
+        return this;
+    }
+
+    /**
+     *
      * @return an (@see IPHCommand) containing the accumulated state of this builder.
      */
     public IPHCommand build() {
@@ -159,6 +170,6 @@ public class IPHCommandBuilder {
 
         return new IPHCommand(mFeatureName, mContentString, mAccessibilityText, mCircleHighlight,
                 mShouldHighlight, mDismissOnTouch, mAnchorView, mOnDismissCallback, mOnShowCallback,
-                mInsetRect);
+                mInsetRect, mAutoDismissTimeout);
     }
 }

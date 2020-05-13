@@ -83,13 +83,10 @@ def main(args):
 class MetaBuildWrapper(object):
   def __init__(self):
     self.chromium_src_dir = CHROMIUM_SRC_DIR
-    self.default_config_master = os.path.join(self.chromium_src_dir, 'tools',
-                                              'mb', 'mb_config.pyl')
-    self.default_config_bucket = os.path.join(self.chromium_src_dir, 'tools',
-                                              'mb', 'mb_config_buckets.pyl')
+    self.default_config = os.path.join(self.chromium_src_dir, 'tools', 'mb',
+                                       'mb_config.pyl')
     self.default_isolate_map = os.path.join(self.chromium_src_dir, 'testing',
                                             'buildbot', 'gn_isolate_map.pyl')
-    self.group_by_bucket = False
     self.executable = sys.executable
     self.platform = sys.platform
     self.sep = os.sep
@@ -97,7 +94,6 @@ class MetaBuildWrapper(object):
     self.configs = {}
     self.public_artifact_builders = None
     self.masters = {}
-    self.buckets = {}
     self.mixins = {}
     self.isolate_exe = 'isolate.exe' if self.platform.startswith(
         'win') else 'isolate'
@@ -125,7 +121,6 @@ class MetaBuildWrapper(object):
       group = subp.add_mutually_exclusive_group()
       group.add_argument(
           '-m', '--master', help='master name to look up config from')
-      group.add_argument('-u', '--bucket', help='bucket to look up config from')
       subp.add_argument('-b', '--builder',
                         help='builder name to look up config from')
       subp.add_argument('-c', '--config',
@@ -134,12 +129,11 @@ class MetaBuildWrapper(object):
                         help='optional phase name (used when builders '
                              'do multiple compiles with different '
                              'arguments in a single build)')
-      subp.add_argument(
-          '-f',
-          '--config-file',
-          metavar='PATH',
-          help=('path to config file '
-                '(default is mb_config[_bucket].pyl'))
+      subp.add_argument('-f',
+                        '--config-file',
+                        metavar='PATH',
+                        help=('path to config file '
+                              '(default is mb_config.pyl'))
       subp.add_argument('-i', '--isolate-map-file', metavar='PATH',
                         help='path to isolate map file '
                              '(default is %(default)s)',
@@ -199,12 +193,11 @@ class MetaBuildWrapper(object):
     subp = subps.add_parser('export',
                             description='Print out the expanded configuration '
                             'for each builder as a JSON object.')
-    subp.add_argument(
-        '-f',
-        '--config-file',
-        metavar='PATH',
-        help=('path to config file '
-              '(default is mb_config[_bucket].pyl'))
+    subp.add_argument('-f',
+                      '--config-file',
+                      metavar='PATH',
+                      help=('path to config file '
+                            '(default is mb_config.pyl'))
     subp.add_argument('-g', '--goma-dir',
                       help='path to goma directory')
     subp.set_defaults(func=self.CmdExport)
@@ -346,19 +339,11 @@ class MetaBuildWrapper(object):
 
     self.args = parser.parse_args(argv)
 
-    self.group_by_bucket = getattr(self.args, 'master', None) is None
     self.use_luci_auth = getattr(self.args, 'luci_auth', False)
 
-    # Use the correct default config file
-    # Not using hasattr here because it would still require a None check
     if (self.args.func != self.CmdValidate
         and getattr(self.args, 'config_file', None) is None):
-      # The default bucket config should be the same in all except replacing
-      # master with bucket and handling proprietary chrome mixins
-      if self.group_by_bucket:
-        self.args.config_file = self.default_config_bucket
-      else:
-        self.args.config_file = self.default_config_master
+      self.args.config_file = self.default_config
 
 
   def DumpInputFiles(self):
@@ -382,42 +367,7 @@ class MetaBuildWrapper(object):
     vals = self.Lookup()
     return self.RunGNAnalyze(vals)
 
-  def CmdExportBucket(self):
-    self.ReadConfigFile(self.args.config_file)
-    obj = {}
-    for bucket, builders in self.buckets.items():
-      obj[bucket] = {}
-      for builder in builders:
-        config = self.buckets[bucket][builder]
-        if not config:
-          continue
-
-        if isinstance(config, dict):
-          args = {
-              k: FlattenConfig(self.configs, self.mixins, v)['gn_args']
-              for k, v in config.items()
-          }
-        elif config.startswith('//'):
-          args = config
-        else:
-          args = FlattenConfig(self.configs, self.mixins, config)['gn_args']
-          if 'error' in args:
-            continue
-
-        obj[bucket][builder] = args
-
-    # Dump object and trim trailing whitespace.
-    s = '\n'.join(
-        l.rstrip()
-        for l in json.dumps(obj, sort_keys=True, indent=2).splitlines())
-    self.Print(s)
-    return 0
-
   def CmdExport(self):
-    ''' Deprecated in favor of CmdExportBucket '''
-    if self.group_by_bucket:
-      return self.CmdExportBucket()
-
     self.ReadConfigFile(self.args.config_file)
     obj = {}
     for master, builders in self.masters.items():
@@ -768,68 +718,18 @@ class MetaBuildWrapper(object):
             ('cpu', 'x86-64'),
             os_dim]
 
-  def CmdValidateBucket(self, print_ok=True):
-    errs = []
-
-    # Build a list of all of the configs referenced by builders.
-    all_configs = validation.GetAllConfigsBucket(self.buckets)
-
-    # Check that every referenced args file or config actually exists.
-    for config, loc in all_configs.items():
-      if config.startswith('//'):
-        if not self.Exists(self.ToAbsPath(config)):
-          errs.append(
-              'Unknown args file "%s" referenced from "%s".' % (config, loc))
-      elif not config in self.configs:
-        errs.append('Unknown config "%s" referenced from "%s".' % (config, loc))
-
-    # Check that every config and mixin is referenced.
-    validation.CheckAllConfigsAndMixinsReferenced(errs, all_configs,
-                                                  self.configs, self.mixins)
-
-    validation.EnsureNoProprietaryMixinsBucket(
-        errs, self.default_config_bucket, self.args.config_file,
-        self.public_artifact_builders, self.buckets, self.configs, self.mixins)
-
-    validation.CheckDuplicateConfigs(errs, self.configs, self.mixins,
-                                     self.buckets, FlattenConfig)
-
-    if errs:
-      raise MBErr(('mb config file %s has problems:' %
-                   (self.args.config_file if self.args.config_file else self.
-                    default_config_bucket)) + '\n  ' + '\n  '.join(errs))
-
-    if print_ok:
-      self.Print('mb config file %s looks ok.' %
-                 (self.args.config_file
-                  if self.args.config_file else self.default_config_bucket))
-    return 0
-
   def CmdValidate(self, print_ok=True):
     errs = []
 
-    # Validate both bucket and master configs if
-    # a specific one isn't specified
+    # Validate master config if a specific one isn't specified
     if getattr(self.args, 'config_file', None) is None:
-      # Cross reference bucket and master configs
-      # Bucket configs should be a subset of master configs, but consistent for
-      # any builders present in both.
-      validation.CheckMasterBucketConsistency(
-          errs, self.ReadFile(self.default_config_master),
-          self.ReadFile(self.default_config_bucket))
-
       # Read the file to make sure it parses.
-      self.ReadConfigFile(self.default_config_bucket)
-      self.CmdValidateBucket()
-
-      self.ReadConfigFile(self.default_config_master)
+      self.ReadConfigFile(self.default_config)
     else:
       self.ReadConfigFile(self.args.config_file)
-      if self.group_by_bucket:
-        return self.CmdValidateBucket()
 
     # Build a list of all of the configs referenced by builders.
-    all_configs = validation.GetAllConfigsMaster(self.masters)
+    all_configs = validation.GetAllConfigs(self.masters)
 
     # Check that every referenced args file or config actually exists.
     for config, loc in all_configs.items():
@@ -845,9 +745,9 @@ class MetaBuildWrapper(object):
     validation.CheckAllConfigsAndMixinsReferenced(errs, all_configs,
                                                   self.configs, self.mixins)
 
-    validation.EnsureNoProprietaryMixinsMaster(
-        errs, self.default_config_master, self.args.config_file, self.masters,
-        self.configs, self.mixins)
+    validation.EnsureNoProprietaryMixins(errs, self.default_config,
+                                         self.args.config_file, self.masters,
+                                         self.configs, self.mixins)
 
     validation.CheckDuplicateConfigs(errs, self.configs, self.mixins,
                                      self.masters, FlattenConfig)
@@ -855,12 +755,12 @@ class MetaBuildWrapper(object):
     if errs:
       raise MBErr(('mb config file %s has problems:' %
                    (self.args.config_file if self.args.config_file else self.
-                    default_config_master)) + '\n  ' + '\n  '.join(errs))
+                    default_config)) + '\n  ' + '\n  '.join(errs))
 
     if print_ok:
       self.Print('mb config file %s looks ok.' %
                  (self.args.config_file
-                  if self.args.config_file else self.default_config_master))
+                  if self.args.config_file else self.default_config))
     return 0
 
   def GetConfig(self):
@@ -903,10 +803,7 @@ class MetaBuildWrapper(object):
   def Lookup(self):
     self.ReadConfigFile(self.args.config_file)
     try:
-      if self.group_by_bucket:
-        config = self.ConfigFromArgsBucket()
-      else:
-        config = self.ConfigFromArgs()
+      config = self.ConfigFromArgs()
     except MBErr as e:
       # TODO(crbug.com/912681) While iOS bots are migrated to use the
       # Chromium recipe, we want to ensure that we're checking MB's
@@ -969,10 +866,7 @@ class MetaBuildWrapper(object):
     self.configs = contents['configs']
     self.mixins = contents['mixins']
     self.masters = contents.get('masters')
-    self.buckets = contents.get('buckets')
     self.public_artifact_builders = contents.get('public_artifact_builders')
-
-    self.group_by_bucket = bool(self.buckets)
 
   def ReadIsolateMap(self):
     if not self.args.isolate_map_files:
@@ -996,44 +890,7 @@ class MetaBuildWrapper(object):
             'Failed to parse isolate map file "%s": %s' % (isolate_map, e))
     return isolate_maps
 
-  def ConfigFromArgsBucket(self):
-    if self.args.config:
-      if self.args.bucket or self.args.builder:
-        raise MBErr('Can not specify both -c/--config and -u/--bucket or '
-                    '-b/--builder')
-
-      return self.args.config
-
-    if not self.args.bucket or not self.args.builder:
-      raise MBErr('Must specify either -c/--config or '
-                  '(-u/--bucket and -b/--builder)')
-
-    if not self.args.bucket in self.buckets:
-      raise MBErr('Bucket name "%s" not found in "%s"' %
-                  (self.args.bucket, self.args.config_file))
-
-    if not self.args.builder in self.buckets[self.args.bucket]:
-      raise MBErr('Builder name "%s"  not found under buckets[%s] in "%s"' %
-                  (self.args.builder, self.args.bucket, self.args.config_file))
-
-    config = self.buckets[self.args.bucket][self.args.builder]
-    if isinstance(config, dict):
-      if self.args.phase is None:
-        raise MBErr('Must specify a build --phase for %s on %s' %
-                    (self.args.builder, self.args.bucket))
-      phase = str(self.args.phase)
-      if phase not in config:
-        raise MBErr('Phase %s doesn\'t exist for %s on %s' %
-                    (phase, self.args.builder, self.args.bucket))
-      return config[phase]
-
-    if self.args.phase is not None:
-      raise MBErr('Must not specify a build --phase for %s on %s' %
-                  (self.args.builder, self.args.bucket))
-    return config
-
   def ConfigFromArgs(self):
-    ''' Deprecated in favor ConfigFromArgsBucket '''
     if self.args.config:
       if self.args.master or self.args.builder:
         raise MBErr('Can not specific both -c/--config and -m/--master or '

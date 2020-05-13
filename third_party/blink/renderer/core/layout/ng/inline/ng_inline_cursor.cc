@@ -1318,6 +1318,7 @@ void NGInlineCursor::MoveToPreviousSiblingPaintFragment() {
 
 void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+  DCHECK(!layout_object.IsFloatingOrOutOfFlowPositioned());
   // If this cursor is rootless, find the root of the inline formatting context.
   bool had_root = true;
   if (!HasRoot()) {

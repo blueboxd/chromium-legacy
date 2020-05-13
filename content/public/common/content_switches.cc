@@ -67,6 +67,9 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // flaky [like monitoring of memory pressure]).
 const char kBrowserTest[] = "browser-test";
 
+// Causes the Conversion Measurement API to run without delays or noise.
+const char kConversionsDebugMode[] = "conversions-debug-mode";
+
 // Sets the tile size used by composited layers.
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";

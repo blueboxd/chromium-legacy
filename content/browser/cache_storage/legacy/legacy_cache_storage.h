@@ -82,6 +82,8 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
     DCHECK(!handle_ref_count_);
   }
 
+  void Init() override;
+
   void OpenCache(const std::string& cache_name,
                  int64_t trace_id,
                  CacheAndErrorCallback callback) override;

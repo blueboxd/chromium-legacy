@@ -10,10 +10,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
 #import "chrome/updater/server/mac/service_protocol.h"
 #import "chrome/updater/server/mac/update_service_wrappers.h"
@@ -31,7 +34,7 @@ using base::SysUTF8ToNSString;
 @end
 
 @implementation CRUUpdateServiceOutOfProcessImpl {
-  base::scoped_nsobject<NSXPCConnection> _xpcConnection;
+  base::scoped_nsobject<NSXPCConnection> _updateCheckXPCConnection;
 }
 
 - (instancetype)init {
@@ -44,28 +47,29 @@ using base::SysUTF8ToNSString;
 
 - (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
   if ((self = [super init])) {
-    _xpcConnection.reset([[NSXPCConnection alloc]
+    _updateCheckXPCConnection.reset([[NSXPCConnection alloc]
         initWithMachServiceName:updater::GetGoogleUpdateServiceMachName().get()
                         options:options]);
 
-    _xpcConnection.get().remoteObjectInterface = updater::GetXpcInterface();
+    _updateCheckXPCConnection.get().remoteObjectInterface =
+        updater::GetXPCUpdateCheckingInterface();
 
-    _xpcConnection.get().interruptionHandler = ^{
+    _updateCheckXPCConnection.get().interruptionHandler = ^{
       LOG(WARNING) << "CRUUpdateCheckingService: XPC connection interrupted.";
     };
 
-    _xpcConnection.get().invalidationHandler = ^{
+    _updateCheckXPCConnection.get().invalidationHandler = ^{
       LOG(WARNING) << "CRUUpdateCheckingService: XPC connection invalidated.";
     };
 
-    [_xpcConnection resume];
+    [_updateCheckXPCConnection resume];
   }
 
   return self;
 }
 
 - (void)dealloc {
-  [_xpcConnection invalidate];
+  [_updateCheckXPCConnection invalidate];
   [super dealloc];
 }
 
@@ -77,7 +81,8 @@ using base::SysUTF8ToNSString;
     reply(nil);
   };
 
-  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
+  [[_updateCheckXPCConnection.get()
+      remoteObjectProxyWithErrorHandler:errorHandler]
       getUpdaterVersionWithReply:reply];
 }
 
@@ -93,7 +98,8 @@ using base::SysUTF8ToNSString;
     reply(-1);
   };
 
-  [[_xpcConnection.get() remoteObjectProxyWithErrorHandler:errorHandler]
+  [[_updateCheckXPCConnection.get()
+      remoteObjectProxyWithErrorHandler:errorHandler]
       registerForUpdatesWithAppId:appId
                         brandCode:brandCode
                               tag:tag
@@ -111,7 +117,7 @@ using base::SysUTF8ToNSString;
     reply(-1);
   };
 
-  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
+  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdatesWithUpdateState:updateState
                                reply:reply];
 }
@@ -127,11 +133,90 @@ using base::SysUTF8ToNSString;
     reply(-1);
   };
 
-  [[_xpcConnection remoteObjectProxyWithErrorHandler:errorHandler]
+  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
       checkForUpdateWithAppID:appID
                      priority:priority
                   updateState:updateState
                         reply:reply];
+}
+
+- (void)haltForUpdateToVersion:(NSString* _Nonnull)version
+                         reply:(void (^_Nonnull)(bool shouldUpdate))reply {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+    reply(NO);
+  };
+
+  [[_updateCheckXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      haltForUpdateToVersion:version
+                       reply:reply];
+}
+
+@end
+
+// Interface to communicate with the XPC Updater Service.
+@interface CRUAdministrationServiceOutOfProcessImpl
+    : NSObject <CRUAdministering>
+
+- (instancetype)initPrivileged;
+
+@end
+
+@implementation CRUAdministrationServiceOutOfProcessImpl {
+  base::scoped_nsobject<NSXPCConnection> _administrationXPCConnection;
+}
+
+- (instancetype)init {
+  return [self initWithConnectionOptions:0];
+}
+
+- (instancetype)initPrivileged {
+  return [self initWithConnectionOptions:NSXPCConnectionPrivileged];
+}
+
+- (instancetype)initWithConnectionOptions:(NSXPCConnectionOptions)options {
+  if ((self = [super init])) {
+    const std::unique_ptr<updater::InfoPlist> infoPlist =
+        updater::InfoPlist::Create(updater::InfoPlistPath());
+    CHECK(infoPlist);
+
+    _administrationXPCConnection.reset([[NSXPCConnection alloc]
+        initWithMachServiceName:
+            base::mac::CFToNSCast(
+                infoPlist->GoogleUpdateServiceLaunchdNameVersioned().get())
+                        options:options]);
+
+    _administrationXPCConnection.get().remoteObjectInterface =
+        updater::GetXPCAdministeringInterface();
+
+    _administrationXPCConnection.get().interruptionHandler = ^{
+      LOG(WARNING) << "CRUAdministering: XPC connection interrupted.";
+    };
+
+    _administrationXPCConnection.get().invalidationHandler = ^{
+      LOG(WARNING) << "CRUAdministering: XPC connection invalidated.";
+    };
+
+    [_administrationXPCConnection resume];
+  }
+
+  return self;
+}
+
+- (void)dealloc {
+  [_administrationXPCConnection invalidate];
+  [super dealloc];
+}
+
+- (void)performAdminTasks {
+  auto errorHandler = ^(NSError* xpcError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([xpcError description]);
+  };
+
+  [[_administrationXPCConnection remoteObjectProxyWithErrorHandler:errorHandler]
+      performAdminTasks];
 }
 
 @end

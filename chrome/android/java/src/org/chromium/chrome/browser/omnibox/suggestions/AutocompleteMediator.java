@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.omnibox.suggestions.clipboard.ClipboardSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.tiles.TileSuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
@@ -81,38 +82,26 @@ import java.util.List;
  */
 class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWithNativeObserver,
                                       OmniboxSuggestionsDropdown.Observer, SuggestionHost {
-    /** A struct containing information about the suggestion and its view type. */
-    private static class SuggestionViewInfo extends MVCListAdapter.ListItem {
-        /** Processor managing the suggestion. */
-        public final SuggestionProcessor processor;
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static class DropdownItemViewInfo extends MVCListAdapter.ListItem {
+        /** Processor managing the item. */
+        public final DropdownItemProcessor processor;
 
-        /** The suggestion this info represents. */
-        public final OmniboxSuggestion suggestion;
-
-        /** Whether this suggestion has been initialized. */
-        private boolean mIsInitialized;
-
-        public SuggestionViewInfo(
-                SuggestionProcessor suggestionProcessor, OmniboxSuggestion omniboxSuggestion) {
-            super(suggestionProcessor.getViewTypeId(), suggestionProcessor.createModel());
-            processor = suggestionProcessor;
-            suggestion = omniboxSuggestion;
+        public DropdownItemViewInfo(DropdownItemProcessor itemProcessor, PropertyModel model) {
+            super(itemProcessor.getViewTypeId(), model);
+            processor = itemProcessor;
         }
 
         /**
          * Initialize model for the encompassed suggestion.
          *
-         * @param suggestionIndex Target suggestion position in the suggestion list.
          * @param layoutDirection View layout direction (LTR or RTL).
          * @param useDarkColors Whether suggestions should be rendered using incognito or night mode
          *         colors.
          */
-        void initializeModel(int suggestionIndex, int layoutDirection, boolean useDarkColors) {
-            if (mIsInitialized) return;
+        void initializeModel(int layoutDirection, boolean useDarkColors) {
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
-            processor.populateModel(suggestion, model, suggestionIndex);
-            mIsInitialized = true;
         }
     }
 
@@ -138,9 +127,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     // other processors because of its unique requirements.
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
     private final TileSuggestionProcessor mTileSuggestionProcessor;
+    private HeaderProcessor mHeaderProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
     private AutocompleteResult mAutocompleteResult;
-    private final List<SuggestionViewInfo> mAvailableSuggestions;
+    private final List<DropdownItemViewInfo> mViewInfoList;
 
     private ToolbarDataProvider mDataProvider;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -213,8 +203,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mHandler = handler;
         mTileSuggestionProcessor =
                 new TileSuggestionProcessor(mContext, queryTileSuggestionCallback);
+        mHeaderProcessor = new HeaderProcessor(mContext);
         mSuggestionProcessors = new ArrayList<>();
-        mAvailableSuggestions = new ArrayList<>();
+        mViewInfoList = new ArrayList<>();
         mAutocompleteResult = new AutocompleteResult(null, null);
 
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
@@ -289,8 +280,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         return mSuggestionVisibilityState;
     }
 
-    private ModelList getSuggestionModelList() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    ModelList getSuggestionModelList() {
         return mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    List<DropdownItemViewInfo> getSuggestionViewInfoListForTest() {
+        return mViewInfoList;
     }
 
     /**
@@ -369,10 +366,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         int richEntitiesCount = 0;
         ModelList currentModels = getSuggestionModelList();
         for (int i = 0; i < currentModels.size(); i++) {
-            SuggestionViewInfo info = (SuggestionViewInfo) currentModels.get(i);
-            info.processor.recordSuggestionPresented(info.suggestion, info.model);
+            DropdownItemViewInfo info = (DropdownItemViewInfo) currentModels.get(i);
+            info.processor.recordItemPresented(info.model);
 
-            if (info.processor.getViewTypeId() == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
+            if (info.type == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
                 richEntitiesCount++;
             }
         }
@@ -388,7 +385,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @return The number of current autocomplete suggestions.
      */
     public int getSuggestionCount() {
-        return getSuggestionModelList().size();
+        return mAutocompleteResult.getSuggestionsList().size();
     }
 
     /**
@@ -400,7 +397,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @return The suggestion at the given index.
      */
     public OmniboxSuggestion getSuggestionAt(int index) {
-        return ((SuggestionViewInfo) getSuggestionModelList().get(index)).suggestion;
+        return mAutocompleteResult.getSuggestionsList().get(index);
     }
 
     /**
@@ -707,15 +704,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             return;
         }
 
-        // Note: this call is typically scheduled for execution, rather than invoked directly.
-        // In some situations this means the content of mCurrentModels may change meanwhile.
-        int verifiedIndex = findSuggestionInModel(suggestion, position);
-        if (verifiedIndex != SUGGESTION_NOT_FOUND) {
-            SuggestionViewInfo info =
-                    (SuggestionViewInfo) getSuggestionModelList().get(verifiedIndex);
-            info.processor.recordSuggestionUsed(info.suggestion, info.model);
-        }
-
         loadUrlFromOmniboxMatch(position, suggestion, mLastActionUpTimestamp, true);
         mDelegate.setKeyboardVisibility(false);
     }
@@ -831,7 +819,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
         int verifiedIndex = SUGGESTION_NOT_FOUND;
         if (!skipCheck) {
-            verifiedIndex = findSuggestionInModel(suggestion, selectedIndex);
+            verifiedIndex = findSuggestionInAutocompleteResult(suggestion, selectedIndex);
         }
 
         // If we do not have the suggestion as part of our results, skip the URL update.
@@ -860,7 +848,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      *         part of the model.
      */
     @SuppressWarnings("ReferenceEquality")
-    private int findSuggestionInModel(OmniboxSuggestion suggestion, int position) {
+    private int findSuggestionInAutocompleteResult(OmniboxSuggestion suggestion, int position) {
         if (getSuggestionCount() > position && getSuggestionAt(position) == suggestion) {
             return position;
         }
@@ -981,7 +969,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      */
     private boolean shouldShowSoftKeyboard() {
         return !mEnableDeferredKeyboardPopup
-                || mAvailableSuggestions.size() <= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW;
+                || mViewInfoList.size() <= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW;
     }
 
     @Override
@@ -1041,12 +1029,24 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         final List<OmniboxSuggestion> newSuggestions = mAutocompleteResult.getSuggestionsList();
         final int newSuggestionsCount = newSuggestions.size();
 
-        mAvailableSuggestions.clear();
+        mViewInfoList.clear();
+        int currentGroup = OmniboxSuggestion.INVALID_GROUP;
+
         for (int index = 0; index < newSuggestionsCount; index++) {
             final OmniboxSuggestion suggestion = newSuggestions.get(index);
+
+            if (suggestion.getGroupId() != currentGroup) {
+                currentGroup = suggestion.getGroupId();
+                final PropertyModel model = mHeaderProcessor.createModel();
+                mHeaderProcessor.populateModel(
+                        model, mAutocompleteResult.getGroupHeaders().get(currentGroup));
+                mViewInfoList.add(new DropdownItemViewInfo(mHeaderProcessor, model));
+            }
+
             final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index == 0);
             final PropertyModel model = processor.createModel();
-            mAvailableSuggestions.add(new SuggestionViewInfo(processor, suggestion));
+            processor.populateModel(suggestion, model, index);
+            mViewInfoList.add(new DropdownItemViewInfo(processor, model));
         }
 
         return true;
@@ -1065,32 +1065,30 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     void updateSuggestionsList(int maximumListHeightPx) {
-        if (mAvailableSuggestions.isEmpty()) {
+        if (mViewInfoList.isEmpty()) {
             hideSuggestions();
             return;
         }
 
         final List<MVCListAdapter.ListItem> newSuggestionViewInfos =
-                new ArrayList<>(mAvailableSuggestions.size());
+                new ArrayList<>(mViewInfoList.size());
         final ModelList prepopulatedSuggestions = getSuggestionModelList();
 
-        final int numSuggestionsToShow = mAvailableSuggestions.size();
+        final int numSuggestionsToShow = mViewInfoList.size();
         int totalSuggestionsHeight = 0;
 
         for (int suggestionIndex = 0; suggestionIndex < numSuggestionsToShow; suggestionIndex++) {
-            final SuggestionViewInfo viewInfo =
-                    (SuggestionViewInfo) mAvailableSuggestions.get(suggestionIndex);
-            final SuggestionProcessor processor = viewInfo.processor;
-            final OmniboxSuggestion suggestion = viewInfo.suggestion;
+            final DropdownItemViewInfo viewInfo =
+                    (DropdownItemViewInfo) mViewInfoList.get(suggestionIndex);
 
-            totalSuggestionsHeight += processor.getMinimumSuggestionViewHeight();
+            totalSuggestionsHeight += viewInfo.processor.getMinimumViewHeight();
             if (mEnableAdaptiveSuggestionsCount
                     && suggestionIndex >= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW
                     && totalSuggestionsHeight > maximumListHeightPx) {
                 break;
             }
 
-            viewInfo.initializeModel(suggestionIndex, mLayoutDirection, mUseDarkColors);
+            viewInfo.initializeModel(mLayoutDirection, mUseDarkColors);
             newSuggestionViewInfos.add(viewInfo);
         }
 
@@ -1267,7 +1265,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         stopAutocomplete(true);
 
         getSuggestionModelList().clear();
-        mAvailableSuggestions.clear();
+        mViewInfoList.clear();
         updateOmniboxSuggestionsVisibility();
     }
 

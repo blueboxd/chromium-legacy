@@ -15,6 +15,10 @@
     background-color: var(--highlight-color);
   }
 
+  :host([is-selected-item_]) cr-icon-button {
+    --cr-icon-button-fill-color-focus: var(--highlight-color);
+  }
+
   @media (prefers-color-scheme: dark) {
     :host([is-selected-item_]),
     :host([is-selected-item_]) .folder-icon {

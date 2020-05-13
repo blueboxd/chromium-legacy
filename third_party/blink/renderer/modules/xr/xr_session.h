@@ -121,7 +121,9 @@ class XRSession final
   const String visibilityState() const;
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
+
   XRSpace* viewerSpace() const;
+
   XRAnchorSet* TrackedAnchors() const;
 
   bool immersive() const;

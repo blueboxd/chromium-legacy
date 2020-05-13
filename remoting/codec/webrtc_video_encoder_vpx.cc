@@ -86,12 +86,6 @@ void SetVp8CodecParameters(vpx_codec_enc_cfg_t* config,
   // redundant option since we explicitly select real time mode when doing
   // encoding.
   config->g_profile = 2;
-
-  // To enable remoting to be highly interactive and allow the target bitrate
-  // to be met, we relax the max quantizer. The quality will get topped-off
-  // in subsequent frames.
-  config->rc_min_quantizer = 20;
-  config->rc_max_quantizer = 50;
 }
 
 void SetVp9CodecParameters(vpx_codec_enc_cfg_t* config,
@@ -110,10 +104,6 @@ void SetVp9CodecParameters(vpx_codec_enc_cfg_t* config,
     config->rc_max_quantizer = 0;
     config->rc_end_usage = VPX_VBR;
   } else {
-    // TODO(wez): Set quantization range to 4-40, once the libvpx encoder is
-    // updated not to output any bits if nothing needs topping-off.
-    config->rc_min_quantizer = 20;
-    config->rc_max_quantizer = 30;
     config->rc_end_usage = VPX_CBR;
     // In the absence of a good bandwidth estimator set the target bitrate to a
     // conservative default.

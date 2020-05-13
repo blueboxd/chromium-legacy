@@ -1654,6 +1654,15 @@ class PortTest(LoggingTestCase):
 
         self.assertEqual(full_webdriver_name, "abd::bar")
 
+    def test_disable_system_font_check_and_nocheck_sys_deps(self):
+        port = self.make_port()
+        self.assertNotIn('--disable-system-font-check',
+                         port.additional_driver_flags())
+        port = self.make_port(
+            options=optparse.Values({'nocheck_sys_deps': True}))
+        self.assertIn('--disable-system-font-check',
+                      port.additional_driver_flags())
+
 
 class NaturalCompareTest(unittest.TestCase):
     def setUp(self):

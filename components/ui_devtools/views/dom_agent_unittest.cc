@@ -327,32 +327,31 @@ TEST_F(DOMAgentTest, GetDocumentMultipleWidgets) {
   //        child_b12
   //          child_b121
   //          child_b122
+
   std::unique_ptr<views::Widget> widget_a = CreateTestWidget();
   std::unique_ptr<views::Widget> widget_b = CreateTestWidget();
-  widget_a->GetRootView()->AddChildView(new TestView("child_a1"));
-  widget_a->GetRootView()->AddChildView(new TestView("child_a2"));
+  widget_a->GetRootView()->AddChildView(std::make_unique<TestView>("child_a1"));
+  widget_a->GetRootView()->AddChildView(std::make_unique<TestView>("child_a2"));
 
-  auto child_b1 = std::make_unique<TestView>("child_b1");
-  child_b1->set_owned_by_client();
-  widget_b->GetRootView()->AddChildView(child_b1.get());
+  {
+    auto child_b111 = std::make_unique<TestView>("child_b111");
+    child_b111->AddChildView(std::make_unique<TestView>("child_b1111"));
 
-  auto child_b11 = std::make_unique<TestView>("child_b11");
-  child_b11->set_owned_by_client();
-  child_b1->AddChildView(child_b11.get());
+    auto child_b11 = std::make_unique<TestView>("child_b11");
+    child_b11->AddChildView(std::move(child_b111));
+    child_b11->AddChildView(std::make_unique<TestView>("child_b112"));
+    child_b11->AddChildView(std::make_unique<TestView>("child_b113"));
 
-  auto child_b111 = std::make_unique<TestView>("child_b111");
-  child_b111->set_owned_by_client();
-  child_b11->AddChildView(child_b111.get());
-  child_b111->AddChildView(new TestView("child_b1111"));
+    auto child_b12 = std::make_unique<TestView>("child_b12");
+    child_b12->AddChildView(std::make_unique<TestView>("child_b121"));
+    child_b12->AddChildView(std::make_unique<TestView>("child_b122"));
 
-  child_b11->AddChildView(new TestView("child_b112"));
-  child_b11->AddChildView(new TestView("child_b113"));
+    auto child_b1 = std::make_unique<TestView>("child_b1");
+    child_b1->AddChildView(std::move(child_b11));
+    child_b1->AddChildView(std::move(child_b12));
 
-  auto child_b12 = std::make_unique<TestView>("child_b12");
-  child_b12->set_owned_by_client();
-  child_b1->AddChildView(child_b12.get());
-  child_b12->AddChildView(new TestView("child_b121"));
-  child_b12->AddChildView(new TestView("child_b122"));
+    widget_b->GetRootView()->AddChildView(std::move(child_b1));
+  }
 
   std::unique_ptr<DOM::Node> root;
   dom_agent()->getDocument(&root);

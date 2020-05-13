@@ -21,7 +21,7 @@ namespace content {
 class CONTENT_EXPORT ConversionStorageDelegateImpl
     : public ConversionStorage::Delegate {
  public:
-  ConversionStorageDelegateImpl();
+  explicit ConversionStorageDelegateImpl(bool debug_mode = false);
   ConversionStorageDelegateImpl(const ConversionStorageDelegateImpl& other) =
       delete;
   ConversionStorageDelegateImpl& operator=(
@@ -38,6 +38,10 @@ class CONTENT_EXPORT ConversionStorageDelegateImpl
   // set reporting windows based on their impression time. This strictly delays
   // the time a report will be sent.
   base::Time GetReportTimeForConversion(const ConversionReport& report) const;
+
+  // Whether the API is running in debug mode, meaning that there should be
+  // no delays or noise added to reports.
+  bool debug_mode_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

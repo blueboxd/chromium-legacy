@@ -31,7 +31,7 @@ TEST_F('InvalidationsWebUITest', 'testRegisteringNewInvalidation', function() {
   var isContained =
       invalidationsLog.value.indexOf(
           'Received Invalidation with type ' +
-          '"EXTENSIONS" version "Unknown" with payload "undefined"') != -1;
+          '"EXTENSIONS" version "Unknown" with payload "undefined"') !== -1;
   expectTrue(isContained, 'Actual log is:' + invalidationsLog.value);
 
 });
@@ -46,17 +46,17 @@ TEST_F('InvalidationsWebUITest', 'testChangingInvalidationsState', function() {
 
   chrome.invalidations.updateInvalidatorState(newState);
   var isContainedState =
-      invalidationsState.textContent.indexOf('INVALIDATIONS_ENABLED') != -1;
+      invalidationsState.textContent.indexOf('INVALIDATIONS_ENABLED') !== -1;
   expectTrue(isContainedState, 'could not change the invalidations text');
 
   invalidationsLog.value = '';
   chrome.invalidations.updateInvalidatorState(newNewState);
   var isContainedState2 = invalidationsState.textContent.indexOf(
-                              'TRANSIENT_INVALIDATION_ERROR') != -1;
+                              'TRANSIENT_INVALIDATION_ERROR') !== -1;
   expectTrue(isContainedState2, 'could not change the invalidations text');
   var isContainedLog = invalidationsLog.value.indexOf(
                            'Invalidations service state changed to ' +
-                           '"TRANSIENT_INVALIDATION_ERROR"') != -1;
+                           '"TRANSIENT_INVALIDATION_ERROR"') !== -1;
   expectTrue(isContainedLog, 'Actual log is:' + invalidationsLog.value);
 });
 
@@ -83,9 +83,9 @@ TEST_F('InvalidationsWebUITest', 'testRegisteringNewIds', function() {
     var pattern2Test = true;
     for (var cell = 0; cell < oidTable.rows[row].cells.length; cell++) {
       pattern1Test = pattern1Test &&
-          (pattern1[cell] == oidTable.rows[row].cells[cell].textContent);
+          (pattern1[cell] === oidTable.rows[row].cells[cell].textContent);
       pattern2Test = pattern2Test &&
-          (pattern2[cell] == oidTable.rows[row].cells[cell].textContent);
+          (pattern2[cell] === oidTable.rows[row].cells[cell].textContent);
     }
     if (pattern1Test) {
       expectEquals('greyed', oidTable.rows[row].className);

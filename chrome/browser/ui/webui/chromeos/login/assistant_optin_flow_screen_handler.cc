@@ -221,8 +221,8 @@ void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
   // Make sure enable Assistant service since we need it during the flow.
   prefs->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
 
-  if (ash::AssistantState::Get()->assistant_state() ==
-      ash::mojom::AssistantState::NOT_READY) {
+  if (ash::AssistantState::Get()->assistant_status() ==
+      chromeos::assistant::AssistantStatus::NOT_READY) {
     ash::AssistantState::Get()->AddObserver(this);
   } else {
     SendGetSettingsRequest();
@@ -282,8 +282,8 @@ void AssistantOptInFlowScreenHandler::OnAssistantSettingsEnabled(bool enabled) {
 }
 
 void AssistantOptInFlowScreenHandler::OnAssistantStatusChanged(
-    ash::mojom::AssistantState state) {
-  if (state != ash::mojom::AssistantState::NOT_READY) {
+    chromeos::assistant::AssistantStatus status) {
+  if (status != chromeos::assistant::AssistantStatus::NOT_READY) {
     SendGetSettingsRequest();
     ash::AssistantState::Get()->RemoveObserver(this);
   }
@@ -293,8 +293,8 @@ void AssistantOptInFlowScreenHandler::SendGetSettingsRequest() {
   if (!initialized_)
     return;
 
-  if (ash::AssistantState::Get()->assistant_state() ==
-      ash::mojom::AssistantState::NOT_READY) {
+  if (ash::AssistantState::Get()->assistant_status() ==
+      chromeos::assistant::AssistantStatus::NOT_READY) {
     return;
   }
 

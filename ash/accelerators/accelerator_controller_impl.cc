@@ -1016,59 +1016,60 @@ void HandleToggleAssistant(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
+  using chromeos::assistant::AssistantAllowedState;
   switch (AssistantState::Get()->allowed_state().value_or(
-      mojom::AssistantAllowedState::ALLOWED)) {
-    case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
+      AssistantAllowedState::ALLOWED)) {
+    case AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_SECONDARY_USER_TOAST_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE:
+    case AssistantAllowedState::DISALLOWED_BY_LOCALE:
       // Show a toast if the Assistant is disabled due to unsupported
       // locales.
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_POLICY:
+    case AssistantAllowedState::DISALLOWED_BY_POLICY:
       // Show a toast if the Assistant is disabled due to enterprise policy.
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_BY_POLICY_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
+    case AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
       // Show a toast if the Assistant is disabled due to being in Demo
       // Mode.
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
+    case AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
       // Show a toast if the Assistant is disabled due to being in public
       // session.
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_IN_PUBLIC_SESSION_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
+    case AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
       // supervised user is deprecated, wait for the code clean up.
       NOTREACHED();
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
+    case AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_IN_GUEST_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
+    case AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
       ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
                     IDS_ASH_ASSISTANT_DISABLED_BY_ACCOUNT_MESSAGE));
       return;
-    case mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
+    case AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
       // No need to show toast in KIOSK mode.
       return;
-    case mojom::AssistantAllowedState::ALLOWED:
+    case AssistantAllowedState::ALLOWED:
       // Nothing need to do if allowed.
       break;
   }

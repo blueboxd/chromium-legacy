@@ -65,7 +65,8 @@ class AssistantAlarmTimerController
       const std::map<std::string, std::string>& params) override;
 
   // AssistantStateObserver:
-  void OnAssistantStatusChanged(mojom::AssistantState state) override;
+  void OnAssistantStatusChanged(
+      chromeos::assistant::AssistantStatus status) override;
 
   // mojom::AssistantAlarmTimerController:
   void OnTimerStateChanged(

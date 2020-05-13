@@ -92,6 +92,8 @@ function addPrivacyChildRoutes(r) {
     r.SITE_SETTINGS_BLUETOOTH_SCANNING =
         r.SITE_SETTINGS.createChild('bluetoothScanning');
     r.SITE_SETTINGS_HID_DEVICES = r.SITE_SETTINGS.createChild('hidDevices');
+    r.SITE_SETTINGS_WINDOW_PLACEMENT =
+        r.SITE_SETTINGS.createChild('windowPlacement');
   }
   if (loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting')) {
     r.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE =

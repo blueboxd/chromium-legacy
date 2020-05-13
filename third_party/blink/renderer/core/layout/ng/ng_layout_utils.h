@@ -19,9 +19,10 @@ class NGLayoutResult;
 // See |NGSimplifiedLayoutAlgorithm| for details about the
 // |kNeedsSimplifiedLayout| cache miss type.
 enum class NGLayoutCacheStatus {
-  kHit,                   // Cache hit, no additional work required.
-  kNeedsLayout,           // Cache miss, full layout required.
-  kNeedsSimplifiedLayout  // Cache miss, simplified layout required.
+  kHit,                    // Cache hit, no additional work required.
+  kNeedsLayout,            // Cache miss, full layout required.
+  kNeedsSimplifiedLayout,  // Cache miss, simplified layout required.
+  kCanReuseLines           // Cache miss, may be possible to reuse lines.
 };
 
 // Calculates the |NGLayoutCacheStatus| based on sizing information. Returns:

@@ -14,11 +14,13 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Privacy settings. Note that some
 // search tags are added only for official Google Chrome OS builds.
 class PrivacySection : public OsSettingsSection {
  public:
-  PrivacySection(Profile* profile, Delegate* per_page_delegate);
+  PrivacySection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~PrivacySection() override;
 
  private:

@@ -21,8 +21,13 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/loopback_audio_converter.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace media {
 class AudioRendererMixerInput;
+class SilentSinkSuspender;
 
 // Mixes a set of AudioConverter::InputCallbacks into a single output stream
 // which is funneled into a single shared AudioRendererSink; saving a bundle
@@ -66,6 +71,8 @@ class MEDIA_EXPORT AudioRendererMixer
              AudioBus* audio_bus) override;
   void OnRenderError() override;
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetSuspenderTaskRunner();
+
   bool is_master_sample_rate(int sample_rate) const {
     return sample_rate == output_params_.sample_rate();
   }
@@ -75,6 +82,13 @@ class MEDIA_EXPORT AudioRendererMixer
 
   // Output sink for this mixer.
   const scoped_refptr<AudioRendererSink> audio_sink_;
+
+  // Optional utility class which disables audio output when only silent audio
+  // is being delivered to the physical audio output stream.
+  std::unique_ptr<SilentSinkSuspender> muted_suspender_;
+
+  // Task Runner used by |muted_suspender_|.
+  scoped_refptr<base::SingleThreadTaskRunner> suspender_task_runner_;
 
   // ---------------[ All variables below protected by |lock_| ]---------------
   base::Lock lock_;

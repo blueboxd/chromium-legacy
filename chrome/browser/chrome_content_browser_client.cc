@@ -115,6 +115,7 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
+#include "chrome/browser/safe_browsing/delayed_warning_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -4007,6 +4008,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   throttles.push_back(
       std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(handle));
+
+  if (base::FeatureList::IsEnabled(safe_browsing::kDelayedWarnings)) {
+    throttles.push_back(
+        std::make_unique<safe_browsing::DelayedWarningNavigationThrottle>(
+            handle));
+  }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

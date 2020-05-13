@@ -79,15 +79,16 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
+    public void recordItemPresented(PropertyModel model) {
         // Note: At the time of writing this functionality, AiS was offering at most one answer to
         // any query. If this changes before the metric is expired, the code below may need either
         // revisiting or a secondary metric telling us how many answer suggestions have been shown.
         // SuggestionUsed bookkeeping handled in C++:
         // https://cs.chromium.org/Omnibox.SuggestionUsed.AnswerInSuggest
-        if (suggestion.hasAnswer()) {
-            RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
-                    suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
+        int type = model.get(AnswerSuggestionViewProperties.ANSWER_TYPE);
+        if (type != AnswerType.INVALID) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Omnibox.AnswerInSuggestShown", type, AnswerType.TOTAL_COUNT);
         }
     }
 
@@ -149,6 +150,12 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
 
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
+
+        if (suggestion.hasAnswer()) {
+            model.set(AnswerSuggestionViewProperties.ANSWER_TYPE, suggestion.getAnswer().getType());
+        } else {
+            model.set(AnswerSuggestionViewProperties.ANSWER_TYPE, AnswerType.INVALID);
+        }
 
         setSuggestionDrawableState(model,
                 SuggestionDrawableState.Builder

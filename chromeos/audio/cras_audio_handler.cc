@@ -237,6 +237,15 @@ void CrasAudioHandler::OnVideoCaptureStoppedOnMainThread(
   SwitchToDevice(*GetDeviceByType(AUDIO_TYPE_FRONT_MIC), true, activated_by);
 }
 
+void CrasAudioHandler::HandleMediaSessionMetadataReset() {
+  const std::map<std::string, std::string> empty_metadata_map = {
+      {"title", ""}, {"artist", ""}, {"album", ""}};
+
+  CrasAudioClient::Get()->SetPlayerMetadata(empty_metadata_map);
+  CrasAudioClient::Get()->SetPlayerIdentity("");
+  CrasAudioClient::Get()->SetPlayerPlaybackStatus("stopped");
+}
+
 void CrasAudioHandler::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr session_info) {
   if (!session_info)
@@ -262,8 +271,10 @@ void CrasAudioHandler::MediaSessionInfoChanged(
 
 void CrasAudioHandler::MediaSessionMetadataChanged(
     const base::Optional<media_session::MediaMetadata>& metadata) {
-  if (!metadata || metadata->IsEmpty())
+  if (!metadata || metadata->IsEmpty()) {
+    HandleMediaSessionMetadataReset();
     return;
+  }
 
   const std::map<std::string, std::string> metadata_map = {
       {"title", base::UTF16ToUTF8(metadata->title)},

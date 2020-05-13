@@ -8,13 +8,17 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -159,6 +163,22 @@ void HandleRequestCallback(const std::string& path,
     std::move(callback).Run(data.get());
     return;
   }
+
+  // May be a test request
+  if (base::EndsWith(path, "/test.pdf", base::CompareCase::SENSITIVE)) {
+    std::string test_pdf_content;
+    base::FilePath test_data_path;
+    CHECK(base::PathService::Get(base::DIR_TEST_DATA, &test_data_path));
+    base::FilePath pdf_path =
+        test_data_path.AppendASCII("pdf/test.pdf").NormalizePathSeparators();
+
+    CHECK(base::ReadFileToString(pdf_path, &test_pdf_content));
+    scoped_refptr<base::RefCountedString> response =
+        base::RefCountedString::TakeString(&test_pdf_content);
+    std::move(callback).Run(response.get());
+    return;
+  }
+
   // Invalid request.
   auto empty_bytes = base::MakeRefCounted<base::RefCountedBytes>();
   std::move(callback).Run(empty_bytes.get());
@@ -341,33 +361,22 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
   static constexpr webui::ResourcePath kPdfResources[] = {
+    {"pdf/bookmark_type.js", IDR_PDF_BOOKMARK_TYPE_JS},
     {"pdf/browser_api.js", IDR_PDF_BROWSER_API_JS},
     {"pdf/constants.js", IDR_PDF_CONSTANTS_JS},
     {"pdf/controller.js", IDR_PDF_CONTROLLER_JS},
     {"pdf/elements/icons.js", IDR_PDF_ICONS_JS},
     {"pdf/elements/shared-vars.js", IDR_PDF_SHARED_VARS_JS},
-    {"pdf/elements/viewer-bookmark.js", IDR_PDF_VIEWER_BOOKMARK_JS},
     {"pdf/elements/viewer-error-screen.js", IDR_PDF_VIEWER_ERROR_SCREEN_JS},
-#if defined(OS_CHROMEOS)
-    {"pdf/elements/viewer-ink-host.js", IDR_PDF_VIEWER_INK_HOST_JS},
-#endif
-    {"pdf/elements/viewer-page-indicator.js", IDR_PDF_VIEWER_PAGE_INDICATOR_JS},
-    {"pdf/elements/viewer-page-selector.js", IDR_PDF_VIEWER_PAGE_SELECTOR_JS},
-    {"pdf/elements/viewer-password-screen.js",
-     IDR_PDF_VIEWER_PASSWORD_SCREEN_JS},
-    {"pdf/elements/viewer-pdf-toolbar.js", IDR_PDF_VIEWER_PDF_TOOLBAR_JS},
-#if defined(OS_CHROMEOS)
-    {"pdf/elements/viewer-form-warning.js", IDR_PDF_VIEWER_FORM_WARNING_JS},
-    {"pdf/elements/viewer-pen-options.js", IDR_PDF_VIEWER_PEN_OPTIONS_JS},
-#endif
-    {"pdf/elements/viewer-toolbar-dropdown.js",
-     IDR_PDF_VIEWER_TOOLBAR_DROPDOWN_JS},
+    {"pdf/elements/viewer-page-indicator.js",
+     IDR_PRINT_PREVIEW_PDF_VIEWER_PAGE_INDICATOR_JS},
     {"pdf/elements/viewer-zoom-button.js", IDR_PDF_VIEWER_ZOOM_BUTTON_JS},
     {"pdf/elements/viewer-zoom-toolbar.js", IDR_PDF_VIEWER_ZOOM_SELECTOR_JS},
     {"pdf/gesture_detector.js", IDR_PDF_GESTURE_DETECTOR_JS},
     {"pdf/index.css", IDR_PDF_INDEX_CSS},
-    {"pdf/index.html", IDR_PDF_INDEX_HTML},
-    {"pdf/main.js", IDR_PDF_MAIN_JS},
+    {"pdf/index.html", IDR_PRINT_PREVIEW_PDF_INDEX_PP_HTML},
+    {"pdf/main_pp.js", IDR_PRINT_PREVIEW_PDF_MAIN_PP_JS},
+    {"pdf/main_util.js", IDR_PDF_MAIN_UTIL_JS},
     {"pdf/metrics.js", IDR_PDF_METRICS_JS},
     {"pdf/navigator.js", IDR_PDF_NAVIGATOR_JS},
     {"pdf/open_pdf_params_parser.js", IDR_PDF_OPEN_PDF_PARAMS_PARSER_JS},
@@ -482,6 +491,9 @@ bool PrintPreviewUI::ParseDataPath(const std::string& path,
                                    int* ui_id,
                                    int* page_index) {
   std::string file_path = path.substr(0, path.find_first_of('?'));
+  if (base::EndsWith(file_path, "/test.pdf", base::CompareCase::SENSITIVE))
+    return true;
+
   if (!base::EndsWith(file_path, "/print.pdf", base::CompareCase::SENSITIVE))
     return false;
 

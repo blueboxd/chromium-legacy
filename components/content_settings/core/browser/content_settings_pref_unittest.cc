@@ -173,7 +173,7 @@ TEST(ContentSettingsPref, CanonicalizationWhileReadingFromPrefs) {
   registrar.Init(&prefs);
   ContentSettingsPref content_settings_pref(
       ContentSettingsType::MEDIA_ENGAGEMENT, &prefs, &registrar,
-      kTestContentSettingPrefName, false, base::DoNothing());
+      kTestContentSettingPrefName, false, false, base::DoNothing());
 
   // Verify that the |value_map| contains the expected content setting patterns
   // and setting.
@@ -263,7 +263,7 @@ TEST(ContentSettingsPref, LegacyPersistedPluginSetting) {
   registrar.Init(&prefs);
   ContentSettingsPref content_settings_pref(
       ContentSettingsType::PLUGINS, &prefs, &registrar,
-      kPluginsContentSettingPrefName, false, base::DoNothing());
+      kPluginsContentSettingPrefName, false, false, base::DoNothing());
 
   // For kPattern1 retrieving the setting without a resource id returns the
   // CONTENT_SETTING_ALLOW value and retrieving it with the resource id (after
@@ -316,7 +316,7 @@ TEST(ContentSettingsPref, ExpirationWhileReadingFromPrefs) {
   registrar.Init(&prefs);
   ContentSettingsPref content_settings_pref(
       ContentSettingsType::MEDIA_ENGAGEMENT, &prefs, &registrar,
-      kTestContentSettingPrefName, false, base::DoNothing());
+      kTestContentSettingPrefName, false, false, base::DoNothing());
 
   // Verify that the |value_map| contains the expected content setting patterns
   // and setting.
@@ -375,7 +375,7 @@ TEST(ContentSettingsPref, LegacyLastModifiedLoad) {
   registrar.Init(&prefs);
   ContentSettingsPref content_settings_pref(
       ContentSettingsType::STORAGE_ACCESS, &prefs, &registrar,
-      kTestContentSettingPrefName, false, base::DoNothing());
+      kTestContentSettingPrefName, false, false, base::DoNothing());
 
   // Ensure that after reading from our JSON/old value the last_modified time is
   // still parsed correctly.

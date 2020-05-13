@@ -96,24 +96,16 @@ TEST_F(FidoGetAssertionTaskTest, TestU2fSignSuccess) {
 }
 
 TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
-  auto private_key = crypto::ECPrivateKey::Create();
-  std::string public_key;
-  private_key->ExportRawPublicKey(&public_key);
-  auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
-  std::vector<uint8_t> key_handle(hash.begin(), hash.end());
+  static const uint8_t kCredentialId[] = {1, 2, 3, 4};
   CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
                                         test_data::kClientDataJson);
-  request_param.allow_list.emplace_back(
-      PublicKeyCredentialDescriptor(CredentialType::kPublicKey, key_handle));
-  ;
+  request_param.allow_list.emplace_back(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey,
+      fido_parsing_utils::Materialize(kCredentialId)));
 
   auto device = std::make_unique<VirtualCtap2Device>();
-  device->mutable_state()->registrations.emplace(
-      key_handle,
-      VirtualFidoDevice::RegistrationData(
-          std::move(private_key),
-          fido_parsing_utils::CreateSHA256Hash(test_data::kRelyingPartyId),
-          42 /* counter */));
+  ASSERT_TRUE(device->mutable_state()->InjectRegistration(
+      kCredentialId, test_data::kRelyingPartyId));
   test::TestCallbackReceiver<> done;
   device->DiscoverSupportedProtocolAndDeviceInfo(done.callback());
   done.WaitForCallback();
@@ -138,11 +130,11 @@ TEST_F(FidoGetAssertionTaskTest, TestSignSuccessWithFake) {
                 .value()
                 ->auth_data()
                 .SerializeToByteArray()[32]);  // UP flag
-  // Counter is incremented for every sign request.
-  EXPECT_EQ(43, get_assertion_callback_receiver()
-                    .value()
-                    ->auth_data()
-                    .SerializeToByteArray()[36]);  // counter
+  // Counter starts at zero and is incremented for every sign request.
+  EXPECT_EQ(1, get_assertion_callback_receiver()
+                   .value()
+                   ->auth_data()
+                   .SerializeToByteArray()[36]);  // counter
 }
 
 TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {

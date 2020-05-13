@@ -54,8 +54,8 @@ var CrManagementA11yTest = class extends PolymerTest {
       },
       'list': function(nodeResult) {
         return nodeResult && nodeResult.element &&
-            nodeResult.element.tagName == 'UL' &&
-            nodeResult.element.getElementsByTagName('DOM-REPEAT').length != 0;
+            nodeResult.element.tagName === 'UL' &&
+            nodeResult.element.getElementsByTagName('DOM-REPEAT').length !== 0;
       },
     };
   }

@@ -24,11 +24,11 @@ DebugLogsStatusWatcher.prototype = {
   },
 
   onStoreDebugLogs: function(status) {
-    if (status.indexOf('Created') != -1) {
+    if (status.indexOf('Created') !== -1) {
       this.onTaskDone(true);
       return;
     }
-    if (status.indexOf('Failed') != -1) {
+    if (status.indexOf('Failed') !== -1) {
       this.onTaskDone(false);
       return;
     }

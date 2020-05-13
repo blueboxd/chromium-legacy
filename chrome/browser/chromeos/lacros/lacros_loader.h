@@ -25,12 +25,15 @@ class LacrosLoader {
 
   void Init();
 
-  // Returns true if the binary is ready to launch.
+  // Returns true if the binary is ready to launch. Typical usage is to check
+  // IsReady(), then if it returns false, call SetLoadCompleteCallback() to be
+  // notified when the download completes.
   bool IsReady() const;
 
-  // Sets a callback to be called when the binary is ready. May never be called
-  // (for example, if there is a download error).
-  void SetReadyCallback(base::OnceClosure ready_callback);
+  // Sets a callback to be called when the binary download completes. The
+  // download may not be successful.
+  using LoadCompleteCallback = base::OnceCallback<void(bool success)>;
+  void SetLoadCompleteCallback(LoadCompleteCallback callback);
 
   // Starts the lacros-chrome binary.
   void Start();
@@ -48,8 +51,8 @@ class LacrosLoader {
   // Path to the lacros-chrome disk image directory.
   base::FilePath lacros_path_;
 
-  // Called when the binary is ready.
-  base::OnceClosure ready_callback_;
+  // Called when the binary download completes.
+  LoadCompleteCallback load_complete_callback_;
 
   // Process handle for the lacros-chrome process.
   base::Process lacros_process_;

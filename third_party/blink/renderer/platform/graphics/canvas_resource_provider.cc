@@ -1034,7 +1034,9 @@ CanvasResourceProvider::CreateSharedImageProvider(
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
       size, msaa_sample_count, filter_quality, color_params,
       context_provider_wrapper, nullptr /* resource_dispatcher */,
-      is_origin_top_left, raster_mode == RasterMode::kGPU, false,
+      is_origin_top_left, raster_mode == RasterMode::kGPU,
+      raster_mode == RasterMode::kGPU &&
+          base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas),
       shared_image_usage_flags);
   if (provider->IsValid())
     return provider;

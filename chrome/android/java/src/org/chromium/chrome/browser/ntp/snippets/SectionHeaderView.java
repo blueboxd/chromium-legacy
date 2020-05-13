@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -14,10 +15,13 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
+import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.widget.RectProvider;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -27,6 +31,8 @@ import org.chromium.ui.widget.ViewRectProvider;
  * manage the feed.
  */
 public class SectionHeaderView extends LinearLayout implements View.OnClickListener {
+    private static final int IPH_TIMEOUT_MS = 10000;
+
     // Views in the header layout that are set during inflate.
     private TextView mTitleView;
     private TextView mStatusView;
@@ -97,6 +103,19 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
             setBackgroundResource(
                     mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);
         }
+    }
+    /** Shows an IPH on the feed header menu button. */
+    public void showMenuIph(UserEducationHelper helper) {
+        helper.requestShowIPH(new IPHCommandBuilder(mMenuView.getContext().getResources(),
+                FeatureConstants.FEED_HEADER_MENU_FEATURE, R.string.ntp_feed_menu_iph,
+                R.string.accessibility_ntp_feed_menu_iph)
+                                      .setAnchorView(mMenuView)
+                                      .setCircleHighlight(true)
+                                      .setShouldHighlight(true)
+                                      .setDismissOnTouch(true)
+                                      .setInsetRect(new Rect(0, 0, 0, 0))
+                                      .setAutoDismissTimeout(10 * 1000)
+                                      .build());
     }
 
     private void displayMenu() {

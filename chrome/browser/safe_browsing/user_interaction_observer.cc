@@ -112,13 +112,42 @@ void SafeBrowsingUserInteractionObserver::WebContentsDestroyed() {
   CleanUp();
 }
 
-void SafeBrowsingUserInteractionObserver::DidStartNavigation(
+void SafeBrowsingUserInteractionObserver::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  // Ignore subframe navigations and same document navigations. These don't
-  // show full page interstitials.
+  // Remove the observer on a top frame navigation to another page. The user is
+  // now on another page so we don't need to wait for an interaction.
   if (!handle->IsInMainFrame() || handle->IsSameDocument()) {
     return;
   }
+  // If this is the first navigation we are seeing, it must be the
+  // navigation that caused this observer to be created.
+  // As an example, if the user navigates to http://test.site, the order of
+  // events are:
+  // 1. SafeBrowsingUrlCheckerImpl detects that the URL should be blocked with
+  //    an interstitial.
+  // 2. It delays the interstitial and creates an instance of this class.
+  // 3. DidFinishNavigation() of this class is called.
+  //
+  // This means that the first time we are here, we should ignore this event
+  // because it's not an interesting navigation. We only want to handle the
+  // navigations that follow.
+  if (!initial_navigation_finished_) {
+    initial_navigation_finished_ = true;
+    return;
+  }
+  // If a download happens when an instance of this observer is attached to
+  // the WebContents, DelayedNavigationThrottle cancels the download. As a
+  // result, the page should remain unchanged on downloads. Record a metric and
+  // ignore this cancelled navigation.
+  if (handle->IsDownload()) {
+    RecordUMA(DelayedWarningEvent::kDownloadCancelled);
+    return;
+  }
+  Detach();
+  // DO NOT add code past this point. |this| is destroyed.
+}
+
+void SafeBrowsingUserInteractionObserver::Detach() {
   web_contents()->RemoveUserData(kWebContentsUserDataKey);
 }
 
@@ -179,6 +208,7 @@ void SafeBrowsingUserInteractionObserver::ShowInterstitial(
   CleanUp();
   RecordUMA(event);
   SafeBrowsingUIManager::StartDisplayingBlockingPage(ui_manager_, resource_);
+  Detach();
   // DO NOT add code past this point. |this| is destroyed.
 }
 

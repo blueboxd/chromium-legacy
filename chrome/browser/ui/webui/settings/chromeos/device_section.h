@@ -27,6 +27,8 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Device settings.
 class DeviceSection : public OsSettingsSection,
                       public system::PointerDeviceObserver::Observer,
@@ -36,7 +38,7 @@ class DeviceSection : public OsSettingsSection,
                       public PowerManagerClient::Observer {
  public:
   DeviceSection(Profile* profile,
-                Delegate* per_page_delegate,
+                SearchTagRegistry* search_tag_registry,
                 PrefService* pref_service);
   ~DeviceSection() override;
 

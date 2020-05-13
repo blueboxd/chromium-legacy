@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
@@ -111,19 +112,20 @@ bool IsAmbientModeAllowed() {
 
 }  // namespace
 
-PersonalizationSection::PersonalizationSection(Profile* profile,
-                                               Delegate* per_page_delegate,
-                                               PrefService* pref_service)
-    : OsSettingsSection(profile, per_page_delegate),
+PersonalizationSection::PersonalizationSection(
+    Profile* profile,
+    SearchTagRegistry* search_tag_registry,
+    PrefService* pref_service)
+    : OsSettingsSection(profile, search_tag_registry),
       pref_service_(pref_service) {
   // Personalization search tags are not added in guest mode.
   if (features::IsGuestModeActive())
     return;
 
-  delegate()->AddSearchTags(GetPersonalizationSearchConcepts());
+  registry()->AddSearchTags(GetPersonalizationSearchConcepts());
 
   if (IsAmbientModeAllowed()) {
-    delegate()->AddSearchTags(GetAmbientModeSearchConcepts());
+    registry()->AddSearchTags(GetAmbientModeSearchConcepts());
 
     pref_change_registrar_.Init(pref_service_);
     pref_change_registrar_.Add(
@@ -197,11 +199,11 @@ void PersonalizationSection::AddHandlers(content::WebUI* web_ui) {
 
 void PersonalizationSection::OnAmbientModeEnabledStateChanged() {
   if (pref_service_->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled)) {
-    delegate()->AddSearchTags(GetAmbientModeOnSearchConcepts());
-    delegate()->RemoveSearchTags(GetAmbientModeOffSearchConcepts());
+    registry()->AddSearchTags(GetAmbientModeOnSearchConcepts());
+    registry()->RemoveSearchTags(GetAmbientModeOffSearchConcepts());
   } else {
-    delegate()->RemoveSearchTags(GetAmbientModeOnSearchConcepts());
-    delegate()->AddSearchTags(GetAmbientModeOffSearchConcepts());
+    registry()->RemoveSearchTags(GetAmbientModeOnSearchConcepts());
+    registry()->AddSearchTags(GetAmbientModeOffSearchConcepts());
   }
 }
 

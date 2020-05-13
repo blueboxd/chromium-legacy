@@ -21,11 +21,13 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 class InternetSection
     : public OsSettingsSection,
       public network_config::mojom::CrosNetworkConfigObserver {
  public:
-  InternetSection(Profile* profile, Delegate* per_page_delegate);
+  InternetSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~InternetSection() override;
 
  private:

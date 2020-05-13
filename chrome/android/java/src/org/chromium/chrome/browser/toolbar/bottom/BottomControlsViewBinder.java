@@ -53,10 +53,6 @@ class BottomControlsViewBinder {
             final boolean showCompositedView =
                     model.get(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE);
             view.sceneLayer.setIsVisible(showCompositedView);
-            if (model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT) != null) {
-                model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT)
-                        .setBottomToolbarSceneLayersVisibility(showCompositedView);
-            }
             model.get(BottomControlsProperties.LAYOUT_MANAGER).requestUpdate();
         } else if (BottomControlsProperties.LAYOUT_MANAGER == propertyKey) {
             assert view.sceneLayer == null;
@@ -66,19 +62,10 @@ class BottomControlsViewBinder {
                     model.get(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE));
             model.get(BottomControlsProperties.LAYOUT_MANAGER)
                     .addSceneOverlayToBack(view.sceneLayer);
-        } else if (BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT == propertyKey) {
-            assert view.sceneLayer != null;
-            assert model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT) != null;
-            model.get(BottomControlsProperties.TOOLBAR_SWIPE_LAYOUT)
-                    .setBottomToolbarSceneLayers(new ScrollingBottomViewSceneLayer(view.sceneLayer),
-                            new ScrollingBottomViewSceneLayer(view.sceneLayer),
-                            model.get(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE));
         } else if (BottomControlsProperties.RESOURCE_MANAGER == propertyKey) {
             model.get(BottomControlsProperties.RESOURCE_MANAGER)
                     .getDynamicResourceLoader()
                     .registerResource(view.root.getId(), view.root.getResourceAdapter());
-        } else if (BottomControlsProperties.TOOLBAR_SWIPE_HANDLER == propertyKey) {
-            view.root.setSwipeDetector(model.get(BottomControlsProperties.TOOLBAR_SWIPE_HANDLER));
         } else {
             assert false : "Unhandled property detected in BottomControlsViewBinder!";
         }

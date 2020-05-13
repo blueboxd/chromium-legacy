@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "build/build_config.h"
 #include "google_apis/gaia/core_account_id.h"
 
 class PrefService;
@@ -24,7 +25,9 @@ extern const char kAutofillAcceptSaveCreditCardPromptState[];
 // Do not get/set the value of this pref directly. Use provided getter/setter.
 extern const char kAutofillCreditCardEnabled[];
 extern const char kAutofillCreditCardFidoAuthEnabled[];
+#if defined(OS_ANDROID)
 extern const char kAutofillCreditCardFidoAuthOfferCheckboxState[];
+#endif
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
 // Please use kAutofillCreditCardEnabled and kAutofillProfileEnabled instead.
 extern const char kAutofillEnabledDeprecated[];

@@ -133,8 +133,11 @@ MirroringActivityRecord::MirroringActivityRecord(
   // Arrange to start mirroring once the session is set.
   on_session_set_ = base::BindOnce(
       &MirroringActivityRecord::StartMirroring, base::Unretained(this),
+      // TODO(jophba): update to pass target playout delay, once we are
+      // copmletely migrated to native MRP.
       SessionParameters::New(session_type, cast_data.ip_endpoint.address(),
-                             cast_data.model_name),
+                             cast_data.model_name,
+                             /*target_playout_delay*/ base::nullopt),
       channel_to_service_.BindNewPipeAndPassReceiver());
 }
 

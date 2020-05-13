@@ -118,13 +118,17 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     int process_id,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
         container_remote,
-    blink::mojom::ServiceWorkerClientType client_type)
+    blink::mojom::ServiceWorkerClientType client_type,
+    DedicatedWorkerId dedicated_worker_id,
+    SharedWorkerId shared_worker_id)
     : context_(std::move(context)),
       create_time_(base::TimeTicks::Now()),
       client_uuid_(base::GenerateGUID()),
       process_id_(process_id),
       container_(std::move(container_remote)),
-      client_type_(client_type) {
+      client_type_(client_type),
+      dedicated_worker_id_(dedicated_worker_id),
+      shared_worker_id_(shared_worker_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForWorkerClient());
   DCHECK(context_);

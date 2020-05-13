@@ -17,13 +17,15 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+class SearchTagRegistry;
+
 // Provides UI strings and search tags for Bluetooth settings. Different search
 // tags are registered depending on whether the device has a Bluetooth chip and
 // whether it is turned on or off.
 class BluetoothSection : public OsSettingsSection,
                          public device::BluetoothAdapter::Observer {
  public:
-  BluetoothSection(Profile* profile, Delegate* per_page_delegate);
+  BluetoothSection(Profile* profile, SearchTagRegistry* search_tag_registry);
   ~BluetoothSection() override;
 
  private:

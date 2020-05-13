@@ -20,6 +20,10 @@
 #include "net/cookies/cookie_util.h"
 #include "url/gurl.h"
 
+#if !defined(OS_IOS)
+#include "third_party/blink/public/common/features.h"
+#endif
+
 namespace content_settings {
 
 CookieSettings::CookieSettings(
@@ -203,6 +207,25 @@ void CookieSettings::GetCookieSettingInternal(
   DCHECK(value);
   ContentSetting setting = ValueToContentSetting(value.get());
   bool block = block_third && is_third_party_request;
+
+#if !defined(OS_IOS)
+  // IOS doesn't use blink and as such cannot check our feature flag. Disabling
+  // by default there should be no-op as the lack of Blink also means no grants
+  // would be generated. Everywhere else we'll use |kStorageAccessAPI| to gate
+  // our checking logic.
+  // We'll perform this check after we know if we will |block| or not to avoid
+  // performing extra work in scenarios we already allow.
+  if (block &&
+      base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+    ContentSetting setting = host_content_settings_map_->GetContentSetting(
+        url, first_party_url, ContentSettingsType::STORAGE_ACCESS,
+        std::string());
+
+    if (setting == CONTENT_SETTING_ALLOW)
+      block = false;
+  }
+#endif
+
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 

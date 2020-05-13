@@ -4,12 +4,8 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_data_offer.h"
 
-#include <fcntl.h>
-#include <algorithm>
-
 #include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/stl_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 
 namespace ui {

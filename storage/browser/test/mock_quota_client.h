@@ -14,7 +14,9 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
@@ -36,9 +38,8 @@ struct MockOriginData {
 class MockQuotaClient : public QuotaClient {
  public:
   MockQuotaClient(scoped_refptr<QuotaManagerProxy> quota_manager_proxy,
-                  const MockOriginData* mock_data,
-                  storage::QuotaClientType id,
-                  size_t mock_data_size);
+                  base::span<const MockOriginData> mock_data,
+                  QuotaClientType client_type);
 
   // To add or modify mock data in this client.
   void AddOriginAndNotify(const url::Origin& origin,
@@ -55,7 +56,7 @@ class MockQuotaClient : public QuotaClient {
   base::Time IncrementMockTime();
 
   // QuotaClient.
-  storage::QuotaClientType type() const override;
+  QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
@@ -87,10 +88,8 @@ class MockQuotaClient : public QuotaClient {
                            blink::mojom::StorageType type,
                            DeletionCallback callback);
 
-  void Populate(const MockOriginData* mock_data, size_t mock_data_size);
-
   const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
-  const storage::QuotaClientType id_;
+  const QuotaClientType client_type_;
 
   std::map<std::pair<url::Origin, blink::mojom::StorageType>, int64_t>
       origin_data_;

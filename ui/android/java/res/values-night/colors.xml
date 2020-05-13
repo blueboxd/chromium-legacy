@@ -73,4 +73,5 @@
     <color name="divider_line_bg_color">@color/divider_line_bg_color_light</color>
     <color name="omnibox_bg_color">@color/omnibox_bg_color_dark</color>
     <color name="image_loading_color">@color/image_loading_color_light</color>
+    <color name="promo_illustration_bg_color">@color/promo_illustration_bg_color_dark</color>
 </resources>

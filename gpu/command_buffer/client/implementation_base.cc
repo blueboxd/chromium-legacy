@@ -420,4 +420,9 @@ void ImplementationBase::SetDisplayTransform(gfx::OverlayTransform transform) {
   gpu_control_->SetDisplayTransform(transform);
 }
 
+void ImplementationBase::SetFrameRate(float frame_rate) {
+  helper_->Flush();
+  gpu_control_->SetFrameRate(frame_rate);
+}
+
 }  // namespace gpu

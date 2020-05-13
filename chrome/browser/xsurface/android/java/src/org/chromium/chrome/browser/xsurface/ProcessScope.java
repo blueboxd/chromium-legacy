@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.xsurface;
 
+import android.content.Context;
+
 import androidx.annotation.Nullable;
 
 /**
@@ -18,11 +20,21 @@ public interface ProcessScope {
     default void resetAccount() {}
 
     /**
-     * Returns a SurfaceScope which should be one per Surface. That Surface can have multiple
-     * HybridListRenderers and SurfaceRenderers within its UI.
+     * Deprecated - Will remove once the other overload is in use.
      **/
     @Nullable
     default SurfaceScope obtainSurfaceScope() {
         return null;
+    }
+
+    /**
+     * Returns a SurfaceScope which should be one per Surface. That Surface can have multiple
+     * HybridListRenderers and SurfaceRenderers within its UI.
+     *
+     * @param activityContext The context of the current activity.
+     **/
+    @Nullable
+    default SurfaceScope obtainSurfaceScope(Context activityContext) {
+        return obtainSurfaceScope();
     }
 }

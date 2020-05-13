@@ -89,14 +89,19 @@ std::string BuildCpuInfo() {
   return cpuinfo;
 }
 
+// Return the CPU architecture in Linux or Windows and the empty string
+// elsewhere.
 std::string GetLowEntropyCpuArchitecture() {
-#if !defined(OS_MACOSX) && defined(OS_POSIX)
-  std::string cpu_info = content::BuildCpuInfo();
-  if ((cpu_info.find("arm") != std::string::npos) ||
-      (cpu_info.find("aarch") != std::string::npos)) {
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && defined(OS_POSIX)
+  // This extra cpu_info_str variable is required to make sure the compiler
+  // doesn't optimize the copy away and have the StringPiece point at the
+  // internal std::string, resulting in a memory violation.
+  std::string cpu_info_str = BuildCpuInfo();
+  base::StringPiece cpu_info = cpu_info_str;
+  if (cpu_info.starts_with("arm") || cpu_info.starts_with("aarch")) {
     return "arm";
-  } else if ((cpu_info.find("86") != std::string::npos) ||
-             (cpu_info.find("x64") != std::string::npos)) {
+  } else if ((cpu_info.starts_with("i") && cpu_info.substr(2, 2) == "86") ||
+             cpu_info.starts_with("x86")) {
     return "x86";
   }
 #elif defined(OS_WIN)

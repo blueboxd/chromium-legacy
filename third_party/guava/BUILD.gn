@@ -17,7 +17,11 @@ android_java_prebuilt("guava_android_java") {
   no_build_hooks = true
 
   # Depend on this to replace excluded ListenableFuture.class
-  deps = [ "//third_party/android_deps:com_google_guava_listenablefuture_java" ]
+  deps = [
+    "//third_party/android_deps:com_google_guava_failureaccess_java",
+    "//third_party/android_deps:com_google_guava_listenablefuture_java",
+    "//third_party/android_deps:com_google_j2objc_j2objc_annotations_java",
+  ]
 
   # Avoid class conflict in com_google_guava_listenablefuture.
   jar_excluded_patterns = [ "*/ListenableFuture.class" ]

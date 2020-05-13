@@ -5304,26 +5304,39 @@ should be able to be added at any place in this file.
 
 <action name="CustomTabs.CloseButtonClicked">
   <owner>dfalcantara@chromium.org</owner>
-  <description>Close button of the CustomTabActivity was clicked.</description>
+  <description>
+    Close button of the CustomTabActivity was clicked. Starting with M84 this is
+    is also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabs.CloseButtonClicked.DownloadsUI">
   <owner>shaktisahu@chromium.org</owner>
   <description>
     The user has clicked on the back arrow while viewing downloaded media on
-    Android.
+    Android. Starting with M84 this is is also recorded for webapps/WebAPKs.
+    Filter the platform for just CCT/TWA data.
   </description>
 </action>
 
 <action name="CustomTabs.CloseButtonClicked.GoToModuleManagedUrl">
   <obsolete>Deprecated as of February 2020, this feature was removed.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <description>
+    Please enter the description of the metric. Starting with M84 this is is
+    also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabs.StartedInitially">
   <owner>tedchoc@chromium.org</owner>
-  <description>A CustomTabActivity was stared for the first time.</description>
+  <description>
+    A CustomTabActivity was stared for the first time. Starting with M84 this is
+    is also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabs.StartedReopened">
@@ -5331,62 +5344,89 @@ should be able to be added at any place in this file.
   <description>
     A CustomTabActivity was started by reopening a previously created instance.
     This can happen if you send a CCT to the background via the home button and
-    reselect it from Android Overview.
+    reselect it from Android Overview. Starting with M84 this is is also
+    recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA data.
   </description>
 </action>
 
 <action name="CustomTabs.SystemBack">
   <owner>dfalcantara@chromium.org</owner>
   <description>
-    User hit the 'back' button in the CustomTabActivity.
+    User hit the 'back' button in the CustomTabActivity. Starting with M84 this
+    is is also recorded for webapps/WebAPKs. Filter the platform for just
+    CCT/TWA data.
   </description>
 </action>
 
 <action name="CustomTabs.TapUrlBar">
   <owner>tedchoc@chromium.org</owner>
-  <description>User tapped the URL bar in the CustomTabActivity.</description>
+  <description>
+    User tapped the URL bar in the CustomTabActivity. Starting with M84 this is
+    is also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabsCustomActionButtonClick">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <description>
+    Please enter the description of the metric. Starting with M84 this is is
+    also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabsCustomActionButtonClick.DownloadsUI.Share">
   <owner>shaktisahu@chromium.org</owner>
   <description>
     The user has clicked on the share button while viewing downloaded media on
-    Android.
+    Android. Starting with M84 this is is also recorded for webapps/WebAPKs.
+    Filter the platform for just CCT/TWA data.
   </description>
 </action>
 
 <action name="CustomTabsMenuCustomMenuItem">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <description>
+    Please enter the description of the metric. Starting with M84 this is is
+    also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabsMenuCustomMenuItem.DownloadsUI.OpenWith">
   <owner>shaktisahu@chromium.org</owner>
   <description>
     The user has selected Open With from the menu while viewing downloaded media
-    on Android.
+    on Android. Starting with M84 this is is also recorded for webapps/WebAPKs.
+    Filter the platform for just CCT/TWA data.
   </description>
 </action>
 
 <action name="CustomTabsMenuFindInPage">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <description>
+    Please enter the description of the metric. Starting with M84 this is is
+    also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabsMenuOpenInChrome">
   <owner>yusufo@chromium.org</owner>
-  <description>User hit &quot;open in browser&quot; menu item.</description>
+  <description>
+    User hit &quot;open in browser&quot; menu item. Starting with M84 this is is
+    also recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA
+    data.
+  </description>
 </action>
 
 <action name="CustomTabsMenuOpenSameUrl">
   <owner>ianwen@chromium.org</owner>
   <description>
     User opens the same url again after closing the previous custom tab.
+    Starting with M84 this is is also recorded for webapps/WebAPKs. Filter the
+    platform for just CCT/TWA data.
   </description>
 </action>
 
@@ -5398,13 +5438,18 @@ should be able to be added at any place in this file.
 
 <action name="CustomTabsRemoteViewsShown" not_user_triggered="true">
   <owner>ianwen@chromium.org</owner>
-  <description>A RemoteViews based bottom bar was shown.</description>
+  <description>
+    A RemoteViews based bottom bar was shown. Starting with M84 this is is also
+    recorded for webapps/WebAPKs. Filter the platform for just CCT/TWA data.
+  </description>
 </action>
 
 <action name="CustomTabsRemoteViewsUpdated" not_user_triggered="true">
   <owner>ianwen@chromium.org</owner>
   <description>
-    A RemoteViews based bottom bar was updated through service API.
+    A RemoteViews based bottom bar was updated through service API. Starting
+    with M84 this is is also recorded for webapps/WebAPKs. Filter the platform
+    for just CCT/TWA data.
   </description>
 </action>
 
@@ -14200,6 +14245,14 @@ should be able to be added at any place in this file.
   <description>
     An ACTION_MAIN intent was received by Chrome and the user was shown the tab
     switcher (overview) on startup.
+  </description>
+</action>
+
+<action name="MobileSyncPassphraseSettingsClose">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <description>
+    Sync Passphrase Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -25104,6 +25157,7 @@ should be able to be added at any place in this file.
   <suffix name="EphemeralTab" label="For Ephemeral Tab."/>
   <suffix name="ExploreSitesTile" label="For Explore Sites feature."/>
   <suffix name="FeedCardMenu" label="For FeedCardMenu feature."/>
+  <suffix name="FeedHeaderMenu" label="For FeedHeaderMenu feature."/>
   <suffix name="GlobalMediaControls" label="For GlobalMediaControls feature."/>
   <suffix name="HomePageButton" label="For HomePageButton feature."/>
   <suffix name="HomepageTile" label="For HomepageTile feature."/>

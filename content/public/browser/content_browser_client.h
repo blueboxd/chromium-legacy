@@ -1810,7 +1810,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called to log a UKM event for the
   // Extensions.CrossOriginFetchFromContentScript3 metric.  See the metric
   // definition in //tools/metrics/ukm/ukm.xml for more details, including when
-  // this metric should be logged.
+  // this event should be logged.
   //
   // |isolated_world_host| is the hostname of the isolated world origin that has
   // initiated the network request.  See the doc comment for

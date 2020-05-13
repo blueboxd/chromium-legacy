@@ -31,10 +31,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
                             Observer* observer);
   ~MediaRouterContextualMenu() override;
 
-  // Transfers the ownership of |menu_model_| to the caller.
-  std::unique_ptr<ui::SimpleMenuModel> TakeMenuModel();
-
-  ui::SimpleMenuModel* menu_model() { return menu_model_.get(); }
+  // Creates a menu model with |this| as its delegate.
+  std::unique_ptr<ui::SimpleMenuModel> CreateMenuModel();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
@@ -74,12 +72,11 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   void ReportIssue();
 
   Browser* const browser_;
-
   Observer* const observer_;
 
-  // TODO(takumif): |menu_model_| is required by MediaRouterAction but not by
-  // CastToolbarButton. Remove |menu_model_| when removing MediaRouterAction.
-  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
+  // Whether the Cast toolbar icon this context menu is shown for is shown by
+  // the administrator policy.
+  const bool shown_by_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenu);
 };

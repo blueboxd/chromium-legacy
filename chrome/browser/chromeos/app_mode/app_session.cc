@@ -175,22 +175,31 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
         browser->tab_strip_model()->GetActiveWebContents();
     std::string url_string =
         active_tab ? active_tab->GetURL().spec() : std::string();
-    bool app_browser = browser->is_type_app() || browser->is_type_app_popup() ||
-                       browser->is_type_popup();
 
-    // The browser has to be of type TYPE_APP, TYPE_POPUP or TYPE_APP_POPUP,
-    // since they do not have visible tab strip.
-    if (app_browser &&
-        KioskSettingsNavigationThrottle::IsSettingsPage(url_string)) {
-      if (app_session_->settings_browser_ &&
-          browser != app_session_->settings_browser_) {
-        // Navigate to this page in the old browser, the current one will be
-        // closed.
+    if (KioskSettingsNavigationThrottle::IsSettingsPage(url_string)) {
+      bool app_browser = browser->is_type_app() ||
+                         browser->is_type_app_popup() ||
+                         browser->is_type_popup();
+      // If this browser is not an app browser or another settings browser
+      // exists, close this one and navigate to |url_string| in the old browser
+      // or create a new app browser if none yet exists.
+      if (!app_browser || app_session_->settings_browser_) {
         browser->window()->Close();
-        NavigateParams nav_params(
-            app_session_->settings_browser_, GURL(url_string),
-            ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
-        Navigate(&nav_params);
+        if (!app_session_->settings_browser_) {
+          // Create a new app browser.
+          NavigateParams nav_params(
+              app_session_->profile_, GURL(url_string),
+              ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
+          nav_params.disposition = WindowOpenDisposition::NEW_POPUP;
+          Navigate(&nav_params);
+        } else {
+          // Navigate in the existing browser.
+          NavigateParams nav_params(
+              app_session_->settings_browser_, GURL(url_string),
+              ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL);
+
+          Navigate(&nav_params);
+        }
       } else {
         app_session_->settings_browser_ = browser;
         // We have to first call Restore() because the window was created as a
@@ -206,7 +215,7 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
     }
     // Call the callback to notify tests that browser was handled.
     if (app_session_->on_handle_browser_callback_)
-      std::move(app_session_->on_handle_browser_callback_).Run();
+      app_session_->on_handle_browser_callback_.Run();
   }
 
   // BrowserListObserver overrides:
@@ -240,6 +249,7 @@ AppSession::AppSession()
 AppSession::~AppSession() {}
 
 void AppSession::Init(Profile* profile, const std::string& app_id) {
+  profile_ = profile;
   app_window_handler_ = std::make_unique<AppWindowHandler>(this);
   app_window_handler_->Init(profile, app_id);
 
@@ -279,8 +289,9 @@ void AppSession::Init(Profile* profile, const std::string& app_id) {
 }
 
 void AppSession::InitForWebKiosk(Browser* browser) {
-  // We should block all other browser window creation and terminate the session
-  // the browser window was closed.
+  profile_ = browser->profile();
+  // We should block all other browser window creation and terminate the
+  // session the browser window was closed.
   browser_window_handler_ =
       std::make_unique<BrowserWindowHandler>(this, browser);
 
@@ -292,7 +303,7 @@ void AppSession::SetAttemptUserExitForTesting(base::OnceClosure closure) {
 }
 
 void AppSession::SetOnHandleBrowserCallbackForTesting(
-    base::OnceClosure closure) {
+    base::RepeatingClosure closure) {
   on_handle_browser_callback_ = std::move(closure);
 }
 

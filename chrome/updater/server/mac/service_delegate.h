@@ -15,6 +15,19 @@ class UpdateService;
 
 @interface CRUUpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate>
 
+- (instancetype)init NS_UNAVAILABLE;
+
+// Designated initializer.
+- (instancetype)initWithUpdateService:
+    (scoped_refptr<updater::UpdateService>)service NS_DESIGNATED_INITIALIZER;
+
+@end
+
+@interface CRUAdministrationXPCServiceDelegate
+    : NSObject <NSXPCListenerDelegate>
+
+- (instancetype)init NS_UNAVAILABLE;
+
 // Designated initializer.
 - (instancetype)initWithUpdateService:
     (scoped_refptr<updater::UpdateService>)service NS_DESIGNATED_INITIALIZER;

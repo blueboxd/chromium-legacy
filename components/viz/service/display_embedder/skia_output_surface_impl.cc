@@ -634,6 +634,12 @@ gpu::MemoryTracker* SkiaOutputSurfaceImpl::GetMemoryTracker() {
   return impl_on_gpu_->GetMemoryTracker();
 }
 
+void SkiaOutputSurfaceImpl::SetFrameRate(float frame_rate) {
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetFrameRate,
+                             base::Unretained(impl_on_gpu_.get()), frame_rate);
+  ScheduleGpuTask(std::move(task), {});
+}
+
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
     gfx::SurfaceOrigin output_surface_origin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

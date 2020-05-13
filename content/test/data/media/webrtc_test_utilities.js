@@ -173,7 +173,7 @@ function isVideoBlack(pixels) {
   var accumulatedLuma = 0;
   for (var i = 0; i < pixels.length; i += 4) {
     // Ignore the alpha channel.
-    accumulatedLuma += rec702Luma_(pixels[i], pixels[i + 1], pixels[i + 2]);
+    accumulatedLuma += rec709Luma_(pixels[i], pixels[i + 1], pixels[i + 2]);
     if (accumulatedLuma > threshold * (i / 4 + 1))
       return false;
   }
@@ -219,7 +219,7 @@ function isAlmostBackgroundGreen(color) {
 
 // Use Luma as in Rec. 709: Y′709 = 0.2126R + 0.7152G + 0.0722B;
 // See http://en.wikipedia.org/wiki/Rec._709.
-function rec702Luma_(r, g, b) {
+function rec709Luma_(r, g, b) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 

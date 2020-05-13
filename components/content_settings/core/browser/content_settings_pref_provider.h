@@ -38,7 +38,8 @@ class PrefProvider : public UserModifiableProvider {
 
   PrefProvider(PrefService* prefs,
                bool off_the_record,
-               bool store_last_modified);
+               bool store_last_modified,
+               bool restore_session);
   ~PrefProvider() override;
 
   // UserModifiableProvider implementations.

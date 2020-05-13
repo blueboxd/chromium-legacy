@@ -823,6 +823,9 @@ group("gn_all") {
     "//third_party/pffft:pffft_benchmark",
     "//third_party/pffft:pffft_unittest",
   ]
+
+  # OpenCV
+  deps += [ "//third_party/opencv:opencv_emd_fuzzer" ]
 }
 
 if ((is_linux || is_win) && enable_remoting && !use_ozone) {

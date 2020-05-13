@@ -182,6 +182,18 @@ TransformationMatrix XRReferenceSpace::OffsetFromNativeMatrix() {
   return origin_offset_->InverseTransformMatrix();
 }
 
+bool XRReferenceSpace::IsStationary() const {
+  switch (type_) {
+    case XRReferenceSpace::Type::kTypeLocal:
+    case XRReferenceSpace::Type::kTypeLocalFloor:
+    case XRReferenceSpace::Type::kTypeBoundedFloor:
+    case XRReferenceSpace::Type::kTypeUnbounded:
+      return true;
+    case XRReferenceSpace::Type::kTypeViewer:
+      return false;
+  }
+}
+
 XRReferenceSpace::Type XRReferenceSpace::GetType() const {
   return type_;
 }

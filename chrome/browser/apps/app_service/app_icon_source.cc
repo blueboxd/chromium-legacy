@@ -87,14 +87,11 @@ void AppIconSource::StartDataRequest(
   if (query_position != std::string::npos)
     size_param = size_param.substr(0, query_position);
 
-  int size = 0;
-  if (!base::StringToInt(size_param, &size)) {
+  int size_in_dip = 0;
+  if (!base::StringToInt(size_param, &size_in_dip)) {
     LoadDefaultImage(std::move(callback));
     return;
   }
-  constexpr bool quantize_to_supported_scale_factor = true;
-  int size_in_dip =
-      apps_util::ConvertPxToDip(size, quantize_to_supported_scale_factor);
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);

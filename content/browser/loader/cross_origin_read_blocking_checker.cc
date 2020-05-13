@@ -104,10 +104,10 @@ CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
   network::CrossOriginReadBlocking::LogAction(
       network::CrossOriginReadBlocking::Action::kResponseStarted);
 
-  // |isolated_world_origin| and |network| are only used for UMA and Rappor
-  // logging related to the OOR-CORS feature.  Since OOR-CORS is not used in
-  // scenarios relevant to CrossOriginReadBlockingChecker, we can just use
-  // |base::nullopt| and |nullptr| here.
+  // |isolated_world_origin| and |network_service_client| are only used for UMA
+  // and UKM logging related to the OOR-CORS feature.  Since OOR-CORS is not
+  // used in scenarios relevant to CrossOriginReadBlockingChecker, we can just
+  // use |base::nullopt| and |nullptr| here.
   const base::Optional<url::Origin> isolated_world_origin = base::nullopt;
   constexpr network::mojom::NetworkServiceClient* network_service_client =
       nullptr;

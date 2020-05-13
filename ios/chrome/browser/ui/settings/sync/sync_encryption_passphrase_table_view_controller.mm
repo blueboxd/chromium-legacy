@@ -511,6 +511,8 @@ const CGFloat kSpinnerButtonPadding = 18;
 - (void)reportDismissalUserAction {
   // Sync Passphrase Settings screen can be closed when being presented from
   // an infobar.
+  base::RecordAction(
+      base::UserMetricsAction("MobileSyncPassphraseSettingsClose"));
 }
 
 - (void)settingsWillBeDismissed {

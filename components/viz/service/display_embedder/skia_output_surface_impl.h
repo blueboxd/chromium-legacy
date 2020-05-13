@@ -88,6 +88,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
   gfx::Rect GetCurrentFramebufferDamage() const override;
+  void SetFrameRate(float frame_rate) override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;

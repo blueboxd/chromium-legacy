@@ -28,6 +28,11 @@ class CORE_EXPORT NGFragmentItems {
   Span Items() const { return base::make_span(ItemsData(), size_); }
   bool IsSubSpan(const Span& span) const;
 
+  const NGFragmentItem& front() const {
+    CHECK_GE(size_, 1u);
+    return *items_[0];
+  }
+
   const String& Text(bool first_line) const {
     return UNLIKELY(first_line) ? first_line_text_content_ : text_content_;
   }
@@ -44,6 +49,16 @@ class CORE_EXPORT NGFragmentItems {
   static void LayoutObjectWillBeDestroyed(const LayoutObject& layout_object);
   static void LayoutObjectWillBeMoved(const LayoutObject& layout_object);
 
+  // Returns the end (next of the last) item that are reusable. If no items are
+  // reusable, it is the first item.
+  const NGFragmentItem* EndOfReusableItems() const;
+
+  // Mark items dirty when |child| is removed from the tree.
+  void DirtyLinesFromChangedChild(const LayoutObject* child) const;
+
+  // Mark items dirty from |LayoutObject::NeedsLayout| flags.
+  void DirtyLinesFromNeedsLayout(const LayoutBlockFlow* block_flow) const;
+
   // The byte size of this instance.
   constexpr static wtf_size_t ByteSizeFor(wtf_size_t count) {
     return sizeof(NGFragmentItems) + count * sizeof(items_[0]);
@@ -54,6 +69,10 @@ class CORE_EXPORT NGFragmentItems {
   const scoped_refptr<const NGFragmentItem>* ItemsData() const {
     return reinterpret_cast<const scoped_refptr<const NGFragmentItem>*>(items_);
   }
+
+  static bool CanReuseAll(NGInlineCursor* cursor);
+  bool TryDirtyFirstLineFor(const LayoutObject& layout_object) const;
+  bool TryDirtyLastLineFor(const LayoutObject& layout_object) const;
 
   String text_content_;
   String first_line_text_content_;

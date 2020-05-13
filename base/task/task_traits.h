@@ -144,12 +144,16 @@ enum class TaskShutdownBehavior : uint8_t {
 //   thread priority in order to avoid priority inversions. Please consult with
 //   //base/task/OWNERS if you suspect a priority inversion.
 enum class ThreadPolicy : uint8_t {
-  // The task runs at background thread priority if:
+  // The task runs on a background priority thread if:
   // - The TaskPriority is BEST_EFFORT.
   // - Background thread priority is supported by the platform (see
   //   environment_config_unittest.cc).
   // - No extension trait (e.g. BrowserThread) is used.
-  // Otherwise, it runs at normal thread priority.
+  // - ThreadPoolInstance::Shutdown() hadn't been called when the task started running.
+  //       (Remaining TaskShutdownBehavior::BLOCK_SHUTDOWN tasks use foreground
+  //        threads during shutdown regardless of TaskPriority)
+  // Otherwise, it runs on a normal priority thread.
+  // This is the default.
   PREFER_BACKGROUND,
 
   // The task runs at normal thread priority, irrespective of its TaskPriority.

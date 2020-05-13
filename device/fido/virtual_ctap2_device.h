@@ -179,7 +179,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   void InitPendingRegistrations(base::span<const uint8_t> rp_id_hash);
 
   AttestedCredentialData ConstructAttestedCredentialData(
-      std::vector<uint8_t> u2f_data,
+      base::span<const uint8_t> key_handle,
       std::unique_ptr<PublicKey> public_key);
   AuthenticatorData ConstructAuthenticatorData(
       base::span<const uint8_t, kRpIdHashLength> rp_id_hash,

@@ -98,31 +98,12 @@ Polymer({
       },
     },
 
-    allowExperimentalSwitchAccess_: {
+    showExperimentalSwitchAccess_: {
       type: Boolean,
       value() {
         return loadTimeData.getBoolean(
             'showExperimentalAccessibilitySwitchAccess');
       },
-    },
-
-    /**
-     * Whether the user is in kiosk mode.
-     * @private
-     */
-    isKioskModeActive_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('isKioskModeActive');
-      }
-    },
-
-    /** @private */
-    shouldShowExperimentalSwitchAccess_: {
-      type: Boolean,
-      computed: 'computeShouldShowExperimentalSwitchAccess_(' +
-          'allowExperimentalSwitchAccess_,' +
-          'isKioskModeActive_)',
     },
 
     /**
@@ -186,7 +167,7 @@ Polymer({
   },
 
   observers: [
-    'pointersChanged_(hasMouse_, hasTouchpad_, isKioskModeActive_)',
+    'pointersChanged_(hasMouse_, hasTouchpad_)',
   ],
 
   /** settings.RouteOriginBehavior override */
@@ -226,9 +207,8 @@ Polymer({
    * @param {boolean} hasTouchpad
    * @private
    */
-  pointersChanged_(hasMouse, hasTouchpad, isKioskModeActive) {
-    this.$.pointerSubpageButton.hidden =
-        (!hasMouse && !hasTouchpad) || isKioskModeActive;
+  pointersChanged_(hasMouse, hasTouchpad) {
+    this.$.pointerSubpageButton.hidden = !hasMouse && !hasTouchpad;
   },
 
   /**
@@ -390,26 +370,6 @@ Polymer({
   onManageAllyPageReady_(startup_sound_enabled, tablet_mode_supported) {
     this.$.startupSoundEnabled.checked = startup_sound_enabled;
     this.showShelfNavigationButtonsSettings_ = tablet_mode_supported &&
-        loadTimeData.getBoolean(
-            'showTabletModeShelfNavigationButtonsSettings') &&
-        !this.isKioskModeActive_;
-  },
-  /*
-   * Whether additional features link should be shown.
-   * @param {boolean} isKiosk
-   * @param {boolean} isGuest
-   * @return {boolean}
-   * @private
-   */
-  shouldShowAdditionalFeaturesLink_(isKiosk, isGuest) {
-    return !isKiosk && !isGuest;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeShouldShowExperimentalSwitchAccess_() {
-    return this.allowExperimentalSwitchAccess_ && !this.isKioskModeActive_;
+        loadTimeData.getBoolean('showTabletModeShelfNavigationButtonsSettings');
   },
 });

@@ -39,6 +39,12 @@ class XRObjectSpace : public XRSpace {
     return XRNativeOriginInformation::Create(object_);
   }
 
+  bool IsStationary() const override {
+    // Object spaces are considered stationary - they are supposed to remain
+    // fixed relative to their surroundings (at least locally).
+    return true;
+  }
+
   void Trace(Visitor* visitor) override {
     visitor->Trace(object_);
     XRSpace::Trace(visitor);

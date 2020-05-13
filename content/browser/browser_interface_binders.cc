@@ -43,6 +43,7 @@
 #include "content/common/input/input_injector.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
+#include "content/common/web_ui.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -302,6 +303,16 @@ void BindSharedWorkerConnector(
     mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver) {
   SharedWorkerConnectorImpl::Create(host->GetGlobalFrameRoutingId(),
                                     std::move(receiver));
+}
+
+void BindWebUIHost(RenderFrameHostImpl* host,
+                   mojo::PendingReceiver<content::mojom::WebUIHost> receiver) {
+  content::WebUIImpl* web_ui = host->web_ui();
+  // WebUIImpl will be nullptr if the WebUI bindings aren't allowed.
+  if (!web_ui)
+    return;
+
+  web_ui->BindWebUIHost(std::move(receiver));
 }
 
 #if defined(OS_ANDROID)
@@ -667,6 +678,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
 
   map->Add<shape_detection::mojom::TextDetection>(
       base::BindRepeating(&BindTextDetection));
+
+  map->Add<content::mojom::WebUIHost>(
+      base::BindRepeating(&BindWebUIHost, base::Unretained(host)));
 
   auto* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {

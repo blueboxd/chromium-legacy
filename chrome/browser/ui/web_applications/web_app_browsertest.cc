@@ -508,6 +508,8 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UninstallMenuOption) {
                                  /*event_flags=*/0);
   tester.ExpectUniqueSample("HostedAppFrame.WrenchMenu.MenuAction",
                             MENU_ACTION_UNINSTALL_APP, 1);
+  tester.ExpectUniqueSample("WrenchMenu.MenuAction", MENU_ACTION_UNINSTALL_APP,
+                            1);
 #endif  // defined(OS_CHROMEOS)
 }
 

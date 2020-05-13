@@ -5,11 +5,14 @@
 package org.chromium.components.browser_ui.widget.promo;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+
+import androidx.appcompat.content.res.AppCompatResources;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,6 +93,9 @@ public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
     @SmallTest
     @Feature({"RenderTest"})
     public void testLarge_Default() throws Exception {
+        Drawable illustration =
+                AppCompatResources.getDrawable(getActivity(), R.drawable.test_illustration);
+        mModel.set(PromoCardProperties.IMAGE, illustration);
         setPromoCard(LayoutStyle.LARGE);
         mRenderTestRule.render(mPromoCardCoordinator.getView(), "promo_card_default");
     }
@@ -98,6 +104,9 @@ public class PromoCardViewRenderTest extends DummyUiActivityTestCase {
     @SmallTest
     @Feature({"RenderTest"})
     public void testLarge_HideSecondaryButton() throws Exception {
+        Drawable illustration =
+                AppCompatResources.getDrawable(getActivity(), R.drawable.test_illustration);
+        mModel.set(PromoCardProperties.IMAGE, illustration);
         mModel.set(PromoCardProperties.HAS_SECONDARY_BUTTON, false);
         setPromoCard(LayoutStyle.LARGE);
 

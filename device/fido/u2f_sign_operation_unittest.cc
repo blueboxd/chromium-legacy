@@ -80,18 +80,13 @@ TEST_F(U2fSignOperationTest, SignSuccess) {
 }
 
 TEST_F(U2fSignOperationTest, SignSuccessWithFakeDevice) {
-  auto private_key = crypto::ECPrivateKey::Create();
-  std::string public_key;
-  private_key->ExportRawPublicKey(&public_key);
-  auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
-  std::vector<uint8_t> key_handle(hash.begin(), hash.end());
-  auto request = CreateSignRequest({key_handle});
+  static const uint8_t kCredentialId[] = {1, 2, 3, 4};
+  auto request =
+      CreateSignRequest({fido_parsing_utils::Materialize(kCredentialId)});
 
   auto device = std::make_unique<VirtualU2fDevice>();
-  device->mutable_state()->registrations.emplace(
-      key_handle, VirtualFidoDevice::RegistrationData(
-                      std::move(private_key), test_data::kApplicationParameter,
-                      42 /* counter */));
+  ASSERT_TRUE(device->mutable_state()->InjectRegistration(
+      kCredentialId, test_data::kRelyingPartyId));
 
   auto u2f_sign = std::make_unique<U2fSignOperation>(
       device.get(), std::move(request), sign_callback_receiver().callback());
@@ -113,12 +108,11 @@ TEST_F(U2fSignOperationTest, SignSuccessWithFakeDevice) {
                 .value()
                 ->auth_data()
                 .SerializeToByteArray()[32]);  // UP flag
-  // Counter is incremented for every sign request so this counter should have
-  // been incremented once.
-  EXPECT_EQ(43, sign_callback_receiver()
-                    .value()
-                    ->auth_data()
-                    .SerializeToByteArray()[36]);  // counter
+  // Counter starts at zero and is incremented for every sign request.
+  EXPECT_EQ(1, sign_callback_receiver()
+                   .value()
+                   ->auth_data()
+                   .SerializeToByteArray()[36]);  // counter
 }
 
 TEST_F(U2fSignOperationTest, DelayedSuccess) {

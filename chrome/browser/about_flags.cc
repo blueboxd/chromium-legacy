@@ -3654,6 +3654,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-webui", flag_descriptions::kNtpWebUIName,
      flag_descriptions::kNtpWebUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kWebUI)},
+
+    {"webui-a11y-enhancements", flag_descriptions::kWebUIA11yEnhancementsName,
+     flag_descriptions::kWebUIA11yEnhancementsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kWebUIA11yEnhancements)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(DCHECK_IS_CONFIGURABLE)
@@ -4284,6 +4288,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersRichUiName,
      flag_descriptions::kEnableQuickAnswersRichUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersRichUi)},
+
+    {"enable-quick-answers-text-annotator",
+     flag_descriptions::kEnableQuickAnswersTextAnnotatorName,
+     flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTextAnnotator)},
 
 #endif  // defined(OS_CHROMEOS)
 
@@ -5609,8 +5618,8 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
     return true;
   }
 
-  // Lacros is only available on canary/dev channels and developer builds.
   if (!strcmp(kLacrosSupportInternalName, entry.internal_name) &&
+      channel != version_info::Channel::BETA &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {

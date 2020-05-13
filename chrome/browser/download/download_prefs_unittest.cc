@@ -5,11 +5,14 @@
 #include "chrome/browser/download/download_prefs.h"
 
 #include "base/files/file_path.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/file_type_policies.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +33,26 @@ TEST(DownloadPrefsTest, Prerequisites) {
       base::FilePath(FILE_PATH_LITERAL("a.swf"))));
   ASSERT_TRUE(FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
       base::FilePath(FILE_PATH_LITERAL("a.txt"))));
+}
+
+// Verifies prefs are registered correctly.
+TEST(DownloadPrefsTest, RegisterPrefs) {
+  content::BrowserTaskEnvironment task_environment_;
+  base::HistogramTester histogram_tester;
+
+  // Download prefs are registered when creating the profile.
+  TestingProfile profile;
+  DownloadPrefs prefs(&profile);
+
+#ifdef OS_ANDROID
+  // Download prompt pref should be registered correctly.
+  histogram_tester.ExpectBucketCount("MobileDownload.DownloadPromptStatus",
+                                     DownloadPromptStatus::SHOW_INITIAL, 1);
+  int prompt_status = profile.GetTestingPrefService()->GetInteger(
+      prefs::kPromptForDownloadAndroid);
+  EXPECT_EQ(prompt_status,
+            static_cast<int>(DownloadPromptStatus::SHOW_INITIAL));
+#endif  // OS_ANDROID
 }
 
 TEST(DownloadPrefsTest, NoAutoOpenByUserForDisallowedFileTypes) {
@@ -341,4 +364,4 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
     EXPECT_EQ(prefs2.DownloadPath(), default_dir2);
   }
 }
-#endif
+#endif  // OS_CHROMEOS

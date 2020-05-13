@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
@@ -158,8 +157,6 @@ public class BottomControlsCoordinator {
             mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
                     menuButtonHelper, overviewModeBehavior, tabCountProvider,
                     incognitoStateProvider, topToolbarRoot, closeAllTabsAction);
-            mMediator.setToolbarSwipeHandler(
-                    layoutManager.createToolbarSwipeHandler(/* supportSwipeDown = */ false));
         }
 
         if (mTabGroupUi != null) {
@@ -183,15 +180,6 @@ public class BottomControlsCoordinator {
      */
     public boolean onBackPressed() {
         return mTabGroupUi != null && mTabGroupUi.onBackPressed();
-    }
-
-    /**
-     * @param layout The {@link ToolbarSwipeLayout} that the bottom controls will hook into. This
-     *               allows the bottom controls to provide the layout with scene layers with the
-     *               bottom controls' texture.
-     */
-    public void setToolbarSwipeLayout(ToolbarSwipeLayout layout) {
-        mMediator.setToolbarSwipeLayout(layout);
     }
 
     /**

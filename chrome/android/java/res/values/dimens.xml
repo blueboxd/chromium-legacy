@@ -283,6 +283,10 @@
     <dimen name="start_surface_toolbar_button_padding_to_edge">16dp</dimen>
 
     <!-- Omnibox suggestions -->
+    <dimen name="omnibox_suggestion_header_margin_start">
+        @dimen/omnibox_suggestion_24dp_icon_margin_start
+    </dimen>
+    <dimen name="omnibox_suggestion_header_height">48dp</dimen>
     <dimen name="omnibox_suggestion_comfortable_height">60dp</dimen>
     <dimen name="omnibox_suggestion_semicompact_height">56dp</dimen>
     <dimen name="omnibox_suggestion_compact_height">52dp</dimen>
@@ -305,7 +309,7 @@
     <dimen name="omnibox_suggestion_entity_icon_size">36dp</dimen>
     <dimen name="omnibox_suggestion_icon_area_size">56dp</dimen>
 
-    <dimen name="omnibox_suggestion_refine_width">48dp</dimen>
+    <dimen name="omnibox_suggestion_action_icon_width">48dp</dimen>
     <dimen name="omnibox_suggestion_text_vertical_padding">5dp</dimen>
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
 

@@ -30,6 +30,7 @@ this preserves local modifications to your build.gradle file.
 
 import argparse
 import collections
+import concurrent.futures
 import contextlib
 import fnmatch
 import logging
@@ -306,27 +307,34 @@ def PrintPackageList(packages, list_name):
     print('\n'.join('    - ' + p for p in packages))
 
 
-def GenerateCipdUploadCommand(cipd_pkg_info):
-    """Generate a shell command to create a cipd package.
+def _GenerateCipdUploadCommands(cipd_pkg_infos):
+    """Generates a shell command to upload missing packages."""
 
-  Args:
-    cipd_pkg_info: A CipdPackageInfo instance.
-  Returns:
-    A string holding a shell command to upload the package through cipd.
-  """
-    pkg_path, pkg_name, pkg_tag = cipd_pkg_info
-    return (
-        '(cd "{0}"; '
-        # Need to skip create step if an instance already exists with the
-        # same package name and version tag (thus the use of ||).
-        'cipd describe "{1}" -version "{2}" || '
-        'cipd create --pkg-def cipd.yaml -tag "{2}")').format(
-            pkg_path, pkg_name, pkg_tag)
+    def cipd_describe(info):
+        pkg_name, pkg_tag = info[1:]
+        result = subprocess.call(
+            ['cipd', 'describe', pkg_name, '-version', pkg_tag],
+            stdout=subprocess.DEVNULL)
+        return info, result
+
+    # Re-run the describe step to prevent mistakes if run multiple times.
+    TEMPLATE = ('(cd "{0}"; '
+                'cipd describe "{1}" -version "{2}" || '
+                'cipd create --pkg-def cipd.yaml -tag "{2}")')
+    cmds = []
+    # Allow 20 CIPD requests at a time.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        for info, result in executor.map(cipd_describe, cipd_pkg_infos):
+            if result:
+                pkg_path, pkg_name, pkg_tag = info
+                cmds.append(TEMPLATE.format(pkg_path, pkg_name, pkg_tag))
+    return cmds
 
 
-def _JetifyAll(aar_files):
+def _JetifyAll(aar_files, libs_dir):
     env = os.environ.copy()
     env['JAVA_HOME'] = _JAVA_HOME
+    env['ANDROID_DEPS'] = libs_dir
 
     # Don't jetify support lib or androidx.
     EXCLUDE = ('android_arch_', 'androidx_', 'com_android_support_')
@@ -348,7 +356,9 @@ def _JetifyAll(aar_files):
     for cmd, proc in jobs:
         output = proc.communicate()[0]
         if proc.returncode:
-            raise Exception('Jetify failed for command: ' + ' '.join(cmd))
+            raise Exception(
+                'Jetify failed for command: {}\nOutput:\n{}'.format(
+                    ' '.join(cmd), output))
         if "You don't need to run Jetifier" not in output:
             logging.info('Needed jetify: %s', cmd[-1])
             num_required += 1
@@ -512,7 +522,7 @@ def main():
 
         logging.info('# Jetify all libraries.')
         aar_files = FindInDirectory(libs_dir, '*.aar')
-        _JetifyAll(aar_files)
+        _JetifyAll(aar_files, libs_dir)
 
         logging.info(
             '# Generate Android .aar info and third-party license files.')
@@ -561,15 +571,10 @@ def main():
         # Generate CIPD package upload commands.
         cipd_packages_to_upload = sorted(updated_packages + new_packages)
         if cipd_packages_to_upload:
-            # TODO(wnwen): Check CIPD to make sure that no other package with
-            #              the same tag exists, print error otherwise.
-            cipd_commands = [
-                GenerateCipdUploadCommand(build_packages[pkg])
-                for pkg in cipd_packages_to_upload
-            ]
-            # Print them to the log for debugging.
-            logging.debug('CIPD update commands\n%s\n',
-                          '\n'.join(cipd_commands))
+            logging.info('Querying %d CIPD packages',
+                         len(cipd_packages_to_upload))
+            cipd_commands = _GenerateCipdUploadCommands(
+                build_packages[pkg] for pkg in cipd_packages_to_upload)
 
         if not args.update_all:
             if not (deleted_packages or new_packages or updated_packages):
@@ -606,10 +611,13 @@ def main():
             CopyFileOrDirectory(src_pkg_path, dst_pkg_path)
 
         if cipd_packages_to_upload:
-            print('Run the following to upload new and updated CIPD packages:')
-            print('---------------------- cut here --------------------------')
-            print('\n'.join(cipd_commands))
-            print('---------------------- cut here --------------------------')
+            if cipd_commands:
+                print('Run the following to upload CIPD packages:')
+                print('-------------------- cut here ------------------------')
+                print('\n'.join(cipd_commands))
+                print('-------------------- cut here ------------------------')
+            else:
+                print('Done. All packages were already up-to-date on CIPD')
 
 
 if __name__ == "__main__":

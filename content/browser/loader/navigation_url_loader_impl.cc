@@ -42,7 +42,6 @@
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -1099,7 +1098,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               new_interceptors;
           new_interceptors.push_back(std::move(interceptors_[i]));
           new_interceptors.swap(interceptors_);
-          // Reset the state of ServiceWorkerProviderHost.
+          // Reset the state of ServiceWorkerContainerHost.
           // Currently we don't support Service Worker in Signed Exchange
           // pages. The page will not be controlled by service workers. And
           // Service Worker related APIs will fail with NoDocumentURL error.
@@ -1298,9 +1297,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // (eg: NavigationLoaderInterceptor for loading a local Web Bundle file).
   bool bypass_redirect_checks_;
 
-  // Used to reset the state of ServiceWorkerProviderHost when
-  // SignedExchangeRequestHandler will handle the response.
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   ServiceWorkerMainResourceHandle* service_worker_handle_ = nullptr;
 
   // Counts the time overhead of all the hops from the UI to the IO threads.

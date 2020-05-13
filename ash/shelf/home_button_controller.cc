@@ -129,7 +129,8 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
 
 bool HomeButtonController::IsAssistantAvailable() {
   AssistantStateBase* state = AssistantState::Get();
-  return state->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
+  return state->allowed_state() ==
+             chromeos::assistant::AssistantAllowedState::ALLOWED &&
          state->settings_enabled().value_or(false);
 }
 
@@ -153,7 +154,7 @@ void HomeButtonController::OnTabletModeStarted() {
 }
 
 void HomeButtonController::OnAssistantFeatureAllowedChanged(
-    mojom::AssistantAllowedState state) {
+    chromeos::assistant::AssistantAllowedState state) {
   button_->OnAssistantAvailabilityChanged();
 }
 

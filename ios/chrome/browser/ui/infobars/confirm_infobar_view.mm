@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1045,6 +1046,7 @@ UIImage* InfoBarCloseImage() {
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       button.pointerInteractionEnabled = YES;
+      button.pointerStyleProvider = CreateOpaqueButtonPointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)

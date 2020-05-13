@@ -208,10 +208,9 @@ MockWidgetInputHandler::DispatchedEventMessage::DispatchedEventMessage(
 
 MockWidgetInputHandler::DispatchedEventMessage::~DispatchedEventMessage() {
   if (callback_) {
-    std::move(callback_).Run(blink::mojom::InputEventResultSource::kUnknown,
-                             ui::LatencyInfo(),
-                             blink::mojom::InputEventResultState::kNotConsumed,
-                             base::nullopt, base::nullopt);
+    std::move(callback_).Run(
+        blink::mojom::InputEventResultSource::kUnknown, ui::LatencyInfo(),
+        blink::mojom::InputEventResultState::kNotConsumed, nullptr, nullptr);
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -225,8 +224,7 @@ void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
     blink::mojom::InputEventResultState state) {
   if (callback_) {
     std::move(callback_).Run(blink::mojom::InputEventResultSource::kMainThread,
-                             ui::LatencyInfo(), state, base::nullopt,
-                             base::nullopt);
+                             ui::LatencyInfo(), state, nullptr, nullptr);
     base::RunLoop().RunUntilIdle();
   }
 }
@@ -235,11 +233,11 @@ void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
     blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency_info,
     blink::mojom::InputEventResultState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   if (callback_) {
-    std::move(callback_).Run(source, latency_info, state, overscroll,
-                             touch_action);
+    std::move(callback_).Run(source, latency_info, state, std::move(overscroll),
+                             std::move(touch_action));
     base::RunLoop().RunUntilIdle();
   }
 }

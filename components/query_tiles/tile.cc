@@ -57,7 +57,7 @@ Tile::Tile(const Tile& other) {
 
 Tile::Tile() = default;
 
-Tile::Tile(Tile&& other) = default;
+Tile::Tile(Tile&& other) noexcept = default;
 
 Tile::~Tile() = default;
 
@@ -66,6 +66,6 @@ Tile& Tile::operator=(const Tile& other) {
   return *this;
 }
 
-Tile& Tile::operator=(Tile&& other) = default;
+Tile& Tile::operator=(Tile&& other) noexcept = default;
 
 }  // namespace upboarding

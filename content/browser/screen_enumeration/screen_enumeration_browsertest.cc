@@ -83,7 +83,7 @@ base::ListValue GetExpectedScreens() {
 
 }  // namespace
 
-// Tests the ScreenEnumeration feature.
+// Tests screen enumeration aspects of the WindowPlacement feature.
 class ScreenEnumerationTest : public ContentBrowserTest {
  public:
   ScreenEnumerationTest() = default;
@@ -95,7 +95,7 @@ class ScreenEnumerationTest : public ContentBrowserTest {
   // ContentBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "ScreenEnumeration");
+        switches::kEnableBlinkFeatures, "WindowPlacement");
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
 };
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(ScreenEnumerationTest, GetScreensBasic) {
   EXPECT_EQ(GetExpectedScreens(), base::Value::AsListValue(result.value));
 }
 
-// Tests the ScreenEnumeration feature with a fake Screen object.
+// Tests screen enumeration functionality with a fake Screen object.
 class FakeScreenEnumerationTest : public ScreenEnumerationTest {
  public:
   FakeScreenEnumerationTest() = default;

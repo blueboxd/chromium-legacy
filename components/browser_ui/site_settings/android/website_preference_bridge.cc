@@ -622,6 +622,10 @@ static void JNI_WebsitePreferenceBridge_GetChosenObjects(
       static_cast<ContentSettingsType>(content_settings_type);
   permissions::ChooserContextBase* context =
       GetChooserContext(jbrowser_context_handle, type);
+  // The ChooserContextBase can be null if the embedder doesn't support the
+  // given ContentSettingsType.
+  if (!context)
+    return;
   for (const auto& object : context->GetAllGrantedObjects()) {
     // Remove the trailing slash so that origins are matched correctly in
     // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.

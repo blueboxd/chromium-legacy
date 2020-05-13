@@ -180,12 +180,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseTracker
 
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
 
-  // TODO(jsbell): Remove this; tests should use the normal task runner.
-  void set_task_runner_for_testing(
-      scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    task_runner_ = std::move(task_runner);
-  }
-
  private:
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
   friend class DatabaseTracker_TestHelper_Test;

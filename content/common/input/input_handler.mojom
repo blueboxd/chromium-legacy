@@ -167,10 +167,6 @@ struct Event {
   TouchData? touch_data;
 };
 
-struct TouchActionOptional {
-  cc.mojom.TouchAction touch_action;
-};
-
 // Interface exposed by the browser to the renderer.
 interface WidgetInputHandlerHost {
   // When the renderer's main thread computes the touch action, send this to the
@@ -179,7 +175,7 @@ interface WidgetInputHandlerHost {
 
   // Sent by the compositor when input scroll events are dropped due to bounds
   // restrictions on the root scroll offset.
-  DidOverscroll(DidOverscrollParams params);
+  DidOverscroll(blink.mojom.DidOverscrollParams params);
 
   // Sent by the compositor when a GSB has started scrolling the viewport.
   DidStartScrollingViewport();
@@ -285,8 +281,8 @@ interface WidgetInputHandler {
       => (blink.mojom.InputEventResultSource source,
          ui.mojom.LatencyInfo updated_latency,
          blink.mojom.InputEventResultState state,
-         DidOverscrollParams? overscroll,
-         TouchActionOptional? touch_action);
+         blink.mojom.DidOverscrollParams? overscroll,
+         blink.mojom.TouchActionOptional? touch_action);
 
   // Sends a non-blocking input event to the render widget. The behaviour
   // of this API is the same as DispatchEvent just that there is no callback

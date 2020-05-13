@@ -67,6 +67,8 @@ class RTCRtpSender final : public ScriptWrappable {
   ScriptPromise setParameters(ScriptState*, const RTCRtpSendParameters*);
   ScriptPromise getStats(ScriptState*);
   void setStreams(HeapVector<Member<MediaStream>> streams, ExceptionState&);
+  RTCInsertableStreams* createEncodedStreams(ScriptState*, ExceptionState&);
+  // TODO(crbug.com/1069295): Make these methods private.
   RTCInsertableStreams* createEncodedAudioStreams(ScriptState*,
                                                   ExceptionState&);
   RTCInsertableStreams* createEncodedVideoStreams(ScriptState*,

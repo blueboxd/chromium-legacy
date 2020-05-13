@@ -104,6 +104,7 @@ public class RootUiCoordinator
     @Nullable
     private Callback<Boolean> mOnOmniboxFocusChangedListener;
     protected ToolbarManager mToolbarManager;
+    protected Supplier<Boolean> mCanAnimateBrowserControls;
     private ModalDialogManagerObserver mModalDialogManagerObserver;
 
     private VrModeObserver mVrModeObserver;
@@ -433,7 +434,7 @@ public class RootUiCoordinator
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
                     mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
                     mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager,
-                    mProfileSupplier, mBookmarkBridgeSupplier);
+                    mProfileSupplier, mBookmarkBridgeSupplier, mCanAnimateBrowserControls);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

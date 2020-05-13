@@ -112,8 +112,7 @@ class ShareSheetPropertyModelBuilder {
                                     callback.onTargetChosen(component);
                                 }
                                 if (params.saveLastUsed()) {
-                                    ShareHelper.setLastShareComponentName(
-                                            component, params.getSourcePackageName());
+                                    ShareHelper.setLastShareComponentName(component);
                                 }
                                 mBottomSheetController.hideContent(bottomSheet, true);
                                 ShareHelper.makeIntentAndShare(params, component);

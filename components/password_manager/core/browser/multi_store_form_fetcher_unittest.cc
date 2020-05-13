@@ -190,7 +190,9 @@ TEST_F(MultiStoreFormFetcherTest, NoStoreResults) {
 
 TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherClonesState) {
   Fetch();
-  // Simluate a user in the account mode.
+  // Simulate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), IsOptedInForAccountStorage())
+      .WillByDefault(Return(true));
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
 
@@ -214,7 +216,9 @@ TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherClonesState) {
 
 TEST_F(MultiStoreFormFetcherTest, CloningMultiStoreFetcherResumesFetch) {
   Fetch();
-  // Simluate a user in the account mode.
+  // Simulate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), IsOptedInForAccountStorage())
+      .WillByDefault(Return(true));
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
 
@@ -318,12 +322,28 @@ TEST_F(MultiStoreFormFetcherTest, BlacklistEntryInTheAccountStore) {
   // Pass empty response from the second store.
   form_fetcher_->OnGetPasswordStoreResults({});
 
-  // Simluate a user in the account mode.
+  // Simulate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), IsOptedInForAccountStorage())
+      .WillByDefault(Return(true));
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
   EXPECT_TRUE(form_fetcher_->IsBlacklisted());
 
-  // Simluate a user in the profile mode.
+  // Simulate a user in the profile mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kProfileStore));
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+
+  // Now simulate a user who isn't opted in for the account storage. In this
+  // case, the blacklist entry in the account store shouldn't matter,
+  // independent of the mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), IsOptedInForAccountStorage())
+      .WillByDefault(Return(false));
+
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kAccountStore));
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
+
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
   EXPECT_FALSE(form_fetcher_->IsBlacklisted());
@@ -341,12 +361,28 @@ TEST_F(MultiStoreFormFetcherTest, BlacklistEntryInTheProfileStore) {
   // Pass empty response from the second store.
   form_fetcher_->OnGetPasswordStoreResults({});
 
-  // Simluate a user in the account mode.
+  // Simulate a user in the account mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), IsOptedInForAccountStorage())
+      .WillByDefault(Return(true));
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kAccountStore));
   EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
-  // Simluate a user in the profile mode.
+  // Simulate a user in the profile mode.
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kProfileStore));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+
+  // Now simulate a user who isn't opted in for the account storage. In this
+  // case, the blacklist entry in the profile store should take effect, whatever
+  // the mode is.
+  ON_CALL(*client()->GetPasswordFeatureManager(), IsOptedInForAccountStorage())
+      .WillByDefault(Return(false));
+
+  ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
+      .WillByDefault(Return(PasswordForm::Store::kAccountStore));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
+
   ON_CALL(*client()->GetPasswordFeatureManager(), GetDefaultPasswordStore())
       .WillByDefault(Return(PasswordForm::Store::kProfileStore));
   EXPECT_TRUE(form_fetcher_->IsBlacklisted());

@@ -39,6 +39,8 @@ modules_dictionary_idl_files = [
   "rtc_data_channel_init.idl",
   "rtc_dtls_fingerprint.idl",
   "rtc_dtmf_tone_change_event_init.idl",
+  "rtc_encoded_audio_frame_metadata.idl",
+  "rtc_encoded_video_frame_metadata.idl",
   "rtc_error_event_init.idl",
   "rtc_error_init.idl",
   "rtc_ice_candidate_init.idl",

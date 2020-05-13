@@ -80,6 +80,10 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual void IntrinsicSizingInfoChanged(
       mojom::blink::IntrinsicSizingInfoPtr) {}
 
+  void AutoscrollStart(const gfx::PointF& position);
+  void AutoscrollFling(const gfx::Vector2dF& position);
+  void AutoscrollEnd();
+
   // Creates or returns cached mutator dispatcher. This usually requires a
   // round trip to the compositor. The returned WeakPtr must only be
   // dereferenced on the output |mutator_task_runner|.

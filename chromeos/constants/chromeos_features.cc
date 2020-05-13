@@ -236,10 +236,6 @@ const base::Feature kVirtualKeyboardFloatingDefault{
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Uses the component updater to download the lacros-chrome binary.
-const base::Feature kLacrosComponentUpdater{"LacrosComponentUpdater",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables "Linux and Chrome OS" support. Allows a Linux version of Chrome
 // ("lacros-chrome") to run as a Wayland client with this instance of Chrome
 // ("ash-chrome") acting as the Wayland server and window manager.
@@ -431,11 +427,6 @@ bool IsImeDecoderWithSandboxEnabled() {
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
-}
-
-bool IsLacrosComponentUpdaterEnabled() {
-  return base::FeatureList::IsEnabled(kLacrosSupport) &&
-         base::FeatureList::IsEnabled(kLacrosComponentUpdater);
 }
 
 bool IsLacrosSupportEnabled() {

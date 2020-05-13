@@ -46,17 +46,17 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
   // contents. When animating AssistantCardElementView, we should animate the
   // layer for the native view as opposed to painting to and animating a layer
   // belonging to AssistantCardElementView.
-  gfx::NativeView native_view() { return contents_view()->GetNativeView(); }
+  gfx::NativeView native_view() { return contents_view_->GetNativeView(); }
 
  private:
-  void InitLayout(const AssistantCardElement* card_element);
+  void InitLayout();
 
-  AssistantWebView* contents_view();
+  AssistantWebView* contents_view_ = nullptr;
 
   AssistantViewDelegate* const delegate_;
   const AssistantCardElement* const card_element_;
 
-  // Rect of the focused node in the |contents_view()|.
+  // Rect of the focused node in the |contents_view_|.
   gfx::Rect focused_node_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantCardElementView);

@@ -516,17 +516,14 @@ void ToolbarActionsModel::InitializeActionList() {
     // have changed even though they haven't.
     pinned_action_ids_ = GetFilteredPinnedActionIds();
 
-    if (!profile_->IsOffTheRecord()) {
-      base::UmaHistogramCounts100("Extensions.Toolbar.PinnedExtensionCount",
+    if (!profile_->IsOffTheRecord() && !action_ids_.empty()) {
+      base::UmaHistogramCounts100("Extensions.Toolbar.PinnedExtensionCount2",
                                   pinned_action_ids_.size());
-      int percentage = 0;
-      if (!action_ids_.empty()) {
-        double percentage_double =
-            pinned_action_ids_.size() / action_ids_.size() * 100.0;
-        percentage = int{percentage_double};
-      }
+      double percentage_double =
+          pinned_action_ids_.size() / action_ids_.size() * 100.0;
+      int percentage = int{percentage_double};
       base::UmaHistogramPercentage(
-          "Extensions.Toolbar.PinnedExtensionPercentage", percentage);
+          "Extensions.Toolbar.PinnedExtensionPercentage2", percentage);
     }
   }
 }

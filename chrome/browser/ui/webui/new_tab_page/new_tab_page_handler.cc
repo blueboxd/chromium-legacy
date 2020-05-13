@@ -554,6 +554,45 @@ void NewTabPageHandler::OnCustomizeDialogAction(
   LogEvent(event);
 }
 
+void NewTabPageHandler::OnDoodleImageClicked(
+    new_tab_page::mojom::DoodleImageType type) {
+  NTPLoggingEventType event;
+  switch (type) {
+    case new_tab_page::mojom::DoodleImageType::ANIMATION:
+      event = NTP_ANIMATED_LOGO_CLICKED;
+      break;
+    case new_tab_page::mojom::DoodleImageType::CTA:
+      event = NTP_CTA_LOGO_CLICKED;
+      break;
+    case new_tab_page::mojom::DoodleImageType::STATIC:
+      event = NTP_STATIC_LOGO_CLICKED;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  LogEvent(event);
+}
+
+void NewTabPageHandler::OnDoodleImageRendered(
+    new_tab_page::mojom::DoodleImageType type,
+    double time) {
+  NTPLoggingEventType event;
+  switch (type) {
+    case new_tab_page::mojom::DoodleImageType::CTA:
+      event = NTP_CTA_LOGO_SHOWN_FROM_CACHE;
+      break;
+    case new_tab_page::mojom::DoodleImageType::STATIC:
+      event = NTP_STATIC_LOGO_SHOWN_FROM_CACHE;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  logger_->LogEvent(event,
+                    base::Time::FromJsTime(time) - ntp_navigation_start_time_);
+}
+
 void NewTabPageHandler::QueryAutocomplete(const base::string16& input,
                                           bool prevent_inline_autocomplete) {
   if (!autocomplete_controller_) {

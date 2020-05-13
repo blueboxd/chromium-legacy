@@ -1268,6 +1268,8 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
 void TabStrip::AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
                              int model_index) {
   tab_at(model_index)->set_group(std::move(group));
+
+  ExitTabClosingMode();
 }
 
 void TabStrip::OnGroupCreated(const tab_groups::TabGroupId& group) {

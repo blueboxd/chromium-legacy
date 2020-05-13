@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "ui/gfx/x/connection.h"
 
 namespace {
 
@@ -251,37 +252,49 @@ X11AtomCache* X11AtomCache::GetInstance() {
   return base::Singleton<X11AtomCache>::get();
 }
 
-X11AtomCache::X11AtomCache() : xdisplay_(gfx::GetXDisplay()) {
+X11AtomCache::X11AtomCache() : connection_(x11::Connection::Get()) {
   for (const auto& predefined_atom : kPredefinedAtoms)
     cached_atoms_[predefined_atom.atom_name] = predefined_atom.atom_value;
 
-  // Grab all the atoms we need now to minimize roundtrips to the X11 server.
-  std::vector<XAtom> cached_atoms(kCacheCount);
-  XInternAtoms(xdisplay_, const_cast<char**>(kAtomsToCache), kCacheCount, False,
-               cached_atoms.data());
-
-  for (int i = 0; i < kCacheCount; ++i)
-    cached_atoms_[kAtomsToCache[i]] = cached_atoms[i];
+  std::vector<x11::Future<x11::XProto::InternAtomReply>> requests;
+  requests.reserve(kCacheCount);
+  for (const char* name : kAtomsToCache) {
+    // TODO(thomasanderson):  The xcbproto descriptions were designed to
+    // generate C bindings for libxcb, so all list-like fields have a separate
+    // length field.  However in our C++ bindings, the lists (std::array,
+    // std::vector, std::string) always have a length associated with them, so
+    // the length field is redundant.  Therefore, they should be removed from
+    // client-visible APIs.
+    requests.push_back(
+        connection_->InternAtom({.name_len = strlen(name), .name = name}));
+  }
+  for (size_t i = 0; i < kCacheCount; ++i) {
+    if (auto response = requests[i].Sync())
+      cached_atoms_[kAtomsToCache[i]] = static_cast<XAtom>(response->atom);
+  }
 }
 
-X11AtomCache::~X11AtomCache() {}
+X11AtomCache::~X11AtomCache() = default;
 
 XAtom X11AtomCache::GetAtom(const char* name) const {
+  DCHECK(name);
   const auto it = cached_atoms_.find(name);
   if (it != cached_atoms_.end())
     return it->second;
 
-  // XInternAtom returns None on failure. Source:
-  // https://www.x.org/releases/X11R7.5/doc/man/man3/XInternAtom.3.html
-  XAtom atom = XInternAtom(xdisplay_, name, False);
-  if (atom == None) {
+  XAtom atom = 0;
+  if (auto response =
+          connection_->InternAtom({.name_len = strlen(name), .name = name})
+              .Sync()) {
+    atom = static_cast<XAtom>(response->atom);
+    cached_atoms_.emplace(name, atom);
+  } else {
     static int error_count = 0;
     ++error_count;
     // TODO(https://crbug.com/1000919): Evaluate and remove UMA metrics after
     // enough data is gathered.
     base::UmaHistogramCounts100("X11.XInternAtomFailure", error_count);
   }
-  cached_atoms_.emplace(name, atom);
   return atom;
 }
 

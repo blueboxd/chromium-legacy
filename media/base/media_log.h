@@ -23,7 +23,6 @@
 #include "media/base/media_log_message_levels.h"
 #include "media/base/media_log_properties.h"
 #include "media/base/media_log_record.h"
-#include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
 #include "url/gurl.h"
 

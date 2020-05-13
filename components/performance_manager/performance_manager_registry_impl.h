@@ -25,6 +25,7 @@ class WebContents;
 
 namespace performance_manager {
 
+class PerformanceManagerMainThreadMechanism;
 class PerformanceManagerMainThreadObserver;
 class ServiceWorkerContextAdapter;
 class WorkerWatcher;
@@ -46,13 +47,21 @@ class PerformanceManagerRegistryImpl
   static PerformanceManagerRegistryImpl* GetInstance();
 
   // Adds / removes an observer that is notified when a PageNode is created on
-  // the main thread.
+  // the main thread. Forwarded to from the public PerformanceManager interface.
   void AddObserver(PerformanceManagerMainThreadObserver* observer);
   void RemoveObserver(PerformanceManagerMainThreadObserver* observer);
+
+  // Adds / removes main thread mechanisms. Forwarded to from the public
+  // PerformanceManager interface.
+  void AddMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+  void RemoveMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+  bool HasMechanism(PerformanceManagerMainThreadMechanism* mechanism);
 
   // PerformanceManagerRegistry:
   void CreatePageNodeForWebContents(
       content::WebContents* web_contents) override;
+  Throttles CreateThrottlesForNavigation(
+      content::NavigationHandle* handle) override;
   void NotifyBrowserContextAdded(
       content::BrowserContext* browser_context) override;
   void NotifyBrowserContextRemoved(
@@ -101,6 +110,7 @@ class PerformanceManagerRegistryImpl
   performance_manager::TabHelperFrameNodeSource frame_node_source_;
 
   base::ObserverList<PerformanceManagerMainThreadObserver> observers_;
+  base::ObserverList<PerformanceManagerMainThreadMechanism> mechanisms_;
 };
 
 }  // namespace performance_manager

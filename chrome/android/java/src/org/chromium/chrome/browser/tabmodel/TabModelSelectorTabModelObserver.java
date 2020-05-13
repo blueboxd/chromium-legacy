@@ -16,7 +16,7 @@ import java.util.List;
  * This can safely be constructed before native libraries have been initialized as this will
  * register to observe the underlying TabModels as they are created lazily.
  */
-public class TabModelSelectorTabModelObserver extends EmptyTabModelObserver {
+public class TabModelSelectorTabModelObserver implements TabModelObserver {
     private final TabModelSelector mTabModelSelector;
 
     private TabModelSelectorObserver mSelectorObserver;

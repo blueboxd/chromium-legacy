@@ -45,11 +45,11 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     public interface OverviewNTPCreator {
         /**
          * Handles showing the StartSurface instead of the NTP if needed.
-         * @param isNTPUrl Whether tab with NTP should be created.
+         * @param isNTP Whether tab with NTP should be created.
          * @param isIncognito Whether tab is created in incognito.
          * @return Whether NTP creation was handled.
          */
-        boolean handleCreateNTPIfNeeded(boolean isNTP, boolean incognito);
+        boolean handleCreateNTPIfNeeded(boolean isNTP, boolean isIncognito);
     }
 
     private final ChromeActivity mActivity;

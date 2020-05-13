@@ -106,6 +106,7 @@ static_library("performance_manager") {
     "public/graph/worker_node.h",
     "public/mechanisms/tab_loading_frame_navigation_scheduler.h",
     "public/performance_manager.h",
+    "public/performance_manager_main_thread_mechanism.h",
     "public/performance_manager_main_thread_observer.h",
     "public/render_frame_host_proxy.h",
     "public/render_process_host_proxy.h",

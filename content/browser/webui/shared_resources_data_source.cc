@@ -81,14 +81,12 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   };
 
 #if defined(OS_CHROMEOS)
-  // Add lottie library for Chrome OS.
-  aliases["../../../third_party/lottie/"] = "lottie/";
-
   if (UsingMultiplePolymerVersions())
     return aliases;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
+  aliases["../../../third_party/lottie/"] = "lottie/";
   aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
       "polymer/v1_0/polymer/";
 #endif  // !defined(OS_ANDROID)
@@ -401,15 +399,15 @@ std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
+std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return "worker-src blob: 'self';";
+}
+
 #if defined(OS_CHROMEOS)
 void SharedResourcesDataSource::DisablePolymer2ForHost(
     const std::string& host) {
   DCHECK(disabled_polymer2_host_.empty() || host == disabled_polymer2_host_);
   disabled_polymer2_host_ = host;
-}
-
-std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return "worker-src blob: 'self';";
 }
 
 // Returns true if the WebContents making the request has disabled Polymer 2.

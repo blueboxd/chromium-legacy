@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -51,7 +50,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             }
         });
 
-        mNormalTabModelObserver = new EmptyTabModelObserver() {
+        mNormalTabModelObserver = new TabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 assert overviewVisible();

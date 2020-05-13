@@ -311,6 +311,9 @@ enum FieldTypeGroup {
 
 typedef std::set<ServerFieldType> ServerFieldTypeSet;
 
+// Returns whether the field can be filled with data.
+bool IsFillableFieldType(ServerFieldType field_type);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FIELD_TYPES_H_

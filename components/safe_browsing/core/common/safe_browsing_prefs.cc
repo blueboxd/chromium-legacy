@@ -393,6 +393,15 @@ bool IsURLWhitelistedByPolicy(const GURL& url, const PrefService& pref) {
   return false;
 }
 
+bool MatchesEnterpriseWhitelist(const PrefService& pref,
+                                const std::vector<GURL>& url_chain) {
+  for (const GURL& url : url_chain) {
+    if (IsURLWhitelistedByPolicy(url, pref))
+      return true;
+  }
+  return false;
+}
+
 void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
                                         std::vector<GURL>* out_login_url_list) {
   const base::ListValue* pref_value =

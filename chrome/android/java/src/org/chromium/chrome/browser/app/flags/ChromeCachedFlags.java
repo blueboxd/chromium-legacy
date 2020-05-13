@@ -84,6 +84,7 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES,
                 StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH,
                 StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY,
+                StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,

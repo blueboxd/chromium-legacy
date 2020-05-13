@@ -185,15 +185,6 @@ IPC_MESSAGE_ROUTED1(WidgetHostMsg_SelectionBoundsChanged,
 // throttle these messages.
 IPC_MESSAGE_ROUTED0(WidgetHostMsg_UpdateScreenRects_ACK)
 
-// Request a non-decelerating synthetic fling animation to be latched on the
-// scroller at the start point, and whose velocity can be changed over time by
-// sending multiple AutoscrollFling gestures.  Used for features like
-// middle-click autoscroll.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_AutoscrollStart, gfx::PointF /* start */)
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_AutoscrollFling,
-                    gfx::Vector2dF /* velocity */)
-IPC_MESSAGE_ROUTED0(WidgetHostMsg_AutoscrollEnd)
-
 // Notifies the browser if the text input state has changed. Primarily useful
 // for IME as they need to know of all changes to update their interpretation
 // of the characters that have been input.

@@ -131,47 +131,16 @@ if (ios_sdk_path == "") {
   }
 }
 
-if (ios_enable_code_signing && !use_ios_simulator) {
-  find_signing_identity_args = [
-    "--identity-description",
-    ios_code_signing_identity_description,
-  ]
-
-  # If an identity is not provided, look for one on the host
+if (!use_ios_simulator && ios_enable_code_signing) {
+  # Automatically select a codesigning identity if no identity is configured.
+  # This only applies to device build as simulator builds are not signed.
   if (ios_code_signing_identity == "") {
-    _ios_identities = exec_script("find_signing_identity.py",
-                                  find_signing_identity_args,
-                                  "list lines")
-    if (_ios_identities == []) {
-      print("Automatic code signing identity selection was enabled but could")
-      print("not find exactly one code signing identity matching")
-      print("$ios_code_signing_identity_description. Check that your keychain")
-      print("is accessible and that there is a valid code signing identity")
-      print("listed by `xcrun security find-identity -v -p codesigning`")
-      print("TIP: Simulator builds don't require code signing...")
-      assert(false)
-    } else {
-      _ios_identities_len = 0
-      foreach(_, _ios_identities) {
-        _ios_identities_len += 1
-      }
-
-      ios_code_signing_identity = _ios_identities[0]
-      if (_ios_identities_len != 1) {
-        print("Warning: Multiple codesigning identities match " +
-              "\"$ios_code_signing_identity_description\"")
-        foreach(_ios_identity, _ios_identities) {
-          _selected = ""
-          if (ios_code_signing_identity == _ios_identity) {
-            _selected = " (selected)"
-          }
-          print("Warning: - $_ios_identity$_selected")
-        }
-        print("Warning: Please use either ios_code_signing_identity or ")
-        print("Warning: ios_code_signing_identity_description variable to ")
-        print("Warning: control which identity is selected.")
-        print()
-      }
-    }
+    ios_code_signing_identity =
+        exec_script("find_signing_identity.py",
+                    [
+                      "--matching-pattern",
+                      ios_code_signing_identity_description,
+                    ],
+                    "string")
   }
 }

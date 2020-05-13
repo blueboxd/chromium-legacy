@@ -80,6 +80,10 @@ std::string TestDataSource::GetContentSecurityPolicyScriptSrc() {
   return "script-src chrome://* 'self';";
 }
 
+std::string TestDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return "worker-src blob: 'self';";
+}
+
 GURL TestDataSource::GetURLForPath(const std::string& path) {
   return GURL(std::string(content::kChromeUIScheme) + "://" + GetSource() +
               "/" + path);

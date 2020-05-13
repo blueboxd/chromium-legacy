@@ -158,6 +158,8 @@ void OverlayProcessorOzone::CheckOverlaySupport(
         // Skip the candidate if the corresponding NativePixmap is not found.
         if (!result) {
           *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
+          ozone_surface_iterator->plane_z_order =
+              surface_iterator->plane_z_order;
         }
       }
     }

@@ -79,7 +79,12 @@ void MaybeOverrideDlpScanResult(DownloadCheckResultReason reason,
         NOTREACHED();
         return;
     }
+  } else if (reason == REASON_WHITELISTED_URL) {
+    callback.Run(deep_scan_result);
+    return;
   }
+
+  NOTREACHED();
 }
 
 }  // namespace
@@ -303,6 +308,13 @@ bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
          AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
              ->IsUnderAdvancedProtection();
 #endif
+}
+
+bool CheckClientDownloadRequest::IsWhitelistedByPolicy() const {
+  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+  if (!profile)
+    return false;
+  return MatchesEnterpriseWhitelist(*profile->GetPrefs(), item_->GetUrlChain());
 }
 
 }  // namespace safe_browsing

@@ -13,9 +13,13 @@ ScopedBlinkAXEventIntent::ScopedBlinkAXEventIntent(
     const BlinkAXEventIntent& intent,
     Document* document)
     : document_(document) {
-  intents_.push_back(intent);
   DCHECK(document_);
   DCHECK(document_->IsActive());
+
+  if (!intent.is_initialized())
+    return;
+  intents_.push_back(intent);
+
   if (AXObjectCache* cache = document_->ExistingAXObjectCache()) {
     AXObjectCache::BlinkAXEventIntentsSet& active_intents =
         cache->ActiveEventIntents();
@@ -34,7 +38,8 @@ ScopedBlinkAXEventIntent::ScopedBlinkAXEventIntent(
         cache->ActiveEventIntents();
 
     for (const auto& intent : intents) {
-      active_intents.insert(intent);
+      if (intent.is_initialized())
+        active_intents.insert(intent);
     }
   }
 }

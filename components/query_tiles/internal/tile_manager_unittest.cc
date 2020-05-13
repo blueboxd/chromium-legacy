@@ -178,7 +178,7 @@ TEST_F(TileManagerTest, InitWithEmptyDb) {
         std::move(callback).Run(true, MockTileStore::KeysAndEntries());
       }));
 
-  Init(TileGroupStatus::kSuccess);
+  Init(TileGroupStatus::kNoTiles);
   GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
@@ -198,7 +198,7 @@ TEST_F(TileManagerTest, InitAndLoadWithExpiredGroup) {
 
   EXPECT_CALL(*tile_store(), Delete(_, _));
 
-  Init(TileGroupStatus::kInvalidGroup);
+  Init(TileGroupStatus::kNoTiles);
   GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
@@ -263,7 +263,7 @@ TEST_F(TileManagerTest, SaveTilesFailed) {
       }));
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
 
-  Init(TileGroupStatus::kSuccess);
+  Init(TileGroupStatus::kNoTiles);
 
   auto tile_to_save = std::make_unique<Tile>();
   test::ResetTestEntry(tile_to_save.get());
@@ -289,7 +289,7 @@ TEST_F(TileManagerTest, SaveTilesSuccess) {
       }));
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
 
-  Init(TileGroupStatus::kSuccess);
+  Init(TileGroupStatus::kNoTiles);
 
   auto tile_to_save = std::make_unique<Tile>();
   auto expected_tile = std::make_unique<Tile>();

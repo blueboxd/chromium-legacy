@@ -22,6 +22,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/interval.h"
@@ -90,6 +91,10 @@ struct InitGlobals {
     base::CommandLine::Init(0, nullptr);
 
     print_comms_ = ::getenv("LPM_DUMP_NATIVE_INPUT");
+
+    // TaskEnvironment requires TestTimeouts initialization to watch for
+    // problematic long-running tasks.
+    TestTimeouts::Initialize();
 
     // Mark this thread as an IO_THREAD with MOCK_TIME, and ensure that Now()
     // is driven from the same mock clock.

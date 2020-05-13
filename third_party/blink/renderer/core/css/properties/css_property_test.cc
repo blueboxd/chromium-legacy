@@ -140,6 +140,7 @@ namespace {
 // allowed to list both 2px and calc(1px + 1px).
 const char* color_examples[] = {"red", "green", "#fef", "#faf", nullptr};
 const char* direction_examples[] = {"ltr", "rtl", nullptr};
+const char* length_or_auto_examples[] = {"auto", "1px", "2px", "5%", nullptr};
 const char* writing_mode_examples[] = {"horizontal-tb", "vertical-rl", nullptr};
 
 struct ComputedValuesEqualData {
@@ -151,7 +152,11 @@ struct ComputedValuesEqualData {
     {"border-left-color", color_examples},
     {"border-right-color", color_examples},
     {"border-top-color", color_examples},
+    {"bottom", length_or_auto_examples},
     {"direction", direction_examples},
+    {"left", length_or_auto_examples},
+    {"right", length_or_auto_examples},
+    {"top", length_or_auto_examples},
     {"writing-mode", writing_mode_examples},
 };
 

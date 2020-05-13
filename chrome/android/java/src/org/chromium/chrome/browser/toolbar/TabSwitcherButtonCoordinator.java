@@ -12,9 +12,6 @@ import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -31,10 +28,6 @@ public class TabSwitcherButtonCoordinator {
      */
     private final PropertyModel mTabSwitcherButtonModel =
             new PropertyModel(TabSwitcherButtonProperties.ALL_KEYS);
-
-    private TabModelSelector mTabModelSelector;
-    private TabModelSelectorObserver mTabModelSelectorObserver;
-    private TabModelSelectorTabModelObserver mTabModelSelectorTabModelObserver;
 
     private ThemeColorProvider mThemeColorProvider;
     private TintObserver mTintObserver;

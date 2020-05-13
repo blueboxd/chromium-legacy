@@ -24,6 +24,7 @@ extern const base::Feature kAutofillCacheServerCardInfo;
 extern const base::Feature kAutofillCreditCardAblationExperiment;
 extern const base::Feature kAutofillCreditCardAuthentication;
 extern const base::Feature kAutofillCreditCardUploadFeedback;
+extern const base::Feature kAutofillEnableCardNicknameManagement;
 extern const base::Feature kAutofillEnableFixedPaymentsBubbleLogging;
 extern const base::Feature kAutofillEnableGoogleIssuedCard;
 extern const base::Feature kAutofillEnableStickyPaymentsBubble;

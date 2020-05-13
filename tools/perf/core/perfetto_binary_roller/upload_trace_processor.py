@@ -38,7 +38,7 @@ def main(args):
   parser.add_argument(
       '--revision',
       help=('Perfetto revision. '
-            'If not supplied, will try to infer from //third_party/perfetto.'))
+            'If not supplied, will try to infer from DEPS file.'))
 
   # When this script is invoked on a CI bot, there are some extra arguments
   # that we have to ignore.
@@ -48,6 +48,9 @@ def main(args):
 
   binary_deps_manager.UploadHostBinary(trace_processor.TP_BINARY_NAME,
                                        args.path, revision)
+
+  # CI bot expects a valid JSON object as script output.
+  sys.stdout.write('{}\n')
 
 
 if __name__ == '__main__':

@@ -5,31 +5,35 @@
 // clang-format off
 import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {SafeBrowsingBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestPrivacyPageBrowserProxy} from 'chrome://test/settings/test_privacy_page_browser_proxy.js';
-import {TestSafeBrowsingBrowserProxy} from 'chrome://test/settings/test_safe_browsing_browser_proxy.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {flushTasks} from '../test_util.m.js';
+
+import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
+import {TestSafeBrowsingBrowserProxy} from './test_safe_browsing_browser_proxy.js';
+import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
 
 suite('CrSettingsSecurityPageTestWithEnhanced', function() {
-  /** @type {.TestMetricsBrowserProxy} */
+  /** @type {!TestMetricsBrowserProxy} */
   let testMetricsBrowserProxy;
 
-  /** @type {SyncBrowserProxy} */
+  /** @type {!TestSyncBrowserProxy} */
   let syncBrowserProxy;
 
-  /** @type {TestPrivacyPageBrowserProxy} */
+  /** @type {!TestPrivacyPageBrowserProxy} */
   let testPrivacyBrowserProxy;
 
-  /** @type {SafeBrowsingBrowserProxy} */
+  /** @type {!TestSafeBrowsingBrowserProxy} */
   let testSafeBrowsingBrowserProxy;
 
-  /** @type {SettingsSecurityPageElement} */
+  /** @type {!SettingsSecurityPageElement} */
   let page;
 
   suiteSetup(function() {
@@ -47,8 +51,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
     testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
     SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-security-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSecurityPageElement} */ (
+        document.createElement('settings-security-page'));
     page.prefs = {
       profile: {password_manager_leak_detection: {value: true}},
       signin: {
@@ -92,7 +97,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingStandard').click();
     flush();
 
-    page.$.safeBrowsingReportingToggle.click();
+    page.$$('#safeBrowsingReportingToggle').click();
     const result =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.IMPROVE_SECURITY, result);
@@ -100,7 +105,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
   test('safeBrowsingReportingToggle', function() {
     page.$$('#safeBrowsingStandard').click();
-    const safeBrowsingReportingToggle = page.$.safeBrowsingReportingToggle;
+    const safeBrowsingReportingToggle = page.$$('#safeBrowsingReportingToggle');
     assertTrue(
         page.prefs.safebrowsing.enabled.value &&
         !page.prefs.safebrowsing.enhanced.value);
@@ -205,11 +210,11 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingStandard').click();
     flush();
 
-    assertFalse(page.$.safeBrowsingReportingToggle.disabled);
+    assertFalse(page.$$('#safeBrowsingReportingToggle').disabled);
     page.$$('#safeBrowsingEnhanced').click();
     flush();
 
-    assertTrue(page.$.safeBrowsingReportingToggle.disabled);
+    assertTrue(page.$$('#safeBrowsingReportingToggle').disabled);
   });
 
   test('noValueChangeSafeBrowsingReportingInEnhanced', function() {
@@ -228,7 +233,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingStandard').click();
     flush();
 
-    assertFalse(page.$.safeBrowsingReportingToggle.disabled);
+    assertFalse(page.$$('#safeBrowsingReportingToggle').disabled);
     page.$$('#safeBrowsingDisabled').click();
     flush();
 
@@ -240,7 +245,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     // Wait for onDisableSafebrowsingDialogClose_ to finish.
     await flushTasks();
 
-    assertTrue(page.$.safeBrowsingReportingToggle.disabled);
+    assertTrue(page.$$('#safeBrowsingReportingToggle').disabled);
   });
 
   test('noValueChangeSafeBrowsingReportingInDisabled', async function() {
@@ -345,8 +350,8 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
         'getSafeBrowsingRadioManagedState');
     testSafeBrowsingBrowserProxy.reset();
 
-    testSafeBrowsingBrowserProxy.setResultFor(
-        'getSafeBrowsingRadioManagedState', Promise.resolve(managedRadioState));
+    testSafeBrowsingBrowserProxy.setSafeBrowsingRadioManagedState(
+        managedRadioState);
     // Change an arbitrary Safe Browsing pref to trigger managed state update.
     page.set('prefs.safebrowsing.enabled.value', false);
     await testSafeBrowsingBrowserProxy.whenCalled(
@@ -370,9 +375,8 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
       standard: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
       disabled: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
     };
-    testSafeBrowsingBrowserProxy.setResultFor(
-        'getSafeBrowsingRadioManagedState',
-        Promise.resolve(unmanagedRadioState));
+    testSafeBrowsingBrowserProxy.setSafeBrowsingRadioManagedState(
+        unmanagedRadioState);
     // Change an arbitrary Safe Browsing pref to trigger managed state update.
     page.set('prefs.safebrowsing.enabled.value', true);
     await testSafeBrowsingBrowserProxy.whenCalled(
@@ -391,10 +395,10 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
 
 suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
-  /** @type {SettingsSecurityPageElement} */
+  /** @type {!SettingsSecurityPageElement} */
   let page;
 
-  /** @type {SafeBrowsingBrowserProxy} */
+  /** @type {!TestSafeBrowsingBrowserProxy} */
   let testSafeBrowsingBrowserProxy;
 
   suiteSetup(function() {
@@ -406,8 +410,9 @@ suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
   setup(function() {
     testSafeBrowsingBrowserProxy = new TestSafeBrowsingBrowserProxy();
     SafeBrowsingBrowserProxyImpl.instance_ = testSafeBrowsingBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-security-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsSecurityPageElement} */ (
+        document.createElement('settings-security-page'));
     page.prefs = {
       profile: {password_manager_leak_detection: {value: true}},
       signin: {

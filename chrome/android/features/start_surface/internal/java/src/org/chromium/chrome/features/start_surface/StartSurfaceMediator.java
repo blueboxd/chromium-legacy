@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -191,7 +190,7 @@ class StartSurfaceMediator
                 // Hide tab carousel, which does not exist in incognito mode, when closing all
                 // normal tabs.
                 mNormalTabModel = mTabModelSelector.getModel(false);
-                mNormalTabModelObserver = new EmptyTabModelObserver() {
+                mNormalTabModelObserver = new TabModelObserver() {
                     @Override
                     public void willCloseTab(Tab tab, boolean animate) {
                         if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE

@@ -280,7 +280,8 @@ TEST_F(OpenTypeMathSupportTest, MathVariantsWithoutTable) {
   }
 }
 
-TEST_F(OpenTypeMathSupportTest, MathVariantsWithTable) {
+// Broken on all platforms by updated to 'operators.woff'. crbug.com/1082250
+TEST_F(OpenTypeMathSupportTest, DISABLED_MathVariantsWithTable) {
   // operators.woff contains stretchy operators from the MathML operator
   // dictionary (including left and over braces) represented by squares.
   // It also contains glyphs h0, h1, h2, h3 and v0, v1, v2, v3 that are

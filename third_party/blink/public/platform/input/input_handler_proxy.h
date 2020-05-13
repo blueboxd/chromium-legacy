@@ -76,12 +76,49 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
     cc::OverscrollBehavior overscroll_behavior;
   };
 
+  // Result codes returned to the client indicating the status of handling the
+  // event on the compositor. Used to determine further event handling behavior
+  // (i.e. should the event be forwarded to the main thread, ACK'ed to the
+  // browser, etc.).
   enum EventDisposition {
+    // The event was handled on the compositor and should not be forwarded to
+    // the main thread.
     DID_HANDLE,
+
+    // The compositor could not handle the event but the event may still be
+    // valid for handling so it should be forwarded to the main thread.
     DID_NOT_HANDLE,
+
+    // Set only from a touchstart that occurred while a fling was in progress.
+    // Indicates that the rest of the touch stream should be sent non-blocking
+    // to ensure the scroll remains smooth. Since it's non-blocking, the event
+    // will be ACK'ed to the browser before being dispatched to the main
+    // thread.
+    // TODO(bokan): It's not clear that we need a separate status for this
+    // case, why can't we just use the DID_HANDLE_NON_BLOCKING below?
     DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING,
+
+    // Set to indicate that the event needs to be sent to the main thread (e.g.
+    // because the touch event hits a touch-event handler) but the compositor
+    // has determined it shouldn't be cancellable (e.g. the event handler is
+    // passive). Because it isn't cancellable, the event (and future events)
+    // will be sent non-blocking and be acked to the browser before being
+    // dispatchehd to the main thread.
+    // TODO(bokan): The semantics of DID/DID_NOT HANDLE are whether the main
+    // thread needs to know about the event. In this case, we expect the event
+    // to be forwarded to the main thread so this should be DID_NOT_HANDLE.
     DID_HANDLE_NON_BLOCKING,
+
+    // The compositor didn't handle the event but has determined the main
+    // thread doesn't care about the event either (e.g. it's a touch event and
+    // the hit point doesn't have a touch handler). In this case, we should ACK
+    // the event immediately. Both this and DID_HANDLE will avoid forwarding
+    // the event to the main thread and ACK immediately; the difference is that
+    // DROP_EVENT tells the client the event wasn't consumed. For example, the
+    // browser may choose to use this to avoid forwarding touch events if there
+    // isn't a consumer for them (and send only the scroll events).
     DROP_EVENT,
+
     // The compositor did handle the scroll event (so it wouldn't forward the
     // event to the main thread.) but it didn't consume the scroll so it should
     // pass it to the next consumer (either overscrolling or bubbling the event

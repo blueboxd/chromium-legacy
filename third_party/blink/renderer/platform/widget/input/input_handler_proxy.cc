@@ -290,25 +290,44 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   }
 
   if (currently_active_gesture_device_.has_value()) {
-    bool is_from_set_non_blocking_touch =
+    // Scroll updates should typically be queued and wait until a
+    // BeginImplFrame to dispatch. However, the first scroll update to be
+    // generated from a *blocking* touch sequence will have waited for the
+    // touch event to be ACK'ed by the renderer as unconsumed. Queueing here
+    // again until BeginImplFrame means we'll likely add a whole frame of
+    // latency to so we flush the queue immediately. This happens only for the
+    // first scroll update because once a scroll starts touch events are
+    // dispatched non-blocking so scroll updates don't wait for a touch ACK.
+    // The |is_source_touch_event_set_non_blocking| bit is set based on the
+    // renderer's reply that a blocking touch stream should be made
+    // non-blocking. Note: unlike wheel events below, the first GSU in a touch
+    // may have come from a non-blocking touch sequence, e.g. if the earlier
+    // touchstart determined we're in a |touch-action: pan-y| region. Because
+    // of this, we can't simply look at the first GSU like wheels do.
+    bool is_from_blocking_touch =
         gesture_event.SourceDevice() == WebGestureDevice::kTouchscreen &&
         gesture_event.is_source_touch_event_set_non_blocking;
+
+    // TODO(bokan): This was added in https://crrev.com/c/557463 before async
+    // wheel events. It's not clear to me why flushing on a scroll end would
+    // help or why this is specific to wheel events but I suspect it's no
+    // longer needed now that wheel scrolling uses non-blocking events.
     bool is_scroll_end_from_wheel =
         gesture_event.SourceDevice() == WebGestureDevice::kTouchpad &&
         gesture_event.GetType() == WebGestureEvent::Type::kGestureScrollEnd;
-    bool scroll_update_has_blocking_wheel_source =
+
+    // Wheel events have the same issue as the blocking touch issue above.
+    // However, all wheel events are initially sent blocking and become non-
+    // blocking on the first unconsumed event. We can therefore simply look for
+    // the first scroll update in a wheel gesture.
+    bool is_first_wheel_scroll_update =
         gesture_event.SourceDevice() == WebGestureDevice::kTouchpad &&
         is_first_gesture_scroll_update;
 
-    if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel ||
-        scroll_update_has_blocking_wheel_source || synchronous_input_handler_) {
-      // 1. Gesture events was already delayed by blocking events in rAF aligned
-      // queue. We want to avoid additional one frame delay by flushing the
-      // VSync queue immediately.
-      // The first GSU latency was tracked by:
-      // |smoothness.tough_scrolling_cases:first_gesture_scroll_update_latency|.
-      // 2. |synchronous_input_handler_| is WebView only. WebView has different
-      // mechanisms and we want to forward all events immediately.
+    // |synchronous_input_handler_| is WebView only. WebView has different
+    // mechanisms and we want to forward all events immediately.
+    if (is_from_blocking_touch || is_scroll_end_from_wheel ||
+        is_first_wheel_scroll_update || synchronous_input_handler_) {
       compositor_event_queue_->Queue(std::move(event_with_callback),
                                      tick_clock_->NowTicks());
       DispatchQueuedInputEvents();

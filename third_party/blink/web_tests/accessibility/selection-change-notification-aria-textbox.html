@@ -1,10 +1,6 @@
-<!DOCTYPE HTML>
-<html>
-<head>
+<!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-</head>
-<body id="static_eventTarget">
 
 <div id="ariaTextbox" role="textbox" tabIndex="0">
   <p>Before</p>
@@ -12,39 +8,40 @@
   <p>After</p>
 </div>
 
-<div id="console"></div>
 <script>
+'use strict';
+
 async_test((t) => {
-    // This forces building the accessibility tree, because selection change
-    // events only fire on elements that already exist.
-    accessibilityController.accessibleElementById('dummy');
+  // This forces building the accessibility tree, because selection change
+  // events only fire on elements that already exist.
+  accessibilityController.accessibleElementById('dummy');
 
-    var element = document.getElementById('ariaTextbox');
-    element.focus();
+  const element = document.getElementById('ariaTextbox');
+  element.focus();
 
-    var axElement = accessibilityController.accessibleElementById('ariaTextbox');
-    axElement.addNotificationListener(t.step_func((notification) => {
-        // Focus notification will come asynchronously after layout
-        if (notification == 'Focus')
-            return;
+  const axElement = accessibilityController.accessibleElementById('ariaTextbox');
+  axElement.setNotificationListener(t.step_func((notification, intents) => {
+    // Focus notification will come asynchronously after layout
+    if (notification == 'Focus')
+      return;
 
-        if (notification == 'SelectedTextChanged') {
-            axElement.removeNotificationListener();
-            t.done();
-            return;
-        };
-        assert_unreached('Unexpected notification: ' + notification);
-    }));
+    if (notification == 'SelectedTextChanged') {
+      assert_array_equals(intents,
+                          ['AXEventIntent(setSelection,character,forward)']);
+      axElement.unsetNotificationListener();
+      t.done();
+      return;
+    }
 
-    var p = document.getElementById('p');
-    var range = document.createRange();
-    range.setStart(p.firstChild, 0);
-    range.setEnd(p.firstChild, 1);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-}, "Tests that a 'selected text changed' notification fires on a focusable element with role=textbox when the user moves the cursor within it.");
+    assert_unreached('Unexpected notification: ' + notification);
+  }));
+
+  const p = document.getElementById('p');
+  const range = document.createRange();
+  range.setStart(p.firstChild, 0);
+  range.setEnd(p.firstChild, 1);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+});
 
 </script>
-
-</body>
-</html>

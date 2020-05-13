@@ -54,13 +54,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticPointerActionParams::Button::BUTTON_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
-IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
-  IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)
-  IPC_STRUCT_TRAITS_MEMBER(latest_overscroll_delta)
-  IPC_STRUCT_TRAITS_MEMBER(current_fling_velocity)
-  IPC_STRUCT_TRAITS_MEMBER(causal_event_viewport_point)
-  IPC_STRUCT_TRAITS_MEMBER(overscroll_behavior)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(gesture_source_type)

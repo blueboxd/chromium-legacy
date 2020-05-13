@@ -164,6 +164,18 @@ class DisplayPasswordButtonTest : public LoginManagerTest {
  public:
   DisplayPasswordButtonTest() : LoginManagerTest() {}
 
+  void LoginAndLock(const LoginManagerMixin::TestUserInfo& test_user) {
+    chromeos::WizardController::SkipPostLoginScreensForTesting();
+
+    auto context = LoginManagerMixin::CreateDefaultUserContext(test_user);
+    login_manager_mixin_.LoginAndWaitForActiveSession(context);
+
+    ScreenLockerTester screen_locker_tester;
+    screen_locker_tester.Lock();
+
+    EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user.account_id));
+  }
+
   void SetDisplayPasswordButtonEnabledLoginAndLock(
       bool display_password_button_enabled) {
     // Sets the feature by user policy
@@ -175,15 +187,7 @@ class DisplayPasswordButtonTest : public LoginManagerTest {
           ->set_value(display_password_button_enabled);
     }
 
-    chromeos::WizardController::SkipPostLoginScreensForTesting();
-
-    auto context = LoginManagerMixin::CreateDefaultUserContext(test_user_);
-    login_manager_mixin_.LoginAndWaitForActiveSession(context);
-
-    ScreenLockerTester screen_locker_tester;
-    screen_locker_tester.Lock();
-
-    EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user_.account_id));
+    LoginAndLock(managed_user_);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -194,45 +198,72 @@ class DisplayPasswordButtonTest : public LoginManagerTest {
     UserSelectionScreen::SetSkipForceOnlineSigninForTesting(true);
   }
 
+  void TearDownInProcessBrowserTestFixture() override {
+    LoginManagerTest::TearDownInProcessBrowserTestFixture();
+    UserSelectionScreen::SetSkipForceOnlineSigninForTesting(false);
+  }
+
  protected:
-  const LoginManagerMixin::TestUserInfo test_user_{
-      AccountId::FromUserEmailGaiaId("user@example.com", "1111")};
-  UserPolicyMixin user_policy_mixin_{&mixin_host_, test_user_.account_id};
+  const LoginManagerMixin::TestUserInfo not_managed_user_{
+      AccountId::FromUserEmailGaiaId("user@gmail.com", "1111")};
+  const LoginManagerMixin::TestUserInfo managed_user_{
+      AccountId::FromUserEmailGaiaId("user@example.com", "22222")};
+  UserPolicyMixin user_policy_mixin_{&mixin_host_, managed_user_.account_id};
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
 };
 
-// Check if the display password button feature is disabled on the lock screen
-// after login into a session and locking the screen.
+// Check if the display password button is shown on the lock screen after having
+// logged into a session and having locked the screen for an unmanaged user.
 IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
-                       PRE_LoginUIDisplayPasswordButtonDisabled) {
+                       PRE_DisplayPasswordButtonShownUnmanagedUser) {
+  LoginAndLock(not_managed_user_);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
+      not_managed_user_.account_id));
+}
+
+// Check if the display password button is shown on the login screen for an
+// unmanaged user.
+IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
+                       DisplayPasswordButtonShownUnmanagedUser) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(not_managed_user_.account_id));
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
+      not_managed_user_.account_id));
+}
+
+// Check if the display password button is hidden on the lock screen after
+// having logged into a session and having locked the screen for a managed user.
+IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
+                       PRE_DisplayPasswordButtonHiddenManagedUser) {
   SetDisplayPasswordButtonEnabledLoginAndLock(false);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
-      test_user_.account_id));
+      managed_user_.account_id));
 }
 
-// Check if the display password button feature is disabled on the login screen.
+// Check if the display password button is hidden on the login screen for a
+// managed user.
 IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
-                       LoginUIDisplayPasswordButtonDisabled) {
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user_.account_id));
+                       DisplayPasswordButtonHiddenManagedUser) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(managed_user_.account_id));
   EXPECT_FALSE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
-      test_user_.account_id));
+      managed_user_.account_id));
 }
 
-// Check if the display password button feature is enabled on the lock screen
-// after login into a session and locking the screen.
+// Check if the display password button is shown on the lock screen after having
+// logged into a session and having locked the screen for a managed user.
 IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
-                       PRE_LoginUIDisplayPasswordButtonEnabled) {
+                       PRE_DisplayPasswordButtonShownManagedUser) {
   SetDisplayPasswordButtonEnabledLoginAndLock(true);
   EXPECT_TRUE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
-      test_user_.account_id));
+      managed_user_.account_id));
 }
 
-// Check if the display password button feature is enabled on the login screen.
+// Check if the display password button is shown on the login screen for a
+// managed user.
 IN_PROC_BROWSER_TEST_F(DisplayPasswordButtonTest,
-                       LoginUIDisplayPasswordButtonEnabled) {
-  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(test_user_.account_id));
+                       DisplayPasswordButtonShownManagedUser) {
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(managed_user_.account_id));
   EXPECT_TRUE(ash::LoginScreenTestApi::IsDisplayPasswordButtonShown(
-      test_user_.account_id));
+      managed_user_.account_id));
 }
 
 // Checks that system info is visible independent of the Oobe dialog state.

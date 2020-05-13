@@ -14,4 +14,8 @@
     <!-- Alert dialog -->
     <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
     <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
+
+    <!-- Toolbar dimensions -->
+    <dimen name="toolbar_shadow_height">8dp</dimen>
+
 </resources>

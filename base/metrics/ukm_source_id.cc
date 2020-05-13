@@ -4,6 +4,8 @@
 
 #include "base/metrics/ukm_source_id.h"
 
+#include <cmath>
+
 #include "base/atomic_sequence_num.h"
 #include "base/check_op.h"
 #include "base/rand_util.h"
@@ -13,8 +15,11 @@ namespace base {
 namespace {
 
 const int64_t kLowBitsMask = (INT64_C(1) << 32) - 1;
-const int64_t kNumTypeBits = static_cast<int64_t>(UkmSourceId::Type::kMaxValue);
-const int64_t kTypeMask = (INT64_C(1) << kNumTypeBits) - 1;
+
+int64_t GetNumTypeBits() {
+  return std::ceil(
+      std::log2(static_cast<int64_t>(UkmSourceId::Type::kMaxValue) + 1));
+}
 
 }  // namespace
 
@@ -35,15 +40,24 @@ UkmSourceId UkmSourceId::New() {
 
 // static
 UkmSourceId UkmSourceId::FromOtherId(int64_t other_id, UkmSourceId::Type type) {
+  // Note on syntax: std::ceil and std::log2 are not constexpr functions thus
+  // these variables cannot be initialized statically in the global scope above.
+  // Function static initialization here is thread safe; so they are initialized
+  // at most once.
+  static const int64_t kNumTypeBits = GetNumTypeBits();
+  static const int64_t kTypeMask = (INT64_C(1) << kNumTypeBits) - 1;
+
   const int64_t type_bits = static_cast<int64_t>(type);
   DCHECK_EQ(type_bits, type_bits & kTypeMask);
-  // Stores the the type ID in the low bits of the source id, and shift the rest
-  // of the ID to make room.  This could cause the original ID to overflow, but
+  // Stores the type of the source ID in its lower bits, and shift the rest of
+  // the ID to make room. This could cause the original ID to overflow, but
   // that should be rare enough that it won't matter for UKM's purposes.
   return UkmSourceId((other_id << kNumTypeBits) | type_bits);
 }
 
 UkmSourceId::Type UkmSourceId::GetType() const {
+  static const int64_t kNumTypeBits = GetNumTypeBits();
+  static const int64_t kTypeMask = (INT64_C(1) << kNumTypeBits) - 1;
   return static_cast<UkmSourceId::Type>(value_ & kTypeMask);
 }
 

@@ -27312,6 +27312,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3289" label="GridRowGapPercentIndefinite"/>
   <int value="3290" label="FlexRowGapPercent"/>
   <int value="3291" label="FlexRowGapPercentIndefinite"/>
+  <int value="3292" label="V8RTCRtpSender_CreateEncodedStreams_Method"/>
+  <int value="3293" label="V8RTCRtpReceiver_CreateEncodedStreams_Method"/>
+  <int value="3294" label="ForceEncodedAudioInsertableStreams"/>
+  <int value="3295" label="ForceEncodedVideoInsertableStreams"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37870,6 +37874,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Last item"/>
 </enum>
 
+<enum name="LiveCaptionsSessionEvent">
+  <int value="0" label="Stream started"/>
+  <int value="1" label="Stream finished"/>
+  <int value="2" label="User closed bubble"/>
+</enum>
+
 <enum name="LoadingPredictorOptimizationHintsReceiveStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Before navigation finish"/>
@@ -38944,6 +38954,8 @@ from previous Chrome versions.
   <int value="-1288130734" label="OpenVR:disabled"/>
   <int value="-1287511172"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:disabled"/>
+  <int value="-1286038936"
+      label="AutofillEnableCardNicknameManagement:enabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1284637134" label="pull-to-refresh"/>
   <int value="-1282992935"
@@ -39637,6 +39649,8 @@ from previous Chrome versions.
   <int value="-513305102" label="LanguagesPreference:enabled"/>
   <int value="-513066193" label="SyncUSSPasswords:enabled"/>
   <int value="-512971943" label="disable-one-copy"/>
+  <int value="-512702391"
+      label="AutofillEnableCardNicknameManagement:disabled"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508346329" label="TerminalSystemAppLegacySettings:disabled"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
@@ -39740,6 +39754,7 @@ from previous Chrome versions.
   <int value="-395606844" label="enable-site-settings"/>
   <int value="-395454065" label="DisablePostScriptPrinting:disabled"/>
   <int value="-387606010" label="ArcBootCompletedBroadcast:enabled"/>
+  <int value="-386971711" label="ChromeSharingHubV15:disabled"/>
   <int value="-385337473" label="enable-fast-unload"/>
   <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-381181808" label="DragAppsInTabletMode:enabled"/>
@@ -39766,6 +39781,7 @@ from previous Chrome versions.
   <int value="-361948582" label="material-security-verbose"/>
   <int value="-360453785" label="LeftToRightUrls:disabled"/>
   <int value="-360038744" label="invert-viewport-scroll-order"/>
+  <int value="-357464687" label="SharingPreferVapid:enabled"/>
   <int value="-355278724" label="CorbAllowlistAlsoAppliesToOorCors:disabled"/>
   <int value="-354783358" label="NTPSaveToOffline:disabled"/>
   <int value="-353182790" label="ConsistentOmniboxGeolocation:disabled"/>
@@ -39999,6 +40015,7 @@ from previous Chrome versions.
   <int value="-79327236" label="ModeSpecificPowerButton:enabled"/>
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
+  <int value="-77789682" label="SharingPreferVapid:disabled"/>
   <int value="-77084779" label="ExperimentalFlingAnimation:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
@@ -41442,6 +41459,7 @@ from previous Chrome versions.
   <int value="1594664550" label="NTPModernLayout:enabled"/>
   <int value="1595208893" label="AudioWorkletRealtimeThread:enabled"/>
   <int value="1597880096" label="FocusMode:disabled"/>
+  <int value="1597972555" label="ChromeSharingHubV15:enabled"/>
   <int value="1600850069" label="MobileIdentityConsistency:disabled"/>
   <int value="1600926040" label="TranslateCompactUI:enabled"/>
   <int value="1602869271" label="ChromeShareScreenshot:disabled"/>
@@ -65711,6 +65729,7 @@ would be helpful to identify which type is being sent.
   <int value="12" label="Settings button for notifications."/>
   <int value="13" label="Announcement notification ack button."/>
   <int value="14" label="Announcement notification open button."/>
+  <int value="15" label="TWA notification 'Got it' button."/>
 </enum>
 
 <enum name="SystemNotificationType">

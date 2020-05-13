@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include <iterator>
 #include <map>
 #include <set>
 #include <utility>
@@ -216,6 +217,7 @@
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/payments/content/payment_request_display_manager.h"
+#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/quota_permission_context_impl.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
@@ -1043,10 +1045,17 @@ base::FilePath GetModulePath(base::StringPiece16 module_name) {
         // !defined(ADDRESS_SANITIZER)
 
 void MaybeAddThrottle(
-    std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles,
-    std::unique_ptr<content::NavigationThrottle> maybe_throttle) {
+    std::unique_ptr<content::NavigationThrottle> maybe_throttle,
+    std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
   if (maybe_throttle)
     throttles->push_back(std::move(maybe_throttle));
+}
+
+void MaybeAddThrottles(
+    std::vector<std::unique_ptr<content::NavigationThrottle>> additional,
+    std::vector<std::unique_ptr<content::NavigationThrottle>>* combined) {
+  combined->insert(combined->end(), std::make_move_iterator(additional.begin()),
+                   std::make_move_iterator(additional.end()));
 }
 
 // Returns whether |web_contents| is within a hosted app.
@@ -3856,20 +3865,20 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  MaybeAddThrottle(&throttles,
-                   FlashDownloadInterception::MaybeCreateThrottleFor(handle));
+  MaybeAddThrottle(FlashDownloadInterception::MaybeCreateThrottleFor(handle),
+                   &throttles);
 #endif
 
 #if defined(OS_CHROMEOS)
   MaybeAddThrottle(
-      &throttles,
-      chromeos::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle));
+      chromeos::WebTimeLimitNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   MaybeAddThrottle(
-      &throttles,
-      SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(handle));
+      SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif
 
 #if defined(OS_ANDROID)
@@ -3887,18 +3896,17 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if BUILDFLAG(DFMIFY_DEV_UI)
   // If the DevUI DFM is already installed, then this is a no-op, except for the
   // side effect of ensuring that the DevUI DFM is loaded.
-  MaybeAddThrottle(&throttles,
-                   dev_ui::DevUiLoaderThrottle::MaybeCreateThrottleFor(handle));
+  MaybeAddThrottle(dev_ui::DevUiLoaderThrottle::MaybeCreateThrottleFor(handle),
+                   &throttles);
 #endif  // BUILDFLAG(DFMIFY_DEV_UI)
 
 #elif BUILDFLAG(ENABLE_EXTENSIONS)
   if (handle->IsInMainFrame()) {
     // Redirect some navigations to apps that have registered matching URL
     // handlers ('url_handlers' in the manifest).
-    auto url_to_app_throttle =
-        PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle);
-    if (url_to_app_throttle)
-      throttles.push_back(std::move(url_to_app_throttle));
+    MaybeAddThrottle(
+        PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle),
+        &throttles);
   }
 #endif
 
@@ -3936,15 +3944,16 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(
       std::make_unique<extensions::ExtensionNavigationThrottle>(handle));
 
-  MaybeAddThrottle(&throttles, extensions::ExtensionsBrowserClient::Get()
-                                   ->GetUserScriptListener()
-                                   ->CreateNavigationThrottle(handle));
+  MaybeAddThrottle(extensions::ExtensionsBrowserClient::Get()
+                       ->GetUserScriptListener()
+                       ->CreateNavigationThrottle(handle),
+                   &throttles);
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   MaybeAddThrottle(
-      &throttles,
-      SupervisedUserGoogleAuthNavigationThrottle::MaybeCreate(handle));
+      SupervisedUserGoogleAuthNavigationThrottle::MaybeCreate(handle),
+      &throttles);
 #endif
 
   content::WebContents* web_contents = handle->GetWebContents();
@@ -3957,24 +3966,24 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if !defined(OS_ANDROID)
   // BackgroundTabNavigationThrottle is used by TabManager, which is only
   // enabled on non-Android platforms.
-  MaybeAddThrottle(&throttles,
-                   resource_coordinator::BackgroundTabNavigationThrottle::
-                       MaybeCreateThrottleFor(handle));
+  MaybeAddThrottle(resource_coordinator::BackgroundTabNavigationThrottle::
+                       MaybeCreateThrottleFor(handle),
+                   &throttles);
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  MaybeAddThrottle(&throttles,
-                   safe_browsing::MaybeCreateNavigationThrottle(handle));
+  MaybeAddThrottle(safe_browsing::MaybeCreateNavigationThrottle(handle),
+                   &throttles);
 #endif
 
   MaybeAddThrottle(
-      &throttles,
-      LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle));
+      LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(handle),
+      &throttles);
 
-  MaybeAddThrottle(&throttles,
-                   PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle));
+  MaybeAddThrottle(PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle),
+                   &throttles);
 
-  MaybeAddThrottle(&throttles, TabUnderNavigationThrottle::MaybeCreate(handle));
+  MaybeAddThrottle(TabUnderNavigationThrottle::MaybeCreate(handle), &throttles);
 
   throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
@@ -3991,19 +4000,19 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
 
   MaybeAddThrottle(
-      &throttles,
-      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle));
+      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
 
 #if !defined(OS_ANDROID)
-  MaybeAddThrottle(&throttles,
-                   DevToolsWindow::MaybeCreateNavigationThrottle(handle));
+  MaybeAddThrottle(DevToolsWindow::MaybeCreateNavigationThrottle(handle),
+                   &throttles);
+
+  MaybeAddThrottle(NewTabPageNavigationThrottle::MaybeCreateThrottleFor(handle),
+                   &throttles);
 
   MaybeAddThrottle(
-      &throttles, NewTabPageNavigationThrottle::MaybeCreateThrottleFor(handle));
-
-  MaybeAddThrottle(
-      &throttles,
-      GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(handle));
+      GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif
 
   throttles.push_back(
@@ -4017,17 +4026,24 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  MaybeAddThrottle(&throttles,
-                   browser_switcher::BrowserSwitcherNavigationThrottle::
-                       MaybeCreateThrottleFor(handle));
+  MaybeAddThrottle(browser_switcher::BrowserSwitcherNavigationThrottle::
+                       MaybeCreateThrottleFor(handle),
+                   &throttles);
 #endif
 
 #if defined(OS_CHROMEOS)
   MaybeAddThrottle(
-      &throttles,
-      chromeos::KioskSettingsNavigationThrottle::MaybeCreateThrottleFor(
-          handle));
+      chromeos::KioskSettingsNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif
+
+  auto* performance_manager_registry =
+      performance_manager::PerformanceManagerRegistry::GetInstance();
+  if (performance_manager_registry) {
+    MaybeAddThrottles(
+        performance_manager_registry->CreateThrottlesForNavigation(handle),
+        &throttles);
+  }
 
   return throttles;
 }

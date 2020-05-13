@@ -557,19 +557,17 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
                                                        GetSiteInstance()))
     return;
 
-  int32_t source_routing_id = params.source_routing_id;
+  base::Optional<base::UnguessableToken> translated_source_token;
   base::string16 source_origin = params.source_origin;
   base::string16 target_origin = params.target_origin;
   blink::TransferableMessage message = std::move(params.message->data);
 
-  // If there is a source_routing_id, translate it to the routing ID of the
+  // If there is a source_routing_id, translate it to the frame token of the
   // equivalent RenderFrameProxyHost in the target process.
-  if (source_routing_id != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl* source_rfh =
-        RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
-    if (!source_rfh) {
-      source_routing_id = MSG_ROUTING_NONE;
-    } else {
+  if (params.source_routing_id != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
+        GetProcess()->GetID(), params.source_routing_id);
+    if (source_rfh) {
       // https://crbug.com/822958: If the postMessage is going to a descendant
       // frame, ensure that any pending visual properties such as size are sent
       // to the target frame before the postMessage, as sites might implicitly
@@ -619,16 +617,14 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
               ->render_manager()
               ->GetRenderFrameProxyHost(target_site_instance);
       if (source_proxy_in_target_site_instance) {
-        source_routing_id =
-            source_proxy_in_target_site_instance->GetRoutingID();
-      } else {
-        source_routing_id = MSG_ROUTING_NONE;
+        translated_source_token =
+            source_proxy_in_target_site_instance->GetFrameToken();
       }
     }
   }
 
-  target_rfh->PostMessageEvent(source_routing_id, source_origin, target_origin,
-                               std::move(message));
+  target_rfh->PostMessageEvent(translated_source_token, source_origin,
+                               target_origin, std::move(message));
 }
 
 void RenderFrameProxyHost::OnDidChangeOpener(int32_t opener_routing_id) {

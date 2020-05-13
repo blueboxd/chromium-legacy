@@ -53,10 +53,10 @@ namespace content {
 BatchingMediaLog::BatchingMediaLog(
     const GURL& security_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    std::unique_ptr<EventHandler> event_handler)
+    std::vector<std::unique_ptr<EventHandler>> event_handlers)
     : security_origin_(security_origin),
       task_runner_(std::move(task_runner)),
-      event_handler_(std::move(event_handler)),
+      event_handlers_(std::move(event_handlers)),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       last_ipc_send_time_(tick_clock_->NowTicks()),
       ipc_send_pending_(false) {
@@ -81,7 +81,8 @@ BatchingMediaLog::~BatchingMediaLog() {
 }
 
 void BatchingMediaLog::OnWebMediaPlayerDestroyedLocked() {
-  event_handler_->OnWebMediaPlayerDestroyed();
+  for (const auto& handler : event_handlers_)
+    handler->OnWebMediaPlayerDestroyed();
 }
 
 void BatchingMediaLog::AddLogRecordLocked(
@@ -217,7 +218,8 @@ void BatchingMediaLog::SendQueuedMediaEvents() {
   if (events_to_send.empty())
     return;
 
-  event_handler_->SendQueuedMediaEvents(std::move(events_to_send));
+  for (const auto& handler : event_handlers_)
+    handler->SendQueuedMediaEvents(events_to_send);
 }
 
 void BatchingMediaLog::SetTickClockForTesting(

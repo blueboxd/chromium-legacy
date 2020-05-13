@@ -789,14 +789,21 @@ void MoveTabsToNewWindow(Browser* browser,
   }
 
   int indices_size = tab_indices.size();
+  int active_index = browser->tab_strip_model()->active_index();
   for (int i = 0; i < indices_size; i++) {
     // Adjust tab index to account for tabs already moved.
     int adjusted_index = tab_indices[i] - i;
     bool pinned = browser->tab_strip_model()->IsTabPinned(adjusted_index);
     std::unique_ptr<WebContents> contents_move =
         browser->tab_strip_model()->DetachWebContentsAt(adjusted_index);
-    int add_types = TabStripModel::ADD_ACTIVE |
-                    (pinned ? TabStripModel::ADD_PINNED : 0);
+
+    int add_types = pinned ? TabStripModel::ADD_PINNED : 0;
+    // The last tab made active takes precedence, so activate the last active
+    // tab, with a fallback for the first tab (i == 0) if the active tab isn’t
+    // in the set of tabs being moved.
+    if (i == 0 || tab_indices[i] == active_index)
+      add_types = add_types | TabStripModel::ADD_ACTIVE;
+
     new_browser->tab_strip_model()->AddWebContents(std::move(contents_move), -1,
                                                    ui::PAGE_TRANSITION_TYPED,
                                                    add_types, new_group);

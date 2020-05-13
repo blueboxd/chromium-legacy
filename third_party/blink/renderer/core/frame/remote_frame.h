@@ -34,7 +34,7 @@ struct FrameLoadRequest;
 class CORE_EXPORT RemoteFrame final : public Frame,
                                       public mojom::blink::RemoteFrame {
  public:
-  // Returns the RenderFrameProxy for the given |frame_token|.
+  // Returns the RemoteFrame for the given |frame_token|.
   static RemoteFrame* FromFrameToken(const base::UnguessableToken& frame_token);
 
   // For a description of |inheriting_agent_factory| go see the comment on the

@@ -59,6 +59,22 @@ interface FrameWidgetHost {
   //
   // Also see blink::mojom::RemoteFrame::IntrinsicSizingInfoOfChildChanged.
   IntrinsicSizingInfoChanged(IntrinsicSizingInfo sizing_info);
+
+  // Requests a non-decelerating synthetic fling animation to be latched on the
+  // scroller at the start point, and whose velocity can be changed over time by
+  // sending multiple AutoscrollFling gestures. Used for features like
+  // middle-click autoscroll.
+  //
+  // Sent by a widget to the browser to notify the start point for the
+  // autoscroll.
+  AutoscrollStart(gfx.mojom.PointF position);
+
+  // Sent by a widget to the browser to notify the velocity for the autoscroll
+  // fling animation.
+  AutoscrollFling(gfx.mojom.Vector2dF velocity);
+
+  // Sent by a widget to the browser to notify the end of the autoscroll.
+  AutoscrollEnd();
 };
 
 // Implemented in Blink, this interface defines widget-specific methods that

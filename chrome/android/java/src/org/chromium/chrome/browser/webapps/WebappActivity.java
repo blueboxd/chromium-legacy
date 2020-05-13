@@ -5,22 +5,18 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
-import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.view.ViewGroup;
 
 import androidx.annotation.VisibleForTesting;
 import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
@@ -34,7 +30,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityModule;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.ArrayList;
@@ -50,10 +45,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private static BrowserServicesIntentDataProvider sIntentDataProviderOverride;
 
     private WebappActivityTabController mTabController;
-    private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
-
-    private static Integer sOverrideCoreCountForTesting;
 
     @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
@@ -94,70 +86,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mTabController.initializeState();
     }
 
-    @VisibleForTesting
-    public static void setOverrideCoreCount(int coreCount) {
-        sOverrideCoreCountForTesting = coreCount;
-    }
-
-    private static int getCoreCount() {
-        if (sOverrideCoreCountForTesting != null) return sOverrideCoreCountForTesting;
-        return Runtime.getRuntime().availableProcessors();
-    }
-
-    @Override
-    protected void doLayoutInflation() {
-        // Because we delay the layout inflation, the CompositorSurfaceManager and its
-        // SurfaceView(s) are created and attached late (ie after the first draw). At the time of
-        // the first attach of a SurfaceView to the view hierarchy (regardless of the SurfaceView's
-        // actual opacity), the window transparency hint changes (because the window creates a
-        // transparent hole and attaches the SurfaceView to that hole). This may cause older android
-        // versions to destroy the window and redraw it causing a flicker. This line sets the window
-        // transparency hint early so that when the SurfaceView gets attached later, the
-        // transparency hint need not change and no flickering occurs.
-        getWindow().setFormat(PixelFormat.TRANSLUCENT);
-        // No need to inflate layout synchronously since splash screen is displayed.
-        Runnable inflateTask = () -> {
-            ViewGroup mainView = WarmupManager.inflateViewHierarchy(
-                    WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
-            if (isActivityFinishingOrDestroyed()) return;
-            if (mainView != null) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                    if (isActivityFinishingOrDestroyed()) return;
-                    onLayoutInflated(mainView);
-                });
-            } else {
-                if (isActivityFinishingOrDestroyed()) return;
-                PostTask.postTask(
-                        UiThreadTaskTraits.DEFAULT, () -> WebappActivity.super.doLayoutInflation());
-            }
-        };
-
-        // Conditionally do layout inflation synchronously if device has low core count.
-        // When layout inflation is done asynchronously, it blocks UI thread startup. While
-        // blocked, the UI thread will draw unnecessary frames - causing the lower priority
-        // layout inflation thread to be de-scheduled significantly more often, especially on
-        // devices with low core count. Thus for low core count devices, there is a startup
-        // performance improvement incurred by doing layout inflation synchronously.
-        if (getCoreCount() > 2) {
-            new Thread(inflateTask).start();
-        } else {
-            inflateTask.run();
-        }
-    }
-
-    private void onLayoutInflated(ViewGroup mainView) {
-        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
-        WarmupManager.transferViewHeirarchy(mainView, contentView);
-        mSplashController.bringSplashBackToFront();
-        onInitialLayoutInflationComplete();
-    }
-
-    @Override
-    public void performPreInflationStartup() {
-        super.performPreInflationStartup();
-        initSplash();
-    }
-
     @Override
     protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
         IntentIgnoringCriterion intentIgnoringCriterion =
@@ -172,7 +100,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         onComponentCreated(component);
 
         mTabController = component.resolveTabController();
-        mSplashController = component.resolveSplashController();
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
@@ -236,11 +163,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return true;
     }
 
-    @VisibleForTesting
-    SplashController getSplashControllerForTests() {
-        return mSplashController;
-    }
-
     @Override
     protected Drawable getBackgroundDrawable() {
         return null;
@@ -251,15 +173,5 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     protected boolean isContextualSearchAllowed() {
         return false;
-    }
-
-    /** Inits the splash screen */
-    private void initSplash() {
-        // Splash screen is shown after preInflationStartup() is run and the delegate is set.
-        boolean isWindowInitiallyTranslucent =
-                BaseCustomTabActivity.isWindowInitiallyTranslucent(this);
-        mSplashController.setConfig(new WebappSplashDelegate(this, mTabObserverRegistrar,
-                                            WebappInfo.create(mIntentDataProvider)),
-                isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
     }
 }

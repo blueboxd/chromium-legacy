@@ -114,10 +114,11 @@ PDFiumPage* PDFiumTestBase::GetPDFiumPageForTest(PDFiumEngine* engine,
 PDFiumTestBase::InitializeEngineResult::InitializeEngineResult() = default;
 
 PDFiumTestBase::InitializeEngineResult::InitializeEngineResult(
-    InitializeEngineResult&& other) = default;
+    InitializeEngineResult&& other) noexcept = default;
 
-PDFiumTestBase::InitializeEngineResult& PDFiumTestBase::InitializeEngineResult::
-operator=(InitializeEngineResult&& other) = default;
+PDFiumTestBase::InitializeEngineResult&
+PDFiumTestBase::InitializeEngineResult::operator=(
+    InitializeEngineResult&& other) noexcept = default;
 
 PDFiumTestBase::InitializeEngineResult::~InitializeEngineResult() = default;
 

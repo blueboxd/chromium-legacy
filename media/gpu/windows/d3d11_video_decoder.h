@@ -19,6 +19,7 @@
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/callback_registry.h"
+#include "media/base/cdm_context.h"
 #include "media/base/video_decoder.h"
 #include "media/base/win/d3d11_create_device_cb.h"
 #include "media/gpu/command_buffer_helper.h"

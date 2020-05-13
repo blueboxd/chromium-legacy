@@ -339,6 +339,12 @@ bool IsURLWhitelistedByPolicy(const GURL& url,
 // Called on UI thread.
 bool IsURLWhitelistedByPolicy(const GURL& url, const PrefService& pref);
 
+// Helper function to determine if any entry on the |url_chain| matches Safe
+// Browsing whitelist domains.
+// Called on UI thread.
+bool MatchesEnterpriseWhitelist(const PrefService& pref,
+                                const std::vector<GURL>& url_chain);
+
 // Helper function to get the pref value of password protection login URLs.
 void GetPasswordProtectionLoginURLsPref(const PrefService& prefs,
                                         std::vector<GURL>* out_login_url_list);

@@ -34,6 +34,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/origin.h"
 
 namespace media_feeds {
 
@@ -267,18 +268,384 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   run_loop.Run();
   WaitForDB();
 
+  auto feeds = GetMediaFeedsSync();
+
+  auto logo1 = mojom::MediaImage::New();
+  logo1->size = ::gfx::Size(1113, 245);
+  logo1->src = GURL(
+      "https://beccahughes.github.io/media/media-feeds/"
+      "chromium_logo_white.png");
+  logo1->content_attributes = {
+      mojom::ContentAttribute::kForDarkBackground,
+      mojom::ContentAttribute::kHasTitle,
+      mojom::ContentAttribute::kHasTransparentBackground};
+  auto logo2 = mojom::MediaImage::New();
+  logo2->size = ::gfx::Size(600, 315);
+  logo2->src =
+      GURL("https://beccahughes.github.io/media/media-feeds/chromium_card.png");
+  logo2->content_attributes = {mojom::ContentAttribute::kForLightBackground,
+                               mojom::ContentAttribute::kHasTitle,
+                               mojom::ContentAttribute::kCentered};
+  std::set<url::Origin> origins = {
+      url::Origin::Create(GURL("https://www.github.com"))};
+  auto user_id = mojom::UserIdentifier::New();
+  user_id->name = "Becca Hughes";
+  user_id->email = "beccahughes@chromium.org";
+  user_id->image = mojom::MediaImage::New();
+  user_id->image->size = ::gfx::Size(32, 32);
+  user_id->image->src = GURL(
+      "https://www.chromium.org/_/rsrc/1438811752264/chromium-projects/"
+      "logo_chrome_color_1x_web_32dp.png");
+
+  // First, check the feed metadata.
+  ASSERT_EQ(1u, feeds.size());
+  EXPECT_EQ("Chromium Developers", feeds[0]->display_name);
+  ASSERT_EQ(2u, feeds[0]->logos.size());
+  EXPECT_EQ(logo1, feeds[0]->logos[0]);
+  EXPECT_EQ(logo2, feeds[0]->logos[1]);
+  EXPECT_FALSE(feeds[0]->associated_origins.empty());
+  EXPECT_THAT(
+      feeds[0]->associated_origins,
+      testing::Contains(url::Origin::Create(GURL("https://www.github.com"))));
+  EXPECT_EQ(user_id, feeds[0]->user_identifier);
+
   auto items = GetItemsForMediaFeedSync(discovered_feeds[0]->id);
 
   EXPECT_EQ(7u, items.size());
-  std::vector<std::string> names;
-  std::transform(items.begin(), items.end(), std::back_inserter(names),
-                 [](auto& item) { return base::UTF16ToASCII(item->name); });
-  EXPECT_THAT(names, testing::UnorderedElementsAre(
-                         "Anatomy of a Web Media Experience",
-                         "Building Modern Web Media Experiences: "
-                         "Picture-in-Picture and AV1",
-                         "Chrome Releases", "Chrome University", "JAM stack",
-                         "Ask Chrome", "Big Buck Bunny"));
+
+  // Check each feed item and all fields one-by-one.
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name =
+        base::ASCIIToUTF16("Anatomy of a Web Media Experience");
+    expected_item->type = mojom::MediaFeedItemType::kVideo;
+    expected_item->author = mojom::Author::New();
+    expected_item->author->name = "Google Chrome Developers";
+    expected_item->author->url =
+        GURL("https://www.youtube.com/user/ChromeDevelopers");
+    ASSERT_TRUE(
+        base::Time::FromString("2019-05-09", &expected_item->date_published));
+    expected_item->duration =
+        base::TimeDelta::FromMinutes(34) + base::TimeDelta::FromSeconds(41);
+    expected_item->genre.push_back("Factual");
+    expected_item->interaction_counters = {
+        {mojom::InteractionCounterType::kWatch, 7252},
+        {mojom::InteractionCounterType::kLike, 94},
+        {mojom::InteractionCounterType::kDislike, 4}};
+    expected_item->is_family_friendly = true;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=lXm6jOQLe1Y");
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/video1.webp");
+    image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                 mojom::ContentAttribute::kIconic,
+                                 mojom::ContentAttribute::kPoster};
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16(
+        "Building Modern Web Media Experiences: Picture-in-Picture and AV1");
+    expected_item->type = mojom::MediaFeedItemType::kVideo;
+    expected_item->author = mojom::Author::New();
+    expected_item->author->name = "Google Chrome Developers";
+    expected_item->author->url =
+        GURL("https://www.youtube.com/user/ChromeDevelopers");
+    ASSERT_TRUE(
+        base::Time::FromString("2018-11-12", &expected_item->date_published));
+    expected_item->duration =
+        base::TimeDelta::FromMinutes(21) + base::TimeDelta::FromSeconds(24);
+    expected_item->genre.push_back("Factual");
+    auto identifier = mojom::Identifier::New();
+    identifier->type = mojom::Identifier::Type::kPartnerId;
+    identifier->value = "456789876";
+    expected_item->identifiers.push_back(std::move(identifier));
+    expected_item->interaction_counters = {
+        {mojom::InteractionCounterType::kWatch, 7252},
+        {mojom::InteractionCounterType::kLike, 94},
+        {mojom::InteractionCounterType::kDislike, 4}};
+    expected_item->is_family_friendly = true;
+    expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url = GURL("https://youtu.be/iTC3mfe0DwE?t=10");
+    expected_item->action->start_time = base::TimeDelta::FromSeconds(10);
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/video2.webp");
+    image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                 mojom::ContentAttribute::kIconic,
+                                 mojom::ContentAttribute::kPoster};
+    expected_item->images.push_back(std::move(image));
+    auto image2 = mojom::MediaImage::New();
+    image2->size = ::gfx::Size(1884, 982);
+    image2->src = GURL(
+        "https://beccahughes.github.io/media/media-feeds/video2_current.png");
+    image2->content_attributes = {mojom::ContentAttribute::kSceneStill};
+    expected_item->images.push_back(std::move(image2));
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("Chrome Releases");
+    expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+    ASSERT_TRUE(
+        base::Time::FromString("2019-11-10", &expected_item->date_published));
+    expected_item->genre.push_back("Factual");
+    expected_item->is_family_friendly = true;
+    expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=L0OB0_bO5I0?t=254");
+    expected_item->action->start_time =
+        base::TimeDelta::FromMinutes(4) + base::TimeDelta::FromSeconds(14);
+
+    expected_item->tv_episode = mojom::TVEpisode::New();
+    expected_item->tv_episode->name = "New in Chrome 79";
+    expected_item->tv_episode->episode_number = 79;
+    expected_item->tv_episode->season_number = 1;
+    expected_item->tv_episode->duration =
+        base::TimeDelta::FromMinutes(4) + base::TimeDelta::FromSeconds(16);
+    auto episode_image = mojom::MediaImage::New();
+    episode_image->size = ::gfx::Size(336, 188);
+    episode_image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chrome79.webp");
+    episode_image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                         mojom::ContentAttribute::kIconic,
+                                         mojom::ContentAttribute::kPoster};
+    expected_item->tv_episode->images.push_back(std::move(episode_image));
+    auto episode_image2 = mojom::MediaImage::New();
+    episode_image2->size = ::gfx::Size(1874, 970);
+    episode_image2->src = GURL(
+        "https://beccahughes.github.io/media/media-feeds/chrome79_current.png");
+    episode_image2->content_attributes = {mojom::ContentAttribute::kSceneStill};
+    expected_item->tv_episode->images.push_back(std::move(episode_image2));
+
+    expected_item->play_next_candidate = mojom::PlayNextCandidate::New();
+    expected_item->play_next_candidate->name = "New in Chrome 80";
+    expected_item->play_next_candidate->episode_number = 80;
+    expected_item->play_next_candidate->season_number = 1;
+    expected_item->play_next_candidate->duration =
+        base::TimeDelta::FromMinutes(6) + base::TimeDelta::FromSeconds(1);
+    expected_item->play_next_candidate->action = mojom::Action::New();
+    expected_item->play_next_candidate->action->url =
+        GURL("https://www.youtube.com/watch?v=lM0qZpxu0Fg");
+    auto play_next_image = mojom::MediaImage::New();
+    play_next_image->size = ::gfx::Size(336, 188);
+    play_next_image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chrome80.webp");
+    play_next_image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                           mojom::ContentAttribute::kIconic,
+                                           mojom::ContentAttribute::kPoster};
+    expected_item->play_next_candidate->images.push_back(
+        std::move(play_next_image));
+
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chromerel.webp");
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("Chrome University");
+    expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+    ASSERT_TRUE(
+        base::Time::FromString("2020-01-01", &expected_item->date_published));
+    expected_item->genre.push_back("Factual");
+    expected_item->is_family_friendly = true;
+    expected_item->action_status = mojom::MediaFeedItemActionStatus::kCompleted;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=kNzoswFIU9M");
+
+    expected_item->tv_episode = mojom::TVEpisode::New();
+    expected_item->tv_episode->name = "Anatomy of the Browser";
+    expected_item->tv_episode->episode_number = 10;
+    expected_item->tv_episode->season_number = 1;
+    expected_item->tv_episode->duration =
+        base::TimeDelta::FromMinutes(15) + base::TimeDelta::FromSeconds(33);
+    auto episode_image = mojom::MediaImage::New();
+    episode_image->size = ::gfx::Size(336, 188);
+    episode_image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chromeu1.webp");
+    episode_image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                         mojom::ContentAttribute::kIconic,
+                                         mojom::ContentAttribute::kPoster};
+    expected_item->tv_episode->images.push_back(std::move(episode_image));
+
+    expected_item->play_next_candidate = mojom::PlayNextCandidate::New();
+    expected_item->play_next_candidate->name = "History of the Web";
+    expected_item->play_next_candidate->episode_number = 1;
+    expected_item->play_next_candidate->season_number = 2;
+    expected_item->play_next_candidate->duration =
+        base::TimeDelta::FromMinutes(10) + base::TimeDelta::FromSeconds(15);
+    expected_item->play_next_candidate->action = mojom::Action::New();
+    expected_item->play_next_candidate->action->url =
+        GURL("https://www.youtube.com/watch?v=PzzNuCk-e0Y");
+    auto play_next_image = mojom::MediaImage::New();
+    play_next_image->size = ::gfx::Size(336, 188);
+    play_next_image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chromeu2.webp");
+    play_next_image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                           mojom::ContentAttribute::kIconic,
+                                           mojom::ContentAttribute::kPoster};
+    expected_item->play_next_candidate->images.push_back(
+        std::move(play_next_image));
+
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/chromeu.webp");
+    image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                 mojom::ContentAttribute::kIconic,
+                                 mojom::ContentAttribute::kPoster};
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("JAM stack");
+    expected_item->type = mojom::MediaFeedItemType::kTVSeries;
+    ASSERT_TRUE(
+        base::Time::FromString("2020-01-22", &expected_item->date_published));
+    expected_item->genre.push_back("Factual");
+    expected_item->is_family_friendly = true;
+    expected_item->duration =
+        base::TimeDelta::FromMinutes(9) + base::TimeDelta::FromSeconds(55);
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=QXsWaA3HTHA");
+
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(360, 480);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/jam.webp");
+    image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                 mojom::ContentAttribute::kIconic,
+                                 mojom::ContentAttribute::kPoster};
+    expected_item->images.push_back(std::move(image));
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("Ask Chrome");
+    expected_item->type = mojom::MediaFeedItemType::kVideo;
+    expected_item->author = mojom::Author::New();
+    expected_item->author->name = "Google Chrome Developers";
+    expected_item->author->url =
+        GURL("https://www.youtube.com/user/ChromeDevelopers");
+    ASSERT_TRUE(
+        base::Time::FromString("2020-01-27", &expected_item->date_published));
+    expected_item->duration = base::TimeDelta::FromMinutes(1);
+    expected_item->genre.push_back("Factual");
+    expected_item->is_family_friendly = true;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url =
+        GURL("https://www.youtube.com/watch?v=zJQNQmE6_UI");
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(336, 188);
+    image->src =
+        GURL("https://beccahughes.github.io/media/media-feeds/askchrome.webp");
+    image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                 mojom::ContentAttribute::kIconic,
+                                 mojom::ContentAttribute::kPoster};
+    expected_item->images.push_back(std::move(image));
+    expected_item->live = mojom::LiveDetails::New();
+    ASSERT_TRUE(base::Time::FromString("2020-03-20T00:00:00+0000",
+                                       &expected_item->live->start_time));
+    base::Time end_time;
+    ASSERT_TRUE(base::Time::FromString("2020-12-31T23:59:00+0000", &end_time));
+    expected_item->live->end_time = end_time;
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
+
+  {
+    mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->name = base::ASCIIToUTF16("Big Buck Bunny");
+    expected_item->type = mojom::MediaFeedItemType::kMovie;
+    ASSERT_TRUE(
+        base::Time::FromString("2008-01-01", &expected_item->date_published));
+    auto content_rating = mojom::ContentRating::New();
+    content_rating->agency = "MPAA";
+    content_rating->value = "G";
+    expected_item->content_ratings.push_back(std::move(content_rating));
+    expected_item->duration = base::TimeDelta::FromMinutes(12);
+    expected_item->genre.push_back("Comedy");
+    expected_item->is_family_friendly = false;
+    expected_item->action = mojom::Action::New();
+    expected_item->action->url = GURL(
+        "https://mounirlamouri.github.io/sandbox/media/dynamic-controls.html");
+    auto image = mojom::MediaImage::New();
+    image->size = ::gfx::Size(1392, 749);
+    image->src = GURL(
+        "https://beccahughes.github.io/media/media-feeds/big_buck_bunny.jpg");
+    image->content_attributes = {mojom::ContentAttribute::kHasTitle,
+                                 mojom::ContentAttribute::kIconic,
+                                 mojom::ContentAttribute::kPoster};
+    expected_item->images.push_back(std::move(image));
+    auto image2 = mojom::MediaImage::New();
+    image2->size = ::gfx::Size(1600, 900);
+    image2->src = GURL(
+        "https://beccahughes.github.io/media/media-feeds/"
+        "big_buck_bunny_bg.jpg");
+    image2->content_attributes = {mojom::ContentAttribute::kIconic,
+                                  mojom::ContentAttribute::kBackground};
+    expected_item->images.push_back(std::move(image2));
+
+    auto actual = std::find_if(items.begin(), items.end(), [&](auto& item) {
+      return item->name == expected_item->name;
+    });
+
+    ASSERT_TRUE(actual != items.end());
+    EXPECT_EQ(expected_item, *actual);
+  }
 }
 
 // Media feeds should successfully fetch and convert a minimal example feed

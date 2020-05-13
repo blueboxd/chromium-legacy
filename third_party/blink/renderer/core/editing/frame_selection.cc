@@ -26,7 +26,11 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 
 #include <stdio.h>
+
+#include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
+#include "third_party/blink/renderer/core/accessibility/scoped_blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
@@ -83,6 +87,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/unicode_utilities.h"
 
 #define EDIT_DEBUG 0
@@ -186,7 +191,7 @@ void FrameSelection::MoveCaretSelection(const IntPoint& point) {
 void FrameSelection::SetSelection(const SelectionInDOMTree& selection,
                                   const SetSelectionOptions& data) {
   if (SetSelectionDeprecated(selection, data))
-    DidSetSelectionDeprecated(data);
+    DidSetSelectionDeprecated(selection, data);
 }
 
 void FrameSelection::SetSelectionAndEndTyping(
@@ -267,9 +272,28 @@ bool FrameSelection::SetSelectionDeprecated(
 }
 
 void FrameSelection::DidSetSelectionDeprecated(
+    const SelectionInDOMTree& new_selection,
     const SetSelectionOptions& options) {
-  const Document& current_document = GetDocument();
-  if (!GetSelectionInDOMTree().IsNone() && !options.DoNotSetFocus()) {
+  Document& current_document = GetDocument();
+  const SetSelectionBy set_selection_by = options.GetSetSelectionBy();
+
+  // Provides details to accessibility about the selection change throughout the
+  // current call stack.
+  //
+  // If the selection is currently being modified via the "Modify" method, we
+  // should already have more detailed information on the stack than can be
+  // deduced in this method.
+  ScopedBlinkAXEventIntent scoped_blink_ax_event_intent(
+      is_being_modified_
+          ? BlinkAXEventIntent()
+          : new_selection.IsNone()
+                ? BlinkAXEventIntent::FromClearedSelection(set_selection_by)
+                : BlinkAXEventIntent::FromNewSelection(
+                      options.Granularity(), new_selection.IsBaseFirst(),
+                      set_selection_by),
+      &current_document);
+
+  if (!new_selection.IsNone() && !options.DoNotSetFocus()) {
     SetFocusedNodeIfNeeded();
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and
     // "FocusIn", |frame_| may associate to another document.
@@ -298,7 +322,7 @@ void FrameSelection::DidSetSelectionDeprecated(
       return;
     }
   }
-  const SetSelectionBy set_selection_by = options.GetSetSelectionBy();
+
   NotifyTextControlOfSelectionChange(set_selection_by);
   if (set_selection_by == SetSelectionBy::kUser) {
     const CursorAlignOnScroll align = options.GetCursorAlignOnScroll();
@@ -397,6 +421,15 @@ bool FrameSelection::Modify(SelectionModifyAlteration alter,
     // scroll window when caret is at end of content editable.
     return true;
   }
+
+  // Provides details to accessibility about the selection change throughout the
+  // current call stack.
+  base::AutoReset<bool> is_being_modified_resetter(&is_being_modified_, true);
+  ScopedBlinkAXEventIntent scoped_blink_ax_event_intent(
+      BlinkAXEventIntent::FromModifiedSelection(
+          alter, direction, granularity, set_selection_by,
+          selection_modifier.DirectionOfSelection()),
+      &GetDocument());
 
   // For MacOS only selection is directionless at the beginning.
   // Selection gets direction on extent.

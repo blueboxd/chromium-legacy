@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
@@ -487,7 +486,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         final CallbackHelper selectedCallback = new CallbackHelper();
 
         TabModel incognitoTabModel = getActivity().getTabModelSelector().getModel(true);
-        TabModelObserver observer = new EmptyTabModelObserver() {
+        TabModelObserver observer = new TabModelObserver() {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {

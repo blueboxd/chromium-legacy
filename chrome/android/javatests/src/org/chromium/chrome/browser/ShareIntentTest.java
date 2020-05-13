@@ -179,8 +179,7 @@ public class ShareIntentTest {
                     mockActivity.getShareDelegateSupplier(), mockActivity.getActivityTabProvider(),
                     null, null);
         });
-        ShareHelper.setLastShareComponentName(
-                new ComponentName("test.package", "test.activity"), null);
+        ShareHelper.setLastShareComponentName(new ComponentName("test.package", "test.activity"));
         // Skips the capture of screenshot and notifies with an empty file.
         ShareDelegateImpl.setScreenshotCaptureSkippedForTesting(true);
 
@@ -202,7 +201,7 @@ public class ShareIntentTest {
 
         mockActivity.waitForFileCheck();
 
-        ShareHelper.setLastShareComponentName(new ComponentName("", ""), null);
+        ShareHelper.setLastShareComponentName(new ComponentName("", ""));
     }
 
     @Before

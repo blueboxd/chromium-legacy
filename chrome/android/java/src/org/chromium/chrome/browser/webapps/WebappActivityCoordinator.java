@@ -12,8 +12,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.ui.SharedActivityCoordinator;
-import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.webapps.WebappSplashController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -34,6 +33,7 @@ public class WebappActivityCoordinator
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final WebappInfo mWebappInfo;
     private final ChromeActivity<?> mActivity;
+    private final WebappSplashController mSplashController;
     private final WebappDeferredStartupWithStorageHandler mDeferredStartupWithStorageHandler;
 
     // Whether the current page is within the webapp's scope.
@@ -43,7 +43,7 @@ public class WebappActivityCoordinator
     public WebappActivityCoordinator(SharedActivityCoordinator sharedActivityCoordinator,
             ChromeActivity<?> activity, BrowserServicesIntentDataProvider intentDataProvider,
             ActivityTabProvider activityTabProvider, CurrentPageVerifier currentPageVerifier,
-            CustomTabOrientationController orientationController, SplashController splashController,
+            WebappSplashController splashController,
             WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
             WebappActionsNotificationManager actionsNotificationManager,
             ActivityLifecycleDispatcher lifecycleDispatcher) {
@@ -53,6 +53,7 @@ public class WebappActivityCoordinator
         mIntentDataProvider = intentDataProvider;
         mWebappInfo = WebappInfo.create(mIntentDataProvider);
         mActivity = activity;
+        mSplashController = splashController;
         mDeferredStartupWithStorageHandler = deferredStartupWithStorageHandler;
 
         // WebappActiveTabUmaTracker sets itself as an observer of |activityTabProvider|.
@@ -65,9 +66,6 @@ public class WebappActivityCoordinator
                 updateStorage(storage);
             }
         });
-
-        orientationController.delayOrientationRequestsIfNeeded(
-                splashController, BaseCustomTabActivity.isWindowInitiallyTranslucent(activity));
 
         lifecycleDispatcher.register(this);
 
@@ -85,6 +83,13 @@ public class WebappActivityCoordinator
      */
     public void initDeferredStartupForActivity() {
         mDeferredStartupWithStorageHandler.initDeferredStartupForActivity();
+    }
+
+    /**
+     * Called once the Activity's main layout is inflated and added to the content view.
+     */
+    public void onInitialLayoutInflationComplete() {
+        mSplashController.onInitialLayoutInflationComplete();
     }
 
     @Override

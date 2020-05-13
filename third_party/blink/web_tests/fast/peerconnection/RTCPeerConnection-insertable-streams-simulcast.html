@@ -10,9 +10,9 @@
 // Test based on wpt/webrtc/simulcast/basic.https.html
 promise_test(async t => {
   const rids = [0, 1, 2];
-  const pc1 = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const pc1 = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => pc1.close());
-  const pc2 = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const pc2 = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => pc2.close());
 
   exchangeIceCandidates(pc1, pc2);
@@ -22,12 +22,13 @@ promise_test(async t => {
   pc2.ontrack = t.step_func(e => {
     const receiverTransformer = new TransformStream({
       async transform(chunk, controller) {
-        if (receiverSSRCs.indexOf(chunk.synchronizationSource) == -1)
-          receiverSSRCs.push(chunk.synchronizationSource);
+        let ssrc = chunk.getMetadata().synchronizationSource;
+        if (receiverSSRCs.indexOf(ssrc) == -1)
+          receiverSSRCs.push(ssrc);
         controller.enqueue(chunk);
       }
     });
-    const receiverStreams = e.receiver.createEncodedVideoStreams();
+    const receiverStreams = e.receiver.createEncodedStreams();
     receiverStreams.readableStream
         .pipeThrough(receiverTransformer)
         .pipeTo(receiverStreams.writableStream);
@@ -50,7 +51,7 @@ promise_test(async t => {
     streams: [stream],
     sendEncodings: rids.map(rid => {rid}),
   });
-  const senderStreams = transceiver.sender.createEncodedVideoStreams();
+  const senderStreams = transceiver.sender.createEncodedStreams();
   let senderSSRCs = [];
   const senderTransformer = new TransformStream({
     async transform(chunk, controller) {

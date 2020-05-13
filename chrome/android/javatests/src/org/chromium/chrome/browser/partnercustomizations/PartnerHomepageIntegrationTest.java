@@ -30,9 +30,9 @@ import org.chromium.chrome.browser.homepage.settings.HomepageEditor;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -203,13 +203,12 @@ public class PartnerHomepageIntegrationTest {
     public void testCloseAllTabs() {
         final CallbackHelper tabClosed = new CallbackHelper();
         final TabModel tabModel = mActivityTestRule.getActivity().getCurrentTabModel();
-        mActivityTestRule.getActivity().getCurrentTabModel().addObserver(
-                new EmptyTabModelObserver() {
-                    @Override
-                    public void didCloseTab(int tabId, boolean incognito) {
-                        if (tabModel.getCount() == 0) tabClosed.notifyCalled();
-                    }
-                });
+        mActivityTestRule.getActivity().getCurrentTabModel().addObserver(new TabModelObserver() {
+            @Override
+            public void didCloseTab(int tabId, boolean incognito) {
+                if (tabModel.getCount() == 0) tabClosed.notifyCalled();
+            }
+        });
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {

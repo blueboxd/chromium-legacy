@@ -171,4 +171,11 @@ void CheckNativeFileSystemWriteRequest::NotifyRequestFinished(
   weakptr_factory_.InvalidateWeakPtrs();
 }
 
+bool CheckNativeFileSystemWriteRequest::IsWhitelistedByPolicy() const {
+  Profile* profile = Profile::FromBrowserContext(item_->browser_context);
+  if (!profile)
+    return false;
+  return IsURLWhitelistedByPolicy(item_->frame_url, *profile->GetPrefs());
+}
+
 }  // namespace safe_browsing

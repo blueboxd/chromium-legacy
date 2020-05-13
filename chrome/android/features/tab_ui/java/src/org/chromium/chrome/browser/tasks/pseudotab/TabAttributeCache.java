@@ -15,7 +15,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -93,7 +92,7 @@ public class TabAttributeCache {
             }
         };
 
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 int id = tab.getId();

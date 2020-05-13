@@ -125,14 +125,14 @@ void BrowserProcessSubThread::CompleteInitializationOnBrowserThread() {
 // them together.
 
 NOINLINE void BrowserProcessSubThread::UIThreadRun(base::RunLoop* run_loop) {
-  const int line_number = __LINE__;
   Thread::Run(run_loop);
+
+  // Inhibit tail calls of Run and inhibit code folding.
+  const int line_number = __LINE__;
   base::debug::Alias(&line_number);
 }
 
 NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
-  const int line_number = __LINE__;
-
   // Register the IO thread for hang watching before it starts running and set
   // up a closure to automatically unregister it when Run() returns.
   base::ScopedClosureRunner unregister_thread_closure;
@@ -142,6 +142,9 @@ NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
   }
 
   Thread::Run(run_loop);
+
+  // Inhibit tail calls of Run and inhibit code folding.
+  const int line_number = __LINE__;
   base::debug::Alias(&line_number);
 }
 

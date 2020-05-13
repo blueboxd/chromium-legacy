@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -140,7 +139,7 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
                         .setDuration(UNDO_DISMISS_SNACKBAR_DURATION);
 
         // register for tab model
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             private int mAddedTabId = Tab.INVALID_TAB_ID;
             @Override
             public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {

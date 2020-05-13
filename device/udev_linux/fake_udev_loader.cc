@@ -58,6 +58,10 @@ udev_device* FakeUdevLoader::AddFakeDevice(
   return devices_.back().get();
 }
 
+void FakeUdevLoader::Reset() {
+  devices_.clear();
+}
+
 bool FakeUdevLoader::Init() {
   return true;
 }

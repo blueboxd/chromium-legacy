@@ -103,7 +103,7 @@ public class ShareDelegateImplIntegrationTest {
         HistogramDelta urlResultDelta = new HistogramDelta(
                 ShareDelegateImpl.CANONICAL_URL_RESULT_HISTOGRAM, expectedUrlResult);
         ShareParams params = triggerShare();
-        Assert.assertEquals(expectedShareUrl, params.getUrl());
+        Assert.assertTrue(params.getText().contains(expectedShareUrl));
         Assert.assertEquals(1, urlResultDelta.getDelta());
     }
 

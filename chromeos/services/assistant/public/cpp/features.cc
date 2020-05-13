@@ -81,6 +81,9 @@ const base::Feature kAssistantRoutines{"AssistantRoutines",
 const base::Feature kAssistantTimersV2{"AssistantTimersV2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantWaitScheduling{"AssistantWaitScheduling",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kEnableClearCutLog{"EnableClearCutLog",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -200,12 +203,18 @@ bool IsTimersV2Enabled() {
   return base::FeatureList::IsEnabled(kAssistantTimersV2);
 }
 
-bool IsWarmerWelcomeEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
-}
-
 bool IsVoiceMatchDisabled() {
   return base::FeatureList::IsEnabled(kDisableVoiceMatch);
+}
+
+bool IsWaitSchedulingEnabled() {
+  // Wait scheduling is only supported for response processing v2 and routines.
+  return base::FeatureList::IsEnabled(kAssistantWaitScheduling) &&
+         (IsResponseProcessingV2Enabled() || IsRoutinesEnabled());
+}
+
+bool IsWarmerWelcomeEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
 }
 
 }  // namespace features

@@ -302,8 +302,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                base::TimeDelta duration);
   void SetNeedsAnimateInput() override;
   bool IsCurrentlyScrollingViewport() const override;
-  bool IsCurrentlyScrollingLayerAt(
-      const gfx::Point& viewport_point) const override;
   EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const override;
   InputHandler::TouchStartOrMoveEventListenerType

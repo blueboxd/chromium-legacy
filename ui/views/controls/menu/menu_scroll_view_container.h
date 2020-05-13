@@ -31,8 +31,6 @@ class MenuScrollViewContainer : public View {
   // External function to check if the bubble border is used.
   bool HasBubbleBorder() const;
 
-  void SetFootnoteView(View* view);
-
   // View overrides.
   gfx::Size CalculatePreferredSize() const override;
   void OnPaintBackground(gfx::Canvas* canvas) override;

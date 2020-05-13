@@ -1408,7 +1408,8 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface_V2[] = {
     {"start_surface_variation", "single"},
     {"show_last_active_tab_only", "true"},
     {"exclude_mv_tiles", "true"},
-    {"show_stack_tab_switcher", "true"}};
+    {"show_stack_tab_switcher", "true"},
+    {"open_ntp_instead_of_start", "true"}};
 
 const FeatureEntry::FeatureParam
     kStartSurfaceAndroid_SingleSurfaceWithoutMvTiles[] = {
@@ -2528,6 +2529,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-sharing-hub", flag_descriptions::kChromeSharingHubName,
      flag_descriptions::kChromeSharingHubDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHub)},
+    {"chrome-sharing-hub-v1-5", flag_descriptions::kChromeSharingHubV15Name,
+     flag_descriptions::kChromeSharingHubV15Description, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHubV15)},
     {"request-unbuffered-dispatch",
      flag_descriptions::kRequestUnbufferedDispatchName,
      flag_descriptions::kRequestUnbufferedDispatchDescription, kOsAndroid,
@@ -4359,6 +4363,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
+    {"sharing-prefer-vapid", flag_descriptions::kSharingPreferVapidName,
+     flag_descriptions::kSharingPreferVapidDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSharingPreferVapid)},
+
     {"sharing-qr-code-generator",
      flag_descriptions::kSharingQRCodeGeneratorName,
      flag_descriptions::kSharingQRCodeGeneratorDescription, kOsDesktop,
@@ -5568,6 +5576,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaFeedsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kMediaFeeds)},
 #endif  // !defined(OS_ANDROID)
+
+    {"autofill-enable-card-nickname-management",
+     flag_descriptions::kAutofillEnableCardNicknameManagementName,
+     flag_descriptions::kAutofillEnableCardNicknameManagementDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableCardNicknameManagement)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

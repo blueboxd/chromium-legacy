@@ -23,6 +23,12 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
+const char kAutofillEnableCardNicknameManagementName[] =
+    "Enable Autofill card nickname management";
+const char kAutofillEnableCardNicknameManagementDescription[] =
+    "When enabled, nicknames for credit cards will be able to be uploaded to "
+    "Payments or modified locally.";
+
 const char kAutofillEnableCompanyNameName[] =
     "Enable Autofill Company Name field";
 const char kAutofillEnableCompanyNameDescription[] =

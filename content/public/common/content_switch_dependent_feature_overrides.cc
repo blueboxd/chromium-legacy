@@ -64,6 +64,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
 
       // Overrides for --enable-experimental-cookie-features.
       {switches::kEnableExperimentalCookieFeatures,
+       std::cref(features::kCookieDeprecationMessages),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalCookieFeatures,
        std::cref(net::features::kCookiesWithoutSameSiteMustBeSecure),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableExperimentalCookieFeatures,

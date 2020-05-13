@@ -65,6 +65,7 @@
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch_tab_helper.h"
+#import "ios/chrome/browser/web/invalid_url_tab_helper.h"
 #import "ios/chrome/browser/web/java_script_console/java_script_console_tab_helper.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
@@ -111,6 +112,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   AppLauncherTabHelper::CreateForWebState(web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       web_state);
+
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    InvalidUrlTabHelper::CreateForWebState(web_state);
+  }
 
   if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
     InfobarOverlayRequestInserter::CreateForWebState(web_state);

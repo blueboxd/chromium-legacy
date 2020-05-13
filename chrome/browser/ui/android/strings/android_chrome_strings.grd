@@ -1811,30 +1811,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- Page info popup -->
-      <message name="IDS_PAGE_INFO_DSE_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed location permission for the current search engine. Eg: Location - Allowed for current search engine">
-        Allowed for current search engine
-      </message>
-      <message name="IDS_PAGE_INFO_DSE_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to describe a blocked location permission for the current search engine. Eg: Location - Blocked for current search engine">
-        Blocked for current search engine
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed permission. Eg: Location - Allowed">
-        Allowed
-      </message>
-      <message name="IDS_PAGE_INFO_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to describe a blocked permission. Eg: Location - Blocked">
-        Blocked
-      </message>
-      <message name="IDS_PAGE_INFO_ANDROID_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to indicate a permission has been blocked within Android settings">
-        Turned off in Android settings
-      </message>
-      <message name="IDS_PAGE_INFO_ANDROID_AR_CAMERA_BLOCKED" desc="The label used in the Page Info dialog for the AR permission to indicate that Camera has been disabled for the device in Android settings">
-        Camera is turned off in Android settings
-      </message>
-      <message name="IDS_PAGE_INFO_ANDROID_LOCATION_BLOCKED" desc="The label used in the Page Info dialog to indicate that location has been been disabled for the device in Android settings">
-        Turned off for this device
-      </message>
-      <message name="IDS_PAGE_INFO_ANDROID_NFC_UNSUPPORTED" desc="The label used in the Page Info dialog to indicate NFC is not supported by this device">
-        This device can't read NFC
-      </message>
       <message name="IDS_PAGE_INFO_CONNECTION_OFFLINE" desc="Message to display in the page info bubble when viewing and offline page.">
         You are viewing an offline copy of this page from <ph name="CREATION_TIME">%1$s<ex>Feb 9, 2016</ex></ph>
       </message>
@@ -3055,13 +3031,16 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Running in Chrome
       </message>
       <message name="IDS_TWA_RUNNING_IN_CHROME_V2" desc="Updated message on a snackbar indicating that the current Activity may use Chrome data (the rest of the app may not be).">
-        History is shared with Chrome. Preferences are shared with <ph name="SITE_NAME">%1$s<ex>www.youtube.com</ex></ph>.
+        You'll see your <ph name="SITE_NAME">%1$s<ex>www.youtube.com</ex></ph> sign-in status, browsing data, and site data in Chrome.
+      </message>
+      <message name="IDS_GOT_IT" desc="Button for the user to accept a disclosure/message">
+        Got it
       </message>
       <message name="IDS_TWA_RUNNING_IN_CHROME_CHANNEL_NAME_INITIAL" desc="Notification channel name for the initial, urgent priority notification telling the user a TWA is running in Chrome.">
-        Running in Chrome (Initial)
+        Web apps
       </message>
       <message name="IDS_TWA_RUNNING_IN_CHROME_CHANNEL_NAME_SUBSEQUENT" desc="Notification channel name for follow up notifications telling the user a TWA is running in Chrome.">
-        Running in Chrome
+        Web apps (quiet)
       </message>
       <message name="IDS_TWA_CLEAR_DATA_DIALOG_TITLE" desc="Title of the clear data dialog showing after user uninstalls or clears data of an app hosting a Trusted Web Activity">
         <ph name="APP_NAME">%1$s<ex>YouTube</ex></ph> also has data in Chrome

@@ -25,14 +25,10 @@ namespace debug {
 // Crashpad does this as part of crash_reporter::InitializeCrashpad.
 // Returns false if called before SetDumpWithoutCrashingFunction.
 //
-// This function must not be called with a tail-call because that would cause
+// This function must not be called with a tail call because that would cause
 // the caller to be omitted from the call stack in the crash dump, and that is
 // confusing and omits what is likely the most important context.
-#if defined(__clang__) && __has_attribute(not_tail_called)
-BASE_EXPORT bool __attribute__((not_tail_called)) DumpWithoutCrashing();
-#else
-BASE_EXPORT bool DumpWithoutCrashing();
-#endif
+BASE_EXPORT bool NOT_TAIL_CALLED DumpWithoutCrashing();
 
 // Sets a function that'll be invoked to dump the current process when
 // DumpWithoutCrashing() is called.

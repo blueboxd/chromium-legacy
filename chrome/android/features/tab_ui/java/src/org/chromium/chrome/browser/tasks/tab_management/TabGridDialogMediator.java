@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -129,7 +128,7 @@ public class TabGridDialogMediator {
         mComponentName = componentName;
 
         // Register for tab model.
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {

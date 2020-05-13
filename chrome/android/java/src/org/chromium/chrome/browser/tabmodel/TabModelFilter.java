@@ -24,7 +24,7 @@ import java.util.List;
  * If there is at least one filter active, this is a {@link TabList} that contains the most
  * important tabs that the filter defines.
  */
-public abstract class TabModelFilter extends EmptyTabModelObserver implements TabList {
+public abstract class TabModelFilter implements TabModelObserver, TabList {
     private static final List<Tab> sEmptyRelatedTabList =
             Collections.unmodifiableList(new ArrayList<Tab>());
     private TabModel mTabModel;

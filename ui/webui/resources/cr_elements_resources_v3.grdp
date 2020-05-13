@@ -253,4 +253,9 @@
            type="BINDATA"
            compress="gzip" />
   </if>
+  <include name="IDR_CR_ELEMENTS_LOTTIE_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_lottie/cr_lottie.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
 </grit-part>

@@ -14,6 +14,7 @@
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -427,6 +428,8 @@ enum AuthenticationButtonType {
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.confirmationButton.pointerInteractionEnabled = YES;
+      self.confirmationButton.pointerStyleProvider =
+          CreateOpaqueButtonPointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)
@@ -454,6 +457,8 @@ enum AuthenticationButtonType {
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       self.skipSigninButton.pointerInteractionEnabled = YES;
+      self.skipSigninButton.pointerStyleProvider =
+          CreateTransparentButtonPointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)
@@ -483,7 +488,6 @@ enum AuthenticationButtonType {
 
 - (void)setSkipSigninStylingWithButton:(UIButton*)button {
   DCHECK(button);
-  button.backgroundColor = self.systemBackgroundColor;
   [button setTitleColor:[UIColor colorNamed:kBlueColor]
                forState:UIControlStateNormal];
 }

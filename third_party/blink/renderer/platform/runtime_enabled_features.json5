@@ -1569,12 +1569,6 @@
       name: "SameSiteByDefaultCookies",
       status: "test",
     },
-    // Exposes the displays connected to the device and provides the display
-    // properties needed for window placement features.
-    {
-      name: "ScreenEnumeration",
-      status: "experimental",
-    },
     {
       name: "ScreenWakeLock",
       status: "stable",
@@ -2013,7 +2007,8 @@
       depends_on: ["WebXRARModule"],
       status: "experimental",
     },
-    // Extends window placement functionality for multi-screen devices.
+    // Extends window placement functionality for multi-screen devices. Also
+    // exposes requisite information about displays connected to the device.
     {
       name: "WindowPlacement",
       status: "experimental",

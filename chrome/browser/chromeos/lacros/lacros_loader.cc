@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/chromeos/lacros/lacros_util.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 
 using component_updater::CrOSComponentManager;
@@ -64,7 +66,7 @@ void LacrosLoader::Init() {
   if (!lacros_util::IsLacrosAllowed())
     return;
 
-  if (chromeos::features::IsLacrosComponentUpdaterEnabled()) {
+  if (chromeos::features::IsLacrosSupportEnabled()) {
     // TODO(crbug.com/1078607): Remove non-error logging from this class.
     LOG(WARNING) << "Starting lacros component load.";
     cros_component_manager_->Load(kLacrosComponentName,
@@ -92,17 +94,14 @@ void LacrosLoader::Start() {
   if (!lacros_util::IsLacrosAllowed())
     return;
 
+  // TODO(jamescook): Provide a switch to override the lacros-chrome path for
+  // developers.
   std::string chrome_path;
-  if (chromeos::features::IsLacrosComponentUpdaterEnabled()) {
-    if (lacros_path_.empty()) {
-      LOG(WARNING) << "lacros component image not yet available";
-      return;
-    }
-    chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
-  } else {
-    // This is the default path on eve-lacros images.
-    chrome_path = "/usr/local/lacros/chrome";
+  if (lacros_path_.empty()) {
+    LOG(WARNING) << "lacros component image not yet available";
+    return;
   }
+  chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
   LOG(WARNING) << "Launching lacros-chrome at " << chrome_path;
 
   base::LaunchOptions options;

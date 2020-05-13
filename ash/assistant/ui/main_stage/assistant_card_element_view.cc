@@ -60,15 +60,15 @@ AssistantCardElementView::AssistantCardElementView(
     AssistantViewDelegate* delegate,
     const AssistantCardElement* card_element)
     : delegate_(delegate), card_element_(card_element) {
-  InitLayout(card_element);
+  InitLayout();
 
   // We observe contents_view() to receive events pertaining to the underlying
   // WebContents including focus change and suppressed navigation events.
-  contents_view()->AddObserver(this);
+  contents_view_->AddObserver(this);
 }
 
 AssistantCardElementView::~AssistantCardElementView() {
-  contents_view()->RemoveObserver(this);
+  contents_view_->RemoveObserver(this);
 }
 
 const char* AssistantCardElementView::GetClassName() const {
@@ -203,19 +203,15 @@ void AssistantCardElementView::DidChangeFocusedNode(
   views::View::ScrollRectToVisible(focused_node_rect_);
 }
 
-void AssistantCardElementView::InitLayout(
-    const AssistantCardElement* card_element) {
+void AssistantCardElementView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Contents view.
-  AddChildView(contents_view());
+  contents_view_ = AddChildView(
+      const_cast<AssistantCardElement*>(card_element_)->MoveContentsView());
 
   // OverrideDescription() doesn't work. Only names are read automatically.
-  GetViewAccessibility().OverrideName(card_element->fallback());
-}
-
-AssistantWebView* AssistantCardElementView::contents_view() {
-  return const_cast<AssistantWebView*>(card_element_->contents_view());
+  GetViewAccessibility().OverrideName(card_element_->fallback());
 }
 
 }  // namespace ash

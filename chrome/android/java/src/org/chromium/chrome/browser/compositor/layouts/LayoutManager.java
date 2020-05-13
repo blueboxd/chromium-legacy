@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -143,7 +142,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     /**
      * Protected class to handle {@link TabModelObserver} related tasks. Extending classes will
      * need to override any related calls to add new functionality */
-    protected class LayoutManagerTabModelObserver extends EmptyTabModelObserver {
+    protected class LayoutManagerTabModelObserver implements TabModelObserver {
         @Override
         public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
             if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());

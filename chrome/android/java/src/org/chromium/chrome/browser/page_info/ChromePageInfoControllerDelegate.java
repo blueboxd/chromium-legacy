@@ -41,6 +41,7 @@ import org.chromium.components.page_info.PageInfoRowView;
 import org.chromium.components.page_info.PageInfoView;
 import org.chromium.components.page_info.PageInfoView.PageInfoViewParams;
 import org.chromium.components.page_info.PageInfoViewV2;
+import org.chromium.components.page_info.PermissionParamsListBuilder;
 import org.chromium.components.page_info.SystemSettingsActivityRequiredListener;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.security_state.SecurityStateModel;

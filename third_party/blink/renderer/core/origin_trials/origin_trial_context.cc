@@ -342,14 +342,19 @@ bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
 
 bool OriginTrialContext::EnableTrialFromName(const String& trial_name,
                                              base::Time expiry_time) {
+  if (!CanEnableTrialFromName(trial_name)) {
+    DVLOG(1) << "EnableTrialFromName: cannot enable trial " << trial_name;
+    return false;
+  }
+
   bool did_enable_feature = false;
   for (OriginTrialFeature feature :
        origin_trials::FeaturesForTrial(trial_name)) {
-    if (!origin_trials::FeatureEnabledForOS(feature))
+    if (!origin_trials::FeatureEnabledForOS(feature)) {
+      DVLOG(1) << "EnableTrialFromName: feature " << static_cast<int>(feature)
+               << " is disabled on current OS.";
       continue;
-
-    if (!CanEnableTrialFromName(trial_name))
-      continue;
+    }
 
     did_enable_feature = true;
     enabled_features_.insert(feature);
@@ -388,6 +393,8 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
   OriginTrialTokenStatus token_result = trial_token_validator_->ValidateToken(
       token_string.AsStringPiece(), origin->ToUrlOrigin(), base::Time::Now(),
       &trial_name_str, &expiry_time);
+  DVLOG(1) << "EnableTrialFromToken: token_result = "
+           << static_cast<int>(token_result) << ", token = " << token;
   if (token_result == OriginTrialTokenStatus::kSuccess) {
     String trial_name =
         String::FromUTF8(trial_name_str.data(), trial_name_str.size());
@@ -399,6 +406,7 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
         valid = EnableTrialFromName(trial_name, expiry_time);
       } else {
         // Insecure origin and trial is restricted to secure origins.
+        DVLOG(1) << "EnableTrialFromToken: not secure";
         token_result = OriginTrialTokenStatus::kInsecure;
       }
     }

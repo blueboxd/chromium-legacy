@@ -41,9 +41,6 @@ enum NetworkConnectionType;
 struct WebCursor;
 
 [Native]
-struct DidOverscrollParams;
-
-[Native]
 struct SyntheticSmoothDrag;
 
 [Native]

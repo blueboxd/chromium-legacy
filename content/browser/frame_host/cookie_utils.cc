@@ -83,11 +83,6 @@ void EmitSameSiteCookiesDeprecationWarning(
       base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
           features::kCookieDeprecationMessages.name,
           base::FeatureList::OVERRIDE_DISABLE_FEATURE);
-  bool emit_messages =
-      !messages_disabled_by_cmdline &&
-      (net::cookie_util::IsSameSiteByDefaultCookiesEnabled() ||
-       net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() ||
-       base::FeatureList::IsEnabled(features::kCookieDeprecationMessages));
 
   bool breaking_context_downgrade = false;
 
@@ -124,7 +119,7 @@ void EmitSameSiteCookiesDeprecationWarning(
               : blink::mojom::SameSiteCookieOperation::SetCookie,
           cookie_details->devtools_request_id);
     }
-    if (emit_messages) {
+    if (!messages_disabled_by_cmdline) {
       root_frame_host->AddSameSiteCookieDeprecationMessage(
           cookie_url, excluded_cookie.status,
           net::cookie_util::IsSameSiteByDefaultCookiesEnabled(),

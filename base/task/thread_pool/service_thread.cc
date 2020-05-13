@@ -57,8 +57,9 @@ void ServiceThread::Init() {
 }
 
 NOINLINE void ServiceThread::Run(RunLoop* run_loop) {
-  const int line_number = __LINE__;
   Thread::Run(run_loop);
+  // Inhibit tail calls of Run and inhibit code folding.
+  const int line_number = __LINE__;
   base::debug::Alias(&line_number);
 }
 

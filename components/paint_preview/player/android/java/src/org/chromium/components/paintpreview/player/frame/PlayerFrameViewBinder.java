@@ -22,7 +22,9 @@ class PlayerFrameViewBinder {
             Rect viewPort = model.get(PlayerFrameProperties.VIEWPORT);
             view.updateViewPort(viewPort.left, viewPort.top, viewPort.right, viewPort.bottom);
         } else if (key.equals(PlayerFrameProperties.SUBFRAME_VIEWS)) {
-            view.updateSubFrames(model.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+            view.updateSubFrameViews(model.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        } else if (key.equals(PlayerFrameProperties.SUBFRAME_RECTS)) {
+            view.updateSubFrameRects(model.get(PlayerFrameProperties.SUBFRAME_RECTS));
         }
     }
 }

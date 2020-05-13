@@ -4,8 +4,6 @@
 
 #include "content/shell/renderer/web_test/accessibility_controller.h"
 
-#include <string>
-
 #include "base/stl_util.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
@@ -176,17 +174,19 @@ bool AccessibilityController::ShouldLogAccessibilityEvents() {
 void AccessibilityController::NotificationReceived(
     blink::WebLocalFrame* frame,
     const blink::WebAXObject& target,
-    const std::string& notification_name) {
+    const std::string& notification_name,
+    const std::vector<ui::AXEventIntent>& event_intents) {
   frame->GetTaskRunner(blink::TaskType::kInternalTest)
       ->PostTask(FROM_HERE,
                  base::BindOnce(&AccessibilityController::PostNotification,
                                 weak_factory_.GetWeakPtr(), target,
-                                notification_name));
+                                notification_name, event_intents));
 }
 
 void AccessibilityController::PostNotification(
     const blink::WebAXObject& target,
-    const std::string& notification_name) {
+    const std::string& notification_name,
+    const std::vector<ui::AXEventIntent>& event_intents) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
 
@@ -209,7 +209,7 @@ void AccessibilityController::PostNotification(
   WebAXObjectProxy* element;
   bool result = gin::ConvertFromV8(isolate, element_handle, &element);
   DCHECK(result);
-  element->NotificationReceived(local_frame, notification_name);
+  element->NotificationReceived(local_frame, notification_name, event_intents);
 
   if (notification_callback_.IsEmpty())
     return;

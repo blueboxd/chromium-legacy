@@ -661,7 +661,7 @@ public class TabPersistentStoreTest {
         // Close all the tabs, using an Observer to determine what is actually being closed.
         TabModel regularModel = selector.getModel(false);
         final List<Integer> closedTabIds = new ArrayList<>();
-        TabModelObserver closeObserver = new EmptyTabModelObserver() {
+        TabModelObserver closeObserver = new TabModelObserver() {
             @Override
             public void multipleTabsPendingClosure(List<Tab> tabs, boolean isAllTabs) {
                 for (Tab tab : tabs) closedTabIds.add(tab.getId());

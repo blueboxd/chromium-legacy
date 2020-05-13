@@ -9,6 +9,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Process;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
@@ -38,6 +40,8 @@ public final class MetricsBridgeService extends Service {
 
     private static final String LOG_FILE_NAME = "webview_metrics_bridge_logs";
 
+    private final File mLogFile;
+
     // Not guarded by a lock because it should only be accessed in a SequencedTaskRunner.
     private HistogramRecordList mRecordsList = HistogramRecordList.newBuilder().build();
 
@@ -54,9 +58,13 @@ public final class MetricsBridgeService extends Service {
             File file = getMetricsLogFile();
             if (!file.exists()) return;
             try (FileInputStream in = new FileInputStream(file)) {
-                HistogramRecordList savedProto = HistogramRecordList.parseFrom(in);
-                mRecordsList =
-                        mRecordsList.toBuilder().addAllRecords(savedProto.getRecordsList()).build();
+                HistogramRecordList.Builder listBuilder = HistogramRecordList.newBuilder();
+                HistogramRecord savedProto = HistogramRecord.parseDelimitedFrom(in);
+                while (savedProto != null) {
+                    listBuilder.addRecords(savedProto);
+                    savedProto = HistogramRecord.parseDelimitedFrom(in);
+                }
+                mRecordsList = listBuilder.build();
             } catch (InvalidProtocolBufferException e) {
                 Log.e(TAG, "Malformed metrics log proto", e);
                 deleteMetricsLogFile();
@@ -64,6 +72,16 @@ public final class MetricsBridgeService extends Service {
                 Log.e(TAG, "Failed reading proto log file", e);
             }
         });
+    }
+
+    public MetricsBridgeService() {
+        this(new File(PathUtils.getDataDirectory(), LOG_FILE_NAME));
+    }
+
+    @VisibleForTesting
+    // Inject a logFile for testing.
+    public MetricsBridgeService(File logFile) {
+        mLogFile = logFile;
     }
 
     private final IMetricsBridgeService.Stub mBinder = new IMetricsBridgeService.Stub() {
@@ -83,17 +101,20 @@ public final class MetricsBridgeService extends Service {
                     Log.w(TAG, "retained records has reached the max capacity, dropping record");
                     return;
                 }
+
+                HistogramRecord proto = null;
                 try {
-                    HistogramRecord proto = HistogramRecord.parseFrom(data);
+                    proto = HistogramRecord.parseFrom(data);
                     mRecordsList = mRecordsList.toBuilder().addRecords(proto).build();
                 } catch (InvalidProtocolBufferException e) {
                     Log.e(TAG, "Malformed metrics log proto", e);
                     return;
                 }
 
-                // Save all histograms including the incoming record to file.
-                try (FileOutputStream out = new FileOutputStream(getMetricsLogFile())) {
-                    mRecordsList.writeTo(out);
+                // Append the histogram record to log file.
+                try (FileOutputStream out =
+                                new FileOutputStream(getMetricsLogFile(), /* append */ true)) {
+                    proto.writeDelimitedTo(out);
                 } catch (IOException e) {
                     Log.e(TAG, "Failed to write to file", e);
                 }
@@ -123,11 +144,23 @@ public final class MetricsBridgeService extends Service {
         return mBinder;
     }
 
-    private static File getMetricsLogFile() {
-        return new File(PathUtils.getDataDirectory(), LOG_FILE_NAME);
+    private File getMetricsLogFile() {
+        return mLogFile;
     }
 
-    private static boolean deleteMetricsLogFile() {
+    private boolean deleteMetricsLogFile() {
         return getMetricsLogFile().delete();
+    }
+
+    /**
+     * Block until all the tasks in the local {@code mSequencedTaskRunner} are finished.
+     *
+     * @param timeoutMillis timeout in milliseconds.
+     */
+    @VisibleForTesting
+    public FutureTask addTaskToBlock() {
+        FutureTask<Object> blockTask = new FutureTask<Object>(() -> {}, new Object());
+        mSequencedTaskRunner.postTask(blockTask);
+        return blockTask;
     }
 }

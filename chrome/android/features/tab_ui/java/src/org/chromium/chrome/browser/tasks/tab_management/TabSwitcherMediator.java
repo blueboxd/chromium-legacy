@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.init.FirstDrawDetector;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -219,7 +218,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
                 // TODO(wychen): move didAddTab and didSelectTab to another observer and inject
@@ -694,6 +693,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      *  @return whether tabs should show in MRU order
      */
     static boolean isShowingTabsInMRUOrder() {
+        // TODO(crbug.com/1076449): Support MRU mode in Instant start.
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) return false;
+
         String feature = StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue();
         return TextUtils.equals(feature, "twopanes");
     }

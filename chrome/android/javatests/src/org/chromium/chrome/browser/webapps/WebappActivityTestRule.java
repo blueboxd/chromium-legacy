@@ -229,8 +229,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 // We also wait till the splash screen has finished initializing.
                 if (getActivity().getActivityTab() == null) return false;
 
-                View splashScreen =
-                        getActivity().getSplashControllerForTests().getSplashScreenForTests();
+                View splashScreen = getSplashController(getActivity()).getSplashScreenForTests();
                 if (splashScreen == null) return false;
 
                 return (!(splashScreen instanceof ViewGroup)
@@ -239,7 +238,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        View splashScreen = getActivity().getSplashControllerForTests().getSplashScreenForTests();
+        View splashScreen = getSplashController(getActivity()).getSplashScreenForTests();
         Assert.assertNotNull("No splash screen available.", splashScreen);
 
         // TODO(pkotwicz): Change return type in order to accommodate new-style WebAPKs.
@@ -258,12 +257,16 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return activity.getSplashControllerForTests().wasSplashScreenHiddenForTests();
+                return getSplashController(activity).wasSplashScreenHiddenForTests();
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     public boolean isSplashScreenVisible() {
-        return getActivity().getSplashControllerForTests().getSplashScreenForTests() != null;
+        return getSplashController(getActivity()).getSplashScreenForTests() != null;
+    }
+
+    public static SplashController getSplashController(WebappActivity activity) {
+        return activity.getComponent().resolveSplashController();
     }
 }

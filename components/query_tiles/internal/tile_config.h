@@ -32,6 +32,15 @@ extern const char kIsUnmeteredNetworkRequiredKey[];
 // Finch parameter key for image prefetch mode.
 extern const char kImagePrefetchModeKey[];
 
+// Finch parameter key for the minimum interval to next schedule.
+extern const char kNextScheduleMinIntervalKey[];
+
+// Finch parameter key for random window.
+extern const char kMaxRandomWindowKey[];
+
+// Finch parameter key for one off task window.
+extern const char kOneoffTaskWindowKey[];
+
 class TileConfig {
  public:
   // Gets the URL for the Query Tiles server.
@@ -50,6 +59,16 @@ class TileConfig {
   // Gets the image prefetch mode to determine how many images will be
   // prefetched in background task.
   static ImagePrefetchMode GetImagePrefetchMode();
+
+  // Get the interval of schedule window in ms.
+  static int GetScheduleIntervalInMs();
+
+  // Get the maxmium window for randomization in ms.
+  static int GetMaxRandomWindowInMs();
+
+  // Get the schedule window duration from start to end in one-off task params
+  // in ms.
+  static int GetOneoffTaskWindowInMs();
 };
 
 }  // namespace upboarding

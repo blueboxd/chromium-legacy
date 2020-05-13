@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
@@ -431,6 +432,57 @@ IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
   async_response.mutable_malware_scan_verdict()->set_verdict(
       MalwareDeepScanningVerdict::SCAN_FAILURE);
   SendFcmMessage(async_response);
+
+  WaitForDownloadToFinish();
+
+  // The file should be blocked for sensitive content.
+  ASSERT_EQ(download_items().size(), 1u);
+  download::DownloadItem* item = *download_items().begin();
+  EXPECT_EQ(item->GetDangerType(),
+            download::DownloadDangerType::
+                DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
+  EXPECT_EQ(item->GetState(), download::DownloadItem::INTERRUPTED);
+}
+
+class WhitelistedUrlDeepScanningBrowserTest
+    : public DownloadDeepScanningBrowserTest {
+ public:
+  WhitelistedUrlDeepScanningBrowserTest() = default;
+  ~WhitelistedUrlDeepScanningBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    DownloadDeepScanningBrowserTest::SetUpOnMainThread();
+
+    base::ListValue domain_list;
+    domain_list.AppendString(embedded_test_server()->base_url().host_piece());
+    browser()->profile()->GetPrefs()->Set(prefs::kSafeBrowsingWhitelistDomains,
+                                          domain_list);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WhitelistedUrlDeepScanningBrowserTest,
+                       WhitelistedUrlStillDoesDlp) {
+  // The file is SAFE according to the metadata check
+  ClientDownloadResponse metadata_response;
+  metadata_response.set_verdict(ClientDownloadResponse::SAFE);
+  ExpectMetadataResponse(metadata_response);
+
+  // The DLP scan runs synchronously, and finds a violation.
+  DeepScanningClientResponse sync_response;
+  sync_response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  sync_response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
+      DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+  ExpectDeepScanSynchronousResponse(/*is_advanced_protection=*/false,
+                                    sync_response);
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/download_protection/zipfile_two_archives.zip");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  WaitForDeepScanRequest(/*is_advanced_protection=*/false);
 
   WaitForDownloadToFinish();
 

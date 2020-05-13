@@ -4,11 +4,20 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 
+#include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 
 XRLayer::XRLayer(XRSession* session) : session_(session) {}
+
+ExecutionContext* XRLayer::GetExecutionContext() const {
+  return session_->GetExecutionContext();
+}
+
+const AtomicString& XRLayer::InterfaceName() const {
+  return event_target_names::kXRLayer;
+}
 
 void XRLayer::Trace(Visitor* visitor) {
   visitor->Trace(session_);

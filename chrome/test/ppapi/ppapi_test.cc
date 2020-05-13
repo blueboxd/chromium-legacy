@@ -160,24 +160,9 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
   // Smooth scrolling confuses the scrollbar test.
   command_line->AppendSwitch(switches::kDisableSmoothScrolling);
-
-  // For a particular host name, resolve another specific host name (which
-  // should then be added to the DNS cache), and then return a particular proxy.
-  // Otherwise, return DIRECT.
-  command_line->AppendSwitchASCII(switches::kProxyPacUrl,
-                                  "data:,"
-                                  "function FindProxyForURL(url, host) {"
-                                  "  if (host == 'use.proxy.test') {"
-                                  "    dnsResolve('host_resolver.test');"
-                                  "    return 'PROXY proxy.test';"
-                                  "  }"
-                                  "  return 'DIRECT'"
-                                  "}");
 }
 
 void PPAPITestBase::SetUpOnMainThread() {
-  host_resolver()->AddRule("host_resolver.test",
-                           embedded_test_server()->host_port_pair().host());
   host_resolver()->AddRuleWithFlags(
       "host_resolver.test", embedded_test_server()->host_port_pair().host(),
       net::HOST_RESOLVER_CANONNAME);

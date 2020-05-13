@@ -178,6 +178,12 @@ const char kAutofillCacheQueryResponsesDescription[] =
     "When enabled, autofill will cache the responses it receives from the "
     "crowd-sourced field type prediction server.";
 
+const char kAutofillEnableCardNicknameManagementName[] =
+    "Enable Autofill card nickname management";
+const char kAutofillEnableCardNicknameManagementDescription[] =
+    "When enabled, nicknames for credit cards will be able to be uploaded to "
+    "Payments or modified locally.";
+
 const char kAutofillEnableCompanyNameName[] =
     "Enable Autofill Company Name field";
 const char kAutofillEnableCompanyNameDescription[] =
@@ -385,8 +391,8 @@ const char kCompositedLayerBordersDescription[] =
 
 const char kCookieDeprecationMessagesName[] = "Cookie deprecation messages";
 const char kCookieDeprecationMessagesDescription[] =
-    "Show messages in the DevTools console about upcoming deprecations that "
-    "would affect sent/received cookies.";
+    "Show messages in DevTools about upcoming deprecations that would affect "
+    "sent/received cookies.";
 
 const char kCookiesWithoutSameSiteMustBeSecureName[] =
     "Cookies without SameSite must be secure";
@@ -1769,6 +1775,11 @@ const char kSharingPeerConnectionSenderDescription[] =
     "Enables the sender devices to connect with chosen device using a peer to "
     "peer connection for transferring data.";
 
+const char kSharingPreferVapidName[] =
+    "Prefer sending Sharing message via VAPID";
+const char kSharingPreferVapidDescription[] =
+    "Prefer sending Sharing message via FCM WebPush authenticated using VAPID.";
+
 const char kSharingQRCodeGeneratorName[] = "Enable sharing page via QR Code";
 const char kSharingQRCodeGeneratorDescription[] =
     "Enables right-click UI to share the page's URL via a generated QR Code.";
@@ -2333,6 +2344,10 @@ const char kChromeShareScreenshotDescription[] =
 const char kChromeSharingHubName[] = "Chrome Sharing Hub";
 const char kChromeSharingHubDescription[] =
     "Enables the Chrome Sharing Hub/custom share sheet.";
+
+const char kChromeSharingHubV15Name[] = "Chrome Sharing Hub V1.5";
+const char kChromeSharingHubV15Description[] =
+    "Enables v1.5 of the Chrome Sharing Hub.";
 
 const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =

@@ -35,7 +35,9 @@
 #include <memory>
 
 #include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
@@ -53,6 +55,7 @@
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
@@ -144,6 +147,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_image.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -1112,28 +1116,30 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector) {
       << "An invalid selector shouldn't prevent other selectors from matching.";
 }
 
-TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck) {
+TEST_F(WebFrameTest, PostMessageEvent) {
   RegisterMockedHttpURLLoad("postmessage_test.html");
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "postmessage_test.html");
 
-  // Send a message with the correct origin.
-  WebSecurityOrigin correct_origin(
-      WebSecurityOrigin::Create(ToKURL(base_url_)));
-  WebDocument document = web_view_helper.LocalMainFrame()->GetDocument();
   WebSerializedScriptValue data(WebSerializedScriptValue::CreateInvalid());
   WebDOMMessageEvent message(data, "http://origin.com");
-  web_view_helper.GetWebView()
-      ->MainFrameImpl()
-      ->DispatchMessageEventWithOriginCheck(correct_origin, message);
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
+
+  // Send a message with the correct origin.
+  scoped_refptr<SecurityOrigin> correct_origin =
+      SecurityOrigin::Create(ToKURL(base_url_));
+  frame->PostMessageEvent(base::nullopt, g_empty_string,
+                          correct_origin->ToString(),
+                          ToBlinkTransferableMessage(message.AsMessage()));
 
   // Send another message with incorrect origin.
-  WebSecurityOrigin incorrect_origin(
-      WebSecurityOrigin::Create(ToKURL(chrome_url_)));
-  web_view_helper.GetWebView()
-      ->MainFrameImpl()
-      ->DispatchMessageEventWithOriginCheck(incorrect_origin, message);
+  scoped_refptr<SecurityOrigin> incorrect_origin =
+      SecurityOrigin::Create(ToKURL(chrome_url_));
+  frame->PostMessageEvent(base::nullopt, g_empty_string,
+                          incorrect_origin->ToString(),
+                          ToBlinkTransferableMessage(message.AsMessage()));
 
   // Verify that only the first addition is in the body of the page.
   std::string content = WebFrameContentDumper::DumpWebViewAsText(

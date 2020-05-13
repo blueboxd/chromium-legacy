@@ -610,7 +610,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
   return focus;
 }
 
-bool BrowserAccessibilityManager::NativeViewHasFocus() const {
+bool BrowserAccessibilityManager::NativeViewHasFocus() {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
   return delegate && delegate->AccessibilityViewHasFocus();
 }

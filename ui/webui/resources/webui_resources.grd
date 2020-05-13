@@ -452,7 +452,7 @@ without changes to the corresponding grd file. -->
                    compress="gzip" />
       </if>
 
-      <if expr="chromeos">
+      <if expr="not is_android and not is_ios">
         <structure name="IDR_LOTTIE_LOTTIE_WORKER_MIN_JS"
                    file="../../../third_party/lottie/lottie_worker.min.js"
                    type="chrome_html"

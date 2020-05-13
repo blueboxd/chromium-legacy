@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -448,7 +447,7 @@ class TabListMediator {
         mActionsOnAllRelatedTabs = actionOnRelatedTabs;
         mUiType = uiType;
 
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
                 mNextTabId = Tab.INVALID_TAB_ID;
@@ -869,9 +868,7 @@ class TabListMediator {
      */
     void prepareOverview() {
         if (!TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
-                || !mTabModelSelector.getTabModelFilterProvider()
-                            .getCurrentTabModelFilter()
-                            .isTabModelRestored()) {
+                || !mTabModelSelector.isTabStateInitialized()) {
             return;
         }
 

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -45,6 +46,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
+#include "ui/views/views_features.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -324,11 +326,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   // not there was text under the tap, which appears to be flaky.
 
   // Take the focus away and tap in the omnibox again, but drag a bit before
-  // releasing.  We should focus the omnibox but not select all of its text.
+  // releasing. This shouldn't select text.
+  //
+  // Whether it'll focus depends on the state of the below feature: touch and
+  // drag will send a tap-down event, then a scroll or swipe event, but no
+  // complete tap event. When enabled, textfields will take focus on a complete
+  // tap instead of tap-down.
+  const bool focused_after_drag =
+      !base::FeatureList::IsEnabled(views::features::kTextfieldFocusOnTapUp);
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER));
   ASSERT_NO_FATAL_FAILURE(Tap(tap_location, tap2_location));
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_EQ(focused_after_drag,
+            ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_FALSE(omnibox_view->IsSelectAll());
 }
 

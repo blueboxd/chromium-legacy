@@ -96,7 +96,9 @@ class TileManagerImpl : public TileManager {
       bool success,
       std::map<std::string, std::unique_ptr<TileGroup>> loaded_groups) {
     if (!success) {
-      std::move(callback).Run(TileGroupStatus::kFailureDbOperation);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    TileGroupStatus::kFailureDbOperation));
       return;
     }
 
@@ -117,7 +119,6 @@ class TileManagerImpl : public TileManager {
       auto group_id = pair.first;
       auto* group = pair.second.get();
       if (!ValidateGroup(group)) {
-        status = TileGroupStatus::kInvalidGroup;
         to_deprecated_in_db.emplace_back(group_id);
       }
     }
@@ -130,11 +131,13 @@ class TileManagerImpl : public TileManager {
     // Moves the valid group into in memory holder.
     if (!loaded_groups.empty())
       std::swap(tile_group_, loaded_groups.begin()->second);
-    std::move(callback).Run(status);
+    else
+      status = TileGroupStatus::kNoTiles;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), status));
   }
 
-  // Returns true if the group is not expired and the locale matches OS
-  // setting.
+  // Returns true if the group is not expired.
   bool ValidateGroup(const TileGroup* group) const {
     return clock_->Now() - group->last_updated_ts <
            TileConfig::GetExpireDuration();

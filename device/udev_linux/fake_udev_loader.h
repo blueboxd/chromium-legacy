@@ -25,6 +25,8 @@ class FakeUdevLoader : public device::UdevLoader {
                              std::map<std::string, std::string> sysattrs,
                              std::map<std::string, std::string> properties);
 
+  void Reset();
+
  private:
   bool Init() override;
   const char* udev_device_get_action(udev_device* udev_device) override;

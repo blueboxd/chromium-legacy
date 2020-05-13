@@ -905,9 +905,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
-  void OnAutoscrollStart(const gfx::PointF& position);
-  void OnAutoscrollFling(const gfx::Vector2dF& velocity);
-  void OnAutoscrollEnd();
   void OnTextInputStateChanged(const TextInputState& params);
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
@@ -929,6 +926,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetHasTouchEventHandlers(bool has_handlers) override;
   void IntrinsicSizingInfoChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
+  void AutoscrollStart(const gfx::PointF& position) override;
+  void AutoscrollFling(const gfx::Vector2dF& velocity) override;
+  void AutoscrollEnd() override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.

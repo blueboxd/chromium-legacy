@@ -35,9 +35,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
@@ -70,7 +70,7 @@ public class SingleTabSwitcherMediatorUnitTest {
     @Captor
     private ArgumentCaptor<EmptyTabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
-    private ArgumentCaptor<EmptyTabModelObserver> mTabModelObserverCaptor;
+    private ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
     private ArgumentCaptor<Callback<Drawable>> mFaviconCallbackCaptor;
 

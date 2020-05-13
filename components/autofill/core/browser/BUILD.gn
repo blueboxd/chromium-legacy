@@ -104,6 +104,7 @@ jumbo_static_library("browser") {
     "data_model/test_data_creator.h",
     "field_filler.cc",
     "field_filler.h",
+    "field_types.cc",
     "field_types.h",
     "form_data_importer.cc",
     "form_data_importer.h",

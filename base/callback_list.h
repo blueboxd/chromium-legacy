@@ -70,12 +70,36 @@
 
 namespace base {
 
+template <typename Signature>
+class OnceCallbackList;
+
+template <typename Signature>
+class RepeatingCallbackList;
+
 namespace internal {
 
-template <typename CallbackListImpl, typename T>
+// A traits class to break circular type dependencies between CallbackListBase
+// and its subclasses.
+template <typename CallbackList>
+struct CallbackListTraits;
+
+template <typename Signature>
+struct CallbackListTraits<OnceCallbackList<Signature>> {
+  using CallbackType = OnceCallback<Signature>;
+  using Callbacks = std::list<CallbackType>;
+};
+
+template <typename Signature>
+struct CallbackListTraits<RepeatingCallbackList<Signature>> {
+  using CallbackType = RepeatingCallback<Signature>;
+  using Callbacks = std::list<CallbackType>;
+};
+
+template <typename CallbackListImpl>
 class CallbackListBase {
  public:
-  using CallbackType = T;
+  using CallbackType =
+      typename CallbackListTraits<CallbackListImpl>::CallbackType;
   static_assert(IsBaseCallback<CallbackType>::value, "");
 
   // A cancellation handle for callers who register callbacks. Subscription
@@ -172,7 +196,7 @@ class CallbackListBase {
   }
 
  protected:
-  using Callbacks = std::list<CallbackType>;
+  using Callbacks = typename CallbackListTraits<CallbackListImpl>::Callbacks;
 
   // Holds non-null callbacks, which will be called during Notify().
   Callbacks callbacks_;
@@ -210,26 +234,24 @@ class CallbackListBase {
 
 template <typename Signature>
 class OnceCallbackList
-    : public internal::CallbackListBase<OnceCallbackList<Signature>,
-                                        OnceCallback<Signature>> {
+    : public internal::CallbackListBase<OnceCallbackList<Signature>> {
  private:
-  using Base = internal::CallbackListBase<OnceCallbackList<Signature>,
-                                          OnceCallback<Signature>>;
-  friend Base;
+  friend internal::CallbackListBase<OnceCallbackList>;
+  using Traits = internal::CallbackListTraits<OnceCallbackList>;
 
   // Runs the current callback, which may cancel it or any other callbacks.
   template <typename... RunArgs>
-  void RunCallback(typename Base::Callbacks::iterator it, RunArgs&&... args) {
+  void RunCallback(typename Traits::Callbacks::iterator it, RunArgs&&... args) {
     // OnceCallbacks still have Subscriptions with outstanding iterators;
     // splice() removes them from |callbacks_| without invalidating those.
-    null_callbacks_.splice(null_callbacks_.end(), Base::callbacks_, it);
+    null_callbacks_.splice(null_callbacks_.end(), this->callbacks_, it);
 
     std::move(*it).Run(args...);
   }
 
   // If |it| refers to an already-canceled callback, does any necessary cleanup
   // and returns true.  Otherwise returns false.
-  bool CancelNullCallback(const typename Base::Callbacks::iterator& it) {
+  bool CancelNullCallback(const typename Traits::Callbacks::iterator& it) {
     if (it->is_null()) {
       null_callbacks_.erase(it);
       return true;
@@ -241,27 +263,24 @@ class OnceCallbackList
   // Subscriptions will still contain valid iterators.  Only needed for
   // OnceCallbacks, since RepeatingCallbacks are not canceled except by
   // Subscription destruction.
-  typename Base::Callbacks null_callbacks_;
+  typename Traits::Callbacks null_callbacks_;
 };
 
 template <typename Signature>
 class RepeatingCallbackList
-    : public internal::CallbackListBase<RepeatingCallbackList<Signature>,
-                                        RepeatingCallback<Signature>> {
+    : public internal::CallbackListBase<RepeatingCallbackList<Signature>> {
  private:
-  using Base = internal::CallbackListBase<RepeatingCallbackList<Signature>,
-                                          RepeatingCallback<Signature>>;
-  friend Base;
-
+  friend internal::CallbackListBase<RepeatingCallbackList>;
+  using Traits = internal::CallbackListTraits<RepeatingCallbackList>;
   // Runs the current callback, which may cancel it or any other callbacks.
   template <typename... RunArgs>
-  void RunCallback(typename Base::Callbacks::iterator it, RunArgs&&... args) {
+  void RunCallback(typename Traits::Callbacks::iterator it, RunArgs&&... args) {
     it->Run(args...);
   }
 
   // If |it| refers to an already-canceled callback, does any necessary cleanup
   // and returns true.  Otherwise returns false.
-  bool CancelNullCallback(const typename Base::Callbacks::iterator& it) {
+  bool CancelNullCallback(const typename Traits::Callbacks::iterator& it) {
     // Because at most one Subscription can point to a given callback, and
     // RepeatingCallbacks are only reset by CancelCallback(), no one should be
     // able to request cancellation of a canceled RepeatingCallback.

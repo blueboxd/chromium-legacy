@@ -373,7 +373,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},
           {"TrustedDOMTypes", features::kTrustedDOMTypes, kEnableOnly},
-          {"UserAgentClientHint", features::kUserAgentClientHint, kEnableOnly},
+          {"UserAgentClientHint", features::kUserAgentClientHint,
+           kUseFeatureState},
 
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {

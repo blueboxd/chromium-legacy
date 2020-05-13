@@ -264,6 +264,11 @@
     "expiry_milestone": 72
   },
   {
+    "name": "autofill-enable-card-nickname-management",
+    "owners": [ "siyua", "sujiezhu@google.com" ],
+    "expiry_milestone": 92
+  },
+  {
     "name": "autofill-enable-company-name",
     "owners": [ "sebsg" ],
     "expiry_milestone": 73
@@ -469,6 +474,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "chrome-sharing-hub-v1-5",
+    "owners": ["sophey"],
+    "expiry_milestone": 89
+  },
+  {
     "name": "chromeos-video-decoder",
     "owners": [ "chromeos-video-eng@google.com" ],
     // This flag should expire once all VDA-based ChromeOS video decoders have
@@ -607,8 +617,8 @@
   },
   {
     "name": "cookie-deprecation-messages",
-    "owners": [ "chlily", "aarontag" ],
-    "expiry_milestone": 85
+    "owners": [ "bingler", "chlily", "aarontag" ],
+    "expiry_milestone": 90
   },
   {
     "name": "cookies-without-same-site-must-be-secure",
@@ -3767,6 +3777,11 @@
     "name": "sharing-peer-connection-sender",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 84
+  },
+  {
+    "name": "sharing-prefer-vapid",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 87
   },
   {
     "name": "sharing-qr-code-generator",

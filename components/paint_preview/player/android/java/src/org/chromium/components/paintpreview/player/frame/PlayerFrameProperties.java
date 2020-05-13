@@ -6,7 +6,6 @@ package org.chromium.components.paintpreview.player.frame;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.Pair;
 import android.view.View;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -31,12 +30,15 @@ class PlayerFrameProperties {
     static final PropertyModel.WritableObjectPropertyKey<Rect> VIEWPORT =
             new PropertyModel.WritableObjectPropertyKey<>(true);
     /**
-     * A list of sub-frames that are currently visible. Each element in the list is a {@link Pair}
-     * consists of a {@link View}, that displays the sub-frame's content, and a {@link Rect}, that
-     * contains its location.
+     * List of currently visible sub-frame {@link View}s.
      */
-    static final PropertyModel.WritableObjectPropertyKey<List<Pair<View, Rect>>> SUBFRAME_VIEWS =
-            new PropertyModel.WritableObjectPropertyKey<>(true);
+    static final PropertyModel.WritableObjectPropertyKey<List<View>> SUBFRAME_VIEWS =
+            new PropertyModel.WritableObjectPropertyKey<>();
+    /**
+     * List of currently visible sub-frame clip rects.
+     */
+    static final PropertyModel.WritableObjectPropertyKey<List<Rect>> SUBFRAME_RECTS =
+            new PropertyModel.WritableObjectPropertyKey<>();
     static final PropertyKey[] ALL_KEYS = {
-            BITMAP_MATRIX, TILE_DIMENSIONS, VIEWPORT, SUBFRAME_VIEWS};
+            BITMAP_MATRIX, TILE_DIMENSIONS, VIEWPORT, SUBFRAME_VIEWS, SUBFRAME_RECTS};
 }

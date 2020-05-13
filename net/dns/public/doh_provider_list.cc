@@ -104,6 +104,12 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
                        "" /* ui_name */, "" /* privacy_policy */,
                        false /* display_globally */,
                        {} /* display_countries */),
+      DohProviderEntry("Cznic", base::nullopt /* provider_id_for_histogram */,
+                       {"185.43.135.1", "2001:148f:fffe::1"},
+                       {"odvr.nic.cz"} /* dns_over_tls_hostnames */,
+                       "https://odvr.nic.cz/doh", "" /* ui_name */,
+                       "" /* privacy_policy */, false /* display_globally */,
+                       {} /* display_countries */),
       // Note: DNS.SB has separate entries for autoupgrade and settings UI to
       // allow the extra |no_ecs| parameter for autoupgrade. This parameter
       // disables EDNS Client Subnet (ECS) handling in order to match the
@@ -175,6 +181,13 @@ const std::vector<DohProviderEntry>& GetDohProviderList() {
           "https://dns.quad9.net/dns-query", "Quad9 (9.9.9.9)" /* ui_name */,
           "https://www.quad9.net/home/privacy/" /* privacy_policy */,
           true /* display_globally */, {} /* display_countries */),
+      DohProviderEntry("Switch", base::nullopt /* provider_id_for_histogram */,
+                       {"130.59.31.251", "130.59.31.248", "2001:620:0:ff::2",
+                        "2001:620:0:ff::3"},
+                       {"dns.switch.ch"} /* dns_over_tls_hostnames */,
+                       "https://dns.switch.ch/dns-query", "" /* ui_name */,
+                       "" /* privacy_policy */, false /* display_globally */,
+                       {} /* display_countries */),
   }};
   return *providers;
 }

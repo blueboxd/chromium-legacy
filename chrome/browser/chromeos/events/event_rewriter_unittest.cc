@@ -24,6 +24,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "device/udev_linux/fake_udev_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -32,6 +33,7 @@
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/event_utils.h"
@@ -46,6 +48,8 @@
 namespace {
 
 constexpr int kKeyboardDeviceId = 123;
+constexpr char kKbdSysPath[] = "/devices/platform/i8042/serio2/input/input1";
+constexpr char kKbdTopRowPropertyName[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
 
 constexpr char kKbdTopRowLayoutUnspecified[] = "";
 constexpr char kKbdTopRowLayout1Tag[] = "1";
@@ -161,6 +165,7 @@ class EventRewriterTest : public ChromeAshTestBase {
         input_method_manager_mock_);  // pass ownership
     delegate_ = std::make_unique<EventRewriterDelegateImpl>(nullptr);
     delegate_->set_pref_service_for_testing(prefs());
+    device_data_manager_test_api_.SetKeyboardDevices({});
     rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(delegate_.get(),
                                                             nullptr, false);
     ChromeAshTestBase::SetUp();
@@ -205,9 +210,25 @@ class EventRewriterTest : public ChromeAshTestBase {
   void SetupKeyboard(const std::string& name,
                      const std::string& layout = "",
                      ui::InputDeviceType type = ui::INPUT_DEVICE_INTERNAL) {
+    // Add a fake device to udev.
+    const ui::InputDevice keyboard(kKeyboardDeviceId, type, name, /*phys=*/"",
+                                   base::FilePath(kKbdSysPath), /*vendor=*/-1,
+                                   /*product=*/-1, /*version=*/-1);
+    std::map<std::string, std::string> sysfs_properties;
+    if (!layout.empty())
+      sysfs_properties[kKbdTopRowPropertyName] = layout;
+
+    fake_udev_.Reset();
+    fake_udev_.AddFakeDevice(keyboard.name, keyboard.sys_path.value(), {},
+                             std::move(sysfs_properties));
+
+    // Reset the state of the device manager.
+    device_data_manager_test_api_.SetKeyboardDevices({});
+    device_data_manager_test_api_.SetKeyboardDevices({keyboard});
+
+    // Reset the state of the EventRewriter.
     rewriter_->ResetStateForTesting();
-    rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId, name, layout,
-                                             type);
+    rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId);
     rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
   }
 
@@ -259,6 +280,8 @@ class EventRewriterTest : public ChromeAshTestBase {
   FakeChromeUserManager* fake_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
   input_method::MockInputMethodManagerImpl* input_method_manager_mock_;
+  testing::FakeUdevLoader fake_udev_;
+  ui::DeviceDataManagerTestApi device_data_manager_test_api_;
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   std::unique_ptr<EventRewriterDelegateImpl> delegate_;

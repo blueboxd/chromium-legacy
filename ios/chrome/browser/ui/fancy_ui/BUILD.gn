@@ -13,8 +13,10 @@ source_set("fancy_ui") {
   deps = [
     "//base",
     "//base:i18n",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/util",
   ]
   public_deps = [ "//ios/third_party/material_components_ios" ]
   libs = [ "UIKit.framework" ]

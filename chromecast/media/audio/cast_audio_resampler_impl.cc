@@ -63,7 +63,9 @@ class CastAudioResamplerImpl : public CastAudioResampler {
     int dest_offset = buffered_frames_;
     buffered_frames_ = 0;
 
-    CopyCurrentInputTo(frames_left, audio_bus, dest_offset);
+    if (frames_left) {
+      CopyCurrentInputTo(frames_left, audio_bus, dest_offset);
+    }
   }
 
   void CopyCurrentInputTo(int frames_to_copy,

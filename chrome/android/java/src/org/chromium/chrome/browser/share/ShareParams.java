@@ -41,9 +41,6 @@ public class ShareParams {
      */
     private final String mText;
 
-    /** The URL of the page to be shared. */
-    private final String mUrl;
-
     /** The common MIME type of the files to be shared. A wildcard if they have differing types. */
     private final String mFileContentType;
 
@@ -62,31 +59,20 @@ public class ShareParams {
      */
     private TargetChosenCallback mCallback;
 
-    /** The package name of the app who requests for share. If Null, it is requested by Chrome */
-    private final String mSourcePackageName;
-
-    /** The {@link Runnable} called when the share dialog is dismissed. */
-    @Nullable
-    private final Runnable mOnDialogDismissed;
-
     private ShareParams(boolean shareDirectly, boolean saveLastUsed, WindowAndroid window,
-            String title, String text, String url, @Nullable String fileContentType,
+            String title, String text, @Nullable String fileContentType,
             @Nullable ArrayList<Uri> fileUris, @Nullable Uri offlineUri,
-            @Nullable Uri screenshotUri, @Nullable TargetChosenCallback callback,
-            @Nullable String sourcePackageName, @Nullable Runnable onDialogDismissed) {
+            @Nullable Uri screenshotUri, @Nullable TargetChosenCallback callback) {
         mShareDirectly = shareDirectly;
         mSaveLastUsed = saveLastUsed;
         mWindow = window;
         mTitle = title;
         mText = text;
-        mUrl = url;
         mFileContentType = fileContentType;
         mFileUris = fileUris;
         mOfflineUri = offlineUri;
         mScreenshotUri = screenshotUri;
         mCallback = callback;
-        mSourcePackageName = sourcePackageName;
-        mOnDialogDismissed = onDialogDismissed;
     }
 
     /**
@@ -123,13 +109,6 @@ public class ShareParams {
      */
     public String getText() {
         return mText;
-    }
-
-    /**
-     * @return The URL of the page to be shared.
-     */
-    public String getUrl() {
-        return mUrl;
     }
 
     /**
@@ -172,21 +151,6 @@ public class ShareParams {
         return mCallback;
     }
 
-    /**
-     * @return The package name of the app who requests for share.
-     */
-    public String getSourcePackageName() {
-        return mSourcePackageName;
-    }
-
-    /**
-     * @return The {@link Runnable} to be called when the share dialog is dismissed.
-     */
-    @Nullable
-    public Runnable getOnDialogDismissed() {
-        return mOnDialogDismissed;
-    }
-
     /** The builder for {@link ShareParams} objects. */
     public static class Builder {
         private boolean mShareDirectly;
@@ -200,9 +164,6 @@ public class ShareParams {
         private Uri mOfflineUri;
         private Uri mScreenshotUri;
         private TargetChosenCallback mCallback;
-        private String mSourcePackageName;
-        private boolean mIsExternalUrl;
-        private Runnable mOnDialogDismissed;
 
         public Builder(@NonNull WindowAndroid window, @NonNull String title, @NonNull String url) {
             mWindow = window;
@@ -232,14 +193,6 @@ public class ShareParams {
          */
         public Builder setSaveLastUsed(boolean saveLastUsed) {
             mSaveLastUsed = saveLastUsed;
-            return this;
-        }
-
-        /**
-         * Sets the URL of the page to be shared.
-         */
-        public Builder setUrl(@NonNull String url) {
-            mUrl = url;
             return this;
         }
 
@@ -283,36 +236,10 @@ public class ShareParams {
             return this;
         }
 
-        /**
-         * Set the package name of the app who requests for share.
-         */
-        public Builder setSourcePackageName(String sourcePackageName) {
-            mSourcePackageName = sourcePackageName;
-            return this;
-        }
-
-        /**
-         * Set whether the params are created by the url from external app.
-         */
-        public Builder setIsExternalUrl(boolean isExternalUrl) {
-            mIsExternalUrl = isExternalUrl;
-            return this;
-        }
-
-        /**
-         * Set a runnable to be called when the share dialog is dismissed.
-         */
-        public Builder setOnDialogDismissed(Runnable onDialogDismised) {
-            mOnDialogDismissed = onDialogDismised;
-            return this;
-        }
-
         /** @return A fully constructed {@link ShareParams} object. */
         public ShareParams build() {
             if (!TextUtils.isEmpty(mUrl)) {
-                if (!mIsExternalUrl) {
-                    mUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(mUrl);
-                }
+                mUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(mUrl);
                 if (!TextUtils.isEmpty(mText)) {
                     // Concatenate text and URL with a space.
                     mText = mText + " " + mUrl;
@@ -320,9 +247,8 @@ public class ShareParams {
                     mText = mUrl;
                 }
             }
-            return new ShareParams(mShareDirectly, mSaveLastUsed, mWindow, mTitle, mText, mUrl,
-                    mFileContentType, mFileUris, mOfflineUri, mScreenshotUri, mCallback,
-                    mSourcePackageName, mOnDialogDismissed);
+            return new ShareParams(mShareDirectly, mSaveLastUsed, mWindow, mTitle, mText,
+                    mFileContentType, mFileUris, mOfflineUri, mScreenshotUri, mCallback);
         }
     }
 }

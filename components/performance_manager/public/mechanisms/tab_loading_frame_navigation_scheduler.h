@@ -49,6 +49,8 @@ class TabLoadingFrameNavigationScheduler
   // in a disabled state, and only starts throttling when explicitly enabled.
   // When subsequently disabled all outstanding throttles are released. Can be
   // toggled multiple times, but this should only really happen in tests.
+  // The mechanism adds itself to the list of PM UI-thread mechanisms when it is
+  // enabled, and removes itself when disabled.
   static void SetThrottlingEnabled(bool enabled);
 
   // Stops throttling the given |contents|, only if it is currently treating the
@@ -59,6 +61,7 @@ class TabLoadingFrameNavigationScheduler
   // Testing seams.
   static void SetPolicyDelegateForTesting(PolicyDelegate* policy_delegate);
   static bool IsThrottlingEnabledForTesting();
+  static bool IsMechanismRegisteredForTesting();
   void StopThrottlingForTesting() { StopThrottlingImpl(); }
   size_t GetThrottleCountForTesting() const { return throttles_.size(); }
 

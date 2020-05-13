@@ -148,8 +148,6 @@ source_set("common") {
     "input/synthetic_tap_gesture_params.h",
     "input/synthetic_web_input_event_builders.cc",
     "input/synthetic_web_input_event_builders.h",
-    "input/touch_action_optional_mojom_traits.cc",
-    "input/touch_action_optional_mojom_traits.h",
     "input/touch_event_stream_validator.cc",
     "input/touch_event_stream_validator.h",
     "input/web_mouse_wheel_event_traits.cc",
@@ -576,10 +574,6 @@ mojom("mojo_bindings") {
           cpp = "::content::ContentSecurityPolicy"
         },
         {
-          mojom = "content.mojom.DidOverscrollParams"
-          cpp = "::ui::DidOverscrollParams"
-        },
-        {
           mojom = "content.mojom.Event"
           cpp = "::std::unique_ptr<::content::InputEvent>"
           move_only = true
@@ -621,10 +615,6 @@ mojom("mojo_bindings") {
           cpp = "::ui::NativeTheme::SystemThemeColor"
         },
         {
-          mojom = "content.mojom.TouchActionOptional"
-          cpp = "::cc::TouchAction"
-        },
-        {
           mojom = "content.mojom.VisualProperties"
           cpp = "::content::VisualProperties"
         },
@@ -664,7 +654,6 @@ mojom("mojo_bindings") {
       traits_private_headers = [
         "//content/common/frame_messages.h",
         "//content/common/input/input_event_mojom_traits.h",
-        "//content/common/input/touch_action_optional_mojom_traits.h",
         "//content/common/input_messages.h",
         "//content/common/view_messages.h",
         "//content/common/widget_messages.h",

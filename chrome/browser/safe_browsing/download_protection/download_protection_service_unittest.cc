@@ -2339,7 +2339,7 @@ TEST_F(DownloadProtectionServiceTest,
       &item, base::BindOnce(&DownloadProtectionServiceTest::CheckDoneCallback,
                             base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
-  EXPECT_TRUE(IsResult(DownloadCheckResult::WHITELISTED_BY_POLICY));
+  EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
 
   // Prepares download item that other url in the url chain matches enterprise
   // whitelist.
@@ -2357,7 +2357,7 @@ TEST_F(DownloadProtectionServiceTest,
       &item2, base::BindOnce(&DownloadProtectionServiceTest::CheckDoneCallback,
                              base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
-  EXPECT_TRUE(IsResult(DownloadCheckResult::WHITELISTED_BY_POLICY));
+  EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
 }
 
 TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
@@ -2781,15 +2781,12 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedByPolicy) {
+  AddDomainToEnterpriseWhitelist("example.com");
   NiceMockDownloadItem item;
-  PrepareBasicDownloadItem(&item, {"http://www.evil.com/a.exe"},  // url_chain
-                           "http://www.google.com/",              // referrer
-                           FILE_PATH_LITERAL("a.tmp"),            // tmp_path
-                           FILE_PATH_LITERAL("a.exe"));           // final_path
-  EXPECT_CALL(item, GetDangerType())
-      .WillRepeatedly(
-          Return(download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY));
-  EXPECT_CALL(item, GetHash()).Times(0);
+  PrepareBasicDownloadItem(&item, {"http://example.com/a.exe"},  // url_chain
+                           "http://www.google.com/",             // referrer
+                           FILE_PATH_LITERAL("a.tmp"),           // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));          // final_path
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .Times(0);
@@ -2800,6 +2797,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedByPolicy) {
       .Times(0);
 
   RunLoop run_loop;
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
   download_service_->CheckClientDownload(
       &item,
       base::BindRepeating(&DownloadProtectionServiceTest::CheckDoneCallback,

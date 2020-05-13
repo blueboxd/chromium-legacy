@@ -24,8 +24,6 @@ import androidx.browser.trusted.splashscreens.SplashScreenParamKey;
 
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -79,7 +77,6 @@ public class TwaSplashController implements InflationObserver, SplashDelegate {
     public TwaSplashController(SplashController splashController, Activity activity,
             ActivityWindowAndroid activityWindowAndroid,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            CustomTabOrientationController orientationController,
             SplashImageHolder splashImageCache,
             BrowserServicesIntentDataProvider intentDataProvider) {
         mSplashController = splashController;
@@ -89,15 +86,10 @@ public class TwaSplashController implements InflationObserver, SplashDelegate {
         mSplashImageCache = splashImageCache;
         mIntentDataProvider = intentDataProvider;
 
-        long splashHideAnimationDurationMs = IntentUtils.safeGetInt(
-                getSplashScreenParamsFromIntent(), SplashScreenParamKey.KEY_FADE_OUT_DURATION_MS,
-                0);
-        boolean isWindowInitiallyTranslucent =
-                BaseCustomTabActivity.isWindowInitiallyTranslucent(activity);
-        mSplashController.setConfig(
-                this, isWindowInitiallyTranslucent, splashHideAnimationDurationMs);
-        orientationController.delayOrientationRequestsIfNeeded(
-                mSplashController, isWindowInitiallyTranslucent);
+        long splashHideAnimationDurationMs =
+                IntentUtils.safeGetInt(getSplashScreenParamsFromIntent(),
+                        SplashScreenParamKey.KEY_FADE_OUT_DURATION_MS, 0);
+        mSplashController.setConfig(this, splashHideAnimationDurationMs);
 
         lifecycleDispatcher.register(this);
     }
@@ -137,12 +129,12 @@ public class TwaSplashController implements InflationObserver, SplashDelegate {
     private void applyCustomizationsToSplashScreenView(ImageView imageView) {
         Bundle params = getSplashScreenParamsFromIntent();
 
-        int backgroundColor = IntentUtils.safeGetInt(params,
-                SplashScreenParamKey.KEY_BACKGROUND_COLOR, Color.WHITE);
+        int backgroundColor = IntentUtils.safeGetInt(
+                params, SplashScreenParamKey.KEY_BACKGROUND_COLOR, Color.WHITE);
         imageView.setBackgroundColor(ColorUtils.getOpaqueColor(backgroundColor));
 
-        int scaleTypeOrdinal = IntentUtils.safeGetInt(params,
-                SplashScreenParamKey.KEY_SCALE_TYPE, -1);
+        int scaleTypeOrdinal =
+                IntentUtils.safeGetInt(params, SplashScreenParamKey.KEY_SCALE_TYPE, -1);
         ImageView.ScaleType[] scaleTypes = ImageView.ScaleType.values();
         ImageView.ScaleType scaleType;
         if (scaleTypeOrdinal < 0 || scaleTypeOrdinal >= scaleTypes.length) {

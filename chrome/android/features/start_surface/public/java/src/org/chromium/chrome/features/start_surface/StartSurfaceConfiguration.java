@@ -32,7 +32,9 @@ public class StartSurfaceConfiguration {
     public static final BooleanCachedFieldTrialParameter START_SURFACE_SHOW_STACK_TAB_SWITCHER =
             new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "show_stack_tab_switcher", false);
-
+    public static final BooleanCachedFieldTrialParameter START_SURFACE_OPEN_NTP_INSTEAD_OF_START =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.START_SURFACE_ANDROID, "open_ntp_instead_of_start", false);
     /**
      * @return Whether the Start Surface is enabled.
      */

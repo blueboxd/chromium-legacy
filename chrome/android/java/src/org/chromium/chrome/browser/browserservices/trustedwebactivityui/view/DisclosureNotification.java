@@ -112,6 +112,9 @@ public class DisclosureNotification implements
         PendingIntentProvider intent = DisclosureAcceptanceBroadcastReceiver.createPendingIntent(
                 mContext, scope, NOTIFICATION_ID_TWA_DISCLOSURE, packageName);
 
+        // We don't have an icon to display.
+        int icon = 0;
+
         return NotificationBuilderFactory
                 .createChromeNotificationBuilder(
                         preferCompat, channelId, remoteAppPackageName, metadata)
@@ -119,6 +122,8 @@ public class DisclosureNotification implements
                 .setContentTitle(title)
                 .setContentText(text)
                 .setContentIntent(intent)
+                .addAction(icon, mResources.getString(R.string.got_it), intent,
+                        NotificationUmaTracker.ActionType.TWA_NOTIFICATION_ACCEPTANCE)
                 .setShowWhen(false)
                 .setAutoCancel(false)
                 .setOngoing(!firstTime)

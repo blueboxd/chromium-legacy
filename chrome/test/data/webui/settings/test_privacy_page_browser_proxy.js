@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {SecureDnsMode, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import { MetricsReporting,PrivacyPageBrowserProxy, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from 'chrome://settings/settings.js';
+
+import {assertFalse} from '../chai_assert.js';
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 // clang-format on
 
 /** @implements {PrivacyPageBrowserProxy} */
@@ -12,7 +14,6 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'getMetricsReporting',
-      'recordSettingsPageHistogram',
       'setMetricsReportingEnabled',
       'showManageSSLCertificates',
       'setBlockAutoplayEnabled',
@@ -62,11 +63,6 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
   getMetricsReporting() {
     this.methodCalled('getMetricsReporting');
     return Promise.resolve(this.metricsReporting);
-  }
-
-  /** @override*/
-  recordSettingsPageHistogram(value) {
-    this.methodCalled('recordSettingsPageHistogram', value);
   }
 
   /** @override */

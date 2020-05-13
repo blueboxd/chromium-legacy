@@ -61,6 +61,8 @@ class CORE_EXPORT SelectionModifier {
   // to return |current_selection_|.
   VisibleSelection Selection() const;
 
+  TextDirection DirectionOfSelection() const;
+
   bool Modify(SelectionModifyAlteration,
               SelectionModifyDirection,
               TextGranularity);
@@ -78,7 +80,6 @@ class CORE_EXPORT SelectionModifier {
   VisibleSelection PrepareToModifySelection(SelectionModifyAlteration,
                                             SelectionModifyDirection) const;
   TextDirection DirectionOfEnclosingBlock() const;
-  TextDirection DirectionOfSelection() const;
   TextDirection LineDirectionOfExtent() const;
   VisiblePosition PositionForPlatform(bool is_get_start) const;
   VisiblePosition StartForPlatform() const;

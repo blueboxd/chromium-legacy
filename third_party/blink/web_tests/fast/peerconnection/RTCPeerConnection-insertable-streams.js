@@ -13,9 +13,13 @@ function areArrayBuffersEqual(buffer1, buffer2)
   return true;
 }
 
+function areMetadataEqual(metadata1, metadata2) {
+  return metadata1.synchronizationSource === metadata2.synchronizationSource;
+}
+
 function areFrameInfosEqual(frame1, frame2) {
-  return frame1.synchronizationSource === frame2.synchronizationSource &&
-         frame1.timestamp === frame2.timestamp &&
+  return frame1.timestamp === frame2.timestamp &&
+         areMetadataEqual(frame1.getMetadata(), frame2.getMetadata()) &&
          areArrayBuffersEqual(frame1.data, frame2.data);
 }
 
@@ -44,4 +48,3 @@ async function doInverseSignalingHandshake(pc1, pc2) {
   await pc2.setRemoteDescription(answer);
   await pc1.setLocalDescription(answer);
 }
-

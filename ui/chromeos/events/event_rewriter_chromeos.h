@@ -124,12 +124,8 @@ class EventRewriterChromeOS : public EventRewriter {
                         bool privacy_screen_supported);
   ~EventRewriterChromeOS() override;
 
-  // Calls KeyboardDeviceAddedInternal.
-  void KeyboardDeviceAddedForTesting(
-      int device_id,
-      const std::string& device_name,
-      const std::string& layout_string = std::string(),
-      InputDeviceType device_type = INPUT_DEVICE_INTERNAL);
+  // Calls KeyboardDeviceAdded.
+  void KeyboardDeviceAddedForTesting(int device_id);
 
   // Reset the internal rewriter state so that next set of tests can be ran on
   // the same rewriter, if needed.
@@ -198,11 +194,6 @@ class EventRewriterChromeOS : public EventRewriter {
   // identifying the keyboard, and returns the device type of this keyboard
   // even if it wasn't stored in |device_id_to_info_|.
   DeviceType KeyboardDeviceAdded(int device_id);
-
-  // Inserts a new entry to |device_id_to_info_|.
-  void KeyboardDeviceAddedInternal(int device_id,
-                                   DeviceType type,
-                                   KeyboardTopRowLayout layout);
 
   // Returns true if |last_keyboard_device_id_| is Hotrod remote.
   bool IsHotrodRemote() const;

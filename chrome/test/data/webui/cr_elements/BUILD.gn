@@ -22,6 +22,7 @@ js_modulizer("modulize") {
     "cr_lazy_render_tests.js",
     "cr_link_row_tests.js",
     "cr_policy_indicator_tests.js",
+    "cr_lottie_tests.js",
     "cr_policy_indicator_behavior_tests.js",
     "cr_policy_pref_indicator_tests.js",
     "cr_profile_avatar_selector_tests.js",

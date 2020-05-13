@@ -444,6 +444,30 @@
       <message name="IDS_PAGE_INFO_FAST_SITE_MESSAGE" desc="A short paragraph that explains what is meant by labeling the current website as fast.">
         This site opens and responds quickly for most people
       </message>
+      <message name="IDS_PAGE_INFO_ANDROID_LOCATION_BLOCKED" desc="The label used in the Page Info dialog to indicate that location has been been disabled for the device in Android settings">
+        Turned off for this device
+      </message>
+      <message name="IDS_PAGE_INFO_ANDROID_NFC_UNSUPPORTED" desc="The label used in the Page Info dialog to indicate NFC is not supported by this device">
+        This device can't read NFC
+      </message>
+      <message name="IDS_PAGE_INFO_ANDROID_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to indicate a permission has been blocked within Android settings">
+        Turned off in Android settings
+      </message>
+      <message name="IDS_PAGE_INFO_ANDROID_AR_CAMERA_BLOCKED" desc="The label used in the Page Info dialog for the AR permission to indicate that Camera has been disabled for the device in Android settings">
+        Camera is turned off in Android settings
+      </message>
+      <message name="IDS_PAGE_INFO_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed permission. Eg: Location - Allowed">
+        Allowed
+      </message>
+      <message name="IDS_PAGE_INFO_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to describe a blocked permission. Eg: Location - Blocked">
+        Blocked
+      </message>
+      <message name="IDS_PAGE_INFO_DSE_PERMISSION_ALLOWED" desc="The label used in the Page Info dialog to describe an allowed location permission for the current search engine. Eg: Location - Allowed for current search engine">
+        Allowed for current search engine
+      </message>
+      <message name="IDS_PAGE_INFO_DSE_PERMISSION_BLOCKED" desc="The label used in the Page Info dialog to describe a blocked location permission for the current search engine. Eg: Location - Blocked for current search engine">
+        Blocked for current search engine
+      </message>
 
     <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
         Cookies

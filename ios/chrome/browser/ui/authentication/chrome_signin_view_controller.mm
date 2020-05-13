@@ -47,6 +47,7 @@
 #include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -842,6 +843,8 @@ enum AuthenticationState {
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       _primaryButton.pointerInteractionEnabled = YES;
+      _primaryButton.pointerStyleProvider =
+          CreateOpaqueButtonPointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)
@@ -858,6 +861,8 @@ enum AuthenticationState {
   if (@available(iOS 13.4, *)) {
     if (base::FeatureList::IsEnabled(kPointerSupport)) {
       _secondaryButton.pointerInteractionEnabled = YES;
+      _secondaryButton.pointerStyleProvider =
+          CreateTransparentButtonPointerStyleProvider();
     }
   }
 #endif  // defined(__IPHONE_13_4)

@@ -34,6 +34,8 @@ class TestDataSource : public content::URLDataSource {
 
   std::string GetContentSecurityPolicyScriptSrc() override;
 
+  std::string GetContentSecurityPolicyWorkerSrc() override;
+
   GURL GetURLForPath(const std::string& path);
 
   void ReadFile(const std::string& path,

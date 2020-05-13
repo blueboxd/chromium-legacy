@@ -14137,6 +14137,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareQRCode">
+  <owner>seblalancette@chromium.org</owner>
+  <description>
+    The user initiated the Share action for the generated QR code image.
+  </description>
+</action>
+
 <action name="MobileShortcutAllBookmarks">
   <obsolete>Deprecated as of 5/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

@@ -99,7 +99,8 @@ ResolveContext::ServerStats::~ServerStats() = default;
 ResolveContext::ResolveContext(URLRequestContext* url_request_context,
                                bool enable_caching)
     : url_request_context_(url_request_context),
-      host_cache_(enable_caching ? HostCache::CreateDefaultCache() : nullptr) {
+      host_cache_(enable_caching ? HostCache::CreateDefaultCache() : nullptr),
+      isolation_info_(IsolationInfo::CreateTransient()) {
   max_timeout_ = GetMaxTimeout();
 }
 

@@ -60,6 +60,8 @@ class RTCRtpReceiver final : public ScriptWrappable {
       ScriptState*,
       ExceptionState&);
   ScriptPromise getStats(ScriptState*);
+  RTCInsertableStreams* createEncodedStreams(ScriptState*, ExceptionState&);
+  // TODO(crbug.com/1069295): Make these methods private.
   RTCInsertableStreams* createEncodedAudioStreams(ScriptState*,
                                                   ExceptionState&);
   RTCInsertableStreams* createEncodedVideoStreams(ScriptState*,

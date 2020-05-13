@@ -344,3 +344,20 @@ var CrElementsPolicyIndicatorBehaviorV3Test =
 TEST_F('CrElementsPolicyIndicatorBehaviorV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrElementsLottieV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_lottie_tests.m.js';
+  }
+
+  /** @override */
+  get commandLineSwitches() {
+    return [{switchName: 'enable-pixel-output-in-tests'}];
+  }
+};
+
+TEST_F('CrElementsLottieV3Test', 'All', function() {
+  mocha.run();
+});

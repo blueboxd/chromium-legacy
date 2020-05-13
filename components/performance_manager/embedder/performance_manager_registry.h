@@ -6,6 +6,7 @@
 #define COMPONENTS_PERFORMANCE_MANAGER_EMBEDDER_PERFORMANCE_MANAGER_REGISTRY_H_
 
 #include <memory>
+#include <vector>
 
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -14,6 +15,8 @@ namespace content {
 class BrowserContext;
 class RenderFrameHost;
 class RenderProcessHost;
+class NavigationHandle;
+class NavigationThrottle;
 class WebContents;
 }  // namespace content
 
@@ -34,6 +37,8 @@ namespace performance_manager {
 // This class can only be accessed on the main thread.
 class PerformanceManagerRegistry {
  public:
+  using Throttles = std::vector<std::unique_ptr<content::NavigationThrottle>>;
+
   virtual ~PerformanceManagerRegistry() = default;
 
   PerformanceManagerRegistry(const PerformanceManagerRegistry&) = delete;
@@ -56,6 +61,12 @@ class PerformanceManagerRegistry {
   // WebContents that already has a PageNode.
   virtual void CreatePageNodeForWebContents(
       content::WebContents* web_contents) = 0;
+
+  // Must be invoked for a NavigationHandle when it is committed, allowing the
+  // PM the opportunity to apply NavigationThrottles. Typically wired up to
+  // ContentBrowserClient::CreateThrottlesForNavigation.
+  virtual Throttles CreateThrottlesForNavigation(
+      content::NavigationHandle* handle) = 0;
 
   // Must be invoked when a BrowserContext is added/removed.
   // Registers/unregisters an observer that creates WorkerNodes when

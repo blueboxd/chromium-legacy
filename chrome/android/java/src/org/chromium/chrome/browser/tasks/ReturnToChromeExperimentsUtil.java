@@ -201,12 +201,26 @@ public final class ReturnToChromeExperimentsUtil {
     }
 
     /**
-     * Check whether we should show Start Surface as the home page.
-     * @return Whether Start Surface should be shown as the home page, otherwise false.
+     * Check whether we should show Start Surface as the home page. This is used for all cases
+     * except initial tab creation, which uses {@link
+     * #shouldShowStartSurfaceAsTheHomePageNoTabs()}.
+     *
+     * @return Whether Start Surface should be shown as the home page.
      */
     public static boolean shouldShowStartSurfaceAsTheHomePage() {
-        // Note that we should only show StartSurface as the HomePage if Single Pane is enabled,
-        // HomePage is not customized, accessibility is not enabled and not on tablet.
+        return shouldShowStartSurfaceAsTheHomePageNoTabs()
+                && !StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START.getValue();
+    }
+
+    /**
+     * Check whether we should show Start Surface as the home page for initial tab creation.
+     *
+     * @return Whether Start Surface should be shown as the home page.
+     */
+    public static boolean shouldShowStartSurfaceAsTheHomePageNoTabs() {
+        // When creating initial tab, i.e. cold start without restored tabs, we should only show
+        // StartSurface as the HomePage if Single Pane is enabled, HomePage is not customized,
+        // accessibility is not enabled and not on tablet.
         String homePageUrl = HomepageManager.getHomepageUri();
         return StartSurfaceConfiguration.isStartSurfaceSinglePaneEnabled()
                 && (TextUtils.isEmpty(homePageUrl) || isNTPUrl(homePageUrl))

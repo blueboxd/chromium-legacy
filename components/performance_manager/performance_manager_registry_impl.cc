@@ -4,6 +4,7 @@
 
 #include "components/performance_manager/performance_manager_registry_impl.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/stl_util.h"
@@ -11,10 +12,12 @@
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/public/performance_manager_main_thread_mechanism.h"
 #include "components/performance_manager/public/performance_manager_main_thread_observer.h"
 #include "components/performance_manager/service_worker_context_adapter.h"
 #include "components/performance_manager/worker_watcher.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -59,6 +62,21 @@ void PerformanceManagerRegistryImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void PerformanceManagerRegistryImpl::AddMechanism(
+    PerformanceManagerMainThreadMechanism* mechanism) {
+  mechanisms_.AddObserver(mechanism);
+}
+
+void PerformanceManagerRegistryImpl::RemoveMechanism(
+    PerformanceManagerMainThreadMechanism* mechanism) {
+  mechanisms_.RemoveObserver(mechanism);
+}
+
+bool PerformanceManagerRegistryImpl::HasMechanism(
+    PerformanceManagerMainThreadMechanism* mechanism) {
+  return mechanisms_.HasObserver(mechanism);
+}
+
 void PerformanceManagerRegistryImpl::CreatePageNodeForWebContents(
     content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -78,6 +96,19 @@ void PerformanceManagerRegistryImpl::CreatePageNodeForWebContents(
     for (auto& observer : observers_)
       observer.OnPageNodeCreatedForWebContents(web_contents);
   }
+}
+
+PerformanceManagerRegistryImpl::Throttles
+PerformanceManagerRegistryImpl::CreateThrottlesForNavigation(
+    content::NavigationHandle* handle) {
+  Throttles combined_throttles;
+  for (auto& mechanism : mechanisms_) {
+    Throttles throttles = mechanism.CreateThrottlesForNavigation(handle);
+    combined_throttles.insert(combined_throttles.end(),
+                              std::make_move_iterator(throttles.begin()),
+                              std::make_move_iterator(throttles.end()));
+  }
+  return combined_throttles;
 }
 
 void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(

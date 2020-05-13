@@ -10,7 +10,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -61,7 +60,7 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
         mSnackbarManagable = snackbarManagable;
         mTabModelSelector = selector;
         mContext = context;
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             private boolean disableUndo() {
                 return AccessibilityUtil.isAccessibilityEnabled()
                         || DeviceClassManager.enableAccessibilityLayout();

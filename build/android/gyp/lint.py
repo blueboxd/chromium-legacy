@@ -55,6 +55,7 @@ def _RunLint(lint_path,
              manifest_package,
              resource_sources,
              resource_zips,
+             android_sdk_root,
              testonly_target=False,
              can_fail_build=False,
              include_unexpected=False,
@@ -102,8 +103,19 @@ def _RunLint(lint_path,
 
   with build_utils.TempDir() as temp_dir:
     cmd = [
-        _RebasePath(lint_path), '-Werror', '--exitcode', '--showall',
-        '--xml', _RebasePath(result_path),
+        _RebasePath(lint_path),
+        '-Werror',
+        '--exitcode',
+        '--showall',
+        '--xml',
+        _RebasePath(result_path),
+        # An explicit sdk root needs to be specified since we have an extra
+        # intermediate 'lastest' directory under cmdline-tools which prevents
+        # lint from automatically deducing the location of the sdk. The sdk is
+        # required for many checks (e.g. NewApi). Lint also requires absolute
+        # paths.
+        '--sdk-home',
+        os.path.abspath(android_sdk_root),
     ]
     if config_path:
       cmd.extend(['--config', _RebasePath(config_path)])
@@ -306,6 +318,9 @@ def _FindInDirectories(directories, filename_filter):
 def _ParseArgs(argv):
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
+  parser.add_argument('--android-sdk-root',
+                      required=True,
+                      help='Lint needs an explicit path to the android sdk.')
   parser.add_argument('--testonly',
                       action='store_true',
                       help='If set, some checks like UnusedResources will be '
@@ -401,6 +416,7 @@ def main():
            args.manifest_package,
            resource_sources,
            args.resource_zips,
+           args.android_sdk_root,
            testonly_target=args.testonly,
            can_fail_build=args.can_fail_build,
            include_unexpected=args.include_unexpected_failures,

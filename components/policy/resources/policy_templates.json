@@ -3624,7 +3624,6 @@
       },
       'id': 700,
       'supported_on' : ['chrome.*:84-', 'chrome_os:84-'],
-      'future': True,
       'caption': '''List of file types that should be automatically opened on download''',
       'tags': [],
       'desc': '''List of file types that should be automatically opened on download. The leading separator should not be included when listing the file type, so list "txt" instead of ".txt".
@@ -10871,15 +10870,11 @@
       'id': 188,
       'caption': '''Show accessibility options in system tray menu''',
       'tags': [],
-      'desc': '''If this policy is set to true, Accessibility options always appear in system tray menu.
+      'desc': '''Setting the policy to True displays the accessibility options in the system tray menu. If you set the policy to False, the options don't appear in the menu.
 
-          If this policy is set to false, Accessibility options never appear in system tray menu.
+      If you set the policy, users can't change it. If not set, accessibility options don't appear in the menu, but users can make them appear through the Settings page.
 
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
-
-          When accessibility features are enabled by other means (e.g by a key combination), Accessibility options will always appear in system tray menu.'''
+      If you turn on accessibility features by other means (for example, by key combination), accessibility options always appear in the system tray menu.'''
     },
     {
       'name': 'DeviceLoginScreenShowOptionsInSystemTrayMenu',
@@ -10896,15 +10891,11 @@
       'id': 646,
       'caption': '''Show accessibility options in system tray menu in the login screen''',
       'tags': [],
-      'desc': '''If this policy is set to true, Accessibility options always appear in system tray menu.
+      'desc': '''Setting the policy to True displays the accessibility options in the system tray menu. If you set the policy to False, the options don't appear in the menu.
 
-          If this policy is set to false, Accessibility options never appear in system tray menu.
+      If you set the policy, users can't change it. If not set, accessibility options don't appear in the menu, but users can make them appear through the Settings page.
 
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
-
-          When accessibility features are enabled by other means (e.g by a key combination), Accessibility options will always appear in system tray menu.'''
+      If you turn on accessibility features by other means (for example, by key combination), accessibility options always appear in the system tray menu.'''
     },
     {
       'name': 'LargeCursorEnabled',
@@ -10921,15 +10912,9 @@
       'id': 211,
       'caption': '''Enable large cursor''',
       'tags': [],
-      'desc': '''Enable the large cursor accessibility feature.
+      'desc': '''Setting the policy to True keeps the large cursor on. Setting the policy to False keeps the large cursor off.
 
-          If this policy is set to true, the large cursor will always be enabled.
-
-          If this policy is set to false, the large cursor will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the large cursor is disabled initially but can be enabled by the user anytime.'''
+      If you set the policy, users can't change the feature. If not set, the large cursor is off at first, but users can turn it on any time.'''
     },
     {
       'name': 'SpokenFeedbackEnabled',
@@ -10946,15 +10931,9 @@
       'id': 212,
       'caption': '''Enable spoken feedback''',
       'tags': [],
-      'desc': '''Enable the spoken feedback accessibility feature.
+      'desc': '''Setting the policy to True keeps spoken feedback on. Setting the policy to False keeps spoken feedback off.
 
-          If this policy is set to true, spoken feedback will always be enabled.
-
-          If this policy is set to false, spoken feedback will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, spoken feedback is disabled initially but can be enabled by the user anytime.'''
+       If you set the policy, users can't change it. If not set, spoken feedback is off at first, but users can turn it on any time.'''
     },
     {
       'name': 'HighContrastEnabled',
@@ -10971,15 +10950,9 @@
       'id': 213,
       'caption': '''Enable high contrast mode''',
       'tags': [],
-      'desc': '''Enable the high contrast mode accessibility feature.
+      'desc': '''Setting the policy to True keeps High-contrast mode on. Setting the policy to False keeps High-contrast mode off.
 
-          If this policy is set to true, high contrast mode will always be enabled.
-
-          If this policy is set to false, high contrast mode will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, high contrast mode is disabled initially but can be enabled by the user anytime.'''
+      If you set the policy, users can't change it. If not set, High-contrast mode is off, but users can turn it on any time.'''
     },
     {
       'name': 'DeviceLoginScreenAccessibilityShortcutsEnabled',
@@ -11046,15 +11019,9 @@
       'id': 255,
       'caption': '''Enable on-screen keyboard''',
       'tags': [],
-      'desc': '''Enable the on-screen keyboard accessibility feature.
+      'desc': '''Setting the policy to True keeps the on-screen keyboard on. Setting the policy to False keeps the on-screen keyboard off.
 
-          If this policy is set to true, the on-screen keyboard will always be enabled.
-
-          If this policy is set to false, the on-screen keyboard will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime.'''
+      If you set the policy, users can't change it. If not set, the on-screen keyboard is off at first, but users can turn it on any time.'''
     },
     {
       'name': 'StickyKeysEnabled',
@@ -11071,15 +11038,9 @@
       'id': 561,
       'caption': '''Enable sticky keys''',
       'tags': [],
-      'desc': '''Enable the sticky keys accessibility feature.
+      'desc': '''Setting the policy to True keeps sticky keys on. Setting the policy to False keeps sticky keys off.
 
-          If this policy is set to true, the sticky keys will always be enabled.
-
-          If this policy is set to false, the sticky keys will always be disabled.
-
-          If you set this policy, users cannot change or override it.
-
-          If this policy is left unset, the sticky keys is disabled initially but can be enabled by the user anytime.'''
+      If you set the policy, users can't change it. If not set, sticky keys is off at first, but users can turn it on any time.'''
     },
     {
       'name': 'SelectToSpeakEnabled',
@@ -11281,11 +11242,9 @@
       'id': 260,
       'caption': '''Media keys default to function keys''',
       'tags': [],
-      'desc': '''Changes the default behaviour of the top row keys to function keys.
+      'desc': '''Setting the policy to True makes the top row of keys on the keyboard act as function key commands. Pressing the Search key changes their behavior back to media keys.
 
-          If this policy is set to true, the keyboard's top row of keys will produce function key commands per default. The search key has to be pressed to revert their behavior back to media keys.
-
-          If this policy is set to false or left unset, the keyboard will produce media key commands per default and function key commands when the search key is held.'''
+      If set to False or not set, the keyboard defaults to producing media key commands. Pressing the Search key changes them to function keys.'''
     },
     {
       'name': 'ScreenMagnifierType',
@@ -11322,11 +11281,11 @@
       'id': 214,
       'caption': '''Set screen magnifier type''',
       'tags': [],
-      'desc': '''If this policy is set, it controls the type of screen magnifier that is enabled. Setting the policy to "None" disables the screen magnifier.
+      'desc': '''Setting the policy to None turns the screen magnifier off.
 
-          If you set this policy, users cannot change or override it.
+      If you set the policy, users can't change it. If not set, the screen magnifier is off at first, but users can turn it on any time.
 
-          If this policy is left unset, the screen magnifier is disabled initially but can be enabled by the user anytime.''',
+      Valid values: • 0 = Off • 1 = On • 2 = Docked magnifier on''',
     },
     {
       'name': 'DeviceLoginScreenDefaultLargeCursorEnabled',
@@ -11342,15 +11301,11 @@
       'id': 215,
       'caption': '''Set default state of the large cursor on the login screen''',
       'tags': [],
-      'desc': '''Set the default state of the large cursor accessibility feature on the login screen.
+      'desc': '''Setting the policy to True turns the large cursor on at the sign-in screen. Setting the policy to False turns the large cursor off at the sign-in screen.
 
-          If this policy is set to true, the large cursor will be enabled when the login screen is shown.
+      If you set the policy, users can temporarily turn the large cursor on or off. When the sign-in screen reloads or stays idle for a minute, it reverts to its original state.
 
-          If this policy is set to false, the large cursor will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling the large cursor. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, the large cursor is disabled when the login screen is first shown. Users can enable or disable the large cursor anytime and its status on the login screen is persisted between users.
+      If not set, the large cursor is off at the sign-in screen. Users can turn it on any time, and its status on the sign-in screen persists across users.
 
           Note: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED">DeviceLoginScreenLargeCursorEnabled</ph> overrides this policy if the former is specified.''',
     },
@@ -11393,15 +11348,11 @@
       'id': 216,
       'caption': '''Set the default state of spoken feedback on the login screen''',
       'tags': [],
-      'desc': '''Set the default state of the spoken feedback accessibility feature on the login screen.
+      'desc': '''Setting the policy to True turns spoken feedback on at the sign-in screen. Setting the policy to False turns spoken feedback off at the screen.
 
-          If this policy is set to true, spoken feedback will be enabled when the login screen is shown.
+      If you set the policy, users can temporarily turn spoken feedback on or off. When the sign-in screen reloads or stays idle for a minute, it reverts to its original state.
 
-          If this policy is set to false, spoken feedback will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling spoken feedback. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, spoken feedback is disabled when the login screen is first shown. Users can enable or disable spoken feedback anytime and its status on the login screen is persisted between users.
+      If not set, spoken feedback is off at the sign-in screen. Users can turn it on any time, and its status on the sign-in screen persists across users.
 
           Note: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME">DeviceLoginScreenSpokenFeedbackEnabled</ph> overrides this policy if the former is specified.''',
     },
@@ -11444,15 +11395,11 @@
       'id': 217,
       'caption': '''Set the default state of high contrast mode on the login screen''',
       'tags': [],
-      'desc': '''Set the default state of the high contrast mode accessibility feature on the login screen.
+      'desc': '''Setting the policy to True turns High-contrast mode on at the sign-in screen. Setting the policy to False turns High-contrast mode off at the screen.
 
-          If this policy is set to true, high contrast mode will be enabled when the login screen is shown.
+      If you set the policy, users can temporarily change High-contrast mode, turning it on or off. When the sign-in screen reloads or stays idle for a minute, it reverts to its original state.
 
-          If this policy is set to false, high contrast mode will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling high contrast mode. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode anytime and its status on the login screen is persisted between users.
+      If not set, High-contrast mode is off at the sign-in screen. Users can turn it on any time, and its status on the sign-in screen persists across users.
 
           Note: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME">DeviceLoginScreenHighContrastEnabled</ph> overrides this policy if the former is specified.''',
     },
@@ -11495,15 +11442,11 @@
       'id': 256,
       'caption': '''Set default state of the on-screen keyboard on the login screen''',
       'tags': [],
-      'desc': '''Set the default state of the on-screen keyboard accessibility feature on the login screen.
+      'desc': '''Setting the policy to True turns the on-screen keyboard on at sign-in. Setting the policy to False turns the on-screen keyboard off at sign-in.
 
-          If this policy is set to true, the on-screen keyboard will be enabled when the login screen is shown.
+      If you set the policy, users can temporarily turn the on-screen keyboard on or off. When the sign-in screen reloads or stays idle for a minute, it reverts to its original state.
 
-          If this policy is set to false, the on-screen keyboard will be disabled when the login screen is shown.
-
-          If you set this policy, users can temporarily override it by enabling or disabling the on-screen keyboard. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
-
-          If this policy is left unset, the on-screen keyboard is disabled when the login screen is first shown. Users can enable or disable the on-screen keyboard anytime and its status on the login screen is persisted between users.
+      If not set, the on-screen keyboard is off at the sign-in screen. Users can turn it on any time, and its status on the sign-in screen persists across users.
 
           Note: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME">DeviceLoginScreenVirtualKeyboardEnabled</ph> overrides this policy if the former is specified.''',
     },
@@ -11642,13 +11585,13 @@
       'id': 218,
       'caption': '''Set the default screen magnifier type enabled on the login screen''',
       'tags': [],
-      'desc': '''Set the default type of screen magnifier that is enabled on the login screen.
+      'desc': '''Setting the policy to None turns screen magnification off at the sign-in screen.
 
-          If this policy is set, it controls the type of screen magnifier that is enabled when the login screen is shown. Setting the policy to "None" disables the screen magnifier.
+       If you set the policy, users can temporarily turn the screen magnifier on or off. When the sign-in screen reloads or stays idle for a minute, it reverts to its original state.
 
-          If you set this policy, users can temporarily override it by enabling or disabling the screen magnifier. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
+      If not set, the screen magnifier is off at the sign-in screen. Users can turn it on any time, and its status on the sign-in screen persists across users.
 
-          If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.
+       Valid values: • 0 = Off • 1 = On • 2 = Docked magnifier on
 
           Note: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME">DeviceLoginScreenScreenMagnifierType</ph> overrides this policy if the former is specified.''',
     },

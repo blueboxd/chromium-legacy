@@ -595,26 +595,40 @@ public class PlayerFrameMediatorTest {
 
         // Initial view port setup.
         mMediator.updateViewportSize(100, 200, 1f);
-        List<Pair<View, Rect>> expectedVisibleViews = new ArrayList<>();
-        expectedVisibleViews.add(subFrame1);
-        expectedVisibleViews.add(subFrame2);
+        List<View> expectedVisibleViews = new ArrayList<>();
+        List<Rect> expectedVisibleRects = new ArrayList<>();
+        expectedVisibleViews.add(subFrame1.first);
+        expectedVisibleViews.add(subFrame2.first);
+        expectedVisibleRects.add(subFrame1.second);
+        expectedVisibleRects.add(subFrame2.second);
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
 
         mMediator.scrollBy(100, 0);
         expectedVisibleViews.clear();
-        expectedVisibleViews.add(subFrame3);
+        expectedVisibleRects.clear();
+        expectedVisibleViews.add(subFrame3.first);
+        expectedVisibleRects.add(new Rect(20, 35, 50, 65));
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
 
         mMediator.scrollBy(-50, 0);
         expectedVisibleViews.clear();
-        expectedVisibleViews.add(subFrame1);
-        expectedVisibleViews.add(subFrame2);
-        expectedVisibleViews.add(subFrame3);
+        expectedVisibleRects.clear();
+        expectedVisibleViews.add(subFrame1.first);
+        expectedVisibleViews.add(subFrame2.first);
+        expectedVisibleViews.add(subFrame3.first);
+        expectedVisibleRects.add(new Rect(-40, 20, 10, 120));
+        expectedVisibleRects.add(new Rect(-20, 130, 20, 160));
+        expectedVisibleRects.add(new Rect(70, 35, 100, 65));
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
 
         mMediator.scrollBy(0, 200);
         expectedVisibleViews.clear();
+        expectedVisibleRects.clear();
         Assert.assertEquals(expectedVisibleViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
+        Assert.assertEquals(expectedVisibleRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
     }
 
     /**

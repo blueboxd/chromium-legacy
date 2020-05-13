@@ -22,7 +22,10 @@ source_set("lib") {
     "crash_reporter_client.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//build:branding_buildflags",
+  ]
 }
 
 source_set("crashpad_handler_main") {

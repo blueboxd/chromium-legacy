@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -47,26 +48,44 @@ class WebDatabaseHostImplTest : public ::testing::Test {
             base::FilePath(), /*is_incognito=*/false,
             /*special_storage_policy=*/nullptr,
             /*quota_manager_proxy=*/nullptr);
-    db_tracker->set_task_runner_for_testing(
-        base::ThreadTaskRunnerHandle::Get());
 
+    task_runner_ = db_tracker->task_runner();
     host_ = std::make_unique<WebDatabaseHostImpl>(process_id(),
                                                   std::move(db_tracker));
   }
 
+  void TearDown() override {
+    task_runner_->DeleteSoon(FROM_HERE, std::move(host_));
+    RunUntilIdle();
+  }
+
   template <typename Callable>
   void CheckUnauthorizedOrigin(const Callable& func) {
-    FakeMojoMessageDispatchContext fake_dispatch_context;
     mojo::test::BadMessageObserver bad_message_observer;
-    func();
+    base::RunLoop run_loop;
+    task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          FakeMojoMessageDispatchContext fake_dispatch_context;
+          func();
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    RunUntilIdle();
     EXPECT_EQ("Unauthorized origin.", bad_message_observer.WaitForBadMessage());
   }
 
   template <typename Callable>
   void CheckInvalidOrigin(const Callable& func) {
-    FakeMojoMessageDispatchContext fake_dispatch_context;
     mojo::test::BadMessageObserver bad_message_observer;
-    func();
+    base::RunLoop run_loop;
+    task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          FakeMojoMessageDispatchContext fake_dispatch_context;
+          func();
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    RunUntilIdle();
     EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForBadMessage());
   }
 
@@ -78,15 +97,19 @@ class WebDatabaseHostImplTest : public ::testing::Test {
     render_process_host_.release();
   }
 
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
+
   WebDatabaseHostImpl* host() { return host_.get(); }
   int process_id() const { return render_process_host_->GetID(); }
   BrowserContext* browser_context() { return &browser_context_; }
+  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<WebDatabaseHostImpl> host_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseHostImplTest);
 };
@@ -205,11 +228,16 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
 
   // Verify that an error occurs with OpenFile() call before process shutdown.
   {
-    FakeMojoMessageDispatchContext fake_dispatch_context;
-    host()->OpenFile(bad_vfs_file_name,
-                     /*desired_flags=*/0, success_callback);
-
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop run_loop;
+    task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          FakeMojoMessageDispatchContext fake_dispatch_context;
+          host()->OpenFile(bad_vfs_file_name,
+                           /*desired_flags=*/0, success_callback);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    RunUntilIdle();
 
     EXPECT_FALSE(success_callback_was_called);
     EXPECT_TRUE(error_callback_message.has_value());
@@ -225,11 +253,16 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
 
   // Attempt the call again and verify that no callbacks were called.
   {
-    FakeMojoMessageDispatchContext fake_dispatch_context;
-    host()->OpenFile(bad_vfs_file_name,
-                     /*desired_flags=*/0, success_callback);
-
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop run_loop;
+    task_runner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          FakeMojoMessageDispatchContext fake_dispatch_context;
+          host()->OpenFile(bad_vfs_file_name,
+                           /*desired_flags=*/0, success_callback);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    RunUntilIdle();
 
     // Verify none of the callbacks were called.
     EXPECT_FALSE(success_callback_was_called);

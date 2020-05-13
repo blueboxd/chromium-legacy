@@ -239,6 +239,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUET_LABELED = "ChromeDuetLabeled";
     public static final String CHROME_SHARE_SCREENSHOT = "ChromeShareScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
+    public static final String CHROME_SHARING_HUB_V15 = "ChromeSharingHubV15";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";

@@ -123,8 +123,9 @@ public class AwNonembeddedUmaRecorder {
                 IMetricsBridgeService metricsService =
                         IMetricsBridgeService.Stub.asInterface(service);
                 try {
-                    // We are not punting this to a background thread since it should be a
-                    // non-blocking call.
+                    // We are not punting this to a background thread since the cost of IPC itself
+                    // should be relatively cheap, and the remote method does its work
+                    // asynchronously.
                     metricsService.recordMetrics(methodCall.toByteArray());
                 } catch (RemoteException e) {
                     Log.e(TAG, "Remote Exception calling IMetricsBridgeService#recordMetrics", e);

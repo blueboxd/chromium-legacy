@@ -91,6 +91,14 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Autofill uses the local heuristic such that address forms are only filled if
+// at least 3 fields are fillable according to local heuristics. Unfortunately,
+// the criterion for fillability is only that the field type is unknown. So many
+// field types that we don't fill (search term, price, ...) count towards that
+// counter, effectively reducing the threshold for some forms.
+const base::Feature kAutofillFixFillableFieldTypes{
+    "AutofillFixFillableFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
 const base::Feature kAutofillKeyboardAccessory{

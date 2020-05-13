@@ -24,11 +24,11 @@ export {AccountManagerBrowserProxyImpl} from './people_page/account_manager_brow
 // </if>
 export {ProfileInfoBrowserProxyImpl} from './people_page/profile_info_browser_proxy.m.js';
 export {MAX_SIGNIN_PROMO_IMPRESSION} from './people_page/sync_account_control.m.js';
-export {PageStatus, StatusAction, SyncBrowserProxyImpl} from './people_page/sync_browser_proxy.m.js';
+export {PageStatus, StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from './people_page/sync_browser_proxy.m.js';
 export {PluralStringProxyImpl} from './plural_string_proxy.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
-export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.m.js';
+export {MetricsReporting, PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from './privacy_page/privacy_page_browser_proxy.m.js';
 export {ResetBrowserProxyImpl} from './reset_page/reset_browser_proxy.js';
 export {buildRouter, routes} from './route.js';
 export {Route, Router} from './router.m.js';

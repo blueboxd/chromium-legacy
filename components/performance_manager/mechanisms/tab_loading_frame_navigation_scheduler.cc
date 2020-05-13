@@ -6,6 +6,8 @@
 
 #include "base/no_destructor.h"
 #include "components/performance_manager/public/graph/policies/tab_loading_frame_navigation_policy.h"
+#include "components/performance_manager/public/performance_manager.h"
+#include "components/performance_manager/public/performance_manager_main_thread_mechanism.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -52,6 +54,36 @@ PolicyDelegate* GetPolicyDelegate() {
     g_policy_delegate = DefaultPolicyDelegate::Instance();
   return g_policy_delegate;
 }
+
+class MainThreadMechanism : public PerformanceManagerMainThreadMechanism {
+ public:
+  MainThreadMechanism() = default;
+  ~MainThreadMechanism() override = default;
+
+  MainThreadMechanism(const MainThreadMechanism&) = delete;
+  MainThreadMechanism& operator=(const MainThreadMechanism&) = delete;
+
+  // PerformanceManagerMainThreadMechanism implementation:
+  Throttles CreateThrottlesForNavigation(
+      content::NavigationHandle* handle) override {
+    auto throttle =
+        TabLoadingFrameNavigationScheduler::MaybeCreateThrottleForNavigation(
+            handle);
+    Throttles throttles;
+    if (throttle)
+      throttles.push_back(std::move(throttle));
+    return throttles;
+  }
+
+  static MainThreadMechanism* Instance() {
+    // NOTE: We should really have the policy object create an instance of the
+    // mechanism, and explicitly manage its lifetime, instead of having this
+    // singleton proxy that lives forever. To do that properly we'll need
+    // something like GraphRegistered for the main thread.
+    static base::NoDestructor<MainThreadMechanism> instance;
+    return instance.get();
+  }
+};
 
 }  // namespace
 
@@ -166,11 +198,15 @@ void TabLoadingFrameNavigationScheduler::SetThrottlingEnabled(bool enabled) {
   if (enabled == g_throttling_enabled)
     return;
   g_throttling_enabled = enabled;
-  if (enabled)
+
+  if (enabled) {
+    PerformanceManager::AddMechanism(MainThreadMechanism::Instance());
     return;
+  }
 
   // At this point the throttling is being disabled. Stop throttling all
   // currently-throttled contents.
+  PerformanceManager::RemoveMechanism(MainThreadMechanism::Instance());
   while (g_root)
     g_root->StopThrottlingImpl();  // Causes |g_root| to delete itself.
 }
@@ -200,6 +236,11 @@ void TabLoadingFrameNavigationScheduler::SetPolicyDelegateForTesting(
 // static
 bool TabLoadingFrameNavigationScheduler::IsThrottlingEnabledForTesting() {
   return g_throttling_enabled;
+}
+
+// static
+bool TabLoadingFrameNavigationScheduler::IsMechanismRegisteredForTesting() {
+  return PerformanceManager::HasMechanism(MainThreadMechanism::Instance());
 }
 
 TabLoadingFrameNavigationScheduler::TabLoadingFrameNavigationScheduler(

@@ -2626,6 +2626,10 @@ enum WebFeature {
   kGridRowGapPercentIndefinite = 3289,
   kFlexRowGapPercent = 3290,
   kFlexRowGapPercentIndefinite = 3291,
+  kV8RTCRtpSender_CreateEncodedStreams_Method = 3292,
+  kV8RTCRtpReceiver_CreateEncodedStreams_Method = 3293,
+  kForceEncodedAudioInsertableStreams = 3294,
+  kForceEncodedVideoInsertableStreams = 3295,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

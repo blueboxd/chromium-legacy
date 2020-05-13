@@ -526,10 +526,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void EnableMojoJsBindings() override;
 
   // mojom::FrameNavigationControl implementation:
-  void PostMessageEvent(int32_t source_routing_id,
-                        const base::string16& source_origin,
-                        const base::string16& target_origin,
-                        blink::TransferableMessage message) override;
   void ForwardMessageFromHost(
       blink::TransferableMessage message,
       const url::Origin& source_origin,

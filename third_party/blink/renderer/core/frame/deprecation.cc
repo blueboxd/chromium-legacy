@@ -532,6 +532,44 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "details.",
               MilestoneString(kM84).Ascii().c_str())};
 
+    case WebFeature::kV8RTCRtpSender_CreateEncodedAudioStreams_Method:
+      return {"V8RTCRtpSender_CreateEncodedAudioStreams_Method", kM85,
+              ReplacedWillBeRemoved("RTCRtpSender.createEncodedAudioStreams",
+                                    "RTCRtpSender.createEncodedStreams", kM85,
+                                    "6321945865879552")};
+
+    case WebFeature::kV8RTCRtpSender_CreateEncodedVideoStreams_Method:
+      return {"V8RTCRtpSender_CreateEncodedVideoStreams_Method", kM85,
+              ReplacedWillBeRemoved("RTCRtpSender.createEncodedVideoStreams",
+                                    "RTCRtpSender.createEncodedStreams", kM85,
+                                    "6321945865879552")};
+
+    case WebFeature::kV8RTCRtpReceiver_CreateEncodedAudioStreams_Method:
+      return {"V8RTCRtpReceiver_CreateEncodedAudioStreams_Method", kM85,
+              ReplacedWillBeRemoved("RTCRtpReceiver.createEncodedAudioStreams",
+                                    "RTCRtpReceiver.createEncodedStreams", kM85,
+                                    "6321945865879552")};
+
+    case WebFeature::kV8RTCRtpReceiver_CreateEncodedVideoStreams_Method:
+      return {"V8RTCRtpReceiver_CreateEncodedVideoStreams_Method", kM85,
+              ReplacedWillBeRemoved("RTCRtpReceiver.createEncodedVideoStreams",
+                                    "RTCRtpReceiver.createEncodedStreams", kM85,
+                                    "6321945865879552")};
+
+    case WebFeature::kForceEncodedAudioInsertableStreams:
+      return {"ForceEncodedAudioInsertableStreams", kM85,
+              ReplacedWillBeRemoved(
+                  "RTCConfiguration.forceEncodedAudioInsertableStreams",
+                  "RTCConfiguration.encodedInsertableStreams", kM85,
+                  "6321945865879552")};
+
+    case WebFeature::kForceEncodedVideoInsertableStreams:
+      return {"ForceEncodedVideoInsertableStreams", kM85,
+              ReplacedWillBeRemoved(
+                  "RTCConfiguration.forceEncodedVideoInsertableStreams",
+                  "RTCConfiguration.encodedInsertableStreams", kM85,
+                  "6321945865879552")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

@@ -86,6 +86,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // Overridden by platform subclasses.
   //
 
+  // Returns true if the property name matches a property filter.
+  bool FilterPropertyName(const base::string16& text);
+
   // Process accessibility tree with filters for output.
   // Given a dictionary that contains a platform-specific dictionary
   // representing an accessibility tree, and utilizing property_filters_ and

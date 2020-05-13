@@ -223,15 +223,15 @@
                file="cr_elements/chromeos/cr_picture/icons.html"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_LOTTIE_HTML"
-               file="cr_elements/chromeos/cr_lottie/cr_lottie.html"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_LOTTIE_JS"
-               file="cr_elements/chromeos/cr_lottie/cr_lottie.js"
-               type="chrome_html"
-               compress="gzip" />
   </if>
+  <structure name="IDR_CR_ELEMENTS_CR_LOTTIE_HTML"
+             file="cr_elements/cr_lottie/cr_lottie.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_LOTTIE_JS"
+             file="cr_elements/cr_lottie/cr_lottie.js"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_POLICY_INDICATOR_HTML"
              file="cr_elements/policy/cr_policy_indicator.html"
              type="chrome_html"

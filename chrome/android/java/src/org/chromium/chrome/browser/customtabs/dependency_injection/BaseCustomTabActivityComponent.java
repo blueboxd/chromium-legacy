@@ -36,9 +36,11 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
     CustomTabTaskDescriptionHelper resolveTaskDescriptionHelper();
     CustomTabToolbarCoordinator resolveToolbarCoordinator();
-    SplashController resolveSplashController();
     TabObserverRegistrar resolveTabObserverRegistrar();
     TwaFinishHandler resolveTwaFinishHandler();
     WebappActivityCoordinator resolveWebappActivityCoordinator();
     WebApkActivityCoordinator resolveWebApkActivityCoordinator();
+
+    // For testing
+    SplashController resolveSplashController();
 }

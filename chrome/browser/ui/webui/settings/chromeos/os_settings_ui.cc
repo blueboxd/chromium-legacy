@@ -82,7 +82,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       html_source,
       base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
-      kOsGeneratedPath, IDR_OS_SETTINGS_SETTINGS_V3_HTML);
+      kOsGeneratedPath, IDR_OS_SETTINGS_SETTINGS_HTML);
 #endif
 
   ManagedUIHandler::Initialize(web_ui, html_source);

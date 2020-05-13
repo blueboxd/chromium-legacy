@@ -96,7 +96,7 @@ void DOMSelection::UpdateFrameSelection(
   if (!did_set)
     return;
   Element* focused_element = GetFrame()->GetDocument()->FocusedElement();
-  frame_selection.DidSetSelectionDeprecated(options);
+  frame_selection.DidSetSelectionDeprecated(selection, options);
   if (GetFrame() && GetFrame()->GetDocument() &&
       focused_element != GetFrame()->GetDocument()->FocusedElement()) {
     UseCounter::Count(GetFrame()->GetDocument(),

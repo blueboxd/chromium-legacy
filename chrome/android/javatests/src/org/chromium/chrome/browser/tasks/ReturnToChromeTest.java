@@ -131,7 +131,7 @@ public class ReturnToChromeTest {
     @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
-            + "/start_surface_variation/single"})
+            + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
     public void testTabSwitcherModeNotTriggeredWithinThreshold() throws Exception {
         // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});
@@ -140,8 +140,8 @@ public class ReturnToChromeTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> Assert.assertTrue(ReturnToChromeExperimentsUtil
-                                                     .shouldShowStartSurfaceAsTheHomePage()));
+                        -> Assert.assertFalse(ReturnToChromeExperimentsUtil
+                                                      .shouldShowStartSurfaceAsTheHomePage()));
 
         Assert.assertFalse(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
 
@@ -154,6 +154,45 @@ public class ReturnToChromeTest {
     }
 
     /**
+     * Test that with {@link StartSurfaceConfiguration#START_SURFACE_OPEN_NTP_INSTEAD_OF_START}
+     * variation, overview mode is not triggered in Single-pane variation with NTP intent, even
+     * though the delay is longer than the interval between stop and start. Plus, a NTP should be
+     * created.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ReturnToChrome"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
+            + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
+    public void testTabSwitcherModeNotTriggeredWithinThreshold_NTP() throws Exception {
+        // clang-format on
+        InstantStartTest.createTabStateFile(new int[] {0, 1});
+        startMainActivityWithURLWithoutCurrentTab(UrlConstants.NTP_URL);
+
+        Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> Assert.assertFalse(ReturnToChromeExperimentsUtil
+                                                      .shouldShowStartSurfaceAsTheHomePage()));
+
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertFalse(
+                    mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
+
+        waitTabModelRestoration();
+
+        // 3 tabs since we created NTP in this case.
+        assertEquals(3, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+        if (!mActivityTestRule.getActivity().isTablet()) {
+            Assert.assertFalse(
+                    mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        }
+    }
+
+    /**
      * Test that overview mode is triggered in Single-pane variation with no tabs, even though
      * the delay is longer than the interval between stop and start.
      */
@@ -163,7 +202,7 @@ public class ReturnToChromeTest {
     @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
-            + "/start_surface_variation/single"})
+            + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
     public void testTabSwitcherModeTriggeredWithinThreshold_NoTab() {
         // clang-format on
         startMainActivityWithURLWithoutCurrentTab(null);
@@ -172,7 +211,7 @@ public class ReturnToChromeTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> Assert.assertTrue(ReturnToChromeExperimentsUtil
-                                                     .shouldShowStartSurfaceAsTheHomePage()));
+                                                     .shouldShowStartSurfaceAsTheHomePageNoTabs()));
 
         if (!mActivityTestRule.getActivity().isTablet()) {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());

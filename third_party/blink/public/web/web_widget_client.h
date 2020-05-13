@@ -90,10 +90,6 @@ class WebWidgetClient {
   // Called when the cursor for the widget changes.
   virtual void DidChangeCursor(const ui::Cursor&) {}
 
-  virtual void AutoscrollStart(const gfx::PointF&) {}
-  virtual void AutoscrollFling(const gfx::Vector2dF& velocity) {}
-  virtual void AutoscrollEnd() {}
-
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
 

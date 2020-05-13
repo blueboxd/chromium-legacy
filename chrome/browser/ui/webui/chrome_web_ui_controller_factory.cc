@@ -194,7 +194,6 @@
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/components/print_management/print_management_ui.h"
 #include "chromeos/components/print_management/url_constants.h"
-#include "chromeos/components/sample_system_web_app_ui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
@@ -205,6 +204,7 @@
 #if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 #include "chromeos/components/sample_system_web_app_ui/sample_system_web_app_ui.h"
+#include "chromeos/components/sample_system_web_app_ui/url_constants.h"
 #endif
 
 #if !defined(OS_CHROMEOS)

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_QUERY_TILES_INTERNAL_TILE_TYPES_H_
 #define COMPONENTS_QUERY_TILES_INTERNAL_TILE_TYPES_H_
 
+#include "base/callback.h"
+
 enum class TileInfoRequestStatus {
   // Initial status, request is not sent.
   kInit = 0,
@@ -25,10 +27,10 @@ enum class TileGroupStatus {
   kUninitialized = 1,
   // Db operations failed.
   kFailureDbOperation = 2,
-  // The group status is invalid, reason could be expired or locale not match.
-  kInvalidGroup = 3,
+  // Group data has been expired or hasn't been downloaded yet.
+  kNoTiles = 3,
   // Max value.
-  kMaxValue = kInvalidGroup,
+  kMaxValue = kNoTiles,
 };
 
 // Config to control how tile images are prefetched in background task.

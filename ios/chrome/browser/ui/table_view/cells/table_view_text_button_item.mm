@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -155,16 +156,11 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
     if (@available(iOS 13.4, *)) {
       if (base::FeatureList::IsEnabled(kPointerSupport)) {
         self.button.pointerInteractionEnabled = YES;
-        // UIKit seems to dynamically adjust the default pointer interaction
-        // behavior based on the size of the button relative to the size of its
-        // container. This produces inconsistent and undesired behavior in some
-        // uses of this table view cell. Removing the pointer shape seems to
-        // produce more consistent and acceptable behavior.
+        // This button's background color is configured whenever the cell is
+        // reused. The pointer style provider used here dynamically provides the
+        // appropriate style based on the background color at runtime.
         self.button.pointerStyleProvider =
-            ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
-                             UIPointerShape* proposedShape) {
-          return [UIPointerStyle styleWithEffect:proposedEffect shape:nil];
-        };
+            CreateOpaqueOrTransparentButtonPointerStyleProvider();
       }
     }
 #endif  // defined(__IPHONE_13_4)

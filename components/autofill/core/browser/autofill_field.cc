@@ -178,7 +178,11 @@ std::string AutofillField::FieldSignatureAsStr() const {
 }
 
 bool AutofillField::IsFieldFillable() const {
-  return !Type().IsUnknown();
+  if (!base::FeatureList::IsEnabled(features::kAutofillFixFillableFieldTypes))
+    return !Type().IsUnknown();
+
+  ServerFieldType field_type = Type().GetStorableType();
+  return IsFillableFieldType(field_type);
 }
 
 void AutofillField::SetPasswordRequirements(PasswordRequirementsSpec spec) {

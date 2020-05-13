@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_audio_frame_metadata.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_audio_frame_delegate.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -48,6 +49,14 @@ DOMArrayBuffer* RTCEncodedAudioFrame::data() const {
     frame_data_ = delegate_->CreateDataBuffer();
   }
   return frame_data_;
+}
+
+RTCEncodedAudioFrameMetadata* RTCEncodedAudioFrame::getMetadata() const {
+  RTCEncodedAudioFrameMetadata* metadata =
+      RTCEncodedAudioFrameMetadata::Create();
+  metadata->setSynchronizationSource(delegate_->Ssrc());
+  metadata->setContributingSources(delegate_->ContributingSources());
+  return metadata;
 }
 
 DOMArrayBuffer* RTCEncodedAudioFrame::additionalData() const {

@@ -4,6 +4,8 @@
 
 source_set("infobar_banner") {
   sources = [
+    "confirm_infobar_banner_overlay_request_config.h",
+    "confirm_infobar_banner_overlay_request_config.mm",
     "infobar_banner_overlay_responses.cc",
     "infobar_banner_overlay_responses.h",
     "save_password_infobar_banner_overlay.h",

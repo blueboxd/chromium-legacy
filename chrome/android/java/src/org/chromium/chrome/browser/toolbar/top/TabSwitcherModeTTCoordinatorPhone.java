@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -214,7 +213,7 @@ class TabSwitcherModeTTCoordinatorPhone {
         assert mTabModelSelector != null;
         mTabSwitcherModeToolbar.setTabModelSelector(mTabModelSelector);
         if (isNewTabVariationEnabled()) {
-            mTabModelObserver = new EmptyTabModelObserver() {
+            mTabModelObserver = new TabModelObserver() {
                 @Override
                 public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
                     assert tab.isIncognito();

@@ -14,8 +14,11 @@ import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.VerifiesOnP;
+import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.WindowEventObserverManager;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -40,15 +43,24 @@ public class SmartSelectionMetricsLogger implements SelectionMetricsLogger {
 
     private SelectionIndicesConverter mConverter;
 
-    public static SmartSelectionMetricsLogger create(WindowAndroid windowAndroid) {
-        if (windowAndroid.getContext().get() == null) {
+    public static SmartSelectionMetricsLogger create(WebContents webContents) {
+        if (webContents.getTopLevelNativeWindow().getContext().get() == null) {
             return null;
         }
-        return new SmartSelectionMetricsLogger(windowAndroid);
+        return new SmartSelectionMetricsLogger(webContents);
     }
 
-    private SmartSelectionMetricsLogger(WindowAndroid windowAndroid) {
-        mWindowAndroid = windowAndroid;
+    private SmartSelectionMetricsLogger(WebContents webContents) {
+        mWindowAndroid = webContents.getTopLevelNativeWindow();
+        WindowEventObserverManager manager = WindowEventObserverManager.from(webContents);
+        if (manager != null) {
+            manager.addObserver(new WindowEventObserver() {
+                @Override
+                public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
+                    mWindowAndroid = newWindowAndroid;
+                }
+            });
+        }
     }
 
     public void logSelectionStarted(String selectionText, int startOffset, boolean editable) {

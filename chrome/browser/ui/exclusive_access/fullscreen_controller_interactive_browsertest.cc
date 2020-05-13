@@ -658,7 +658,7 @@ class ExperimentalFullscreenControllerInteractiveTest
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures, "ScreenEnumeration,WindowPlacement");
+        switches::kEnableBlinkFeatures, "WindowPlacement");
     FullscreenControllerInteractiveTest::SetUpCommandLine(command_line);
   }
 };

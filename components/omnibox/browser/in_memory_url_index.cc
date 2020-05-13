@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -299,13 +300,13 @@ void InMemoryURLIndex::Shutdown() {
                          &URLIndexPrivateData::WritePrivateDataToCacheFileTask),
                      private_data_, path));
 #ifndef LEAK_SANITIZER
-  // Intentionally allocate and then leak a scoped_refptr to private_data_. This
+  // Intentionally create and then leak a scoped_refptr to private_data_. This
   // permanently raises the reference count so that the URLIndexPrivateData
   // destructor won't run during browser shutdown. This saves having to walk the
   // maps to free their memory, which saves time and avoids shutdown hangs,
   // especially if some of the memory has been paged out.
-  auto* leak_pointer = new scoped_refptr<URLIndexPrivateData>(private_data_);
-  ANALYZER_ALLOW_UNUSED(leak_pointer);
+  base::NoDestructor<scoped_refptr<URLIndexPrivateData>> leak_reference(
+      private_data_);
 #endif
   needs_to_be_cached_ = false;
 }

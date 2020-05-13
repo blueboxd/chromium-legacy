@@ -11,7 +11,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -89,6 +88,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                 profileSupplier, bookmarkBridgeSupplier);
         mIntentWithEffect = intentWithEffect;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
+        mCanAnimateBrowserControls = () -> {
+            final Tab tab = mActivity.getActivityTabProvider().get();
+            return tab != null && tab.isUserInteractable() && !tab.isNativePage();
+        };
     }
 
     @Override
@@ -218,15 +221,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         }
 
         final ChromeFullscreenManager fullscreenManager = mActivity.getFullscreenManager();
-        Supplier<Boolean> canAnimateBrowserControls = () -> {
-            final Tab tab = mActivity.getActivityTabProvider().get();
-            return tab != null && tab.isUserInteractable() && !tab.isNativePage();
-        };
-        mToolbarManager.setCanAnimateNativeBrowserControlsSupplier(canAnimateBrowserControls);
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
                 mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager,
                 mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator,
-                canAnimateBrowserControls, layoutManager::requestUpdate);
+                mCanAnimateBrowserControls, layoutManager::requestUpdate);
         layoutManager.setStatusIndicatorSceneOverlay(mStatusIndicatorCoordinator.getSceneLayer());
         mStatusIndicatorObserver = new StatusIndicatorCoordinator.StatusIndicatorObserver() {
             @Override

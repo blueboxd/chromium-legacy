@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/blink/public/web/web_ax_object.h"
+#include "ui/accessibility/ax_event_intent.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -43,8 +45,10 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   virtual bool IsRoot() const;
   bool IsEqualToObject(const blink::WebAXObject& object);
 
-  void NotificationReceived(blink::WebLocalFrame* frame,
-                            const std::string& notification_name);
+  void NotificationReceived(
+      blink::WebLocalFrame* frame,
+      const std::string& notification_name,
+      const std::vector<ui::AXEventIntent>& event_intents);
   void Reset();
 
  protected:

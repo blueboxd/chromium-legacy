@@ -15,6 +15,16 @@ interface RTCRtpSender {
     [Measure] readonly attribute RTCDTMFSender? dtmf;
     [Measure, RaisesException] void setStreams(MediaStream... streams);
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
-    [Measure, RuntimeEnabled=RTCInsertableStreams, CallWith=ScriptState, RaisesException] RTCInsertableStreams createEncodedAudioStreams();
-    [Measure, RuntimeEnabled=RTCInsertableStreams, CallWith=ScriptState, RaisesException] RTCInsertableStreams createEncodedVideoStreams();
+    [Measure,
+     RuntimeEnabled=RTCInsertableStreams,
+     CallWith=ScriptState,
+     RaisesException] RTCInsertableStreams createEncodedStreams();
+    [DeprecateAs=V8RTCRtpSender_CreateEncodedAudioStreams_Method,
+     RuntimeEnabled=RTCInsertableStreams,
+     CallWith=ScriptState,
+     RaisesException] RTCInsertableStreams createEncodedAudioStreams();
+    [DeprecateAs=V8RTCRtpSender_CreateEncodedVideoStreams_Method,
+     RuntimeEnabled=RTCInsertableStreams,
+     CallWith=ScriptState,
+     RaisesException] RTCInsertableStreams createEncodedVideoStreams();
 };

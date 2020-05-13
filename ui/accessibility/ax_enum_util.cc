@@ -2144,14 +2144,14 @@ const char* ToString(ax::mojom::Command command) {
       return "insert";
     case ax::mojom::Command::kMarker:
       return "marker";
+    case ax::mojom::Command::kMoveSelection:
+      return "moveSelection";
     case ax::mojom::Command::kPaste:
       return "paste";
     case ax::mojom::Command::kReplace:
       return "replace";
     case ax::mojom::Command::kSetSelection:
       return "setSelection";
-    case ax::mojom::Command::kShrinkSelection:
-      return "shrinkSelection";
     case ax::mojom::Command::kType:
       return "type";
   }
@@ -2176,14 +2176,14 @@ ax::mojom::Command ParseCommand(const char* command) {
     return ax::mojom::Command::kInsert;
   if (0 == strcmp(command, "marker"))
     return ax::mojom::Command::kMarker;
+  if (0 == strcmp(command, "moveSelection"))
+    return ax::mojom::Command::kMoveSelection;
   if (0 == strcmp(command, "paste"))
     return ax::mojom::Command::kPaste;
   if (0 == strcmp(command, "replace"))
     return ax::mojom::Command::kReplace;
   if (0 == strcmp(command, "setSelection"))
     return ax::mojom::Command::kSetSelection;
-  if (0 == strcmp(command, "shrinkSelection"))
-    return ax::mojom::Command::kShrinkSelection;
   if (0 == strcmp(command, "type"))
     return ax::mojom::Command::kType;
 

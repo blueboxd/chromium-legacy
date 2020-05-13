@@ -175,6 +175,15 @@ ScriptPromise RTCRtpReceiver::getStats(ScriptState* script_state) {
   return promise;
 }
 
+RTCInsertableStreams* RTCRtpReceiver::createEncodedStreams(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  if (track_->kind() == "audio")
+    return createEncodedAudioStreams(script_state, exception_state);
+  DCHECK_EQ(track_->kind(), "video");
+  return createEncodedVideoStreams(script_state, exception_state);
+}
+
 RTCInsertableStreams* RTCRtpReceiver::createEncodedAudioStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {

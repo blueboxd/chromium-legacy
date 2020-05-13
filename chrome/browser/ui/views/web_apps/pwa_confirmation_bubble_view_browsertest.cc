@@ -32,4 +32,14 @@ IN_PROC_BROWSER_TEST_F(PWAConfirmationBubbleViewBrowserTest,
   chrome::ShowPWAInstallBubble(
       browser->tab_strip_model()->GetActiveWebContents(), std::move(app_info),
       base::DoNothing());
+
+  // Tests that we don't crash when attempting to show bubble when it's already
+  // shown.
+  app_info = std::make_unique<WebApplicationInfo>();
+  app_info->title = base::UTF8ToUTF16("Test app 3");
+  app_info->app_url = GURL("https://example3.com");
+  app_info->open_as_window = true;
+  chrome::ShowPWAInstallBubble(
+      browser->tab_strip_model()->GetActiveWebContents(), std::move(app_info),
+      base::DoNothing());
 }

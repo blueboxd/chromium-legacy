@@ -924,6 +924,8 @@ if (enable_java_templates) {
         rebase_path(_stamp_path, root_build_dir),
         "--include-unexpected-failures",
         "--min-sdk-version=$_min_sdk_version",
+        "--android-sdk-root",
+        rebase_path(lint_android_sdk_root, root_build_dir),
       ]
 
       if (defined(testonly) && testonly) {

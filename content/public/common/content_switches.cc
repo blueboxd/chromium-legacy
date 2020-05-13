@@ -103,10 +103,6 @@ const char kDisableAcceleratedVideoDecode[] =
 const char kDisableAcceleratedVideoEncode[] =
     "disable-accelerated-video-encode";
 
-// Turns off the accessibility in the renderer.
-const char kDisableAxSerializerForTesting[] =
-    "disable-ax-serializer-for-testing";
-
 // Disable limits on the number of backing stores. Can prevent blinking for
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";

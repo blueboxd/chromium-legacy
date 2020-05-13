@@ -279,6 +279,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/open_in:unit_tests",
     "//ios/chrome/browser/ui/overlays:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner:unit_tests",
+    "//ios/chrome/browser/ui/overlays/infobar_banner/confirm:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_banner/passwords:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_modal:unit_tests",
     "//ios/chrome/browser/ui/overlays/infobar_modal/passwords:unit_tests",

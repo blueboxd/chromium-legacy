@@ -166,7 +166,8 @@ class CORE_EXPORT FrameSelection final
   // be called.
   bool SetSelectionDeprecated(const SelectionInDOMTree&,
                               const SetSelectionOptions&);
-  void DidSetSelectionDeprecated(const SetSelectionOptions&);
+  void DidSetSelectionDeprecated(const SelectionInDOMTree&,
+                                 const SetSelectionOptions&);
 
   // Call this after doing user-triggered selections to make it easy to delete
   // the frame you entirely selected.
@@ -323,6 +324,10 @@ class CORE_EXPORT FrameSelection final
   LayoutUnit x_pos_for_vertical_arrow_navigation_;
 
   bool focused_ : 1;
+
+  // The selection is currently being modified via the "Modify" method.
+  bool is_being_modified_ = false;
+
   bool is_handle_visible_ = false;
   // TODO(editing-dev): We should change is_directional_ type to enum.
   // as directional can have three values forward, backward or directionless.

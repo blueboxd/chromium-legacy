@@ -665,6 +665,10 @@ std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
                                   WarnSameSiteUnspecifiedLaxAllowUnsafe);
   }
 
+  // If schemeful messages are disabled, don't add a warning for them.
+  if (!base::FeatureList::IsEnabled(features::kCookieDeprecationMessages))
+    return warning_reasons;
+
   // There can only be one of the following warnings.
   if (status.HasWarningReason(net::CanonicalCookie::CookieInclusionStatus::
                                   WARN_STRICT_LAX_DOWNGRADE_STRICT_SAMESITE)) {

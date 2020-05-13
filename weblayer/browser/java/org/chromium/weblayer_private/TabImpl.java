@@ -35,6 +35,7 @@ import org.chromium.components.find_in_page.FindResultBar;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.Visibility;
@@ -103,9 +104,11 @@ public final class TabImpl extends ITab.Stub {
     private FindInPageBridge mFindInPageBridge;
     private FindResultBar mFindResultBar;
     // See usage note in {@link #onFindResultAvailable}.
-    boolean mWaitingForMatchRects;
+    private boolean mWaitingForMatchRects;
     private InterceptNavigationDelegateClientImpl mInterceptNavigationDelegateClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
+
+    private boolean mPostContainerViewInitDone;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -219,6 +222,16 @@ public final class TabImpl extends ITab.Stub {
         sTabMap.put(mId, this);
     }
 
+    private void doInitAfterSettingContainerView() {
+        if (mPostContainerViewInitDone) return;
+
+        mPostContainerViewInitDone = true;
+        SelectionPopupController controller =
+                SelectionPopupController.fromWebContents(mWebContents);
+        controller.setActionModeCallback(new ActionModeCallback(mWebContents));
+        controller.setSelectionClient(SelectionClient.createSmartSelectionClient(mWebContents));
+    }
+
     public ProfileImpl getProfile() {
         return mProfile;
     }
@@ -233,14 +246,12 @@ public final class TabImpl extends ITab.Stub {
     public void attachToBrowser(BrowserImpl browser) {
         mBrowser = browser;
         updateFromBrowser();
-        SelectionPopupController controller =
-                SelectionPopupController.fromWebContents(mWebContents);
-        controller.setActionModeCallback(new ActionModeCallback(mWebContents));
     }
 
     public void updateFromBrowser() {
         mWebContents.setTopLevelNativeWindow(mBrowser.getWindowAndroid());
         mViewAndroidDelegate.setContainerView(mBrowser.getViewAndroidDelegateContainerView());
+        doInitAfterSettingContainerView();
         updateWebContentsVisibility();
 
         boolean attached = (mBrowser.getContext() != null);

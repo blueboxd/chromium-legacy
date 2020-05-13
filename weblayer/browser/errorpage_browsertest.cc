@@ -8,6 +8,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "net/base/mock_network_change_notifier.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "weblayer/common/features.h"
 #include "weblayer/shell/browser/shell.h"
@@ -56,18 +57,12 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
- public:
-  ConnectionType GetCurrentConnectionType() const override {
-    return net::NetworkChangeNotifier::CONNECTION_4G;
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(ErrorPageReloadBrowserTest, ReloadOnNetworkChanged) {
   // Make sure the renderer thinks it's online, since that is a necessary
   // condition for the reload.
-  net::NetworkChangeNotifier::DisableForTest disable;
-  MockNetworkChangeNotifier mock_notifier;
+  net::test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
+  mock_network_change_notifier.mock_network_change_notifier()
+      ->SetConnectionType(net::NetworkChangeNotifier::CONNECTION_4G);
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/error_page");

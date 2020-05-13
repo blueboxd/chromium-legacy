@@ -66,16 +66,15 @@ public class SmartSelectionClient implements SelectionClient {
             return null;
         }
 
-        return new SmartSelectionClient(callback, webContents, windowAndroid);
+        return new SmartSelectionClient(callback, webContents);
     }
 
-    private SmartSelectionClient(
-            ResultCallback callback, WebContents webContents, WindowAndroid windowAndroid) {
+    private SmartSelectionClient(ResultCallback callback, WebContents webContents) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        mProvider = new SmartSelectionProvider(callback, windowAndroid);
+        mProvider = new SmartSelectionProvider(callback, webContents);
         mCallback = callback;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            mSmartSelectionMetricsLogger = SmartSelectionMetricsLogger.create(windowAndroid);
+            mSmartSelectionMetricsLogger = SmartSelectionMetricsLogger.create(webContents);
         }
         mNativeSmartSelectionClient =
                 SmartSelectionClientJni.get().init(SmartSelectionClient.this, webContents);

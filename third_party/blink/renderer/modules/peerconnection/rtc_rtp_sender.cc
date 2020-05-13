@@ -643,6 +643,15 @@ void RTCRtpSender::setStreams(HeapVector<Member<MediaStream>> streams,
   sender_->SetStreams(stream_ids);
 }
 
+RTCInsertableStreams* RTCRtpSender::createEncodedStreams(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  if (kind_ == "audio")
+    return createEncodedAudioStreams(script_state, exception_state);
+  DCHECK_EQ(kind_, "video");
+  return createEncodedVideoStreams(script_state, exception_state);
+}
+
 RTCInsertableStreams* RTCRtpSender::createEncodedAudioStreams(
     ScriptState* script_state,
     ExceptionState& exception_state) {

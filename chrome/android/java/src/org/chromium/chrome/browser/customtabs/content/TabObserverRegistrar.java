@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,7 +28,7 @@ import javax.inject.Inject;
  * they enter/leave the TabModel.
  */
 @ActivityScope
-public class TabObserverRegistrar extends EmptyTabModelObserver implements Destroyable {
+public class TabObserverRegistrar implements TabModelObserver, Destroyable {
     private CustomTabActivityTabProvider mTabProvider;
     private final Set<PageLoadMetrics.Observer> mPageLoadMetricsObservers = new HashSet<>();
     private final Set<TabObserver> mTabObservers = new HashSet<>();

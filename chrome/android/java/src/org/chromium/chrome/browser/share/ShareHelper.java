@@ -34,7 +34,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
@@ -82,8 +81,6 @@ public class ShareHelper {
     /** The task ID of the activity that triggered the share action. */
     public static final String EXTRA_TASK_ID = "org.chromium.chrome.extra.TASK_ID";
 
-    private static final String PACKAGE_NAME_KEY_SUFFIX = "last_shared_package_name";
-    private static final String CLASS_NAME_KEY_SUFFIX = "last_shared_class_name";
     private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
 
     /** Force the use of a Chrome-specific intent chooser, not the system chooser. */
@@ -170,7 +167,6 @@ public class ShareHelper {
      */
     static class TargetChosenReceiver extends BroadcastReceiver implements IntentCallback {
         private static final String EXTRA_RECEIVER_TOKEN = "receiver_token";
-        private static final String EXTRA_SOURCE_PACKAGE_NAME = "source_package_name";
         private static final Object LOCK = new Object();
 
         private static String sTargetChosenReceiveAction;
@@ -193,8 +189,7 @@ public class ShareHelper {
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
         static void sendChooserIntent(boolean saveLastUsed, WindowAndroid window,
-                Intent sharingIntent, @Nullable TargetChosenCallback callback,
-                @Nullable String sourcePackageName) {
+                Intent sharingIntent, @Nullable TargetChosenCallback callback) {
             final String packageName = ContextUtils.getApplicationContext().getPackageName();
             synchronized (LOCK) {
                 if (sTargetChosenReceiveAction == null) {
@@ -218,7 +213,6 @@ public class ShareHelper {
             Intent intent = new Intent(sTargetChosenReceiveAction);
             intent.setPackage(packageName);
             intent.putExtra(EXTRA_RECEIVER_TOKEN, sLastRegisteredReceiver.hashCode());
-            intent.putExtra(EXTRA_SOURCE_PACKAGE_NAME, sourcePackageName);
             Activity activity = window.getActivity().get();
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 0, intent,
                     PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
@@ -244,13 +238,12 @@ public class ShareHelper {
             }
 
             ComponentName target = intent.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT);
-            String sourcePackageName = intent.getStringExtra(EXTRA_SOURCE_PACKAGE_NAME);
             if (mCallback != null) {
                 mCallback.onTargetChosen(target);
                 mCallback = null;
             }
             if (mSaveLastUsed && target != null) {
-                setLastShareComponentName(target, sourcePackageName);
+                setLastShareComponentName(target);
             }
         }
 
@@ -275,12 +268,11 @@ public class ShareHelper {
      */
     public static void shareDirectly(ShareParams params) {
         assert params.shareDirectly();
-        ComponentName component = getLastShareComponentName(params.getSourcePackageName());
+        ComponentName component = getLastShareComponentName();
         if (component == null) return;
         assert params.getCallback() == null;
         makeIntentAndShare(params, component);
     }
-
 
     /**
      * Share an image URI with an activity identified by the provided Component Name.
@@ -293,7 +285,7 @@ public class ShareHelper {
         Intent shareIntent = getShareImageIntent(imageUri);
         if (name == null) {
             if (TargetChosenReceiver.isSupported()) {
-                TargetChosenReceiver.sendChooserIntent(true, window, shareIntent, null, null);
+                TargetChosenReceiver.sendChooserIntent(true, window, shareIntent, null);
             } else {
                 Intent chooserIntent = Intent.createChooser(shareIntent,
                         window.getActivity().get().getString(R.string.share_link_chooser_title));
@@ -369,7 +361,7 @@ public class ShareHelper {
                     callbackCalled[0] = true;
                 }
                 if (params.saveLastUsed()) {
-                    setLastShareComponentName(component, params.getSourcePackageName());
+                    setLastShareComponentName(component);
                 }
                 makeIntentAndShare(params, component);
                 dialog.dismiss();
@@ -382,9 +374,6 @@ public class ShareHelper {
                 if (callback != null && !callbackCalled[0]) {
                     callback.onCancel();
                     callbackCalled[0] = true;
-                }
-                if (params.getOnDialogDismissed() != null) {
-                    params.getOnDialogDismissed().run();
                 }
             }
         });
@@ -417,8 +406,8 @@ public class ShareHelper {
             fireIntent(params.getWindow(), intent, null);
         } else {
             assert TargetChosenReceiver.isSupported();
-            TargetChosenReceiver.sendChooserIntent(params.saveLastUsed(), params.getWindow(),
-                    intent, params.getCallback(), params.getSourcePackageName());
+            TargetChosenReceiver.sendChooserIntent(
+                    params.saveLastUsed(), params.getWindow(), intent, params.getCallback());
         }
     }
 
@@ -429,7 +418,7 @@ public class ShareHelper {
      */
     public static void configureDirectShareMenuItem(Context context, MenuItem item) {
         Intent shareIntent = getShareLinkAppCompatibilityIntent();
-        Pair<Drawable, CharSequence> directShare = getShareableIconAndName(shareIntent, null);
+        Pair<Drawable, CharSequence> directShare = getShareableIconAndName(shareIntent);
         Drawable directShareIcon = directShare.first;
         CharSequence directShareTitle = directShare.second;
 
@@ -443,16 +432,13 @@ public class ShareHelper {
     /**
      * Get the icon and name of the most recently shared app by certain app.
      * @param shareIntent Intent used to get list of apps support sharing.
-     * @param sourcePackageName The package name of the app who requests for share. If Null, it is
-     *                          requested by Chrome.
      * @return The Image and the String of the recently shared Icon.
      */
-    public static Pair<Drawable, CharSequence> getShareableIconAndName(
-            Intent shareIntent, @Nullable String sourcePackageName) {
+    public static Pair<Drawable, CharSequence> getShareableIconAndName(Intent shareIntent) {
         Drawable directShareIcon = null;
         CharSequence directShareTitle = null;
 
-        final ComponentName component = getLastShareComponentName(sourcePackageName);
+        final ComponentName component = getLastShareComponentName();
         boolean isComponentValid = false;
         if (component != null) {
             shareIntent.setPackage(component.getPackageName());
@@ -492,25 +478,9 @@ public class ShareHelper {
      *
      * This method is public since it is used in tests to avoid creating share dialog.
      * @param component The {@link ComponentName} of the app selected for sharing.
-     * @param sourcePackageName The package name of the app who requests share. If Null, it is
-     *                          request by Chrome.
      */
     @VisibleForTesting
-    public static void setLastShareComponentName(
-            ComponentName component, @Nullable String sourcePackageName) {
-        if (sourcePackageName == null) {
-            setLastShareComponentNameForChrome(component);
-            return;
-        }
-
-        SharedPreferences preferences = getExternalAppSharingSharedPreferences();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(getPackageNameKey(sourcePackageName), component.getPackageName());
-        editor.putString(getClassNameKey(sourcePackageName), component.getClassName());
-        editor.apply();
-    }
-
-    private static void setLastShareComponentNameForChrome(ComponentName component) {
+    public static void setLastShareComponentName(ComponentName component) {
         SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
         preferencesManager.writeString(
                 ChromePreferenceKeys.SHARING_LAST_SHARED_PACKAGE_NAME, component.getPackageName());
@@ -595,27 +565,10 @@ public class ShareHelper {
     }
 
     /**
-     * Gets the {@link ComponentName} of the app that was used to last share by certain app.
-     * @param sourcePackageName The package name of the app who requests for share. If Null, it is
-     *                          requested by Chrome.
+     * Gets the {@link ComponentName} of the app that was used to last share.
      */
     @Nullable
-    public static ComponentName getLastShareComponentName(@Nullable String sourcePackageName) {
-        if (sourcePackageName == null) {
-            return getLastShareByChromeComponentName();
-        }
-
-        SharedPreferences preferences = getExternalAppSharingSharedPreferences();
-        String packageName = preferences.getString(getPackageNameKey(sourcePackageName), null);
-        String className = preferences.getString(getClassNameKey(sourcePackageName), null);
-        return createComponentName(packageName, className);
-    }
-
-    /**
-     * Gets the {@link ComponentName} of the app that was used to last share by Chrome.
-     */
-    @Nullable
-    public static ComponentName getLastShareByChromeComponentName() {
+    public static ComponentName getLastShareComponentName() {
         SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
         String packageName = preferencesManager.readString(
                 ChromePreferenceKeys.SHARING_LAST_SHARED_PACKAGE_NAME, null);
@@ -632,14 +585,6 @@ public class ShareHelper {
     private static SharedPreferences getExternalAppSharingSharedPreferences() {
         return ContextUtils.getApplicationContext().getSharedPreferences(
                 EXTERNAL_APP_SHARING_PREF_FILE_NAME, Context.MODE_PRIVATE);
-    }
-
-    private static String getPackageNameKey(@NonNull String sourcePackageName) {
-        return sourcePackageName + PACKAGE_NAME_KEY_SUFFIX;
-    }
-
-    private static String getClassNameKey(@NonNull String sourcePackageName) {
-        return sourcePackageName + CLASS_NAME_KEY_SUFFIX;
     }
 
     /**

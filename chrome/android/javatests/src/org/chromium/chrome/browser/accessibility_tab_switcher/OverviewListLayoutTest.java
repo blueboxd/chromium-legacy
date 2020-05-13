@@ -29,8 +29,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -206,7 +206,7 @@ public class OverviewListLayoutTest {
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();
@@ -237,7 +237,7 @@ public class OverviewListLayoutTest {
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();
@@ -287,7 +287,7 @@ public class OverviewListLayoutTest {
 
         final CallbackHelper didReceivePendingClosureHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabPendingClosure(Tab tab) {
                 didReceivePendingClosureHelper.notifyCalled();
@@ -453,7 +453,7 @@ public class OverviewListLayoutTest {
         getListItemAndDisableAnimations(0);
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
         final TabModel model = mActivityTestRule.getActivity().getCurrentTabModel();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();

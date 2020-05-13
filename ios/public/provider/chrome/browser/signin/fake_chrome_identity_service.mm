@@ -37,6 +37,7 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
 @interface FakeAccountDetailsViewController : UIViewController {
   __weak ChromeIdentity* _identity;
   UIButton* _removeAccountButton;
+  UIButton* _closeAccountDetailsButton;
 }
 @end
 
@@ -54,6 +55,9 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
   [_removeAccountButton removeTarget:self
                               action:@selector(didTapRemoveAccount:)
                     forControlEvents:UIControlEventTouchUpInside];
+  [_closeAccountDetailsButton removeTarget:self
+                                    action:@selector(didTapCloseAccount:)
+                          forControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)viewDidLoad {
@@ -63,21 +67,43 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
   self.view.backgroundColor = [UIColor orangeColor];
 
   _removeAccountButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  [_removeAccountButton setTitle:@"Remove account"
-                        forState:UIControlStateNormal];
-  [_removeAccountButton addTarget:self
-                           action:@selector(didTapRemoveAccount:)
-                 forControlEvents:UIControlEventTouchUpInside];
-  [self.view addSubview:_removeAccountButton];
+  [self addButtonToSubviewWithTitle:@"Remove account"
+                             button:_removeAccountButton
+                             action:@selector(didTapRemoveAccount:)];
+
+  _closeAccountDetailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  [self addButtonToSubviewWithTitle:@"Close account"
+                             button:_closeAccountDetailsButton
+                             action:@selector(didTapCloseAccount:)];
 }
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
 
   CGRect bounds = self.view.bounds;
-  [_removeAccountButton
-      setCenter:CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds))];
-  [_removeAccountButton sizeToFit];
+  [self sizeButtonToFitWithCenter:CGPointMake(CGRectGetMidX(bounds),
+                                              CGRectGetMinY(bounds))
+                           button:_removeAccountButton];
+  [self sizeButtonToFitWithCenter:CGPointMake(CGRectGetMidX(bounds),
+                                              CGRectGetMidY(bounds))
+                           button:_closeAccountDetailsButton];
+}
+
+#pragma mark - Private
+
+- (void)addButtonToSubviewWithTitle:(NSString*)title
+                             button:(UIButton*)button
+                             action:(SEL)action {
+  [button setTitle:title forState:UIControlStateNormal];
+  [button addTarget:self
+                action:action
+      forControlEvents:UIControlEventTouchUpInside];
+  [self.view addSubview:button];
+}
+
+- (void)sizeButtonToFitWithCenter:(CGPoint)center button:(UIButton*)button {
+  [button setCenter:center];
+  [button sizeToFit];
 }
 
 - (void)didTapRemoveAccount:(id)sender {
@@ -85,6 +111,10 @@ NSString* FakeGetHostedDomainForIdentity(ChromeIdentity* identity) {
       ->ForgetIdentity(_identity, ^(NSError*) {
         [self dismissViewControllerAnimated:YES completion:nil];
       });
+}
+
+- (void)didTapCloseAccount:(id)sender {
+  [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

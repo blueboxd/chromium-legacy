@@ -36,31 +36,28 @@ struct CheckedPtrNoOpImpl {
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
   // hasn't been freed. The function is allowed to crash on nullptr.
-  static ALWAYS_INLINE void* SafelyUnwrapPtr(uintptr_t wrapped_ptr) {
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
+      uintptr_t wrapped_ptr) {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
   // hasn't been freed. The function must handle nullptr gracefully.
-  static ALWAYS_INLINE void* SafelyUnwrapPtrMayBeNull(uintptr_t wrapped_ptr) {
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForExtraction(
+      uintptr_t wrapped_ptr) {
+    return reinterpret_cast<void*>(wrapped_ptr);
+  }
+
+  // Unwraps the pointer's uintptr_t representation, without making an assertion
+  // on whether memory was freed or not.
+  static ALWAYS_INLINE void* UnsafelyUnwrapPtrForComparison(
+      uintptr_t wrapped_ptr) {
     return reinterpret_cast<void*>(wrapped_ptr);
   }
 
   // Advance the wrapped pointer by |delta| bytes.
   static ALWAYS_INLINE uintptr_t Advance(uintptr_t wrapped_ptr, size_t delta) {
     return wrapped_ptr + delta;
-  }
-
-  // Checks if wrapped pointers are equal. The pointers can be nullptr.
-  static ALWAYS_INLINE bool AreEqual(uintptr_t wrapped_ptr1,
-                                     uintptr_t wrapped_ptr2) {
-    return wrapped_ptr1 == wrapped_ptr2;
-  }
-
-  // Checks if a wrapped pointer is equal to a raw pointer. The pointers
-  // can be nullptr.
-  static ALWAYS_INLINE bool AreEqual(uintptr_t wrapped_ptr, const void* ptr) {
-    return reinterpret_cast<void*>(wrapped_ptr) == ptr;
   }
 };
 
@@ -89,10 +86,8 @@ struct DereferencedPointerType<void> {};
 // 2. Keep this class as small as possible, while still satisfying goal #1 (i.e.
 //    we aren't striving to maximize compatibility with raw pointers, merely
 //    adding support for cases encountered so far).
-template <typename T>
+template <typename T, typename Impl = internal::CheckedPtrNoOpImpl>
 class CheckedPtr {
-  using Impl = internal::CheckedPtrNoOpImpl;
-
  public:
   // CheckedPtr can be trivially default constructed (leaving |wrapped_ptr_|
   // uninitialized).  This is needed for compatibility with raw pointers.
@@ -129,7 +124,7 @@ class CheckedPtr {
 
   // Avoid using. The goal of CheckedPtr is to be as close to raw pointer as
   // possible, so use it only if absolutely necessary (e.g. for const_cast).
-  ALWAYS_INLINE T* get() const { return GetMayBeNull(); }
+  ALWAYS_INLINE T* get() const { return GetForExtraction(); }
 
   explicit ALWAYS_INLINE operator bool() const {
     return wrapped_ptr_ != Impl::GetWrappedNullPtr();
@@ -140,15 +135,15 @@ class CheckedPtr {
   template <typename U = T,
             typename V = typename internal::DereferencedPointerType<U>::Type>
   ALWAYS_INLINE V& operator*() const {
-    return *GetOkToCrashOnNull();
+    return *GetForDereference();
   }
-  ALWAYS_INLINE T* operator->() const { return GetOkToCrashOnNull(); }
+  ALWAYS_INLINE T* operator->() const { return GetForDereference(); }
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  ALWAYS_INLINE operator T*() const { return GetMayBeNull(); }
+  ALWAYS_INLINE operator T*() const { return GetForExtraction(); }
   template <typename U>
   explicit ALWAYS_INLINE operator U*() const {
-    return static_cast<U*>(GetMayBeNull());
+    return static_cast<U*>(GetForExtraction());
   }
 
   ALWAYS_INLINE CheckedPtr& operator++() {
@@ -170,24 +165,43 @@ class CheckedPtr {
     return *this += -delta_elems;
   }
 
-  ALWAYS_INLINE bool operator==(T* p) const {
-    return Impl::AreEqual(wrapped_ptr_, p);
-  }
+  ALWAYS_INLINE bool operator==(T* p) const { return GetForComparison() == p; }
   ALWAYS_INLINE bool operator!=(T* p) const { return !operator==(p); }
+
+  // Useful for cases like this:
+  //   class Base {};
+  //   class Derived : public Base {};
+  //   Derived d;
+  //   CheckedPtr<Derived> derived_ptr = &d;
+  //   Base* base_ptr = &d;
+  //   if (derived_ptr == base_ptr) {...}
+  // Without these, such comparisons would end up calling |operator T*()|.
+  template <typename U>
+  ALWAYS_INLINE bool operator==(U* p) const {
+    // Add |const| when casting, because |U| may have |const| in it. Even if |T|
+    // doesn't, comparison between |T*| and |const T*| is fine.
+    return GetForComparison() == static_cast<std::add_const_t<T>*>(p);
+  }
+  template <typename U>
+  ALWAYS_INLINE bool operator!=(U* p) const {
+    return !operator==(p);
+  }
+
   ALWAYS_INLINE bool operator==(const CheckedPtr& other) const {
-    return Impl::AreEqual(wrapped_ptr_, other.wrapped_ptr_);
+    return GetForComparison() == other.GetForComparison();
   }
   ALWAYS_INLINE bool operator!=(const CheckedPtr& other) const {
     return !operator==(other);
   }
-  template <typename U>
-  ALWAYS_INLINE bool operator==(const CheckedPtr<U>& other) const {
-    // TODO(bartekn): Eliminate unwrapping |other| (which cast does), because it
-    // may check if the pointer was freed.
-    return Impl::AreEqual(wrapped_ptr_, static_cast<T*>(other));
+  template <typename U, typename I>
+  ALWAYS_INLINE bool operator==(const CheckedPtr<U, I>& other) const {
+    // Add |const| when casting, because |U| may have |const| in it. Even if |T|
+    // doesn't, comparison between |T*| and |const T*| is fine.
+    return GetForComparison() ==
+           static_cast<std::add_const_t<T>*>(other.GetForComparison());
   }
-  template <typename U>
-  ALWAYS_INLINE bool operator!=(const CheckedPtr<U>& other) const {
+  template <typename U, typename I>
+  ALWAYS_INLINE bool operator!=(const CheckedPtr<U, I>& other) const {
     return !operator==(other);
   }
 
@@ -196,22 +210,53 @@ class CheckedPtr {
   }
 
  private:
-  // This getter is meant for situations where the pointers is merely read, not
-  // necessarily with intention to dereference. It doesn't crash on nullptr.
-  ALWAYS_INLINE T* GetMayBeNull() const {
-    return static_cast<T*>(Impl::SafelyUnwrapPtrMayBeNull(wrapped_ptr_));
-  }
-  // This getter is meant for situations where the pointers is meant to be
+  // This getter is meant for situations where the pointer is meant to be
   // dereferenced. It is allowed to crash on nullptr (it may or may not),
   // because it knows that the caller will crash on nullptr.
-  ALWAYS_INLINE T* GetOkToCrashOnNull() const {
-    return static_cast<T*>(Impl::SafelyUnwrapPtr(wrapped_ptr_));
+  ALWAYS_INLINE T* GetForDereference() const {
+    return static_cast<T*>(Impl::SafelyUnwrapPtrForDereference(wrapped_ptr_));
+  }
+  // This getter is meant for situations where the raw pointer is meant to be
+  // extracted outside of this class, but not necessarily with an intention to
+  // dereference. It mustn't crash on nullptr.
+  ALWAYS_INLINE T* GetForExtraction() const {
+    return static_cast<T*>(Impl::SafelyUnwrapPtrForExtraction(wrapped_ptr_));
+  }
+  // This getter is meant *only* for situations where the pointer is meant to be
+  // compared (guaranteeing no dereference or extraction outside of this class).
+  // Any verifications can and should be skipped for performance reasons.
+  ALWAYS_INLINE T* GetForComparison() const {
+    return static_cast<T*>(Impl::UnsafelyUnwrapPtrForComparison(wrapped_ptr_));
   }
 
   // Store the pointer as |uintptr_t|, because depending on implementation, its
   // unused bits may be re-purposed to store extra information.
   uintptr_t wrapped_ptr_;
+
+  template <typename U, typename V>
+  friend class CheckedPtr;
 };
+
+// These are for cases where a raw pointer is on the left hand side. Reverse
+// order, so that |CheckedPtr::operator==()| kicks in, which will compare more
+// efficiently. Otherwise the CheckedPtr operand would have to be cast to raw
+// pointer, which may be more costly.
+template <typename T, typename I>
+ALWAYS_INLINE bool operator==(T* lhs, const CheckedPtr<T, I>& rhs) {
+  return rhs == lhs;
+}
+template <typename T, typename I>
+ALWAYS_INLINE bool operator!=(T* lhs, const CheckedPtr<T, I>& rhs) {
+  return !operator==(lhs, rhs);
+}
+template <typename T, typename I, typename U>
+ALWAYS_INLINE bool operator==(U* lhs, const CheckedPtr<T, I>& rhs) {
+  return rhs == lhs;
+}
+template <typename T, typename I, typename U>
+ALWAYS_INLINE bool operator!=(U* lhs, const CheckedPtr<T, I>& rhs) {
+  return !operator==(lhs, rhs);
+}
 
 template <typename T>
 ALWAYS_INLINE void swap(CheckedPtr<T>& lhs, CheckedPtr<T>& rhs) noexcept {

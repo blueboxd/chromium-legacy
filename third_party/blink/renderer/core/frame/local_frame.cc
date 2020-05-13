@@ -106,6 +106,7 @@
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -127,6 +128,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -2601,10 +2603,76 @@ void LocalFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
 }
 
 void LocalFrame::OnScreensChange() {
-  if (RuntimeEnabledFeatures::ScreenEnumerationEnabled()) {
+  if (RuntimeEnabledFeatures::WindowPlacementEnabled()) {
     DomWindow()->DispatchEvent(
         *Event::Create(event_type_names::kScreenschange));
   }
+}
+
+void LocalFrame::PostMessageEvent(
+    const base::Optional<base::UnguessableToken>& source_frame_token,
+    const String& source_origin,
+    const String& target_origin,
+    BlinkTransferableMessage message) {
+  RemoteFrame* source_frame = SourceFrameForOptionalToken(source_frame_token);
+
+  // We must pass in the target_origin to do the security check on this side,
+  // since it may have changed since the original postMessage call was made.
+  scoped_refptr<SecurityOrigin> target_security_origin;
+  if (!target_origin.IsEmpty()) {
+    target_security_origin = SecurityOrigin::CreateFromString(target_origin);
+  }
+
+  // Preparation of the MessageEvent.
+  MessageEvent* message_event = MessageEvent::Create();
+  DOMWindow* window = nullptr;
+  if (source_frame)
+    window = source_frame->DomWindow();
+  MessagePortArray* ports = nullptr;
+  if (GetDocument()) {
+    ports = MessagePort::EntanglePorts(*GetDocument()->GetExecutionContext(),
+                                       std::move(message.ports));
+  }
+  UserActivation* user_activation = nullptr;
+  if (message.user_activation) {
+    user_activation = MakeGarbageCollected<UserActivation>(
+        message.user_activation->has_been_active,
+        message.user_activation->was_active);
+  }
+  message_event->initMessageEvent(
+      "message", false, false, std::move(message.message), source_origin,
+      "" /*lastEventId*/, window, ports, user_activation,
+      message.transfer_user_activation, message.allow_autoplay);
+
+  // If the agent cluster id had a value it means this was locked when it
+  // was serialized.
+  if (message.locked_agent_cluster_id)
+    message_event->LockToAgentCluster();
+
+  // Transfer user activation state in the target's renderer when
+  // |transferUserActivation| is true.
+  //
+  // Also do the same as an ad-hoc solution to allow the origin trial of dynamic
+  // delegation of autoplay capability through postMessages.  Note that we
+  // skipped updating the user activation states in all other copies of the
+  // frame tree in this case because this is a temporary hack.
+  //
+  // TODO(mustaq): Remove the ad-hoc solution when the API shape is
+  // ready. https://crbug.com/985914
+  if ((RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+       message.transfer_user_activation) ||
+      message.allow_autoplay) {
+    TransferUserActivationFrom(source_frame);
+    if (message.allow_autoplay)
+      UseCounter::Count(GetDocument(), WebFeature::kAutoplayDynamicDelegation);
+  }
+
+  // Finally dispatch the message to the DOM Window.
+  DomWindow()->DispatchMessageEventWithOriginCheck(
+      target_security_origin.get(), message_event,
+      std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
+      message.locked_agent_cluster_id ? message.locked_agent_cluster_id.value()
+                                      : base::UnguessableToken());
 }
 
 void LocalFrame::BindReportingObserver(

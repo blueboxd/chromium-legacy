@@ -54,6 +54,12 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = 'android-lollipop-arm-rel',
+    goma_jobs = goma.jobs.J150,
+    tryjob = try_.job(),
+)
+
+try_.chromium_android_builder(
     name = 'android-marshmallow-arm64-rel',
     cores = 16,
     goma_jobs = goma.jobs.J300,

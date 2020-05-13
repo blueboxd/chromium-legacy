@@ -1245,10 +1245,11 @@ void RenderWidget::ClearEditCommands() {
   edit_commands_.clear();
 }
 
-void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
+void RenderWidget::OnDidOverscroll(
+    blink::mojom::DidOverscrollParamsPtr params) {
   if (mojom::WidgetInputHandlerHost* host =
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-    host->DidOverscroll(params);
+    host->DidOverscroll(std::move(params));
   }
 }
 
@@ -1568,18 +1569,6 @@ void RenderWidget::DidChangeCursor(const ui::Cursor& cursor) {
   // Only send a SetCursor message if we need to make a change.
   if (input_handler_->DidChangeCursor(cursor))
     GetWebWidget()->SetCursor(cursor);
-}
-
-void RenderWidget::AutoscrollStart(const gfx::PointF& point) {
-  Send(new WidgetHostMsg_AutoscrollStart(routing_id_, point));
-}
-
-void RenderWidget::AutoscrollFling(const gfx::Vector2dF& velocity) {
-  Send(new WidgetHostMsg_AutoscrollFling(routing_id_, velocity));
-}
-
-void RenderWidget::AutoscrollEnd() {
-  Send(new WidgetHostMsg_AutoscrollEnd(routing_id_));
 }
 
 // We are supposed to get a single call to Show for a newly created RenderWidget

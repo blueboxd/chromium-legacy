@@ -194,7 +194,7 @@ WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
     const WebAppShortcutMenuItemInfo& other) = default;
 
 WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
-    WebAppShortcutMenuItemInfo&&) = default;
+    WebAppShortcutMenuItemInfo&&) noexcept = default;
 
 WebApp::WebAppShortcutMenuItemInfo::~WebAppShortcutMenuItemInfo() = default;
 
@@ -203,8 +203,8 @@ WebApp::WebAppShortcutMenuItemInfo::operator=(
     const WebAppShortcutMenuItemInfo&) = default;
 
 WebApp::WebAppShortcutMenuItemInfo&
-WebApp::WebAppShortcutMenuItemInfo::operator=(WebAppShortcutMenuItemInfo&&) =
-    default;
+WebApp::WebAppShortcutMenuItemInfo::operator=(
+    WebAppShortcutMenuItemInfo&&) noexcept = default;
 
 void WebApp::SetSyncData(SyncData sync_data) {
   sync_data_ = std::move(sync_data);

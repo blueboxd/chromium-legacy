@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -43,11 +45,10 @@ void PostMessageToFrameInternal(
   message.owned_encoded_message = blink::EncodeStringMessage(data);
   message.encoded_message = message.owned_encoded_message;
   message.ports = std::move(channels);
-  int32_t source_routing_id = MSG_ROUTING_NONE;
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
-  rfh->PostMessageEvent(source_routing_id, source_origin, target_origin,
+  rfh->PostMessageEvent(base::nullopt, source_origin, target_origin,
                         std::move(message));
 }
 

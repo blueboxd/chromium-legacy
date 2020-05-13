@@ -133,8 +133,10 @@ public class NotificationUmaTracker {
         int ANNOUNCEMENT_ACK = 13;
         // Open button on announcement notification.
         int ANNOUNCEMENT_OPEN = 14;
+        // "Got it" button on the TWA "Running in Chrome" notification.
+        int TWA_NOTIFICATION_ACCEPTANCE = 15;
 
-        int NUM_ENTRIES = 15;
+        int NUM_ENTRIES = 16;
     }
 
     private static class LazyHolder {

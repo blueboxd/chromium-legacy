@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_parsing/address_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field.h"
@@ -28,6 +29,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -103,16 +105,48 @@ FieldCandidatesMap FormField::ParseFormFields(
   ParseFormFieldsPass(SearchField::Parse, processed_fields, &field_candidates,
                       log_manager);
 
+  size_t fillable_fields = 0;
+  if (base::FeatureList::IsEnabled(features::kAutofillFixFillableFieldTypes)) {
+    for (const auto& candidate : field_candidates) {
+      if (IsFillableFieldType(candidate.second.BestHeuristicType()))
+        ++fillable_fields;
+    }
+  } else {
+    fillable_fields = field_candidates.size();
+  }
+
   // Do not autofill a form if there aren't enough fields. Otherwise, it is
   // very easy to have false positives. See http://crbug.com/447332
   // For <form> tags, make an exception for email fields, which are commonly
   // the only recognized field on account registration sites.
   const bool accept_parsing =
-      field_candidates.size() >= MinRequiredFieldsForHeuristics() ||
+      fillable_fields >= MinRequiredFieldsForHeuristics() ||
       (is_form_tag && email_count > 0);
 
-  if (!accept_parsing)
+  if (!accept_parsing) {
+    if (log_manager) {
+      LogBuffer table_rows;
+      for (const auto& field : fields) {
+        table_rows << Tr{} << "Field:" << *field;
+      }
+      for (const auto& candidate : field_candidates) {
+        LogBuffer name;
+        name << "Type candidate for: " << candidate.first;
+        LogBuffer description;
+        ServerFieldType field_type = candidate.second.BestHeuristicType();
+        description << "BestHeuristicType: "
+                    << AutofillType::ServerFieldTypeToString(field_type)
+                    << ", is fillable: " << IsFillableFieldType(field_type);
+        table_rows << Tr{} << std::move(name) << std::move(description);
+      }
+      log_manager->Log()
+          << LoggingScope::kParsing
+          << LogMessage::kLocalHeuristicDidNotFindEnoughFillableFields
+          << Tag{"table"} << Attrib{"class", "form"} << std::move(table_rows)
+          << CTag{"table"};
+    }
     field_candidates.clear();
+  }
 
   return field_candidates;
 }

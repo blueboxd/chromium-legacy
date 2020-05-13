@@ -23,6 +23,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,6 +86,9 @@ public class MainActivity extends FragmentActivity {
                     }
                 },
                 /* recursive */ false);
+
+        // The boolean value doesn't matter, we only care about the total count.
+        RecordHistogram.recordBooleanHistogram("Android.WebView.DevUi.AppLaunch", true);
     }
 
     private void switchFragment(int chosenFragmentId) {

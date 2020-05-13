@@ -134,7 +134,7 @@ public class MoreProgressButtonTest extends DummyUiActivityTestCase {
     public void testStateAfterBindAction() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             boolean buttonShownBefore = mActivity.findViewById(R.id.action_button).isShown();
-            boolean spinnerShownBefore = mActivity.findViewById(R.id.action_button).isShown();
+            boolean spinnerShownBefore = mActivity.findViewById(R.id.progress_spinner).isShown();
 
             mMoreProgressButton.setOnClickRunnable(() -> changeTextView(""));
 

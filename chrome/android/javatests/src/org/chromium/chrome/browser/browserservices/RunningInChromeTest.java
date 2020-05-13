@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
@@ -33,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -127,33 +125,13 @@ public class RunningInChromeTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1072424")
-    @Features.DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE)
-    public void showsRunningInChrome() throws TimeoutException {
-        Intent intent = createTrustedWebActivityIntent(mTestPage);
-        launch(intent);
-
-        clearOtherSnackbars();
-
-        assertTrue(isTrustedWebActivity(mCustomTabActivityTestRule.getActivity()));
-        Espresso.onView(withText(containsString(getV1String())))
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
-    @MediumTest
     public void showsNewRunningInChrome() throws TimeoutException {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         clearOtherSnackbars();
 
         assertTrue(isTrustedWebActivity(mCustomTabActivityTestRule.getActivity()));
-        Espresso.onView(withText(containsString(getV1String())))
-                .check(doesNotExist());
-
-        String site = Origin.createOrThrow(mTestPage).toString();
-
-        Espresso.onView(withText(containsString(getV2String(site))))
+        Espresso.onView(withText(containsString(getString())))
                 .check(matches(isDisplayed()));
     }
 
@@ -235,12 +213,7 @@ public class RunningInChromeTest {
         });
     }
 
-    private String getV2String(String scope) {
-        return mCustomTabActivityTestRule.getActivity().getResources()
-                .getString(R.string.twa_running_in_chrome_v2, scope);
-    }
-
-    private String getV1String() {
+    private String getString() {
         return mCustomTabActivityTestRule.getActivity().getResources()
                 .getString(R.string.twa_running_in_chrome);
     }

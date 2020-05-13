@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_encoded_video_frame_metadata.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_encoded_video_frame_delegate.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -34,6 +35,13 @@ DOMArrayBuffer* RTCEncodedVideoFrame::data() const {
   if (!frame_data_)
     frame_data_ = delegate_->CreateDataBuffer();
   return frame_data_;
+}
+
+RTCEncodedVideoFrameMetadata* RTCEncodedVideoFrame::getMetadata() const {
+  RTCEncodedVideoFrameMetadata* metadata =
+      RTCEncodedVideoFrameMetadata::Create();
+  metadata->setSynchronizationSource(delegate_->Ssrc());
+  return metadata;
 }
 
 DOMArrayBuffer* RTCEncodedVideoFrame::additionalData() const {

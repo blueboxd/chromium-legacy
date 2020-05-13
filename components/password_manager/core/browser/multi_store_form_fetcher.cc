@@ -56,8 +56,9 @@ void MultiStoreFormFetcher::Fetch() {
 }
 
 bool MultiStoreFormFetcher::IsBlacklisted() const {
-  if (client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
-      PasswordForm::Store::kAccountStore) {
+  if (client_->GetPasswordFeatureManager()->IsOptedInForAccountStorage() &&
+      client_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
+          PasswordForm::Store::kAccountStore) {
     return is_blacklisted_in_account_store_;
   }
   return is_blacklisted_in_profile_store_;

@@ -15,7 +15,6 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -295,13 +294,11 @@ static void SetUpGLibLogHandler() {
 }
 #endif  // defined(USE_GLIB)
 
-// Tell compiler not to inline this function so it's possible to tell what
-// thread was unresponsive by inspecting the callstack.
+// NOINLINE so it's possible to tell what thread was unresponsive by inspecting
+// the callstack.
 NOINLINE void ResetThread_IO(
     std::unique_ptr<BrowserProcessSubThread> io_thread) {
-  const int line_number = __LINE__;
   io_thread.reset();
-  base::debug::Alias(&line_number);
 }
 
 enum WorkerPoolType : size_t {

@@ -90,7 +90,7 @@
         <!-- The static image is always visible and the animated image is
              stacked on top of the static image so that there is no flicker when
              starting the animation. -->
-        <img id="image" src="[[imageUrl_]]">
+        <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_">
         </img>
         <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
             hidden="[[!showAnimation_]]">

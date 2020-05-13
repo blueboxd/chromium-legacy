@@ -297,9 +297,13 @@ void InputRouterImpl::OnSetWhiteListedTouchAction(
   UpdateTouchAckTimeoutEnabled();
 }
 
-void InputRouterImpl::DidOverscroll(const ui::DidOverscrollParams& params) {
+void InputRouterImpl::DidOverscroll(
+    blink::mojom::DidOverscrollParamsPtr params) {
   // Touchpad and Touchscreen flings are handled on the browser side.
-  ui::DidOverscrollParams fling_updated_params = params;
+  ui::DidOverscrollParams fling_updated_params = {
+      params->accumulated_overscroll, params->latest_overscroll_delta,
+      params->current_fling_velocity, params->causal_event_viewport_point,
+      params->overscroll_behavior};
   fling_updated_params.current_fling_velocity =
       gesture_event_queue_.CurrentFlingVelocity();
   client_->DidOverscroll(fling_updated_params);
@@ -528,8 +532,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                          TRACE_EVENT_SCOPE_THREAD);
     if (filtered_state != blink::mojom::InputEventResultState::kUnknown) {
       std::move(callback).Run(blink::mojom::InputEventResultSource::kBrowser,
-                              latency_info, filtered_state, base::nullopt,
-                              base::nullopt);
+                              latency_info, filtered_state, nullptr, nullptr);
     }
     return;
   }
@@ -547,8 +550,8 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                blink::mojom::InputEventResultSource source,
                const ui::LatencyInfo& latency,
                blink::mojom::InputEventResultState state,
-               const base::Optional<ui::DidOverscrollParams>& overscroll,
-               const base::Optional<cc::TouchAction>& touch_action) {
+               blink::mojom::DidOverscrollParamsPtr overscroll,
+               blink::mojom::TouchActionOptionalPtr touch_action) {
               // Filter source to ensure only valid values are sent from the
               // renderer.
               if (source == blink::mojom::InputEventResultSource::kBrowser) {
@@ -557,8 +560,9 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                 return;
               }
 
-              std::move(callback).Run(source, latency, state, overscroll,
-                                      touch_action);
+              std::move(callback).Run(source, latency, state,
+                                      std::move(overscroll),
+                                      std::move(touch_action));
             },
             std::move(callback), weak_this_);
     client_->GetWidgetInputHandler()->DispatchEvent(
@@ -568,10 +572,9 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                          TRACE_EVENT_SCOPE_THREAD);
     client_->GetWidgetInputHandler()->DispatchNonBlockingEvent(
         std::move(event));
-    std::move(callback).Run(blink::mojom::InputEventResultSource::kBrowser,
-                            latency_info,
-                            blink::mojom::InputEventResultState::kIgnored,
-                            base::nullopt, base::nullopt);
+    std::move(callback).Run(
+        blink::mojom::InputEventResultSource::kBrowser, latency_info,
+        blink::mojom::InputEventResultState::kIgnored, nullptr, nullptr);
   }
 }
 
@@ -581,8 +584,8 @@ void InputRouterImpl::KeyboardEventHandled(
     blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
     blink::mojom::InputEventResultState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::KeboardEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                InputEventResultStateToString(state));
@@ -604,8 +607,8 @@ void InputRouterImpl::MouseEventHandled(
     blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
     blink::mojom::InputEventResultState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                InputEventResultStateToString(state));
@@ -621,8 +624,8 @@ void InputRouterImpl::TouchEventHandled(
     blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
     blink::mojom::InputEventResultState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::TouchEventHandled", "type",
                WebInputEvent::GetName(touch_event.event.GetType()), "ack",
                InputEventResultStateToString(state));
@@ -633,11 +636,11 @@ void InputRouterImpl::TouchEventHandled(
   // The SetTouchAction IPC occurs on a different channel so always
   // send it in the input event ack to ensure it is available at the
   // time the ACK is handled.
-  if (touch_action.has_value()) {
+  if (touch_action) {
     if (source == blink::mojom::InputEventResultSource::kCompositorThread)
-      OnSetWhiteListedTouchAction(touch_action.value());
+      OnSetWhiteListedTouchAction(touch_action->touch_action);
     else if (source == blink::mojom::InputEventResultSource::kMainThread)
-      OnSetTouchAction(touch_action.value());
+      OnSetTouchAction(touch_action->touch_action);
     else
       NOTREACHED();
   }
@@ -655,8 +658,8 @@ void InputRouterImpl::GestureEventHandled(
     blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
     blink::mojom::InputEventResultState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::GestureEventHandled", "type",
                WebInputEvent::GetName(gesture_event.event.GetType()), "ack",
                InputEventResultStateToString(state));
@@ -666,7 +669,7 @@ void InputRouterImpl::GestureEventHandled(
   if (overscroll) {
     DCHECK_EQ(WebInputEvent::Type::kGestureScrollUpdate,
               gesture_event.event.GetType());
-    DidOverscroll(overscroll.value());
+    DidOverscroll(std::move(overscroll));
   }
 
   // |gesture_event_queue_| will forward to OnGestureEventAck when appropriate.
@@ -680,8 +683,8 @@ void InputRouterImpl::MouseWheelEventHandled(
     blink::mojom::InputEventResultSource source,
     const ui::LatencyInfo& latency,
     blink::mojom::InputEventResultState state,
-    const base::Optional<ui::DidOverscrollParams>& overscroll,
-    const base::Optional<cc::TouchAction>& touch_action) {
+    blink::mojom::DidOverscrollParamsPtr overscroll,
+    blink::mojom::TouchActionOptionalPtr touch_action) {
   TRACE_EVENT2("input", "InputRouterImpl::MouseWheelEventHandled", "type",
                WebInputEvent::GetName(event.event.GetType()), "ack",
                InputEventResultStateToString(state));
@@ -690,7 +693,7 @@ void InputRouterImpl::MouseWheelEventHandled(
   event.latency.AddNewLatencyFrom(latency);
 
   if (overscroll)
-    DidOverscroll(overscroll.value());
+    DidOverscroll(std::move(overscroll));
 
   std::move(callback).Run(event, source, state);
 }

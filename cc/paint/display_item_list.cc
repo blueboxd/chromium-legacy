@@ -296,7 +296,6 @@ void DisplayItemList::Reset() {
   offsets_.shrink_to_fit();
   paired_begin_stack_.clear();
   paired_begin_stack_.shrink_to_fit();
-  has_draw_ops_ = false;
 }
 
 sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {

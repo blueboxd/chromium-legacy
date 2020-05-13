@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 
 namespace blink {
@@ -42,7 +43,7 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
   virtual void OnDidHandleKeyEvent() = 0;
 
   // Notifies that an overscroll was completed from Blink.
-  virtual void OnDidOverscroll(const ui::DidOverscrollParams& params) = 0;
+  virtual void OnDidOverscroll(blink::mojom::DidOverscrollParamsPtr params) = 0;
 
   // Notifies the delegate of the |input_handler| managing it.
   virtual void SetInputHandler(RenderWidgetInputHandler* input_handler) = 0;

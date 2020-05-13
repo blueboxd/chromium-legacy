@@ -621,14 +621,16 @@ void WebFrameTestProxy::PostAccessibilityEvent(const ui::AXEvent& event) {
 
   blink::WebDocument document = GetWebFrame()->GetDocument();
   auto object = blink::WebAXObject::FromWebDocumentByID(document, event.id);
-  HandleWebAccessibilityEvent(std::move(object), event_name);
+  HandleWebAccessibilityEvent(std::move(object), event_name,
+                              event.event_intents);
 
   RenderFrameImpl::PostAccessibilityEvent(event);
 }
 
 void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
                                              bool subtree) {
-  HandleWebAccessibilityEvent(object, "MarkDirty");
+  HandleWebAccessibilityEvent(object, "MarkDirty",
+                              std::vector<ui::AXEventIntent>());
 
   // Guard against the case where |this| was deleted as a result of an
   // accessibility listener detaching a frame. If that occurs, the
@@ -641,7 +643,8 @@ void WebFrameTestProxy::MarkWebAXObjectDirty(const blink::WebAXObject& object,
 
 void WebFrameTestProxy::HandleWebAccessibilityEvent(
     const blink::WebAXObject& object,
-    const char* event_name) {
+    const char* event_name,
+    const std::vector<ui::AXEventIntent>& event_intents) {
   // Only hook the accessibility events that occurred during the test run.
   // This check prevents false positives in BlinkLeakDetector.
   // The pending tasks in browser/renderer message queue may trigger
@@ -655,7 +658,7 @@ void WebFrameTestProxy::HandleWebAccessibilityEvent(
       web_view_test_proxy_->accessibility_controller();
 
   accessibility_controller->NotificationReceived(GetWebFrame(), object,
-                                                 event_name);
+                                                 event_name, event_intents);
 
   if (accessibility_controller->ShouldLogAccessibilityEvents()) {
     std::string message("AccessibilityNotification - ");

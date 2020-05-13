@@ -244,7 +244,11 @@ template("webapk_tmpl") {
   }
 
   android_apk(target_name) {
-    forward_variables_from(invoker, [ "apk_name" ])
+    forward_variables_from(invoker,
+                           [
+                             "apk_name",
+                             "testonly",
+                           ])
     deps = [ ":$_java_with_services_target_name" ]
 
     android_manifest = _manifest_output
@@ -296,6 +300,7 @@ webapk_tmpl("maps_go_webapk") {
 }
 
 webapk_tmpl("uiautomator_maps_go_webapk") {
+  testonly = true
   config_file = "manifest/maps_go_manifest_config.json"
   manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
   apk_name = "JavatestsMapsWebApk"
@@ -319,6 +324,7 @@ webapk_tmpl("new_splash_webapk") {
 
 # Used by javatests
 webapk_tmpl("javatests_webapk") {
+  testonly = true
   config_file = "manifest/bound_manifest_config.json"
   manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
   delta_config_file = "manifest/javatest_manifest_config_delta.json"

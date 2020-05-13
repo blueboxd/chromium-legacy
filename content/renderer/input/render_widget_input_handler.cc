@@ -226,7 +226,7 @@ class RenderWidgetInputHandler::HandlingState {
   // handled. If the event causes overscroll, the overscroll metadata can be
   // bundled in the event ack, saving an IPC.  Note that we must continue
   // supporting overscroll IPC notifications due to fling animation updates.
-  std::unique_ptr<ui::DidOverscrollParams> event_overscroll;
+  blink::mojom::DidOverscrollParamsPtr event_overscroll;
 
   base::Optional<cc::TouchAction> touch_action;
 
@@ -558,12 +558,9 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
     const gfx::PointF& position,
     const gfx::Vector2dF& velocity,
     const cc::OverscrollBehavior& behavior) {
-  std::unique_ptr<DidOverscrollParams> params(new DidOverscrollParams());
-  params->accumulated_overscroll = accumulatedOverscroll;
-  params->latest_overscroll_delta = overscrollDelta;
-  params->current_fling_velocity = velocity;
-  params->causal_event_viewport_point = position;
-  params->overscroll_behavior = behavior;
+  blink::mojom::DidOverscrollParamsPtr params =
+      blink::mojom::DidOverscrollParams::New(
+          accumulatedOverscroll, overscrollDelta, velocity, position, behavior);
 
   // If we're currently handling an event, stash the overscroll data such that
   // it can be bundled in the event ack.
@@ -572,7 +569,7 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
     return;
   }
 
-  delegate_->OnDidOverscroll(*params);
+  delegate_->OnDidOverscroll(std::move(params));
 }
 
 void RenderWidgetInputHandler::InjectGestureScrollEvent(

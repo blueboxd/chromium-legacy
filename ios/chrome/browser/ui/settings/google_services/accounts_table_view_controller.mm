@@ -356,7 +356,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
           base::mac::ObjCCastStrict<TableViewAccountItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
       DCHECK(item.chromeIdentity);
-      [self showAccountDetails:item.chromeIdentity];
+      UIView* itemView =
+          [[tableView cellForRowAtIndexPath:indexPath] contentView];
+      [self showAccountDetails:item.chromeIdentity itemView:itemView];
       break;
     }
     case ItemTypeAddAccount: {
@@ -425,13 +427,48 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-- (void)showAccountDetails:(ChromeIdentity*)identity {
+- (void)showAccountDetails:(ChromeIdentity*)identity
+                  itemView:(UIView*)itemView {
   if ([_alertCoordinator isVisible])
     return;
-  _dimissAccountDetailsViewControllerBlock =
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->PresentAccountDetailsController(identity, self, /*animated=*/YES);
+  if (base::FeatureList::IsEnabled(kEnableMyGoogle)) {
+    _alertCoordinator = [[ActionSheetCoordinator alloc]
+        initWithBaseViewController:self
+                           browser:_browser
+                             title:nil
+                           message:identity.userEmail
+                              rect:itemView.frame
+                              view:itemView];
+
+    [_alertCoordinator
+        addItemWithTitle:l10n_util::GetNSString(
+                             IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE)
+                  action:^{
+                    _dimissAccountDetailsViewControllerBlock =
+                        ios::GetChromeBrowserProvider()
+                            ->GetChromeIdentityService()
+                            ->PresentAccountDetailsController(identity, self,
+                                                              /*animated=*/YES);
+                  }
+                   style:UIAlertActionStyleDefault];
+    [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(
+                                            IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE)
+                                 action:^{
+                                   // TODO(crbug.com/1043080): Use Identity API
+                                   // to remove account.
+                                 }
+                                  style:UIAlertActionStyleDestructive];
+
+    [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                                 action:nil
+                                  style:UIAlertActionStyleCancel];
+    [_alertCoordinator start];
+  } else {
+    _dimissAccountDetailsViewControllerBlock =
+        ios::GetChromeBrowserProvider()
+            ->GetChromeIdentityService()
+            ->PresentAccountDetailsController(identity, self, /*animated=*/YES);
+  }
 }
 
 - (void)showSignOutWithClearData:(BOOL)forceClearData

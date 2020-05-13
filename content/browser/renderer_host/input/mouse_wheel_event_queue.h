@@ -58,7 +58,19 @@ class CONTENT_EXPORT MouseWheelEventQueueClient {
   virtual bool IsAutoscrollInProgress() = 0;
 };
 
-// A queue for throttling and coalescing mouse wheel events.
+// A queue for throttling and coalescing mouse wheel events. This class tracks
+// wheel events sent to the renderer and receives their ACKs. If the ACK
+// reports the event went unconsumed by the renderer, this class will generate
+// a sequence of gesture scroll events.
+//
+// Within a sequence, wheel events are initially forwarded using a blocking
+// dispatch. This means that further wheel events are queued and scroll event
+// generation will wait (i.e.  block) until the in-flight wheel event is ACKed.
+// Once a wheel event goes unconsumed, and scrolling begins, dispatch of
+// subsequent wheel events becomes non-blocking. This means the wheel event
+// will be ACKed by the browser immediately after being dispatched. This will
+// cause scroll events to follow the wheel immediately and new wheel events
+// will be dispatched immediately rather than queueing.
 class CONTENT_EXPORT MouseWheelEventQueue {
  public:
   // The |client| must outlive the MouseWheelEventQueue.

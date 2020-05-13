@@ -10,7 +10,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
+import android.content.Context;
 import android.view.textclassifier.SelectionEvent;
 import android.view.textclassifier.TextClassificationManager;
 import android.view.textclassifier.TextClassifier;
@@ -30,8 +32,10 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.ref.WeakReference;
 import java.text.BreakIterator;
 
 /**
@@ -40,6 +44,9 @@ import java.text.BreakIterator;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SmartSelectionMetricsLoggerTest {
+    private WebContentsImpl mWebContents;
+    private WindowAndroid mWindowAndroid;
+
     @Mock
     private TextClassifier mTextClassifier;
 
@@ -60,6 +67,13 @@ public class SmartSelectionMetricsLoggerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ShadowLog.stream = System.out;
+
+        mWebContents = Mockito.mock(WebContentsImpl.class);
+        mWindowAndroid = Mockito.mock(WindowAndroid.class);
+        when(mWebContents.getTopLevelNativeWindow()).thenReturn(mWindowAndroid);
+        when(mWindowAndroid.getContext())
+                .thenReturn(
+                        new WeakReference<Context>(ApplicationProvider.getApplicationContext()));
 
         TextClassificationManager tcm =
                 ApplicationProvider.getApplicationContext().getSystemService(
@@ -304,8 +318,7 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testNormalLoggingFlow() {
-        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
-                new WindowAndroid(ApplicationProvider.getApplicationContext()));
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(mWebContents);
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 
@@ -374,8 +387,7 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testMultipleDrag() {
-        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
-                new WindowAndroid(ApplicationProvider.getApplicationContext()));
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(mWebContents);
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 
@@ -424,8 +436,7 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testTextShift() {
-        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
-                new WindowAndroid(ApplicationProvider.getApplicationContext()));
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(mWebContents);
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 
@@ -468,8 +479,7 @@ public class SmartSelectionMetricsLoggerTest {
     @Test
     @Feature({"TextInput", "SmartSelection"})
     public void testSelectionChanged() {
-        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(
-                new WindowAndroid(ApplicationProvider.getApplicationContext()));
+        SmartSelectionMetricsLogger logger = SmartSelectionMetricsLogger.create(mWebContents);
         ArgumentCaptor<SelectionEvent> captor = ArgumentCaptor.forClass(SelectionEvent.class);
         InOrder inOrder = inOrder(mTextClassifier);
 

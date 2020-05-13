@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
-#include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_dom_snapshot_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
@@ -639,10 +639,10 @@ void InspectorHighlight::VisitAndCollectDistanceInfo(Node* node) {
 
   if (!node->IsContainerNode())
     return;
-  for (Node* child = blink::dom_traversal_utils::FirstChild(*node, false);
-       child; child = blink::dom_traversal_utils::NextSibling(*child, false)) {
+  Node* first_child = InspectorDOMSnapshotAgent::FirstChild(*node, false);
+  for (Node* child = first_child; child;
+       child = InspectorDOMSnapshotAgent::NextSibling(*child, false))
     VisitAndCollectDistanceInfo(child);
-  }
 }
 
 void InspectorHighlight::VisitAndCollectDistanceInfo(

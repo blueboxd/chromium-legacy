@@ -51,7 +51,8 @@ class StretchyOperatorShaperTest : public testing::Test {
 
 // See createStretchy() in
 // third_party/blink/web_tests/external/wpt/mathml/tools/operator-dictionary.py
-TEST_F(StretchyOperatorShaperTest, GlyphVariants) {
+// Broken on all platforms by updated to 'operators.woff'. crbug.com/1082250
+TEST_F(StretchyOperatorShaperTest, DISABLED_GlyphVariants) {
   Font math = CreateMathFont("operators.woff");
 
   StretchyOperatorShaper vertical_shaper(

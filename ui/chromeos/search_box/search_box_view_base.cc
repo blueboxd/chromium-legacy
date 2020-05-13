@@ -537,16 +537,22 @@ void SearchBoxViewBase::SetShowAssistantButton(bool show) {
 void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
   if (located_event->type() == ui::ET_MOUSE_PRESSED ||
       located_event->type() == ui::ET_GESTURE_TAP) {
-    bool event_is_in_searchbox_bounds =
+    const bool event_is_in_searchbox_bounds =
         GetWidget()->GetWindowBoundsInScreen().Contains(
             located_event->root_location());
-    if (is_search_box_active_ || !event_is_in_searchbox_bounds ||
-        !search_box_->GetText().empty())
+    // Don't handle an event out of the searchbox bounds.
+    if (!event_is_in_searchbox_bounds)
       return;
-    // If the event was within the searchbox bounds and in an inactive empty
-    // search box, enable the search box.
 
-    SetSearchBoxActive(true, located_event->type());
+    // If the event is in an inactive empty search box, enable the search box.
+    if (!is_search_box_active_ && search_box_->GetText().empty()) {
+      SetSearchBoxActive(true, located_event->type());
+      return;
+    }
+
+    // Otherwise, update the keyboard in case it was hidden. Tapping again
+    // should reopen it.
+    UpdateKeyboardVisibility();
   }
   located_event->SetHandled();
 }

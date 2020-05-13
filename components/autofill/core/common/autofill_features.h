@@ -34,6 +34,7 @@ extern const base::Feature kAutofillEnableHideSuggestionsUI;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForUpload;
+extern const base::Feature kAutofillFixFillableFieldTypes;
 extern const base::Feature kAutofillKeyboardAccessory;
 extern const base::Feature kAutofillPruneSuggestions;
 extern const base::Feature kAutofillMetadataUploads;

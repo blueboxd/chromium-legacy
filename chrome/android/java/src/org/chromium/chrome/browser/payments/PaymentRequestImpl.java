@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -383,7 +382,7 @@ public class PaymentRequestImpl
     };
 
     /** Monitors changes in the current TabModel. */
-    private final TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
+    private final TabModelObserver mTabModelObserver = new TabModelObserver() {
         @Override
         public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
             if (tab == null || tab.getId() != lastId) {

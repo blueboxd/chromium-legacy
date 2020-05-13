@@ -18,7 +18,7 @@ class BASE_EXPORT UkmSourceId {
  public:
   enum class Type : int64_t {
     // Source ids of this type are created via ukm::AssignNewSourceId, to denote
-    // 'custom' source other than the 4 types below. Source of this type has
+    // 'custom' source other than the types below. Source of this type has
     // additional restrictions with logging, as determined by
     // IsWhitelistedSourceId.
     UKM = 0,

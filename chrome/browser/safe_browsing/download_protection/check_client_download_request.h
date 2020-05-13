@@ -76,6 +76,8 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   bool ShouldPromptForDeepScanning(
       DownloadCheckResultReason reason) const override;
 
+  bool IsWhitelistedByPolicy() const override;
+
   // The DownloadItem we are checking. Will be NULL if the request has been
   // canceled. Must be accessed only on UI thread.
   download::DownloadItem* item_;

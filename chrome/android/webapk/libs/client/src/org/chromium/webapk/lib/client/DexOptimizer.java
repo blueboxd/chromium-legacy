@@ -169,7 +169,7 @@ public class DexOptimizer {
      *   client's file space.
      */
     private static class VMRuntime {
-        @SuppressLint("NewApi")
+        @SuppressLint({"DiscouragedPrivateApi", "NewApi"})
         @SuppressWarnings("unchecked")
         public static String getCurrentInstructionSet() throws NoSuchMethodException {
             Method getCurrentInstructionSetMethod;

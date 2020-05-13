@@ -18,6 +18,9 @@ class LogBuffer;
   T(ParsedForms, "Parsed forms:")                                              \
   T(SendAutofillUpload, "Sending Autofill Upload Request:")                    \
   T(LocalHeuristicRegExMatched, "RegEx of local heuristic matched:")           \
+  T(LocalHeuristicDidNotFindEnoughFillableFields,                              \
+    "Local heuristics did not find enough fillable fields to classify the "    \
+    "form as fillable; therefore it did not produce any classifications.")     \
   T(AbortParsingTooManyForms, "Abort parsing form: Too many forms in cache: ") \
   T(AbortParsingNotAllowedScheme,                                              \
     "Abort parsing form: Ignoring form because the source url has no allowed " \

@@ -232,30 +232,6 @@ class WidgetChangeObserver : public TestWidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(WidgetChangeObserver);
 };
 
-class NativeHostHolder {
- public:
-  NativeHostHolder()
-      : view_([[NSView alloc] init]), host_(new NativeViewHost()) {
-    host_->set_owned_by_client();
-  }
-
-  void AttachNativeView() {
-    DCHECK(!host_->native_view());
-    host_->Attach(view_.get());
-  }
-
-  void Detach() { host_->Detach(); }
-
-  NSView* view() const { return view_.get(); }
-  NativeViewHost* host() const { return host_.get(); }
-
- private:
-  base::scoped_nsobject<NSView> view_;
-  std::unique_ptr<NativeViewHost> host_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeHostHolder);
-};
-
 // This class gives public access to the protected ctor of
 // BubbleDialogDelegateView.
 class SimpleBubbleView : public BubbleDialogDelegateView {
@@ -2247,6 +2223,29 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
   NativeWidgetMacViewsOrderTest() {}
 
  protected:
+  class NativeHostHolder {
+   public:
+    static std::unique_ptr<NativeHostHolder> CreateAndAddToParent(
+        View* parent) {
+      std::unique_ptr<NativeHostHolder> holder(new NativeHostHolder(
+          parent->AddChildView(std::make_unique<NativeViewHost>())));
+      holder->host()->Attach(holder->view());
+      return holder;
+    }
+
+    NSView* view() const { return view_.get(); }
+    NativeViewHost* host() const { return host_; }
+
+   private:
+    NativeHostHolder(NativeViewHost* host)
+        : host_(host), view_([[NSView alloc] init]) {}
+
+    NativeViewHost* const host_;
+    base::scoped_nsobject<NSView> view_;
+
+    DISALLOW_COPY_AND_ASSIGN(NativeHostHolder);
+  };
+
   // testing::Test:
   void SetUp() override {
     WidgetTest::SetUp();
@@ -2261,10 +2260,8 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 
     const size_t kNativeViewCount = 3;
     for (size_t i = 0; i < kNativeViewCount; ++i) {
-      auto holder = std::make_unique<NativeHostHolder>();
-      native_host_parent_->AddChildView(holder->host());
-      holder->AttachNativeView();
-      hosts_.push_back(std::move(holder));
+      hosts_.push_back(
+          NativeHostHolder::CreateAndAddToParent(native_host_parent_));
     }
     EXPECT_EQ(kNativeViewCount, native_host_parent_->children().size());
     EXPECT_NSEQ([widget_->GetNativeView().GetNativeNSView() subviews],
@@ -2275,6 +2272,7 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 
   void TearDown() override {
     widget_->CloseNow();
+    hosts_.clear();
     WidgetTest::TearDown();
   }
 
@@ -2296,13 +2294,14 @@ class NativeWidgetMacViewsOrderTest : public WidgetTest {
 // Test that NativeViewHost::Attach()/Detach() method saves the NativeView
 // z-order.
 TEST_F(NativeWidgetMacViewsOrderTest, NativeViewAttached) {
-  hosts_[1]->Detach();
+  NativeHostHolder* second_host = hosts_[1].get();
+  second_host->host()->Detach();
   EXPECT_NSEQ([GetContentNativeView() subviews],
               ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
                 hosts_[0]->view(), hosts_[2]->view()
               ]]));
 
-  hosts_[1]->AttachNativeView();
+  second_host->host()->Attach(second_host->view());
   EXPECT_NSEQ([GetContentNativeView() subviews],
               ([GetStartingSubviews() arrayByAddingObjectsFromArray:@[
                 hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()

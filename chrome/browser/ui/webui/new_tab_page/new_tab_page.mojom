@@ -165,6 +165,16 @@ struct DoodleShareButton {
   url.mojom.Url icon_url;
 };
 
+// Type of image of an image doodle. Used for metrics logging only.
+enum DoodleImageType {
+  // Animation of an animated doodle.
+  ANIMATION,
+  // Static preview image of an animated doodle.
+  CTA,
+  // Image of a static doodle.
+  STATIC,
+};
+
 // The contents of simple and animated doodles.
 struct ImageDoodleContent {
   // Doodle image encoded as data URL.
@@ -299,6 +309,10 @@ interface PageHandler {
   OnMostVisitedTileNavigation(MostVisitedTile tile, uint32 index);
   // Logs an action performed in the customize dialog.
   OnCustomizeDialogAction(CustomizeDialogAction action);
+  // Logs that the |type| image of an image doodle has been clicked.
+  OnDoodleImageClicked(DoodleImageType type);
+  // Logs that the |type| image of an image doodle has been shown at |time|.
+  OnDoodleImageRendered(DoodleImageType type, double time);
 
   // ======= REALBOX =======
   // Queries autocomplete matches from the browser.

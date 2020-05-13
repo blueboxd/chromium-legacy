@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using autofill::features::kAutofillFixFillableFieldTypes;
 using base::ASCIIToUTF16;
 
 namespace autofill {
@@ -191,6 +192,59 @@ TEST(FormFieldTest, ParseFormFields) {
     EXPECT_EQ(ADDRESS_HOME_LINE2,
               field_candidates_map.find(ASCIIToUTF16("Address line2"))
                   ->second.BestHeuristicType());
+  }
+}
+
+// Test that the minimum number of required fields for the heuristics considers
+// whether a field is actually fillable.
+TEST(FormFieldTest, ParseFormFieldEnforceMinFillableFields) {
+  std::vector<std::unique_ptr<AutofillField>> fields;
+  FormFieldData field_data;
+  field_data.form_control_type = "text";
+
+  field_data.label = ASCIIToUTF16("Address line 1");
+  fields.push_back(
+      std::make_unique<AutofillField>(field_data, field_data.label));
+
+  field_data.label = ASCIIToUTF16("Address line 2");
+  fields.push_back(
+      std::make_unique<AutofillField>(field_data, field_data.label));
+
+  // Don't parse forms with 2 fields.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        kAutofillEnforceMinRequiredFieldsForHeuristics);
+    EXPECT_EQ(0u, FormField::ParseFormFields(fields, true).size());
+  }
+
+  field_data.label = ASCIIToUTF16("Search");
+  fields.push_back(
+      std::make_unique<AutofillField>(field_data, field_data.label));
+
+  // Before the fix in kAutofillFixFillableFieldTypes, we would parse the form
+  // now, although a search field is not fillable.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        /*enabled_features=*/
+        {kAutofillEnforceMinRequiredFieldsForHeuristics},
+        /*disabled_features=*/{kAutofillFixFillableFieldTypes});
+    EXPECT_EQ(3u, FormField::ParseFormFields(fields, true).size());
+  }
+
+  // With the fix, we don't parse the form because search fields are not
+  // fillable (therefore, the form has only 2 fillable fields).
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        /*enabled_features=*/
+        {kAutofillEnforceMinRequiredFieldsForHeuristics,
+         kAutofillFixFillableFieldTypes},
+        /*disabled_features=*/{});
+    const FieldCandidatesMap field_candidates_map =
+        FormField::ParseFormFields(fields, true);
+    EXPECT_EQ(0u, FormField::ParseFormFields(fields, true).size());
   }
 }
 

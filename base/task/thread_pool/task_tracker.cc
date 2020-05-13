@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/debug/alias.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -760,21 +759,15 @@ void TaskTracker::CallFlushCallbackForTesting() {
 }
 
 NOINLINE void TaskTracker::RunContinueOnShutdown(Task* task) {
-  const int line_number = __LINE__;
   task_annotator_.RunTask("ThreadPool_RunTask_ContinueOnShutdown", task);
-  base::debug::Alias(&line_number);
 }
 
 NOINLINE void TaskTracker::RunSkipOnShutdown(Task* task) {
-  const int line_number = __LINE__;
   task_annotator_.RunTask("ThreadPool_RunTask_SkipOnShutdown", task);
-  base::debug::Alias(&line_number);
 }
 
 NOINLINE void TaskTracker::RunBlockShutdown(Task* task) {
-  const int line_number = __LINE__;
   task_annotator_.RunTask("ThreadPool_RunTask_BlockShutdown", task);
-  base::debug::Alias(&line_number);
 }
 
 void TaskTracker::RunTaskWithShutdownBehavior(

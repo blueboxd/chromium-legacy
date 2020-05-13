@@ -15,6 +15,7 @@ import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/web_sandbox_flags.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
+import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/choosers/popup_menu.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
@@ -500,6 +501,19 @@ interface LocalFrame {
   // TODO(crbug.com/1068774): Include screen info with this event, perhaps
   // plumbing the multi-screen info via SynchronizeVisualProperties.
   OnScreensChange();
+
+  // Posts a message from a frame in another process to the current renderer.
+  // |source_frame_token| is the frame token of the RemoteFrame in the current
+  // renderer representing the frame (from a different renderer) where this
+  // message is coming from. |source_origin| is the origin of the source frame
+  // when the message was sent, and |target_origin| specifies what the origin of
+  // the target frame must be for the message to be dispatched. An empty string
+  // allows the message to be dispatched to any origin. |message| is the encoded
+  // data, and any extra properties such as transferred ports or blobs.
+  PostMessageEvent(mojo_base.mojom.UnguessableToken? source_frame_token,
+                   mojo_base.mojom.String16 source_origin,
+                   mojo_base.mojom.String16 target_origin,
+                   blink.mojom.TransferableMessage message);
 
   // Requests the index of a character in the frame's text stream at the given
   // point. The point is in the viewport coordinate space. Replies using

@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -75,7 +74,7 @@ public class EmptyBackgroundViewWrapper {
                 overviewModeBehavior -> mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeBehaviorSupplier.addObserver(mOverviewModeSupplierCallback);
 
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {

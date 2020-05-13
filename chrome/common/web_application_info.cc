@@ -26,7 +26,7 @@ WebApplicationShortcutInfo::WebApplicationShortcutInfo(
     const WebApplicationShortcutInfo& other) = default;
 
 WebApplicationShortcutInfo::WebApplicationShortcutInfo(
-    WebApplicationShortcutInfo&&) = default;
+    WebApplicationShortcutInfo&&) noexcept = default;
 
 WebApplicationShortcutInfo::~WebApplicationShortcutInfo() = default;
 
@@ -34,7 +34,7 @@ WebApplicationShortcutInfo& WebApplicationShortcutInfo::operator=(
     const WebApplicationShortcutInfo&) = default;
 
 WebApplicationShortcutInfo& WebApplicationShortcutInfo::operator=(
-    WebApplicationShortcutInfo&&) = default;
+    WebApplicationShortcutInfo&&) noexcept = default;
 
 WebApplicationInfo::WebApplicationInfo()
     : mobile_capable(MOBILE_CAPABLE_UNSPECIFIED),

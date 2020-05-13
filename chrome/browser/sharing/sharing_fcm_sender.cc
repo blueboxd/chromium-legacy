@@ -70,11 +70,18 @@ void SharingFCMSender::SendMessageToFcmTarget(
     SendMessageCallback callback) {
   TRACE_EVENT0("sharing", "SharingFCMSender::SendMessageToFcmTarget");
 
-  if (base::FeatureList::IsEnabled(kSharingSendViaSync) &&
+  bool canSendViaSync =
+      base::FeatureList::IsEnabled(kSharingSendViaSync) &&
       sync_service_->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE) &&
       !fcm_configuration.sender_id_fcm_token().empty() &&
       !fcm_configuration.sender_id_p256dh().empty() &&
-      !fcm_configuration.sender_id_auth_secret().empty()) {
+      !fcm_configuration.sender_id_auth_secret().empty();
+  bool canSendViaVapid = !fcm_configuration.vapid_fcm_token().empty() &&
+                         !fcm_configuration.vapid_p256dh().empty() &&
+                         !fcm_configuration.vapid_auth_secret().empty();
+
+  if (canSendViaSync && (!canSendViaVapid ||
+                         !base::FeatureList::IsEnabled(kSharingPreferVapid))) {
     message.set_message_id(base::GenerateGUID());
     EncryptMessage(
         kSharingSenderID, fcm_configuration.sender_id_p256dh(),
@@ -87,9 +94,7 @@ void SharingFCMSender::SendMessageToFcmTarget(
     return;
   }
 
-  if (!fcm_configuration.vapid_fcm_token().empty() &&
-      !fcm_configuration.vapid_p256dh().empty() &&
-      !fcm_configuration.vapid_auth_secret().empty()) {
+  if (canSendViaVapid) {
     base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
         sync_preference_->GetFCMRegistration();
     if (!fcm_registration || !fcm_registration->authorized_entity) {

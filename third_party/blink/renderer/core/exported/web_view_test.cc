@@ -4106,6 +4106,9 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
   }
   void IntrinsicSizingInfoChanged(
       mojom::blink::IntrinsicSizingInfoPtr sizing_info) override {}
+  void AutoscrollStart(const gfx::PointF& position) override {}
+  void AutoscrollFling(const gfx::Vector2dF& position) override {}
+  void AutoscrollEnd() override {}
 
  private:
   mojo::AssociatedReceiver<mojom::blink::FrameWidgetHost>

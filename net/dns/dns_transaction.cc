@@ -334,6 +334,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
                  const GURL& gurl_without_parameters,
                  bool use_post,
                  URLRequestContext* url_request_context,
+                 const IsolationInfo& isolation_info,
                  RequestPriority request_priority_)
       : DnsAttempt(doh_server_index), query_(std::move(query)) {
     GURL url;
@@ -404,6 +405,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     request_->SetLoadFlags(request_->load_flags() | LOAD_DISABLE_CACHE |
                            LOAD_BYPASS_PROXY);
     request_->set_allow_credentials(false);
+    request_->set_isolation_info(isolation_info);
   }
 
   // DnsAttempt overrides.
@@ -557,6 +559,7 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
                              const OptRecordRdata* opt_rdata,
                              std::vector<std::unique_ptr<DnsAttempt>>* attempts,
                              URLRequestContext* url_request_context,
+                             const IsolationInfo& isolation_info,
                              RequestPriority request_priority) {
   DCHECK(url_request_context);
 
@@ -579,7 +582,7 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
   attempts->push_back(std::make_unique<DnsHTTPAttempt>(
       doh_server_index, std::move(query), doh_config.server_template,
       gurl_without_parameters, doh_config.use_post, url_request_context,
-      request_priority));
+      isolation_info, request_priority));
 }
 
 class DnsTCPAttempt : public DnsAttempt {
@@ -943,7 +946,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         session_.get(), doh_server_index, formatted_probe_hostname_,
         dns_protocol::kTypeA, nullptr /* opt_rdata */,
         &probe_stats->probe_attempts, context_->url_request_context(),
-        RequestPriority::DEFAULT_PRIORITY);
+        context_->isolation_info(), RequestPriority::DEFAULT_PRIORITY);
 
     probe_stats->probe_attempts.back()->Start(base::BindOnce(
         &DnsOverHttpsProbeRunner::ProbeComplete, weak_ptr_factory_.GetWeakPtr(),
@@ -1233,7 +1236,8 @@ class DnsTransactionImpl : public DnsTransaction,
     unsigned attempt_number = attempts_.size();
     ConstructDnsHTTPAttempt(
         session_.get(), doh_server_index, qnames_.front(), qtype_, opt_rdata_,
-        &attempts_, resolve_context_->url_request_context(), request_priority_);
+        &attempts_, resolve_context_->url_request_context(),
+        resolve_context_->isolation_info(), request_priority_);
     ++attempts_count_;
     int rv = attempts_.back()->Start(base::BindOnce(
         &DnsTransactionImpl::OnAttemptComplete, base::Unretained(this),

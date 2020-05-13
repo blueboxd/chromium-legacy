@@ -736,21 +736,24 @@ void ChromeClientImpl::SetCursorOverridden(bool overridden) {
 void ChromeClientImpl::AutoscrollStart(const gfx::PointF& viewport_point,
                                        LocalFrame* local_frame) {
   // TODO(dcheng): Why is this null check necessary?
-  if (FrameWidget* widget = local_frame->GetWidgetForLocalRoot())
-    widget->Client()->AutoscrollStart(viewport_point);
+  if (WebFrameWidgetBase* widget =
+          WebLocalFrameImpl::FromFrame(local_frame)->LocalRootFrameWidget())
+    widget->AutoscrollStart(viewport_point);
 }
 
 void ChromeClientImpl::AutoscrollFling(const gfx::Vector2dF& velocity,
                                        LocalFrame* local_frame) {
   // TODO(dcheng): Why is this null check necessary?
-  if (FrameWidget* widget = local_frame->GetWidgetForLocalRoot())
-    widget->Client()->AutoscrollFling(velocity);
+  if (WebFrameWidgetBase* widget =
+          WebLocalFrameImpl::FromFrame(local_frame)->LocalRootFrameWidget())
+    widget->AutoscrollFling(velocity);
 }
 
 void ChromeClientImpl::AutoscrollEnd(LocalFrame* local_frame) {
   // TODO(dcheng): Why is this null check necessary?
-  if (FrameWidget* widget = local_frame->GetWidgetForLocalRoot())
-    widget->Client()->AutoscrollEnd();
+  if (WebFrameWidgetBase* widget =
+          WebLocalFrameImpl::FromFrame(local_frame)->LocalRootFrameWidget())
+    widget->AutoscrollEnd();
 }
 
 String ChromeClientImpl::AcceptLanguages() {

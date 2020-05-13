@@ -22,6 +22,7 @@ class FrameNode;
 class Graph;
 class GraphOwned;
 class PageNode;
+class PerformanceManagerMainThreadMechanism;
 class PerformanceManagerMainThreadObserver;
 
 // The performance manager is a rendezvous point for communicating with the
@@ -76,6 +77,12 @@ class PerformanceManager {
   // that happen on the main thread. Can only be called on the main thread.
   static void AddObserver(PerformanceManagerMainThreadObserver* observer);
   static void RemoveObserver(PerformanceManagerMainThreadObserver* observer);
+
+  // Adds / removes a mechanism that need to be called synchronously on the main
+  // thread (ie, to apply NavigationThrottles).
+  static void AddMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+  static void RemoveMechanism(PerformanceManagerMainThreadMechanism* mechanism);
+  static bool HasMechanism(PerformanceManagerMainThreadMechanism* mechanism);
 
  protected:
   PerformanceManager();

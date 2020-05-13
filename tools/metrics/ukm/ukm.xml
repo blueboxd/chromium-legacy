@@ -281,6 +281,22 @@ be describing additional metrics about the same event.
       bucket (with a bucket ratio of 1.3).
     </summary>
   </metric>
+  <metric name="MaxAdDensityByArea">
+    <summary>
+      The estimated maximum density of ads on a page by area. Calculated as the
+      area of ads on the page * 100 / page area. This counts each overlapping
+      area once, it may be inaccurate due to updates and calculations being
+      throttled.
+    </summary>
+  </metric>
+  <metric name="MaxAdDensityByHeight">
+    <summary>
+      The estimated maximum density of ads on a page by height. Calculated as
+      the combined height of ads on the page * 100 / page height. This counts
+      each overlapping area once, it may be inaccurate due to updates and
+      calculations being throttled.
+    </summary>
+  </metric>
   <metric name="TotalBytes">
     <summary>
       Amount of network bytes used to load resources on the page. Includes

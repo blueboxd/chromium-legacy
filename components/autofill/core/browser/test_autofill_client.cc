@@ -10,6 +10,10 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/test_internal_authenticator.h"
+#endif
+
 namespace autofill {
 
 TestAutofillClient::TestAutofillClient()
@@ -74,6 +78,14 @@ TestAutofillClient::GetSecurityLevelForUmaHistograms() {
 std::string TestAutofillClient::GetPageLanguage() const {
   return page_language_;
 }
+
+#if !defined(OS_IOS)
+std::unique_ptr<InternalAuthenticator>
+TestAutofillClient::CreateCreditCardInternalAuthenticator(
+    content::RenderFrameHost* rfh) {
+  return std::make_unique<TestInternalAuthenticator>();
+}
+#endif
 
 void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
 

@@ -64,6 +64,7 @@ js_type_check("closure_compile") {
     ":cookies_page_test",
     ":passwords_and_autofill_fake_data",
     ":search_page_test",
+    ":security_page_test",
     ":settings_page_test_util",
     ":site_list_tests",
     ":site_settings_page_test",
@@ -74,8 +75,11 @@ js_type_check("closure_compile") {
     ":test_metrics_browser_proxy",
     ":test_open_window_proxy",
     ":test_password_manager_proxy",
+    ":test_privacy_page_browser_proxy",
+    ":test_safe_browsing_browser_proxy",
     ":test_search_engines_browser_proxy.m",
     ":test_site_settings_prefs_browser_proxy",
+    ":test_sync_browser_proxy.m",
     ":test_util",
 
     # TODO(crbug.com/1000989): Add targets for more files here.
@@ -150,11 +154,41 @@ js_library("test_password_manager_proxy") {
   ]
 }
 
+js_library("test_privacy_page_browser_proxy") {
+  deps = [
+    "..:chai_assert",
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:settings",
+  ]
+}
+
+js_library("test_safe_browsing_browser_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:lazy_load",
+  ]
+}
+
 js_library("search_page_test") {
   deps = [
     ":test_search_engines_browser_proxy.m",
     "..:chai_assert",
     "//chrome/browser/resources/settings:settings",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("security_page_test") {
+  deps = [
+    ":test_metrics_browser_proxy",
+    ":test_privacy_page_browser_proxy",
+    ":test_safe_browsing_browser_proxy",
+    ":test_sync_browser_proxy.m",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/settings:lazy_load",
+    "//chrome/browser/resources/settings:settings",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -235,6 +269,15 @@ js_library("test_site_settings_prefs_browser_proxy") {
     "..:test_browser_proxy.m",
     "//chrome/browser/resources/settings:lazy_load",
   ]
+}
+
+js_library("test_sync_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/settings/test_sync_browser_proxy.m.js" ]
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:settings",
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("test_util") {

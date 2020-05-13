@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "components/performance_manager/performance_manager_registry_impl.h"
 #include "components/performance_manager/test_support/performance_manager_browsertest_harness.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -74,9 +75,13 @@ class TabLoadingFrameNavigationSchedulerTest
     // Enable the mechanism at the beginning of all tests.
     EXPECT_FALSE(
         TabLoadingFrameNavigationScheduler::IsThrottlingEnabledForTesting());
+    EXPECT_FALSE(
+        TabLoadingFrameNavigationScheduler::IsMechanismRegisteredForTesting());
     TabLoadingFrameNavigationScheduler::SetThrottlingEnabled(true);
     EXPECT_TRUE(
         TabLoadingFrameNavigationScheduler::IsThrottlingEnabledForTesting());
+    EXPECT_TRUE(
+        TabLoadingFrameNavigationScheduler::IsMechanismRegisteredForTesting());
 
     // Register a callback so we can set navigation throttles. Passing
     // |this| is fine because we clear the callback before we are torn down.
@@ -95,10 +100,13 @@ class TabLoadingFrameNavigationSchedulerTest
     content::ShellContentBrowserClient::Get()
         ->set_create_throttles_for_navigation_callback(callback);
 
-    // Disable at the end of all tests.
+    // Disable at the end of all tests. Some tests may already have disabled
+    // throttling, so don't first check it is enabled.
     TabLoadingFrameNavigationScheduler::SetThrottlingEnabled(false);
     EXPECT_FALSE(
         TabLoadingFrameNavigationScheduler::IsThrottlingEnabledForTesting());
+    EXPECT_FALSE(
+        TabLoadingFrameNavigationScheduler::IsMechanismRegisteredForTesting());
 
     TabLoadingFrameNavigationScheduler::SetPolicyDelegateForTesting(nullptr);
 

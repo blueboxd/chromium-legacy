@@ -267,4 +267,57 @@ TEST_F(WebAudioSourceProviderImplTest, CopyAudioCB) {
   testing::Mock::VerifyAndClear(mock_sink_.get());
 }
 
+TEST_F(WebAudioSourceProviderImplTest, MultipleInitializeWithSetClient) {
+  // setClient() with a nullptr client should do nothing if no client is set.
+  wasp_impl_->SetClient(nullptr);
+
+  // When Initialize() is called after setClient(), the params should propagate
+  // to the client via setFormat() during the call.
+  EXPECT_TRUE(wasp_impl_->IsOptimizedForHardwareParameters());
+  EXPECT_CALL(*this, SetFormat(params_.channels(), params_.sample_rate()));
+  wasp_impl_->Initialize(params_, &fake_callback_);
+  base::RunLoop().RunUntilIdle();
+
+  // If |mock_sink_| is not null, it should be stopped during setClient(this).
+  if (mock_sink_)
+    EXPECT_CALL(*mock_sink_.get(), Stop());
+
+  // setClient() with the same client should do nothing.
+  wasp_impl_->SetClient(this);
+  base::RunLoop().RunUntilIdle();
+
+  // Stop allows Initialize() to be called again.
+  wasp_impl_->Stop();
+
+  // It's possible that due to media change or just the change in the return
+  // value for IsOptimizedForHardwareParameters() that different params are
+  // given. Ensure this doesn't crash.
+  EXPECT_FALSE(wasp_impl_->IsOptimizedForHardwareParameters());
+  auto stream_params = media::AudioParameters(
+      media::AudioParameters::AUDIO_PCM_LINEAR, media::CHANNEL_LAYOUT_MONO,
+      kTestSampleRate * 2, 64);
+
+  EXPECT_CALL(*this,
+              SetFormat(stream_params.channels(), stream_params.sample_rate()));
+  wasp_impl_->Initialize(stream_params, &fake_callback_);
+  base::RunLoop().RunUntilIdle();
+
+  wasp_impl_->Start();
+  wasp_impl_->Play();
+
+  auto bus1 = media::AudioBus::Create(stream_params);
+  auto bus2 = media::AudioBus::Create(stream_params);
+
+  // Point the WebVector into memory owned by |bus1|.
+  WebVector<float*> audio_data(static_cast<size_t>(bus1->channels()));
+  for (size_t i = 0; i < audio_data.size(); ++i)
+    audio_data[i] = bus1->channel(static_cast<int>(i));
+
+  // Verify provideInput() doesn't return silence and doesn't crash.
+  bus1->channel(0)[0] = 1;
+  bus2->Zero();
+  wasp_impl_->ProvideInput(audio_data, params_.frames_per_buffer());
+  ASSERT_FALSE(CompareBusses(bus1.get(), bus2.get()));
+}
+
 }  // namespace blink

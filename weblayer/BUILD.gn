@@ -452,6 +452,7 @@ source_set("weblayer_lib_base") {
       "//android_webview:generate_aw_strings",
       "//components/android_system_error_page",
       "//components/autofill/android:provider",
+      "//components/browser_ui/site_settings/android",
       "//components/cdm/browser",
       "//components/content_settings/android",
       "//components/crash/android:crash_android",

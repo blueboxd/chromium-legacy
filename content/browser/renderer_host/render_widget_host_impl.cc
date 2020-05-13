@@ -609,9 +609,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollStart, OnAutoscrollStart)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollFling, OnAutoscrollFling)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_AutoscrollEnd, OnAutoscrollEnd)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
@@ -2421,7 +2418,7 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
              new_visual_properties.is_pinch_gesture_active;
 }
 
-void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
+void RenderWidgetHostImpl::AutoscrollStart(const gfx::PointF& position) {
   GetView()->OnAutoscrollStart();
   sent_autoscroll_scroll_begin_ = false;
   autoscroll_in_progress_ = true;
@@ -2430,7 +2427,7 @@ void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
   autoscroll_start_position_ = position;
 }
 
-void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
+void RenderWidgetHostImpl::AutoscrollFling(const gfx::Vector2dF& velocity) {
   DCHECK(autoscroll_in_progress_);
   if (!sent_autoscroll_scroll_begin_ && velocity != gfx::Vector2dF()) {
     // Send a GSB event with valid delta hints.
@@ -2457,7 +2454,7 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
       event, ui::LatencyInfo(ui::SourceEventType::OTHER));
 }
 
-void RenderWidgetHostImpl::OnAutoscrollEnd() {
+void RenderWidgetHostImpl::AutoscrollEnd() {
   autoscroll_in_progress_ = false;
 
   delegate()->GetInputEventRouter()->SetAutoScrollInProgress(

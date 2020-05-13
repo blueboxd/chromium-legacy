@@ -4577,6 +4577,7 @@ interface ImageData
     method getColorSettings
 interface ImageDecoder
     attribute @@toStringTag
+    getter complete
     getter frameCount
     getter repetitionCount
     getter type
@@ -6347,6 +6348,7 @@ interface RTCEncodedAudioFrame
     getter synchronizationSource
     getter timestamp
     method constructor
+    method getMetadata
     method toString
     setter data
 interface RTCEncodedVideoFrame
@@ -6357,6 +6359,7 @@ interface RTCEncodedVideoFrame
     getter timestamp
     getter type
     method constructor
+    method getMetadata
     method toString
     setter data
 interface RTCError : DOMException
@@ -6536,6 +6539,7 @@ interface RTCRtpReceiver
     getter transport
     method constructor
     method createEncodedAudioStreams
+    method createEncodedStreams
     method createEncodedVideoStreams
     method getContributingSources
     method getParameters
@@ -6551,6 +6555,7 @@ interface RTCRtpSender
     getter transport
     method constructor
     method createEncodedAudioStreams
+    method createEncodedStreams
     method createEncodedVideoStreams
     method getParameters
     method getStats
@@ -11360,7 +11365,7 @@ interface XRInputSourcesChangeEvent : Event
     getter removed
     getter session
     method constructor
-interface XRLayer
+interface XRLayer : EventTarget
     attribute @@toStringTag
     method constructor
 interface XRLightEstimate

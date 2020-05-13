@@ -17,8 +17,8 @@
 #include "content/renderer/input/main_thread_event_queue_task_list.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_info.h"
 
@@ -27,7 +27,7 @@ namespace content {
 using HandledEventCallback =
     base::OnceCallback<void(blink::mojom::InputEventResultState ack_state,
                             const ui::LatencyInfo& latency_info,
-                            std::unique_ptr<ui::DidOverscrollParams>,
+                            blink::mojom::DidOverscrollParamsPtr,
                             base::Optional<cc::TouchAction>)>;
 
 // All interaction with the MainThreadEventQueueClient will occur

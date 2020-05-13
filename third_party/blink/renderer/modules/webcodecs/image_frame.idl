@@ -9,6 +9,9 @@ dictionary ImageFrame {
   // Actual decoded image; includes resolution information.
   required ImageBitmap image;
 
+  // Indicates if the decoded image is actually complete.
+  required boolean complete;
+
   // Expected on screen duration for the image in microseconds.
   required unsigned long long duration;
 

@@ -258,6 +258,10 @@ can also step or execute backwards. This works by first recording a trace
 and then debugging based on that. I recommend installing it by compiling
 [from source](https://github.com/mozilla/rr/wiki/Building-And-Installing).
 
+Currently you must apply a patch adding
+[support for recording the MADV_WIPEONFORK](https://bugs.chromium.org/p/chromium/issues/detail?id=1082304#c6)
+syscall as upstream rr triggers an internal assert on this call.
+
 Once installed, you can use it like this:
 ```
 rr record out/Debug/content_shell --single-process --no-sandbox --disable-hang-monitor --single-process  --disable-seccomp-sandbox --disable-setuid-sandbox

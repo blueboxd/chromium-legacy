@@ -120,9 +120,8 @@ base::FilePath PlatformCrashpadInitialization(
     // to ChromeOS's /sbin/crash_reporter which in turn passes the dump to
     // crash_sender which handles the upload.
     std::string url;
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD) && \
-    !defined(OS_CHROMEOS)
-    url = "https://clients2.google.com/cr/report";
+#if !defined(OS_CHROMEOS)
+    url = crash_reporter_client->GetUploadUrl();
 #else
     url = std::string();
 #endif

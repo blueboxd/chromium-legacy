@@ -438,15 +438,14 @@ class InputRouterImplTestBase : public testing::Test {
   }
 
   void ActiveTouchSequenceCountTest(
-      const base::Optional<cc::TouchAction>& touch_action,
+      blink::mojom::TouchActionOptionalPtr touch_action,
       blink::mojom::InputEventResultState state) {
     PressTouchPoint(1, 1);
-    base::Optional<ui::DidOverscrollParams> overscroll;
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
     input_router_->TouchEventHandled(
         TouchEventWithLatencyInfo(touch_event_),
         blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
-        state, overscroll, touch_action);
+        state, nullptr, std::move(touch_action));
     EXPECT_EQ(input_router_->touch_action_filter_.num_of_active_touches_, 1);
     ReleaseTouchPoint(0);
     input_router_->OnTouchEventAck(
@@ -458,15 +457,13 @@ class InputRouterImplTestBase : public testing::Test {
   void StopTimeoutMonitorTest() {
     ResetTouchAction();
     PressTouchPoint(1, 1);
-    base::Optional<ui::DidOverscrollParams> overscroll;
-    base::Optional<cc::TouchAction> touch_action = cc::TouchAction::kPan;
     input_router_->SendTouchEvent(TouchEventWithLatencyInfo(touch_event_));
     EXPECT_TRUE(input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
     input_router_->TouchEventHandled(
         TouchEventWithLatencyInfo(touch_event_),
         blink::mojom::InputEventResultSource::kCompositorThread,
         ui::LatencyInfo(), blink::mojom::InputEventResultState::kNotConsumed,
-        overscroll, touch_action);
+        nullptr, blink::mojom::TouchActionOptional::New(cc::TouchAction::kPan));
     EXPECT_TRUE(input_router_->touch_event_queue_.IsTimeoutRunningForTesting());
     input_router_->SetTouchActionFromMain(cc::TouchAction::kPan);
     EXPECT_FALSE(
@@ -674,30 +671,28 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
 // Test that the active touch sequence count increment when the touch start is
 // not ACKed from the main thread.
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithoutTouchAction) {
-  base::Optional<cc::TouchAction> touch_action;
   ActiveTouchSequenceCountTest(
-      touch_action, blink::mojom::InputEventResultState::kSetNonBlocking);
+      nullptr, blink::mojom::InputEventResultState::kSetNonBlocking);
 }
 
 TEST_F(InputRouterImplTest,
        ActiveTouchSequenceCountWithoutTouchActionNoConsumer) {
-  base::Optional<cc::TouchAction> touch_action;
   ActiveTouchSequenceCountTest(
-      touch_action, blink::mojom::InputEventResultState::kNoConsumerExists);
+      nullptr, blink::mojom::InputEventResultState::kNoConsumerExists);
 }
 
 // Test that the active touch sequence count increment when the touch start is
 // ACKed from the main thread.
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchAction) {
-  base::Optional<cc::TouchAction> touch_action(cc::TouchAction::kPanY);
   ActiveTouchSequenceCountTest(
-      touch_action, blink::mojom::InputEventResultState::kSetNonBlocking);
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kPanY),
+      blink::mojom::InputEventResultState::kSetNonBlocking);
 }
 
 TEST_F(InputRouterImplTest, ActiveTouchSequenceCountWithTouchActionNoConsumer) {
-  base::Optional<cc::TouchAction> touch_action(cc::TouchAction::kPanY);
   ActiveTouchSequenceCountTest(
-      touch_action, blink::mojom::InputEventResultState::kNoConsumerExists);
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kPanY),
+      blink::mojom::InputEventResultState::kNoConsumerExists);
 }
 
 TEST_F(InputRouterImplTest, TouchActionAutoWithAckStateConsumed) {
@@ -1346,8 +1341,8 @@ TEST_F(InputRouterImplTest,
   CancelTouchTimeout();
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
-      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
-      cc::TouchAction::kNone);
+      blink::mojom::InputEventResultState::kConsumed, nullptr,
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kNone));
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_FALSE(TouchEventTimeoutEnabled());
 
@@ -1431,8 +1426,8 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
 
   touch_press_event1[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
-      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
-      cc::TouchAction::kNone);
+      blink::mojom::InputEventResultState::kConsumed, nullptr,
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kNone));
   touch_move_event1[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
@@ -1457,7 +1452,7 @@ TEST_F(InputRouterImplTest, TouchActionResetBeforeEventReachesRenderer) {
   touch_press_event2[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kCompositorThread,
       ui::LatencyInfo(), blink::mojom::InputEventResultState::kConsumed,
-      base::nullopt, cc::TouchAction::kAuto);
+      nullptr, blink::mojom::TouchActionOptional::New(cc::TouchAction::kAuto));
   touch_press_event2[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   touch_move_event2[0]->ToEvent()->CallCallback(
@@ -1495,8 +1490,8 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHasNoConsumer) {
   CancelTouchTimeout();
   touch_press_event1[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
-      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
-      cc::TouchAction::kNone);
+      blink::mojom::InputEventResultState::kConsumed, nullptr,
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kNone));
   touch_move_event1[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
@@ -1571,8 +1566,8 @@ TEST_F(InputRouterImplTest, TouchActionResetWhenTouchHandlerRemoved) {
   // Ensure we have touch-action:none, suppressing scroll events.
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
-      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
-      cc::TouchAction::kNone);
+      blink::mojom::InputEventResultState::kConsumed, nullptr,
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kNone));
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   dispatched_messages[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
@@ -1659,8 +1654,8 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kMainThread, ui::LatencyInfo(),
-      blink::mojom::InputEventResultState::kConsumed, base::nullopt,
-      cc::TouchAction::kNone);
+      blink::mojom::InputEventResultState::kConsumed, nullptr,
+      blink::mojom::TouchActionOptional::New(cc::TouchAction::kNone));
   ReleaseTouchPoint(0);
   SendTouchEvent();
 
@@ -2001,12 +1996,12 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
 // Test proper routing of overscroll notifications received either from
 // event acks or from |DidOverscroll| IPC messages.
 TEST_F(InputRouterImplTest, OverscrollDispatch) {
-  DidOverscrollParams overscroll;
+  blink::mojom::DidOverscrollParams overscroll;
   overscroll.accumulated_overscroll = gfx::Vector2dF(-14, 14);
   overscroll.latest_overscroll_delta = gfx::Vector2dF(-7, 0);
   overscroll.current_fling_velocity = gfx::Vector2dF(-1, 0);
 
-  input_router_->DidOverscroll(overscroll);
+  input_router_->DidOverscroll(overscroll.Clone());
   DidOverscrollParams client_overscroll = client_->GetAndResetOverscroll();
   EXPECT_EQ(overscroll.accumulated_overscroll,
             client_overscroll.accumulated_overscroll);
@@ -2018,7 +2013,7 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
   // controller.
   EXPECT_EQ(gfx::Vector2dF(), client_overscroll.current_fling_velocity);
 
-  DidOverscrollParams wheel_overscroll;
+  blink::mojom::DidOverscrollParams wheel_overscroll;
   wheel_overscroll.accumulated_overscroll = gfx::Vector2dF(7, -7);
   wheel_overscroll.latest_overscroll_delta = gfx::Vector2dF(3, 0);
   wheel_overscroll.current_fling_velocity = gfx::Vector2dF(1, 0);
@@ -2031,7 +2026,7 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kCompositorThread,
       ui::LatencyInfo(), blink::mojom::InputEventResultState::kNotConsumed,
-      DidOverscrollParams(wheel_overscroll), base::nullopt);
+      wheel_overscroll.Clone(), nullptr);
 
   client_overscroll = client_->GetAndResetOverscroll();
   EXPECT_EQ(wheel_overscroll.accumulated_overscroll,
@@ -2096,7 +2091,7 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultSource::kCompositorThread,
       ui::LatencyInfo(), blink::mojom::InputEventResultState::kConsumed,
-      base::nullopt, expected_touch_action);
+      nullptr, blink::mojom::TouchActionOptional::New(cc::TouchAction::kPan));
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   base::Optional<cc::TouchAction> allowed_touch_action = AllowedTouchAction();
   cc::TouchAction white_listed_touch_action = WhiteListedTouchAction();

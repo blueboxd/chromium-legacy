@@ -99,12 +99,9 @@ inline void WritePixel(float max_channel,
                        uint32_t* rgba_dest) {
   *rgba_dest = SkPackARGB32NoCheck(
       alpha,
-      gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) *
-                        max_channel),
-      gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) *
-                        max_channel),
-      gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) *
-                        max_channel));
+      gfx::ToRoundedInt(base::ClampToRange(pixel.x(), 0.0f, 1.0f) * 255.0f),
+      gfx::ToRoundedInt(base::ClampToRange(pixel.y(), 0.0f, 1.0f) * 255.0f),
+      gfx::ToRoundedInt(base::ClampToRange(pixel.z(), 0.0f, 1.0f) * 255.0f));
 }
 
 inline void WritePixel(float max_channel,
@@ -295,7 +292,6 @@ void AVIFImageDecoder::Decode(size_t index) {
 
   ImageFrame& buffer = frame_buffer_cache_[index];
   DCHECK_NE(buffer.GetStatus(), ImageFrame::kFrameComplete);
-  buffer.SetHasAlpha(!!image->alphaPlane);
   if (decode_to_half_float_)
     buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
@@ -322,6 +318,7 @@ void AVIFImageDecoder::Decode(size_t index) {
   }
 
   buffer.SetPixelsChanged(true);
+  buffer.SetHasAlpha(!!image->alphaPlane);
   buffer.SetStatus(ImageFrame::kFrameComplete);
 }
 
@@ -437,10 +434,9 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   }
 
   uint32_t* rgba_8888 = buffer->GetAddr(0, 0);
-  if (ImageIsHighBitDepth() ||
-      // TODO(wtc): Figure out a way to check frame_cs == ~BT.2020 too since
-      // ConvertVideoFrameToRGBPixels() can handle that too.
-      frame_cs == gfx::ColorSpace::CreateREC709() ||
+  // TODO(wtc): Figure out a way to check frame_cs == ~BT.2020 too since
+  // ConvertVideoFrameToRGBPixels() can handle that too.
+  if (frame_cs == gfx::ColorSpace::CreateREC709() ||
       frame_cs == gfx::ColorSpace::CreateREC601() ||
       frame_cs == gfx::ColorSpace::CreateJpeg()) {
     // Create temporary frame wrapping the YUVA planes.
@@ -488,12 +484,22 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
     DVLOG(1) << "Failed to update color transform...";
     return false;
   }
-  if (is_mono) {
-    YUVAToRGBA<ColorType::kMono, uint8_t>(image, color_transform_.get(),
-                                          rgba_8888);
+  if (ImageIsHighBitDepth()) {
+    if (is_mono) {
+      YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),
+                                             rgba_8888);
+    } else {
+      YUVAToRGBA<ColorType::kColor, uint16_t>(image, color_transform_.get(),
+                                              rgba_8888);
+    }
   } else {
-    YUVAToRGBA<ColorType::kColor, uint8_t>(image, color_transform_.get(),
-                                           rgba_8888);
+    if (is_mono) {
+      YUVAToRGBA<ColorType::kMono, uint8_t>(image, color_transform_.get(),
+                                            rgba_8888);
+    } else {
+      YUVAToRGBA<ColorType::kColor, uint8_t>(image, color_transform_.get(),
+                                             rgba_8888);
+    }
   }
   return true;
 }

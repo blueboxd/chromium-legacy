@@ -42,6 +42,7 @@ const char kAddressLine1Re[] =
     "|morada|endereço"                        // pt-BR, pt-PT
     "|Адрес"                                  // ru
     "|地址"                                   // zh-CN
+    "|(\\b|_)adres(\\b|_)"                      // tr
     "|^주소.?$|주소.?1";                      // ko-KR
 const char kAddressLine1LabelRe[] =
     "(^\\W*address)"
@@ -53,6 +54,7 @@ const char kAddressLine1LabelRe[] =
     "|indirizzo"  // it-IT
     "|住所"       // ja-JP
     "|地址"       // zh-CN
+    "|(\\b|_)adres(\\b|_)"  // tr
     "|주소";      // ko-KR
 const char kAddressLine2Re[] =
     "address[_-]?line(2|two)|address2|addr2|street|suite|unit"
@@ -84,6 +86,7 @@ const char kCountryRe[] =
     "|(?<!(入|出))国"      // ja-JP
     "|国家"                // zh-CN
     "|국가|나라"           // ko-KR
+    "|(\\b|_)ulce(\\b|_)"     // tr
     "|کشور";               // fa
 const char kCountryLocationRe[] = "location";
 const char kZipCodeRe[] =
@@ -100,6 +103,7 @@ const char kZipCodeRe[] =
     "|പിന്‍കോഡ്"  // ml
     "|邮政编码|邮编"                // zh-CN
     "|郵遞區號"                     // zh-TW
+    "|(\\b|_)posta kodu(\\b|_)"       // tr
     "|우편.?번호";                  // ko-KR
 const char kZip4Re[] =
     "zip|^-$|post2"
@@ -120,6 +124,7 @@ const char kCityRe[] =
     "|शहर"                                   // hi for city
     "|ग्राम|गाँव"                              // hi for village
     "|നഗരം|ഗ്രാമം"                            // ml for town|village
+    "|((\\b|_)(il|ilimiz|sehir|kent)(\\b|_))"  // tr
     "|^시[^도·・]|시[·・]?군[·・]?구";       // ko-KR
 const char kStateRe[] =
     "(?<!(united|hist|history).?)state|county|region|province"
@@ -132,6 +137,7 @@ const char kStateRe[] =
     "|സംസ്ഥാനം"              // ml
     "|استان"                // fa
     "|राज्य"                 // hi
+    "|(\\b|_)ilce|ilcemiz(\\b|_)" // tr
     "|^시[·・]?도";         // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
@@ -269,6 +275,7 @@ const char kEmailRe[] =
     "മെയിൽ"                                        // ml
     "|ایمیل|پست.*الکترونیک"                        // fa
     "|ईमेल|इलॅक्ट्रॉनिक.?मेल"                           // hi
+    "|(\\b|_)eposta(\\b|_)"                          // tr
     "|(?:이메일|전자.?우편|[Ee]-?mail)(.?주소)?";  // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
@@ -288,6 +295,7 @@ const char kNameRe[] =
     "|^nome"                 // pt-BR, pt-PT
     "|نام.*نام.*خانوادگی"    // fa
     "|姓名"                  // zh-CN
+    "|(\\b|_)ad soyad(\\b|_)"  // tr
     "|성명";                 // ko-KR
 const char kNameSpecificRe[] =
     "^name"
@@ -304,6 +312,7 @@ const char kFirstNameRe[] =
     "|نام"                     // fa
     "|이름"                    // ko-KR
     "|പേര്"                     // ml
+    "|(\\b|_)ad(\\b|_)"           // tr
     "|नाम";                    // hi
 const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
 const char kMiddleNameRe[] =
@@ -321,6 +330,7 @@ const char kLastNameRe[] =
     "|نام.*خانوادگی"                       // fa
     "|उपनाम"                               // hi
     "|മറുപേര്"                               // ml
+    "|(\\b|_)soyad(\\b|_)"                   // tr
     "|\\b성(?:[^명]|\\b)";                 // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,8 @@
 
 package com.android.webview.chromium;
 
+import android.annotation.SuppressLint;
+
 import dalvik.system.BaseDexClassLoader;
 
 import org.chromium.base.Log;
@@ -28,6 +30,7 @@ public class SplitApkWorkaround {
      * This function runs in the WebView zygote, which cannot make any binder calls to the framework
      * and is a very restricted environment.
      */
+    @SuppressLint("DiscouragedPrivateApi")
     @SuppressWarnings("unchecked")
     public static void apply() {
         try {

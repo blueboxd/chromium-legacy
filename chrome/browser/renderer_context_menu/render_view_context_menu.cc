@@ -537,7 +537,14 @@ void OnProfileCreated(const GURL& link_url,
                       Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     Browser* browser = chrome::FindLastActiveWithProfile(profile);
-    NavigateParams nav_params(browser, link_url, ui::PAGE_TRANSITION_LINK);
+    NavigateParams nav_params(
+        browser, link_url,
+        /* |ui::PAGE_TRANSITION_TYPED| is used rather than
+           |ui::PAGE_TRANSITION_LINK| since this ultimately opens the link in
+           another browser. This parameter is used within the tab strip model of
+           the browser it opens in implying a link from the active tab in the
+           destination browser which is not correct. */
+        ui::PAGE_TRANSITION_TYPED);
     nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
     nav_params.referrer = referrer;
     nav_params.window_action = NavigateParams::SHOW_WINDOW;

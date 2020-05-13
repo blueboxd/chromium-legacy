@@ -292,7 +292,7 @@ public class MediaPlayerBridge {
         boolean canSeekForward = true;
         boolean canSeekBackward = true;
         try {
-            @SuppressLint("PrivateApi")
+            @SuppressLint({"DiscouragedPrivateApi", "PrivateApi"})
             Method getMetadata = player.getClass().getDeclaredMethod(
                     "getMetadata", boolean.class, boolean.class);
             getMetadata.setAccessible(true);

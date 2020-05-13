@@ -621,6 +621,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-mygoogle", flag_descriptions::kEnableMyGoogleName,
      flag_descriptions::kEnableMyGoogleDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableMyGoogle)},
+    {"autofill-enable-card-nickname-management",
+     flag_descriptions::kAutofillEnableCardNicknameManagementName,
+     flag_descriptions::kAutofillEnableCardNicknameManagementDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableCardNicknameManagement)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

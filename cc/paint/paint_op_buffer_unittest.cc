@@ -3829,4 +3829,57 @@ TEST(PaintOpBufferTest, NullImages) {
             PaintOpType::DrawImage);
 }
 
+TEST(PaintOpBufferTest, HasDrawOpsAndHasDrawTextOps) {
+  auto buffer1 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_FALSE(buffer1->has_draw_ops());
+  EXPECT_FALSE(buffer1->has_draw_text_ops());
+  buffer1->push<DrawRectOp>(SkRect::MakeWH(3, 4), PaintFlags());
+  PushDrawRectOps(buffer1.get());
+  EXPECT_TRUE(buffer1->has_draw_ops());
+  EXPECT_FALSE(buffer1->has_draw_text_ops());
+
+  auto buffer2 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_FALSE(buffer2->has_draw_ops());
+  EXPECT_FALSE(buffer2->has_draw_text_ops());
+  buffer2->push<DrawRecordOp>(std::move(buffer1));
+  EXPECT_TRUE(buffer2->has_draw_ops());
+  EXPECT_FALSE(buffer2->has_draw_text_ops());
+  buffer2->push<DrawTextBlobOp>(SkTextBlob::MakeFromString("abc", SkFont()), 0,
+                                0, PaintFlags());
+  PushDrawTextBlobOps(buffer2.get());
+  EXPECT_TRUE(buffer2->has_draw_ops());
+  EXPECT_TRUE(buffer2->has_draw_text_ops());
+  buffer2->push<DrawRectOp>(SkRect::MakeWH(4, 5), PaintFlags());
+  EXPECT_TRUE(buffer2->has_draw_ops());
+  EXPECT_TRUE(buffer2->has_draw_text_ops());
+
+  auto buffer3 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_FALSE(buffer3->has_draw_text_ops());
+  EXPECT_FALSE(buffer3->has_draw_ops());
+  buffer3->push<DrawRecordOp>(std::move(buffer2));
+  EXPECT_TRUE(buffer3->has_draw_ops());
+  EXPECT_TRUE(buffer3->has_draw_text_ops());
+}
+
+TEST(PaintOpBufferTest, HasEffectsPreventingLCDTextForSaveLayerAlpha) {
+  auto buffer1 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_FALSE(buffer1->has_effects_preventing_lcd_text_for_save_layer_alpha());
+  buffer1->push<DrawRectOp>(SkRect::MakeWH(3, 4), PaintFlags());
+  EXPECT_FALSE(buffer1->has_effects_preventing_lcd_text_for_save_layer_alpha());
+
+  auto buffer2 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_FALSE(buffer2->has_effects_preventing_lcd_text_for_save_layer_alpha());
+  buffer2->push<DrawRecordOp>(std::move(buffer1));
+  EXPECT_FALSE(buffer2->has_effects_preventing_lcd_text_for_save_layer_alpha());
+  buffer2->push<SaveLayerOp>(nullptr, nullptr);
+  EXPECT_TRUE(buffer2->has_effects_preventing_lcd_text_for_save_layer_alpha());
+  buffer2->push<DrawRectOp>(SkRect::MakeWH(4, 5), PaintFlags());
+  EXPECT_TRUE(buffer2->has_effects_preventing_lcd_text_for_save_layer_alpha());
+
+  auto buffer3 = sk_make_sp<PaintOpBuffer>();
+  EXPECT_FALSE(buffer3->has_effects_preventing_lcd_text_for_save_layer_alpha());
+  buffer3->push<DrawRecordOp>(std::move(buffer2));
+  EXPECT_TRUE(buffer3->has_effects_preventing_lcd_text_for_save_layer_alpha());
+}
+
 }  // namespace cc

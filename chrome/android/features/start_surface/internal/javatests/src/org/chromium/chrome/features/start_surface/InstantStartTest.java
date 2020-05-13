@@ -54,8 +54,6 @@ import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.tab_ui.R;
@@ -73,7 +71,6 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Integration tests of Instant Start which requires 2-stage initialization for Clank startup.
@@ -285,10 +282,8 @@ public class InstantStartTest {
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(()
-                                            -> Assert.assertTrue(mActivityTestRule.getActivity()
-                                                                         .getLayoutManager()
-                                                                         .overviewVisible()));
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
@@ -314,10 +309,8 @@ public class InstantStartTest {
         Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
         Assert.assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
 
-        CriteriaHelper.pollUiThread(()
-                                            -> Assert.assertTrue(mActivityTestRule.getActivity()
-                                                                         .getLayoutManager()
-                                                                         .overviewVisible()));
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
 
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
         assertThat(mActivityTestRule.getActivity().getLayoutManager())
@@ -434,27 +427,21 @@ public class InstantStartTest {
                 (Runnable) ReturnToChromeExperimentsUtil::shouldShowStartSurfaceAsTheHomePage);
     }
 
-    private void showOverview() {
-        AtomicReference<StartSurface> startSurface = new AtomicReference<>();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
-            startSurface.set(
-                    tabManagementDelegate.createStartSurface(mActivityTestRule.getActivity()));
-            startSurface.get().getController().enableRecordingFirstMeaningfulPaint(0);
-            startSurface.get().getController().showOverview(false);
-        });
-        Assert.assertTrue(startSurface.get().getController().overviewVisible());
-    }
-
     @Test
     @SmallTest
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/omniboxonly"})
     public void renderTabSwitcher_NoStateFile() throws IOException {
+        // clang-format on
         startMainActivityFromLauncher();
-        showOverview();
-
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "tabSwitcher_empty");
     }
@@ -463,12 +450,18 @@ public class InstantStartTest {
     @SmallTest
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/omniboxonly"})
     public void renderTabSwitcher_CorruptedStateFile() throws IOException {
+        // clang-format on
         createCorruptedTabStateFile();
         startMainActivityFromLauncher();
-        showOverview();
-
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "tabSwitcher_empty");
     }
@@ -492,8 +485,14 @@ public class InstantStartTest {
     @SmallTest
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/omniboxonly"})
     public void renderTabSwitcher() throws IOException, InterruptedException {
+        // clang-format on
         createTabStateFile(new int[] {0, 1, 2});
         createThumbnailBitmapAndWriteToFile(0);
         createThumbnailBitmapAndWriteToFile(1);
@@ -504,8 +503,8 @@ public class InstantStartTest {
 
         // Must be after createTabStateFile() to read these files.
         startMainActivityFromLauncher();
-        showOverview();
-
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
         RecyclerView recyclerView =
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
         CriteriaHelper.pollUiThread(
@@ -529,9 +528,15 @@ public class InstantStartTest {
     @SmallTest
     @Feature({"RenderTest"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
-    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/omniboxonly"})
     public void renderTabGroups() throws IOException, InterruptedException {
+        // clang-format on
         createThumbnailBitmapAndWriteToFile(0);
         createThumbnailBitmapAndWriteToFile(1);
         createThumbnailBitmapAndWriteToFile(2);
@@ -547,8 +552,8 @@ public class InstantStartTest {
 
         // Must be after createTabStateFile() to read these files.
         startMainActivityFromLauncher();
-        showOverview();
-
+        CriteriaHelper.pollUiThread(
+                mActivityTestRule.getActivity().getLayoutManager()::overviewVisible);
         RecyclerView recyclerView =
                 mActivityTestRule.getActivity().findViewById(R.id.tab_list_view);
         CriteriaHelper.pollUiThread(

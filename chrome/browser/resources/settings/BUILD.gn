@@ -214,6 +214,8 @@ js_library("settings") {
     ":open_window_proxy",
     "about_page:about_page_browser_proxy.m",
     "autofill_page:password_manager_proxy",
+    "people_page:sync_browser_proxy.m",
+    "privacy_page:privacy_page_browser_proxy.m",
     "search_engines_page:search_engines_browser_proxy.m",
     "settings_ui:settings_ui",
   ]
@@ -248,6 +250,8 @@ js_library("lazy_load") {
     "autofill_page:autofill_section",
     "autofill_page:payments_section",
     "privacy_page:cookies_page",
+    "privacy_page:safe_browsing_browser_proxy",
+    "privacy_page:security_page",
     "site_settings:local_data_browser_proxy",
     "site_settings:protocol_handlers",
     "site_settings:site_settings_prefs_browser_proxy",

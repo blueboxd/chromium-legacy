@@ -5,6 +5,8 @@
 
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
@@ -95,6 +97,8 @@
 }
 
 - (void)confirmationAlertPrimaryAction {
+  base::RecordAction(base::UserMetricsAction("MobileShareQRCode"));
+
   self.activityServiceCoordinator = [[ActivityServiceCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];

@@ -21,6 +21,7 @@ namespace blink {
 
 class DOMArrayBuffer;
 class RTCEncodedVideoFrameDelegate;
+class RTCEncodedVideoFrameMetadata;
 
 class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -36,6 +37,7 @@ class MODULES_EXPORT RTCEncodedVideoFrame final : public ScriptWrappable {
   // Returns the RTP Packet Timestamp for this frame.
   uint64_t timestamp() const;
   DOMArrayBuffer* data() const;
+  RTCEncodedVideoFrameMetadata* getMetadata() const;
   DOMArrayBuffer* additionalData() const;
   void setData(DOMArrayBuffer*);
   uint32_t synchronizationSource() const;

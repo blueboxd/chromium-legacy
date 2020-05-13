@@ -702,6 +702,18 @@ void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
 }
 
+void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
+  GetAssociatedFrameWidgetHost()->AutoscrollStart(std::move(position));
+}
+
+void WebFrameWidgetBase::AutoscrollFling(const gfx::Vector2dF& velocity) {
+  GetAssociatedFrameWidgetHost()->AutoscrollFling(std::move(velocity));
+}
+
+void WebFrameWidgetBase::AutoscrollEnd() {
+  GetAssociatedFrameWidgetHost()->AutoscrollEnd();
+}
+
 void WebFrameWidgetBase::RequestAnimationAfterDelay(
     const base::TimeDelta& delay) {
   DCHECK(request_animation_after_delay_timer_.get());

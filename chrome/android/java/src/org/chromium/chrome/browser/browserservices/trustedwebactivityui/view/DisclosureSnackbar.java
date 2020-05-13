@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.view;
 
-import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_SCOPE;
-
 import android.content.res.Resources;
 
 import org.chromium.chrome.R;
@@ -58,15 +56,14 @@ public class DisclosureSnackbar extends DisclosureInfobar {
         if (mShown) return null;
         mShown = true;
 
-        String scope = mModel.get(DISCLOSURE_SCOPE);
-        String text = mResources.getString(R.string.twa_running_in_chrome_v2, scope);
+        String title = mResources.getString(R.string.twa_running_in_chrome);
 
         int type = Snackbar.TYPE_ACTION;
         int code = Snackbar.UMA_TWA_PRIVACY_DISCLOSURE_V2;
 
-        String action = mResources.getString(R.string.ok);
+        String action = mResources.getString(R.string.got_it);
 
-        return Snackbar.make(text, controller, type, code)
+        return Snackbar.make(title, controller, type, code)
                 .setAction(action, null)
                 .setDuration(DURATION_MS)
                 .setSingleLine(false);

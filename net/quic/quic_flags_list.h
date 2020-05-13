@@ -288,11 +288,7 @@ QUIC_FLAG(
 // If true, quic::BandwidthSampler will start in application limited phase.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bw_sampler_app_limited_starting_value,
-          false)
-
-// If true, use blackhole detector in QuicConnection to detect path degrading
-// and network blackhole.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_blackhole_detector, true)
+          true)
 
 // If true, use idle network detector to detect handshake timeout and idle
 // network timeout.
@@ -370,13 +366,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_use_available_min_rtt, true)
 // If true, notify handshakers when connection closes.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_notify_handshaker_on_connection_close,
-          false)
+          true)
 
 // If true, for QUIC + TLS, change default encryption level when new encryption
 // key is available.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_change_default_encryption_level,
-          false)
+          true)
 
 // If true, do not change ACK in PostProcessAckFrame if an ACK has been queued.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, false)

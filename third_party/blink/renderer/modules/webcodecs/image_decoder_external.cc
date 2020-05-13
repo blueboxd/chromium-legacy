@@ -35,8 +35,11 @@ ImageDecoderExternal* ImageDecoderExternal::Create(
 
 ImageDecoderExternal::DecodeRequest::DecodeRequest(
     ScriptPromiseResolver* resolver,
-    uint32_t frame_index)
-    : resolver(resolver), frame_index(frame_index) {}
+    uint32_t frame_index,
+    bool complete_frames_only)
+    : resolver(resolver),
+      frame_index(frame_index),
+      complete_frames_only(complete_frames_only) {}
 
 void ImageDecoderExternal::DecodeRequest::Trace(Visitor* visitor) {
   visitor->Trace(resolver);
@@ -113,13 +116,14 @@ ImageDecoderExternal::~ImageDecoderExternal() {
   DVLOG(1) << __func__;
 }
 
-ScriptPromise ImageDecoderExternal::decode(uint32_t frame_index) {
+ScriptPromise ImageDecoderExternal::decode(uint32_t frame_index,
+                                           bool complete_frames_only) {
   DVLOG(1) << __func__;
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
   auto promise = resolver->Promise();
-  pending_decodes_.push_back(
-      MakeGarbageCollected<DecodeRequest>(resolver, frame_index));
+  pending_decodes_.push_back(MakeGarbageCollected<DecodeRequest>(
+      resolver, frame_index, complete_frames_only));
   MaybeSatisfyPendingDecodes();
   return promise;
 }
@@ -134,6 +138,10 @@ String ImageDecoderExternal::type() const {
 
 uint32_t ImageDecoderExternal::repetitionCount() const {
   return repetition_count_;
+}
+
+bool ImageDecoderExternal::complete() const {
+  return data_complete_;
 }
 
 void ImageDecoderExternal::OnStateChange() {
@@ -205,16 +213,39 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
     }
 
     // Only satisfy fully complete decode requests.
-    if (image->GetStatus() != ImageFrame::kFrameComplete)
+    const bool is_complete = image->GetStatus() == ImageFrame::kFrameComplete;
+    if (!is_complete && request->complete_frames_only)
       continue;
 
-    auto sk_image = image->FinalizePixelsAndGetImage();
+    if (!is_complete && image->GetStatus() != ImageFrame::kFramePartial)
+      continue;
+
+    // Prefer FinalizePixelsAndGetImage() since that will mark the underlying
+    // bitmap as immutable, which allows copies to be avoided.
+    auto sk_image = is_complete ? image->FinalizePixelsAndGetImage()
+                                : SkImage::MakeFromBitmap(image->Bitmap());
     if (!sk_image) {
       request->complete = true;
       // TODO: Include frameIndex in rejection?
       request->resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kOperationError, "Failed decode frame"));
       continue;
+    }
+
+    if (!is_complete) {
+      auto generation_id = image->Bitmap().getGenerationID();
+      auto it = incomplete_frames_.find(request->frame_index);
+      if (it == incomplete_frames_.end()) {
+        incomplete_frames_.Set(request->frame_index, generation_id);
+      } else {
+        // Don't fulfill the promise until a new bitmap is seen.
+        if (it->value == generation_id)
+          continue;
+
+        it->value = generation_id;
+      }
+    } else {
+      incomplete_frames_.erase(request->frame_index);
     }
 
     auto* result = ImageFrameExternal::Create();
@@ -225,6 +256,7 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
     result->setDuration(
         decoder_->FrameDurationAtIndex(request->frame_index).InMicroseconds());
     result->setOrientation(decoder_->Orientation().Orientation());
+    result->setComplete(is_complete);
     request->complete = true;
     request->resolver->Resolve(result);
   }

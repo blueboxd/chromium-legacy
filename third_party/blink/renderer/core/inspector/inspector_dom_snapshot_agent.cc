@@ -141,52 +141,6 @@ String GetOriginUrl(const Node* node) {
   return node->GetDocument().Url().GetString();
 }
 
-class DOMTreeIterator {
-  STACK_ALLOCATED();
-
- public:
-  DOMTreeIterator(Node* root, int root_node_id)
-      : current_(root), path_to_current_node_({root_node_id}) {
-    DCHECK(current_);
-  }
-
-  void Advance(int next_node_id) {
-    DCHECK(current_);
-    const bool skip_shadow_root =
-        current_->GetShadowRoot() && current_->GetShadowRoot()->IsUserAgent();
-    if (Node* first_child = skip_shadow_root
-                                ? current_->firstChild()
-                                : FlatTreeTraversal::FirstChild(*current_)) {
-      current_ = first_child;
-      path_to_current_node_.push_back(next_node_id);
-      return;
-    }
-    // No children, let's try siblings, then ancestor siblings.
-    while (current_) {
-      if (Node* node = FlatTreeTraversal::NextSibling(*current_)) {
-        path_to_current_node_.back() = next_node_id;
-        current_ = node;
-        return;
-      }
-      current_ = FlatTreeTraversal::Parent(*current_);
-      path_to_current_node_.pop_back();
-    }
-    DCHECK(path_to_current_node_.IsEmpty());
-  }
-
-  Node* CurrentNode() const { return current_; }
-
-  int ParentNodeId() const {
-    return path_to_current_node_.size() > 1
-               ? *(path_to_current_node_.rbegin() + 1)
-               : -1;
-  }
-
- private:
-  Node* current_;
-  WTF::Vector<int> path_to_current_node_;
-};
-
 }  // namespace
 
 // Returns |layout_object|'s bounding box in document coordinates.
@@ -463,16 +417,11 @@ void InspectorDOMSnapshotAgent::VisitDocument(Document* document) {
         std::make_unique<protocol::Array<protocol::Array<double>>>());
   }
 
-  auto* node_names = document_->getNodes()->getNodeName(nullptr);
-  for (DOMTreeIterator it(document, node_names->size()); it.CurrentNode();
-       it.Advance(node_names->size())) {
-    DCHECK(!it.CurrentNode()->IsInUserAgentShadowRoot());
-    VisitNode(it.CurrentNode(), it.ParentNodeId());
-  }
+  VisitNode(document, -1);
   documents_->emplace_back(std::move(document_));
 }
 
-void InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
+int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
   String node_value;
   switch (node->getNodeType()) {
     case Node::kTextNode:
@@ -558,6 +507,62 @@ void InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
       SetRare(nodes->getCurrentSourceURL(nullptr), index,
               image_element->currentSrc());
     }
+  }
+  if (node->IsContainerNode())
+    VisitContainerChildren(node, index);
+  return index;
+}
+
+// static
+Node* InspectorDOMSnapshotAgent::FirstChild(
+    const Node& node,
+    bool include_user_agent_shadow_tree) {
+  DCHECK(include_user_agent_shadow_tree || !node.IsInUserAgentShadowRoot());
+  if (!include_user_agent_shadow_tree) {
+    ShadowRoot* shadow_root = node.GetShadowRoot();
+    if (shadow_root && shadow_root->GetType() == ShadowRootType::kUserAgent) {
+      Node* child = node.firstChild();
+      while (child && !child->CanParticipateInFlatTree())
+        child = child->nextSibling();
+      return child;
+    }
+  }
+  return FlatTreeTraversal::FirstChild(node);
+}
+
+// static
+bool InspectorDOMSnapshotAgent::HasChildren(
+    const Node& node,
+    bool include_user_agent_shadow_tree) {
+  return FirstChild(node, include_user_agent_shadow_tree);
+}
+
+// static
+Node* InspectorDOMSnapshotAgent::NextSibling(
+    const Node& node,
+    bool include_user_agent_shadow_tree) {
+  DCHECK(include_user_agent_shadow_tree || !node.IsInUserAgentShadowRoot());
+  if (!include_user_agent_shadow_tree) {
+    if (node.ParentElementShadowRoot() &&
+        node.ParentElementShadowRoot()->GetType() ==
+            ShadowRootType::kUserAgent) {
+      Node* sibling = node.nextSibling();
+      while (sibling && !sibling->CanParticipateInFlatTree())
+        sibling = sibling->nextSibling();
+      return sibling;
+    }
+  }
+  return FlatTreeTraversal::NextSibling(node);
+}
+
+void InspectorDOMSnapshotAgent::VisitContainerChildren(Node* container,
+                                                       int parent_index) {
+  if (!HasChildren(*container, false))
+    return;
+
+  for (Node* child = FirstChild(*container, false); child;
+       child = NextSibling(*child, false)) {
+    VisitNode(child, parent_index);
   }
 }
 

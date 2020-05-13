@@ -42,6 +42,7 @@ public class PlayerFrameCoordinator {
      */
     public void addSubFrame(PlayerFrameCoordinator subFrame, Rect clipRect) {
         mMediator.addSubFrame(subFrame.getView(), clipRect);
+        subFrame.mView.getGestureDetector().setParentGestureDetector(mView.getGestureDetector());
     }
 
     /**

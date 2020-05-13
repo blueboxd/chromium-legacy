@@ -133,13 +133,7 @@ base::FilePath PlatformCrashpadInitialization(
       crash_reporter_client->GetCrashDumpLocation(&database_path);
       crash_reporter_client->GetCrashMetricsLocation(&metrics_path);
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
-      // Only allow the possibility of report upload in official builds. This
-      // crash server won't have symbols for any other build types.
-      std::string url = "https://clients2.google.com/cr/report";
-#else
-      std::string url;
-#endif
+      std::string url = crash_reporter_client->GetUploadUrl();
 
       std::vector<std::string> arguments;
 

@@ -246,8 +246,8 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else {
         // VoiceOver does not read anything if selection changes on the
-        // currently focused object, and the focus did not move. Detect a
-        // selection change in a where the focus did not change.
+        // currently focused object, and the focus did not move. Fire a
+        // selection change if the focus did not change.
         BrowserAccessibility* focus = GetFocus();
         BrowserAccessibility* container =
             focus->PlatformGetSelectionContainer();

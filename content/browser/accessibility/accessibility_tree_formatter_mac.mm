@@ -210,8 +210,8 @@ AccessibilityTreeFormatterMac::~AccessibilityTreeFormatterMac() {}
 void AccessibilityTreeFormatterMac::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {
   static NSArray* default_attributes = [@[
-    @"AXAutocomplete*", @"AXDescription=*", @"AXTitle=*", @"AXTitleUIElement=*",
-    @"AXHelp=*", @"AXValue=*"
+    @"AXAutocompleteValue=*", @"AXDescription=*", @"AXRole=*", @"AXTitle=*",
+    @"AXTitleUIElement=*", @"AXHelp=*", @"AXValue=*"
   ] retain];
 
   for (NSString* attribute : default_attributes) {
@@ -278,9 +278,11 @@ void AccessibilityTreeFormatterMac::AddProperties(
 
   for (NSString* supportedAttribute in
        [cocoa_node accessibilityAttributeNames]) {
-    id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
-    if (value != nil) {
-      dict->Set(SysNSStringToUTF8(supportedAttribute), PopulateObject(value));
+    if (FilterPropertyName(SysNSStringToUTF16(supportedAttribute))) {
+      id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
+      if (value != nil) {
+        dict->Set(SysNSStringToUTF8(supportedAttribute), PopulateObject(value));
+      }
     }
   }
   dict->Set(kPositionDictAttr, PopulatePosition(*node));

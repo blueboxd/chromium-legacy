@@ -22,7 +22,6 @@ public class ShareContextMenuItem implements ContextMenuItem {
     @IdRes
     private final int mMenuId;
     private final boolean mIsShareLink;
-    private String mCreatorPackageName;
 
     /**
      * A representation of a Context Menu Item. Each item should have a string and an id associated
@@ -35,13 +34,6 @@ public class ShareContextMenuItem implements ContextMenuItem {
         mStringId = stringId;
         mMenuId = menuId;
         mIsShareLink = isShareLink;
-    }
-
-    /**
-     * Set the package name of the app who requests for share. If Null, it is requested by Chrome.
-     */
-    public void setCreatorPackageName(String creatorPackageName) {
-        mCreatorPackageName = creatorPackageName;
     }
 
     @Override
@@ -67,6 +59,6 @@ public class ShareContextMenuItem implements ContextMenuItem {
     public Pair<Drawable, CharSequence> getShareInfo() {
         Intent shareIntent = mIsShareLink ? ShareHelper.getShareLinkAppCompatibilityIntent()
                                           : ShareHelper.getShareImageIntent(null);
-        return ShareHelper.getShareableIconAndName(shareIntent, mCreatorPackageName);
+        return ShareHelper.getShareableIconAndName(shareIntent);
     }
 }

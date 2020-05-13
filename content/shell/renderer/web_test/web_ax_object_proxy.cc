@@ -6,6 +6,10 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <map>
+#include <utility>
+
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "gin/handle.h"
@@ -529,7 +533,7 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
   return blink::WebRect();
 }
 
-std::vector<std::string> GetMisspellings(blink::WebAXObject& object) {
+std::vector<std::string> GetMisspellings(const blink::WebAXObject& object) {
   std::vector<std::string> misspellings;
   std::string text(object.GetName().Utf8());
 
@@ -875,7 +879,8 @@ bool WebAXObjectProxy::IsEqualToObject(const blink::WebAXObject& other) {
 
 void WebAXObjectProxy::NotificationReceived(
     blink::WebLocalFrame* frame,
-    const std::string& notification_name) {
+    const std::string& notification_name,
+    const std::vector<ui::AXEventIntent>& event_intents) {
   if (notification_callback_.IsEmpty())
     return;
 
@@ -885,12 +890,21 @@ void WebAXObjectProxy::NotificationReceived(
 
   v8::Isolate* isolate = blink::MainThreadIsolate();
 
+  v8::Local<v8::Array> intents_array(
+      v8::Array::New(isolate, event_intents.size()));
+  for (size_t i = 0; i < event_intents.size(); ++i) {
+    intents_array
+        ->CreateDataProperty(context, uint32_t{i},
+                             v8::String::NewFromUtf8(
+                                 isolate, event_intents[i].ToString().c_str())
+                                 .ToLocalChecked())
+        .Check();
+  }
+
   v8::Local<v8::Value> argv[] = {
-      v8::String::NewFromUtf8(isolate, notification_name.data(),
-                              v8::NewStringType::kNormal,
-                              notification_name.size())
+      v8::String::NewFromUtf8(isolate, notification_name.c_str())
           .ToLocalChecked(),
-  };
+      intents_array};
   // TODO(aboxhall): Can we force this to run in a new task, to avoid
   // dirtying layout during post-layout hooks?
   frame->CallFunctionEvenIfScriptDisabled(

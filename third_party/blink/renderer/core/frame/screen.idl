@@ -44,11 +44,11 @@
 
     // Proposed
     // https://github.com/webscreens/screen-enumeration
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute long left;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute long top;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute boolean internal;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute boolean primary;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute float scaleFactor;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute DOMString id;
-    [RuntimeEnabled=ScreenEnumeration] readonly attribute boolean touchSupport;
+    [RuntimeEnabled=WindowPlacement] readonly attribute long left;
+    [RuntimeEnabled=WindowPlacement] readonly attribute long top;
+    [RuntimeEnabled=WindowPlacement] readonly attribute boolean internal;
+    [RuntimeEnabled=WindowPlacement] readonly attribute boolean primary;
+    [RuntimeEnabled=WindowPlacement] readonly attribute float scaleFactor;
+    [RuntimeEnabled=WindowPlacement] readonly attribute DOMString id;
+    [RuntimeEnabled=WindowPlacement] readonly attribute boolean touchSupport;
 };

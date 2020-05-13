@@ -38,10 +38,11 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
   ~ImageDecoderExternal() override;
 
   // image_decoder.idl implementation.
-  ScriptPromise decode(uint32_t frame_index);
+  ScriptPromise decode(uint32_t frame_index, bool complete_frames_only);
   uint32_t frameCount() const;
   String type() const;
   uint32_t repetitionCount() const;
+  bool complete() const;
 
   // BytesConsumer::Client implementation.
   void OnStateChange() override;
@@ -74,14 +75,26 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
 
   // Pending decode() requests.
   struct DecodeRequest : public GarbageCollected<DecodeRequest> {
-    DecodeRequest(ScriptPromiseResolver* resolver, uint32_t frame_index);
+    DecodeRequest(ScriptPromiseResolver* resolver,
+                  uint32_t frame_index,
+                  bool complete_frames_only);
     void Trace(Visitor*);
 
     Member<ScriptPromiseResolver> resolver;
     uint32_t frame_index;
+    bool complete_frames_only;
     bool complete = false;
   };
   HeapVector<Member<DecodeRequest>> pending_decodes_;
+
+  // When decode() of incomplete frames has been requested, we need to track the
+  // generation id for each SkBitmap that we've handed out. So that we can defer
+  // resolution of promises until a new bitmap is generated.
+  HashMap<uint32_t,
+          uint32_t,
+          DefaultHash<uint32_t>::Hash,
+          WTF::UnsignedWithZeroKeyHashTraits<uint32_t>>
+      incomplete_frames_;
 };
 
 }  // namespace blink

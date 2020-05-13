@@ -213,21 +213,6 @@ interface FrameNavigationControl {
       bool wants_result,
       int32 world_id) => (mojo_base.mojom.Value result);
 
-  // Posts a message from a frame in another process to the current renderer.
-  // |source_routing_id| is the routing ID of the source frame in the source
-  // process when sent to the browser. The browser replaces it with the routing
-  // ID of the equivalent frame proxy in the destination process.
-  // |source_origin| is the origin of the source frame when the message was
-  // sent, and |target_origin| specifies what the origin of the target frame
-  // must be for the message to be dispatched. An empty string allows the
-  // message to be dispatched to any origin.
-  // |message| is the encoded data, and any extra properties such as
-  // transferred ports or blobs.
-  PostMessageEvent(int32 source_routing_id,
-                   mojo_base.mojom.String16 source_origin,
-                   mojo_base.mojom.String16 target_origin,
-                   blink.mojom.TransferableMessage message);
-
   // Forwards a message from a portal's host to the main frame in the portal's
   // guest contents.
   ForwardMessageFromHost(blink.mojom.TransferableMessage message,

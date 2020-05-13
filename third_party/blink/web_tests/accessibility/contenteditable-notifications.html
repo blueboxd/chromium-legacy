@@ -1,54 +1,59 @@
-<!DOCTYPE HTML>
-<html>
-<head>
+<!DOCTYPE html>
 <script src="../resources/accessibility-helper.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-</head>
-<body>
 
-<div id="textbox" contentEditable="true">First<p>Second</p></div>
+<div id="textbox" contenteditable="true">
+  First<p>Second</p>
+</div>
 
 <script>
+'use strict';
+
 async_test((t) => {
-    // TODO(aboxhall): No longer necessary when updates are processed after layout.
-    // Ensure entire a11y tree has already been seen.
-    traverseAccessibilityTree(accessibilityController.rootElement);
+  // TODO(aboxhall): No longer necessary when updates are processed after layout.
+  // Ensure entire a11y tree has already been seen.
+  traverseAccessibilityTree(accessibilityController.rootElement);
 
-    // Focus the contenteditable text box and move the cursor to the end.
-    var textbox = document.getElementById("textbox");
-    textbox.focus();
-    eventSender.keyDown("ArrowDown", []);
-    eventSender.keyDown("ArrowDown", []);
+  const textbox = document.getElementById('textbox');
+  const axTextBox = accessibilityController.accessibleElementById('textbox');
+  let valueChangedCount = 0;
+  let selectedTextChangedCount = 0;
+  const expectedIntents = [];
 
-    var axTextBox = accessibilityController.focusedElement;
+  axTextBox.setNotificationListener(t.step_func((notification, intents) => {
+    if (notification == "ValueChanged") {
+      ++valueChangedCount;
+    } else if (notification == "SelectedTextChanged") {
+      assert_array_equals(intents, [expectedIntents[selectedTextChangedCount]]);
+      ++selectedTextChangedCount;
+    }
 
-    var valueChangedCount = 0;
-    var selectedTextChangedCount = 0;
+    if (valueChangedCount >= 8 && selectedTextChangedCount >= 9) {
+      t.done();
+    }
+  }));
 
-    // Defer the main part of the test so that the notification listener
-    // doesn't catch any notifications still in the queue from loading the
-    // page and initially setting focus.
-    axTextBox.addNotificationListener(t.step_func((notification) => {
-        if (notification == "ValueChanged")
-            valueChangedCount++;
-        else if (notification == "SelectedTextChanged")
-            selectedTextChangedCount++;
-
-        if (valueChangedCount >= 8 && selectedTextChangedCount >= 4) {
-            t.done();
-        }
-    }));
-
-    eventSender.keyDown("ArrowLeft", []);
-    eventSender.keyDown("ArrowLeft", []);
-    eventSender.keyDown("w", []);
-    eventSender.keyDown("x", []);
-    eventSender.keyDown("y", []);
-    eventSender.keyDown("z", []);
-}, "This test ensures that moving the cursor in a contentEditable sends a selected text change notification, and typing in a contentEditable sends both a value changed and selected text changed notification - both on the root element that's marked as contentEditable.");
+  textbox.focus();
+  // Initial setting of the selection.
+  expectedIntents.push('AXEventIntent(setSelection,character,forward)');
+  eventSender.keyDown("ArrowDown", []);
+  expectedIntents.push('AXEventIntent(moveSelection,lineEnd,forward)');
+  eventSender.keyDown("ArrowDown", []);
+  expectedIntents.push('AXEventIntent(moveSelection,lineEnd,forward)');
+  eventSender.keyDown("ArrowLeft", []);
+  expectedIntents.push('AXEventIntent(moveSelection,character,backward)');
+  eventSender.keyDown("ArrowLeft", []);
+  expectedIntents.push('AXEventIntent(moveSelection,character,backward)');
+  eventSender.keyDown("w", []);
+  // TODO(nektar): Support an intent for the typing command.
+  expectedIntents.push('AXEventIntent(setSelection,character,forward)');
+  eventSender.keyDown("x", []);
+  expectedIntents.push('AXEventIntent(setSelection,character,forward)');
+  eventSender.keyDown("y", []);
+  expectedIntents.push('AXEventIntent(setSelection,character,forward)');
+  eventSender.keyDown("z", []);
+  expectedIntents.push('AXEventIntent(setSelection,character,forward)');
+}, 'This test ensures that moving the cursor in a contentEditable sends a selected text change notification, and typing in a contentEditable sends both a value changed and selected text changed notification.');
 
 </script>
-
-</body>
-</html>

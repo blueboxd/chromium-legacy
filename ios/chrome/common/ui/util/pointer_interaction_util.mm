@@ -14,6 +14,32 @@
 
 #if defined(__IPHONE_13_4)
 
+namespace {
+// Returns a pointer style with a hover effect with a slight tint and no pointer
+// shape (i.e., the pointer stays the same).
+UIPointerStyle* CreateHoverEffectNoShapePointerStyle(UIButton* button)
+    API_AVAILABLE(ios(13.4)) {
+  UITargetedPreview* preview = [[UITargetedPreview alloc] initWithView:button];
+  UIPointerHoverEffect* effect =
+      [UIPointerHoverEffect effectWithPreview:preview];
+  effect.preferredTintMode = UIPointerEffectTintModeOverlay;
+  effect.prefersScaledContent = NO;
+  effect.prefersShadow = NO;
+  return [UIPointerStyle styleWithEffect:effect shape:nil];
+}
+
+// Returns a pointer style with a highlight effect and a rounded rectangle
+// pointer shape sized to the button frame.
+UIPointerStyle* CreateHighlightEffectRectShapePointerStyle(UIButton* button)
+    API_AVAILABLE(ios(13.4)) {
+  UITargetedPreview* preview = [[UITargetedPreview alloc] initWithView:button];
+  UIPointerHighlightEffect* effect =
+      [UIPointerHighlightEffect effectWithPreview:preview];
+  UIPointerShape* shape = [UIPointerShape shapeWithRoundedRect:button.frame];
+  return [UIPointerStyle styleWithEffect:effect shape:shape];
+}
+}  // namespace
+
 UIButtonPointerStyleProvider CreateDefaultEffectCirclePointerStyleProvider()
     API_AVAILABLE(ios(13.4)) {
   return ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
@@ -41,6 +67,40 @@ UIButtonPointerStyleProvider CreateLiftEffectCirclePointerStyleProvider()
         [UIPointerShape shapeWithRoundedRect:button.frame
                                 cornerRadius:button.frame.size.width / 2];
     return [UIPointerStyle styleWithEffect:effect shape:shape];
+  };
+}
+
+UIButtonPointerStyleProvider CreateOpaqueButtonPointerStyleProvider()
+    API_AVAILABLE(ios(13.4)) {
+  return ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                          UIPointerShape* proposedShape) {
+    DCHECK(button.backgroundColor &&
+           button.backgroundColor != [UIColor clearColor])
+        << "Expected an opaque background for button.";
+    return CreateHoverEffectNoShapePointerStyle(button);
+  };
+}
+
+UIButtonPointerStyleProvider CreateTransparentButtonPointerStyleProvider()
+    API_AVAILABLE(ios(13.4)) {
+  return ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                          UIPointerShape* proposedShape) {
+    DCHECK(!button.backgroundColor ||
+           button.backgroundColor == [UIColor clearColor])
+        << "Expected a transparent background for button.";
+    return CreateHighlightEffectRectShapePointerStyle(button);
+  };
+}
+
+UIButtonPointerStyleProvider
+CreateOpaqueOrTransparentButtonPointerStyleProvider() API_AVAILABLE(ios(13.4)) {
+  return ^UIPointerStyle*(UIButton* button, UIPointerEffect* proposedEffect,
+                          UIPointerShape* proposedShape) {
+    if (button.backgroundColor &&
+        button.backgroundColor != [UIColor clearColor]) {
+      return CreateHoverEffectNoShapePointerStyle(button);
+    }
+    return CreateHighlightEffectRectShapePointerStyle(button);
   };
 }
 

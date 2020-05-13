@@ -121,7 +121,9 @@ class LogoElement extends PolymerElement {
     super();
     /** @private {!EventTracker} */
     this.eventTracker_ = new EventTracker();
-    BrowserProxy.getInstance().handler.getDoodle().then(({doodle}) => {
+    /** @private {newTabPage.mojom.PageHandlerRemote} */
+    this.pageHandler_ = BrowserProxy.getInstance().handler;
+    this.pageHandler_.getDoodle().then(({doodle}) => {
       this.doodle_ = doodle;
       this.loaded_ = true;
       if (this.doodle_ && this.doodle_.content.interactiveDoodle) {
@@ -190,13 +192,25 @@ class LogoElement extends PolymerElement {
    * @private
    */
   onImageClick_() {
-    if (!this.showAnimation_ && this.doodle_ &&
-        this.doodle_.content.imageDoodle.animationUrl) {
+    if (this.isCtaImageShown_()) {
       this.showAnimation_ = true;
+      this.pageHandler_.onDoodleImageClicked(
+          newTabPage.mojom.DoodleImageType.CTA);
       return;
     }
+    this.pageHandler_.onDoodleImageClicked(
+        this.showAnimation_ ? newTabPage.mojom.DoodleImageType.ANIMATION :
+                              newTabPage.mojom.DoodleImageType.STATIC);
     BrowserProxy.getInstance().open(
         this.doodle_.content.imageDoodle.onClickUrl.url);
+  }
+
+  /** @private */
+  onImageLoad_() {
+    this.pageHandler_.onDoodleImageRendered(
+        this.isCtaImageShown_() ? newTabPage.mojom.DoodleImageType.CTA :
+                                  newTabPage.mojom.DoodleImageType.STATIC,
+        BrowserProxy.getInstance().now());
   }
 
   /**
@@ -207,6 +221,15 @@ class LogoElement extends PolymerElement {
     if ([' ', 'Enter'].includes(e.key)) {
       this.onImageClick_();
     }
+  }
+
+  /**
+   * @returns {boolean}
+   * @private
+   */
+  isCtaImageShown_() {
+    return !this.showAnimation_ && !!this.doodle_ &&
+        !!this.doodle_.content.imageDoodle.animationUrl;
   }
 
   /**

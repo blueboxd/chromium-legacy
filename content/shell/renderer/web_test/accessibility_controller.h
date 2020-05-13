@@ -7,17 +7,23 @@
 
 #include <vector>
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/renderer/web_test/web_ax_object_proxy.h"
 #include "third_party/blink/public/web/web_ax_object.h"
+#include "ui/accessibility/ax_event_intent.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+
 class WebAXContext;
 class WebLocalFrame;
 class WebString;
 class WebView;
+
 }  // namespace blink
 
 namespace content {
@@ -32,11 +38,14 @@ class AccessibilityController {
   void Reset();
   void Install(blink::WebLocalFrame* frame);
   bool ShouldLogAccessibilityEvents();
-  void NotificationReceived(blink::WebLocalFrame* frame,
-                            const blink::WebAXObject& target,
-                            const std::string& notification_name);
+  void NotificationReceived(
+      blink::WebLocalFrame* frame,
+      const blink::WebAXObject& target,
+      const std::string& notification_name,
+      const std::vector<ui::AXEventIntent>& event_intents);
   void PostNotification(const blink::WebAXObject& target,
-                        const std::string& notification_name);
+                        const std::string& notification_name,
+                        const std::vector<ui::AXEventIntent>& event_intents);
 
  private:
   friend class AccessibilityControllerBindings;

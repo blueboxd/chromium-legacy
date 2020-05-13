@@ -119,7 +119,6 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_history_item.h"
@@ -2213,41 +2212,6 @@ void WebLocalFrameImpl::SendOrientationChangeEvent() {
   if (RuntimeEnabledFeatures::OrientationEventEnabled() &&
       GetFrame()->DomWindow())
     GetFrame()->DomWindow()->SendOrientationChangeEvent();
-}
-
-void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
-    const WebSecurityOrigin& intended_target_origin,
-    const WebDOMMessageEvent& event) {
-  DCHECK(!event.IsNull());
-
-  MessageEvent* msg_event = static_cast<MessageEvent*>((Event*)event);
-  Frame* source_frame = nullptr;
-  if (msg_event->source() && msg_event->source()->ToDOMWindow())
-    source_frame = msg_event->source()->ToDOMWindow()->GetFrame();
-
-  // Transfer user activation state in the target's renderer when
-  // |transferUserActivation| is true.
-  //
-  // Also do the same as an ad-hoc solution to allow the origin trial of dynamic
-  // delegation of autoplay capability through postMessages.  Note that we
-  // skipped updating the user activation states in all other copies of the
-  // frame tree in this case because this is a temporary hack.
-  //
-  // TODO(mustaq): Remove the ad-hoc solution when the API shape is
-  // ready. crbug.com/985914
-  if ((RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
-       msg_event->transferUserActivation()) ||
-      msg_event->allowAutoplay()) {
-    GetFrame()->TransferUserActivationFrom(source_frame);
-    if (msg_event->allowAutoplay())
-      UseCounter::Count(GetDocument(), WebFeature::kAutoplayDynamicDelegation);
-  }
-
-  GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
-      intended_target_origin.Get(), msg_event,
-      std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
-      event.locked_agent_cluster_id() ? event.locked_agent_cluster_id().value()
-                                      : base::UnguessableToken());
 }
 
 WebNode WebLocalFrameImpl::ContextMenuNode() const {

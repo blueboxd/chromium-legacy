@@ -75,8 +75,34 @@ class WebAudioSourceProviderImpl::TeeFilter
   int Render(base::TimeDelta delay,
              base::TimeTicks delay_timestamp,
              int prior_frames_skipped,
-             media::AudioBus* dest) override;
-  void OnRenderError() override;
+             media::AudioBus* audio_bus) override {
+    DCHECK(initialized());
+
+    const int num_rendered_frames = renderer_->Render(
+        delay, delay_timestamp, prior_frames_skipped, audio_bus);
+
+    // Avoid taking the copy lock for the vast majority of cases.
+    if (copy_required_) {
+      base::AutoLock auto_lock(copy_lock_);
+      if (!copy_audio_bus_callback_.is_null()) {
+        const int64_t frames_delayed =
+            media::AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
+        std::unique_ptr<media::AudioBus> bus_copy =
+            media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
+        audio_bus->CopyTo(bus_copy.get());
+        copy_audio_bus_callback_.Run(std::move(bus_copy),
+                                     static_cast<uint32_t>(frames_delayed),
+                                     sample_rate_);
+      }
+    }
+
+    return num_rendered_frames;
+  }
+
+  void OnRenderError() override {
+    DCHECK(initialized());
+    renderer_->OnRenderError();
+  }
 
   bool initialized() const { return !!renderer_; }
   int channels() const { return channels_; }
@@ -135,7 +161,7 @@ void WebAudioSourceProviderImpl::SetClient(
     // The client will now take control by calling provideInput() periodically.
     client_ = client;
 
-    set_format_cb_ = media::BindToCurrentLoop(WTF::Bind(
+    set_format_cb_ = media::BindToCurrentLoop(WTF::BindRepeating(
         &WebAudioSourceProviderImpl::OnSetFormat, weak_factory_.GetWeakPtr()));
 
     // If |tee_filter_| is Initialize()d - then run |set_format_cb_| to send
@@ -143,13 +169,17 @@ void WebAudioSourceProviderImpl::SetClient(
     // called when Initialize() is called. Note: Always using |set_format_cb_|
     // ensures we have the same locking order when calling into |client_|.
     if (tee_filter_->initialized())
-      std::move(set_format_cb_).Run();
+      set_format_cb_.Run();
     return;
   }
 
   // Drop client, but normal playback can't be restored. This is okay, the only
   // way to disconnect a client is internally at time of destruction.
   client_ = nullptr;
+
+  // We need to invalidate WeakPtr references on the renderer thread.
+  set_format_cb_.Reset();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void WebAudioSourceProviderImpl::ProvideInput(
@@ -197,7 +227,7 @@ void WebAudioSourceProviderImpl::Initialize(
     sink_->Initialize(params, tee_filter_.get());
 
   if (set_format_cb_)
-    std::move(set_format_cb_).Run();
+    set_format_cb_.Run();
 }
 
 void WebAudioSourceProviderImpl::Start() {
@@ -309,39 +339,6 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
 
   // Inform Blink about the audio stream format.
   client_->SetFormat(tee_filter_->channels(), tee_filter_->sample_rate());
-}
-
-int WebAudioSourceProviderImpl::TeeFilter::Render(
-    base::TimeDelta delay,
-    base::TimeTicks delay_timestamp,
-    int prior_frames_skipped,
-    media::AudioBus* audio_bus) {
-  DCHECK(initialized());
-
-  const int num_rendered_frames = renderer_->Render(
-      delay, delay_timestamp, prior_frames_skipped, audio_bus);
-
-  // Avoid taking the copy lock for the vast majority of cases.
-  if (copy_required_) {
-    base::AutoLock auto_lock(copy_lock_);
-    if (!copy_audio_bus_callback_.is_null()) {
-      const int64_t frames_delayed =
-          media::AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
-      std::unique_ptr<media::AudioBus> bus_copy =
-          media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
-      audio_bus->CopyTo(bus_copy.get());
-      copy_audio_bus_callback_.Run(std::move(bus_copy),
-                                   static_cast<uint32_t>(frames_delayed),
-                                   sample_rate_);
-    }
-  }
-
-  return num_rendered_frames;
-}
-
-void WebAudioSourceProviderImpl::TeeFilter::OnRenderError() {
-  DCHECK(initialized());
-  renderer_->OnRenderError();
 }
 
 }  // namespace blink

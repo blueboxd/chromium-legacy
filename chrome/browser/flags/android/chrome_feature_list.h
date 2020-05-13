@@ -41,6 +41,7 @@ extern const base::Feature kDontAutoHideBrowserControls;
 extern const base::Feature kChromeDuetLabeled;
 extern const base::Feature kChromeShareScreenshot;
 extern const base::Feature kChromeSharingHub;
+extern const base::Feature kChromeSharingHubV15;
 extern const base::Feature kChromeSmartSelection;
 extern const base::Feature kCommandLineOnNonRooted;
 extern const base::Feature kConditionalTabStripAndroid;

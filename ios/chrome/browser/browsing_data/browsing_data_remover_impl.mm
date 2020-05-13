@@ -619,7 +619,7 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
             "History.ClearBrowsingData.Duration.FullDeletion", delta);
       } else {
         UMA_HISTOGRAM_MEDIUM_TIMES(
-            "History.ClearBrowsingData.Duration.PartialDeletion", delta);
+            "History.ClearBrowsingData.Duration.TimeRangeDeletion", delta);
       }
     }
     removal_queue_.pop();

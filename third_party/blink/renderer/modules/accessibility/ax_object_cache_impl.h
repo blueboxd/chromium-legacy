@@ -29,7 +29,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_CACHE_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_CACHE_IMPL_H_
 
-#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -299,7 +298,9 @@ class MODULES_EXPORT AXObjectCacheImpl
                   ax::mojom::blink::EventFrom event_from,
                   const BlinkAXEventIntentsSet& intents)
         : target(target), event_type(event_type), event_from(event_from) {
-      std::copy(intents.begin(), intents.end(), event_intents.begin());
+      for (const auto& intent : intents) {
+        event_intents.insert(intent.key, intent.value);
+      }
     }
     Member<AXObject> target;
     ax::mojom::blink::Event event_type;
@@ -315,7 +316,9 @@ class MODULES_EXPORT AXObjectCacheImpl
                      const BlinkAXEventIntentsSet& intents,
                      base::OnceClosure callback)
         : node(node), event_from(event_from), callback(std::move(callback)) {
-      std::copy(intents.begin(), intents.end(), event_intents.begin());
+      for (const auto& intent : intents) {
+        event_intents.insert(intent.key, intent.value);
+      }
     }
     WeakMember<Node> node;
     ax::mojom::blink::EventFrom event_from;

@@ -14,24 +14,45 @@ constexpr char kDefaultBaseURL[] =
     "https://autopush-gsaprototype-pa.sandbox.googleapis.com";
 
 // Default URL string for GetQueryTiles RPC.
-const char kDefaultGetQueryTilePath[] = "/v1/querytiles";
+constexpr char kDefaultGetQueryTilePath[] = "/v1/querytiles";
 
 // Finch parameter key for experiment tag to be passed to the server.
-const char kExperimentTagKey[] = "experiment_tag";
+constexpr char kExperimentTagKey[] = "experiment_tag";
 
 // Finch parameter key for base server URL to retrieve the tiles.
-const char kBaseURLKey[] = "base_url";
+constexpr char kBaseURLKey[] = "base_url";
 
 // Finch parameter key for expire duration in seconds.
-const char kExpireDurationKey[] = "expire_duration";
+constexpr char kExpireDurationKey[] = "expire_duration";
 
 // Finch parameter key for expire duration in seconds.
-const char kIsUnmeteredNetworkRequiredKey[] = "is_unmetered_network_required";
+constexpr char kIsUnmeteredNetworkRequiredKey[] =
+    "is_unmetered_network_required";
+
+// Finch parameter key for schedule interval.
+constexpr char kScheduleIntervalKey[] =
+    "tile_background_task_schedule_interval";
+
+// Finch parameter key for random window.
+constexpr char kMaxRandomWindowKey[] = "tile_background_task_random_window";
+
+// Finch parameter key for oneoff task window.
+constexpr char kOneoffTaskWindowKey[] =
+    "tile_background_task_oneoff_task_window";
 
 const char kImagePrefetchModeKey[] = "image_prefetch_mode";
 
 // Default expire duration.
-const int kDefaultExpireDurationInSeconds = 48 * 60 * 60;
+constexpr int kDefaultExpireDurationInSeconds = 48 * 60 * 60;  // 2 days.
+
+// Default periodic interval of background task.
+constexpr int kDefaultScheduleInterval = 12 * 3600 * 1000;  // 12 hours.
+
+// Default length of random window added to the interval.
+constexpr int kDefaultRandomWindow = 4 * 3600 * 1000;  // 4 hours.
+
+// Default length of random window added to the interval.
+constexpr int kDefaultOneoffTaskWindow = 2 * 3600 * 1000;  // 2 hours.
 
 namespace {
 const GURL BuildGetQueryTileURL(const GURL& base_url, const char* path) {
@@ -81,6 +102,24 @@ ImagePrefetchMode TileConfig::GetImagePrefetchMode() {
     return ImagePrefetchMode::kAll;
 
   return ImagePrefetchMode::kTopLevel;
+}
+
+// static
+int TileConfig::GetScheduleIntervalInMs() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kQueryTiles, kScheduleIntervalKey, kDefaultScheduleInterval);
+}
+
+// static
+int TileConfig::GetMaxRandomWindowInMs() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kQueryTiles, kMaxRandomWindowKey, kDefaultRandomWindow);
+}
+
+// static
+int TileConfig::GetOneoffTaskWindowInMs() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kQueryTiles, kOneoffTaskWindowKey, kDefaultOneoffTaskWindow);
 }
 
 }  // namespace upboarding

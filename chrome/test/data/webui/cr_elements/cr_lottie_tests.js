@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {eventToPromise} from '../test_util.m.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for cr-lottie. */
-cr.define('cr_lottie_test', function() {
+suite('cr_lottie_test', function() {
   /**
    * A data url that produces a sample json lottie animation.
    * @type {string}
@@ -85,7 +91,8 @@ cr.define('cr_lottie_test', function() {
     await waitForPlayingEvent;
   });
 
-  test('TestResize', async () => {
+  // TODO(crbug.com/1021474): flaky.
+  test.skip('TestResize', async () => {
     const waitForInitializeEvent =
         test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
     await waitForInitializeEvent;
@@ -147,7 +154,8 @@ cr.define('cr_lottie_test', function() {
     await waitForPlayingEvent;
   });
 
-  test('TestRenderFrame', async () => {
+  // TODO(crbug.com/1021474): flaky.
+  test.skip('TestRenderFrame', async () => {
     // Offscreen canvas has a race issue when used in this test framework. To
     // ensure that we capture a frame from the animation and not an empty frame,
     // we delay the capture by 2 seconds.

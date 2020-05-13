@@ -352,7 +352,8 @@ ios_framework_bundle("web_view") {
     public_headers += cronet_native_public_headers
   }
 
-  sources = [ "internal/web_view_global_state_util.mm" ]
+  sources = ios_web_view_public_headers
+  sources += [ "internal/web_view_global_state_util.mm" ]
   if (ios_web_view_include_cronet) {
     sources += [ "//components/cronet/ios/Cronet.h" ]
   }

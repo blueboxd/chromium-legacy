@@ -93,14 +93,14 @@ class FakeWebPushSender : public WebPushSender {
 
   const std::string& fcm_token() { return fcm_token_; }
   crypto::ECPrivateKey* vapid_key() { return vapid_key_; }
-  const WebPushMessage& message() { return message_; }
+  const base::Optional<WebPushMessage>& message() { return message_; }
 
   void set_result(SendWebPushMessageResult result) { result_ = result; }
 
  private:
   std::string fcm_token_;
   crypto::ECPrivateKey* vapid_key_;
-  WebPushMessage message_;
+  base::Optional<WebPushMessage> message_;
   SendWebPushMessageResult result_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebPushSender);
@@ -127,7 +127,9 @@ class FakeSharingMessageBridge : public SharingMessageBridge {
     return nullptr;
   }
 
-  const sync_pb::SharingMessageSpecifics& specifics() { return specifics_; }
+  const base::Optional<sync_pb::SharingMessageSpecifics>& specifics() {
+    return specifics_;
+  }
 
   void set_error_code(
       const sync_pb::SharingMessageCommitError::ErrorCode& error_code) {
@@ -135,7 +137,7 @@ class FakeSharingMessageBridge : public SharingMessageBridge {
   }
 
  private:
-  sync_pb::SharingMessageSpecifics specifics_;
+  base::Optional<sync_pb::SharingMessageSpecifics> specifics_;
   sync_pb::SharingMessageCommitError::ErrorCode error_code_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSharingMessageBridge);
@@ -330,6 +332,100 @@ TEST_F(SharingFCMSenderTest, SendViaSyncDisabled) {
   EXPECT_EQ(SharingChannelType::kUnknown, channel_type);
 }
 
+TEST_F(SharingFCMSenderTest, PreferVapid) {
+  scoped_feature_list_.InitAndEnableFeature(kSharingPreferVapid);
+  test_sync_service_.SetActiveDataTypes({syncer::SHARING_MESSAGE});
+  sync_prefs_.SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, base::Time::Now()));
+
+  fake_web_push_sender_->set_result(SendWebPushMessageResult::kSuccessful);
+  fake_sharing_message_bridge_.set_error_code(
+      sync_pb::SharingMessageCommitError::NONE);
+
+  std::unique_ptr<crypto::ECPrivateKey> vapid_key =
+      crypto::ECPrivateKey::Create();
+  ON_CALL(vapid_key_manager_, GetOrCreateKey())
+      .WillByDefault(testing::Return(vapid_key.get()));
+
+  chrome_browser_sharing::FCMChannelConfiguration fcm_channel;
+  // Set both VAPID and Sender ID channel.
+  fcm_channel.set_vapid_fcm_token(kVapidFcmToken);
+  fcm_channel.set_vapid_p256dh(kVapidP256dh);
+  fcm_channel.set_vapid_auth_secret(kVapidAuthSecret);
+  fcm_channel.set_sender_id_fcm_token(kSenderIdFcmToken);
+  fcm_channel.set_sender_id_p256dh(kSenderIdP256dh);
+  fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
+
+  SharingSendMessageResult result;
+  base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
+  chrome_browser_sharing::SharingMessage sharing_message;
+  sharing_message.mutable_ping_message();
+  sharing_fcm_sender_.SendMessageToFcmTarget(
+      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
+      std::move(sharing_message),
+      base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
+
+  EXPECT_EQ(SharingSendMessageResult::kSuccessful, result);
+  // Ensures that a Ping message is sent through WebPushSender.
+  chrome_browser_sharing::SharingMessage message_sent;
+  ASSERT_TRUE(fake_web_push_sender_->message());
+  message_sent.ParseFromString(fake_web_push_sender_->message()->payload);
+  EXPECT_TRUE(message_sent.has_ping_message());
+  // Ensures that no message is sent through SharingMessageBridge.
+  EXPECT_FALSE(fake_sharing_message_bridge_.specifics());
+}
+
+TEST_F(SharingFCMSenderTest, PreferSync) {
+  scoped_feature_list_.InitAndDisableFeature(kSharingPreferVapid);
+  test_sync_service_.SetActiveDataTypes({syncer::SHARING_MESSAGE});
+  sync_prefs_.SetFCMRegistration(SharingSyncPreference::FCMRegistration(
+      kAuthorizedEntity, base::Time::Now()));
+
+  fake_web_push_sender_->set_result(SendWebPushMessageResult::kSuccessful);
+  fake_sharing_message_bridge_.set_error_code(
+      sync_pb::SharingMessageCommitError::NONE);
+
+  std::unique_ptr<crypto::ECPrivateKey> vapid_key =
+      crypto::ECPrivateKey::Create();
+  ON_CALL(vapid_key_manager_, GetOrCreateKey())
+      .WillByDefault(testing::Return(vapid_key.get()));
+
+  chrome_browser_sharing::FCMChannelConfiguration fcm_channel;
+  // Set both VAPID and Sender ID channel.
+  fcm_channel.set_vapid_fcm_token(kVapidFcmToken);
+  fcm_channel.set_vapid_p256dh(kVapidP256dh);
+  fcm_channel.set_vapid_auth_secret(kVapidAuthSecret);
+  fcm_channel.set_sender_id_fcm_token(kSenderIdFcmToken);
+  fcm_channel.set_sender_id_p256dh(kSenderIdP256dh);
+  fcm_channel.set_sender_id_auth_secret(kSenderIdAuthSecret);
+
+  SharingSendMessageResult result;
+  base::Optional<std::string> message_id;
+  SharingChannelType channel_type;
+  chrome_browser_sharing::SharingMessage sharing_message;
+  sharing_message.mutable_ping_message();
+  sharing_fcm_sender_.SendMessageToFcmTarget(
+      fcm_channel, base::TimeDelta::FromSeconds(kTtlSeconds),
+      std::move(sharing_message),
+      base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
+                     base::Unretained(this), &result, &message_id,
+                     &channel_type));
+
+  EXPECT_EQ(SharingSendMessageResult::kSuccessful, result);
+  // Ensures that a Ping message is sent through SharingMessageBridge.
+  chrome_browser_sharing::SharingMessage message_sent;
+  ASSERT_TRUE(fake_sharing_message_bridge_.specifics());
+  ASSERT_TRUE(fake_sharing_message_bridge_.specifics()->has_payload());
+  message_sent.ParseFromString(
+      fake_sharing_message_bridge_.specifics()->payload());
+  EXPECT_TRUE(message_sent.has_ping_message());
+  // Ensures that no message is sent through WebPushSender.
+  EXPECT_FALSE(fake_web_push_sender_->message());
+}
+
 struct WebPushResultTestData {
   const SendWebPushMessageResult web_push_result;
   const SharingSendMessageResult expected_result;
@@ -392,11 +488,12 @@ TEST_P(SharingFCMSenderWebPushResultTest, ResultTest) {
 
   EXPECT_EQ(kVapidFcmToken, fake_web_push_sender_->fcm_token());
   EXPECT_EQ(vapid_key.get(), fake_web_push_sender_->vapid_key());
-  EXPECT_EQ(kTtlSeconds, fake_web_push_sender_->message().time_to_live);
+  EXPECT_EQ(kTtlSeconds, fake_web_push_sender_->message()->time_to_live);
   EXPECT_EQ(WebPushMessage::Urgency::kHigh,
-            fake_web_push_sender_->message().urgency);
+            fake_web_push_sender_->message()->urgency);
   chrome_browser_sharing::SharingMessage message_sent;
-  message_sent.ParseFromString(fake_web_push_sender_->message().payload);
+  ASSERT_TRUE(fake_web_push_sender_->message());
+  message_sent.ParseFromString(fake_web_push_sender_->message()->payload);
   EXPECT_TRUE(message_sent.has_ping_message());
 
   EXPECT_EQ(GetParam().expected_result, result);
@@ -469,16 +566,17 @@ TEST_P(SharingFCMSenderCommitErrorCodeTest, ErrorCodeTest) {
   EXPECT_EQ(kSenderIdAuthSecret, fake_gcm_driver_.auth_secret());
 
   auto specifics = fake_sharing_message_bridge_.specifics();
-  ASSERT_TRUE(specifics.has_channel_configuration());
-  ASSERT_TRUE(specifics.channel_configuration().has_fcm());
-  auto fcm = specifics.channel_configuration().fcm();
+  ASSERT_TRUE(specifics);
+  ASSERT_TRUE(specifics->has_channel_configuration());
+  ASSERT_TRUE(specifics->channel_configuration().has_fcm());
+  auto fcm = specifics->channel_configuration().fcm();
   EXPECT_EQ(kSenderIdFcmToken, fcm.token());
   EXPECT_EQ(kTtlSeconds, fcm.ttl());
   EXPECT_EQ(10, fcm.priority());
 
   chrome_browser_sharing::SharingMessage message_sent;
-  ASSERT_TRUE(specifics.has_payload());
-  message_sent.ParseFromString(specifics.payload());
+  ASSERT_TRUE(specifics->has_payload());
+  message_sent.ParseFromString(specifics->payload());
   EXPECT_TRUE(message_sent.has_ping_message());
 
   EXPECT_EQ(GetParam().expected_result, result);
@@ -518,12 +616,13 @@ TEST_F(SharingFCMSenderTest, ServerTarget) {
   EXPECT_EQ(kServerAuthSecret, fake_gcm_driver_.auth_secret());
 
   auto specifics = fake_sharing_message_bridge_.specifics();
-  ASSERT_TRUE(specifics.has_channel_configuration());
-  EXPECT_EQ(kServerConfiguration, specifics.channel_configuration().server());
+  ASSERT_TRUE(specifics);
+  ASSERT_TRUE(specifics->has_channel_configuration());
+  EXPECT_EQ(kServerConfiguration, specifics->channel_configuration().server());
 
   chrome_browser_sharing::SharingMessage message_sent;
-  ASSERT_TRUE(specifics.has_payload());
-  message_sent.ParseFromString(specifics.payload());
+  ASSERT_TRUE(specifics->has_payload());
+  message_sent.ParseFromString(specifics->payload());
   EXPECT_TRUE(message_sent.has_ping_message());
 
   EXPECT_EQ(SharingSendMessageResult::kSuccessful, result);

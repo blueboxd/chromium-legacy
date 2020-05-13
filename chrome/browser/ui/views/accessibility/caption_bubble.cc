@@ -10,8 +10,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/caption_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -426,6 +428,12 @@ void CaptionBubble::AddedToWidget() {
 void CaptionBubble::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   if (sender == close_button_) {
+    // TODO(crbug.com/1055150): This histogram currently only reports a single
+    // bucket, but it will eventually be extended to report session starts and
+    // natural session ends (when the audio stream ends).
+    UMA_HISTOGRAM_ENUMERATION(
+        "Accessibility.LiveCaptions.Session",
+        CaptionController::SessionEvent::kCloseButtonClicked);
     DCHECK(GetWidget());
     GetWidget()->CloseWithReason(
         views::Widget::ClosedReason::kCloseButtonClicked);

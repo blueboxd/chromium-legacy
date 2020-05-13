@@ -174,8 +174,8 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     : media_session_(std::make_unique<AssistantMediaSession>(this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
-          assistant::features::IsAppSupportEnabled(),
-          assistant::features::IsRoutinesEnabled())),
+          features::IsAppSupportEnabled(),
+          features::IsWaitSchedulingEnabled())),
       chromium_api_delegate_(std::move(pending_url_loader_factory)),
       assistant_settings_(
           std::make_unique<AssistantSettingsImpl>(context, this)),
@@ -696,6 +696,7 @@ void AssistantManagerServiceImpl::OnConversationTurnFinished(
 
 void AssistantManagerServiceImpl::OnScheduleWait(int id, int time_ms) {
   ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnScheduleWait, id, time_ms);
+  DCHECK(features::IsWaitSchedulingEnabled());
 
   // Schedule a wait for |time_ms|, notifying the CrosActionModule when the wait
   // has finished so that it can inform LibAssistant to resume execution.

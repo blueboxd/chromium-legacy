@@ -1077,16 +1077,17 @@ public class ChromeTabbedActivity
     }
 
     private boolean shouldShowTabSwitcherOnStart() {
-        if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
-            String intentUrl = IntentHandler.getUrlFromIntent(getIntent());
-            if (NewTabPage.isNTPUrl(intentUrl)
-                    || (isMainIntentFromLauncher(getIntent())
-                            && ReturnToChromeExperimentsUtil.getTotalTabCount(getTabModelSelector())
-                                    <= 0)) {
-                return true;
-            }
+        String intentUrl = IntentHandler.getUrlFromIntent(getIntent());
+        if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
+                && NewTabPage.isNTPUrl(intentUrl)) {
+            // Handle NTP intent.
+            return true;
+        } else if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePageNoTabs()
+                && isMainIntentFromLauncher(getIntent())
+                && ReturnToChromeExperimentsUtil.getTotalTabCount(getTabModelSelector()) <= 0) {
+            // Handle initial tab creation.
+            return true;
         }
-
         long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
         return isMainIntentFromLauncher(getIntent())
                 && ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
@@ -1215,9 +1216,8 @@ public class ChromeTabbedActivity
     private void createInitialTab() {
         mPendingInitialTabCreation = false;
 
-        // If the grid tab switcher is enabled and the tab switcher will be shown on start,
-        //  do not create a new tab. With the grid, creating a new tab is now a one tap action.
-        if (!(shouldShowTabSwitcherOnStart() && TabUiFeatureUtilities.isGridTabSwitcherEnabled())) {
+        // If the start surface will be shown on start, do not create a new tab.
+        if (!shouldShowTabSwitcherOnStart()) {
             String url = HomepageManager.getHomepageUri();
             if (TextUtils.isEmpty(url)) {
                 url = UrlConstants.NTP_URL;

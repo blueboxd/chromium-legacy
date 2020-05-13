@@ -12,7 +12,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -69,7 +68,7 @@ public class IncognitoToggleButtonTablet extends IncognitoToggleButton {
         if (selector != null) {
             updateButtonVisibility();
 
-            mTabModelObserver = new EmptyTabModelObserver() {
+            mTabModelObserver = new TabModelObserver() {
                 @Override
                 public void didAddTab(
                         Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {

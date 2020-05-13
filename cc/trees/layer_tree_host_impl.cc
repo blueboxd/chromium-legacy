@@ -899,33 +899,6 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingViewport() const {
   return viewport().ShouldScroll(*node);
 }
 
-bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
-    const gfx::Point& viewport_point) const {
-  auto* scrolling_node = CurrentlyScrollingNode();
-  if (!scrolling_node)
-    return false;
-
-  gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
-
-  LayerImpl* layer_impl =
-      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
-
-  bool scroll_on_main_thread = false;
-  uint32_t main_thread_scrolling_reasons;
-  auto* test_scroll_node = FindScrollNodeForDeviceViewportPoint(
-      device_viewport_point, layer_impl, &scroll_on_main_thread,
-      &main_thread_scrolling_reasons);
-
-  if (scroll_on_main_thread)
-    return false;
-
-  if (scrolling_node == test_scroll_node)
-    return true;
-
-  return false;
-}
-
 EventListenerProperties LayerTreeHostImpl::GetEventListenerProperties(
     EventListenerClass event_class) const {
   return active_tree_->event_listener_properties(event_class);

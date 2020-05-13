@@ -40,7 +40,6 @@ CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kDisableYUVImageDecoding[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoEncode[];
-CONTENT_EXPORT extern const char kDisableAxSerializerForTesting[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char
     kDisableBackgroundingOccludedWindowsForTesting[];

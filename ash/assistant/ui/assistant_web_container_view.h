@@ -8,6 +8,7 @@
 #include "ash/public/cpp/assistant/assistant_web_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
@@ -19,12 +20,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
     : public views::WidgetDelegateView,
       public AssistantWebView::Observer {
  public:
+  METADATA_HEADER(AssistantWebContainerView);
+
   explicit AssistantWebContainerView(
       AssistantWebViewDelegate* web_container_view_delegate);
   ~AssistantWebContainerView() override;
 
   // views::WidgetDelegateView:
-  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
@@ -44,12 +46,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantWebContainerView
   void OpenUrl(const GURL& url);
 
  private:
+  AssistantWebView* ContentsView();
   void InitLayout();
   void RemoveContents();
 
   AssistantWebViewDelegate* const web_container_view_delegate_;
 
   std::unique_ptr<AssistantWebView> contents_view_;
+  AssistantWebView* contents_view_ptr_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantWebContainerView);
 };

@@ -15,8 +15,9 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/database/database_quota_client.h"
@@ -41,7 +42,6 @@ class MockDatabaseTracker : public DatabaseTracker {
       : DatabaseTracker(base::FilePath(), false, nullptr, nullptr),
         delete_called_count_(0),
         async_delete_(false) {
-    set_task_runner_for_testing(base::ThreadTaskRunnerHandle::Get());
   }
 
   bool GetOriginInfo(const std::string& origin_identifier,
@@ -71,7 +71,7 @@ class MockDatabaseTracker : public DatabaseTracker {
                           net::CompletionOnceCallback callback) override {
     ++delete_called_count_;
     if (async_delete()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(&MockDatabaseTracker::AsyncDeleteDataForOrigin, this,
                          std::move(callback)));
@@ -136,10 +136,9 @@ class DatabaseQuotaClientTest : public testing::Test {
     usage_ = 0;
     client->GetOriginUsage(
         origin, type,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
-                           weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginUsageComplete,
+                       weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return usage_;
   }
 
@@ -148,10 +147,9 @@ class DatabaseQuotaClientTest : public testing::Test {
       blink::mojom::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
-        type, base::AdaptCallbackForRepeating(
-                  base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
-                                 weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        type, base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                             weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return origins_;
   }
 
@@ -162,10 +160,9 @@ class DatabaseQuotaClientTest : public testing::Test {
     origins_.clear();
     client->GetOriginsForHost(
         type, host,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
-                           weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        base::BindOnce(&DatabaseQuotaClientTest::OnGetOriginsComplete,
+                       weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return origins_;
   }
 
@@ -175,10 +172,9 @@ class DatabaseQuotaClientTest : public testing::Test {
     delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     client->DeleteOriginData(
         origin, type,
-        base::AdaptCallbackForRepeating(
-            base::BindOnce(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
-                           weak_factory_.GetWeakPtr())));
-    base::RunLoop().RunUntilIdle();
+        base::BindOnce(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
+                       weak_factory_.GetWeakPtr()));
+    task_environment_.RunUntilIdle();
     return delete_status_ == blink::mojom::QuotaStatusCode::kOk;
   }
 

@@ -223,7 +223,6 @@ defaults = args.defaults(
     use_clang_coverage = False,
     use_java_coverage = False,
     resultdb_bigquery_exports = [],
-    should_exonerate_flaky_failures = False,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -258,7 +257,6 @@ def builder(
     use_clang_coverage=args.DEFAULT,
     use_java_coverage=args.DEFAULT,
     resultdb_bigquery_exports=args.DEFAULT,
-    should_exonerate_flaky_failures=args.DEFAULT,
     **kwargs):
   """Define a builder.
 
@@ -332,8 +330,6 @@ def builder(
     * use_java_coverage - a boolean indicating whether java coverage should be
       used. If True, the 'use_java_coverage" field will be set in the
       '$build/code_coverage' property. By default, considered False.
-    * should_exonerate_flaky_failures - a boolean indicathing whether the
-      builder should exonerate a test failure if it's known to be flaky on ToT.
     * resultdb_bigquery_exports - a list of resultdb.export_test_results(...)
       specifying parameters for exporting test results to BigQuery. By default,
       do not export.
@@ -427,13 +423,6 @@ def builder(
   )
   if code_coverage != None:
     properties['$build/code_coverage'] = code_coverage
-
-  should_exonerate_flaky_failures = defaults.get_value(
-      'should_exonerate_flaky_failures', should_exonerate_flaky_failures)
-  if should_exonerate_flaky_failures:
-    properties['$build/test_utils'] = {
-      'should_exonerate_flaky_failures': True,
-    }
 
   kwargs = dict(kwargs)
   bucket = defaults.get_value('bucket', bucket)

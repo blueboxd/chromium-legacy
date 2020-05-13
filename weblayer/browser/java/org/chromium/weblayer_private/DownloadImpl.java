@@ -401,7 +401,9 @@ public final class DownloadImpl extends IDownload.Stub {
             long totalBytes = getTotalBytes();
             boolean indeterminate = totalBytes == -1;
             int progressCurrent = -1;
-            if (!indeterminate) progressCurrent = (int) (bytes * 100 / totalBytes);
+            if (!indeterminate && totalBytes != 0) {
+                progressCurrent = (int) (bytes * 100 / totalBytes);
+            }
 
             String contentText;
             String bytesString = DownloadUtils.getStringForBytes(context, bytes);

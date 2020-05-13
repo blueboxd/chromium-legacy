@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -182,27 +184,36 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   self.passwordButton.contentEdgeInsets = UIEdgeInsetsMake(0, 2, 0, 2);
   [icons addObject:self.passwordButton];
 
-    self.cardsButton =
-        [self manualFillButtonWithAction:@selector(cardButtonPressed:)
-                              ImageNamed:@"ic_credit_card"
-                 accessibilityIdentifier:
-                     manual_fill::AccessoryCreditCardAccessibilityIdentifier
-                      accessibilityLabel:
-                          l10n_util::GetNSString(
-                              IDS_IOS_MANUAL_FALLBACK_SHOW_CREDIT_CARDS)];
-    self.cardsButton.hidden = self.isCreditCardButtonHidden;
-    [icons addObject:self.cardsButton];
+  self.cardsButton =
+      [self manualFillButtonWithAction:@selector(cardButtonPressed:)
+                            ImageNamed:@"ic_credit_card"
+               accessibilityIdentifier:
+                   manual_fill::AccessoryCreditCardAccessibilityIdentifier
+                    accessibilityLabel:
+                        l10n_util::GetNSString(
+                            IDS_IOS_MANUAL_FALLBACK_SHOW_CREDIT_CARDS)];
+  self.cardsButton.hidden = self.isCreditCardButtonHidden;
+  [icons addObject:self.cardsButton];
 
-    self.accountButton = [self
-        manualFillButtonWithAction:@selector(accountButtonPressed:)
-                        ImageNamed:@"ic_place"
-           accessibilityIdentifier:manual_fill::
-                                       AccessoryAddressAccessibilityIdentifier
-                accessibilityLabel:l10n_util::GetNSString(
-                                       IDS_IOS_MANUAL_FALLBACK_SHOW_ADDRESSES)];
+  self.accountButton = [self
+      manualFillButtonWithAction:@selector(accountButtonPressed:)
+                      ImageNamed:@"ic_place"
+         accessibilityIdentifier:manual_fill::
+                                     AccessoryAddressAccessibilityIdentifier
+              accessibilityLabel:l10n_util::GetNSString(
+                                     IDS_IOS_MANUAL_FALLBACK_SHOW_ADDRESSES)];
 
-    self.accountButton.hidden = self.isAddressButtonHidden;
-    [icons addObject:self.accountButton];
+  self.accountButton.hidden = self.isAddressButtonHidden;
+  [icons addObject:self.accountButton];
+
+#if defined(__IPHONE_13_4)
+  if (@available(iOS 13.4, *)) {
+    if (base::FeatureList::IsEnabled(kPointerSupport)) {
+      for (UIButton* button in icons)
+        button.pointerInteractionEnabled = YES;
+    }
+  }
+#endif  // defined(__IPHONE_13_4)
 
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:icons];
   stackView.spacing =

@@ -13,12 +13,13 @@ import android.os.Bundle;
 interface IMetricsBridgeService {
     /**
      * Record a UMA API method call from a non-embedded WebView processes. This should only be
-     * called by WebView's non-embedded processes (which are trusted). This is a non-blocking
-     * call.
+     * called by WebView's non-embedded processes (which are trusted). This is a blocking IPC,
+     * although its work (including disk IO) happens asynchronously.
+     *
      * @param methodCall a byte array serialization of
      *                   org.chromium.android_webview.proto.HistogramRecord proto message object.
      */
-    oneway void recordMetrics(in byte[] methodCall);
+    void recordMetrics(in byte[] methodCall);
 
     /**
      * Get a list of recorded UMA method calls through the callback. This a blocking call.

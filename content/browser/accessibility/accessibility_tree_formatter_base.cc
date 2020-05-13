@@ -189,6 +189,28 @@ AccessibilityTreeFormatterBase::GetVersionSpecificExpectedFileSuffix() {
   return FILE_PATH_LITERAL("");
 }
 
+bool AccessibilityTreeFormatterBase::FilterPropertyName(
+    const base::string16& text) {
+  // Find the first allow-filter matching the property name. The filter should
+  // be either an exact property match or a wildcard matching to support filter
+  // collections like AXRole* which matches AXRoleDescription.
+  const base::string16 delim = base::ASCIIToUTF16("=");
+  for (const auto& filter : property_filters_) {
+    base::String16Tokenizer tokenizer(filter.match_str, delim);
+    if (tokenizer.GetNext() && (text == tokenizer.token() ||
+                                base::MatchPattern(text, tokenizer.token()))) {
+      switch (filter.type) {
+        case PropertyFilter::ALLOW_EMPTY:
+        case PropertyFilter::ALLOW:
+          return true;
+        default:
+          break;
+      }
+    }
+  }
+  return false;
+}
+
 bool AccessibilityTreeFormatterBase::MatchesPropertyFilters(
     const base::string16& text,
     bool default_result) const {

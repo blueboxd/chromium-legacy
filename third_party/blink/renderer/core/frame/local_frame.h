@@ -555,6 +555,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // the next navigation.
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
   void OnScreensChange() final;
+  void PostMessageEvent(
+      const base::Optional<base::UnguessableToken>& source_frame_token,
+      const String& source_origin,
+      const String& target_origin,
+      BlinkTransferableMessage message) final;
   void BindReportingObserver(
       mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) final;
 

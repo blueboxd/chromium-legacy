@@ -48,7 +48,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -56,12 +56,14 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -174,7 +176,7 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @DisabledTest
+    @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
             "/hide_switch_when_no_incognito_tabs/true"})
@@ -191,7 +193,7 @@ public class StartSurfaceTest {
                 .check(matches(isDisplayed()));
 
         if (!isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to make incognito switch part of the view.
+            // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
             onView(withId(org.chromium.chrome.tab_ui.R.id.incognito_switch))
                     .check(matches(withEffectiveVisibility(GONE)));
         }
@@ -200,12 +202,13 @@ public class StartSurfaceTest {
         TabUiTestHelper.createTabs(cta, true, 1);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to avoid wrongly focusing on the toolbar omnibox.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
         TabUiTestHelper.enterTabSwitcher(cta);
         if (!isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to make incognito switch part of the view.
+            // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
             onView(withId(org.chromium.chrome.tab_ui.R.id.incognito_switch))
                     .check(matches(isDisplayed()));
         }
@@ -214,7 +217,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         if (!isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to make incognito switch part of the view.
+            // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
             onView(withId(org.chromium.chrome.tab_ui.R.id.incognito_switch))
                     .check(matches(withEffectiveVisibility(GONE)));
         }
@@ -227,7 +230,7 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @DisabledTest
+    @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
     @CommandLineFlags.Add({BASE_PARAMS + "/twopanes"})
     public void testShow_TwoPanes() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -270,7 +273,7 @@ public class StartSurfaceTest {
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(isDisplayed()));
         if (!isInstantReturn()) {
-            // TODO(crbug/1065314): show tab switcher section.
+            // TODO(crbug.com/1065314): show tab switcher section.
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
                     .check(matches(isDisplayed()));
             onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
@@ -294,7 +297,8 @@ public class StartSurfaceTest {
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to avoid wrongly focusing on the toolbar omnibox.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
 
@@ -331,7 +335,7 @@ public class StartSurfaceTest {
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(withEffectiveVisibility(GONE)));
         if (!isInstantReturn()) {
-            // TODO(crbug/1065314): show tab switcher section.
+            // TODO(crbug.com/1065314): show tab switcher section.
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
                     .check(matches(isDisplayed()));
             onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
@@ -341,7 +345,7 @@ public class StartSurfaceTest {
                 .check(matches(isDisplayed()));
 
         if (!isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to make incognito switch part of the view.
+            // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
             onView(withId(org.chromium.chrome.tab_ui.R.id.incognito_switch))
                     .check(matches(withEffectiveVisibility(GONE)));
         }
@@ -361,7 +365,8 @@ public class StartSurfaceTest {
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to avoid wrongly focusing on the toolbar omnibox.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
 
@@ -398,7 +403,7 @@ public class StartSurfaceTest {
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(withEffectiveVisibility(GONE)));
         if (!isInstantReturn()) {
-            // TODO(crbug/1065314): show tab switcher section.
+            // TODO(crbug.com/1065314): show tab switcher section.
             onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
                     .check(matches(isDisplayed()));
             onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
@@ -410,7 +415,7 @@ public class StartSurfaceTest {
                 .check(matches(isDisplayed()));
 
         if (!isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to make incognito switch part of the view.
+            // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
             onView(withId(org.chromium.chrome.tab_ui.R.id.incognito_switch))
                     .check(matches(withEffectiveVisibility(GONE)));
         }
@@ -431,7 +436,8 @@ public class StartSurfaceTest {
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
 
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to avoid wrongly focusing on the toolbar omnibox.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
         pressBack();
@@ -518,7 +524,8 @@ public class StartSurfaceTest {
             pressBack();
         }
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to avoid wrongly focusing on the toolbar omnibox.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
@@ -604,7 +611,7 @@ public class StartSurfaceTest {
                         && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         waitForTabModel();
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): hide toolbar to make incognito switch visible.
+            // TODO(crbug.com/1076274): hide toolbar to make incognito switch visible.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
             });
@@ -659,7 +666,8 @@ public class StartSurfaceTest {
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(2));
         if (isInstantReturn()) {
-            // TODO(crbug/1076274): fix toolbar to avoid wrongly focusing on the toolbar omnibox.
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
             return;
         }
         // Press back button should close the tab opened from the Start surface.
@@ -670,6 +678,67 @@ public class StartSurfaceTest {
         assertThat(
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(1));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/open_ntp_instead_of_start/true"})
+    public void testCreateNewTab_OpenNTPInsteadOfStart() {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        waitForTabModel();
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+
+        // Create a new tab from menu should create NTP instead of showing start.
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), cta, false, false);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
+        CriteriaHelper.pollUiThread(() -> !cta.getOverviewModeBehavior().overviewVisible());
+        TabUiTestHelper.enterTabSwitcher(cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+
+        // Click plus button from top toolbar should create NTP instead of showing start surface.
+        onView(withId(R.id.new_tab_button)).perform(click());
+        TabUiTestHelper.verifyTabModelTabCount(cta, 3, 0);
+        assertFalse(cta.getOverviewModeBehavior().overviewVisible());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/open_ntp_instead_of_start/true"})
+    public void testHomeButton_OpenNTPInsteadOfStart() {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        waitForTabModel();
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), cta, false, false);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
+        if (isInstantReturn()) {
+            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
+            // omnibox.
+            return;
+        }
+        mActivityTestRule.loadUrl("about:blank");
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> cta.getTabModelSelector().getCurrentTab().getOriginalUrl().equals(
+                                "about:blank"));
+
+        // Click the home button should navigate to NTP instead of showing start surface.
+        onView(withId(R.id.home_button)).perform(click());
+        CriteriaHelper.pollUiThread(
+                () -> NewTabPage.isNTPUrl(cta.getTabModelSelector().getCurrentTab().getUrl()));
+        assertFalse(cta.getOverviewModeBehavior().overviewVisible());
     }
 
     private void waitForTabModel() {

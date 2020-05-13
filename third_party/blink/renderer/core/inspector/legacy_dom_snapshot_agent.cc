@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_debugger_agent.h"
@@ -304,16 +303,16 @@ LegacyDOMSnapshotAgent::VisitContainerChildren(
     bool include_user_agent_shadow_tree) {
   auto children = std::make_unique<protocol::Array<int>>();
 
-  if (!blink::dom_traversal_utils::HasChildren(*container,
-                                               include_user_agent_shadow_tree))
+  if (!InspectorDOMSnapshotAgent::HasChildren(*container,
+                                              include_user_agent_shadow_tree))
     return nullptr;
 
-  Node* child = blink::dom_traversal_utils::FirstChild(
+  Node* child = InspectorDOMSnapshotAgent::FirstChild(
       *container, include_user_agent_shadow_tree);
   while (child) {
     children->emplace_back(VisitNode(child, include_event_listeners,
                                      include_user_agent_shadow_tree));
-    child = blink::dom_traversal_utils::NextSibling(
+    child = InspectorDOMSnapshotAgent::NextSibling(
         *child, include_user_agent_shadow_tree);
   }
 

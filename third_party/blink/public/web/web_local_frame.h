@@ -54,7 +54,6 @@ class WebAutofillClient;
 class WebContentCaptureClient;
 class WebContentSettingsClient;
 class WebDocument;
-class WebDOMMessageEvent;
 class WebLocalFrameClient;
 class WebFrameWidget;
 class WebInputMethodController;
@@ -569,11 +568,6 @@ class WebLocalFrame : public WebFrame {
   virtual void CopyImageAtForTesting(const gfx::Point&) = 0;
 
   // Events --------------------------------------------------------------
-
-  // Dispatches a message event on the current DOMWindow in this WebFrame.
-  virtual void DispatchMessageEventWithOriginCheck(
-      const WebSecurityOrigin& intended_target_origin,
-      const WebDOMMessageEvent&) = 0;
 
   // TEMP: Usage count for chrome.loadtimes deprecation.
   // This will be removed following the deprecation.

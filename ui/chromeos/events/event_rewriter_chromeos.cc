@@ -39,8 +39,6 @@ namespace {
 // Hotrod controller vendor/product ids.
 const int kHotrodRemoteVendorId = 0x0471;
 const int kHotrodRemoteProductId = 0x21cc;
-const int kUnknownVendorId = -1;
-const int kUnknownProductId = -1;
 
 // Flag masks for remapping alt+click or search+click to right click.
 constexpr int kAltLeftButton = (EF_ALT_DOWN | EF_LEFT_MOUSE_BUTTON);
@@ -477,23 +475,8 @@ EventRewriterChromeOS::EventRewriterChromeOS(
 
 EventRewriterChromeOS::~EventRewriterChromeOS() {}
 
-void EventRewriterChromeOS::KeyboardDeviceAddedForTesting(
-    int device_id,
-    const std::string& device_name,
-    const std::string& layout_name,
-    InputDeviceType device_type) {
-  // Tests must avoid XI2 reserved device IDs.
-  DCHECK((device_id < 0) || (device_id > 1));
-  InputDevice keyboard_device(device_id, device_type, device_name);
-  keyboard_device.vendor_id = kUnknownVendorId;
-  keyboard_device.product_id = kUnknownProductId;
-
-  KeyboardTopRowLayout layout;
-  if (ParseKeyboardTopRowLayout(layout_name, &layout)) {
-    KeyboardDeviceAddedInternal(
-        device_id, IdentifyKeyboardType(keyboard_device, !layout_name.empty()),
-        layout);
-  }
+void EventRewriterChromeOS::KeyboardDeviceAddedForTesting(int device_id) {
+  KeyboardDeviceAdded(device_id);
 }
 
 void EventRewriterChromeOS::ResetStateForTesting() {
@@ -1699,15 +1682,6 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
   return false;
 }
 
-void EventRewriterChromeOS::KeyboardDeviceAddedInternal(
-    int device_id,
-    DeviceType type,
-    KeyboardTopRowLayout layout) {
-  // Always overwrite the existing device_id since the X server may reuse a
-  // device id for an unattached device.
-  device_id_to_info_[device_id] = {type, layout};
-}
-
 bool EventRewriterChromeOS::ForceTopRowAsFunctionKeys() const {
   return delegate_ && delegate_->TopRowKeysAreFunctionKeys();
 }
@@ -1727,9 +1701,11 @@ EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(
         // udev. This gives a chance to reattempt reading from udev on
         // subsequent key events, rather than being stuck in a bad state until
         // next reboot. crbug.com/783166.
-        KeyboardDeviceAddedInternal(keyboard.id, type, layout);
-      }
 
+        // Always overwrite the existing device_id since the X server may reuse
+        // a device id for an unattached device.
+        device_id_to_info_[keyboard.id] = {type, layout};
+      }
       return type;
     }
   }

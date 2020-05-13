@@ -130,10 +130,12 @@ if [ "x$(id -u)" != x0 ] && [ 0 -eq "${do_quick_check-0}" ]; then
   echo
 fi
 
-if [ "$do_inst_lib32" = "1" ] || [ "$do_inst_nacl" = "1" ]; then
-  sudo dpkg --add-architecture i386
+if [ 0 -eq "${do_quick_check-0}" ] ; then
+  if [ "$do_inst_lib32" = "1" ] || [ "$do_inst_nacl" = "1" ]; then
+    sudo dpkg --add-architecture i386
+  fi
+  sudo apt-get update
 fi
-sudo apt-get update
 
 # Populate ${apt_package_list} for package_exists() parsing.
 apt_package_list=$(build_apt_package_list)

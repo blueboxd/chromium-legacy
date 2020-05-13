@@ -138,7 +138,7 @@ class QueuedWebInputEvent : public blink::WebCoalescedInputEvent,
   void HandledEvent(MainThreadEventQueue* queue,
                     blink::mojom::InputEventResultState ack_result,
                     const ui::LatencyInfo& latency_info,
-                    std::unique_ptr<ui::DidOverscrollParams> overscroll,
+                    blink::mojom::DidOverscrollParamsPtr overscroll,
                     base::Optional<cc::TouchAction> touch_action) {
     if (callback_) {
       std::move(callback_).Run(ack_result, latency_info, std::move(overscroll),
@@ -258,9 +258,9 @@ void MainThreadEventQueue::HandleEvent(
              blink::mojom::InputEventResultState::kSetNonBlockingDueToFling ||
          ack_result == blink::mojom::InputEventResultState::kNotConsumed);
 
-  bool non_blocking =
-      original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING ||
-      ack_result == blink::mojom::InputEventResultState::kSetNonBlocking;
+  bool is_blocking =
+      original_dispatch_type == DISPATCH_TYPE_BLOCKING &&
+      ack_result != blink::mojom::InputEventResultState::kSetNonBlocking;
   bool is_wheel = event->GetType() == blink::WebInputEvent::Type::kMouseWheel;
   bool is_touch = blink::WebInputEvent::IsTouchEventType(event->GetType());
   bool originally_cancelable = false;
@@ -274,7 +274,7 @@ void MainThreadEventQueue::HandleEvent(
 
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
-    if (non_blocking) {
+    if (!is_blocking) {
       touch_event->dispatch_type =
           blink::WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     }
@@ -291,15 +291,15 @@ void MainThreadEventQueue::HandleEvent(
           last_touch_start_forced_nonblocking_due_to_fling_) {
         touch_event->dispatch_type = blink::WebInputEvent::DispatchType::
             kListenersForcedNonBlockingDueToFling;
-        non_blocking = true;
+        is_blocking = false;
         last_touch_start_forced_nonblocking_due_to_fling_ = true;
       }
     }
 
     // If the event is non-cancelable ACK it right away.
-    if (!non_blocking && touch_event->dispatch_type !=
-                             blink::WebInputEvent::DispatchType::kBlocking)
-      non_blocking = true;
+    if (is_blocking && touch_event->dispatch_type !=
+                           blink::WebInputEvent::DispatchType::kBlocking)
+      is_blocking = false;
   }
 
   if (is_wheel) {
@@ -307,7 +307,7 @@ void MainThreadEventQueue::HandleEvent(
         static_cast<blink::WebMouseWheelEvent*>(event.get());
     originally_cancelable = wheel_event->dispatch_type ==
                             blink::WebInputEvent::DispatchType::kBlocking;
-    if (non_blocking) {
+    if (!is_blocking) {
       // Adjust the |dispatchType| on the event since the compositor
       // determined all event listeners are passive.
       wheel_event->dispatch_type =
@@ -316,7 +316,7 @@ void MainThreadEventQueue::HandleEvent(
   }
 
   HandledEventCallback event_callback;
-  if (!non_blocking) {
+  if (is_blocking) {
     TRACE_EVENT_INSTANT0("input", "Blocking", TRACE_EVENT_SCOPE_THREAD);
     event_callback = std::move(callback);
   }

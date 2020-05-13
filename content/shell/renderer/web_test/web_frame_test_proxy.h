@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_event_intent.h"
 
 namespace content {
 class BlinkTestRunner;
@@ -97,8 +99,10 @@ class WebFrameTestProxy : public RenderFrameImpl,
   void BindReceiver(
       mojo::PendingAssociatedReceiver<mojom::WebTestRenderFrame> receiver);
 
-  void HandleWebAccessibilityEvent(const blink::WebAXObject& object,
-                                   const char* event_name);
+  void HandleWebAccessibilityEvent(
+      const blink::WebAXObject& object,
+      const char* event_name,
+      const std::vector<ui::AXEventIntent>& event_intents);
 
   TestRunner* test_runner();
   BlinkTestRunner* blink_test_runner();

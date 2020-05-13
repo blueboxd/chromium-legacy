@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedW
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.Origin;
+import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 
 /**
  * Chrome's customization of PermissionParamsListBuilderDelegate logic.

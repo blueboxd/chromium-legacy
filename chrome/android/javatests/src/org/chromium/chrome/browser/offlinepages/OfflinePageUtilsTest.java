@@ -198,7 +198,7 @@ public class OfflinePageUtilsTest {
      */
     class TestShareCallback implements Callback<ShareParams> {
         private Semaphore mSemaphore;
-        private String mUri;
+        private String mText;
 
         public TestShareCallback(Semaphore semaphore) {
             mSemaphore = semaphore;
@@ -206,12 +206,12 @@ public class OfflinePageUtilsTest {
 
         @Override
         public void onResult(ShareParams shareParams) {
-            mUri = shareParams.getUrl();
+            mText = shareParams.getText();
             mSemaphore.release();
         }
 
-        public String getSharedUri() {
-            return mUri;
+        public String getSharedText() {
+            return mText;
         }
     }
 
@@ -280,11 +280,8 @@ public class OfflinePageUtilsTest {
 
         // Wait for share callback to get called.
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        // Assert that URI is what we expected.
-        String foundUri = shareCallback.getSharedUri();
-        Uri uri = Uri.parse(foundUri);
-        String uriPath = uri.getPath();
-        Assert.assertEquals(TEST_PAGE, uriPath);
+        // Assert that text is what we expected.
+        Assert.assertTrue(shareCallback.getSharedText().contains(TEST_PAGE));
     }
 
     @Test
@@ -307,8 +304,7 @@ public class OfflinePageUtilsTest {
         // Wait for share callback to get called.
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
         // Assert that URI is what we expected.
-        String foundUri = shareCallback.getSharedUri();
-        Assert.assertTrue(foundUri.startsWith(CONTENT_URI_PREFIX));
+        Assert.assertTrue(shareCallback.getSharedText().contains(CONTENT_URI_PREFIX));
     }
 
     // Checks on the UI thread if an offline path corresponds to a sharable file.

@@ -25,6 +25,13 @@ class TestEventHandler : public BatchingMediaLog::EventHandler {
       std::vector<media::MediaLogRecord> events) override;
   void OnWebMediaPlayerDestroyed() override;
 
+  static std::vector<std::unique_ptr<BatchingMediaLog::EventHandler>> Create(
+      BatchingMediaLogTest* ptr) {
+    std::vector<std::unique_ptr<BatchingMediaLog::EventHandler>> move_me;
+    move_me.push_back(std::make_unique<TestEventHandler>(ptr));
+    return move_me;
+  }
+
  private:
   BatchingMediaLogTest* test_cls_;
 };
@@ -35,7 +42,7 @@ class BatchingMediaLogTest : public testing::Test {
       : task_runner_(new base::TestMockTimeTaskRunner()),
         log_(GURL("http://foo.com"),
              task_runner_,
-             std::make_unique<TestEventHandler>(this)) {
+             TestEventHandler::Create(this)) {
     log_.SetTickClockForTesting(&tick_clock_);
   }
 

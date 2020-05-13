@@ -25,6 +25,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.compositor.CompositorView;
+import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -119,7 +121,8 @@ public class SplashController
     @Inject
     public SplashController(ChromeActivity<?> activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabObserverRegistrar tabObserverRegistrar, TwaFinishHandler finishHandler) {
+            TabObserverRegistrar tabObserverRegistrar,
+            CustomTabOrientationController orientationController, TwaFinishHandler finishHandler) {
         mActivity = activity;
         mLifecycleDispatcher = lifecycleDispatcher;
         mTabObserverRegistrar = tabObserverRegistrar;
@@ -127,15 +130,19 @@ public class SplashController
         mTranslucencyRemovalStrategy = TranslucencyRemoval.NONE;
         mFinishHandler = finishHandler;
 
+        boolean isWindowInitiallyTranslucent =
+                BaseCustomTabActivity.isWindowInitiallyTranslucent(activity);
+        mTranslucencyRemovalStrategy =
+                computeTranslucencyRemovalStrategy(isWindowInitiallyTranslucent);
+
+        orientationController.delayOrientationRequestsIfNeeded(this, isWindowInitiallyTranslucent);
+
         mLifecycleDispatcher.register(this);
         mTabObserverRegistrar.registerActivityTabObserver(this);
     }
 
-    public void setConfig(SplashDelegate delegate, boolean isWindowInitiallyTranslucent,
-            long splashHideAnimationDurationMs) {
+    public void setConfig(SplashDelegate delegate, long splashHideAnimationDurationMs) {
         mDelegate = delegate;
-        mTranslucencyRemovalStrategy =
-                computeTranslucencyRemovalStrategy(isWindowInitiallyTranslucent);
         mSplashHideAnimationDurationMs = splashHideAnimationDurationMs;
         if (mDidPreInflationStartup) {
             showSplash();

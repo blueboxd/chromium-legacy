@@ -8,18 +8,10 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/login/ui/access_code_input.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
-#include "base/time/time.h"
-#include "components/account_id/account_id.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -165,9 +157,6 @@ class ASH_EXPORT PinRequestView : public views::DialogDelegateView,
 
  private:
   class FocusableLabelButton;
-  class AccessCodeInput;
-  class FlexCodeInput;
-  class FixedLengthCodeInput;
 
   // Submits access code for validation.
   void SubmitCode();

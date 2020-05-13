@@ -85,11 +85,7 @@ base::FilePath PlatformCrashpadInitialization(
     std::map<std::string, std::string> process_annotations;
     GetPlatformCrashpadAnnotations(&process_annotations);
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    std::string url = "https://clients2.google.com/cr/report";
-#else
-    std::string url;
-#endif
+    std::string url = crash_reporter_client->GetUploadUrl();
 
     // Allow the crash server to be overridden for testing. If the variable
     // isn't present in the environment then the default URL will remain.

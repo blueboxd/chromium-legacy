@@ -183,6 +183,12 @@ void CheckClientDownloadRequestBase::Start() {
   DVLOG(2) << "Starting SafeBrowsing download check for: " << source_url_;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  if (IsWhitelistedByPolicy()) {
+    FinishRequest(DownloadCheckResult::WHITELISTED_BY_POLICY,
+                  REASON_WHITELISTED_URL);
+    return;
+  }
+
   // If whitelist check passes, FinishRequest() will be called to avoid
   // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
   // analysis.

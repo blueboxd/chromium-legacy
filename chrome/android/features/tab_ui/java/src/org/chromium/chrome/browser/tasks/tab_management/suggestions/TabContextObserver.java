@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -32,7 +31,7 @@ public abstract class TabContextObserver {
             }
         };
 
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void didAddTab(Tab tab, int type, @TabCreationState int creationState) {
                 onTabContextChanged(TabContextChangeReason.TAB_ADDED);

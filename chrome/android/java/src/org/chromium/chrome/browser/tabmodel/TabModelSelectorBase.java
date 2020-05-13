@@ -55,7 +55,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         assert mActiveModelIndex != MODEL_NOT_FOUND;
         mTabModelFilterProvider = new TabModelFilterProvider(mTabModels);
 
-        TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
+        TabModelObserver tabModelObserver = new TabModelObserver() {
             @Override
             public void didAddTab(
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {

@@ -786,6 +786,7 @@ interface ImageData
     method getColorSettings
 interface ImageDecoder
     attribute @@toStringTag
+    getter complete
     getter frameCount
     getter repetitionCount
     getter type

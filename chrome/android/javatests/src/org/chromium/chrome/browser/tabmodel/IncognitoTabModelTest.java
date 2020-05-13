@@ -45,7 +45,7 @@ public class IncognitoTabModelTest {
         mTabModel = mActivityTestRule.getActivity().getTabModelSelector().getModel(true);
     }
 
-    private class CloseAllDuringAddTabTabModelObserver extends EmptyTabModelObserver {
+    private class CloseAllDuringAddTabTabModelObserver implements TabModelObserver {
         @Override
         public void willAddTab(Tab tab, @TabLaunchType int type) {
             mTabModel.closeAllTabs();

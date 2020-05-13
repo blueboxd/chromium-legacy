@@ -250,9 +250,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
   void CopyImageAtForTesting(const gfx::Point&) override;
-  void DispatchMessageEventWithOriginCheck(
-      const WebSecurityOrigin& intended_target_origin,
-      const WebDOMMessageEvent&) override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
   void OnPortalActivated(
       const base::UnguessableToken& portal_token,

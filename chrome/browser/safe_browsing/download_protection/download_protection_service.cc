@@ -75,19 +75,6 @@ void AddEventUrlToReferrerChain(const download::DownloadItem& item,
     event_url_entry->add_server_redirect_chain()->set_url(url.spec());
 }
 
-bool MatchesEnterpriseWhitelist(const Profile* profile,
-                                const std::vector<GURL>& url_chain) {
-  if (!profile)
-    return false;
-
-  const PrefService* prefs = profile->GetPrefs();
-  for (const GURL& url : url_chain) {
-    if (IsURLWhitelistedByPolicy(url, *prefs))
-      return true;
-  }
-  return false;
-}
-
 int GetDownloadAttributionUserGestureLimit(const download::DownloadItem& item) {
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(
@@ -179,11 +166,6 @@ bool DownloadProtectionService::IsHashManuallyBlacklisted(
 void DownloadProtectionService::CheckClientDownload(
     download::DownloadItem* item,
     CheckDownloadRepeatingCallback callback) {
-  if (item->GetDangerType() ==
-      download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY) {
-    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
-    return;
-  }
   auto request = std::make_unique<CheckClientDownloadRequest>(
       item, std::move(callback), this, database_manager_,
       binary_feature_extractor_);
@@ -225,12 +207,16 @@ void DownloadProtectionService::CheckDownloadUrl(
       content::DownloadItemUtils::GetWebContents(item);
   // |web_contents| can be null in tests.
   // Checks if this download is whitelisted by enterprise policy.
-  if (web_contents &&
-      MatchesEnterpriseWhitelist(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-          item->GetUrlChain())) {
-    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
-    return;
+  if (web_contents) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    if (profile &&
+        MatchesEnterpriseWhitelist(*profile->GetPrefs(), item->GetUrlChain())) {
+      // We don't return WHITELISTED_BY_POLICY yet, because future deep scanning
+      // operations may indicate the file is unsafe.
+      std::move(callback).Run(DownloadCheckResult::SAFE);
+      return;
+    }
   }
 
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
@@ -276,7 +262,8 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
     CheckDownloadCallback callback) {
   DVLOG(1) << __func__ << " url:" << requestor_url
            << " default_file_path:" << default_file_path.value();
-  if (MatchesEnterpriseWhitelist(profile,
+  if (profile &&
+      MatchesEnterpriseWhitelist(*profile->GetPrefs(),
                                  {requestor_url, initiating_frame_url})) {
     std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
     return;
@@ -295,13 +282,6 @@ void DownloadProtectionService::CheckPPAPIDownloadRequest(
 void DownloadProtectionService::CheckNativeFileSystemWrite(
     std::unique_ptr<content::NativeFileSystemWriteItem> item,
     CheckDownloadCallback callback) {
-  if (MatchesEnterpriseWhitelist(
-          Profile::FromBrowserContext(item->browser_context),
-          {item->frame_url})) {
-    std::move(callback).Run(DownloadCheckResult::WHITELISTED_BY_POLICY);
-    return;
-  }
-
   auto request = std::make_unique<CheckNativeFileSystemWriteRequest>(
       std::move(item), std::move(callback), this, database_manager_,
       binary_feature_extractor_);

@@ -27,6 +27,10 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
+#if !defined(OS_IOS)
+#include "components/autofill/core/browser/payments/internal_authenticator.h"
+#endif
+
 namespace autofill {
 
 // This class is for easier writing of tests.
@@ -49,6 +53,10 @@ class TestAutofillClient : public AutofillClient {
   AddressNormalizer* GetAddressNormalizer() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
+#if !defined(OS_IOS)
+  std::unique_ptr<InternalAuthenticator> CreateCreditCardInternalAuthenticator(
+      content::RenderFrameHost* rfh) override;
+#endif
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,

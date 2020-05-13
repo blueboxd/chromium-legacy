@@ -7,7 +7,6 @@ package org.chromium.components.paintpreview.player.frame;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Handler;
-import android.util.Pair;
 import android.view.View;
 import android.widget.Scroller;
 
@@ -45,10 +44,25 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     /** The content height inside this frame, at a scale factor of 1. */
     private final int mContentHeight;
     /**
-     * A list of {@link PlayerFrameCoordinator}s and {@link Rect}s representing this frame's
-     * sub-frames and their coordinates.
+     * Contains all {@link View}s corresponding to this frame's sub-frames.
      */
-    private final List<Pair<View, Rect>> mSubFrames = new ArrayList<>();
+    private final List<View> mSubFrameViews = new ArrayList<>();
+    /**
+     * Contains all clip rects corresponding to this frame's sub-frames.
+     */
+    private final List<Rect> mSubFrameRects = new ArrayList<>();
+    /**
+     * Contains scaled clip rects corresponding to this frame's sub-frames.
+     */
+    private final List<Rect> mSubFrameScaledRects = new ArrayList<>();
+    /**
+     * Contains views for currently visible sub-frames according to {@link #mViewPort}.
+     */
+    private final List<View> mVisibleSubFrameViews = new ArrayList<>();
+    /**
+     * Contains scaled clip rects for currently visible sub-frames according to {@link #mViewPort}.
+     */
+    private final List<Rect> mVisibleSubFrameScaledRects = new ArrayList<>();
     private final PropertyModel mModel;
     private final PlayerCompositorDelegate mCompositorDelegate;
     private final Scroller mScroller;
@@ -78,6 +92,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             Scroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight) {
         mModel = model;
+        mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mVisibleSubFrameViews);
+        mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mVisibleSubFrameScaledRects);
+
         mCompositorDelegate = compositorDelegate;
         mScroller = scroller;
         mGuid = frameGuid;
@@ -92,7 +109,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
      * @param clipRect     The bounds of the sub-frame, relative to this frame.
      */
     void addSubFrame(View subFrameView, Rect clipRect) {
-        mSubFrames.add(new Pair<>(subFrameView, clipRect));
+        mSubFrameViews.add(subFrameView);
+        mSubFrameRects.add(clipRect);
+        mSubFrameScaledRects.add(new Rect());
     }
 
     @Override
@@ -147,6 +166,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         // Update mViewportRect and let the view know. PropertyModelChangeProcessor is smart about
         // this and will only update the view if mViewportRect is actually changed.
         mViewportRect.offset(distanceX, distanceY);
+        updateSubFrames();
         mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, tileDimensions);
         mModel.set(PlayerFrameProperties.VIEWPORT, mViewportRect);
 
@@ -181,17 +201,31 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
                 requestBitmapForAdjacentTiles(tileWidth, tileHeight, row, col, scaleFactor);
             }
         }
+    }
 
-        // Add visible sub-frames to the view.
-        List<Pair<View, Rect>> visibleSubFrames = new ArrayList<>();
-        for (int i = 0; i < mSubFrames.size(); i++) {
-            // TODO(crbug.com/1020702): These values should be scaled for scale factors other than
-            // 1.
-            if (Rect.intersects(mSubFrames.get(i).second, mViewportRect)) {
-                visibleSubFrames.add(mSubFrames.get(i));
+    private void updateSubFrames() {
+        mVisibleSubFrameViews.clear();
+        mVisibleSubFrameScaledRects.clear();
+        for (int i = 0; i < mSubFrameRects.size(); i++) {
+            Rect subFrameScaledRect = mSubFrameScaledRects.get(i);
+            scaleRect(mSubFrameRects.get(i), subFrameScaledRect, mScaleFactor);
+            if (Rect.intersects(subFrameScaledRect, mViewportRect)) {
+                int transformedLeft = subFrameScaledRect.left - mViewportRect.left;
+                int transformedTop = subFrameScaledRect.top - mViewportRect.top;
+                subFrameScaledRect.set(transformedLeft, transformedTop,
+                        transformedLeft + subFrameScaledRect.width(),
+                        transformedTop + subFrameScaledRect.height());
+                mVisibleSubFrameViews.add(mSubFrameViews.get(i));
+                mVisibleSubFrameScaledRects.add(subFrameScaledRect);
             }
         }
-        mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, visibleSubFrames);
+    }
+
+    private void scaleRect(Rect inRect, Rect outRect, float scaleFactor) {
+        outRect.set((int) (((float) inRect.left) * scaleFactor),
+                (int) (((float) inRect.top) * scaleFactor),
+                (int) (((float) inRect.right) * scaleFactor),
+                (int) (((float) inRect.bottom) * scaleFactor));
     }
 
     private void requestBitmapForAdjacentTiles(
@@ -299,7 +333,11 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     @Override
     public void onClick(int x, int y) {
-        mCompositorDelegate.onClick(mGuid, mViewportRect.left + x, mViewportRect.top + y);
+        // x and y are in the View's coordinate system (scaled). This needs to be adjusted to the
+        // absolute coordinate system for hit testing.
+        mCompositorDelegate.onClick(mGuid,
+                Math.round((float) (mViewportRect.left + x) / mScaleFactor),
+                Math.round((float) (mViewportRect.top + y) / mScaleFactor));
     }
 
     @Override

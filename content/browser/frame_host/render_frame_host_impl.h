@@ -403,17 +403,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // BrowserAccessibilityDelegate
   void AccessibilityPerformAction(const ui::AXActionData& data) override;
-  bool AccessibilityViewHasFocus() const override;
+  bool AccessibilityViewHasFocus() override;
   void AccessibilityViewSetFocus() override;
-  gfx::Rect AccessibilityGetViewBounds() const override;
-  float AccessibilityGetDeviceScaleFactor() const override;
+  gfx::Rect AccessibilityGetViewBounds() override;
+  float AccessibilityGetDeviceScaleFactor() override;
   void AccessibilityFatalError() override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override;
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
   WebContents* AccessibilityWebContents() override;
-  bool AccessibilityIsMainFrame() const override;
+  bool AccessibilityIsMainFrame() override;
 
   // RenderProcessHostObserver implementation.
   void RenderProcessExited(RenderProcessHost* host,
@@ -1174,10 +1174,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
       CommitCallbackInterceptor* interceptor);
 
   // Posts a message from a frame in another process to the current renderer.
-  void PostMessageEvent(int32_t source_routing_id,
-                        const base::string16& source_origin,
-                        const base::string16& target_origin,
-                        blink::TransferableMessage message);
+  void PostMessageEvent(
+      const base::Optional<base::UnguessableToken>& source_token,
+      const base::string16& source_origin,
+      const base::string16& target_origin,
+      blink::TransferableMessage message);
 
   // Requests to swap the current frame into the frame tree, replacing the
   // RenderFrameProxy it is associated with.

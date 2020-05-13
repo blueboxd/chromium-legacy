@@ -29,9 +29,9 @@ class SharedResourcesDataSource : public URLDataSource {
   bool ShouldServeMimeTypeAsContentTypeHeader() override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) override;
+  std::string GetContentSecurityPolicyWorkerSrc() override;
 #if defined(OS_CHROMEOS)
   void DisablePolymer2ForHost(const std::string& host) override;
-  std::string GetContentSecurityPolicyWorkerSrc() override;
 #endif  // defined (OS_CHROMEOS)
 
  private:

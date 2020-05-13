@@ -49,6 +49,41 @@ static_assert(
 
 namespace {
 
+static int g_get_for_dereference_cnt = INT_MIN;
+static int g_get_for_extraction_cnt = INT_MIN;
+static int g_get_for_comparison_cnt = INT_MIN;
+
+static void ClearCounters() {
+  g_get_for_dereference_cnt = 0;
+  g_get_for_extraction_cnt = 0;
+  g_get_for_comparison_cnt = 0;
+}
+
+struct CheckedPtrCountingNoOpImpl : base::internal::CheckedPtrNoOpImpl {
+  using Super = base::internal::CheckedPtrNoOpImpl;
+
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
+      uintptr_t wrapped_ptr) {
+    ++g_get_for_dereference_cnt;
+    return Super::SafelyUnwrapPtrForDereference(wrapped_ptr);
+  }
+
+  static ALWAYS_INLINE void* SafelyUnwrapPtrForExtraction(
+      uintptr_t wrapped_ptr) {
+    ++g_get_for_extraction_cnt;
+    return Super::SafelyUnwrapPtrForExtraction(wrapped_ptr);
+  }
+
+  static ALWAYS_INLINE void* UnsafelyUnwrapPtrForComparison(
+      uintptr_t wrapped_ptr) {
+    ++g_get_for_comparison_cnt;
+    return Super::UnsafelyUnwrapPtrForComparison(wrapped_ptr);
+  }
+};
+
+template <typename T>
+using CountingCheckedPtr = CheckedPtr<T, CheckedPtrCountingNoOpImpl>;
+
 struct MyStruct {
   int x;
 };
@@ -145,50 +180,135 @@ TEST(CheckedPtr, OperatorNE) {
 }
 
 TEST(CheckedPtr, OperatorEQCast) {
+  ClearCounters();
   int foo = 42;
-  CheckedPtr<int> int_ptr = &foo;
-  CheckedPtr<void> void_ptr = &foo;
-  EXPECT_TRUE(int_ptr == int_ptr);
-  EXPECT_TRUE(void_ptr == void_ptr);
-  EXPECT_TRUE(int_ptr == void_ptr);
-  EXPECT_TRUE(void_ptr == int_ptr);
+  const int* raw_int_ptr = &foo;
+  void* raw_void_ptr = &foo;
+  CountingCheckedPtr<int> checked_int_ptr = &foo;
+  CountingCheckedPtr<const void> checked_void_ptr = &foo;
+  EXPECT_TRUE(checked_int_ptr == checked_int_ptr);
+  EXPECT_TRUE(checked_int_ptr == raw_int_ptr);
+  EXPECT_TRUE(raw_int_ptr == checked_int_ptr);
+  EXPECT_TRUE(checked_void_ptr == checked_void_ptr);
+  EXPECT_TRUE(checked_void_ptr == raw_void_ptr);
+  EXPECT_TRUE(raw_void_ptr == checked_void_ptr);
+  EXPECT_TRUE(checked_int_ptr == checked_void_ptr);
+  EXPECT_TRUE(checked_int_ptr == raw_void_ptr);
+  EXPECT_TRUE(raw_int_ptr == checked_void_ptr);
+  EXPECT_TRUE(checked_void_ptr == checked_int_ptr);
+  EXPECT_TRUE(checked_void_ptr == raw_int_ptr);
+  EXPECT_TRUE(raw_void_ptr == checked_int_ptr);
+  // Make sure that all cases are handled by operator== (faster) and none by the
+  // cast operator (slower).
+  EXPECT_EQ(g_get_for_comparison_cnt, 16);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 
+  ClearCounters();
   Derived derived_val(42, 84, 1024);
-  CheckedPtr<Derived> derived_ptr = &derived_val;
-  CheckedPtr<Base1> base1_ptr = &derived_val;
-  CheckedPtr<Base2> base2_ptr = &derived_val;
-  EXPECT_TRUE(derived_ptr == derived_ptr);
-  EXPECT_TRUE(derived_ptr == base1_ptr);
-  EXPECT_TRUE(base1_ptr == derived_ptr);
+  Derived* raw_derived_ptr = &derived_val;
+  const Base1* raw_base1_ptr = &derived_val;
+  Base2* raw_base2_ptr = &derived_val;
+  CountingCheckedPtr<const Derived> checked_derived_ptr = &derived_val;
+  CountingCheckedPtr<Base1> checked_base1_ptr = &derived_val;
+  CountingCheckedPtr<const Base2> checked_base2_ptr = &derived_val;
+  EXPECT_TRUE(checked_derived_ptr == checked_derived_ptr);
+  EXPECT_TRUE(checked_derived_ptr == raw_derived_ptr);
+  EXPECT_TRUE(raw_derived_ptr == checked_derived_ptr);
+  EXPECT_TRUE(checked_derived_ptr == checked_base1_ptr);
+  EXPECT_TRUE(checked_derived_ptr == raw_base1_ptr);
+  EXPECT_TRUE(raw_derived_ptr == checked_base1_ptr);
+  EXPECT_TRUE(checked_base1_ptr == checked_derived_ptr);
+  EXPECT_TRUE(checked_base1_ptr == raw_derived_ptr);
+  EXPECT_TRUE(raw_base1_ptr == checked_derived_ptr);
   // |base2_ptr| points to the second base class of |derived|, so will be
   // located at an offset. While the stored raw uinptr_t values shouldn't match,
   // ensure that the internal pointer manipulation correctly offsets when
   // casting up and down the class hierarchy.
-  EXPECT_NE(reinterpret_cast<uintptr_t>(base2_ptr.get()),
-            reinterpret_cast<uintptr_t>(derived_ptr.get()));
-  EXPECT_TRUE(derived_ptr == base2_ptr);
-  EXPECT_TRUE(base2_ptr == derived_ptr);
+  EXPECT_NE(reinterpret_cast<uintptr_t>(checked_base2_ptr.get()),
+            reinterpret_cast<uintptr_t>(checked_derived_ptr.get()));
+  EXPECT_NE(reinterpret_cast<uintptr_t>(raw_base2_ptr),
+            reinterpret_cast<uintptr_t>(checked_derived_ptr.get()));
+  EXPECT_NE(reinterpret_cast<uintptr_t>(checked_base2_ptr.get()),
+            reinterpret_cast<uintptr_t>(raw_derived_ptr));
+  EXPECT_TRUE(checked_derived_ptr == checked_base2_ptr);
+  EXPECT_TRUE(checked_derived_ptr == raw_base2_ptr);
+  EXPECT_TRUE(raw_derived_ptr == checked_base2_ptr);
+  EXPECT_TRUE(checked_base2_ptr == checked_derived_ptr);
+  EXPECT_TRUE(checked_base2_ptr == raw_derived_ptr);
+  EXPECT_TRUE(raw_base2_ptr == checked_derived_ptr);
+  // Make sure that all cases are handled by operator== (faster) and none by the
+  // cast operator (slower).
+  // The 4 extractions come from .get() checks, that compare raw addresses.
+  EXPECT_EQ(g_get_for_comparison_cnt, 20);
+  EXPECT_EQ(g_get_for_extraction_cnt, 4);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
 TEST(CheckedPtr, OperatorNECast) {
+  ClearCounters();
   int foo = 42;
-  CheckedPtr<int> int_ptr = &foo;
-  CheckedPtr<void> void_ptr = &foo;
-  EXPECT_FALSE(int_ptr != void_ptr);
-  EXPECT_FALSE(void_ptr != int_ptr);
+  int* raw_int_ptr = &foo;
+  const void* raw_void_ptr = &foo;
+  CountingCheckedPtr<const int> checked_int_ptr = &foo;
+  CountingCheckedPtr<void> checked_void_ptr = &foo;
+  EXPECT_FALSE(checked_int_ptr != checked_int_ptr);
+  EXPECT_FALSE(checked_int_ptr != raw_int_ptr);
+  EXPECT_FALSE(raw_int_ptr != checked_int_ptr);
+  EXPECT_FALSE(checked_void_ptr != checked_void_ptr);
+  EXPECT_FALSE(checked_void_ptr != raw_void_ptr);
+  EXPECT_FALSE(raw_void_ptr != checked_void_ptr);
+  EXPECT_FALSE(checked_int_ptr != checked_void_ptr);
+  EXPECT_FALSE(checked_int_ptr != raw_void_ptr);
+  EXPECT_FALSE(raw_int_ptr != checked_void_ptr);
+  EXPECT_FALSE(checked_void_ptr != checked_int_ptr);
+  EXPECT_FALSE(checked_void_ptr != raw_int_ptr);
+  EXPECT_FALSE(raw_void_ptr != checked_int_ptr);
+  // Make sure that all cases are handled by operator== (faster) and none by the
+  // cast operator (slower).
+  EXPECT_EQ(g_get_for_comparison_cnt, 16);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 
+  ClearCounters();
   Derived derived_val(42, 84, 1024);
-  CheckedPtr<Derived> derived_ptr = &derived_val;
-  CheckedPtr<Base1> base1_ptr = &derived_val;
-  CheckedPtr<Base2> base2_ptr = &derived_val;
-  EXPECT_FALSE(derived_ptr != base1_ptr);
-  EXPECT_FALSE(base1_ptr != derived_ptr);
-  // base2_ptr is pointing in the middle of derived_ptr, thus having a different
-  // underlying address. Yet, they still should be equal.
-  EXPECT_EQ(reinterpret_cast<uintptr_t>(base2_ptr.get()),
-            reinterpret_cast<uintptr_t>(derived_ptr.get()) + 4);
-  EXPECT_FALSE(derived_ptr != base2_ptr);
-  EXPECT_FALSE(base2_ptr != derived_ptr);
+  const Derived* raw_derived_ptr = &derived_val;
+  Base1* raw_base1_ptr = &derived_val;
+  const Base2* raw_base2_ptr = &derived_val;
+  CountingCheckedPtr<Derived> checked_derived_ptr = &derived_val;
+  CountingCheckedPtr<const Base1> checked_base1_ptr = &derived_val;
+  CountingCheckedPtr<Base2> checked_base2_ptr = &derived_val;
+  EXPECT_FALSE(checked_derived_ptr != checked_derived_ptr);
+  EXPECT_FALSE(checked_derived_ptr != raw_derived_ptr);
+  EXPECT_FALSE(raw_derived_ptr != checked_derived_ptr);
+  EXPECT_FALSE(checked_derived_ptr != checked_base1_ptr);
+  EXPECT_FALSE(checked_derived_ptr != raw_base1_ptr);
+  EXPECT_FALSE(raw_derived_ptr != checked_base1_ptr);
+  EXPECT_FALSE(checked_base1_ptr != checked_derived_ptr);
+  EXPECT_FALSE(checked_base1_ptr != raw_derived_ptr);
+  EXPECT_FALSE(raw_base1_ptr != checked_derived_ptr);
+  // |base2_ptr| points to the second base class of |derived|, so will be
+  // located at an offset. While the stored raw uinptr_t values shouldn't match,
+  // ensure that the internal pointer manipulation correctly offsets when
+  // casting up and down the class hierarchy.
+  EXPECT_NE(reinterpret_cast<uintptr_t>(checked_base2_ptr.get()),
+            reinterpret_cast<uintptr_t>(checked_derived_ptr.get()));
+  EXPECT_NE(reinterpret_cast<uintptr_t>(raw_base2_ptr),
+            reinterpret_cast<uintptr_t>(checked_derived_ptr.get()));
+  EXPECT_NE(reinterpret_cast<uintptr_t>(checked_base2_ptr.get()),
+            reinterpret_cast<uintptr_t>(raw_derived_ptr));
+  EXPECT_FALSE(checked_derived_ptr != checked_base2_ptr);
+  EXPECT_FALSE(checked_derived_ptr != raw_base2_ptr);
+  EXPECT_FALSE(raw_derived_ptr != checked_base2_ptr);
+  EXPECT_FALSE(checked_base2_ptr != checked_derived_ptr);
+  EXPECT_FALSE(checked_base2_ptr != raw_derived_ptr);
+  EXPECT_FALSE(raw_base2_ptr != checked_derived_ptr);
+  // Make sure that all cases are handled by operator== (faster) and none by the
+  // cast operator (slower).
+  // The 4 extractions come from .get() checks, that compare raw addresses.
+  EXPECT_EQ(g_get_for_comparison_cnt, 20);
+  EXPECT_EQ(g_get_for_extraction_cnt, 4);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
 TEST(CheckedPtr, Cast) {

@@ -104,7 +104,7 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.browser.toolbar.top.CustomTabToolbar;
@@ -1167,7 +1167,7 @@ public class CustomTabActivityTest {
 
         final CallbackHelper openTabHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            tabSelector.getModel(false).addObserver(new EmptyTabModelObserver() {
+            tabSelector.getModel(false).addObserver(new TabModelObserver() {
                 @Override
                 public void didAddTab(
                         Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {

@@ -55,6 +55,7 @@ class CheckNativeFileSystemWriteRequest
       DownloadCheckResultReason reason) const override;
   void NotifyRequestFinished(DownloadCheckResult result,
                              DownloadCheckResultReason reason) override;
+  bool IsWhitelistedByPolicy() const override;
 
   const std::unique_ptr<content::NativeFileSystemWriteItem> item_;
   std::unique_ptr<ReferrerChainData> referrer_chain_data_;

@@ -343,12 +343,12 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
           media::kMemoryPressureBasedSourceBufferGC,
           "enable_instant_source_buffer_gc", false);
 
-  std::unique_ptr<BatchingMediaLog::EventHandler> event_handler;
+  std::vector<std::unique_ptr<BatchingMediaLog::EventHandler>> handlers;
+  handlers.push_back(std::make_unique<RenderMediaEventHandler>());
+
   if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
-    event_handler =
-        std::make_unique<InspectorMediaEventHandler>(inspector_context);
-  } else {
-    event_handler = std::make_unique<RenderMediaEventHandler>();
+    handlers.push_back(
+        std::make_unique<InspectorMediaEventHandler>(inspector_context));
   }
 
   // This must be created for every new WebMediaPlayer, each instance generates
@@ -356,7 +356,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   auto media_log = std::make_unique<BatchingMediaLog>(
       url::Origin(security_origin).GetURL(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
-      std::move(event_handler));
+      std::move(handlers));
 
   base::WeakPtr<media::MediaObserver> media_observer;
   auto factory_selector = CreateRendererFactorySelector(
@@ -622,12 +622,12 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
   scoped_refptr<base::SingleThreadTaskRunner>
       video_frame_compositor_task_runner;
 
-  std::unique_ptr<BatchingMediaLog::EventHandler> event_handler;
+  std::vector<std::unique_ptr<BatchingMediaLog::EventHandler>> handlers;
+  handlers.push_back(std::make_unique<RenderMediaEventHandler>());
+
   if (base::FeatureList::IsEnabled(media::kMediaInspectorLogging)) {
-    event_handler =
-        std::make_unique<InspectorMediaEventHandler>(inspector_context);
-  } else {
-    event_handler = std::make_unique<RenderMediaEventHandler>();
+    handlers.push_back(
+        std::make_unique<InspectorMediaEventHandler>(inspector_context));
   }
 
   // This must be created for every new WebMediaPlayer, each instance generates
@@ -635,7 +635,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
   auto media_log = std::make_unique<BatchingMediaLog>(
       url::Origin(security_origin).GetURL(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
-      std::move(event_handler));
+      std::move(handlers));
 
   std::unique_ptr<blink::WebVideoFrameSubmitter> submitter = CreateSubmitter(
       &video_frame_compositor_task_runner, settings, media_log.get());

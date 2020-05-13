@@ -1031,6 +1031,8 @@ static_library("browser") {
     "page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h",
     "page_load_metrics/observers/ad_metrics/frame_data.cc",
     "page_load_metrics/observers/ad_metrics/frame_data.h",
+    "page_load_metrics/observers/ad_metrics/page_ad_density_tracker.cc",
+    "page_load_metrics/observers/ad_metrics/page_ad_density_tracker.h",
     "page_load_metrics/observers/amp_page_load_metrics_observer.cc",
     "page_load_metrics/observers/amp_page_load_metrics_observer.h",
     "page_load_metrics/observers/data_saver_site_breakdown_metrics_observer.cc",

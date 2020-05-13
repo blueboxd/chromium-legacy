@@ -243,10 +243,6 @@ class CC_EXPORT InputHandler {
   // Returns true if there is an active scroll on the viewport.
   virtual bool IsCurrentlyScrollingViewport() const = 0;
 
-  // Whether the layer under |viewport_point| is the currently scrolling layer.
-  virtual bool IsCurrentlyScrollingLayerAt(
-      const gfx::Point& viewport_point) const = 0;
-
   virtual EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const = 0;
 

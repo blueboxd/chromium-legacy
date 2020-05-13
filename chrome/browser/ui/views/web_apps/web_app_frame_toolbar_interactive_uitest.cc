@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_test_mixin.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -89,6 +90,12 @@ IN_PROC_BROWSER_TEST_P(WebAppFrameToolbarInteractiveUITest, CycleFocus) {
   }
   focus_manager->AdvanceFocus(true);
   EXPECT_EQ(focus_manager->GetFocusedView()->GetID(), VIEW_ID_RELOAD_BUTTON);
+
+  // Test that back button is enabled after navigating to another page
+  const GURL another_url("https://anothertest.org");
+  web_app::NavigateToURLAndWait(app_browser(), another_url);
+  app_browser()->command_controller()->ExecuteCommand(IDC_FOCUS_TOOLBAR);
+  EXPECT_EQ(focus_manager->GetFocusedView()->GetID(), VIEW_ID_BACK_BUTTON);
 }
 
 INSTANTIATE_TEST_SUITE_P(ExtensionsToolbarMenu,

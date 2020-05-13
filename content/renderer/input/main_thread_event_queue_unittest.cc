@@ -160,7 +160,7 @@ class HandledEventCallbackTracker {
   void DidHandleEvent(size_t index,
                       blink::mojom::InputEventResultState ack_result,
                       const ui::LatencyInfo& latency,
-                      std::unique_ptr<ui::DidOverscrollParams> params,
+                      blink::mojom::DidOverscrollParamsPtr params,
                       base::Optional<cc::TouchAction> touch_action) {
     callbacks_received_[index] = ReceivedCallback(
         handling_event_ ? CallbackReceivedState::kCalledWhileHandlingEvent

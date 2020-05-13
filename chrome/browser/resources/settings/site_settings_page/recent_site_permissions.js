@@ -16,7 +16,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
-import {AllSitesAction, ContentSetting, SiteSettingSource} from '../site_settings/constants.js';
+import {AllSitesAction, ContentSetting, ContentSettingsTypes, SiteSettingSource} from '../site_settings/constants.js';
 import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.js';
 import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
@@ -113,65 +113,65 @@ Polymer({
    */
   getI18nContentTypeString_(contentSettingsType) {
     switch (contentSettingsType) {
-      case 'cookies':
+      case ContentSettingsTypes.COOKIES:
         return this.i18n('siteSettingsCookies');
-      case 'images':
+      case ContentSettingsTypes.IMAGES:
         return this.i18n('siteSettingsImages');
-      case 'javascript':
+      case ContentSettingsTypes.JAVASCRIPT:
         return this.i18n('siteSettingsJavascript');
-      case 'sound':
+      case ContentSettingsTypes.SOUND:
         return this.i18n('siteSettingsSound');
-      case 'popups':
+      case ContentSettingsTypes.POPUPS:
         return this.i18n('siteSettingsPopups');
-      case 'location':
+      case ContentSettingsTypes.GEOLOCATION:
         return this.i18n('siteSettingsLocation');
-      case 'notifications':
+      case ContentSettingsTypes.NOTIFICATIONS:
         return this.i18n('siteSettingsNotifications');
-      case 'media-stream-mic':
+      case ContentSettingsTypes.MIC:
         return this.i18n('siteSettingsMic');
-      case 'media-stream-camera':
+      case ContentSettingsTypes.CAMERA:
         return this.i18n('siteSettingsCamera');
-      case 'register-protocol-handler':
+      case ContentSettingsTypes.PROTOCOL_HANDLERS:
         return this.i18n('siteSettingsHandlers');
-      case 'ppapi-broker':
+      case ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return this.i18n('siteSettingsUnsandboxedPlugins');
-      case 'multiple-automatic-downloads':
+      case ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
         return this.i18n('siteSettingsAutomaticDownloads');
-      case 'background-sync':
+      case ContentSettingsTypes.BACKGROUND_SYNC:
         return this.i18n('siteSettingsBackgroundSync');
-      case 'midi-sysex':
+      case ContentSettingsTypes.MIDI_DEVICES:
         return this.i18n('siteSettingsMidiDevices');
-      case 'usb-devices':
+      case ContentSettingsTypes.USB_DEVICES:
         return this.i18n('siteSettingsUsbDevices');
-      case 'serial-ports':
+      case ContentSettingsTypes.SERIAL_PORTS:
         return this.i18n('siteSettingsSerialPorts');
-      case 'bluetooth-devices':
+      case ContentSettingsTypes.BLUETOOTH_DEVICES:
         return this.i18n('siteSettingsBluetoothDevices');
-      case 'zoom-levels':
+      case ContentSettingsTypes.ZOOM_LEVELS:
         return this.i18n('siteSettingsZoomLevels');
-      case 'protected-content':
+      case ContentSettingsTypes.PROTECTED_CONTENT:
         return this.i18n('siteSettingsProtectedContent');
-      case 'ads':
+      case ContentSettingsTypes.ADS:
         return this.i18n('siteSettingsAds');
-      case 'clipboard':
+      case ContentSettingsTypes.CLIPBOARD:
         return this.i18n('siteSettingsClipboard');
-      case 'sensors':
+      case ContentSettingsTypes.SENSORS:
         return this.i18n('siteSettingsSensors');
-      case 'payment-handler':
+      case ContentSettingsTypes.PAYMENT_HANDLER:
         return this.i18n('siteSettingsPaymentHandler');
-      case 'mixed-script':
+      case ContentSettingsTypes.MIXEDSCRIPT:
         return this.i18n('siteSettingsInsecureContent');
-      case 'bluetooth-scanning':
+      case ContentSettingsTypes.BLUETOOTH_SCANNING:
         return this.i18n('siteSettingsBluetoothScanning');
-      case 'native-file-system-write':
+      case ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
         return this.i18n('siteSettingsNativeFileSystemWrite');
-      case 'hid-devices':
+      case ContentSettingsTypes.HID_DEVICES:
         return this.i18n('siteSettingsHidDevices');
-      case 'ar':
+      case ContentSettingsTypes.AR:
         return this.i18n('siteSettingsAr');
-      case 'vr':
+      case ContentSettingsTypes.VR:
         return this.i18n('siteSettingsVr');
-      case 'window-placement':
+      case ContentSettingsTypes.WINDOW_PLACEMENT:
         return this.i18n('siteSettingsWindowPlacement');
       default:
         return '';

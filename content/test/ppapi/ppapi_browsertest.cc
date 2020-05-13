@@ -123,6 +123,8 @@ TEST_PPAPI_OUT_OF_PROCESS(MessageHandler)
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Basics)
 TEST_PPAPI_OUT_OF_PROCESS(MessageLoop_Post)
 
+TEST_PPAPI_OUT_OF_PROCESS(NetworkProxy)
+
 // TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
 // http://crbug.com/89961

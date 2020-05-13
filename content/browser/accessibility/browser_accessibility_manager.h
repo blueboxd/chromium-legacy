@@ -86,10 +86,10 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
 
   virtual void AccessibilityPerformAction(const ui::AXActionData& data) = 0;
-  virtual bool AccessibilityViewHasFocus() const = 0;
+  virtual bool AccessibilityViewHasFocus() = 0;
   virtual void AccessibilityViewSetFocus() = 0;
-  virtual gfx::Rect AccessibilityGetViewBounds() const = 0;
-  virtual float AccessibilityGetDeviceScaleFactor() const = 0;
+  virtual gfx::Rect AccessibilityGetViewBounds() = 0;
+  virtual float AccessibilityGetDeviceScaleFactor() = 0;
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
@@ -99,7 +99,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
 
   // Returns true if this delegate represents the main (topmost) frame in a
   // tree of frames.
-  virtual bool AccessibilityIsMainFrame() const = 0;
+  virtual bool AccessibilityIsMainFrame() = 0;
 };
 
 // This is all of the information about the current find in page result,
@@ -345,7 +345,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   BrowserAccessibility* GetActiveDescendant(BrowserAccessibility* focus) const;
 
   // Returns true if native focus is anywhere in this WebContents or not.
-  bool NativeViewHasFocus() const;
+  bool NativeViewHasFocus();
 
   // True by default, but some platforms want to treat the root
   // scroll offsets separately.

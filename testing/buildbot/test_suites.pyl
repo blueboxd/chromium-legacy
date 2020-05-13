@@ -1311,6 +1311,9 @@
         ],
       },
       'net_unittests': {
+        'swarming': {
+          'shards': 4,
+        },
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter',
         ],
@@ -1946,6 +1949,7 @@
           '--test-launcher-retry-limit=0',
           '--no-use-spvc',
           '--no-use-spvc-parser',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -1955,6 +1959,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--skip-validation',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -1963,6 +1968,7 @@
           '--use-gpu-in-tests',
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
       },
       'dawn_end2end_use_spvc_parser_tests': {
@@ -1972,6 +1978,7 @@
           '--test-launcher-retry-limit=0',
           '--use-spvc',
           '--use-spvc-parser',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -1982,6 +1989,7 @@
           '--test-launcher-retry-limit=0',
           '--use-spvc',
           '--no-use-spvc-parser',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -1991,6 +1999,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--enable-backend-validation',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2000,6 +2009,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--use-wire',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2015,6 +2025,7 @@
           '--test-launcher-retry-limit=0',
           '--no-use-spvc',
           '--no-use-spvc-parser',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2024,6 +2035,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--skip-validation',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2032,6 +2044,7 @@
           '--use-gpu-in-tests',
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
       },
       'dawn_end2end_use_spvc_parser_tests': {
@@ -2041,6 +2054,7 @@
           '--test-launcher-retry-limit=0',
           '--use-spvc',
           '--use-spvc-parser',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2051,6 +2065,7 @@
           '--test-launcher-retry-limit=0',
           '--use-spvc',
           '--no-use-spvc-parser',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2060,6 +2075,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--enable-backend-validation',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2069,6 +2085,7 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--use-wire',
+          '--exclusive-device-type-preference=discrete,integrated',
         ],
         'test': 'dawn_end2end_tests',
       },

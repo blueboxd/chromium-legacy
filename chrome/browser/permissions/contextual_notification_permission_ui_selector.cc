@@ -61,6 +61,7 @@ base::Optional<UiToUse> GetUiToUseBasedOnSiteReputation(
       return UiToUse::kNormalUi;
     case CrowdDenyPreloadData::SiteReputation::UNSOLICITED_PROMPTS:
       return UiToUse::kQuietUi;
+    case CrowdDenyPreloadData::SiteReputation::ABUSIVE_PROMPTS:
     case CrowdDenyPreloadData::SiteReputation::UNKNOWN:
       return base::nullopt;
   }

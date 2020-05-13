@@ -9132,7 +9132,7 @@ interface XRInputSourcesChangeEvent : Event
     getter removed
     getter session
     method constructor
-interface XRLayer
+interface XRLayer : EventTarget
     attribute @@toStringTag
     method constructor
 interface XRPose

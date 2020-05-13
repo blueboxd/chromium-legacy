@@ -22,7 +22,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -60,10 +59,11 @@
 
 using testing::_;
 
-namespace ui {
+namespace blink {
+namespace mojom {
 
-bool operator==(const ui::DidOverscrollParams& lhs,
-                const ui::DidOverscrollParams& rhs) {
+bool operator==(const DidOverscrollParams& lhs,
+                const DidOverscrollParams& rhs) {
   return lhs.accumulated_overscroll == rhs.accumulated_overscroll &&
          lhs.latest_overscroll_delta == rhs.latest_overscroll_delta &&
          lhs.current_fling_velocity == rhs.current_fling_velocity &&
@@ -71,7 +71,8 @@ bool operator==(const ui::DidOverscrollParams& lhs,
          lhs.overscroll_behavior == rhs.overscroll_behavior;
 }
 
-}  // namespace ui
+}  // namespace mojom
+}  // namespace blink
 
 namespace cc {
 class AnimationHost;
@@ -106,7 +107,7 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
                     uint32_t,
                     blink::mojom::InputEventResultState));
 
-  MOCK_METHOD1(DidOverscroll, void(const ui::DidOverscrollParams&));
+  MOCK_METHOD1(DidOverscroll, void(blink::mojom::DidOverscrollParamsPtr));
 
   MOCK_METHOD0(DidStopFlinging, void());
 
@@ -150,7 +151,7 @@ class MockHandledEventCallback {
   MOCK_METHOD4_T(Run,
                  void(blink::mojom::InputEventResultState,
                       const ui::LatencyInfo&,
-                      std::unique_ptr<ui::DidOverscrollParams>&,
+                      blink::mojom::DidOverscrollParams* overscroll,
                       base::Optional<cc::TouchAction>));
 
   HandledEventCallback GetCallback() {
@@ -161,9 +162,9 @@ class MockHandledEventCallback {
  private:
   void HandleCallback(blink::mojom::InputEventResultState ack_state,
                       const ui::LatencyInfo& latency_info,
-                      std::unique_ptr<ui::DidOverscrollParams> overscroll,
+                      blink::mojom::DidOverscrollParamsPtr overscroll,
                       base::Optional<cc::TouchAction> touch_action) {
-    Run(ack_state, latency_info, overscroll, touch_action);
+    Run(ack_state, latency_info, overscroll.get(), touch_action);
   }
 
   DISALLOW_COPY_AND_ASSIGN(MockHandledEventCallback);
@@ -448,7 +449,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {
   scroll.data.scroll_update.delta_y = 10;
   MockHandledEventCallback handled_event;
 
-  ui::DidOverscrollParams expected_overscroll;
+  blink::mojom::DidOverscrollParams expected_overscroll;
   expected_overscroll.latest_overscroll_delta = gfx::Vector2dF(0, 10);
   expected_overscroll.accumulated_overscroll = gfx::Vector2dF(0, 10);
   expected_overscroll.causal_event_viewport_point = gfx::PointF(-10, 0);

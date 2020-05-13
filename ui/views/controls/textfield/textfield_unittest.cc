@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
 #include "base/pickle.h"
@@ -53,6 +54,7 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_utils.h"
 #include "url/gurl.h"
@@ -778,6 +780,19 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   // Textfield does not listen to OnMouseMoved, so this function does not send
   // an event when it updates the cursor position.
   void MoveMouseTo(const gfx::Point& where) { mouse_position_ = where; }
+
+  // Tap on the textfield.
+  void TapAtCursor(ui::EventPointerType pointer_type) {
+    ui::GestureEventDetails tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+    tap_down_details.set_primary_pointer_type(pointer_type);
+    GestureEventForTest tap_down(GetCursorPositionX(0), 0, tap_down_details);
+    textfield_->OnGestureEvent(&tap_down);
+
+    ui::GestureEventDetails tap_up_details(ui::ET_GESTURE_TAP);
+    tap_up_details.set_primary_pointer_type(pointer_type);
+    GestureEventForTest tap_up(GetCursorPositionX(0), 0, tap_up_details);
+    textfield_->OnGestureEvent(&tap_up);
+  }
 
   // We need widget to populate wrapper class.
   Widget* widget_ = nullptr;
@@ -3741,11 +3756,7 @@ TEST_F(TextfieldTest, FocusReasonTouchTap) {
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
             textfield_->GetFocusReason());
 
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
-  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
-  textfield_->OnGestureEvent(&tap);
-
+  TapAtCursor(ui::EventPointerType::kTouch);
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_TOUCH,
             textfield_->GetFocusReason());
 }
@@ -3756,11 +3767,7 @@ TEST_F(TextfieldTest, FocusReasonPenTap) {
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
             textfield_->GetFocusReason());
 
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
-  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
-  textfield_->OnGestureEvent(&tap);
-
+  TapAtCursor(ui::EventPointerType::kPen);
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_PEN,
             textfield_->GetFocusReason());
 }
@@ -3771,21 +3778,8 @@ TEST_F(TextfieldTest, FocusReasonMultipleEvents) {
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_NONE,
             textfield_->GetFocusReason());
 
-  // Pen tap, followed by a touch tap
-  {
-    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-    tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
-    GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
-    textfield_->OnGestureEvent(&tap);
-  }
-
-  {
-    ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-    tap_details.set_primary_pointer_type(ui::EventPointerType::kTouch);
-    GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
-    textfield_->OnGestureEvent(&tap);
-  }
-
+  TapAtCursor(ui::EventPointerType::kPen);
+  TapAtCursor(ui::EventPointerType::kTouch);
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_PEN,
             textfield_->GetFocusReason());
 }
@@ -3797,13 +3791,8 @@ TEST_F(TextfieldTest, FocusReasonFocusBlurFocus) {
             textfield_->GetFocusReason());
 
   // Pen tap, blur, then programmatic focus.
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
-  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
-  textfield_->OnGestureEvent(&tap);
-
+  TapAtCursor(ui::EventPointerType::kPen);
   widget_->GetFocusManager()->ClearFocus();
-
   textfield_->RequestFocus();
 
   EXPECT_EQ(ui::TextInputClient::FOCUS_REASON_OTHER,
@@ -3813,11 +3802,7 @@ TEST_F(TextfieldTest, FocusReasonFocusBlurFocus) {
 TEST_F(TextfieldTest, KeyboardObserverForPenInput) {
   InitTextfield();
 
-  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP_DOWN);
-  tap_details.set_primary_pointer_type(ui::EventPointerType::kPen);
-  GestureEventForTest tap(GetCursorPositionX(0), 0, tap_details);
-  textfield_->OnGestureEvent(&tap);
-
+  TapAtCursor(ui::EventPointerType::kPen);
   EXPECT_EQ(1, input_method_->count_show_virtual_keyboard());
 }
 

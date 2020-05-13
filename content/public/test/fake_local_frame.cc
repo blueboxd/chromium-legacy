@@ -91,6 +91,12 @@ void FakeLocalFrame::DidUpdateFramePolicy(
 
 void FakeLocalFrame::OnScreensChange() {}
 
+void FakeLocalFrame::PostMessageEvent(
+    const base::Optional<base::UnguessableToken>& source_frame_token,
+    const base::string16& source_origin,
+    const base::string16& target_origin,
+    blink::TransferableMessage message) {}
+
 #if defined(OS_MACOSX)
 void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
 void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}

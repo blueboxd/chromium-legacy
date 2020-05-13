@@ -40,7 +40,7 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
 
   BatchingMediaLog(const GURL& security_origin,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                   std::unique_ptr<EventHandler> impl);
+                   std::vector<std::unique_ptr<EventHandler>> impl);
   ~BatchingMediaLog() override;
 
   // Will reset |last_ipc_send_time_| with the value of NowTicks().
@@ -66,7 +66,7 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // impl for sending queued events.
-  std::unique_ptr<EventHandler> event_handler_;
+  std::vector<std::unique_ptr<EventHandler>> event_handlers_;
 
   // |lock_| protects access to all of the following member variables.  It
   // allows any render process thread to AddEvent(), while preserving their

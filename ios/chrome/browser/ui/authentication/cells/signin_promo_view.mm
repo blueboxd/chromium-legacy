@@ -18,6 +18,7 @@
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -117,6 +118,8 @@ const CGFloat kImageViewWidthHeight = 32;
     if (@available(iOS 13.4, *)) {
       if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _primaryButton.pointerInteractionEnabled = YES;
+        _primaryButton.pointerStyleProvider =
+            CreateOpaqueButtonPointerStyleProvider();
       }
     }
 #endif  // defined(__IPHONE_13_4)

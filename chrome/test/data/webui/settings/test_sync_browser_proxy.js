@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {PageStatus} from 'chrome://settings/settings.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// clang-format off
+// #import {PageStatus, SyncBrowserProxy, SyncStatus} from 'chrome://settings/settings.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// clang-format on
 
 /** @implements {settings.SyncBrowserProxy} */
 /* #export */ class TestSyncBrowserProxy extends TestBrowserProxy {
@@ -41,7 +43,8 @@
   /** @override */
   getSyncStatus() {
     this.methodCalled('getSyncStatus');
-    return Promise.resolve({signedIn: true, signedInUsername: 'fakeUsername'});
+    return Promise.resolve(/** @type {!settings.SyncStatus} */ (
+        {signedIn: true, signedInUsername: 'fakeUsername'}));
   }
 
   /** @override */
@@ -111,6 +114,15 @@
   sendSyncPrefsChanged() {
     this.methodCalled('sendSyncPrefsChanged');
   }
+
+  /** @override */
+  attemptUserExit() {}
+
+  /** @override */
+  openActivityControlsUrl() {}
+
+  /** @override */
+  startKeyRetrieval() {}
 }
 
 if (cr.isChromeOS) {

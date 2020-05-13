@@ -54,4 +54,7 @@ extern const base::FeatureParam<int> kSharingMessageBridgeTimeoutSeconds;
 // Feature flag for sending sharing message via Sync.
 extern const base::Feature kSharingSendViaSync;
 
+// Feature flag for prefer sending sharing message using VAPID.
+extern const base::Feature kSharingPreferVapid;
+
 #endif  // CHROME_BROWSER_SHARING_FEATURES_H_

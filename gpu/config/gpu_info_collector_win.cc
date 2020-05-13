@@ -337,9 +337,14 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   VkApplicationInfo app_info = {};
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
+  const std::vector<const char*> enabled_instance_extensions = {
+      "VK_KHR_surface", "VK_KHR_win32_surface"};
+
   VkInstanceCreateInfo create_info = {};
   create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   create_info.pApplicationInfo = &app_info;
+  create_info.enabledExtensionCount = enabled_instance_extensions.size();
+  create_info.ppEnabledExtensionNames = enabled_instance_extensions.data();
 
   // Get the Vulkan API version supported in the GPU driver
   int highest_minor_version = VK_VERSION_MINOR(info->vulkan_version);

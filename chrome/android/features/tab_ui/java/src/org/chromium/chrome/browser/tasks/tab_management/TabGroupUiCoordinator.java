@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
@@ -125,7 +125,7 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         // Record the group count after all tabs are being restored. This only happen once per life
         // cycle, therefore remove the observer after recording. We only focus on normal tab model
         // because we don't restore tabs in incognito tab model.
-        tabModelSelector.getModel(false).addObserver(new EmptyTabModelObserver() {
+        tabModelSelector.getModel(false).addObserver(new TabModelObserver() {
             @Override
             public void restoreCompleted() {
                 recordTabGroupCount();

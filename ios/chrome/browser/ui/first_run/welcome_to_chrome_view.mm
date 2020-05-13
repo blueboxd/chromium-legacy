@@ -5,13 +5,11 @@
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
 
 #include "base/check_op.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/fancy_ui/primary_action_button.h"
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/CRUILabel+AttributeUtils.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/label_observer.h"
@@ -293,13 +291,6 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
     UIImage* selectedImage = [[UIImage imageNamed:kCheckBoxCheckedImageName]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [_checkBoxButton setImage:selectedImage forState:UIControlStateSelected];
-#if defined(__IPHONE_13_4)
-    if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
-        _checkBoxButton.pointerInteractionEnabled = YES;
-      }
-    }
-#endif  // defined(__IPHONE_13_4)
   }
   return _checkBoxButton;
 }
@@ -318,13 +309,6 @@ const char kTermsOfServiceUrl[] = "internal://terms-of-service";
     // First Run UI when it shows up.
     SetA11yLabelAndUiAutomationName(
         _OKButton, IDS_IOS_FIRSTRUN_OPT_IN_ACCEPT_BUTTON, @"Accept & Continue");
-#if defined(__IPHONE_13_4)
-    if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
-        _OKButton.pointerInteractionEnabled = YES;
-      }
-    }
-#endif  // defined(__IPHONE_13_4)
   }
   return _OKButton;
 }

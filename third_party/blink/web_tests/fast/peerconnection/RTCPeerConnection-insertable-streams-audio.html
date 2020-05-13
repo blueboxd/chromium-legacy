@@ -10,9 +10,9 @@
 <body>
 <script>
 async function testAudioFlow(t, negotiationFunction) {
-  const caller = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
-  const callee = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  const callee = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => callee.close());
 
   const stream = await navigator.mediaDevices.getUserMedia({audio:true});
@@ -20,7 +20,7 @@ async function testAudioFlow(t, negotiationFunction) {
   t.add_cleanup(() => audioTrack.stop());
 
   const audioSender = caller.addTrack(audioTrack)
-  const senderStreams = audioSender.createEncodedAudioStreams();
+  const senderStreams = audioSender.createEncodedStreams();
   const senderReader = senderStreams.readableStream.getReader();
   const senderWriter = senderStreams.writableStream.getWriter();
 
@@ -36,7 +36,7 @@ async function testAudioFlow(t, negotiationFunction) {
       assert_true(audioReceiver !== undefined);
 
       const receiverStreams =
-          audioReceiver.createEncodedAudioStreams();
+          audioReceiver.createEncodedStreams();
       const receiverReader = receiverStreams.readableStream.getReader();
       const receiverWriter = receiverStreams.writableStream.getWriter();
 
@@ -68,9 +68,10 @@ async function testAudioFlow(t, negotiationFunction) {
     const result = await senderReader.read()
     frameInfos.push({
       data: result.value.data,
-      synchronizationSource: result.value.synchronizationSource,
       timestamp: result.value.timestamp,
       type: result.value.type,
+      metadata: result.value.getMetadata(),
+      getMetadata() { return this.metadata; }
     });
     senderWriter.write(result.value);
   }
@@ -86,9 +87,10 @@ async function testAudioFlow(t, negotiationFunction) {
     result.value.data = buffer;
     frameInfos.push({
       data: result.value.data,
-      synchronizationSource: result.value.synchronizationSource,
       timestamp: result.value.timestamp,
       type: result.value.type,
+      metadata: result.value.getMetadata(),
+      getMetadata() { return this.metadata; }
     });
     senderWriter.write(result.value);
   }
@@ -101,9 +103,10 @@ async function testAudioFlow(t, negotiationFunction) {
 
     frameInfos.push({
       data: result.value.data,
-      synchronizationSource: result.value.synchronizationSource,
       timestamp: result.value.timestamp,
       type: result.value.type,
+      metadata: result.value.getMetadata(),
+      getMetadata() { return this.metadata; }
     });
     senderWriter.write(result.value);
   }
@@ -132,8 +135,8 @@ promise_test(async t => {
   await doSignalingHandshake(caller, callee);
 
   const audioSender = caller.addTrack(audioTrack);
-  assert_throws_dom("InvalidStateError", () => audioSender.createEncodedAudioStreams());
-}, 'RTCRtpSender.createEncodedAudioStream() throws if not requested in PC configuration');
+  assert_throws_dom("InvalidStateError", () => audioSender.createEncodedStreams());
+}, 'RTCRtpSender.createEncodedStream() throws if not requested in PC configuration');
 
 promise_test(async t => {
   const caller = new RTCPeerConnection();
@@ -149,7 +152,7 @@ promise_test(async t => {
     callee.ontrack = t.step_func(() => {
       const audioReceiver = callee.getReceivers().find(r => r.track.kind === 'audio');
       assert_true(audioReceiver !== undefined);
-      assert_throws_dom("InvalidStateError", () => audioReceiver.createEncodedAudioStreams());
+      assert_throws_dom("InvalidStateError", () => audioReceiver.createEncodedStreams());
       resolve();
     });
   });
@@ -157,10 +160,10 @@ promise_test(async t => {
   exchangeIceCandidates(caller, callee);
   await doSignalingHandshake(caller, callee);
   return ontrackPromise;
-}, 'RTCRtpReceiver.createEncodedAudioStream() throws if not requested in PC configuration');
+}, 'RTCRtpReceiver.createEncodedStream() throws if not requested in PC configuration');
 
 promise_test(async t => {
-  const caller = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
   const callee = new RTCPeerConnection();
   t.add_cleanup(() => callee.close());
@@ -170,7 +173,7 @@ promise_test(async t => {
   t.add_cleanup(() => track.stop());
 
   const sender = caller.addTrack(track)
-  const senderStreams = sender.createEncodedAudioStreams();
+  const senderStreams = sender.createEncodedStreams();
 
   const senderWorker = new Worker('RTCPeerConnection-sender-worker-single-frame.js')
   senderWorker.postMessage(
@@ -210,7 +213,7 @@ promise_test(async t => {
 }, 'RTCRtpSender readable stream transferred to a Worker and the Worker sends an RTCEncodedAudioFrame back');
 
 promise_test(async t => {
-  const caller = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
   const callee = new RTCPeerConnection();
   t.add_cleanup(() => callee.close());
@@ -220,7 +223,7 @@ promise_test(async t => {
   t.add_cleanup(() => track.stop());
 
   const sender = caller.addTrack(track)
-  const streams = sender.createEncodedAudioStreams();
+  const streams = sender.createEncodedStreams();
   const transformer = new TransformStream({
     transform(frame, controller) {
       // Inserting the same frame twice will result in failure since the frame
@@ -237,6 +240,51 @@ promise_test(async t => {
       t, 'OperationError',
       streams.readableStream.pipeThrough(transformer).pipeTo(streams.writableStream));
 }, 'Enqueuing the same frame twice fails');
+
+promise_test(async t => {
+  const caller = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection({forceEncodedAudioInsertableStreams:true});
+  t.add_cleanup(() => callee.close());
+
+  const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+  const audioTrack = stream.getAudioTracks()[0];
+  t.add_cleanup(() => audioTrack.stop());
+
+  const audioSender = caller.addTrack(audioTrack)
+  const senderStreams = audioSender.createEncodedAudioStreams();
+  const senderReader = senderStreams.readableStream.getReader();
+  const senderWriter = senderStreams.writableStream.getWriter();
+
+  let sentFrameInfo = null;
+  const ontrackPromise = new Promise(resolve => {
+    callee.ontrack = e => {
+      const audioReceiver = e.receiver;
+
+      const receiverStreams = audioReceiver.createEncodedAudioStreams();
+      const receiverReader = receiverStreams.readableStream.getReader();
+      receiverReader.read().then(t.step_func(receivedResult => {
+        assert_true(areFrameInfosEqual(receivedResult.value, sentFrameInfo));
+        resolve();
+      }));
+    }
+  });
+
+  exchangeIceCandidates(caller, callee);
+  await doSignalingHandshake(caller, callee);
+
+  // Pass frames as they come from the encoder.
+  const result = await senderReader.read()
+  sentFrameInfo = {
+    timestamp: result.value.timestamp,
+    data: result.value.data,
+    metadata: result.value.getMetadata(),
+    getMetadata() { return this.metadata; }
+  }
+  senderWriter.write(result.value);
+
+  return ontrackPromise;
+}, 'Legacy API works');
 
 </script>
 </body>

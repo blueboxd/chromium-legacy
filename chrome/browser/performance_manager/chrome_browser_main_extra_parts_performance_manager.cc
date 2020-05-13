@@ -28,7 +28,9 @@
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_feature_observer_client.h"
 #include "components/performance_manager/public/decorators/page_load_tracker_decorator_helper.h"
+#include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/policies/tab_loading_frame_navigation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 
@@ -125,6 +127,13 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
     graph->PassToGraph(
         std::make_unique<
             performance_manager::policies::HighPMFMemoryPressurePolicy>());
+  }
+
+  if (base::FeatureList::IsEnabled(
+          performance_manager::features::kTabLoadingFrameNavigationThrottles)) {
+    graph->PassToGraph(
+        std::make_unique<
+            performance_manager::policies::TabLoadingFrameNavigationPolicy>());
   }
 }
 

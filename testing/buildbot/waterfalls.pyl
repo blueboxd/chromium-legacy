@@ -2785,6 +2785,7 @@
         'browser_config': 'release_x64',
         'os_type': 'win',
         'mixins': [
+          'isolate_profile_data',
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
@@ -4756,6 +4757,9 @@
         },
       },
       'Win x64 Builder': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
         'additional_compile_targets': [
           'pdf_fuzzers'
         ],

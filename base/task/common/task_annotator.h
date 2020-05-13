@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/pending_task.h"
 
@@ -45,7 +46,8 @@ class BASE_EXPORT TaskAnnotator {
                      const char* task_queue_name);
 
   // Run a previously queued task.
-  void RunTask(const char* trace_event_name, PendingTask* pending_task);
+  void NOT_TAIL_CALLED RunTask(const char* trace_event_name,
+                               PendingTask* pending_task);
 
   // Creates a process-wide unique ID to represent this task in trace events.
   // This will be mangled with a Process ID hash to reduce the likelyhood of

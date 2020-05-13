@@ -36,6 +36,9 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void SetHasTouchEventHandlers(bool has_handlers) override;
   void IntrinsicSizingInfoChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
+  void AutoscrollStart(const gfx::PointF& position) override;
+  void AutoscrollFling(const gfx::Vector2dF& position) override;
+  void AutoscrollEnd() override;
 
   // blink::mojom::WidgetHost overrides.
   void SetCursor(const ui::Cursor& cursor) override;

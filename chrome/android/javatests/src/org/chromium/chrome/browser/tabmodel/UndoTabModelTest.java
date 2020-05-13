@@ -118,7 +118,7 @@ public class UndoTabModelTest {
         Assert.assertNotNull(TabModelUtils.getTabById(model, tab.getId()));
 
         final CallbackHelper didReceivePendingClosureHelper = new CallbackHelper();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabPendingClosure(Tab tab) {
                 didReceivePendingClosureHelper.notifyCalled();
@@ -159,7 +159,7 @@ public class UndoTabModelTest {
         Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
 
         final CallbackHelper didReceiveClosureCancelledHelper = new CallbackHelper();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureUndone(Tab tab) {
                 didReceiveClosureCancelledHelper.notifyCalled();
@@ -193,7 +193,7 @@ public class UndoTabModelTest {
             Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
 
             // Make sure that this TabModel throws the right events.
-            model.addObserver(new EmptyTabModelObserver() {
+            model.addObserver(new TabModelObserver() {
                 @Override
                 public void tabClosureUndone(Tab currentTab) {
                     tabClosureUndoneHelper.notifyCalled();
@@ -228,7 +228,7 @@ public class UndoTabModelTest {
         Assert.assertNull(TabModelUtils.getTabById(model, tab.getId()));
 
         final CallbackHelper didReceiveClosureCommittedHelper = new CallbackHelper();
-        model.addObserver(new EmptyTabModelObserver() {
+        model.addObserver(new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 didReceiveClosureCommittedHelper.notifyCalled();
@@ -261,7 +261,7 @@ public class UndoTabModelTest {
             Assert.assertTrue(model.isClosurePending(tab.getId()));
 
             // Make sure that this TabModel throws the right events.
-            model.addObserver(new EmptyTabModelObserver() {
+            model.addObserver(new TabModelObserver() {
                 @Override
                 public void tabClosureCommitted(Tab currentTab) {
                     tabClosureCommittedHelper.notifyCalled();
@@ -299,7 +299,7 @@ public class UndoTabModelTest {
 
     // Helper class that notifies after the tab is closed, and a tab restore service entry has been
     // created in tab restore service.
-    private static class TabClosedObserver extends EmptyTabModelObserver {
+    private static class TabClosedObserver implements TabModelObserver {
         private CallbackHelper mTabClosedCallback;
 
         public TabClosedObserver(CallbackHelper closedCallback) {

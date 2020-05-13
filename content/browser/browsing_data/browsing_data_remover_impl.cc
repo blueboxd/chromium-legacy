@@ -637,12 +637,6 @@ void BrowsingDataRemoverImpl::Notify() {
       base::UmaHistogramMediumTimes(
           "History.ClearBrowsingData.Duration.TimeRangeDeletion", delta);
     }
-    // TODO(dullweber): Remove this metric after M83.
-    if (!task.delete_begin.is_null() || !task.delete_end.is_max() ||
-        !task.filter_builder->IsEmptyBlacklist()) {
-      base::UmaHistogramMediumTimes(
-          "History.ClearBrowsingData.Duration.PartialDeletion", delta);
-    }
   } else {
     base::UmaHistogramMediumTimes(
         "History.ClearBrowsingData.Duration.OriginDeletion", delta);

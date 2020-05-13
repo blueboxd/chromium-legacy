@@ -36,7 +36,6 @@ android_resources("java_resources") {
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//third_party/android_deps:androidx_preference_preference_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java_resources",
   ]
   sources = [

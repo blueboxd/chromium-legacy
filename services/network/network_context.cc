@@ -1624,8 +1624,7 @@ void NetworkContext::LookupServerBasicAuthCredentials(
     std::move(callback).Run(base::nullopt);
 }
 
-const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const
-    noexcept {
+const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const {
   return &http_auth_merged_preferences_;
 }
 

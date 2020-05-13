@@ -186,6 +186,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_lazy_render_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_link_row_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_lottie_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_policy_indicator_behavior_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_policy_indicator_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_policy_pref_indicator_tests.m.js",

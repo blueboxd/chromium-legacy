@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/sample_format.h"

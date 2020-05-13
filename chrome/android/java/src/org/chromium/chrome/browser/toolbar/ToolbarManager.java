@@ -211,7 +211,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
     private int mCurrentOrientation;
 
-    private Supplier<Boolean> mCanAnimateNativeBrowserControls;
+    private final Supplier<Boolean> mCanAnimateNativeBrowserControls;
 
     /**
      * Runnable for the home and search accelerator button when Start Surface home page is enabled.
@@ -251,12 +251,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             List<ButtonDataProvider> buttonDataProviders, ActivityTabProvider tabProvider,
             ScrimCoordinator scrimCoordinator, ToolbarActionModeCallback toolbarActionModeCallback,
             FindToolbarManager findToolbarManager, ObservableSupplier<Profile> profileSupplier,
-            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            @Nullable Supplier<Boolean> canAnimateNativeBrowserControls) {
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
+        mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControls;
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -1357,16 +1359,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     public void onDeferredStartup(final long activityCreationTimeMs, final String activityName) {
         recordStartupHistograms(activityCreationTimeMs, activityName);
         mLocationBar.onDeferredStartup();
-    }
-
-    /**
-     * Set a supplier that will provide a boolean indicating whether the browser controls in native
-     * can be animated. E.g. true if the current tab is user interactable.
-     * @param canAnimateNativeBrowserControlsSupplier The boolean supplier.
-     */
-    public void setCanAnimateNativeBrowserControlsSupplier(
-            Supplier<Boolean> canAnimateNativeBrowserControlsSupplier) {
-        mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControlsSupplier;
     }
 
     /**

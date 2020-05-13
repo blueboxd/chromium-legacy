@@ -46,6 +46,7 @@ namespace {
 using assistant::ui::kWarmerWelcomesMaxTimesTriggered;
 using chromeos::assistant::features::IsResponseProcessingV2Enabled;
 using chromeos::assistant::features::IsTimersV2Enabled;
+using chromeos::assistant::features::IsWaitSchedulingEnabled;
 
 // Android.
 constexpr char kAndroidIntentScheme[] = "intent://";
@@ -715,15 +716,12 @@ void AssistantInteractionControllerImpl::OnTtsStarted(bool due_to_error) {
 }
 
 void AssistantInteractionControllerImpl::OnWaitStarted() {
+  DCHECK(IsWaitSchedulingEnabled());
   if (!HasActiveInteraction())
     return;
 
-  // Commit the pending query in whatever state it's in. Note that the server
-  // guarantees that if a wait occurs, it is as part of a routine's execution
-  // and it will be the last event prior to the current interaction being
-  // finished and the response will not contain any TTS. Upon finishing
-  // execution of the current interaction, a new interaction will automatically
-  // be started for the next leg of the routine's execution.
+  // If necessary, commit the pending query in whatever state it's in. This is
+  // prerequisite to being able to commit a response.
   if (model_.pending_query().type() != AssistantQueryType::kNull)
     model_.CommitPendingQuery();
 
@@ -737,8 +735,7 @@ void AssistantInteractionControllerImpl::OnWaitStarted() {
   }
 
   // Commit the pending response so that the UI is flushed to the screen while
-  // the wait occurs, giving the user time to digest the current response before
-  // the routine begins its next leg in the next interaction.
+  // the wait occurs, giving the user time to digest the current response.
   OnProcessPendingResponse();
 }
 

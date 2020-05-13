@@ -14,6 +14,7 @@
 #include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "net/base/isolation_info.h"
 #include "net/base/net_export.h"
 #include "net/dns/dns_config.h"
 
@@ -143,6 +144,15 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
     return current_session_.get();
   }
 
+  // Returns IsolationInfo that should be used for DoH requests. Using a single
+  // transient IsolationInfo ensures that DNS requests aren't pooled with normal
+  // web requests, but still allows them to be pooled with each other, to allow
+  // reusing connections to the DoH server across different third party
+  // contexts. One downside of a transient IsolationInfo is that it means
+  // metadata about the DoH server itself will not be cached across restarts
+  // (alternative service info if it supports QUIC, for instance).
+  const IsolationInfo& isolation_info() const { return isolation_info_; }
+
  private:
   friend DohDnsServerIterator;
   friend ClassicDnsServerIterator;
@@ -225,6 +235,8 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   std::vector<ServerStats> classic_server_stats_;
   // Track runtime statistics of each DoH server.
   std::vector<ServerStats> doh_server_stats_;
+
+  const IsolationInfo isolation_info_;
 };
 
 }  // namespace net

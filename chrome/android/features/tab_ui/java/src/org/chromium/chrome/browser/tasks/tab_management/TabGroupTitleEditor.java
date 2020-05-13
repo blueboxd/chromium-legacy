@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObserver;
@@ -26,7 +25,7 @@ public abstract class TabGroupTitleEditor {
     public TabGroupTitleEditor(TabModelSelector tabModelSelector) {
         mTabModelSelector = tabModelSelector;
 
-        mTabModelObserver = new EmptyTabModelObserver() {
+        mTabModelObserver = new TabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
                 int tabRootId = ((TabImpl) tab).getRootId();

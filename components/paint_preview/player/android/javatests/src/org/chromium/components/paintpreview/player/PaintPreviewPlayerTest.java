@@ -5,11 +5,9 @@
 package org.chromium.components.paintpreview.player;
 
 import android.graphics.Rect;
-import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.uiautomator.UiDevice;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -46,6 +43,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private static final String TEST_OUT_OF_VIEWPORT_LINK_URL =
             "https://foundation.wikimedia.org/wiki/Privacy_policy";
 
+    private static final int TEST_PAGE_WIDTH = 1082;
     private static final int TEST_PAGE_HEIGHT = 5019;
 
     @Rule
@@ -106,7 +104,6 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1065441")
     public void linkClickTest() {
         initPlayerManager();
         final View playerHostView = mPlayerManager.getView();
@@ -124,13 +121,9 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
         // Scroll to the bottom, and click on a link.
         scrollToBottom();
-        int playerHeight = playerHostView.getHeight();
-        assertLinkUrl(playerHostView, 322, playerHeight - (TEST_PAGE_HEIGHT - 4946),
-                TEST_OUT_OF_VIEWPORT_LINK_URL);
-        assertLinkUrl(playerHostView, 376, playerHeight - (TEST_PAGE_HEIGHT - 4954),
-                TEST_OUT_OF_VIEWPORT_LINK_URL);
-        assertLinkUrl(playerHostView, 422, playerHeight - (TEST_PAGE_HEIGHT - 4965),
-                TEST_OUT_OF_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 322, 4946, TEST_OUT_OF_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 376, 4954, TEST_OUT_OF_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 422, 4965, TEST_OUT_OF_VIEWPORT_LINK_URL);
     }
 
     /**
@@ -154,12 +147,15 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         int padding = 20;
         int swipeSteps = 5;
         int viewPortBottom = deviceHeight - statusBarHeight - navigationBarHeight;
-        while (viewPortBottom < TEST_PAGE_HEIGHT) {
-            int fromY = deviceHeight - navigationBarHeight - padding;
-            int toY = statusBarHeight + padding;
+        int fromY = deviceHeight - navigationBarHeight - padding;
+        int toY = statusBarHeight + padding;
+        int delta = fromY - toY;
+        while (viewPortBottom < scaleAbsoluteCoordinateToViewCoordinate(TEST_PAGE_HEIGHT)) {
             uiDevice.swipe(50, fromY, 50, toY, swipeSteps);
-            viewPortBottom += fromY - toY;
+            viewPortBottom += delta;
         }
+        // Repeat an addition time to avoid flakiness.
+        uiDevice.swipe(50, fromY, 50, toY, swipeSteps);
     }
 
     private void initPlayerManager() {
@@ -184,35 +180,47 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
-    private void destroyPlayerManager() {}
+    /*
+     * Scales the provided coordinate to be view relative
+     */
+    private int scaleAbsoluteCoordinateToViewCoordinate(int coordinate) {
+        float scaleFactor = (float) mPlayerManager.getView().getWidth() / (float) TEST_PAGE_WIDTH;
+        return Math.round((float) coordinate * scaleFactor);
+    }
 
+    /*
+     * Asserts that the expectedUrl is found in the view at absolute coordinates x and y.
+     */
     private void assertLinkUrl(View view, int x, int y, String expectedUrl) {
+        int scaledX = scaleAbsoluteCoordinateToViewCoordinate(x);
+        int scaledY = scaleAbsoluteCoordinateToViewCoordinate(y);
+
+        // In this test scaledY will only exceed the view height if scrolled to the bottom of a
+        // page.
+        if (scaledY > view.getHeight()) {
+            scaledY = view.getHeight()
+                    - (scaleAbsoluteCoordinateToViewCoordinate(TEST_PAGE_HEIGHT) - scaledY);
+        }
+
         mLinkClickHandler.mUrl = null;
-        dispatchTapEvent(view, x, y);
+
+        int[] locationXY = new int[2];
+        view.getLocationOnScreen(locationXY);
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        device.click(scaledX + locationXY[0], scaledY + locationXY[1]);
+
         CriteriaHelper.pollUiThread(
-                ()-> {
+                ()
+                        -> {
                     GURL url = mLinkClickHandler.mUrl;
                     if (url == null) return false;
 
                     return url.getSpec().equals(expectedUrl);
                 },
-                "Link press on (" + x + ", " + y + ") failed. Expected: " + expectedUrl
+                "Link press on abs (" + x + ", " + y + ") failed. Expected: " + expectedUrl
                         + ", found: "
                         + (mLinkClickHandler.mUrl == null ? null
                                                           : mLinkClickHandler.mUrl.getSpec()),
                 TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-    }
-
-    private void dispatchTapEvent(View view, int x, int y) {
-        long downTime = SystemClock.uptimeMillis();
-        MotionEvent downEvent = MotionEvent.obtain(
-                downTime, downTime + 100, MotionEvent.ACTION_DOWN, (float) x, (float) y, 0);
-        MotionEvent upEvent = MotionEvent.obtain(
-                downTime + 150, downTime + 200, MotionEvent.ACTION_UP, (float) x, (float) y, 0);
-
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            view.dispatchTouchEvent(downEvent);
-            view.dispatchTouchEvent(upEvent);
-        });
     }
 }

@@ -115,6 +115,9 @@ extern const char kAutofillAssistantChromeEntryDescription[];
 extern const char kAutofillCacheQueryResponsesName[];
 extern const char kAutofillCacheQueryResponsesDescription[];
 
+extern const char kAutofillEnableCardNicknameManagementName[];
+extern const char kAutofillEnableCardNicknameManagementDescription[];
+
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];
 
@@ -1037,6 +1040,9 @@ extern const char kSharingPeerConnectionReceiverDescription[];
 extern const char kSharingPeerConnectionSenderName[];
 extern const char kSharingPeerConnectionSenderDescription[];
 
+extern const char kSharingPreferVapidName[];
+extern const char kSharingPreferVapidDescription[];
+
 extern const char kSharingQRCodeGeneratorName[];
 extern const char kSharingQRCodeGeneratorDescription[];
 
@@ -1371,6 +1377,9 @@ extern const char kChromeShareScreenshotDescription[];
 
 extern const char kChromeSharingHubName[];
 extern const char kChromeSharingHubDescription[];
+
+extern const char kChromeSharingHubV15Name[];
+extern const char kChromeSharingHubV15Description[];
 
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];

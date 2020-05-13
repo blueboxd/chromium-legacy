@@ -1910,8 +1910,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private boolean handleOmniboxInOverviewMode(boolean inTabSwitcherMode) {
         if (!getToolbarDataProvider().shouldShowLocationBarInOverviewMode()) return false;
 
-        mIsHomeButtonEnabled = !inTabSwitcherMode;
-
         if (mToggleTabStackButton != null) {
             boolean isGone = inTabSwitcherMode || isTabSwitcherOnBottom();
             mToggleTabStackButton.setVisibility(isGone ? GONE : VISIBLE);

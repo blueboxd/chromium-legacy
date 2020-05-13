@@ -846,14 +846,14 @@ enum Command {
   kCut,
   kDelete,
   kDictate,
-  kExtendSelection,
+  kExtendSelection,  // The existing selection has been extended or shrunk.
   kFormat,  // The text attributes, such as font size, have changed.
   kInsert,
   kMarker,  // A document marker has been added or removed.
+  kMoveSelection,  // The selection has been moved by a specific granularity.
   kPaste,
   kReplace,
   kSetSelection,  // A completely new selection has been set.
-  kShrinkSelection,
   kType,
   kNone = kType
 };

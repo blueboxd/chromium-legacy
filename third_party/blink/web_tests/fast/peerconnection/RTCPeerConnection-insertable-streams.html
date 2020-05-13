@@ -13,9 +13,9 @@
 // Insertable Streams spec is mature enough.
 
 async function testVideoFlow(t, negotiationFunction) {
-  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
-  const callee = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const callee = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => callee.close());
 
   const stream = await navigator.mediaDevices.getUserMedia({video:true});
@@ -23,7 +23,7 @@ async function testVideoFlow(t, negotiationFunction) {
   t.add_cleanup(() => videoTrack.stop());
 
   const videoSender = caller.addTrack(videoTrack)
-  const senderStreams = videoSender.createEncodedVideoStreams();
+  const senderStreams = videoSender.createEncodedStreams();
   const senderReader = senderStreams.readableStream.getReader();
   const senderWriter = senderStreams.writableStream.getWriter();
 
@@ -39,7 +39,7 @@ async function testVideoFlow(t, negotiationFunction) {
       assert_true(videoReceiver !== undefined);
 
       const receiverStreams =
-          videoReceiver.createEncodedVideoStreams();
+          videoReceiver.createEncodedStreams();
       const receiverReader = receiverStreams.readableStream.getReader();
       const receiverWriter = receiverStreams.writableStream.getWriter();
 
@@ -72,7 +72,8 @@ async function testVideoFlow(t, negotiationFunction) {
     frameInfos.push({
       timestamp: result.value.timestamp,
       data: result.value.data,
-      synchronizationSource: result.value.synchronizationSource
+      metadata: result.value.getMetadata(),
+      getMetadata() { return this.metadata; }
     });
     senderWriter.write(result.value);
   }
@@ -88,7 +89,8 @@ async function testVideoFlow(t, negotiationFunction) {
     frameInfos.push({
       timestamp: result.value.timestamp,
       data: result.value.data,
-      synchronizationSource: result.value.synchronizationSource
+      metadata: result.value.getMetadata(),
+      getMetadata() { return this.metadata; }
     });
     senderWriter.write(result.value);
   }
@@ -102,7 +104,8 @@ async function testVideoFlow(t, negotiationFunction) {
     frameInfos.push({
       timestamp: result.value.timestamp,
       data: result.value.data,
-      synchronizationSource: result.value.synchronizationSource
+      metadata: result.value.getMetadata(),
+      getMetadata() { return this.metadata; }
     });
     senderWriter.write(result.value);
   }
@@ -131,8 +134,8 @@ promise_test(async t => {
   await doSignalingHandshake(caller, callee);
 
   const videoSender = caller.addTrack(videoTrack);
-  assert_throws_dom("InvalidStateError", () => videoSender.createEncodedVideoStreams());
-}, 'RTCRtpSender.createEncodedVideoStream() throws if not requested in PC configuration');
+  assert_throws_dom("InvalidStateError", () => videoSender.createEncodedStreams());
+}, 'RTCRtpSender.createEncodedStream() throws if not requested in PC configuration');
 
 promise_test(async t => {
   const caller = new RTCPeerConnection();
@@ -148,7 +151,7 @@ promise_test(async t => {
     callee.ontrack = t.step_func(() => {
       const videoReceiver = callee.getReceivers().find(r => r.track.kind === 'video');
       assert_true(videoReceiver !== undefined);
-      assert_throws_dom("InvalidStateError", () => videoReceiver.createEncodedVideoStreams());
+      assert_throws_dom("InvalidStateError", () => videoReceiver.createEncodedStreams());
       resolve();
     });
   });
@@ -156,10 +159,10 @@ promise_test(async t => {
   exchangeIceCandidates(caller, callee);
   await doSignalingHandshake(caller, callee);
   return ontrackPromise;
-}, 'RTCRtpReceiver.createEncodedVideoStream() throws if not requested in PC configuration');
+}, 'RTCRtpReceiver.createEncodedStream() throws if not requested in PC configuration');
 
 promise_test(async t => {
-  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
   const callee = new RTCPeerConnection();
   t.add_cleanup(() => callee.close());
@@ -169,7 +172,7 @@ promise_test(async t => {
   t.add_cleanup(() => videoTrack.stop());
 
   const videoSender = caller.addTrack(videoTrack)
-  const senderStreams = videoSender.createEncodedVideoStreams();
+  const senderStreams = videoSender.createEncodedStreams();
 
   const senderWorker = new Worker('RTCPeerConnection-sender-worker-single-frame.js')
   senderWorker.postMessage(
@@ -196,7 +199,7 @@ promise_test(async t => {
         assert_equals(message.data.type, expectedFrameData.type);
         assert_equals(message.data.timestamp, expectedFrameData.timestamp);
         assert_true(areArrayBuffersEqual(message.data.data, expectedFrameData.data));
-        assert_true(areArrayBuffersEqual(message.data.additionalData, expectedFrameData.additionalData));
+        assert_equals(message.data.getMetadata().synchronizationSource, expectedFrameData.metadata.synchronizationSource);
         if (++numVerifiedFrames == 2)
           resolve();
       }
@@ -263,9 +266,9 @@ promise_test(t => {
 }, 'Video flows when insertable streams is enabled for audio and disabled for audio.');
 
 promise_test(async t => {
-  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
-  const callee = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const callee = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => callee.close());
 
   const stream = await navigator.mediaDevices.getUserMedia({video:true});
@@ -273,14 +276,14 @@ promise_test(async t => {
   t.add_cleanup(() => track.stop());
 
   const sender = caller.addTrack(track)
-  const senderStreams = sender.createEncodedVideoStreams();
+  const senderStreams = sender.createEncodedStreams();
   const senderReader = senderStreams.readableStream.getReader();
   const senderWriter = senderStreams.writableStream.getWriter();
   const numFramesToSend = 20;
 
   const ontrackPromise = new Promise((resolve, reject) => {
     callee.ontrack = async e => {
-      const receiverStreams = e.receiver.createEncodedVideoStreams();
+      const receiverStreams = e.receiver.createEncodedStreams();
       const receiverReader = receiverStreams.readableStream.getReader();
 
       let numReceivedKeyFrames = 0;
@@ -324,7 +327,7 @@ promise_test(async t => {
 }, 'Key and Delta frames are sent and received');
 
 promise_test(async t => {
-  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
   const callee = new RTCPeerConnection();
   t.add_cleanup(() => callee.close());
@@ -334,7 +337,7 @@ promise_test(async t => {
   t.add_cleanup(() => track.stop());
 
   const sender = caller.addTrack(track)
-  const streams = sender.createEncodedVideoStreams();
+  const streams = sender.createEncodedStreams();
   const transformer = new TransformStream({
     transform(frame, controller) {
       // Inserting the same frame twice will result in failure since the frame
@@ -351,6 +354,51 @@ promise_test(async t => {
       t, 'OperationError',
       streams.readableStream.pipeThrough(transformer).pipeTo(streams.writableStream));
 }, 'Enqueuing the same frame twice fails');
+
+promise_test(async t => {
+  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  t.add_cleanup(() => caller.close());
+  const callee = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  t.add_cleanup(() => callee.close());
+
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  const videoTrack = stream.getVideoTracks()[0];
+  t.add_cleanup(() => videoTrack.stop());
+
+  const videoSender = caller.addTrack(videoTrack)
+  const senderStreams = videoSender.createEncodedVideoStreams();
+  const senderReader = senderStreams.readableStream.getReader();
+  const senderWriter = senderStreams.writableStream.getWriter();
+
+  let sentFrameInfo = null;
+  const ontrackPromise = new Promise(resolve => {
+    callee.ontrack = t.step_func(async e => {
+      const videoReceiver = e.receiver;
+
+      const receiverStreams = videoReceiver.createEncodedVideoStreams();
+      const receiverReader = receiverStreams.readableStream.getReader();
+      receiverReader.read().then(t.step_func(receivedResult => {
+        assert_true(areFrameInfosEqual(receivedResult.value, sentFrameInfo));
+        resolve();
+      }));
+    });
+  });
+
+  exchangeIceCandidates(caller, callee);
+  await doSignalingHandshake(caller, callee);
+
+  // Pass frames as they come from the encoder.
+  const result = await senderReader.read()
+  sentFrameInfo = {
+    timestamp: result.value.timestamp,
+    data: result.value.data,
+    metadata: result.value.getMetadata(),
+    getMetadata() { return this.metadata; }
+  }
+  senderWriter.write(result.value);
+
+  return ontrackPromise;
+}, 'Legacy API works');
 
 </script>
 </body>

@@ -2,15 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {SafeBrowsingBrowserProxy, SafeBrowsingRadioManagedState} from 'chrome://settings/lazy_load.js';
+
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
 /** @implements {SafeBrowsingBrowserProxy} */
 export class TestSafeBrowsingBrowserProxy extends TestBrowserProxy {
   constructor() {
-    super();
-    this.mockMethods([
+    super([
       'getSafeBrowsingRadioManagedState',
       'validateSafeBrowsingEnhanced',
     ]);
+
+    /** @type {!SafeBrowsingRadioManagedState} */
+    this.managedRadioState_;
+  }
+
+  /** @param {!SafeBrowsingRadioManagedState} state */
+  setSafeBrowsingRadioManagedState(state) {
+    this.managedRadioState_ = state;
+  }
+
+  /** @override */
+  getSafeBrowsingRadioManagedState() {
+    this.methodCalled('getSafeBrowsingRadioManagedState');
+    return Promise.resolve(this.managedRadioState_);
+  }
+
+  /** @override */
+  validateSafeBrowsingEnhanced() {
+    this.methodCalled('validateSafeBrowsingEnhanced');
   }
 }

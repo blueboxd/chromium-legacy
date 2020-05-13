@@ -152,6 +152,10 @@ class CheckClientDownloadRequestBase {
   void OnGotAccessToken(
       base::Optional<signin::AccessTokenInfo> access_token_info);
 
+  // Called at the request start to determine if we should bailout due to the
+  // file being whitelisted by policy
+  virtual bool IsWhitelistedByPolicy() const = 0;
+
   // Source URL being downloaded from. This shuold always be set, but could be
   // for example an artificial blob: URL if there is no source URL.
   const GURL source_url_;

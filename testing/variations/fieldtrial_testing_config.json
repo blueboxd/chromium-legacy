@@ -6006,6 +6006,23 @@
             ]
         }
     ],
+    "TextfieldFocusOnTapUp": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TextfieldFocusOnTapUp"
+                    ]
+                }
+            ]
+        }
+    ],
     "TextureLayerSkipWaitForActivation": [
         {
             "platforms": [
@@ -7035,6 +7052,7 @@
                     },
                     "enable_features": [
                         "IPH_WebUITabStrip",
+                        "TextfieldFocusOnTapUp",
                         "WebUITabStrip",
                         "WebUITabStripTabDragIntegration"
                     ]

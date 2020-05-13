@@ -60,8 +60,8 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     mojo::PendingRemote<network::mojom::URLLoader> loader;
     network::ResourceRequest resource_request;
     resource_request.url = script_url_;
-    resource_request.resource_type =
-        static_cast<int>(blink::mojom::ResourceType::kServiceWorker);
+    resource_request.destination =
+        network::mojom::RequestDestination::kServiceWorker;
     factory_->CreateLoaderAndStart(
         loader.InitWithNewPipeAndPassReceiver(), 0 /* routing_id */,
         0 /* request_id */, network::mojom::kURLLoadOptionNone,

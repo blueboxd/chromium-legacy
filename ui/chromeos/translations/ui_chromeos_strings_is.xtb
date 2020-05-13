@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Loðber</translation>
 <translation id="3966388904776714213">Hljóðspilari</translation>
 <translation id="4002066346123236978">Heiti</translation>
+<translation id="4065397611279318371">Til að opna skrár með <ph name="APP_NAME" /> forritinu skaltu færa þær í <ph name="SHARED_DIRECTORY_LABEL" /> möppuna.</translation>
 <translation id="4070370845051020638">Kantónsk innsláttaraðferð</translation>
 <translation id="4072248638558688893">Tamil-lyklaborð (hljóðritun)</translation>
 <translation id="4124935795427217608">Einhyrningur</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> af skrám verður eytt</translation>
 <translation id="509429900233858213">Villa kom upp.</translation>
 <translation id="5098629044894065541">Hebreskt</translation>
-<translation id="5112685521274804841">Skrár í þessari möppu eru skrifvarðar. Sumar aðgerðir eru ekki studdar.</translation>
 <translation id="5123433949759960244">Körfubolti</translation>
 <translation id="5129662217315786329">Pólskt</translation>
 <translation id="5144820558584035333">Hangul 3 sett (390)</translation>

@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കുന്നു.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> അപകടകരമായതിനാൽ, Chrome ഇതിനെ ബ്ലോക്കുചെയ്‌തു.</translation>
 <translation id="1619887657840448962">Chrome സുരക്ഷിതമാക്കാൻ, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> എന്നതിൽ ലിസ്റ്റ് ചെയ്യാത്ത ചില വിപുലീകരണങ്ങൾ ഞങ്ങൾ പ്രവർത്തനരഹിതമാക്കി, അവ നിങ്ങളുടെ അറിവില്ലാതെ ചേർത്തിരിക്കാനിടയുണ്ട്.</translation>
+<translation id="162629503687514352">Chrome OS-ന് നിങ്ങളുടെ പാസ്‌വേഡുകൾ സമന്വയിപ്പിക്കാനായില്ല.</translation>
 <translation id="1628000112320670027">Chrome ഉപയോഗിക്കുന്നതിനുള്ള സഹായം തേടുക</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (ബീറ്റ)<ph name="END_LINK_LINUX_OSS" /> പോലെ അധിക <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പൺ സോഴ്‌സ് സോഫ്‌റ്റ്‌വെയർ<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാണ് Chrome OS സാധ്യമാക്കിയിട്ടുള്ളത്.</translation>
 <translation id="1666409074978194368">എകദേശം അപ് റ്റു ഡേറ്റാണ്! അപ്‌ഡേറ്റ് ചെയ്യൽ പൂർത്തിയാക്കാൻ Google Chrome വീണ്ടും ആരംഭിക്കുക. അദൃശ്യ വിൻഡോകൾ വീണ്ടും തുറക്കില്ല.</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">Chrome ടാബ്</translation>
 <translation id="3080151273017101988">Google Chrome അടച്ചാലും പശ്ചാത്തല ആപ്ലിക്കേഷനുകള്‍ പ്രവര്‍ത്തിപ്പിക്കുന്നത് തുടരുക</translation>
 <translation id="3089968997497233615">Google Chrome-ന്റെ പുതിയതും സുരക്ഷിതവുമായ പതിപ്പ് ലഭ്യമാണ്.</translation>
+<translation id="3127818369811890733">Chrome OS-ന് നിങ്ങളുടെ ഡാറ്റ സമന്വയിപ്പിക്കാനായില്ല.</translation>
 <translation id="3149510190863420837">Chrome അപ്ലിക്കേഷനുകൾ</translation>
 <translation id="3360895254066713204">Chrome സഹായി‌</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ഇപ്പോൾ വീണ്ടും സമാരംഭിക്കും}=1{ഒരു സെക്കൻഡിൽ Chrome വീണ്ടും സമാരംഭിക്കും}other{# സെക്കൻഡിൽ Chrome വീണ്ടും സമാരംഭിക്കും}}</translation>

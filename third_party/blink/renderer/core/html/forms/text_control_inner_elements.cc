@@ -111,6 +111,13 @@ void TextControlInnerEditorElement::SetVisibility(bool is_visible) {
   }
 }
 
+void TextControlInnerEditorElement::FocusChanged() {
+  // When the focus changes for the host element, we may need to recalc style
+  // for text-overflow. See TextControlElement::ValueForTextOverflow().
+  SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                             style_change_reason::kControl));
+}
+
 LayoutObject* TextControlInnerEditorElement::CreateLayoutObject(
     const ComputedStyle&,
     LegacyLayout) {

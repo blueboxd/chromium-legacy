@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome выкарыстоўвае камеру.</translation>
 <translation id="1587325591171447154">Файл <ph name="FILE_NAME" /> небяспечны, таму Chrome заблакіраваў яго.</translation>
 <translation id="1619887657840448962">У мэтах бяспекі Chrome мы адключылі наступнае пашырэнне, якое не значыцца ў спісе <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і магло быць дададзена без вашага ведама.</translation>
+<translation id="162629503687514352">Сістэме Chrome OS не ўдалося сінхранізаваць паролі.</translation>
 <translation id="1628000112320670027">Даведка Chrome</translation>
 <translation id="1662639173275167396">Chrome OS працуе дзякуючы дадатковаму <ph name="BEGIN_LINK_CROS_OSS" />праграмнаму забеспячэнню з адкрытым зыходным кодам<ph name="END_LINK_CROS_OSS" />, як і <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бэта-версія)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Амаль гатова! Каб завяршыць абнаўленне, перазапусціце Google Chrome. Вокны ў рэжыме інкогніта не будуць адкрыты паўторна.</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">Укладка Chrome</translation>
 <translation id="3080151273017101988">Працягваць выконваць фонавыя праграмы, калі Google Chrome закрыты</translation>
 <translation id="3089968997497233615">Ёсць новая, больш бяспечная версія Google Chrome.</translation>
+<translation id="3127818369811890733">Сістэме Chrome OS не ўдалося сінхранізаваць даныя.</translation>
 <translation id="3149510190863420837">Праграмы Chrome</translation>
 <translation id="3360895254066713204">Памочнік Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Перазапуск Chrome адбудзецца зараз}=1{Chrome будзе перазапушчаны праз 1 секунду}one{Chrome будзе перазапушчаны праз # секунду}few{Chrome будзе перазапушчаны праз # секунды}many{Chrome будзе перазапушчаны праз # секунд}other{Chrome будзе перазапушчаны праз # секунды}}</translation>

@@ -35,10 +35,18 @@
         display: inline-block;
         margin-inline-start: 8px;
       }
+
+      cr-dialog::part(dialog) {
+        border-radius: 12px;
+      }
+      cr-dialog::part(wrapper) {
+        /* subtract the internal padding in <cr-dialog> */
+        padding: calc(24px - 20px);
+      }
     </style>
 
     <cr-dialog id="dialog" show-close-button
-        close-text="[[i18n('CLOSE_LABEL')]]" exportparts="dialog">
+        close-text="[[i18n('CLOSE_LABEL')]]" >
       <div slot="title">
         [[i18n('FORMAT_DIALOG_TITLE', volumeInfo_.label)]]
       </div>

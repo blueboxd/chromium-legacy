@@ -2442,15 +2442,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책을 설정하지 않으면 사용자가 홈 버튼을 표시할지 여부를 선택할 수 있습니다.</translation>
 <translation id="4483649828988077221">자동 업데이트 사용 안함</translation>
 <translation id="4485425108474077672">새 탭 페이지 URL 설정</translation>
-<translation id="4487507711538762752">이 정책은 네트워킹 코드가 브라우저 프로세스에서 실행되도록 강제합니다.
-
-      기본적으로 사용 중지되어 있으며, 사용 설정할 경우 네트워킹 프로세스가 샌드박스 처리되었을 때 사용자가 보안 문제에 노출됩니다.
-
-      기업이 네트워킹 API 후크에 종속되지 않는 타사 소프트웨어로 이전할 기회를 제공하기 위해 만들어진 정책입니다. LSP 및 Win32 API 패칭보다 프록시 서버를 권장합니다.
-
-      정책을 설정하지 않으면 네트워킹 코드가 기본적으로 브라우저 프로세스 외부에서 실행될 수 있습니다.
-
-      이 정책은 <ph name="PRODUCT_NAME" /> 버전 84에서 삭제됩니다.</translation>
 <translation id="4492287494009043413">화면 캡쳐 사용 중지</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290"><ph name="PLUGIN_VM_NAME" /> 관련 정책을 설정합니다.</translation>
@@ -3384,6 +3375,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       False로 설정되어 있거나 설정되어 있지 않은 경우 Web Components v0 기능이 M80에서부터 기본적으로 사용 중지됩니다.
 
       이 정책은 Chrome 84 이후 삭제됩니다.</translation>
+<translation id="5763698334786515749">로그인/잠금 화면에서 비밀번호 표시 버튼을 사용 설정합니다.</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5770738360657678870">개발자 채널(불안정할 수 있음)</translation>
 <translation id="5774856474228476867">기본 검색 공급자 검색 URL</translation>
@@ -3738,6 +3730,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="6368011194414932347">홈페이지 URL 설정</translation>
 <translation id="6368403635025849609">이 사이트에서 자바스크립트 허용</translation>
+<translation id="6372105930898423193">기본으로 사용 중지되어 있는 경우에도 AppCache 기능이 다시 사용 설정되도록 허용합니다.</translation>
 <translation id="6376659517206731212">필수로 설정할 수 있음</translation>
 <translation id="6377355597423503887">이 정책은 지원이 중단되었으므로 대신 BrowserSignin을 사용해 보시기 바랍니다.
 
@@ -3958,6 +3951,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
 <translation id="6672070613706645316">사용자가 새 탭 페이지의 배경을 맞춤설정하도록 허용</translation>
 <translation id="6672630473862787247">일반, 시크릿 모드, 게스트 세션에서 수동 인증을 사용 설정합니다.</translation>
+<translation id="6677797768774898583">이 기능을 사용하면 사용자가 로그인/잠금 화면에서 버튼을 클릭하여 비밀번호를 표시할 수 있습니다.</translation>
 <translation id="6685903773201985073">게스트 세션과 일반 세션에서 수동 인증을 사용 설정합니다.</translation>
 <translation id="6689792153960219308">하드웨어 상태 보고</translation>
 <translation id="6698632841807204978">단색 인쇄 사용 설정</translation>
@@ -4280,6 +4274,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           이 정책이 false로 설정되면 화면 wake lock 요청이 시스템 wake lock 요청으로 강등됩니다.</translation>
 <translation id="7177857088692019405">빠른 잠금 해제</translation>
+<translation id="718126088895133062">이 정책은 이 기기의 <ph name="PLUGIN_VM_NAME" /> 라이선스 사용자 ID를 지정합니다.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">전력 피크 시프트 전원 관리 정책을 사용합니다.
 
@@ -5650,6 +5645,9 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="9217154963008402249">네트워크 패킷 모니터링 빈도</translation>
 <translation id="922540222991413931">확장 프로그램, 앱, 사용자 스크립트 설치 소스 등 설정</translation>
 <translation id="924557436754151212">처음 실행 시 기본 브라우저에서 저장된 비밀번호 가져오기</translation>
+<translation id="929549405492388749">정책이 true로 설정되면 Chrome에서 기본적으로 AppCache를 이용할 수 없는 경우에도 AppCache가 강제로 사용 설정됩니다.
+
+      정책이 설정되어 있지 않거나 false로 설정되면 AppCache가 Chrome의 기본값을 따릅니다.</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉터리 설정</translation>
 <translation id="940706688964479124">다운로드 시 자동으로 열려야 하는 파일 유형 목록</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치될 때 기본 HTML 렌더러를 설정할 수 있습니다.

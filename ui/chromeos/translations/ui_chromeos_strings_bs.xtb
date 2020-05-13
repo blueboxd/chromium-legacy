@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Reprodukcija zvuka</translation>
 <translation id="4002066346123236978">Naslov</translation>
+<translation id="4065397611279318371">Da otvorite fajlove pomoću aplikacija <ph name="APP_NAME" />, najprije ih premjestite u folder <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Način unosa na kantonskom</translation>
 <translation id="4072248638558688893">Tamilska tastatura (fonetska)</translation>
 <translation id="4124935795427217608">Jednorog</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">Broj fajlova koji će se izbrisati: <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
 <translation id="5098629044894065541">Hebrejska</translation>
-<translation id="5112685521274804841">Fajlovi u ovim folderima su samo za čitanje. Neke aktivnosti nisu podržane.</translation>
 <translation id="5123433949759960244">Košarka</translation>
 <translation id="5129662217315786329">Poljska</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>

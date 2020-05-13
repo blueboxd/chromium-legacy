@@ -12,7 +12,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
-#include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -168,36 +168,17 @@ std::string ThemeSource::GetMimeType(const std::string& path) {
   return IsNewTabCssPath(parsed_path) ? "text/css" : "image/png";
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-ThemeSource::TaskRunnerForRequestPath(const std::string& path) {
-  std::string parsed_path;
-  webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, nullptr);
-
-  if (IsNewTabCssPath(parsed_path)) {
-    // We'll get this data from the NTPResourceCache, which must be accessed on
-    // the UI thread.
-    return content::URLDataSource::TaskRunnerForRequestPath(path);
-  }
-
-  // If it's not a themeable image, we don't need to go to the UI thread.
-  int resource_id = ResourcesUtil::GetThemeResourceId(parsed_path);
-  return BrowserThemePack::IsPersistentImageID(resource_id)
-             ? content::URLDataSource::TaskRunnerForRequestPath(path)
-             : nullptr;
-}
-
 bool ThemeSource::AllowCaching() {
   return false;
 }
 
-bool ThemeSource::ShouldServiceRequest(
-    const GURL& url,
-    content::ResourceContext* resource_context,
-    int render_process_id) {
+bool ThemeSource::ShouldServiceRequest(const GURL& url,
+                                       content::BrowserContext* browser_context,
+                                       int render_process_id) {
   return url.SchemeIs(chrome::kChromeSearchScheme)
-             ? InstantIOContext::ShouldServiceRequest(url, resource_context,
-                                                      render_process_id)
-             : URLDataSource::ShouldServiceRequest(url, resource_context,
+             ? InstantService::ShouldServiceRequest(url, browser_context,
+                                                    render_process_id)
+             : URLDataSource::ShouldServiceRequest(url, browser_context,
                                                    render_process_id);
 }
 
@@ -210,13 +191,11 @@ void ThemeSource::SendThemeBitmap(
     float scale) {
   ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactor(scale);
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     scoped_refptr<base::RefCountedMemory> image_data(
         ThemeService::GetThemeProviderForProfile(profile_->GetOriginalProfile())
             .GetRawData(resource_id, scale_factor));
     std::move(callback).Run(image_data.get());
   } else {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     std::move(callback).Run(
         rb.LoadDataResourceBytesForScale(resource_id, scale_factor));

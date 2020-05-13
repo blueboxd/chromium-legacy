@@ -312,48 +312,6 @@ const char* CursorCssNameFromId(mojom::CursorType id) {
       return "grab";
     case mojom::CursorType::kGrabbing:
       return "grabbing";
-
-#if defined(OS_CHROMEOS)
-    case mojom::CursorType::kNull:
-    case mojom::CursorType::kPointer:
-    case mojom::CursorType::kNoDrop:
-    case mojom::CursorType::kNotAllowed:
-    case mojom::CursorType::kCopy:
-    case mojom::CursorType::kMove:
-    case mojom::CursorType::kEastResize:
-    case mojom::CursorType::kNorthResize:
-    case mojom::CursorType::kSouthResize:
-    case mojom::CursorType::kWestResize:
-    case mojom::CursorType::kNorthEastResize:
-    case mojom::CursorType::kNorthWestResize:
-    case mojom::CursorType::kSouthWestResize:
-    case mojom::CursorType::kSouthEastResize:
-    case mojom::CursorType::kIBeam:
-    case mojom::CursorType::kAlias:
-    case mojom::CursorType::kCell:
-    case mojom::CursorType::kContextMenu:
-    case mojom::CursorType::kCross:
-    case mojom::CursorType::kHelp:
-    case mojom::CursorType::kWait:
-    case mojom::CursorType::kNorthSouthResize:
-    case mojom::CursorType::kEastWestResize:
-    case mojom::CursorType::kNorthEastSouthWestResize:
-    case mojom::CursorType::kNorthWestSouthEastResize:
-    case mojom::CursorType::kProgress:
-    case mojom::CursorType::kColumnResize:
-    case mojom::CursorType::kRowResize:
-    case mojom::CursorType::kVerticalText:
-    case mojom::CursorType::kZoomIn:
-    case mojom::CursorType::kZoomOut:
-    case mojom::CursorType::kHand:
-    case mojom::CursorType::kDndNone:
-    case mojom::CursorType::kDndMove:
-    case mojom::CursorType::kDndCopy:
-    case mojom::CursorType::kDndLink:
-      // In some environments, the image assets are not set (e.g. in
-      // content-browsertests, content-shell etc.).
-      return "left_ptr";
-#else   // defined(OS_CHROMEOS)
     case mojom::CursorType::kNull:
       return "left_ptr";
     case mojom::CursorType::kPointer:
@@ -430,7 +388,6 @@ const char* CursorCssNameFromId(mojom::CursorType id) {
       return "dnd-copy";
     case mojom::CursorType::kDndLink:
       return "dnd-link";
-#endif  // defined(OS_CHROMEOS)
     case mojom::CursorType::kCustom:
       NOTREACHED();
       return "left_ptr";

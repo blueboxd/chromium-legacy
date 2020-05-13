@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1587325591171447154">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
 <translation id="1619887657840448962">Per tal que Chrome sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
+<translation id="162629503687514352">Chrome OS no ha pogut sincronitzar les teves contrasenyes.</translation>
 <translation id="1628000112320670027">Obtén ajuda per a Chrome</translation>
 <translation id="1662639173275167396">Chrome OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS" />programari lliure<ph name="END_LINK_CROS_OSS" /> addicional, com ara <ph name="BEGIN_LINK_LINUX_OSS" />Linux (versió beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Gairebé has acabat amb l'actualització. Reinicia Google Chrome per completar-la. Les finestres d'incògnit no es tornaran a obrir.</translation>
@@ -74,6 +75,7 @@
 <translation id="3065168410429928842">Pestanya de Chrome</translation>
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
+<translation id="3127818369811890733">Chrome OS no ha pogut sincronitzar les teves dades.</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
 <translation id="3360895254066713204">Aplicació d'ajuda de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome es reiniciarà ara}=1{Chrome es reiniciarà d'aquí a 1 segon}other{Chrome es reiniciarà d'aquí a # segons}}</translation>

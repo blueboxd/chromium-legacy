@@ -294,11 +294,13 @@ bool TaskManagerImpl::GetV8Memory(TaskId task_id,
                                   int64_t* allocated,
                                   int64_t* used) const {
   const Task* task = GetTaskByTaskId(task_id);
-  if (!task->ReportsV8Memory())
+  const int64_t allocated_memory = task->GetV8MemoryAllocated();
+  const int64_t used_memory = task->GetV8MemoryUsed();
+  if (allocated_memory == -1 || used_memory == -1)
     return false;
 
-  *allocated = task->GetV8MemoryAllocated();
-  *used = task->GetV8MemoryUsed();
+  *allocated = allocated_memory;
+  *used = used_memory;
 
   return true;
 }

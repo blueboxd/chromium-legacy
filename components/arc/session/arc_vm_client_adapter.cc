@@ -66,7 +66,6 @@ constexpr const char kArcVmBootNotificationServerJobName[] =
     "arcvm_2dboot_2dnotification_2dserver";
 
 constexpr const char kCrosSystemPath[] = "/usr/bin/crossystem";
-constexpr const char kHomeDirectory[] = "/home";
 constexpr const char kArcVmBootNotificationServerSocketPath[] =
     "/run/arcvm_boot_notification_server/host.socket";
 
@@ -101,26 +100,6 @@ std::string GetChromeOsChannelFromLsbRelease() {
     return kUnknown;
   }
   return value.erase(value.find(kChannelSuffix), kChannelSuffix.size());
-}
-
-// TODO(pliard): Export host-side /data to the VM, and remove the function.
-vm_tools::concierge::CreateDiskImageRequest CreateArcDiskRequest(
-    const std::string& user_id_hash,
-    int64_t free_disk_bytes) {
-  DCHECK(!user_id_hash.empty());
-
-  vm_tools::concierge::CreateDiskImageRequest request;
-  request.set_cryptohome_id(user_id_hash);
-  request.set_disk_path("arcvm");
-
-  // The type of disk image to be created.
-  request.set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
-  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
-
-  // The logical size of the new disk image, in bytes.
-  request.set_disk_size(free_disk_bytes / 2);
-
-  return request;
 }
 
 std::string MonotonicTimestamp() {
@@ -204,7 +183,7 @@ std::vector<std::string> GenerateKernelCmdline(
       GenerateUpgradeProps(upgrade_params, serial_number, "androidboot");
   result.insert(result.end(), upgrade_props.begin(), upgrade_props.end());
 
-  // TODO(yusukes): Check if we need to set ro.boot.enable_adb_sideloading for
+  // TODO(niwa): Check if we need to set ro.boot.enable_adb_sideloading for
   // ARCVM.
 
   // Conditionally sets some properties based on |start_params|.
@@ -225,7 +204,6 @@ std::vector<std::string> GenerateKernelCmdline(
 vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     const std::string& user_id_hash,
     uint32_t cpus,
-    const base::FilePath& data_disk_path,
     const base::FilePath& demo_session_apps_path,
     const FileSystemStatus& file_system_status,
     std::vector<std::string> kernel_cmdline) {
@@ -261,18 +239,21 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
   request.set_rootfs_writable(file_system_status.is_host_rootfs_writable() &&
                               file_system_status.is_system_image_ext_format());
 
-  // Add /data as /dev/vdb.
+  // Add /vendor as /dev/vdb.
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
-  disk_image->set_path(data_disk_path.value());
+  disk_image->set_path(file_system_status.vendor_image_path().value());
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
-  disk_image->set_writable(true);
+  disk_image->set_writable(false);
   disk_image->set_do_mount(true);
+
   // Add /vendor as /dev/vdc.
+  // TODO(yusukes): Remove /dev/vdc once Android side stops using it.
   disk_image = request.add_disks();
   disk_image->set_path(file_system_status.vendor_image_path().value());
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
+
   // Add /run/imageloader/.../android_demo_apps.squash as /dev/vdd if needed.
   // TODO(b/144542975): Do this on upgrade instead.
   if (!demo_session_apps_path.empty()) {
@@ -433,7 +414,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   // ArcClientAdapter overrides:
   void StartMiniArc(StartParams params,
                     chromeos::VoidDBusMethodCallback callback) override {
-    // TODO(yusukes): Support mini ARC.
+    // TODO(wvk): Support mini ARC.
     VLOG(2) << "Mini ARCVM instance is not supported.";
 
     // Save the parameters for the later call to UpgradeArc.
@@ -681,75 +662,28 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       std::move(callback).Run(false);
       return;
     }
-    // TODO(pliard): Export host-side /data to the VM, and remove the call. Note
-    // that ArcSessionImpl checks low disk conditions before calling UpgradeArc.
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                       base::FilePath(kHomeDirectory)),
-        base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
-  }
 
-  void CreateDiskImageAfterSizeCheck(UpgradeParams params,
-                                     chromeos::VoidDBusMethodCallback callback,
-                                     int64_t free_disk_bytes) {
-    VLOG(2) << "Got free disk size: " << free_disk_bytes;
-    if (user_id_hash_.empty()) {
-      LOG(ERROR) << "User ID hash is not set";
-      std::move(callback).Run(false);
-      return;
-    }
-    // TODO(pliard): Export host-side /data to the VM, and remove the call.
-    GetConciergeClient()->CreateDiskImage(
-        CreateArcDiskRequest(user_id_hash_, free_disk_bytes),
-        base::BindOnce(&ArcVmClientAdapter::OnDiskImageCreated,
-                       weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback)));
-  }
-
-  // TODO(pliard): Export host-side /data to the VM, and remove the first half
-  // of the function.
-  void OnDiskImageCreated(
-      UpgradeParams params,
-      chromeos::VoidDBusMethodCallback callback,
-      base::Optional<vm_tools::concierge::CreateDiskImageResponse> reply) {
-    if (!reply.has_value()) {
-      LOG(ERROR) << "Failed to create disk image. Empty response.";
-      std::move(callback).Run(false);
-      return;
-    }
-
-    const vm_tools::concierge::CreateDiskImageResponse& response =
-        reply.value();
-    if (response.status() != vm_tools::concierge::DISK_STATUS_EXISTS &&
-        response.status() != vm_tools::concierge::DISK_STATUS_CREATED) {
-      LOG(ERROR) << "Failed to create disk image: "
-                 << response.failure_reason();
-      std::move(callback).Run(false);
-      return;
-    }
-    VLOG(1) << "Disk image for arcvm ready. status=" << response.status()
-            << ", disk=" << response.disk_path();
-
+    VLOG(2) << "Checking file system status";
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&FileSystemStatus::GetFileSystemStatusBlocking),
         base::BindOnce(&ArcVmClientAdapter::OnFileSystemStatus,
                        weak_factory_.GetWeakPtr(), std::move(params),
-                       std::move(callback),
-                       base::FilePath(response.disk_path())));
+                       std::move(callback)));
   }
 
   void OnFileSystemStatus(UpgradeParams params,
                           chromeos::VoidDBusMethodCallback callback,
-                          const base::FilePath& data_disk_path,
                           FileSystemStatus file_system_status) {
     VLOG(2) << "Got file system status";
     if (file_system_status_rewriter_for_testing_)
       file_system_status_rewriter_for_testing_.Run(&file_system_status);
 
+    if (user_id_hash_.empty()) {
+      LOG(ERROR) << "User ID hash is not set";
+      std::move(callback).Run(false);
+      return;
+    }
     if (serial_number_.empty()) {
       LOG(ERROR) << "Serial number is not set";
       std::move(callback).Run(false);
@@ -765,8 +699,8 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         start_params_, params, file_system_status, *is_dev_mode_,
         is_host_on_vm_, GetChromeOsChannelFromLsbRelease(), serial_number_);
     auto start_request = CreateStartArcVmRequest(
-        user_id_hash_, cpus, data_disk_path, params.demo_session_apps_path,
-        file_system_status, std::move(kernel_cmdline));
+        user_id_hash_, cpus, params.demo_session_apps_path, file_system_status,
+        std::move(kernel_cmdline));
 
     GetConciergeClient()->StartArcVm(
         start_request,
@@ -834,7 +768,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
 
     // We likely tried to stop mini VM which doesn't exist today. Notify
     // observers.
-    // TODO(yusukes): Remove the fallback once we implement mini VM.
+    // TODO(wvk): Remove the fallback once we implement mini VM.
     OnArcInstanceStopped();
   }
 
@@ -918,8 +852,8 @@ std::vector<std::string> GenerateUpgradeProps(
     }
   }
 
-  // TODO(yusukes): Handle |is_managed_account| in |upgrade_params|.
-
+  // TODO(niwa): Handle |is_managed_account| in |upgrade_params| when we
+  // implement apk sideloading for ARCVM.
   return result;
 }
 

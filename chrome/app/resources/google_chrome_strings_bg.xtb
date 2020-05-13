@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
+<translation id="162629503687514352">Chrome OS не синхронизира паролите ви.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="1662639173275167396">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />. Това се отнася и за <ph name="BEGIN_LINK_LINUX_OSS" />Linux (бета)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Почти приключихме! Рестартирайте Google Chrome, за да завършите актуализирането. Прозорците в режим „инкогнито“ няма да бъдат отворени отново.</translation>
@@ -76,6 +77,7 @@
 <translation id="3065168410429928842">Раздел в Chrome</translation>
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
+<translation id="3127818369811890733">Chrome OS не синхронизира данните ви.</translation>
 <translation id="3149510190863420837">Приложения в Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ще се стартира отново сега}=1{Chrome ще се стартира отново след 1 секунда}other{Chrome ще се стартира отново след # секунди}}</translation>

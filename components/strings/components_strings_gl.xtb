@@ -160,6 +160,7 @@
 <translation id="161042844686301425">Ciano</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1623104350909869708">Evitar que esta páxina cree caixas de diálogo adicionais</translation>
+<translation id="1623253368136559158">Movemento da cámara</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Produciuse un erro ao gardar a tarxeta</translation>
 <translation id="1639239467298939599">Cargando</translation>
@@ -441,6 +442,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2856444702002559011">É posible que os piratas informáticos tenten roubar a túa información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (por exemplo, contrasinais, mensaxes ou tarxetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Dobrez de póster</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Colocación das ventás</translation>
 <translation id="2881276955470682203">Queres gardar a tarxeta?</translation>
 <translation id="2882949212241984732">Dobrez en ventá dobre</translation>
 <translation id="2903493209154104877">Enderezos</translation>
@@ -641,6 +643,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Comprobar o proxy, o firewall e a configuración de DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Entre as aplicacións que poden provocar este erro inclúense o software de filtrado web ou proxy, o antivirus e o firewall.</translation>
 <translation id="373042150751172459">B4 (sobre)</translation>
+<translation id="3731873414101415120">Os sitios web que visitas e o contido de páxinas que non son seguras</translation>
 <translation id="3736520371357197498">Se aceptas os riscos para a túa seguranza, podes <ph name="BEGIN_LINK" />visitar este sitio non seguro<ph name="END_LINK" /> antes de que se eliminen os programas perigosos.</translation>
 <translation id="3744899669254331632">Non se pode visitar <ph name="SITE" /> nestes momentos porque o sitio web enviou credenciais codificadas que Chromium non pode procesar. Os erros e ataques da rede normalmente son temporais, polo que é probable que esta páxina funcione máis tarde.</translation>
 <translation id="3745099705178523657">Unha vez que confirmes os datos, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
@@ -907,6 +910,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4877083676943085827">{COUNT,plural, =0{Ningún}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> e <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Busca de "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Automático (opción predeterminada)</translation>
+<translation id="4879725228911483934">Abrir e colocar ventás nas túas pantallas</translation>
 <translation id="4880827082731008257">Historial de busca</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4892518386797173871">Traseira</translation>
@@ -1620,6 +1624,7 @@ Detalles adicionais:
 <translation id="7887885240995164102">Acceder ao modo de pantalla superposta</translation>
 <translation id="7888575728750733395">Intent de renderización da impresión</translation>
 <translation id="7904208859782148177">C3 (sobre)</translation>
+<translation id="7923775243649974918">Move á túa cámara</translation>
 <translation id="7932579305932748336">Recubrimento</translation>
 <translation id="79338296614623784">Introduce un número de teléfono válido</translation>
 <translation id="7934052535022478634">Completouse o pago</translation>

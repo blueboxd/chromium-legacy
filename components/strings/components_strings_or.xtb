@@ -160,6 +160,7 @@
 <translation id="161042844686301425">ସାୟାନ୍</translation>
 <translation id="1620510694547887537">କ୍ୟାମେରା</translation>
 <translation id="1623104350909869708">ଅତିରିକ୍ତ ସଂଳାପଗୁଡିକ ସୃଷ୍ଟି କରିବା କାର୍ଯ୍ୟରୁ ଏହି ପୃଷ୍ଠାକୁ ପ୍ରତିରୋଧ କରନ୍ତୁ</translation>
+<translation id="1623253368136559158">କ୍ୟାମେରା ଗତିବିଧି</translation>
 <translation id="16338877384480380">ଆର୍କିଟେକ୍‌ଚର୍-B</translation>
 <translation id="1638780421120290329">କାର୍ଡ ସେଭ୍ କରିପାରିବ ନାହିଁ</translation>
 <translation id="1639239467298939599">ଲୋଡ୍ ହେଉଛି</translation>
@@ -437,6 +438,7 @@
 <translation id="2856444702002559011">ଆକ୍ରମଣକାରୀ ହୁଏତ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />ରୁ ଆପଣଙ୍କର ସୂଚନା ଚୋରାଇବାକୁ ଚେଷ୍ଟା କରିପାରନ୍ତି (ଉଦାହରଣ ସ୍ୱରୂପ, ପାସ୍‍ୱର୍ଡ, ମେସେଜ୍ କିମ୍ବା କ୍ରେଡିଟ୍‍ କାର୍ଡ)। <ph name="BEGIN_LEARN_MORE_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">ପୋଷ୍ଟର୍ ଫୋଲ୍ଡ</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">ୱିଣ୍ଡୋ ପ୍ଲେସମେଣ୍ଟ</translation>
 <translation id="2881276955470682203">କାର୍ଡ ସେଭ୍ କରିବେ?</translation>
 <translation id="2882949212241984732">ଡବଲ୍-ଗେଟ୍ ଫୋଲ୍ଡ</translation>
 <translation id="2903493209154104877">ଠିକଣାଗୁଡ଼ିକ</translation>
@@ -634,6 +636,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ପ୍ରୋକ୍ସି ଓ ଫାୟାରୱାଲ୍ ଏବଂ DNS କନ୍‌ଫିଗ୍‌ରେସନ୍‌ ଯାଞ୍ଚ ହେଉଛି<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">ଯେଉଁ ଆପ୍ଲିକେସନ୍‌ ଯୋଗୁଁ ଏହି ତ୍ରୁଟି ହୋ‍ଇପାରେ ସେମାନଙ୍କ ମଧ୍ୟରେ ଆଣ୍ଟିଭାଇରସ୍‌, ଫାୟାର୍‌ୱାଲ୍‌ ଏବଂ ୱେବ୍‌-ଫିଲ୍ଟରିଂ କିମ୍ବା ପ୍ରକ୍ସି ସଫ୍ଟୱେର୍ ସାମିଲ୍‍ ଅଛି।</translation>
 <translation id="373042150751172459">B4 (ଏନଭଲପ୍)</translation>
+<translation id="3731873414101415120">ଆପଣ ଭିଜିଟ୍ କରିଥିବା ୱେବସାଇଟ୍ ଏବଂ ସୁରକ୍ଷିତ ନଥିବା ପୃଷ୍ଠାଗୁଡ଼ିକର ବିଷୟବସ୍ତୁ</translation>
 <translation id="3736520371357197498">ଆପଣଙ୍କ ସୁରକ୍ଷା ପ୍ରତି ଥିବା ବିପଦକୁ ଯଦି ଆପଣ ବୁଝିପାରନ୍ତି, ତେବେ ବିପଦପୂର୍ଣ୍ଣ ପ୍ରୋଗ୍ରାମ୍‍ଗୁଡ଼ିକୁ କଢ଼ାଯିବା ପୂର୍ବରୁ ଆପଣ ଏହି <ph name="BEGIN_LINK" />ଅସୁରକ୍ଷିତ ସାଇଟ୍‍କୁ ଯାଇପାରନ୍ତି<ph name="END_LINK" />।</translation>
 <translation id="3744899669254331632">ଆପଣ ବର୍ତ୍ତମାନ <ph name="SITE" />କୁ ଯାଇପାରିବେ ନାହିଁ କାରଣ ୱେବ୍-ସାଇଟ୍ ଅସ୍ପଷ୍ଟ କ୍ରେଡେନ୍ସିଆଲ୍‍ଗୁଡ଼ିକୁ ପଠାଇଛି ଯାହାକୁ, Chromium କାର୍ଯ୍ୟକାରୀ କରିପାରିବ ନାହିଁ। ନେଟ୍‍ୱାର୍କ ତ୍ରୁଟି ଓ ଆକ୍ରମଣଗୁଡ଼ିକ ସାଧାରଣତଃ ଅସ୍ଥାୟୀ ଅଟେ ତେଣୁ ଏହି ପୃଷ୍ଠା ପରେ କାମ କରିପାରେ।</translation>
 <translation id="3745099705178523657">ଆପଣ ସୁନିଶ୍ଚିତ କରିବା ପରେ, ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟରୁ ମିଳିଥିବା କାର୍ଡ ବିବରଣୀ ଏହି ସାଇଟ୍ ସହ ସେୟାର୍ କରାଯିବ।</translation>
@@ -899,6 +902,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{କିଛି ନାହିଁ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="4879491255372875719">ସ୍ୱଚାଳିତ (ଡିଫଲ୍ଟ)</translation>
+<translation id="4879725228911483934">ୱିଣ୍ଡୋଗୁଡ଼ିକ ଖୋଲି ଆପଣଙ୍କ ସ୍କ୍ରିନଗୁଡ଼ିକରେ ରଖନ୍ତୁ</translation>
 <translation id="4880827082731008257">ଇତିବୃତ୍ତି ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="4881695831933465202">ଖୋଲନ୍ତୁ</translation>
 <translation id="4892518386797173871">ପଛଭାଗ</translation>
@@ -1611,6 +1615,7 @@
 <translation id="7887885240995164102">ପିକଚର୍-ଇନ୍-ପିକଚର୍ ଲେଖନ୍ତୁ</translation>
 <translation id="7888575728750733395">ପ୍ରିଣ୍ଟ ରେଣ୍ଡରିଂ ଇଣ୍ଟେଣ୍ଟ</translation>
 <translation id="7904208859782148177">C3 (ଏନଭଲପ୍)</translation>
+<translation id="7923775243649974918">ଆପଣଙ୍କ କ୍ୟାମେରା ମୁଭ୍ କରନ୍ତୁ</translation>
 <translation id="7932579305932748336">କୋଟ୍</translation>
 <translation id="79338296614623784">ଏକ ବୈଧ ଫୋନ୍ ନମ୍ଵର୍ ଲେଖନ୍ତୁ</translation>
 <translation id="7934052535022478634">ଦେୟ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି</translation>

@@ -42,6 +42,8 @@ class TileServiceImpl : public InitializableTileService {
   TileServiceImpl& operator=(const TileServiceImpl& other) = delete;
 
  private:
+  friend class TileServiceImplTest;
+
   // InitializableTileService implementation.
   void Initialize(SuccessCallback callback) override;
   void GetQueryTiles(GetTilesCallback callback) override;

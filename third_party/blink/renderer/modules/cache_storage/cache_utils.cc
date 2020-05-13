@@ -35,7 +35,7 @@ Response* CreateEagerResponse(ScriptState* script_state,
   // completion of the eagerly read blob and propagate it to the given
   // DataPipeBytesConsumer::CompletionNotifier.  The list will also hold
   // the client alive.
-  client_list->AddClient(std::move(eager_response->client_receiver),
+  client_list->AddClient(context, std::move(eager_response->client_receiver),
                          std::move(completion_notifier));
 
   fetch_data = Response::FilterResponseData(

@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">NOTHING</translation>
 <translation id="3966388904776714213">အသံဖွင့် ကိရိယာ</translation>
 <translation id="4002066346123236978">ခေါင်းစဉ်</translation>
+<translation id="4065397611279318371">ဖိုင်များကို <ph name="APP_NAME" /> အက်ပ်များဖြင့် ဖွင့်ရန် ၎င်းတို့ကို <ph name="SHARED_DIRECTORY_LABEL" /> ဖိုင်တွဲသို့ ဦးစွာရွှေ့ပါ။</translation>
 <translation id="4070370845051020638">ကွမ်တုံးထည့်သွင်းမှုနည်းလမ်း</translation>
 <translation id="4072248638558688893">တမီးလ် ကီးဘုတ် (Phonetic)</translation>
 <translation id="4124935795427217608">သိင်္ဂဿမြင်း</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">ဖိုင် <ph name="TOTAL_FILE_SIZE" /> ကို ဖျက်လိုက်ပါမည်</translation>
 <translation id="509429900233858213">အမှား တစ်ခု ကြုံခဲ့ရသည်။</translation>
 <translation id="5098629044894065541">ဟီဘရူး</translation>
-<translation id="5112685521274804841">ဤဖိုင်တွဲအတွင်းရှိ ဖိုင်များက ဖတ်ရန်သီးသန့် ဖြစ်သည်။ လုပ်ဆောင်ချက်အချို့ကို မပံ့ပိုးပါ။</translation>
 <translation id="5123433949759960244">ဘတ်စကက်ဘော</translation>
 <translation id="5129662217315786329">ပိုလန်</translation>
 <translation id="5144820558584035333">ဟံဂူလ် ၃ စုံ (၃၉၀)</translation>

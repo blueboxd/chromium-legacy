@@ -351,7 +351,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फाइलहरू मेटाइने छन्</translation>
 <translation id="509429900233858213">त्रुटि भयो।</translation>
 <translation id="5098629044894065541">हिब्रु</translation>
-<translation id="5112685521274804841">यो फोल्डरभित्र रहेका फाइलहरू रिड गर्न मात्र मिल्छ। केही क्रियाकलापहरू गर्न मिल्दैन।</translation>
 <translation id="5123433949759960244">बास्केटबल</translation>
 <translation id="5129662217315786329">पोलिस</translation>
 <translation id="5144820558584035333">हंगुल 3 सेट (390)</translation>
@@ -432,14 +431,14 @@
 <translation id="5850516540536751549">यो फाइल प्रकार समर्थित छैन। यो फाइल प्रकारलाई खोल्न सक्ने एप फेला पार्नको लागि कृपया <ph name="BEGIN_LINK" />Chrome वेब स्टोर<ph name="END_LINK" /> को भ्रमण गर्नुहोस्।
     <ph name="BEGIN_LINK_HELP" />थप जान्नुहोस्<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">यहाँ हेर्ने कुरा केही छैन ...</translation>
-<translation id="5857774240076772505">Linux का अनुप्रयोगलाई <ph name="FOLDER_NAME" /> फोल्डरमा रहेका फाइलहरू परिमार्जन गर्ने अनुमति दिनुहोस्</translation>
+<translation id="5857774240076772505">Linux का एपलाई <ph name="FOLDER_NAME" /> फोल्डरमा रहेका फाइलहरू परिमार्जन गर्ने अनुमति दिनुहोस्</translation>
 <translation id="5892290200158927959">फ्रान्सेली BÉPO किबोर्ड</translation>
 <translation id="5911887972742538906">तपाईंको Linux एप स्थापना गर्ने क्रममा त्रुटि भयो।</translation>
 <translation id="5912396950572065471">ढाँचा</translation>
 <translation id="5913638992615760742">प्रतिलिपि गर्न सकिएन, अनपेक्षित त्रुटि: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">जापानी इनपुट (जापानी किबोर्डका लागि)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
-<translation id="5949281959820712067">Linux का अनुप्रयोगलाई आफ्नो Google ड्राइभमा रहेका फाइलहरू परिमार्जन गर्ने अनुमति दिनुहोस्। परिवर्तनहरू तपाईंका अन्य यन्त्रहरूमा पनि सिंक हुने छन्।</translation>
+<translation id="5949281959820712067">Linux का एपलाई आफ्नो Google ड्राइभमा रहेका फाइलहरू परिमार्जन गर्ने अनुमति दिनुहोस्। परिवर्तनहरू तपाईंका अन्य यन्त्रहरूमा पनि सिंक हुने छन्।</translation>
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> वस्तुहरू</translation>
 <translation id="5982621672636444458">विकल्पहरू क्रमबद्ध गर्नुहोस्</translation>
 <translation id="6005282720244019462">ल्याटिन अमेरिकी किबोर्ड</translation>
@@ -528,7 +527,7 @@
 <translation id="6965382102122355670">ठिक छ</translation>
 <translation id="6970230597523682626">बुल्गेरियन</translation>
 <translation id="6973630695168034713">फोल्डरहरू</translation>
-<translation id="6978611942794658017">यो फाइल Windows सफ्वेयर प्रयोग गर्ने पिसीको लागि डिजाइन गरिएको हो। यो तपाइँको यन्त्रसँग मिल्दो छैन जसले Chrome OS चालू गर्छ। कृपया एक मिल्दो अनुप्रयोगको लागि Chrome Web Store मा खोज्नुहोस्।</translation>
+<translation id="6978611942794658017">यो फाइल Windows सफ्वेयर प्रयोग गर्ने पिसीको लागि डिजाइन गरिएको हो। यो तपाइँको यन्त्रसँग मिल्दो छैन जसले Chrome OS चालू गर्छ। कृपया एक मिल्दो एपको लागि Chrome Web Store मा खोज्नुहोस्।</translation>
 <translation id="6979158407327259162">Google ड्राइभ</translation>
 <translation id="6990081529015358884">तपाईंको खाली स्थान समाप्त भएको छ</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> फोल्डरहरू चयन गरियो</translation>
@@ -710,7 +709,7 @@
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' का सदस्यहरूले यी वस्तुहरूको प्रतिलिपिमाथिको पहुँच पाउनुहुनेछ।</translation>
 <translation id="9131598836763251128">एक वा बढी फाइलहरू चयन गर्नुहोस्</translation>
 <translation id="9133055936679483811">जिप गर्ने कार्य असफल भयो। <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">यो फाइल म्याकिन्टस सफ्टवेयर प्रयोग गर्ने कम्प्युटरको लागि डिजाइन गरिएको हो। यो तपाइँको यन्त्रसँग मिल्दो छैन जसले Chrome OS प्रयोग गर्छ। कृपया एक मिल्दो अनुप्रयोगको लागि Chrome Web Store मा खोज्नुहोस्।</translation>
+<translation id="9134524245363717059">यो फाइल म्याकिन्टस सफ्टवेयर प्रयोग गर्ने कम्प्युटरको लागि डिजाइन गरिएको हो। यो तपाइँको यन्त्रसँग मिल्दो छैन जसले Chrome OS प्रयोग गर्छ। कृपया एक मिल्दो एपको लागि Chrome Web Store मा खोज्नुहोस्।</translation>
 <translation id="913758436357682283">म्यानमार म्यान्सान किबोर्ड</translation>
 <translation id="9148058034647219655">बाहिर निस्कनुहोस्</translation>
 <translation id="9153744823707037316">ऐरे आगत विधि</translation>

@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Kivis</translation>
 <translation id="3966388904776714213">Garso įrašų grotuvas</translation>
 <translation id="4002066346123236978">Pavadinimas</translation>
+<translation id="4065397611279318371">Jei norite atidaryti failus naudodami programas <ph name="APP_NAME" />, pirmiausia perkelkite juos į „<ph name="SHARED_DIRECTORY_LABEL" />“ aplanką.</translation>
 <translation id="4070370845051020638">Įvesties kantoniečių dialektu metodas</translation>
 <translation id="4072248638558688893">Tamiliška klaviatūra (fonetinė)</translation>
 <translation id="4124935795427217608">Vienaragis</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">Bus ištrinta <ph name="TOTAL_FILE_SIZE" /> failų</translation>
 <translation id="509429900233858213">Įvyko klaida.</translation>
 <translation id="5098629044894065541">Hebrajų</translation>
-<translation id="5112685521274804841">Failai šiuose aplankuose tik skaitomi. Tam tikra veikla nepalaikoma.</translation>
 <translation id="5123433949759960244">Krepšinis</translation>
 <translation id="5129662217315786329">Lenkų</translation>
 <translation id="5144820558584035333">Hangul 3 rinkinys (390)</translation>

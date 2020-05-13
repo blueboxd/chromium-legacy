@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_blob_client_list.h"
 
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+
 namespace blink {
 
 // Class implementing the BlobReaderClient interface.  This is used to
@@ -18,12 +21,16 @@ class CacheStorageBlobClientList::Client
 
  public:
   Client(CacheStorageBlobClientList* owner,
+         ExecutionContext* context,
          mojo::PendingReceiver<mojom::blink::BlobReaderClient>
              client_pending_receiver,
          DataPipeBytesConsumer::CompletionNotifier* completion_notifier)
       : owner_(owner),
-        client_receiver_(this, std::move(client_pending_receiver)),
-        completion_notifier_(completion_notifier) {}
+        client_receiver_(this, context),
+        completion_notifier_(completion_notifier) {
+    client_receiver_.Bind(std::move(client_pending_receiver),
+                          context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+  }
 
   void OnCalculatedSize(uint64_t total_size,
                         uint64_t expected_content_size) override {}
@@ -44,6 +51,7 @@ class CacheStorageBlobClientList::Client
   void Trace(Visitor* visitor) {
     visitor->Trace(owner_);
     visitor->Trace(completion_notifier_);
+    visitor->Trace(client_receiver_);
   }
 
  private:
@@ -61,18 +69,22 @@ class CacheStorageBlobClientList::Client
   }
 
   WeakMember<CacheStorageBlobClientList> owner_;
-  mojo::Receiver<mojom::blink::BlobReaderClient> client_receiver_;
+  HeapMojoReceiver<mojom::blink::BlobReaderClient,
+                   Client,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      client_receiver_;
   Member<DataPipeBytesConsumer::CompletionNotifier> completion_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(Client);
 };
 
 void CacheStorageBlobClientList::AddClient(
+    ExecutionContext* context,
     mojo::PendingReceiver<mojom::blink::BlobReaderClient>
         client_pending_receiver,
     DataPipeBytesConsumer::CompletionNotifier* completion_notifier) {
   clients.emplace_back(MakeGarbageCollected<Client>(
-      this, std::move(client_pending_receiver), completion_notifier));
+      this, context, std::move(client_pending_receiver), completion_notifier));
 }
 
 void CacheStorageBlobClientList::Trace(Visitor* visitor) {

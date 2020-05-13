@@ -216,9 +216,10 @@ class CONTENT_EXPORT ServiceWorkerUpdatedScriptLoader final
 
   const GURL request_url_;
 
-  // This is blink::mojom::ResourceType::kServiceWorker for the main script or
-  // blink::mojom::ResourceType::kScript for an imported script.
-  const blink::mojom::ResourceType resource_type_;
+  // This is network::mojom::RequestDestination::kServiceWorker for the main
+  // script or network::mojom::RequestDestination::kScript for an imported
+  // script.
+  const network::mojom::RequestDestination request_destination_;
 
   // Loader options to pass to the network loader.
   const uint32_t options_;

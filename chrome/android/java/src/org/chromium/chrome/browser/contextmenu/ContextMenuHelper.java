@@ -226,7 +226,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      */
     public void searchWithGoogleLens(boolean isIncognito) {
         retrieveImage(ContextMenuImageFormat.PNG, (Uri imageUri) -> {
-            ShareHelper.shareImageWithGoogleLens(mWindow, imageUri, isIncognito);
+            ShareHelper.shareImageWithGoogleLens(mWindow, imageUri, isIncognito,
+                    mCurrentContextMenuParams.getSrcUrl(),
+                    mCurrentContextMenuParams.getTitleText());
         });
     }
 

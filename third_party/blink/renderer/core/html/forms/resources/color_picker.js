@@ -723,7 +723,7 @@ class VisualColorPicker extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.hueSlider_.focused = false;
-    this.colorWell_.pointerDown(new Point(event.touches[0].clientX, event.touches[0].clientY));
+    this.colorWell_.pointerDown(new Point(Math.round(event.touches[0].clientX), Math.round(event.touches[0].clientY)));
   }
 
   /**
@@ -733,7 +733,7 @@ class VisualColorPicker extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this.colorWell_.focused = false;
-    this.hueSlider_.pointerDown(new Point(event.touches[0].clientX, event.touches[0].clientY));
+    this.hueSlider_.pointerDown(new Point(Math.round(event.touches[0].clientX), Math.round(event.touches[0].clientY)));
   }
 
   onTouchStart_ = () => {
@@ -745,7 +745,7 @@ class VisualColorPicker extends HTMLElement {
    * @param {!Event} event
    */
   onTouchMove_ = (event) => {
-    var point = new Point(event.touches[0].clientX, event.touches[0].clientY);
+    var point = new Point(Math.round(event.touches[0].clientX), Math.round(event.touches[0].clientY));
     this.colorWell_.pointerMove(point);
     this.hueSlider_.pointerMove(point);
   }
@@ -1064,7 +1064,7 @@ class ColorPalette extends HTMLCanvasElement {
    * @param {number} y
    */
   hslImageDataAtPoint_(x, y) {
-    let offset = Math.round(y * this.width + x) * 3;
+    let offset = (y * this.width + x) * 3;
     // It is possible that the computed offset is larger than the hslImageData
     // array's length. This can happen at certain zoom levels (ex. 150%), where
     // the height of the color well is not a round number. The getImageData API

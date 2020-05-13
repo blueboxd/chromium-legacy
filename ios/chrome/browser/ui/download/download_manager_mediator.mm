@@ -127,20 +127,17 @@ void DownloadManagerMediator::UpdateConsumer() {
 
     if (base::FeatureList::IsEnabled(
             web::features::kEnablePersistentDownloads)) {
-      NSURL* temp_download_url = [NSURL
-          fileURLWithPath:base::SysUTF8ToNSString(download_path_.value())];
-
       base::FilePath user_download_path;
       GetDownloadsDirectory(&user_download_path);
       user_download_path = user_download_path.Append(
           base::UTF16ToUTF8(task_->GetSuggestedFilename()));
-      NSURL* download_url = [NSURL
-          fileURLWithPath:base::SysUTF8ToNSString(user_download_path.value())];
 
-      [[NSFileManager defaultManager] moveItemAtURL:temp_download_url
-                                              toURL:download_url
-                                              error:nil];
-      download_path_ = user_download_path;
+      base::ThreadPool::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+          base::Bind(&base::Move, download_path_, user_download_path),
+          base::Bind(&DownloadManagerMediator::RestoreDownloadPath,
+                     weak_ptr_factory_.GetWeakPtr(), user_download_path));
     }
   }
 
@@ -159,6 +156,13 @@ void DownloadManagerMediator::UpdateConsumer() {
     UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
                                     l10n_util::GetNSString(a11y_announcement));
   }
+}
+
+void DownloadManagerMediator::RestoreDownloadPath(
+    base::FilePath user_download_path,
+    bool moveCompleted) {
+  DCHECK(moveCompleted);
+  download_path_ = user_download_path;
 }
 
 DownloadManagerState DownloadManagerMediator::GetDownloadManagerState() const {

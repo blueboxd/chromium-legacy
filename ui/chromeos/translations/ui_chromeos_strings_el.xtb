@@ -268,6 +268,7 @@
 <translation id="3958548648197196644">Ακτινίδιο</translation>
 <translation id="3966388904776714213">Πρόγραμμα αναπαραγωγής ήχου</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
+<translation id="4065397611279318371">Για να ανοίξετε αρχεία με εφαρμογές <ph name="APP_NAME" />, αρχικά μετακινήστε τα στον φάκελο <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Μέθοδος εισαγωγής Καντονέζικων</translation>
 <translation id="4072248638558688893">Πληκτρολόγιο Ταμίλ (Φωνητικό)</translation>
 <translation id="4124935795427217608">Μονόκερος</translation>
@@ -362,7 +363,6 @@
 <translation id="509429900233858213">Παρουσιάστηκε σφάλμα.</translation>
 <translation id="5098629044894065541">Εβραϊκά
 </translation>
-<translation id="5112685521274804841">Τα αρχεία σε αυτόν τον φάκελο είναι μόνο για ανάγνωση. Δεν υποστηρίζονται ορισμένες δραστηριότητες.</translation>
 <translation id="5123433949759960244">Μπάλα μπάσκετ</translation>
 <translation id="5129662217315786329">Πολωνικά
 </translation>

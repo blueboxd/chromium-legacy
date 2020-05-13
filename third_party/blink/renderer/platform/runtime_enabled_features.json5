@@ -1471,6 +1471,7 @@
     },
     {
       name: "QuicTransport",
+      origin_trial_feature_name: "QuicTransport",
       status: "experimental",
     },
     {

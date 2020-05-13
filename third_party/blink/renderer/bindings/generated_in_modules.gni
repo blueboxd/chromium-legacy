@@ -1194,6 +1194,8 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_video_track_reader.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_video_track_writer.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_video_track_writer.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_virtual_keyboard.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_virtual_keyboard.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_wake_lock.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_wake_lock.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_sentinel.cc",

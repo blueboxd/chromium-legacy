@@ -35,10 +35,38 @@ class MessageData {
 /**
  * The Object placed in MessageData.message (and thrown by the Promise returned
  * by sendMessage) if an exception is caught on the receiving end.
- *
- * @typedef {{message: string}}
+ * @typedef {{
+ *     name: string,
+ *     message: string,
+ *     stack: string,
+ * }}
  */
 let GenericErrorResponse;
+
+/**
+ * Error object allowing attributes to be undefined.
+ * @typedef {{
+ *    name: (string|undefined),
+ *    message: (string|undefined),
+ *    stack: (string|undefined),
+ * }}
+ */
+let DefensiveError;
+
+/**
+ * To handle generic errors such as `DOMException` not being an `Error`
+ * defensively assign '' if the attribute is undefined. Without explicitly
+ * extracting fields, `Errors` are sent as `{}` across the pipe.
+ * @param {!DefensiveError} error
+ * @return {GenericErrorResponse}
+ */
+function serializeError(error) {
+  return {
+    message: error.message || '',
+    name: error.name || '',
+    stack: error.stack || ''
+  };
+}
 
 /**
  * The type of a message handler function which gets called when the message
@@ -238,15 +266,41 @@ class MessagePipe {
   }
 
   /**
-   * Sends a message to the target window and return a Promise that will resolve
-   * on response. If the target handler does not send a response the promise
-   * will resolve with a empty object.
+   * Wraps `sendMessageImpl()` catching errors from the target context to throw
+   * more useful errors with the current context stacktrace attached.
    *
    * @param {string} messageType
    * @param {!Object=} message
    * @return {!Promise<!Object>}
    */
-  sendMessage(messageType, message = {}) {
+  async sendMessage(messageType, message = {}) {
+    try {
+      return await this.sendMessageImpl(messageType, message);
+    } catch (/** @type {!GenericErrorResponse} */ errorResponse) {
+      // Create an error with the name of the IPC function invoked, append the
+      // stacktrace from the target context (origin of the error) with the
+      // stacktrace of the current context.
+      const error = new Error(`${messageType}: ${errorResponse.message}`);
+      error.name = errorResponse.name || 'Unknown Error';
+      error.stack +=
+          `\nError from ${this.targetOrigin_}\n${errorResponse.stack}`;
+      // TODO(b/156205603): use internal `chrome.crashReportPrivate.reportError`
+      // to log this error.
+      throw error;
+    }
+  }
+
+  /**
+   * Sends a message to the target window and return a Promise that will resolve
+   * on response. If the target handler does not send a response the promise
+   * will resolve with a empty object.
+   *
+   * @private
+   * @param {string} messageType
+   * @param {!Object=} message
+   * @return {!Promise<!Object>}
+   */
+  async sendMessageImpl(messageType, message = {}) {
     throwIfReserved(messageType);
 
     const messageId = this.nextMessageId_++;
@@ -305,23 +359,21 @@ class MessagePipe {
     const {RESPONSE_TYPE, ERROR_TYPE} = ReservedMessageTypes;
     /** @type {!Object|undefined} */
     let response;
-    /** @type {?Error} */
+    /** @type {?DefensiveError} */
     let error = null;
     /** @type {boolean} */
     let sawError = false;
 
     try {
       response = await this.messageHandlers_.get(messageType)(message);
-    } catch (/** @type {!Error} */ err) {
+    } catch (/** @type {!DefensiveError} */ err) {
       // If an error happened capture the error and send it back.
-      error = err;
       sawError = true;
-      /** @type{GenericErrorResponse} */
-      const errorResponse = {message: error.message || ''};
-      response = errorResponse;
+      error = err;
+      response = serializeError(err);
     }
-
-    this.postToTarget_(error ? ERROR_TYPE : RESPONSE_TYPE, response, messageId);
+    this.postToTarget_(
+        sawError ? ERROR_TYPE : RESPONSE_TYPE, response, messageId);
 
     if (sawError && this.rethrowErrors) {
       // Rethrow the error so the current frame has visibility on its handler
@@ -336,7 +388,7 @@ class MessagePipe {
    * @param {!Event} event
    */
   receiveMessage_(event) {
-    const e = /** @type{!MessageEvent<!MessageData>} */ (event);
+    const e = /** @type {!MessageEvent<!MessageData>} */ (event);
     const {messageId, type, message} = e.data;
     const {ERROR_TYPE} = ReservedMessageTypes;
 
@@ -362,10 +414,9 @@ class MessagePipe {
 
     if (!this.messageHandlers_.has(type)) {
       // If there is no listener for this event send a error message to source.
-      /** @type {GenericErrorResponse} */
-      const errorResponse = {
-        message: `No handler registered for message type '${type}'`
-      };
+      const error =
+          new Error(`No handler registered for message type '${type}'`);
+      const errorResponse = serializeError(error);
       this.postToTarget_(ERROR_TYPE, errorResponse, messageId);
       return;
     }

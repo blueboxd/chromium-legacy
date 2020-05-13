@@ -325,6 +325,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3738139272394829648">Snertileit</translation>
 <translation id="3739899004075612870">Bókamerki bætt við <ph name="PRODUCT_NAME" /></translation>
 <translation id="3749259744154402564">Ekki stutt</translation>
+<translation id="3763247130972274048">Ýttu tvisvar vinstra eða hægra megin á myndskeið til að fara fram um 10 sekúndur</translation>
 <translation id="3771001275138982843">Ekki var hægt að sækja uppfærslu</translation>
 <translation id="3771033907050503522">Huliðsflipar</translation>
 <translation id="3771694256347217732">Þjónustuskilmálar Google</translation>
@@ -551,7 +552,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5581519193887989363">Þú getur alltaf valið hvað á að samstilla í <ph name="BEGIN_LINK1" />stillingunum<ph name="END_LINK1" />.</translation>
 <translation id="5595485650161345191">Breyta heimilisfangi</translation>
 <translation id="5599455543593328020">Huliðsstilling</translation>
-<translation id="5620928963363755975">Þú finnur skrár og síður í „Niðurhal“ undir hnappinum „Fleiri valkostir“</translation>
+<translation id="5620928963363755975">Þú finnur skrár og síður í Niðurhali undir hnappinum „Fleiri valkostir“</translation>
 <translation id="5626134646977739690">Nafn:</translation>
 <translation id="5639724618331995626">Leyfa öll vefsvæði</translation>
 <translation id="5648166631817621825">Síðastliðna sjö daga</translation>
@@ -598,7 +599,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5942872142862698679">Notar Google fyrir leit</translation>
 <translation id="5952764234151283551">Sendir vefslóð síðunnar sem þú reynir að opna til Google</translation>
 <translation id="5956665950594638604">Opna hjálparmiðstöð Chrome í nýjum flipa</translation>
-<translation id="5958275228015807058">Þú finnur skrár og síður í „Niðurhal“</translation>
+<translation id="5958275228015807058">Þú finnur skrár og síður í Niðurhali</translation>
 <translation id="5962718611393537961">Ýttu til að draga saman</translation>
 <translation id="5964805880140440652">Til að deila þessari síðu í öðru tæki skaltu kveikja á samstillingu í stillingum Chrome</translation>
 <translation id="6000066717592683814">Nota Google áfram</translation>
@@ -891,6 +892,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8368027906805972958">Óþekkt eða óstutt tæki (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Senda skilaboð</translation>
 <translation id="8413126021676339697">Sýna allan feril</translation>
+<translation id="8425213833346101688">Breyta</translation>
 <translation id="8427875596167638501">Forskoðunarflipinn er hálfopinn</translation>
 <translation id="8428213095426709021">Stillingar</translation>
 <translation id="8438566539970814960">Bæta leit og vafra</translation>

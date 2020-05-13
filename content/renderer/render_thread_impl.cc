@@ -61,7 +61,6 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/view_messages.h"
@@ -887,8 +886,8 @@ IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
 
 void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
   ChildThreadImpl::GetRouter()->AddRoute(routing_id, listener);
-  auto it = pending_frame_creates_.find(routing_id);
-  if (it == pending_frame_creates_.end())
+  auto it = pending_frames_.find(routing_id);
+  if (it == pending_frames_.end())
     return;
 
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(routing_id);
@@ -904,24 +903,22 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
       frame->GetTaskRunner(
           blink::TaskType::kInternalNavigationAssociatedUnfreezable));
 
-  frame->BindFrame(it->second->TakeFrameReceiver());
-  pending_frame_creates_.erase(it);
+  frame->BindFrame(std::move(it->second));
+  pending_frames_.erase(it);
 }
 
 void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
   ChildThreadImpl::GetRouter()->RemoveRoute(routing_id);
   unfreezable_message_filter_->RemoveListenerUnfreezableTaskRunner(routing_id);
   GetChannel()->RemoveListenerTaskRunner(routing_id);
+  pending_frames_.erase(routing_id);
 }
 
 void RenderThreadImpl::RegisterPendingFrameCreate(
     int routing_id,
     mojo::PendingReceiver<mojom::Frame> frame_receiver) {
-  std::pair<PendingFrameCreateMap::iterator, bool> result =
-      pending_frame_creates_.insert(std::make_pair(
-          routing_id, std::make_unique<PendingFrameCreate>(
-                          routing_id, std::move(frame_receiver))));
-  CHECK(result.second) << "Inserting a duplicate item.";
+  auto pair = pending_frames_.emplace(routing_id, std::move(frame_receiver));
+  CHECK(pair.second) << "Inserting a duplicate item.";
 }
 
 mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
@@ -2217,19 +2214,6 @@ void RenderThreadImpl::ReleaseFreeMemory() {
     SkGraphics::PurgeAllCaches();
     blink::WebMemoryPressureListener::OnPurgeMemory();
   }
-}
-
-RenderThreadImpl::PendingFrameCreate::PendingFrameCreate(
-    int routing_id,
-    mojo::PendingReceiver<mojom::Frame> frame_receiver)
-    : routing_id_(routing_id), frame_receiver_(std::move(frame_receiver)) {}
-
-RenderThreadImpl::PendingFrameCreate::~PendingFrameCreate() = default;
-
-void RenderThreadImpl::PendingFrameCreate::OnConnectionError() {
-  size_t erased =
-      RenderThreadImpl::current()->pending_frame_creates_.erase(routing_id_);
-  DCHECK_EQ(1u, erased);
 }
 
 void RenderThreadImpl::OnSyncMemoryPressure(

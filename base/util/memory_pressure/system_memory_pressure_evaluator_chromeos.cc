@@ -58,6 +58,9 @@ constexpr char kMinFilelist[] = "/proc/sys/vm/min_filelist_kbytes";
 constexpr char kRamVsSwapWeight[] =
     "/sys/kernel/mm/chromeos-low_mem/ram_vs_swap_weight";
 
+// The extra free to trigger kernel memory reclaim earlier.
+constexpr char kExtraFree[] = "/proc/sys/vm/extra_free_kbytes";
+
 // Converts an available memory value in MB to a memory pressure level.
 base::MemoryPressureListener::MemoryPressureLevel
 GetMemoryPressureLevelFromAvailable(int available_mb,
@@ -306,7 +309,13 @@ uint64_t SystemMemoryPressureEvaluator::GetReservedMemoryKB() {
     LOG(ERROR) << "Couldn't get /proc/zoneinfo";
     return 0;
   }
-  return CalculateReservedFreeKB(file_contents);
+
+  // Reserve free pages is high watermark + lowmem_reserve and extra_free_kbytes
+  // raises the high watermark.  Nullify the effect of extra_free_kbytes by
+  // excluding it from the reserved pages.  The default extra_free_kbytes value
+  // is 0 if the file couldn't be accessed.
+  return CalculateReservedFreeKB(file_contents) -
+         ReadFileToUint64(base::FilePath(kExtraFree));
 }
 
 // CalculateAvailableMemoryUserSpaceKB implements the same available memory

@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="1619887657840448962">Chrome ಅನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡದಿರುವ ಕೆಳಗಿನ ವಿಸ್ತರಣೆಯನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಇದು ನಿಮ್ಮ ಗಮನಕ್ಕೆ ಬಾರದೇ ಸೇರಿಸಲಾಗಿರಬಹುದು.</translation>
+<translation id="162629503687514352">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="1628000112320670027">Chrome ಕುರಿತಾಗಿ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="1662639173275167396">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS" />ಓಪನ್ ಸೋರ್ಸ್ ಸಾಫ್ಟ್‌ವೇರ್‌<ph name="END_LINK_CROS_OSS" /> ನಿಂದ Chrome OS ನ ರಚನೆ, ಹಾಗೆಯೇ <ph name="BEGIN_LINK_LINUX_OSS" />Linux (ಬೀಟಾ)<ph name="END_LINK_LINUX_OSS" /> ರಚನೆ ಸಹ ಸಾಧ್ಯವಾಯಿತು.</translation>
 <translation id="1666409074978194368">ಬಹುತೇಕ ಅಪ್ ಟು ಡೇಟ್ ಆಗಿದೆ! ಅಪ್‌ಡೇಟ್ ಅನ್ನು ಮುಕ್ತಾಯಗೊಳಿಸಲು, Google Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ. ಅಜ್ಞಾತ ವಿಂಡೋಗಳನ್ನು ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
@@ -76,6 +77,7 @@
 <translation id="3065168410429928842">Chrome ಟ್ಯಾಬ್</translation>
 <translation id="3080151273017101988">Google Chrome ಮುಚ್ಚಿದಾಗ ರನ್‌ ಆಗುತ್ತಿರುವ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮುಂದುವರಿಸು</translation>
 <translation id="3089968997497233615">ಹೊಸದಾದ, ಸುರಕ್ಷಿತವಾದ Google Chrome ನ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
+<translation id="3127818369811890733">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="3360895254066713204">Chrome ಸಹಾಯಕ</translation>
 <translation id="3379938682270551431">{0,plural, =0{ಇದೀಗ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಕೆಂಡಿನಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>

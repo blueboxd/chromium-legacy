@@ -23,10 +23,11 @@
       <structure name="IDR_CAMERA_CHROME_UTIL_JS" file="src/js/chrome_util.js" type="chrome_html" />
       <structure name="IDR_CAMERA_COMLINK_JS" file="src/js/lib/comlink.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CONSTRAINTS_PREFERRER_JS" file="src/js/device/constraints_preferrer.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_DEVICE_ERROR_JS" file="src/js/device/error.js" type="chrome_html" />
       <structure name="IDR_CAMERA_DEVICE_INFO_UPDATER_JS" file="src/js/device/device_info_updater.js" type="chrome_html" />
       <structure name="IDR_CAMERA_DEVICE_OPERATOR_JS" file="src/js/mojo/device_operator.js" type="chrome_html" />
       <structure name="IDR_CAMERA_DIALOG_JS" file="src/js/views/dialog.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_ERROR_JS" file="src/js/device/error.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_ERROR_JS" file="src/js/error.js" type="chrome_html" />
       <structure name="IDR_CAMERA_FILENAMER_JS" file="src/js/models/filenamer.js" type="chrome_html" />
       <structure name="IDR_CAMERA_FILESYSTEM_JS" file="src/js/models/filesystem.js" type="chrome_html" />
       <structure name="IDR_CAMERA_GALLERYBUTTON_JS" file="src/js/gallerybutton.js" type="chrome_html" />

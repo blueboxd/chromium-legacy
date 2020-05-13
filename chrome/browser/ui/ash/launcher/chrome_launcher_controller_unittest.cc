@@ -886,7 +886,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
-    app_service_test().FlushMojoCalls();
     return app_id;
   }
 
@@ -3305,8 +3304,12 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
        V2AppHandlingTwoUsers) {
   InitLauncherController();
+  // Create a profile for our second user (will be destroyed by the framework).
+  TestingProfile* profile2 = CreateMultiUserProfile("user2");
   const AccountId account_id(
       multi_user_util::GetAccountIdFromProfile(profile()));
+  const AccountId account_id2(
+      multi_user_util::GetAccountIdFromProfile(profile2));
   // Check that there is a browser.
   EXPECT_EQ(1, model_->item_count());
 
@@ -3314,11 +3317,6 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   AddExtension(extension1_.get());
   V2App v2_app(profile(), extension1_.get());
   EXPECT_EQ(2, model_->item_count());
-
-  // Create a profile for our second user (will be destroyed by the framework).
-  TestingProfile* profile2 = CreateMultiUserProfile("user2");
-  const AccountId account_id2(
-      multi_user_util::GetAccountIdFromProfile(profile2));
 
   // After switching users the item should go away.
   SwitchActiveUser(account_id2);
@@ -3525,15 +3523,10 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   InitLauncherController();
 
   TestingProfile* profile2 = CreateMultiUserProfile("user-2");
-  const AccountId account_id2(
-      multi_user_util::GetAccountIdFromProfile(profile2));
-  // If switch to account_id2 is not run, the following switch to account_id
-  // is invalid, because the user account is not changed, so switch to
-  // account_id2 first.
-  SwitchActiveUser(account_id2);
-
   const AccountId account_id(
       multi_user_util::GetAccountIdFromProfile(profile()));
+  const AccountId account_id2(
+      multi_user_util::GetAccountIdFromProfile(profile2));
   SwitchActiveUser(account_id);
   EXPECT_EQ(1, model_->item_count());
 

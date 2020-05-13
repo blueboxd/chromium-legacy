@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">קיווי</translation>
 <translation id="3966388904776714213">נגן אודיו</translation>
 <translation id="4002066346123236978">כותרת</translation>
+<translation id="4065397611279318371">כדי לפתוח קבצים באמצעות אפליקציות <ph name="APP_NAME" />, תחילה יש להעביר אותם לתיקיית <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">שיטת קלט קנטונזית</translation>
 <translation id="4072248638558688893">מקלדת טמילית (פונטית)</translation>
 <translation id="4124935795427217608">חד-קרן</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">קבצים בנפח כולל של <ph name="TOTAL_FILE_SIZE" /> יימחקו</translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
 <translation id="5098629044894065541">עברית</translation>
-<translation id="5112685521274804841">הקבצים בתיקייה הזו הם לקריאה בלבד. לא ניתן לבצע פעולות מסוימות.</translation>
 <translation id="5123433949759960244">כדורסל</translation>
 <translation id="5129662217315786329">פולנית</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)‎</translation>

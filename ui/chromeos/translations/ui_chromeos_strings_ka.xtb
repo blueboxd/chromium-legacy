@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">კივი</translation>
 <translation id="3966388904776714213">აუდიო დამკვრელი</translation>
 <translation id="4002066346123236978">სათაური</translation>
+<translation id="4065397611279318371">ფაილების <ph name="APP_NAME" /> აპებით გასახსნელად, პირველ რიგში, გადაიტანეთ ისინი <ph name="SHARED_DIRECTORY_LABEL" />-ის საქაღალდეში.</translation>
 <translation id="4070370845051020638">კანტონური შეყვანის მეთოდი</translation>
 <translation id="4072248638558688893">ტამილური კლავიატურა (ფონეტიკური)</translation>
 <translation id="4124935795427217608">ზღაპრული მარტორქა</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">წაიშლება ფაილების <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">შეცდომა მოხდა.</translation>
 <translation id="5098629044894065541">ებრაული</translation>
-<translation id="5112685521274804841">ამ საქაღალდეში არსებული ფაილები მხოლოდ კითხვადია. ზოგიერთი მოქმედება მხარდაუჭერელია.</translation>
 <translation id="5123433949759960244">კალათბურთის ბურთი</translation>
 <translation id="5129662217315786329">პოლონური</translation>
 <translation id="5144820558584035333">ჰანგული კომპლექტი 3 (390)</translation>

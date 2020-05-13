@@ -63,6 +63,7 @@ source_set("unit_tests") {
     "tile_group_unittest.cc",
     "tile_iterator_unittest.cc",
     "tile_manager_unittest.cc",
+    "tile_service_impl_unittest.cc",
     "tile_store_unittest.cc",
   ]
 

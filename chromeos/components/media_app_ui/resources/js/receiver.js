@@ -30,18 +30,9 @@ class ReceivedFile {
   async overwriteOriginal(blob) {
     /** @type{OverwriteFileMessage} */
     const message = {token: this.token, blob: blob};
-    const reply =
-        parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message);
-    try {
-      await reply;
-    } catch (/** @type{GenericErrorResponse} */ errorResponse) {
-      if (errorResponse.message === 'File not current.') {
-        const domError = new DOMError();
-        domError.name = 'NotAllowedError';
-        throw domError;
-      }
-      throw errorResponse;
-    }
+
+    await parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message);
+
     // Note the following are skipped if an exception is thrown above.
     this.blob = blob;
     this.size = blob.size;

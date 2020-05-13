@@ -24,6 +24,7 @@
 <translation id="1966382378801805537">Chromiumএ ডিফ’ল্ট ব্ৰাউজাৰ নির্ধাৰণ বা ছেট কৰিব নোৱাৰে</translation>
 <translation id="2008474315282236005">এইটোৱে এই ডিভাইচটোৰ পৰা ১টা বস্তু মচিব। আপোনাৰ ডেটা পাছত পুনৰুদ্ধাৰ কৰিবলৈ Chromiumত <ph name="USER_EMAIL" /> হিচাপে ছাইন ইন কৰক।</translation>
 <translation id="2185166961232948079">Chromium - নেটৱর্কত ছাইন ইন - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">Chromium OSএ আপোনাৰ পাছৱৰ্ডসমূহ ছিংক কৰিব নোৱাৰিলে।</translation>
 <translation id="2241627712206172106">আপুনি যদি কোনো কম্পিউটাৰ শ্বেয়াৰ কৰে, আপোনাৰ বন্ধুবৰ্গ আৰু পৰিয়ালে পৃথককৈ ব্ৰাউজ কৰিব পাৰে আৰু তেওঁলোকে বিচৰা ধৰণে Chromium ছেট আপ কৰিব পাৰে।</translation>
 <translation id="2294245788148774212">ঐচ্ছিক: Googleলৈ স্বয়ংক্ৰিয়ভাৱে ডায়গন’ষ্টিক আৰু ব্যৱহাৰৰ ডেটা পঠিয়াই Chromium OSৰ সুবিধাসমূহ আৰু কার্যদক্ষতা উন্নত কৰাত সহায় কৰক।</translation>
 <translation id="2347108572062610441">আপুনি Chromium আৰম্ভ কৰিলে কি পৃষ্ঠা দেখুওৱা হ‘ব এই এক্সটেনশ্বনটোৱে সেইটো সলনি কৰিছে।</translation>
@@ -136,6 +137,7 @@
 <translation id="6134968993075716475">সুৰক্ষিত ব্ৰাউজিং অফ আছে। Chromiumএ ইয়াক অন কৰাটো চুপাৰিছ কৰে।</translation>
 <translation id="6212496753309875659">এই কম্পিউটাৰটোত ইতিমধ্যে Chromiumৰ অধিক শেহতীয়া সংস্কৰণ আছে। যদি ছফ্টৱেৰটোৱে কাম কৰা নাই তেন্তে Chromium আনইনষ্টল কৰি আকৌ চেষ্টা কৰক।</translation>
 <translation id="6219195342503754812">{0,plural, =0{এতিয়া Chromium পুনৰ লঞ্চ হ’ব}=1{১ ছেকেণ্ডত Chromium পুনৰ লঞ্চ হ’ব}one{# ছেকেণ্ডত Chromium পুনৰ লঞ্চ হ’ব}other{# ছেকেণ্ডত Chromium পুনৰ লঞ্চ হ’ব}}</translation>
+<translation id="623836266260425961">Chromium OSএ আপোনাৰ ডেটা ছিংক কৰিব নোৱাৰিলে।</translation>
 <translation id="6248213926982192922">Chromiumক ডিফ’ল্ট ব্ৰাউজাৰ বনাওক</translation>
 <translation id="6266342355635466082">Chromiumএ আপডে'টসমূহ পৰীক্ষা কৰিব নোৱাৰে। আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰি চাওক।</translation>
 <translation id="6268381023930128611">Chromiumৰ পৰা ছাইন আউট কৰিবনে?</translation>

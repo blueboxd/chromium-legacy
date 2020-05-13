@@ -36,7 +36,7 @@ js_library("video_saver") {
   ]
   deps = [
     "..:intent",
-    "../externs:w3c_fileapi",
+    "../externs:w3c_api",
     "../lib:comlink",
     "../lib:ffmpeg",
   ]

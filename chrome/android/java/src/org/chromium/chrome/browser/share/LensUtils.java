@@ -30,10 +30,15 @@ public class LensUtils {
     private static final String ACCOUNT_NAME_URI_KEY = "AccountNameUriKey";
     private static final String INCOGNITO_URI_KEY = "IncognitoUriKey";
     private static final String LAUNCH_TIMESTAMP_URI_KEY = "ActivityLaunchTimestampNanos";
+    private static final String IMAGE_SRC_URI_KEY = "ImageSrc";
+    private static final String ALT_URI_KEY = "ImageAlt";
+
     private static final String MIN_AGSA_VERSION_FEATURE_PARAM_NAME = "minAgsaVersionName";
     private static final String USE_SEARCH_BY_IMAGE_TEXT_FEATURE_PARAM_NAME =
             "useSearchByImageText";
     private static final String LOG_UKM_PARAM_NAME = "logUkm";
+    private static final String SEND_SRC_PARAM_NAME = "sendSrc";
+    private static final String SEND_ALT_PARAM_NAME = "sendAlt";
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
 
     /**
@@ -68,9 +73,9 @@ public class LensUtils {
             try {
                 PackageManager pm = context.getPackageManager();
                 // No data transmission occurring so safe to assume incognito is false.
-                Intent lensIntent =
-                        getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false,
-                                /* currentTimeNanos= */ 0L);
+                Intent lensIntent = getShareWithGoogleLensIntent(Uri.EMPTY,
+                        /* isIncognito= */ false,
+                        /* currentTimeNanos= */ 0L, /* srcUrl */ "", /* titleOrAltText */ "");
                 ComponentName lensActivity = lensIntent.resolveActivity(pm);
                 if (lensActivity == null) return "";
                 PackageInfo packageInfo = pm.getPackageInfo(lensActivity.getPackageName(), 0);
@@ -144,11 +149,13 @@ public class LensUtils {
      *                 if only resolving the activity.
      * @param isIncognito Whether the current tab is in incognito mode.
      * @param currentTimeNanos The current system time since boot in nanos.
+     * @param srcUrl The 'src' attribute of the image.
+     * @param titleOrAltText The 'title' or, if empty, the 'alt' attribute of the image.
      * @return The intent to Google Lens.
      */
 
-    public static Intent getShareWithGoogleLensIntent(
-            Uri imageUri, boolean isIncognito, long currentTimeNanos) {
+    public static Intent getShareWithGoogleLensIntent(Uri imageUri, boolean isIncognito,
+            long currentTimeNanos, String srcUrl, String titleOrAltText) {
         CoreAccountInfo coreAccountInfo =
                 IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
                         ConsentLevel.SYNC);
@@ -158,14 +165,31 @@ public class LensUtils {
 
         Uri lensUri = Uri.parse(LENS_CONTRACT_URI);
         if (!Uri.EMPTY.equals(imageUri)) {
-            lensUri =
+            Uri.Builder lensUriBuilder =
                     lensUri.buildUpon()
                             .appendQueryParameter(LENS_BITMAP_URI_KEY, imageUri.toString())
                             .appendQueryParameter(ACCOUNT_NAME_URI_KEY, signedInAccountName)
                             .appendQueryParameter(INCOGNITO_URI_KEY, Boolean.toString(isIncognito))
                             .appendQueryParameter(
-                                    LAUNCH_TIMESTAMP_URI_KEY, Long.toString(currentTimeNanos))
-                            .build();
+                                    LAUNCH_TIMESTAMP_URI_KEY, Long.toString(currentTimeNanos));
+
+            if (!isIncognito) {
+                if ((srcUrl != null)
+                        && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                                SEND_SRC_PARAM_NAME, false)) {
+                    lensUriBuilder.appendQueryParameter(IMAGE_SRC_URI_KEY, srcUrl);
+                }
+
+                if ((titleOrAltText != null)
+                        && ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                                ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS,
+                                SEND_ALT_PARAM_NAME, false)) {
+                    lensUriBuilder.appendQueryParameter(ALT_URI_KEY, titleOrAltText);
+                }
+            }
+
+            lensUri = lensUriBuilder.build();
             ContextUtils.getApplicationContext().grantUriPermission(
                     IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
@@ -173,6 +197,7 @@ public class LensUtils {
         Intent intent = new Intent(Intent.ACTION_VIEW).setData(lensUri);
         intent.setPackage(IntentHandler.PACKAGE_GSA);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
         return intent;
     }
 

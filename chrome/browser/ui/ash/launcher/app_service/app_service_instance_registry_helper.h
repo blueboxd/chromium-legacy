@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_SERVICE_INSTANCE_REGISTRY_HELPER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_SERVICE_APP_SERVICE_INSTANCE_REGISTRY_HELPER_H_
 
-#include <map>
 #include <memory>
-#include <set>
 
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
@@ -34,7 +32,6 @@ class AppServiceInstanceRegistryHelper {
   ~AppServiceInstanceRegistryHelper();
 
   void ActiveUserChanged();
-  void AdditionalUserAddedToSession(Profile* profile);
 
   // Notifies the AppService InstanceRegistry that active tabs are changed.
   void OnActiveTabChanged(content::WebContents* old_contents,
@@ -85,10 +82,6 @@ class AppServiceInstanceRegistryHelper {
   // Return true if the app is opend in a browser.
   bool IsOpenedInBrowser(const std::string& app_id, aura::Window* window) const;
 
-  // Returns an app id for |window| in InstanceRegistry. If there is no |window|
-  // in InstanceRegistry, returns an empty string.
-  std::string GetAppId(aura::Window* window) const;
-
  private:
   // Returns an app id to represent |contents| in InstanceRegistry. If there is
   // no app in |contents|, returns the app id of the Chrome component
@@ -99,13 +92,6 @@ class AppServiceInstanceRegistryHelper {
   // is a Web app, returns the native window for it. If there is no app in
   // |contents|, returns the toplevel window.
   aura::Window* GetWindow(content::WebContents* contents);
-
-  // Returns windows in InstanceRegistry for the given |app_id|.
-  std::set<aura::Window*> GetWindows(const std::string& app_id);
-
-  // Returns the state in InstanceRegistry for the given |app_id|. If there is
-  // no |window| in InstanceRegistry, returns apps::InstanceState::kUnknown.
-  apps::InstanceState GetState(aura::Window* window) const;
 
   // Adds the tab's |window| to |browser_window_to_tab_window_|.
   void AddTabWindow(const std::string& app_id, aura::Window* window);

@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, PRE_AfterRestart) {
   // in the incognito profile.
   state->AllowCert(kWWWGoogleHost, *cert, net::ERR_CERT_DATE_INVALID, tab);
 
-  Profile* incognito = profile->GetOffTheRecordProfile();
+  Profile* incognito = profile->GetPrimaryOTRProfile();
   content::SSLHostStateDelegate* incognito_state =
       incognito->GetSSLHostStateDelegate();
 
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoSSLHostStateDelegateTest, AfterRestart) {
             state->QueryPolicy(kWWWGoogleHost, *cert,
                                net::ERR_CERT_DATE_INVALID, tab));
 
-  Profile* incognito = profile->GetOffTheRecordProfile();
+  Profile* incognito = profile->GetPrimaryOTRProfile();
   content::SSLHostStateDelegate* incognito_state =
       incognito->GetSSLHostStateDelegate();
 

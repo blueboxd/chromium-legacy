@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">‏Google Chrome درحال استفاده از دوربین شما است.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک است، بنابراین Chrome آن را مسدود کرده ست.</translation>
 <translation id="1619887657840448962">‏برای ایمن‌تر کردن Chrome، افزونه زیر را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده است و ممکن است بدون اطلاع شما اضافه شده باشد، غیرفعال کردیم.</translation>
+<translation id="162629503687514352">‏سیستم‌عامل Chrome نتوانست گذرواژه‌هایتان را همگام‌سازی کند.</translation>
 <translation id="1628000112320670027">‏دریافت کمک برای Chrome</translation>
 <translation id="1662639173275167396">‏ساخت سیستم‌عامل Chrome به کمک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگری (همان‌گونه که <ph name="BEGIN_LINK_LINUX_OSS" />Linux (بتا)<ph name="END_LINK_LINUX_OSS" /> است)، امکان‌پذیر شده است.</translation>
 <translation id="1666409074978194368">‏تقریباً به‌روزرسانی شده است! برای تکمیل به‌روزرسانی، Google Chrome را مجدداً راه‌اندازی کنید. پنجره‌های ناشناس بازگشایی نمی‌شود.</translation>
@@ -75,6 +76,7 @@
 <translation id="3065168410429928842">‏برگه Chrome</translation>
 <translation id="3080151273017101988">‏ادامه اجرای برنامه‌ها در پس‌زمینه هنگامیکه Google Chrome بسته می‌شود</translation>
 <translation id="3089968997497233615">‏نسخه جدید و امن تری از Google Chrome موجود است.</translation>
+<translation id="3127818369811890733">‏سیستم‌عامل Chrome نتوانست داده‌هایتان را همگام‌سازی کند.</translation>
 <translation id="3149510190863420837">‏برنامه‌های Chrome</translation>
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏Chrome هم‌اکنون راه‌اندازی مجدد می‌شود}=1{‏Chrome ‏۱ ثانیه دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}}</translation>

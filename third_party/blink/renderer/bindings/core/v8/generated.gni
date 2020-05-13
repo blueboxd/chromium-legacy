@@ -206,7 +206,6 @@ if (is_win && is_official_build) {
 }
 
 generated_core_dictionary_files = []
-generated_demo_files = []
 
 if (use_v8_bind_gen_for_dictionary) {
   generated_core_dictionary_files +=
@@ -224,12 +223,6 @@ if (use_v8_bind_gen_for_dictionary) {
             "$bindings_core_v8_output_dir/v8_{{source_name_part}}.cc",
             "$bindings_core_v8_output_dir/v8_{{source_name_part}}.h",
           ])
-
-  # Generated file from demonstration_and_testing.idl, which won't be compiled.
-  generated_demo_files += [
-    "$bindings_core_v8_output_dir/v8_example_dictionary.cc",
-    "$bindings_core_v8_output_dir/v8_example_dictionary.h",
-  ]
 } else {
   generated_core_testing_dictionary_files =
       process_file_template(

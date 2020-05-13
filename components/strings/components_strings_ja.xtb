@@ -160,6 +160,7 @@
 <translation id="161042844686301425">シアン</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
+<translation id="1623253368136559158">カメラの操作</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">カードを保存できません</translation>
 <translation id="1639239467298939599">読み込み中</translation>
@@ -437,6 +438,7 @@
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって、パスワード、メッセージ、クレジット カードなどの情報が盗まれる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">ポスター折り</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">ウィンドウの配置</translation>
 <translation id="2881276955470682203">カードを保存しますか？</translation>
 <translation id="2882949212241984732">両観音折り</translation>
 <translation id="2903493209154104877">住所</translation>
@@ -637,6 +639,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />プロキシ、ファイアウォール、DNS の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">このエラーの原因としては、ウィルス対策ソフトウェア、ファイアウォール ソフトウェア、ウェブ フィルタリング ソフトウェア、プロキシ ソフトウェアなどが考えられます。</translation>
 <translation id="373042150751172459">B4（封筒）</translation>
+<translation id="3731873414101415120">アクセスしたウェブサイトと安全でないページのコンテンツ</translation>
 <translation id="3736520371357197498">危険なプログラムが削除されるより前に<ph name="BEGIN_LINK" />この安全でないサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> から送信された暗号化済みの認証情報を Chromium で処理できないため、現在このウェブサイトにアクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
 <translation id="3745099705178523657">確認後、Google アカウントのカード情報がこのサイトと共有されます。</translation>
@@ -902,6 +905,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{なし}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />、<ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> を検索</translation>
 <translation id="4879491255372875719">自動（デフォルト）</translation>
+<translation id="4879725228911483934">画面上にウィンドウを開いて配置する</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4892518386797173871">背面</translation>
@@ -1615,6 +1619,7 @@
 <translation id="7887885240995164102">ピクチャー イン ピクチャーを開始</translation>
 <translation id="7888575728750733395">印刷時のレンダリング インテント</translation>
 <translation id="7904208859782148177">C3（封筒）</translation>
+<translation id="7923775243649974918">カメラを動かす</translation>
 <translation id="7932579305932748336">コーティング</translation>
 <translation id="79338296614623784">有効な電話番号を入力してください</translation>
 <translation id="7934052535022478634">お支払いの完了</translation>

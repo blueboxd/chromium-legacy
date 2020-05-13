@@ -35,6 +35,7 @@
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
@@ -43,6 +44,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/common/google_util.h"
+#include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
@@ -1917,6 +1919,16 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     return WaitForReady(browser);
   }
 
+  static bool RequestPermissionAndWaitForInterstitial(Browser* browser) {
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver observer(contents);
+    const char* const kScript = "Notification.requestPermission(function(){})";
+    EXPECT_TRUE(content::ExecuteScript(contents, kScript));
+    observer.WaitForNavigationFinished();
+    return WaitForReady(browser);
+  }
+
  protected:
   // Initiates a download and waits for it to be completed or cancelled.
   static void DownloadAndWaitForNavigation(Browser* browser) {
@@ -1993,6 +2005,22 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectTotalCount(kDelayedWarningsHistogram, 0);
 }
 
+// Close the tab while a user interaction observer is attached to the tab. It
+// shouldn't crash.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       CloseTab_ShouldNotCrash) {
+  base::HistogramTester histograms;
+  chrome::NewTab(browser());
+  NavigateAndAssertNoInterstitial();
+  chrome::CloseTab(browser());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningNotShown, 1);
+}
+
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                        KeyPress_WarningShown) {
   base::HistogramTester histograms;
@@ -2034,6 +2062,34 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectBucketCount(
       kDelayedWarningsHistogram,
       DelayedWarningEvent::kWarningShownOnFullscreenAttempt, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       PermissionRequest_WarningShown) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Page tries to request a notification permission. The prompt should be
+  // cancelled and an interstitial should be shown.
+  EXPECT_TRUE(RequestPermissionAndWaitForInterstitial(browser()));
+  EXPECT_FALSE(
+      browser()->tab_strip_model()->GetActiveWebContents()->IsFullscreen());
+
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(
+      kDelayedWarningsHistogram,
+      DelayedWarningEvent::kWarningShownOnPermissionRequest, 1);
+  histograms.ExpectTotalCount("Permissions.Action.Notifications", 1);
+  histograms.ExpectBucketCount(
+      "Permissions.Action.Notifications",
+      static_cast<int>(permissions::PermissionAction::DENIED), 1);
 }
 
 // The user clicks on the page. Feature isn't configured to show a warning on

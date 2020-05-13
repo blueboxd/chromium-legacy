@@ -31,13 +31,17 @@ struct WebRequestData;
 class WebRequestConditionAttribute
     : public base::RefCounted<WebRequestConditionAttribute> {
  public:
+  // These values are used in the
+  // Extensions.DeclarativeWebRequest.ConditionAttributeType histogram, so when
+  // adding/removing values, the numbering of existing values should not change.
   enum Type {
-    CONDITION_RESOURCE_TYPE,
-    CONDITION_CONTENT_TYPE,
-    CONDITION_RESPONSE_HEADERS,
-    CONDITION_THIRD_PARTY,
-    CONDITION_REQUEST_HEADERS,
-    CONDITION_STAGES
+    CONDITION_RESOURCE_TYPE = 0,
+    CONDITION_CONTENT_TYPE = 1,
+    CONDITION_RESPONSE_HEADERS = 2,
+    CONDITION_THIRD_PARTY = 3,
+    CONDITION_REQUEST_HEADERS = 4,
+    CONDITION_STAGES = 5,
+    CONDITION_MAX = CONDITION_STAGES,
   };
 
   WebRequestConditionAttribute();

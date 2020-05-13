@@ -310,11 +310,13 @@ public class ShareHelper {
      * @param window The current window.
      * @param imageUri The url to share with the app.
      * @param isIncognito Whether the current tab is in incognito mode.
+     * @param srcUrl The 'src' attribute of the image.
+     * @param titleOrAltText The 'title' or, if empty, the 'alt' attribute of the image.
      */
-    public static void shareImageWithGoogleLens(
-            final WindowAndroid window, Uri imageUri, boolean isIncognito) {
+    public static void shareImageWithGoogleLens(final WindowAndroid window, Uri imageUri,
+            boolean isIncognito, String srcUrl, String titleOrAltText) {
         Intent shareIntent = LensUtils.getShareWithGoogleLensIntent(
-                imageUri, isIncognito, SystemClock.elapsedRealtimeNanos());
+                imageUri, isIncognito, SystemClock.elapsedRealtimeNanos(), srcUrl, titleOrAltText);
         try {
             // Pass an empty callback to ensure the triggered activity can identify the source
             // of the intent (startActivityForResult allows app identification).

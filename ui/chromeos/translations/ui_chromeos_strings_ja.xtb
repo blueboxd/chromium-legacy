@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">キウイ</translation>
 <translation id="3966388904776714213">オーディオ プレーヤー</translation>
 <translation id="4002066346123236978">タイトル</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> アプリでファイルを開くには、<ph name="SHARED_DIRECTORY_LABEL" /> フォルダにファイルを移動してください。</translation>
 <translation id="4070370845051020638">広東語入力方法</translation>
 <translation id="4072248638558688893">タミル語キーボード（表音）</translation>
 <translation id="4124935795427217608">ユニコーン</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> 分のファイルが削除されます</translation>
 <translation id="509429900233858213">エラーが発生しました。</translation>
 <translation id="5098629044894065541">ヘブライ語</translation>
-<translation id="5112685521274804841">このフォルダ内のファイルは読み取り専用です。一部の操作は行えません。</translation>
 <translation id="5123433949759960244">バスケットボール</translation>
 <translation id="5129662217315786329">ポーランド語</translation>
 <translation id="5144820558584035333">ハングル（3 ボル式、390）</translation>

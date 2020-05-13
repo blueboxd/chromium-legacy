@@ -2385,15 +2385,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="4482640907922304445"><ph name="PRODUCT_NAME" /> のツールバーにホーム ボタンを表示します。この設定を有効にすると、ホーム ボタンが常に表示されます。この設定を無効にすると、ホーム ボタンは表示されません。この設定を有効または無効にすると、ユーザーは <ph name="PRODUCT_NAME" /> でこの設定の変更やオーバーライドができなくなります。このポリシーが未設定の場合、ホーム ボタンを表示するかどうかをユーザーが選択できます。</translation>
 <translation id="4483649828988077221">自動更新を無効にする</translation>
 <translation id="4485425108474077672">新しいタブページ URL を設定する</translation>
-<translation id="4487507711538762752">このポリシーでは、ネットワーク用のコードがブラウザ プロセスで実行されます。
-
-      デフォルトでは、このポリシーは無効です。有効にした場合、ネットワーク プロセスがサンドボックス化されると、ユーザーはセキュリティの問題から保護されなくなります。
-
-      このポリシーは、企業がネットワーク API のフックに依存しないサードパーティのソフトウェアに移行できるようにすることを目的としたものです。LSP や Win32 API のパッチ適用にはプロキシ サーバーをおすすめします。
-
-      このポリシーを設定しない場合、ネットワーク コードは、デフォルトでブラウザ プロセス外で実行されます。
-
-      このポリシーは <ph name="PRODUCT_NAME" /> バージョン 84 で削除されます。</translation>
 <translation id="4492287494009043413">スクリーンショットの使用を無効にする</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290"><ph name="PLUGIN_VM_NAME" /> に関連するポリシーを設定します。</translation>
@@ -3295,6 +3286,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを True に設定した場合、Web Components v0 の機能はすべてのサイトで有効になります。このポリシーを False に設定するか未設定のままにした場合、Web Components v0 の機能は M80 以降においてデフォルトで無効になります。
 
       このポリシーは、Chrome 84 以降で削除されます。</translation>
+<translation id="5763698334786515749">ログイン画面とロック画面でパスワード表示ボタンを有効にします。</translation>
 <translation id="5765780083710877561">説明:</translation>
 <translation id="5770738360657678870">Dev チャンネル（不安定な場合があります）</translation>
 <translation id="5774856474228476867">デフォルトの検索プロバイダの検索 URL</translation>
@@ -3643,6 +3635,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="6368011194414932347">ホームページの URL を指定する</translation>
 <translation id="6368403635025849609">これらのサイトの JavaScript を許可する</translation>
+<translation id="6372105930898423193">AppCache 機能がデフォルトで無効になっている場合でも有効化を許可します。</translation>
 <translation id="6376659517206731212">必須に設定可能</translation>
 <translation id="6377355597423503887">このポリシーはサポート終了となりました。代わりに BrowserSignin の使用を検討してください。
 
@@ -3862,6 +3855,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="6665670272107384733">ロックのクイック解除機能を使用するために必要なパスワード入力の頻度を設定する</translation>
 <translation id="6672070613706645316">ユーザーに新しいタブページの背景のカスタマイズを許可する</translation>
 <translation id="6672630473862787247">通常セッション、シークレット モード、ゲスト セッションでアンビエント認証を有効にします。</translation>
+<translation id="6677797768774898583">この機能により、ログイン画面とロック画面でユーザーがボタンをクリックしてパスワードを表示できるようになります。</translation>
 <translation id="6685903773201985073">ゲスト セッションと標準セッションでアンビエント認証を有効にします。</translation>
 <translation id="6689792153960219308">ハードウェア ステータスを報告する</translation>
 <translation id="6698632841807204978">白黒印刷を有効にする</translation>
@@ -4172,6 +4166,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
           このポリシーが false に設定されている場合、画面の起動ロックのリクエストはシステムの起動ロックのリクエストに引き下げられます。</translation>
 <translation id="7177857088692019405">ロックのクイック解除</translation>
+<translation id="718126088895133062">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のライセンス ユーザー ID を指定します。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">電力のピークシフト管理のポリシーを有効にします。
 
@@ -5501,6 +5496,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="9217154963008402249">監視ネットワーク パケットの送信間隔</translation>
 <translation id="922540222991413931">拡張機能、アプリ、ユーザー スクリプトのインストール ソースを設定する</translation>
 <translation id="924557436754151212">初回実行時にデフォルトのブラウザから保存したパスワードをインポートする</translation>
+<translation id="929549405492388749">このポリシーを true に設定した場合、Chrome の AppCache がデフォルトで無効になっていても、強制的に有効化します。
+
+      このポリシーを未設定のままにするか、false に設定した場合、AppCache の設定は Chrome のデフォルト設定に準拠します。</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> のユーザー データ ディレクトリを設定する</translation>
 <translation id="940706688964479124">ダウンロード後に自動的に開くファイル形式のリスト</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" /> がインストールされている場合、デフォルトの HTML レンダラを設定できます。

@@ -163,32 +163,59 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
 // Tests that we receive an error if our message is unhandled.
 TEST_F('MediaAppUIBrowserTest', 'ReceivesNoHandlerError', async () => {
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
-  let errorMessage = '';
+  let caughtError = {};
 
   try {
     await guestMessagePipe.sendMessage('unknown-message', null);
   } catch (error) {
-    errorMessage = error.message;
+    caughtError = error;
   }
 
+  assertEquals(caughtError.name, 'Error');
   assertEquals(
-      errorMessage,
-      'No handler registered for message type \'unknown-message\'');
+      caughtError.message,
+      'unknown-message: No handler registered for message type \'unknown-message\'');
+
+  assertMatchErrorStack(caughtError.stack, [
+    // Error stack of the test context.
+    'Error: unknown-message: No handler registered for message type \'unknown-message\'',
+    'at MessagePipe.sendMessage \\(chrome:',
+    'at async MediaAppUIBrowserTest.<anonymous>',
+    // Error stack of the untrusted context (guestMessagePipe) is appended.
+    'Error from chrome-untrusted:',
+    'Error: No handler registered for message type \'unknown-message\'',
+    'at MessagePipe.receiveMessage_ \\(chrome-untrusted:',
+    'at MessagePipe.messageListener_ \\(chrome-untrusted:',
+  ]);
   testDone();
 });
 
 // Tests that we receive an error if the handler fails.
 TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
-  let errorMessage = '';
+  let caughtError = {};
 
   try {
     await guestMessagePipe.sendMessage('bad-handler', null);
   } catch (error) {
-    errorMessage = error.message;
+    caughtError = error;
   }
 
-  assertEquals(errorMessage, 'This is an error');
+  assertEquals(caughtError.name, 'Error');
+  assertEquals(caughtError.message, 'bad-handler: This is an error');
+  assertMatchErrorStack(caughtError.stack, [
+    // Error stack of the test context.
+    'Error: bad-handler: This is an error',
+    'at MessagePipe.sendMessage \\(chrome:',
+    'at async MediaAppUIBrowserTest.<anonymous>',
+    // Error stack of the untrusted context (guestMessagePipe) is appended.
+    'Error from chrome-untrusted:',
+    'Error: This is an error',
+    'at guest_query_receiver.js',
+    'at MessagePipe.callHandlerForMessageType_ \\(chrome-untrusted:',
+    'at MessagePipe.receiveMessage_ \\(chrome-untrusted:',
+    'at MessagePipe.messageListener_ \\(chrome-untrusted:',
+  ]);
   testDone();
 });
 
@@ -208,6 +235,44 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
 
   assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
   assertEquals(await writeResult.text(), 'Foo');
+  testDone();
+});
+
+// Tests `MessagePipe.sendMessage()` properly propagates errors and appends
+// stacktraces.
+TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
+  // Prevent the trusted context throwing errors resulting JS errors.
+  guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
+  guestMessagePipe.rethrowErrors = false;
+
+  const handle = new FakeFileSystemFileHandle();
+  await loadFile(await createTestImageFile(), handle);
+  // Force Error by forcing `fileToken` in launch.js to be out of sync.
+  fileToken = -1;
+  let caughtError = {};
+
+  try {
+    const message = {overwriteLastFile: 'Foo'};
+    await guestMessagePipe.sendMessage('test', message);
+  } catch (e) {
+    caughtError = e;
+  }
+
+  assertEquals(caughtError.name, 'Error');
+  assertEquals(caughtError.message, 'test: overwrite-file: File not current.');
+  assertMatchErrorStack(caughtError.stack, [
+    // Error stack of the untrusted & test context.
+    'at MessagePipe.sendMessage \\(chrome-untrusted:',
+    'at async ReceivedFile.overwriteOriginal \\(chrome-untrusted:',
+    'at async runTestQuery \\(guest_query_receiver',
+    'at async MessagePipe.callHandlerForMessageType_ \\(chrome-untrusted:',
+    // Error stack of the trusted context is appended.
+    'Error from chrome:',
+    'Error: File not current.\\n    at chrome:',
+    'at MessagePipe.callHandlerForMessageType_ \\(chrome:',
+    'at MessagePipe.receiveMessage_ \\(chrome:',
+    'at MessagePipe.messageListener_ \\(chrome:',
+  ]);
   testDone();
 });
 

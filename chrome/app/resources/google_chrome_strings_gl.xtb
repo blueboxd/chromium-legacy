@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome utiliza a túa cámara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, así que Chrome bloqueouno.</translation>
 <translation id="1619887657840448962">Para conseguir que Chrome resulte máis seguro, desactivamos a seguinte extensión que non aparece en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e que quizais se engadise sen o teu coñecemento.</translation>
+<translation id="162629503687514352">Chrome OS non puido sincronizar os teus contrasinais.</translation>
 <translation id="1628000112320670027">Obter axuda sobre Chrome</translation>
 <translation id="1662639173275167396">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional, como <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">A actualización está a piques de rematar. Reinicia Google Chrome para completala. As ventás do modo de incógnito non se volverán abrir.</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">Pestana de Chrome</translation>
 <translation id="3080151273017101988">Continuar executando aplicacións en segundo plano cando se peche Google Chrome</translation>
 <translation id="3089968997497233615">Está dispoñible unha versión nova e máis segura de Google Chrome.</translation>
+<translation id="3127818369811890733">Chrome OS non puido sincronizar os teus datos.</translation>
 <translation id="3149510190863420837">Aplicacións de Chrome</translation>
 <translation id="3360895254066713204">Axudante de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome reiniciarase agora}=1{Chrome reiniciarase en 1 segundo}other{Chrome reiniciarase en # segundos}}</translation>

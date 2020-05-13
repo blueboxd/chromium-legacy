@@ -165,10 +165,6 @@ int64_t Task::GetSqliteMemoryUsed() const {
   return -1;
 }
 
-bool Task::ReportsV8Memory() const {
-  return GetV8MemoryAllocated() != -1;
-}
-
 int64_t Task::GetV8MemoryAllocated() const {
   return -1;
 }

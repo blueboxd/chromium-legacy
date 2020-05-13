@@ -76,8 +76,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     int64_t cache_resource_id)
     : request_url_(original_request.url),
-      resource_type_(static_cast<blink::mojom::ResourceType>(
-          original_request.resource_type)),
+      resource_destination_(original_request.destination),
       original_options_(options),
       version_(version),
       network_watcher_(FROM_HERE,
@@ -90,7 +89,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
   service_worker_loader_helpers::CheckVersionStatusBeforeWorkerScriptLoad(
-      version_->status(), resource_type_);
+      version_->status(), resource_destination_);
 #endif  // DCHECK_IS_ON()
 
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -99,7 +98,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // worker is starting up, and it must be starting up here.
   DCHECK(registration);
   const bool is_main_script =
-      resource_type_ == blink::mojom::ResourceType::kServiceWorker;
+      (resource_destination_ ==
+       network::mojom::RequestDestination::kServiceWorker);
   if (is_main_script) {
     // Request SSLInfo. It will be persisted in service worker storage and
     // may be used by ServiceWorkerNavigationLoader for navigations handled
@@ -202,7 +202,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     return;
   }
 
-  if (resource_type_ == blink::mojom::ResourceType::kServiceWorker) {
+  if (resource_destination_ ==
+      network::mojom::RequestDestination::kServiceWorker) {
     // Check the path restriction defined in the spec:
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;

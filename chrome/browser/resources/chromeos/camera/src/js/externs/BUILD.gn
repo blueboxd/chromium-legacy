@@ -10,8 +10,8 @@ js_library("universal_analytics_api") {
   externs_list = [ "universal_analytics_api.js" ]
 }
 
-js_library("w3c_fileapi") {
+js_library("w3c_api") {
   sources = []
 
-  externs_list = [ "w3c_fileapi.js" ]
+  externs_list = [ "w3c_api.js" ]
 }

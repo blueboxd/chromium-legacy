@@ -20,6 +20,7 @@ js_type_check("compile_resources") {
     ":background",
     ":background_ops",
     ":chrome_util",
+    ":error",
     ":gallerybutton",
     ":intent",
     ":main",
@@ -36,6 +37,9 @@ js_type_check("compile_resources") {
 }
 
 js_library("chrome_util") {
+}
+
+js_library("error") {
 }
 
 js_library("intent") {
@@ -62,6 +66,7 @@ js_library("gallerybutton") {
 
 js_library("metrics") {
   deps = [
+    ":error",
     ":state",
     "externs:universal_analytics_api",
   ]
@@ -119,6 +124,7 @@ js_library("background") {
 js_library("background_ops") {
   deps = [
     ":chrome_util",
+    ":error",
     ":intent",
     ":perf",
   ]
@@ -137,7 +143,7 @@ js_library("util") {
     ":tooltip",
     ":type",
     "browser_proxy:browser_proxy",
-    "externs:w3c_fileapi",
+    "externs:w3c_api",
     "mojo:chrome_helper",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]

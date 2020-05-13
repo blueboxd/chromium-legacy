@@ -2416,15 +2416,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid niet wordt ingesteld, kan de gebruiker kiezen of de knop 'Homepage' wel of niet wordt weergegeven.</translation>
 <translation id="4483649828988077221">Automatisch updaten uitschakelen</translation>
 <translation id="4485425108474077672">De URL van de pagina 'Nieuw tabblad' configureren</translation>
-<translation id="4487507711538762752">Met dit beleid wordt afgedwongen dat netwerkcode wordt uitgevoerd in het browserproces.
-
-      Dit beleid is standaard uitgeschakeld. Indien ingeschakeld, worden gebruikers blootgesteld aan beveiligingsproblemen als het netwerkproces in een sandbox wordt uitgevoerd.
-
-      Dit beleid is bedoeld om bedrijven de kans te geven naar software van derden te migreren die niet afhankelijk is van hooking van de netwerk-API's. Proxyservers krijgen de voorkeur boven LSP's en Win32 API-patching.
-
-      Als dit beleid niet is ingesteld, wordt de netwerkcode standaard uitgevoerd buiten het browserproces.
-
-      Dit beleid wordt verwijderd in <ph name="PRODUCT_NAME" />-versie 84.</translation>
 <translation id="4492287494009043413">Het maken van screenshots uitschakelen</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Aan <ph name="PLUGIN_VM_NAME" /> gerelateerd beleid configureren.</translation>

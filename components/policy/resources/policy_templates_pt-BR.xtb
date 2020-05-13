@@ -2374,15 +2374,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4482640907922304445">Mostra o botão "Página inicial" na barra de ferramentas de <ph name="PRODUCT_NAME" />. Se ativar esta configuração, o botão "Página inicial" será sempre exibido. Se desativar esta configuração, o botão "Página inicial" nunca será exibido. Se ativar ou desativar esta configuração, os usuários não podem alterá-la ou substituí-la em <ph name="PRODUCT_NAME" />. Deixar esta política sem definição permitirá ao usuário escolher se deseja exibir o botão "Página inicial".</translation>
 <translation id="4483649828988077221">Desativar a atualização automática</translation>
 <translation id="4485425108474077672">Configurar o URL da página "Nova guia"</translation>
-<translation id="4487507711538762752">Esta política força o código de rede a ser executado no processo do navegador.
-
-      Ela fica desativada por padrão e, se ativada, deixa os usuários vulneráveis a problemas de segurança quando o processo de rede está no sandbox.
-
-      Esta política tem como objetivo oferecer às empresas a oportunidade de migrar para um software de terceiros que não dependa de hook das APIs de rede. Recomendamos o uso de servidores proxy em vez da aplicação de patches de API Win32 e LSPs.
-
-      Se esta política não for configurada, o código de rede será executado fora do processo do navegador por padrão.
-
-      Ela política será removida na versão 84 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4492287494009043413">Desativar captura de tela</translation>
 <translation id="4494132853995232608">DTC wilco</translation>
 <translation id="449423975179525290">Configura políticas relacionadas ao <ph name="PLUGIN_VM_NAME" />.</translation>

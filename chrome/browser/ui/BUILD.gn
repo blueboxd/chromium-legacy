@@ -3896,6 +3896,8 @@ static_library("ui") {
       "app_list/search/search_controller.h",
       "app_list/search/search_controller_factory.cc",
       "app_list/search/search_controller_factory.h",
+      "app_list/search/search_metrics_observer.cc",
+      "app_list/search/search_metrics_observer.h",
       "app_list/search/search_provider.cc",
       "app_list/search/search_provider.h",
       "app_list/search/search_resource_manager.cc",

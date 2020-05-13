@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chromeএ আপোনাৰ কেমেৰা ব্যৱহাৰ কৰি আছে।</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" />টো ক্ষতিকাৰক বাবে Chromeএ সেইটো অৱৰোধ কৰিছে।</translation>
 <translation id="1619887657840448962">আমি Chromeক অধিক সুৰক্ষিত কৰি তুলিবলৈ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />ত সূচীবদ্ধ নোহোৱা আৰু আপুনি নজনাকৈয়ে যোগ হ’ব পৰা এক্সটেনশ্বন অক্ষম কৰিছোঁ।</translation>
+<translation id="162629503687514352">Chrome OSএ আপোনাৰ পাছৱৰ্ডসমূহ ছিংক কৰিব নোৱাৰিলে।</translation>
 <translation id="1628000112320670027">Chromeৰ জৰিয়তে সহায় পাওক</translation>
 <translation id="1662639173275167396">Chrome OSক <ph name="BEGIN_LINK_CROS_OSS" />Linux (বিটা)<ph name="END_LINK_CROS_OSS" />ৰ দৰেই অতিৰিক্ত <ph name="BEGIN_LINK_LINUX_OSS" />মুক্ত উৎসৰ ছফ্টৱেৰ<ph name="END_LINK_LINUX_OSS" />ৰ জৰিয়তে সম্ভৱ কৰি তোলা হৈছে।</translation>
 <translation id="1666409074978194368">প্ৰায় আপ-টু-ডে’ট কৰা হৈছে! আপডে’ট কৰাটো সম্পূর্ণ কৰিবলৈ Google Chrome পুনৰ লঞ্চ কৰক। ইনক’গনিট' ৱিণ্ড'সমূহ পুনৰ খুলিব নোৱাৰিব।</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">Chrome টেব</translation>
 <translation id="3080151273017101988">Google Chrome বন্ধ কৰাৰ পিছতো নেপথ্যত এপ্‌সমূহ চলি থাকিবলৈ দিয়ক</translation>
 <translation id="3089968997497233615">Google Chromeৰ এটি নতুন, অধিক সুৰক্ষিত সংস্কৰণ উপলব্ধ।</translation>
+<translation id="3127818369811890733">Chrome OSএ আপোনাৰ ডেটা ছিংক কৰিব নোৱাৰিলে।</translation>
 <translation id="3149510190863420837">Chromeৰ এপ্‌</translation>
 <translation id="3360895254066713204">Chromeৰ সহায়ক</translation>
 <translation id="3379938682270551431">{0,plural, =0{এতিয়া Chrome পুনৰ লঞ্চ হ’ব}=1{১ ছেকেণ্ডত Chrome পুনৰ লঞ্চ হ’ব}one{# ছেকেণ্ডত Chrome পুনৰ লঞ্চ হ’ব}other{# ছেকেণ্ডত Chrome পুনৰ লঞ্চ হ’ব}}</translation>

@@ -31,6 +31,10 @@ import org.chromium.chrome.test.util.browser.Features;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * Unit tests for {@link PseudoTab}.
@@ -91,6 +95,18 @@ public class PseudoTabUnitTest {
         PseudoTab tab1prime = PseudoTab.fromTabId(TAB1_ID);
         Assert.assertNotEquals(tab1, tab2);
         Assert.assertEquals(tab1, tab1prime);
+    }
+
+    @Test
+    public void fromTabId_threadSafety() throws InterruptedException {
+        final int count = 100000;
+        ExecutorService service = Executors.newCachedThreadPool();
+
+        IntStream.range(0, count).forEach(
+                tabId -> service.submit(() -> PseudoTab.fromTabId(tabId)));
+        service.awaitTermination(1000, TimeUnit.MILLISECONDS);
+
+        Assert.assertEquals(count, PseudoTab.getAllTabsCountForTests());
     }
 
     @Test

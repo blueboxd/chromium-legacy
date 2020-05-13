@@ -3,45 +3,50 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions, Router, routes} from 'chrome://settings/settings.js';
-import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
-import {TestSiteSettingsPrefsBrowserProxy} from 'chrome://test/settings/test_site_settings_prefs_browser_proxy.js';
-import {createContentSettingTypeToValuePair, createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from 'chrome://test/settings/test_util.js';
-import {flushTasks, isChildVisible, isVisible} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {flushTasks, isChildVisible, isVisible} from '../test_util.m.js';
+
+import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
+import {createContentSettingTypeToValuePair, createDefaultContentSetting,createRawSiteException,createSiteSettingsPrefs} from './test_util.js';
 
 // clang-format on
 
 suite('CrSettingsCookiesPageTest', function() {
-  /** @type {TestSiteSettingsPrefsBrowserProxy} */
+  /** @type {!TestSiteSettingsPrefsBrowserProxy} */
   let siteSettingsBrowserProxy;
 
-  /** @type {settings.TestMetricsBrowserProxy} */
+  /** @type {!TestMetricsBrowserProxy} */
   let testMetricsBrowserProxy;
 
-  /** @type {SettingsSecurityPageElement} */
+  /** @type {!SettingsCookiesPageElement} */
   let page;
 
-  /** @type {Element} */
+  /** @type {!SettingsToggleButtonElement} */
   let clearOnExit;
 
-  /** @type {Element} */
+  /** @type {!SettingsToggleButtonElement} */
   let networkPrediction;
 
-  /** @type {Element} */
+  /** @type {!SettingsCollapseRadioButtonElement} */
   let allowAll;
 
-  /** @type {Element} */
+  /** @type {!SettingsCollapseRadioButtonElement} */
   let blockThirdPartyIncognito;
 
-  /** @type {Element} */
+  /** @type {!SettingsCollapseRadioButtonElement} */
   let blockThirdParty;
 
-  /** @type {Element} */
+  /** @type {!SettingsCollapseRadioButtonElement} */
   let blockAll;
 
-  /** @type {array<!Element>} */
+  /** @type {!Array<!SettingsCollapseRadioButtonElement>} */
   let radioButtons;
 
   suiteSetup(function() {
@@ -55,8 +60,9 @@ suite('CrSettingsCookiesPageTest', function() {
     MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-cookies-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsCookiesPageElement} */ (
+        document.createElement('settings-cookies-page'));
     page.prefs = {
       profile: {
         cookie_controls_mode: {value: 0},
@@ -66,14 +72,19 @@ suite('CrSettingsCookiesPageTest', function() {
     document.body.appendChild(page);
     flush();
 
-    allowAll = page.$$('#allowAll');
-    blockThirdPartyIncognito = page.$$('#blockThirdPartyIncognito');
-    blockThirdParty = page.$$('#blockThirdParty');
-    blockAll = page.$$('#blockAll');
-    clearOnExit = page.$$('#clearOnExit');
-    networkPrediction = page.$$('#networkPrediction');
-    radioButtons =
-        [allowAll, blockThirdPartyIncognito, blockThirdParty, blockAll];
+    radioButtons = /** @type {!Array<!SettingsCollapseRadioButtonElement>} */ ([
+      page.$$('#allowAll'),
+      page.$$('#blockThirdPartyIncognito'),
+      page.$$('#blockThirdParty'),
+      page.$$('#blockAll'),
+    ]);
+    [allowAll, blockThirdPartyIncognito, blockThirdParty, blockAll] =
+        radioButtons;
+
+    clearOnExit =
+        /** @type {!SettingsToggleButtonElement} */ (page.$$('#clearOnExit'));
+    networkPrediction = /** @type {!SettingsToggleButtonElement} */ (
+        page.$$('#networkPrediction'));
   });
 
   teardown(function() {
@@ -295,7 +306,8 @@ suite('CrSettingsCookiesPageTest', function() {
     await siteSettingsBrowserProxy.whenCalled('getExceptionList');
     flush();
 
-    const exceptionLists = page.shadowRoot.querySelectorAll('site-list');
+    const exceptionLists = /** @type {!NodeList<!SiteListElement>} */ (
+        page.shadowRoot.querySelectorAll('site-list'));
     assertEquals(exceptionLists.length, 3);
 
     for (const list of exceptionLists) {
@@ -312,11 +324,16 @@ suite('CrSettingsCookiesPageTest', function() {
 
   test('CookieControls_ManagedState', async function() {
     const managedControlState = {
-      allowAll: {disabled: true, indicator: 'devicePolicy'},
-      blockThirdPartyIncognito: {disabled: true, indicator: 'devicePolicy'},
-      blockThirdParty: {disabled: true, indicator: 'devicePolicy'},
-      blockAll: {disabled: true, indicator: 'devicePolicy'},
-      sessionOnly: {disabled: true, indicator: 'devicePolicy'},
+      allowAll:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+      blockThirdPartyIncognito:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+      blockThirdParty:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+      blockAll:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
+      sessionOnly:
+          {disabled: true, indicator: CrPolicyIndicatorType.DEVICE_POLICY},
     };
     const managedPrefs = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
@@ -351,11 +368,12 @@ suite('CrSettingsCookiesPageTest', function() {
 
     // Revert to an unmanaged state and ensure all controls return to unmanged.
     const unmanagedControlState = {
-      allowAll: {disabled: false, indicator: 'none'},
-      blockThirdPartyIncognito: {disabled: false, indicator: 'none'},
-      blockThirdParty: {disabled: false, indicator: 'none'},
-      blockAll: {disabled: false, indicator: 'none'},
-      sessionOnly: {disabled: false, indicator: 'none'},
+      allowAll: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+      blockThirdPartyIncognito:
+          {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+      blockThirdParty: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+      blockAll: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
+      sessionOnly: {disabled: false, indicator: CrPolicyIndicatorType.NONE},
     };
     const unmanagedPrefs = createSiteSettingsPrefs(
         [createContentSettingTypeToValuePair(
@@ -394,7 +412,7 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
   /** @type {TestSiteSettingsPrefsBrowserProxy} */
   let siteSettingsBrowserProxy;
 
-  /** @type {SettingsSecurityPageElement} */
+  /** @type {!SettingsCookiesPageElement} */
   let page;
 
   suiteSetup(function() {
@@ -406,8 +424,9 @@ suite('CrSettingsCookiesPageTest_ImprovedCookieControlsDisabled', function() {
   setup(function() {
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
     SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
-    PolymerTest.clearBody();
-    page = document.createElement('settings-cookies-page');
+    document.body.innerHTML = '';
+    page = /** @type {!SettingsCookiesPageElement} */ (
+        document.createElement('settings-cookies-page'));
     page.prefs = {
       profile: {
         cookie_controls_mode: {value: 0},

@@ -621,27 +621,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // Target rendering ColorSpace.
   gfx::ColorSpace rendering_color_space_;
 
-  class PendingFrameCreate {
-   public:
-    PendingFrameCreate(int routing_id,
-                       mojo::PendingReceiver<mojom::Frame> frame_receiver);
-    ~PendingFrameCreate();
-
-    mojo::PendingReceiver<mojom::Frame> TakeFrameReceiver() {
-      return std::move(frame_receiver_);
-    }
-
-   private:
-    // Mojo error handler.
-    void OnConnectionError();
-
-    const int routing_id_;
-    mojo::PendingReceiver<mojom::Frame> frame_receiver_;
-  };
-
-  using PendingFrameCreateMap =
-      std::map<int, std::unique_ptr<PendingFrameCreate>>;
-  PendingFrameCreateMap pending_frame_creates_;
+  // Used when AddRoute() is called and the RenderFrameImpl hasn't been created
+  // yet.
+  std::map<int, mojo::PendingReceiver<mojom::Frame>> pending_frames_;
 
   mojo::AssociatedRemote<mojom::RendererHost> renderer_host_;
 

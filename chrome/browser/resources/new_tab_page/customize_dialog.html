@@ -19,9 +19,15 @@
   div[slot=body] {
     color: var(--cr-primary-text-color);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     overflow: hidden;
     padding: 0;
+  }
+
+  #bodyContainer {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
   }
 
   div[slot=button-container] {
@@ -51,9 +57,13 @@
     flex-grow: 1;
   }
 
-  #menu,
-  #pages {
+  #menu {
     height: calc(100% - 2 * var(--border-width));
+    overflow: auto;
+  }
+
+  #pages {
+    height: 100%;
     overflow: auto;
   }
 
@@ -64,11 +74,12 @@
   }
 
   div[scroll-border] {
-    border-bottom: var(--border-width) solid var(--ntp-border-color);
+    border-bottom: var(--border-width) solid transparent;
   }
 
-  div[scroll-border]:not([show]) {
-    --ntp-border-color: transparent;
+  div[scroll-border][show-1],
+  div[scroll-border][show-2] {
+    border-bottom-color: var(--ntp-border-color);
   }
 
   #menu {
@@ -176,40 +187,45 @@
     </div>
   </div>
   <div slot="body">
-    <div id="menuContainer">
-      <div id="menu">
-        <iron-selector selected-attribute="selected"
-            attr-for-selected="page-name" selected="{{selectedPage_}}"
-            on-keydown="onMenuItemKeyDown_">
-          <div class="menu-item" page-name="backgrounds" tabindex="0">
-            <div id="backgroundsIcon" class="menu-item-icon"></div>
-            $i18n{backgroundsMenuItem}
-          </div>
-          <div class="menu-item" page-name="shortcuts" tabindex="0">
-            <div id="shortcutsIcon" class="menu-item-icon"></div>
-            $i18n{shortcutsMenuItem}
-          </div>
-          <div class="menu-item" page-name="themes" tabindex="0">
-            <div id="themesIcon" class="menu-item-icon"></div>
-            $i18n{themesMenuItem}
-          </div>
-        </iron-selector>
+    <div id="topPageScrollBorder" scroll-border></div>
+    <div id="bodyContainer">
+      <div id="menuContainer">
+        <div id="menu">
+          <iron-selector selected-attribute="selected"
+              attr-for-selected="page-name" selected="{{selectedPage_}}"
+              on-keydown="onMenuItemKeyDown_">
+            <div class="menu-item" page-name="backgrounds" tabindex="0">
+              <div id="backgroundsIcon" class="menu-item-icon"></div>
+              $i18n{backgroundsMenuItem}
+            </div>
+            <div class="menu-item" page-name="shortcuts" tabindex="0">
+              <div id="shortcutsIcon" class="menu-item-icon"></div>
+              $i18n{shortcutsMenuItem}
+            </div>
+            <div class="menu-item" page-name="themes" tabindex="0">
+              <div id="themesIcon" class="menu-item-icon"></div>
+              $i18n{themesMenuItem}
+            </div>
+          </iron-selector>
+        </div>
+      </div>
+      <div id="pagesContainer">
+        <div id="pages">
+          <iron-pages selected="[[selectedPage_]]"
+              attr-for-selected="page-name">
+            <ntp-customize-backgrounds id="backgrounds" page-name="backgrounds"
+                selected-collection="{{selectedCollection_}}" theme="[[theme]]"
+                background-selection="{{backgroundSelection}}">
+            </ntp-customize-backgrounds>
+            <ntp-customize-shortcuts page-name="shortcuts">
+            </ntp-customize-shortcuts>
+            <ntp-customize-themes page-name="themes" theme="[[theme]]">
+            </ntp-customize-themes>
+          </iron-pages>
+        </div>
       </div>
     </div>
-    <div id="pagesContainer">
-      <div id="pages">
-        <iron-pages selected="[[selectedPage_]]" attr-for-selected="page-name">
-          <ntp-customize-backgrounds id="backgrounds" page-name="backgrounds"
-              selected-collection="{{selectedCollection_}}" theme="[[theme]]"
-              background-selection="{{backgroundSelection}}">
-          </ntp-customize-backgrounds>
-          <ntp-customize-shortcuts page-name="shortcuts">
-          </ntp-customize-shortcuts>
-          <ntp-customize-themes page-name="themes" theme="[[theme]]">
-          </ntp-customize-themes>
-        </iron-pages>
-      </div>
-    </div>
+    <div id="bottomPageScrollBorder" scroll-border></div>
   </div>
   <div slot="button-container">
     <cr-button class="cancel-button" on-click="onCancelClick_">

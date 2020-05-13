@@ -302,22 +302,13 @@ Wenn Sie diese Richtlinie deaktivieren, wird das Scrollen zu bestimmten Textfrag
 <translation id="1474273443907024088">TLS-Funktion "False Start" deaktivieren</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Informationen zur Hintergrundbeleuchtung ausgeben</translation>
-<translation id="1488406778491620405">Über die Bedienungshilfe "<ph name="PRODUCT_NAME" />"
-          erhalten sehbehinderte Screenreader-Nutzer
-          Beschreibungen für unbeschriftete Bilder im Internet. Nutzer, die diese Funktion aktivieren,
-          können einen anonymen Google-Dienst verwenden, um
-          automatische Beschreibungen für unbeschriftete Bilder im Internet zu erhalten.
+<translation id="1488406778491620405">Über die Bedienungshilfe "<ph name="PRODUCT_NAME" />" erhalten sehbehinderte Screenreader-Nutzer Beschreibungen für unbeschriftete Bilder im Internet. Nutzer, die diese Funktion aktivieren, können einen anonymen Google-Dienst verwenden, um automatische Beschreibungen für unbeschriftete Bilder im Internet zu erhalten.
 
-          Wenn diese Funktion aktiviert ist, werden die Bildinhalte an Google-Server gesendet, um Beschreibungen zu erstellen. Es werden keine Cookies oder anderen Nutzerdaten gesendet
-          und Google speichert oder protokolliert keine Bildinhalte.
+          Wenn diese Funktion aktiviert ist, werden die Bildinhalte an Google-Server gesendet, um Beschreibungen zu erstellen. Es werden keine Cookies oder anderen Nutzerdaten gesendet und Google speichert oder protokolliert keine Bildinhalte.
 
-          Wenn diese Richtlinie auf "true" gesetzt wird, wird die Funktion
-          "<ph name="PRODUCT_NAME" />"
-          aktiviert. Sie betrifft jedoch nur Nutzer, die
-          einen Screenreader oder ähnliche Hilfstechnologien verwenden.
+          Wenn diese Richtlinie auf "true" gesetzt wird, wird die Funktion "<ph name="PRODUCT_NAME" />" aktiviert. Sie betrifft jedoch nur Nutzer, die einen Screenreader oder ähnliche Hilfstechnologien verwenden.
 
-          Wird sie auf "false" gesetzt, können Nutzer diese Funktion nicht
-          aktivieren.
+          Wird sie auf "false" gesetzt, können Nutzer diese Funktion nicht aktivieren.
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.</translation>
 <translation id="1497640071678474358">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, welche Websites keine Pop-ups öffnen dürfen.
@@ -2393,15 +2384,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4482640907922304445">Zeigt die Schaltfläche "Startseite" in der Symbolleiste von <ph name="PRODUCT_NAME" /> an. Wenn Sie diese Einstellung aktivieren, so wird die Schaltfläche "Startseite" immer angezeigt. Sollten Sie sie deaktivieren, erscheint die Schaltfläche nicht. Ist diese Einstellung aktiviert oder deaktiviert, können Nutzer sie in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen. Ist die Richtlinie nicht konfiguriert, so kann der Nutzer selbst bestimmen, ob die Schaltfläche "Startseite" zur Verfügung stehen soll.</translation>
 <translation id="4483649828988077221">Automatische Updates deaktivieren</translation>
 <translation id="4485425108474077672">URL für "Neuer Tab"-Seite konfigurieren</translation>
-<translation id="4487507711538762752">Mit dieser Richtlinie wird erzwungen, dass der Netzwerkcode im Browserprozess ausgeführt wird.
-
-      Sie ist standardmäßig deaktiviert. Ist sie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
-
-      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen ist. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, wird der Netzwerkcode standardmäßig außerhalb des Browserprozesses ausgeführt.
-
-      Diese Richtlinie wird in <ph name="PRODUCT_NAME" /> 84 entfernt.</translation>
 <translation id="4492287494009043413">Aufnahme von Screenshots deaktivieren</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Richtlinien für <ph name="PLUGIN_VM_NAME" /> konfigurieren.</translation>
@@ -3018,7 +3000,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Wenn diese Richtlinie deaktiviert ist, wird nie beim Nutzer nachgefragt und Audioaufnahmen sind nur für URLs in der Liste "AudioCaptureAllowedUrls" verfügbar.
 
       Diese Richtlinie gilt für jegliche Form der Audioeingabe, nicht nur für das integrierte Mikrofon.</translation>
-<translation id="5417906792459853336">Diese Richtlinie gibt Informationen zum Bestand der Anwendungen und zur Verwendung eines Geräts aus.
+<translation id="5417906792459853336">Mit dieser Richtlinie wird festgelegt, ob Informationen zum Bestand der Anwendungen und zur Verwendung eines Geräts ausgegeben werden.
 
       Wenn sie auf "false" gesetzt oder nicht konfiguriert ist, werden keine Informationen ausgegeben.
       Ist sie auf "true" gesetzt, werden Informationen zu Anwendungen und zur Verwendung eines Geräts ausgegeben.</translation>
@@ -3069,7 +3051,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="5457065417344056871">Gastmodus im Browser aktivieren</translation>
 <translation id="5457924070961220141">Ermöglicht Ihnen die Konfiguration des Standard-HTML-Renderers, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt die Standardeinstellung zum Einsatz, wobei der Hostbrowser das Rendering übernimmt. Sie haben aber die Möglichkeit, dies zu ändern und <ph name="PRODUCT_FRAME_NAME" /> das Rendering der HTML-Seite übernehmen zu lassen.</translation>
 <translation id="5464816904705580310">Konfiguriert Einstellungen für verwaltete Nutzer</translation>
-<translation id="5466596281866046569">Informationen zu Berichts-Apps</translation>
+<translation id="5466596281866046569">App-Informationen ausgeben</translation>
 <translation id="546726650689747237">Verzögerung für die Bildschirmabdunkelung im Netzbetrieb</translation>
 <translation id="5469143988693423708">Nutzer darf Crostini ausführen</translation>
 <translation id="5469825884154817306">Bilder auf diesen Websites blockieren</translation>
@@ -3306,6 +3288,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Ist sie auf "False" gesetzt oder nicht konfiguriert, sind die Funktionen von Web Components v0 ab M80 standardmäßig deaktiviert.
 
       Diese Richtlinie wird nach Chrome 84 entfernt.</translation>
+<translation id="5763698334786515749">Schaltfläche zum Anzeigen des Passworts auf dem Start- oder Sperrbildschirm aktivieren.</translation>
 <translation id="5765780083710877561">Beschreibung:</translation>
 <translation id="5770738360657678870">Entwicklerversion (möglicherweise nicht stabil)</translation>
 <translation id="5774856474228476867">Such-URL der Standardsuchmaschine</translation>
@@ -3643,6 +3626,7 @@ Ist die Richtlinie nicht festgelegt, findet keine automatische Anmeldung statt.<
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="6368011194414932347">Startseiten-URL konfigurieren</translation>
 <translation id="6368403635025849609">JavaScript auf diesen Websites zulassen</translation>
+<translation id="6372105930898423193">Ermöglicht die Aktivierung der AppCache-Funktion, selbst wenn sie standardmäßig deaktiviert ist.</translation>
 <translation id="6376659517206731212">Kann verbindlich sein</translation>
 <translation id="6377355597423503887">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "BrowserSignin" verwenden.
 
@@ -3863,6 +3847,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6665670272107384733">Festlegen, wie oft der Nutzer das Passwort eingeben muss, um das schnelle Entsperren zu verwenden</translation>
 <translation id="6672070613706645316">Nutzern erlauben, den Hintergrund auf der "Neuer Tab"-Seite anzupassen</translation>
 <translation id="6672630473862787247">Aktiviert die passive Authentifizierung für reguläre, Inkognito- und Gastsitzungen.</translation>
+<translation id="6677797768774898583">Wenn die Funktion aktiviert ist, kann der Nutzer eine Schaltfläche anklicken und sich so das Passwort auf dem Start- oder Sperrbildschirm anzeigen lassen.</translation>
 <translation id="6685903773201985073">Aktiviert die passive Authentifizierung für Gast- und reguläre Sitzungen.</translation>
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698632841807204978">Schwarz-Weiß-Druck aktivieren</translation>
@@ -4173,6 +4158,7 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung berücksichtigt, es sei denn, "AllowWakeLocks" ist auf "false" gesetzt.
 Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfragen auf den Status von System-Wakelocks zurückgestuft.</translation>
 <translation id="7177857088692019405">Schnelles Entsperren</translation>
+<translation id="718126088895133062">Mit dieser Richtlinie wird die Nutzer-ID zur <ph name="PLUGIN_VM_NAME" />-Lizenzierung für dieses Gerät angegeben.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Hiermit können Sie die Energieverwaltungsrichtlinie zum Umschalten bei Leistungsspitzen aktivieren.
 
@@ -5498,6 +5484,9 @@ Wenn die Richtlinie auf "true" gesetzt ist, ist "Kopf- und Fußzeilen" im Dialog
 <translation id="9217154963008402249">Häufigkeit von Kontrollnetzwerkpaketen</translation>
 <translation id="922540222991413931">Installationsquellen für Erweiterungen, Apps und Nutzerskripte konfigurieren</translation>
 <translation id="924557436754151212">Gespeicherte Passwörter bei erster Ausführung aus Standardbrowser importieren</translation>
+<translation id="929549405492388749">Wird die Richtlinie auf "true" gesetzt, wird die Aktivierung von AppCache erzwungen, selbst wenn AppCache in Chrome nicht standardmäßig verfügbar ist.
+
+      Wird die Richtlinie nicht oder auf "false" gesetzt, folgt AppCache der Standardeinstellung von Chrome.</translation>
 <translation id="930930237275114205">Verzeichnis für <ph name="PRODUCT_FRAME_NAME" />-Nutzerdaten festlegen</translation>
 <translation id="940706688964479124">Liste von Dateitypen, die nach dem Download automatisch geöffnet werden sollen</translation>
 <translation id="943865157632139008">Mit dieser Richtlinie können Sie den standardmäßigen HTML-Renderer konfigurieren, wenn <ph name="PRODUCT_FRAME_NAME" /> installiert ist.

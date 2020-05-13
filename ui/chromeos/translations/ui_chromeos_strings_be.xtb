@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Ківі</translation>
 <translation id="3966388904776714213">Аўдыяпрайгравальнік</translation>
 <translation id="4002066346123236978">Назва</translation>
+<translation id="4065397611279318371">Каб адкрываць файлы ў праграмах <ph name="APP_NAME" />, спачатку перамясціце іх у папку <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Кантонскі метад уводу</translation>
 <translation id="4072248638558688893">Тамільская клавіятура (фанетычная)</translation>
 <translation id="4124935795427217608">Аднарог</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">Будуць выдалены файлы агульным памерам <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Адбылася памылка.</translation>
 <translation id="5098629044894065541">Іўрыт</translation>
-<translation id="5112685521274804841">Файлы ў гэтай папцы – толькі для чытання. Некаторыя дзеянні не падтрымліваюцца.</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
 <translation id="5129662217315786329">Польская</translation>
 <translation id="5144820558584035333">Карэйскі алфавіт (хангыль), рэжым 3 Set (390)</translation>

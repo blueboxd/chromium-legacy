@@ -142,8 +142,6 @@ class Task {
 
   // Getting the allocated and used V8 memory (in bytes). Not all tasks reports
   // V8 memory, in this case a default invalid value of -1 will be returned.
-  // Check for whether the task reports it or not first.
-  bool ReportsV8Memory() const;
   virtual int64_t GetV8MemoryAllocated() const;
   virtual int64_t GetV8MemoryUsed() const;
 

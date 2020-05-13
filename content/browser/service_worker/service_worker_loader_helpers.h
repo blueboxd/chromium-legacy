@@ -58,10 +58,10 @@ bool ShouldValidateBrowserCacheForScript(
 
 #if DCHECK_IS_ON()
 // Checks the consistency between the status of the service worker version and
-// the script resource type to be fetched by the loaders.
+// the script resource destination to be fetched by the loaders.
 void CheckVersionStatusBeforeWorkerScriptLoad(
     ServiceWorkerVersion::Status status,
-    blink::mojom::ResourceType resource_type);
+    network::mojom::RequestDestination resource_destination);
 #endif  // DCHECK_IS_ON()
 
 }  // namespace service_worker_loader_helpers

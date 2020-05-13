@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3966388904776714213">Player audio</translation>
 <translation id="4002066346123236978">Titlu</translation>
+<translation id="4065397611279318371">Pentru a deschide fișiere cu ajutorul aplicațiilor <ph name="APP_NAME" />, mai întâi mută-le în dosarul <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Metoda de introducere a textului în cantoneză</translation>
 <translation id="4072248638558688893">Tastatură tamilă (Fonetică)</translation>
 <translation id="4124935795427217608">Unicorn</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> fișiere vor fi șterse</translation>
 <translation id="509429900233858213">A apărut o eroare.</translation>
 <translation id="5098629044894065541">Ebraică</translation>
-<translation id="5112685521274804841">Fișierele din aceste dosare sunt numai în citire. Unele activități nu sunt acceptate.</translation>
 <translation id="5123433949759960244">Baschet</translation>
 <translation id="5129662217315786329">Poloneză</translation>
 <translation id="5144820558584035333">Hangul setul 3 (390)</translation>

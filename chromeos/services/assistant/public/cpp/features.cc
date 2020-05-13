@@ -72,9 +72,6 @@ const base::FeatureParam<int>
     kAssistantProactiveSuggestionsTimeoutThresholdMillis{
         &kAssistantProactiveSuggestions, "timeout-threshold-millis", 15 * 1000};
 
-// When enabled, Assistant will use response processing V2. This is a set of
-// synced client and server changes which will turn on default parallel client
-// op processing and eager (streaming) UI element rendering.
 const base::Feature kAssistantResponseProcessingV2{
     "AssistantResponseProcessingV2", base::FEATURE_DISABLED_BY_DEFAULT};
 

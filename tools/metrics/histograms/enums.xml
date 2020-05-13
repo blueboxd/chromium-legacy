@@ -2734,6 +2734,18 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="Peeking To Half"/>
 </enum>
 
+<enum name="AppListUserEvent">
+  <int value="0" label="Impression"/>
+  <int value="1" label="Launch"/>
+  <int value="2" label="Abandon"/>
+</enum>
+
+<enum name="AppListUserEventError">
+  <int value="0" label="Missing notifier"/>
+  <int value="1" label="Result not found"/>
+  <int value="2" label="Untracked location"/>
+</enum>
+
 <enum name="AppListZeroStateResultRemovalConfirmation">
   <int value="0" label="Removal Confirmed"/>
   <int value="1" label="Removal Canceled"/>
@@ -58631,6 +58643,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="Page tried to enter fullscreen mode and the warning was shown."/>
   <int value="6"
       label="Page initiated a download and it was silently cancelled."/>
+  <int value="7"
+      label="The page triggered a permission request. It was denied and the
+             warning was shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">
@@ -70207,6 +70222,18 @@ Full version information for the fingerprint enum values:
   <int value="58" label="kXDNSPrefetchControl"/>
   <int value="59" label="kXFrameOptions"/>
   <int value="60" label="kXXSSProtection"/>
+</enum>
+
+<enum name="WebRequestConditionAttributeType">
+  <summary>
+    The types of WebRequestConditionAttribute in the DeclarativeWebRequest API.
+  </summary>
+  <int value="0" label="RESOURCE_TYPE"/>
+  <int value="1" label="CONTENT_TYPE"/>
+  <int value="2" label="RESPONSE_HEADERS"/>
+  <int value="3" label="THIRD_PARTY"/>
+  <int value="4" label="REQUEST_HEADERS"/>
+  <int value="5" label="STAGES"/>
 </enum>
 
 <enum name="WebRequestEventListenerFlag">

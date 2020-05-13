@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3966388904776714213">Zvočni predvajalnik</translation>
 <translation id="4002066346123236978">Naslov</translation>
+<translation id="4065397611279318371">Če želite odpirati datoteke z aplikacijami <ph name="APP_NAME" />, jih najprej premaknite v mapo <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Način vnosa za kantonščino</translation>
 <translation id="4072248638558688893">Tipkovnica za tamilščino (fonetična)</translation>
 <translation id="4124935795427217608">Samorog</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911">Izbrisanih bo za <ph name="TOTAL_FILE_SIZE" /> datotek</translation>
 <translation id="509429900233858213">Napaka.</translation>
 <translation id="5098629044894065541">hebrejščina</translation>
-<translation id="5112685521274804841">Datoteke v tej mapi so samo za branje. Nekatere dejavnosti niso podprte.</translation>
 <translation id="5123433949759960244">Košarkarska žoga</translation>
 <translation id="5129662217315786329">poljščina</translation>
 <translation id="5144820558584035333">Trodelni hangulski način (390)</translation>

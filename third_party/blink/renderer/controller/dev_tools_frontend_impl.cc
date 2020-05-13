@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dev_tools_host.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
@@ -64,12 +65,17 @@ const char DevToolsFrontendImpl::kSupplementName[] = "DevToolsFrontendImpl";
 DevToolsFrontendImpl::DevToolsFrontendImpl(
     LocalFrame& frame,
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsFrontend> receiver)
-    : Supplement<LocalFrame>(frame), receiver_(this, std::move(receiver)) {}
+    : Supplement<LocalFrame>(frame),
+      host_(frame.DomWindow()),
+      receiver_(this, frame.DomWindow()) {
+  receiver_.Bind(std::move(receiver),
+                 frame.GetTaskRunner(TaskType::kMiscPlatformAPI));
+}
 
 DevToolsFrontendImpl::~DevToolsFrontendImpl() = default;
 
 void DevToolsFrontendImpl::DidClearWindowObject() {
-  if (host_) {
+  if (host_.is_bound()) {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Use higher limit for DevTools isolate so that it does not OOM when
     // profiling large heaps.
@@ -102,7 +108,8 @@ void DevToolsFrontendImpl::SetupDevToolsFrontend(
     mojo::PendingAssociatedRemote<mojom::blink::DevToolsFrontendHost> host) {
   DCHECK(GetSupplementable()->IsMainFrame());
   api_script_ = api_script;
-  host_.Bind(std::move(host));
+  host_.Bind(std::move(host),
+             GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI));
   host_.set_disconnect_handler(WTF::Bind(
       &DevToolsFrontendImpl::DestroyOnHostGone, WrapWeakPersistent(this)));
   GetSupplementable()->GetPage()->SetDefaultPageScaleLimits(1.f, 1.f);
@@ -115,7 +122,7 @@ void DevToolsFrontendImpl::SetupDevToolsExtensionAPI(
 }
 
 void DevToolsFrontendImpl::SendMessageToEmbedder(const String& message) {
-  if (host_)
+  if (host_.is_bound())
     host_->DispatchEmbedderMessage(message);
 }
 
@@ -127,6 +134,8 @@ void DevToolsFrontendImpl::DestroyOnHostGone() {
 
 void DevToolsFrontendImpl::Trace(Visitor* visitor) {
   visitor->Trace(devtools_host_);
+  visitor->Trace(host_);
+  visitor->Trace(receiver_);
   Supplement<LocalFrame>::Trace(visitor);
 }
 

@@ -28,9 +28,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/mojom/types.mojom-shared.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -73,11 +70,6 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
         std::make_unique<AppServiceAppWindowCrostiniTracker>(this);
 
   profile_list_.push_back(owner->profile());
-
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser && browser->window() && browser->window()->GetNativeWindow())
-      observed_windows_.Add(browser->window()->GetNativeWindow());
-  }
 }
 
 AppServiceAppWindowLauncherController::
@@ -134,12 +126,11 @@ void AppServiceAppWindowLauncherController::ActiveUserChanged(
 void AppServiceAppWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
   // Each users InstanceRegister needs to be observed.
-  proxy_ = apps::AppServiceProxyFactory::GetForProfile(profile);
-  DCHECK(proxy_);
-  proxy_->InstanceRegistry().AddObserver(this);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  proxy->InstanceRegistry().AddObserver(this);
   profile_list_.push_back(profile);
-
-  app_service_instance_helper_->AdditionalUserAddedToSession(profile);
 }
 
 void AppServiceAppWindowLauncherController::OnWindowInitialized(
@@ -170,7 +161,9 @@ void AppServiceAppWindowLauncherController::OnWindowPropertyChanged(
   if (shelf_id.IsNull())
     return;
 
-  if (GetAppType(shelf_id.app_id) != apps::mojom::AppType::kBuiltIn)
+  DCHECK(proxy_);
+  if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) !=
+      apps::mojom::AppType::kBuiltIn)
     return;
 
   app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
@@ -190,7 +183,7 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
   if (arc_tracker_)
     arc_tracker_->OnWindowVisibilityChanged(window);
 
-  ash::ShelfID shelf_id = GetShelfId(window);
+  ash::ShelfID shelf_id = GetShelfId(window, false /*search_profile_list*/);
   if (shelf_id.IsNull())
     return;
 
@@ -209,11 +202,8 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
   app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
                                             shelf_id.launch_id, state);
 
-  // Only register the visible non-browser |window| for the active user.
-  if (!visible || shelf_id.app_id == extension_misc::kChromeAppId ||
-      !proxy_->InstanceRegistry().Exists(window)) {
+  if (!visible || shelf_id.app_id == extension_misc::kChromeAppId)
     return;
-  }
 
   RegisterWindow(window, shelf_id);
 
@@ -232,27 +222,29 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   // window could be teleported from the inactive user, and isn't saved in the
   // proxy of the active user's profile, but it should still be removed from
   // the controller, and the shelf, so search all the proxies.
-  std::string app_id = GetShelfId(window).app_id;
-  if (app_id.empty()) {
+  ash::ShelfID shelf_id = GetShelfId(window, true /*search_profile_list*/);
+  if (shelf_id.IsNull()) {
     // For Crostini apps, it could be run from the command line, and not saved
     // in AppService, so GetShelfId could return null when the window is
     // destroyed, but it should still be deleted from instance and remove the
     // app window from the shelf. So if we can get the window from
     // InstanceRegistry, we should still destroy it from InstanceRegistry and
     // remove the app window from the shelf
-    app_id = app_service_instance_helper_->GetAppId(window);
-    if (app_id.empty())
+    shelf_id = proxy_->InstanceRegistry().GetShelfId(window);
+    if (shelf_id.IsNull())
       return;
   }
 
-  if (app_service_instance_helper_->IsOpenedInBrowser(app_id, window) ||
-      app_id == extension_misc::kChromeAppId) {
+  if (app_service_instance_helper_->IsOpenedInBrowser(shelf_id.app_id,
+                                                      window) ||
+      shelf_id.app_id == extension_misc::kChromeAppId) {
     return;
   }
 
   // Delete the instance from InstanceRegistry.
-  app_service_instance_helper_->OnInstances(
-      GetAppId(app_id), window, std::string(), apps::InstanceState::kDestroyed);
+  app_service_instance_helper_->OnInstances(GetAppId(shelf_id.app_id), window,
+                                            std::string(),
+                                            apps::InstanceState::kDestroyed);
 
   auto app_window_it = aura_window_to_app_window_.find(window);
   if (app_window_it == aura_window_to_app_window_.end())
@@ -312,7 +304,8 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
       (update.State() & apps::InstanceState::kDestroyed) ==
           apps::InstanceState::kUnknown) {
     std::string app_id = update.AppId();
-    if (GetAppType(app_id) == apps::mojom::AppType::kCrostini ||
+    if (proxy_->AppRegistryCache().GetAppType(app_id) ==
+            apps::mojom::AppType::kCrostini ||
         crostini::IsUnmatchedCrostiniShelfAppId(app_id)) {
       window->SetProperty(aura::client::kAppType,
                           static_cast<int>(ash::AppType::CROSTINI_APP));
@@ -425,7 +418,8 @@ void AppServiceAppWindowLauncherController::SetWindowActivated(
   if (!window || !observed_windows_.IsObserving(window))
     return;
 
-  const ash::ShelfID shelf_id = GetShelfId(window);
+  const ash::ShelfID shelf_id =
+      GetShelfId(window, false /*search_profile_list*/);
   if (shelf_id.IsNull())
     return;
 
@@ -547,7 +541,8 @@ void AppServiceAppWindowLauncherController::OnItemDelegateDiscarded(
 }
 
 ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
-    aura::Window* window) const {
+    aura::Window* window,
+    bool search_profile_list) const {
   if (crostini_tracker_) {
     std::string shelf_app_id;
     shelf_app_id = crostini_tracker_->GetShelfAppId(window);
@@ -567,32 +562,47 @@ ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
 
   // If the window exists in InstanceRegistry, get the shelf id from
   // InstanceRegistry.
-  for (auto* profile : profile_list_) {
-    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
-    shelf_id = proxy->InstanceRegistry().GetShelfId(window);
-    if (!shelf_id.IsNull())
-      break;
-  }
-  if (shelf_id.IsNull()) {
-    shelf_id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-  }
-  if (!shelf_id.IsNull() &&
-      GetAppType(shelf_id.app_id) != apps::mojom::AppType::kUnknown) {
-    return shelf_id;
-  }
-  return ash::ShelfID();
-}
-
-apps::mojom::AppType AppServiceAppWindowLauncherController::GetAppType(
-    const std::string& app_id) const {
-  for (auto* profile : profile_list_) {
-    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
-    auto app_type = proxy->AppRegistryCache().GetAppType(app_id);
-    if (app_type != apps::mojom::AppType::kUnknown) {
-      return app_type;
+  if (!search_profile_list) {
+    // Search from the proxy of the active user's profile, and verify whether
+    // the app exists in the proxy.
+    shelf_id = proxy_->InstanceRegistry().GetShelfId(window);
+    if (shelf_id.IsNull()) {
+      shelf_id =
+          ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+    }
+    if (!shelf_id.IsNull()) {
+      if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) ==
+              apps::mojom::AppType::kUnknown &&
+          shelf_id.app_id != extension_misc::kChromeAppId) {
+        return ash::ShelfID();
+      }
+      return shelf_id;
+    }
+  } else {
+    for (auto* profile : profile_list_) {
+      auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+      shelf_id = proxy->InstanceRegistry().GetShelfId(window);
+      if (!shelf_id.IsNull())
+        break;
+    }
+    if (shelf_id.IsNull()) {
+      shelf_id =
+          ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+    }
+    if (!shelf_id.IsNull()) {
+      for (auto* profile : profile_list_) {
+        auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+        if (proxy->AppRegistryCache().GetAppType(shelf_id.app_id) !=
+                apps::mojom::AppType::kUnknown ||
+            shelf_id.app_id == extension_misc::kChromeAppId) {
+          return shelf_id;
+        }
+      }
+      return ash::ShelfID();
     }
   }
-  return apps::mojom::AppType::kUnknown;
+
+  return shelf_id;
 }
 
 void AppServiceAppWindowLauncherController::UserHasAppOnActiveDesktop(

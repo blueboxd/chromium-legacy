@@ -149,7 +149,7 @@
 <translation id="1559528461873125649">यस्तो कुनै फाइल या निर्देशिका छैन</translation>
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सँग निजी जडान स्थापना गर्न सकिँदैन किनकि तपाईँको यन्त्रको मिति र समय (<ph name="DATE_AND_TIME" />) सही छैनन्।&lt;/p&gt;
 
-      &lt;p&gt;कृपया मिति र समय मिलाउन &lt;strong&gt;सेटिङ&lt;/strong&gt; अनुप्रयोगको &lt;strong&gt;सामान्य&lt;/strong&gt; खण्डमा गई मिलाउनुहोस्।&lt;/p&gt;</translation>
+      &lt;p&gt;कृपया मिति र समय मिलाउन &lt;strong&gt;सेटिङ&lt;/strong&gt; एपको &lt;strong&gt;सामान्य&lt;/strong&gt; खण्डमा गई मिलाउनुहोस्।&lt;/p&gt;</translation>
 <translation id="1569487616857761740">म्याद सकिने मिति प्रविष्टि गर्नुहोस्</translation>
 <translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">यो वेबपृष्ठ प्रदर्शन गर्दा कुनै त्रुटी भयो।</translation>
@@ -160,6 +160,7 @@
 <translation id="161042844686301425">सायन</translation>
 <translation id="1620510694547887537">क्यामेरा</translation>
 <translation id="1623104350909869708">यो पृष्ठलाई अतिरिक्त संवादहरू सिर्जना गर्नबाट रोक्नुहोस्</translation>
+<translation id="1623253368136559158">क्यामेराको फोकस परिवर्तन गर्न</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">कार्ड सुरक्षित गर्न सकिएन</translation>
 <translation id="1639239467298939599">लोड गर्दै</translation>
@@ -634,7 +635,7 @@
 <translation id="3714780639079136834">मोबाइल डेटा वा Wi-Fi लाई सक्रिय गर्नुहोस्</translation>
 <translation id="3715597595485130451">Wi-Fi मा जडान गर्नुहोस्</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />प्रोक्सी, फायरवाल र DNS को कन्फिगरेसनलाई जाँच गर्नुहोस्<ph name="END_LINK" /></translation>
-<translation id="372429172604983730">यो त्रुटि उत्पन्न गराउन सक्ने अनुप्रयोगहरूमा एन्टिभाइरस, फायरवाल र वेब-फिल्टर वा प्रोक्सी सफ्टवेयर पर्दछन्।</translation>
+<translation id="372429172604983730">यो त्रुटि उत्पन्न गराउन सक्ने एपहरूमा एन्टिभाइरस, फायरवाल र वेब-फिल्टर वा प्रोक्सी सफ्टवेयर पर्दछन्।</translation>
 <translation id="373042150751172459">B4 (Envelope)</translation>
 <translation id="3736520371357197498">यदि तपाईं आफ्नो सुरक्षामा भएका जोखिमहरूलाई बुझ्नुहुन्छ भने, तपाईं खतरनाक कार्यक्रमहरू हटाइनु भन्दा पहिले तपाईं <ph name="BEGIN_LINK" />यो असुरक्षित साइट भ्रमण<ph name="END_LINK" /> गर्न सक्नुहुन्छ।</translation>
 <translation id="3744899669254331632">तपाईं अहिले <ph name="SITE" />को  भ्रमण गर्न सक्नुहुन्न किनकि क्रोमियमले प्रशोधन गर्न सक्दैन भन्नेवेबसाइटले अपत्यारिला प्रमाणहरू पठायो। सञ्जाल त्रुटि र आक्रमणहरू सामन्यतया: अस्थायी हुन्छन्, यसैले यो पृष्ठले पछि सायद  काम गर्ने छ।</translation>
@@ -1531,7 +1532,7 @@
 <translation id="7569952961197462199">Chrome बाट क्रेडिट कार्ड हटाउने हो?</translation>
 <translation id="7569983096843329377">कालो</translation>
 <translation id="7575207903026901870">सुझावको बटन हटाउनुहोस्, यो सुझाव हटाउन Enter थिच्नुहोस्</translation>
-<translation id="7578104083680115302">तपाईंले Google मार्फत सुरक्षित गर्नुभएका कार्डहरू प्रयोग गर्दै साइट र अनुप्रयोगहरूमा द्रुत रूपमा भुक्तानी गर्नुहोस्।</translation>
+<translation id="7578104083680115302">तपाईंले Google मार्फत सुरक्षित गर्नुभएका कार्डहरू प्रयोग गर्दै साइट र एपहरूमा द्रुत रूपमा भुक्तानी गर्नुहोस्।</translation>
 <translation id="7581199239021537589">सतह २ मा रहेको छविको Y सिफ्ट</translation>
 <translation id="7591636454931265313"><ph name="EMBEDDED_URL" /> <ph name="TOP_LEVEL_URL" /> मा कुकी र साइटको डेटा प्रयोग गर्न चाहन्छ</translation>
 <translation id="7592362899630581445">सर्भरको प्रमाणपत्रले नाम प्रतिबन्धहरूलाई उल्लङ्घन गर्छ।</translation>
@@ -1614,6 +1615,7 @@
 <translation id="7887885240995164102">picture-in-picture मोडमा प्रविष्टि गर्नुहोस्‌</translation>
 <translation id="7888575728750733395">प्रिन्टिङ रेन्डर गर्ने प्रक्रियाको उद्देश्य</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
+<translation id="7923775243649974918">तपाईंको क्यामेराको फोकस परिवर्तन गर्न</translation>
 <translation id="7932579305932748336">कोट</translation>
 <translation id="79338296614623784">मान्य फोन नम्बर प्रविष्टि गर्नुहोस्</translation>
 <translation id="7934052535022478634">भुक्तानी गर्ने कार्य पूरा भयो</translation>

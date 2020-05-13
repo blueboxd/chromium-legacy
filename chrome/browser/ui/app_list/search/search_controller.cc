@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
+#include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
@@ -73,6 +74,8 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
                                    Profile* profile)
     : profile_(profile),
       mixer_(std::make_unique<Mixer>(model_updater)),
+      metrics_observer_(
+          std::make_unique<SearchMetricsObserver>(notifier, this)),
       list_controller_(list_controller) {}
 
 SearchController::~SearchController() {}

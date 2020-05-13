@@ -22,6 +22,7 @@
 <translation id="1966382378801805537">O Chromium não consegue determinar ou definir o navegador predefinido</translation>
 <translation id="2008474315282236005">Esta ação elimina 1 item deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="2185166961232948079">Chromium – Início de sessão na rede – <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">O Chromium OS não conseguiu sincronizar as suas palavras-passe.</translation>
 <translation id="2241627712206172106">Se partilhar um computador, os amigos e os familiares podem navegar separadamente e configurar o Chromium da forma que quiserem.</translation>
 <translation id="2294245788148774212">Opcional: ajudar a melhorar as funcionalidades e o desempenho do Chromium OS ao enviar automaticamente dados de diagnóstico e de utilização para a Google.</translation>
 <translation id="2347108572062610441">Esta extensão alterou a página apresentada quando inicia o Chromium.</translation>
@@ -134,6 +135,7 @@
 <translation id="6134968993075716475">A Navegação segura está desativada. O Chromium recomenda que a ative.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver a funcionar, desinstale o Chromium e tente novamente.</translation>
 <translation id="6219195342503754812">{0,plural, =0{O Chromium será reiniciado agora}=1{O Chromium será reiniciado dentro de 1 segundo}other{O Chromium será reiniciado dentro de # segundos}}</translation>
+<translation id="623836266260425961">O Chromium OS não conseguiu sincronizar os dados.</translation>
 <translation id="6248213926982192922">Definir o Chromium como navegador predefinido</translation>
 <translation id="6266342355635466082">O Chromium não consegue verificar se existem atualizações. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="6268381023930128611">Pretende terminar sessão no Chromium?</translation>

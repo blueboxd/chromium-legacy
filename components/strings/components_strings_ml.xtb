@@ -160,6 +160,7 @@
 <translation id="161042844686301425">സിയാൻ</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
 <translation id="1623104350909869708">കൂടുതൽ ഡയലോഗുകൾ സൃഷ്‌ടിക്കുന്നതിൽ നിന്നും ഈ പേജിനെ തടയുക</translation>
+<translation id="1623253368136559158">ക്യാമറയുടെ ചലനം</translation>
 <translation id="16338877384480380">ആര്‍ക്കിടെക്ച്ചര്‍-B</translation>
 <translation id="1638780421120290329">കാർഡ് സംരക്ഷിക്കാനാകുന്നില്ല</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
@@ -437,6 +438,7 @@
 <translation id="2856444702002559011"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> എന്നതിൽ നിന്ന് നിങ്ങളുടെ വിവരം മോഷ്‌ടിക്കാൻ അക്രമികൾ ശ്രമിക്കുന്നുണ്ടാവാം (ഉദാഹരണത്തിന്, പാസ്‌വേഡുകൾ, സന്ദേശങ്ങൾ, അല്ലെങ്കിൽ ക്രെഡിറ്റ് കാർഡുകൾ). <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">പോസ്‌റ്റർ മടക്ക്</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">വിൻഡോ പ്ലെയ്‌സ്‌മെന്റ്</translation>
 <translation id="2881276955470682203">കാർഡ് സംരക്ഷിക്കണോ?</translation>
 <translation id="2882949212241984732">ഡബിൾ-ഗേറ്റ് മടക്ക്</translation>
 <translation id="2903493209154104877">വിലാസങ്ങള്‍‌</translation>
@@ -636,6 +638,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />പ്രോക്‌സിയും ഫയർവാളും DNS കോൺഫിഗറേഷനും പരിശോധിക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">ആന്‍റിവൈറസ്, ഫയർവാൾ, വെബ് ഫിൽട്ടറിംഗ് അല്ലെങ്കിൽ പ്രോക്‌സി സോഫ്റ്റ്‌വെയർ എന്നിവ ഉൾപ്പെടെയുള്ള ആപ്പുകൾ ഈ പിശകിന് കാരണമാകുന്നു.</translation>
 <translation id="373042150751172459">B4 (എൻവലപ്പ്)</translation>
+<translation id="3731873414101415120">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളും സുരക്ഷിതമല്ലാത്ത പേജുകളുടെ ഉള്ളടക്കങ്ങളും</translation>
 <translation id="3736520371357197498">നിങ്ങളുടെ സുരക്ഷയെ ബാധിച്ചേക്കാവുന്ന അപകട സാധ്യതകളെക്കുറിച്ച് മനസ്സിലാക്കുകയാണെങ്കിൽപ്പോലും, പ്രോഗ്രാമുകൾ നീക്കംചെയ്യുന്നതിനു മുമ്പ് <ph name="BEGIN_LINK" />ഈ സുരക്ഷിതമല്ലാത്ത സൈറ്റ്<ph name="END_LINK" /> നിങ്ങൾക്ക് സന്ദർശിക്കാം (ശുപാർശചെയ്യുന്നില്ല).</translation>
 <translation id="3744899669254331632">Chromium-ന് പ്രോസസ് ചെയ്യാനാകാത്ത രൂപമാറ്റം വരുത്തിയ ക്രെഡൻഷ്യലുകൾ വെബ്സൈറ്റ് അയയ്ക്കുന്നതിനാൽ നിങ്ങൾക്കിപ്പോൾ <ph name="SITE" /> സന്ദർശിക്കാനാകില്ല. നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലികമായതിനാൽ ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കും.</translation>
 <translation id="3745099705178523657">സ്ഥിരീകരിച്ച് കഴിഞ്ഞാൽ, നിങ്ങളുടെ Google അക്കൗണ്ടിൽ നിന്നുള്ള കാർഡ് വിശദാംശങ്ങൾ പങ്കിടും.</translation>
@@ -901,6 +904,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> തിരയുക</translation>
 <translation id="4879491255372875719">സ്വമേധയാ (ഡിഫോൾട്ട്)</translation>
+<translation id="4879725228911483934">നിങ്ങളുടെ സ്ക്രീനുകളിൽ വിൻഡോകൾ തുറക്കുക, സ്ഥാപിക്കുക</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
 <translation id="4892518386797173871">പിൻഭാഗം</translation>
@@ -1614,6 +1618,7 @@
 <translation id="7887885240995164102">ചിത്രത്തിനുള്ളിലെ ചിത്രത്തിലേക്ക് പ്രവേശിക്കുക</translation>
 <translation id="7888575728750733395">പ്രിന്റ് റെൻഡറിംഗ് ഇന്റന്റ്</translation>
 <translation id="7904208859782148177">C3 (എൻവലപ്പ്)</translation>
+<translation id="7923775243649974918">നിങ്ങളുടെ ക്യാമറ ചലിപ്പിക്കുക</translation>
 <translation id="7932579305932748336">കോട്ട്</translation>
 <translation id="79338296614623784">ശരിയായ ഒരു ഫോൺ നമ്പർ നൽകുക</translation>
 <translation id="7934052535022478634">പേയ്‌മെന്റ് പൂർത്തിയായി</translation>

@@ -2447,15 +2447,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se establece esta política, el usuario podrá decidir si quiere que el botón se muestre o no.</translation>
 <translation id="4483649828988077221">Inhabilitar actualización automática</translation>
 <translation id="4485425108474077672">Configurar la URL de la página Nueva pestaña</translation>
-<translation id="4487507711538762752">Esta política fuerza que el código de red se ejecute en el proceso del navegador.
-
-      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad cuando el proceso de red se pone en zona de pruebas.
-
-      El objetivo de esta política es dar a las empresas la opción de migrar a software de terceros que no dependa de la modificación de las API de red. Es recomendable utilizar servidores proxy en lugar de LSPs y parches de la API Win32.
-
-      Si no se establece esta política, el código de red se ejecutará fuera del proceso del navegador de forma predeterminada.
-
-      Esta política se eliminará en la versión 84 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4492287494009043413">Inhabilitar la realización de capturas de pantalla</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Configura las políticas relacionadas con <ph name="PLUGIN_VM_NAME" />.</translation>
@@ -3389,6 +3380,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se establece esta política o se le asigna el valor "false", las funciones v0 de los componentes web se inhabilitarán de forma predeterminada desde M80.
 
       Esta política se eliminará después de la versión 84 de Chrome.</translation>
+<translation id="5763698334786515749">Habilita el botón para mostrar la contraseña en las pantallas de inicio de sesión y bloqueo.</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal de desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">URL de búsqueda del proveedor de búsquedas predeterminadas</translation>
@@ -3742,6 +3734,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="6368011194414932347">Configurar la URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
+<translation id="6372105930898423193">Permite volver a habilitar la función AppCache aunque esté desactivada de forma predeterminada.</translation>
 <translation id="6376659517206731212">Puede ser obligatoria</translation>
 <translation id="6377355597423503887">Esta política está obsoleta, pero puedes utilizar BrowserSignin en su lugar.
 
@@ -3962,6 +3955,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6665670272107384733">Definir la frecuencia con la que el usuario debe introducir la contraseña para utilizar el desbloqueo rápido</translation>
 <translation id="6672070613706645316">Permite a los usuarios personalizar la imagen de fondo de la página Nueva pestaña</translation>
 <translation id="6672630473862787247">Habilita la autenticación pasiva en sesiones normales, de incógnito y de invitado.</translation>
+<translation id="6677797768774898583">Esta función permite al usuario ver la contraseña en las pantallas de inicio de sesión y bloqueo tras hacer clic en un botón.</translation>
 <translation id="6685903773201985073">Habilita la autenticación pasiva en sesiones normales y de invitado.</translation>
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión en monocromo</translation>
@@ -4282,6 +4276,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Si se le asigna el valor "False" a esta política, se disminuirá el nivel de las solicitudes de wake locks de pantalla y se convertirán en solicitudes de wake locks del sistema.</translation>
 <translation id="7177857088692019405">Desbloqueo rápido</translation>
+<translation id="718126088895133062">Esta política especifica el ID de usuario de licencias de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Habilita la política de gestión de energía del cambio de alimentación en picos.
 
@@ -5641,6 +5636,9 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="9217154963008402249">Frecuencia de los paquetes de red de supervisión</translation>
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas desde el navegador predeterminado en la primera ejecución</translation>
+<translation id="929549405492388749">Si se le asigna el valor "true", AppCache se habilitará aunque no esté disponible en Chrome de forma predeterminada.
+
+      Si no se le asigna ningún valor o se le asigna el valor "false", AppCache respetará la configuración predeterminada de Chrome.</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="940706688964479124">Lista de tipos de archivo que deberían abrirse automáticamente al descargarse</translation>
 <translation id="943865157632139008">Permite configurar el procesador de HTML predeterminado si se ha instalado <ph name="PRODUCT_FRAME_NAME" />.

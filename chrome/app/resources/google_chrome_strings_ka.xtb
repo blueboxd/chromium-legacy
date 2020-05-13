@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome იყენებს თქვენს კამერას.</translation>
 <translation id="1587325591171447154">Chrome-მა დაბლოკა <ph name="FILE_NAME" />, რადგან ის სახიფათოა.</translation>
 <translation id="1619887657840448962">Chrome-ის უსაფრთხოების გასაძლიერებლად, ჩვენ გავთიშეთ შემდეგი გაფართოება, რომელიც არ არის ხელმისაწვდომი <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-ში და, შესაძლოა, თქვენი თანხმობის გარეშე დაემატა.</translation>
+<translation id="162629503687514352">Chrome OS-მა ვერ მოახერხა თქვენი პაროლების სინქრონიზაცია.</translation>
 <translation id="1628000112320670027">Chrome-თან დაკავშირებული დახმარების მიღება</translation>
 <translation id="1662639173275167396">Chrome OS-ს უზრუნველყოფს ისეთი დამატებითი <ph name="BEGIN_LINK_CROS_OSS" />ღია კოდის პროგრამული უზრუნველყოფა<ph name="END_LINK_CROS_OSS" />, როგორიცაა <ph name="BEGIN_LINK_LINUX_OSS" />Linux (ბეტა)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">ყველაფერი თითქმის მზადაა! განახლების დასასრულებლად ხელახლა გაუშვით Google Chrome. ინკოგნიტო ფანჯრები ხელახლა არ გაიხსნება.</translation>
@@ -78,6 +79,7 @@
 <translation id="3065168410429928842">Chrome-ის ჩანართი</translation>
 <translation id="3080151273017101988">გაგრძელება გაშვებული ფონური პროგრამებით Google Chrome-ის დახურვისას</translation>
 <translation id="3089968997497233615">ხელმისაწვდომია Google Chrome-ის უფრო ახალი და უსაფრთხო ვერსია.</translation>
+<translation id="3127818369811890733">Chrome OS-მა ვერ მოახერხა თქვენი მონაცემების სინქრონიზაცია.</translation>
 <translation id="3149510190863420837">Chrome-ის პროგრამები</translation>
 <translation id="3360895254066713204">Chrome-ის დამხმარე</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ახლა ხელახლა გაეშვება}=1{Chrome ხელახლა გაეშვება 1 წამში}other{Chrome ხელახლა გაეშვება # წამში}}</translation>

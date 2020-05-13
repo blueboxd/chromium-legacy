@@ -2353,15 +2353,6 @@
 <translation id="4482640907922304445">顯示「<ph name="PRODUCT_NAME" />」工具列上的 [首頁] 按鈕。如果你啟用這項設定，系統會顯示 [首頁] 按鈕。如果你停用這項設定，系統就不會顯示 [首頁] 按鈕。不論你啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME" />」中的這項設定。如果你不設定這項政策，使用者就能選擇是否要顯示 [首頁] 按鈕。</translation>
 <translation id="4483649828988077221">停用自動更新</translation>
 <translation id="4485425108474077672">設定新分頁網址</translation>
-<translation id="4487507711538762752">這項政策會強制網路程式碼在瀏覽器程序中執行。
-
-      這項政策預設為停用；如果你啟用政策，當網路程序採用沙箱機制時，使用者就可能會遇到安全性問題。
-
-      設置這項政策是為了讓企業能移轉到不需掛接網路 API 的第三方軟體。建議你使用 Proxy 伺服器，不要使用 LSP 和 Win32 API 修補程式。
-
-      如果不設定這項政策，網路程式碼依預設會在瀏覽器程序外執行。
-
-      這項政策將在 <ph name="PRODUCT_NAME" /> 第 84 版中移除。</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">設定 <ph name="PLUGIN_VM_NAME" /> 的相關政策。</translation>
@@ -3261,6 +3252,7 @@
       如果不設定這項政策或設為 False，那麼從 M80 版開始，系統在預設狀態下會停用 Web Components v0 功能。
 
       這項政策將在 Chrome 第 84 版後移除。</translation>
+<translation id="5763698334786515749">在登入畫面和鎖定畫面上啟用密碼顯示按鈕。</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
@@ -3597,6 +3589,7 @@
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>
+<translation id="6372105930898423193">允許重新啟用 AppCache 功能 (即使預設值為停用)。</translation>
 <translation id="6376659517206731212">可強制實行</translation>
 <translation id="6377355597423503887">這項政策已被淘汰，請考慮改用 BrowserSignin。
 
@@ -3813,6 +3806,7 @@
 <translation id="6665670272107384733">設定使用者使用快速解鎖功能時需輸入密碼的頻率</translation>
 <translation id="6672070613706645316">允許使用者自訂新分頁的背景</translation>
 <translation id="6672630473862787247">在一般工作階段、無痕模式工作階段和訪客工作階段中啟用背景驗證。</translation>
+<translation id="6677797768774898583">當使用者按下按鈕後，這項功能可將密碼顯示在登入畫面和鎖定畫面上。</translation>
 <translation id="6685903773201985073">在訪客工作階段和一般工作階段中啟用背景驗證。</translation>
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6698632841807204978">啟用單色列印</translation>
@@ -4122,6 +4116,7 @@
 
           如果這項政策設為「False」，系統將忽略螢幕 Wake Lock 使用要求。</translation>
 <translation id="7177857088692019405">快速解鎖</translation>
+<translation id="718126088895133062">這項政策會為這部裝置指定 <ph name="PLUGIN_VM_NAME" /> 授權使用者 ID。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">啟用「用電尖峰轉移」電源管理政策。
 
@@ -5434,6 +5429,9 @@
 <translation id="9217154963008402249">監控網路封包的傳送頻率</translation>
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
+<translation id="929549405492388749">如果設為 True，即使 Chrome 預設為不提供 AppCache，系統仍會強制啟用 AppCache。
+
+      如果不設定或設為 False，系統會按照 Chrome 的預設值啟用或停用 AppCache。</translation>
 <translation id="930930237275114205">設定 <ph name="PRODUCT_FRAME_NAME" /> 使用者資料目錄</translation>
 <translation id="940706688964479124">指定下載後應自動開啟的檔案類型清單</translation>
 <translation id="943865157632139008">這項政策可讓你在安裝 <ph name="PRODUCT_FRAME_NAME" />後，設定預設的 HTML 算繪器。

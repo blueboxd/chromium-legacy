@@ -21,6 +21,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
 <translation id="1619887657840448962">To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
+<translation id="162629503687514352">Chrome OS could not sync your passwords.</translation>
 <translation id="1628000112320670027">Get help with Chrome</translation>
 <translation id="1662639173275167396">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />, as is <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Nearly up to date! Relaunch Google Chrome to finish updating. Incognito windows won't reopen.</translation>
@@ -79,6 +80,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3065168410429928842">Chrome Tab</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
+<translation id="3127818369811890733">Chrome OS could not sync your data.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome will relaunch now}=1{Chrome will relaunch in 1 second}other{Chrome will relaunch in # seconds}}</translation>

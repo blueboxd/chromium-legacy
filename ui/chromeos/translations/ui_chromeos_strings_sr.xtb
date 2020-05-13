@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Киви</translation>
 <translation id="3966388904776714213">Аудио плејер</translation>
 <translation id="4002066346123236978">Наслов</translation>
+<translation id="4065397611279318371">Да бисте отварали датотеке помоћу апликације <ph name="APP_NAME" />, прво их преместите у директоријум <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Mетод уноса за кантонски</translation>
 <translation id="4072248638558688893">Тамилска тастатура (фонетска)</translation>
 <translation id="4124935795427217608">Једнорог</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> датотека ће се избрисати</translation>
 <translation id="509429900233858213">Дошло је до грешке.</translation>
 <translation id="5098629044894065541">хебрејски</translation>
-<translation id="5112685521274804841">Датотеке у овом директоријуму су само за читање. Неке активности нису подржане.</translation>
 <translation id="5123433949759960244">Кошаркашка лопта</translation>
 <translation id="5129662217315786329">пољски</translation>
 <translation id="5144820558584035333">Хангул, 3 реда (390)</translation>

@@ -39,27 +39,25 @@ export function hexColorToSkColor(hexColor) {
  *
  * Returns an |IntersectionObserver| so the caller can disconnect the observer
  * when needed.
- * @param {!HTMLElement} container
+ * @param {!Element} container
+ * @param {!Element} topBorder
+ * @param {!Element} bottomBorder
+ * @param {string} showAttribute
  * @return {!IntersectionObserver}
  */
-export function createScrollBorders(container) {
+export function createScrollBorders(
+    container, topBorder, bottomBorder, showAttribute) {
   const topProbe = document.createElement('div');
   container.prepend(topProbe);
   const bottomProbe = document.createElement('div');
   container.append(bottomProbe);
-  const topBorder = document.createElement('div');
-  topBorder.toggleAttribute('scroll-border', true);
-  container.parentNode.insertBefore(topBorder, container);
-  const bottomBorder = document.createElement('div');
-  bottomBorder.toggleAttribute('scroll-border', true);
-  container.parentNode.insertBefore(bottomBorder, container.nextSibling);
   const observer = new IntersectionObserver(entries => {
     entries.forEach(({target, intersectionRatio}) => {
       const show = intersectionRatio === 0;
       if (target === topProbe) {
-        topBorder.toggleAttribute('show', show);
+        topBorder.toggleAttribute(showAttribute, show);
       } else if (target === bottomProbe) {
-        bottomBorder.toggleAttribute('show', show);
+        bottomBorder.toggleAttribute(showAttribute, show);
       }
     });
   }, {root: container});

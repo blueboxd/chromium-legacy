@@ -308,7 +308,7 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1488406778491620405">La función de accesibilidad de <ph name="PRODUCT_NAME" />
           permite que los usuarios del lector de pantalla para personas con discapacidad visual
           obtengan descripciones de las imágenes sin etiquetar que se encuentran en la Web. Los usuarios que habiliten esta función
-          podrán usar un servicio anónimo de Google para 
+          podrán usar un servicio anónimo de Google para
           obtener descripciones automáticas de las imágenes sin etiquetar que encuentran en la Web.
 
           Si se habilita esta función, el contenido de las imágenes se enviará a los servidores de Google
@@ -2395,15 +2395,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4482640907922304445">Muestra el botón de la Página principal en la barra de herramientas de <ph name="PRODUCT_NAME" />. Si se habilita esta configuración, el botón Página principal se mostrará siempre. Si se inhabilita esta configuración, el botón Página principal no se mostrará nunca. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />. Si esta política no se configura, el usuario podrá elegir si desea mostrar el botón.</translation>
 <translation id="4483649828988077221">Inhabilitar la actualización automática</translation>
 <translation id="4485425108474077672">Configurar la URL de la página Nueva pestaña</translation>
-<translation id="4487507711538762752">Esta política fuerza la ejecución del código de red en el proceso de navegación.
-
-      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
-
-      Esta política permite que las empresas migren a software de terceros sin necesidad de modificar las API de red. Se recomiendan los servidores Proxy antes que los LSP y la aplicación de parches de API Win32.
-
-      Si no se establece esta política, el código de red se ejecutará de forma predeterminada por fuera del proceso del navegador.
-
-      En la versión 84 de <ph name="PRODUCT_NAME" />, se quitará esta política.</translation>
 <translation id="4492287494009043413">Inhabilitar la toma de capturas de pantalla</translation>
 <translation id="4494132853995232608">DTC wilco</translation>
 <translation id="449423975179525290">Configura las políticas relacionadas con <ph name="PLUGIN_VM_NAME" />.</translation>
@@ -3302,6 +3293,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se establece como falsa o no se establece, se inhabilitarán las funciones de Web Components v0 de forma predeterminada, a partir de la versión M80.
 
       Después de Chrome 84, se quitará esta política.</translation>
+<translation id="5763698334786515749">Habilita el botón para mostrar la contraseña en la pantalla de inicio o de bloqueo</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
@@ -3653,6 +3645,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="6368011194414932347">Configurar la dirección URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
+<translation id="6372105930898423193">Permite volver a habilitar la función AppCache, incluso si se encuentra desactivada de forma predeterminada</translation>
 <translation id="6376659517206731212">Puede ser obligatoria</translation>
 <translation id="6377355597423503887">Esta política dejó de estar disponible; considera usar la política BrowserSignin en su lugar.
 
@@ -3873,6 +3866,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6665670272107384733">Establecer la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido</translation>
 <translation id="6672070613706645316">Permite que los usuarios personalicen el fondo en la página Nueva pestaña</translation>
 <translation id="6672630473862787247">Permite la autenticación ambiental en sesiones comunes, de incógnito y de invitado.</translation>
+<translation id="6677797768774898583">Esta función permite que se muestre la contraseña en la pantalla de inicio o de bloqueo cuando el usuario hace clic en un botón.</translation>
 <translation id="6685903773201985073">Permite la autenticación ambiental en sesiones comunes y de invitado.</translation>
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión monocromática</translation>
@@ -4185,6 +4179,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si se establece esta política como falsa, las solicitudes de bloqueos de activación pantalla se considerarán como del sistema.</translation>
 <translation id="7177857088692019405">Desbloqueo rápido</translation>
+<translation id="718126088895133062">Esta política especifica el ID de usuario de licencia de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Habilita la política de administración energética para el cambio de pico de consumo de energía.
 
@@ -5544,6 +5539,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="9217154963008402249">Frecuencia de envío de paquetes de red de control</translation>
 <translation id="922540222991413931">Configurar fuentes de instalación de secuencias de comandos de usuario, aplicaciones y extensiones</translation>
 <translation id="924557436754151212">Importar las contraseñas guardadas del navegador predeterminado en la primera ejecución</translation>
+<translation id="929549405492388749">Si se establece esta política como verdadera, esta acción forzará la habilitación de AppCache, incluso cuando esta función no está disponible en Chrome de forma predeterminada.
+
+      Si no se establece o se establece como falsa, AppCache seguirá la configuración predeterminada de Chrome.</translation>
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="940706688964479124">Lista de tipos de archivos que deben abrirse automáticamente cuando se descargan</translation>
 <translation id="943865157632139008">Te permite configurar el procesador de HTML predeterminado cuando <ph name="PRODUCT_FRAME_NAME" /> está instalado.

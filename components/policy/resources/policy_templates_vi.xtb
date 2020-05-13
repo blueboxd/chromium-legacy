@@ -314,12 +314,12 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
           nội dung mô tả tự động cho những hình ảnh chưa gắn nhãn mà họ thấy trên web.
 
           Nếu bạn bật tính năng này, thì nội dung của hình ảnh sẽ được gửi tới máy chủ của
-          Google để tạo nội dung mô tả. Sẽ không gửi được cookie và
-          và dữ liệu người dùng khác. Ngoài ra, Google không lưu hoặc ghi bất kỳ nội dung hình ảnh nào.
+          Google để tạo nội dung mô tả. Tính năng này sẽ không gửi cookie và
+          và dữ liệu khác của người dùng. Ngoài ra, Google không lưu hoặc ghi lại bất kỳ nội dung hình ảnh nào.
 
           Nếu bạn đặt chính sách này thành true, thì tính năng
           <ph name="PRODUCT_NAME" />
-          sẽ được bật, mặc dù tính năng này chỉ ảnh hưởng đến những người dùng đang sử dụng
+          sẽ được bật, mặc dù tính năng này chỉ ảnh hưởng đến những người dùng sử dụng
           trình đọc màn hình hoặc công nghệ hỗ trợ tương tự khác.
 
           Nếu bạn đặt chính sách thành này false, thì người dùng sẽ không có tùy chọn bật
@@ -2443,15 +2443,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Không thiết lập chính sách này sẽ cho phép người dùng chọn có hiển thị nút trang chủ hay không.</translation>
 <translation id="4483649828988077221">Tắt tính năng tự động cập nhật</translation>
 <translation id="4485425108474077672">Định cấu hình URL trang Tab mới</translation>
-<translation id="4487507711538762752">Chính sách này buộc mã nối mạng chạy trong quá trình chạy trình duyệt.
-
-      Chính sách này được tắt theo mặc định. Nếu bạn bật chính sách này, người dùng sẽ dễ gặp phải các sự cố bảo mật sau khi quá trình nối mạng được chạy trong hộp cát.
-
-      Chính sách này nhằm mang đến cho doanh nghiệp cơ hội di chuyển sang phần mềm của bên thứ 3 không phụ thuộc vào việc kết nối các API nối mạng. Thay vì vá API Win32 và LSP, bạn nên sử dụng máy chủ proxy.
-
-      Nếu bạn không đặt chính sách này, thì mã nối mạng sẽ chạy ngoài quá trình chạy trình duyệt theo mặc định.
-
-      Chính sách này sẽ bị xóa trong <ph name="PRODUCT_NAME" /> phiên bản 84.</translation>
 <translation id="4492287494009043413">Tắt tính năng chụp ảnh chụp màn hình</translation>
 <translation id="4494132853995232608">Wilco DTC</translation>
 <translation id="449423975179525290">Định cấu hình chính sách liên quan đến <ph name="PLUGIN_VM_NAME" />.</translation>
@@ -3142,7 +3133,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5457924070961220141">Cho phép bạn định cấu hình trình kết xuất HTML mặc định khi  <ph name="PRODUCT_FRAME_NAME" /> được cài đặt.
           Cài đặt mặc định, được sử dụng khi không thiết lập chính sách này, cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu  <ph name="PRODUCT_FRAME_NAME" /> hiển thị các trang HTML theo mặc định.</translation>
 <translation id="5464816904705580310">Định cấu hình cài đặt cho người dùng được quản lý.</translation>
-<translation id="5466596281866046569">Thông tin ứng dụng báo cáo</translation>
+<translation id="5466596281866046569">Báo cáo thông tin ứng dụng</translation>
 <translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
 <translation id="5469143988693423708">Người dùng được phép chạy Crostini</translation>
 <translation id="5469825884154817306">Chặn hình ảnh trên các trang web này</translation>

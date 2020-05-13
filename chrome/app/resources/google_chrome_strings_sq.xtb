@@ -21,6 +21,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="1587223624401073077">Google Chrome po përdor kamerën tënde.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> është i rrezikshëm, prandaj Chrome e ka bllokuar.</translation>
 <translation id="1619887657840448962">Për ta bërë më të sigurt Chrome, çaktivizuam shtesën e mëposhtme që nuk është e listuar në <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dhe që mund të jetë shtuar pa dijeninë tënde.</translation>
+<translation id="162629503687514352">Sistemi operativ Chrome nuk mund t'i sinkronizonte fjalëkalimet e tua.</translation>
 <translation id="1628000112320670027">Merr ndihmë për Chrome</translation>
 <translation id="1662639173275167396">Chrome OS mundësohet nga <ph name="BEGIN_LINK_CROS_OSS" />softuerë shtesë me burim të hapur<ph name="END_LINK_CROS_OSS" />, si p.sh. <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Pothuajse u përditësua! Rinis Google Chrome për të përfunduar përditësimin. Dritaret "e fshehta" nuk do të hapen.</translation>
@@ -79,6 +80,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="3065168410429928842">Skeda Chrome</translation>
 <translation id="3080151273017101988">Vazhdo ekzekutimin e aplikacioneve në sfond kur Google Chrome është i mbyllur</translation>
 <translation id="3089968997497233615">Ofrohet një version i ri dhe më i sigurt i Google Chrome.</translation>
+<translation id="3127818369811890733">Sistemi operativ Chrome nuk mund t'i sinkronizonte të dhënat e tua.</translation>
 <translation id="3149510190863420837">Aplikacionet e Chrome</translation>
 <translation id="3360895254066713204">Ndihmësi i Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome do të hapet përsëri tani}=1{Chrome do të hapet përsëri për 1 sekondë}other{Chrome do të hapet përsëri për # sekonda}}</translation>

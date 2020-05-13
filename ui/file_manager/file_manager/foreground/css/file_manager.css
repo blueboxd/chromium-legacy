@@ -2328,7 +2328,7 @@ body.files-ng #default-tasks-list > li[selected] {
 }
 
 body.files-ng #default-tasks-list li[selected]::after {
-  background-image: url(../images/files/ui/list_check.svg);
+  background-image: url(../images/common/ic_selected.svg);
   background-position: right;
   background-repeat: no-repeat;
   content: ' ';

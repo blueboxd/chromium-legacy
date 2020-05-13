@@ -444,7 +444,7 @@
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="4402014469255336455">Tiefes Himmelblau</translation>
 <translation id="4432457053224379116">Indischrot</translation>
-<translation id="4437615272777527928">Geben Sie etwas ein, um die Menüs zu durchsuchen. Verwenden Sie die Nach-oben- und Nach-unten-Taste, um die Ergebnisse durchzugehen. Verwenden Sie die Nach-links- und Nach-rechts-Taste, um den Textcursor zu bewegen und zwischen Menüs zu wechseln.</translation>
+<translation id="4437615272777527928">Geben Sie etwas ein, um die Menüs zu durchsuchen. Verwenden Sie die Nach-oben- und die Nach-unten-Taste, um die Ergebnisse durchzugehen. Verwenden Sie die Nach-links- und die Nach-rechts-Taste, um den Textcursor zu bewegen und zwischen Menüs zu wechseln.</translation>
 <translation id="4457472090507035117">Aktuelle Stimme auswählen:</translation>
 <translation id="4476183483923481720">Neue Zeile</translation>
 <translation id="4479068155583208887">Backstein</translation>
@@ -921,7 +921,7 @@
 <translation id="8428603554127842284">Ebene <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Weitere Informationen</translation>
-<translation id="8448196839635577295">Aktuell kein ChromeVox-Fokus. Tippen Sie auf "Entdecken", um Elemente zu finden.</translation>
+<translation id="8448196839635577295">Aktuell kein ChromeVox-Fokus. Verwenden Sie "Tippen &amp; Entdecken", um Elemente zu finden.</translation>
 <translation id="8455868257606149352">Max.: <ph name="X" /></translation>
 <translation id="84575901236241018">verfügt über den Zugriffsschlüssel <ph name="KEY" />.</translation>
 <translation id="8463645336674919227">Grammatikfehler wird verlassen</translation>

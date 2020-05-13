@@ -4,6 +4,11 @@
 
 import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assert} from './chrome_util.js';
+import {
+  ErrorLevel,
+  ErrorType,
+  getStackFrames,
+} from './error.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from './intent.js';
 // eslint-disable-next-line no-unused-vars
@@ -104,6 +109,9 @@ export function initMetrics(isTesting) {
     // check here since we are "chrome-extension://".
     window.ga('set', 'checkProtocolTask', null);
   })();
+  window.addEventListener('unhandledrejection', (e) => {
+    log(Type.ERROR, ErrorType.UNCAUGHT_PROMISE, ErrorLevel.ERROR, e.reason);
+  });
 }
 
 /**
@@ -223,6 +231,48 @@ function sendIntentEvent(intent, intentResult) {
 }
 
 /**
+ * All triggered error will be hashed and saved in this set to prevent the same
+ * error being triggered multiple times.
+ * @type {!Set<string>}
+ */
+const triggeredErrorSet = new Set();
+
+/**
+ * Sends error type event.
+ * @param {ErrorType} type
+ * @param {ErrorLevel} level
+ * @param {!Error} error
+ */
+function sendErrorEvent(type, level, error) {
+  const frames = getStackFrames(error);
+  const errorName = error.name;
+  const frame = (frames !== null && frames.length > 0) ? frames[0] : {};
+  let {fileName = '', lineNo = '', colNo = '', funcName = ''} = frame;
+  lineNo = String(lineNo);
+  colNo = String(colNo);
+
+  const hash = [errorName, fileName, lineNo, colNo].join(',');
+  if (triggeredErrorSet.has(hash)) {
+    return;
+  }
+  triggeredErrorSet.add(hash);
+
+  sendEvent(
+      {
+        eventCategory: 'error',
+        eventAction: type,
+        eventLabel: level,
+      },
+      new Map([
+        [16, errorName],
+        [17, fileName],
+        [18, funcName],
+        [19, lineNo],
+        [20, colNo],
+      ]));
+}
+
+/**
  * Metrics types.
  * @enum {function(...)}
  */
@@ -231,6 +281,7 @@ export const Type = {
   CAPTURE: sendCaptureEvent,
   PERF: sendPerfEvent,
   INTENT: sendIntentEvent,
+  ERROR: sendErrorEvent,
 };
 
 /**

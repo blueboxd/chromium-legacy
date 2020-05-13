@@ -93,21 +93,25 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
 class HighlightPathGenerator : public views::HighlightPathGenerator {
  public:
   explicit HighlightPathGenerator(TrayBackgroundView* tray_background_view)
-      : tray_background_view_(tray_background_view) {}
+      : tray_background_view_(tray_background_view), insets_(gfx::Insets()) {}
+
+  HighlightPathGenerator(TrayBackgroundView* tray_background_view,
+                         gfx::Insets insets)
+      : tray_background_view_(tray_background_view), insets_(insets) {}
 
   HighlightPathGenerator(const HighlightPathGenerator&) = delete;
   HighlightPathGenerator& operator=(const HighlightPathGenerator&) = delete;
 
   // HighlightPathGenerator:
   base::Optional<gfx::RRectF> GetRoundRect(const gfx::RectF& rect) override {
-    const float focus_ring_padding = 1.f;
     gfx::RectF bounds(tray_background_view_->GetBackgroundBounds());
-    bounds.Inset(focus_ring_padding, focus_ring_padding);
+    bounds.Inset(insets_);
     return gfx::RRectF(bounds, ShelfConfig::Get()->control_border_radius());
   }
 
  private:
   TrayBackgroundView* const tray_background_view_;
+  const gfx::Insets insets_;
 };
 
 }  // namespace
@@ -159,8 +163,12 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetInstallFocusRingOnFocus(true);
+
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+  focus_ring()->SetPathGenerator(std::make_unique<HighlightPathGenerator>(
+      this, kTrayBackgroundFocusPadding));
   SetFocusPainter(nullptr);
+
   views::HighlightPathGenerator::Install(
       this, std::make_unique<HighlightPathGenerator>(this));
 

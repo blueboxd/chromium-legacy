@@ -59,10 +59,22 @@ SafeBrowsingUserInteractionObserver::SafeBrowsingUserInteractionObserver(
       key_press_callback_);
   web_contents->GetRenderViewHost()->GetWidget()->AddMouseEventCallback(
       mouse_event_callback_);
+
+  // Observe permission bubble events.
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
+  if (permission_request_manager) {
+    permission_request_manager->AddObserver(this);
+  }
   RecordUMA(DelayedWarningEvent::kPageLoaded);
 }
 
 SafeBrowsingUserInteractionObserver::~SafeBrowsingUserInteractionObserver() {
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+  if (permission_request_manager) {
+    permission_request_manager->RemoveObserver(this);
+  }
   web_contents_->GetRenderViewHost()->GetWidget()->RemoveKeyPressEventCallback(
       key_press_callback_);
   web_contents_->GetRenderViewHost()->GetWidget()->RemoveMouseEventCallback(
@@ -110,6 +122,7 @@ void SafeBrowsingUserInteractionObserver::RenderViewHostChanged(
 
 void SafeBrowsingUserInteractionObserver::WebContentsDestroyed() {
   CleanUp();
+  Detach();
 }
 
 void SafeBrowsingUserInteractionObserver::DidFinishNavigation(
@@ -171,6 +184,19 @@ void SafeBrowsingUserInteractionObserver::DidToggleFullscreenModeForTab(
   // Exit fullscreen only after navigating to the interstitial. We don't want to
   // interfere with an ongoing fullscreen request.
   contents->ExitFullscreen(will_cause_resize);
+  // DO NOT add code past this point. |this| is destroyed.
+}
+
+void SafeBrowsingUserInteractionObserver::OnBubbleAdded() {
+  // The page requested a permission that triggered a permission prompt. Deny
+  // and show the interstitial.
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+  if (!permission_request_manager) {
+    return;
+  }
+  permission_request_manager->Deny();
+  ShowInterstitial(DelayedWarningEvent::kWarningShownOnPermissionRequest);
   // DO NOT add code past this point. |this| is destroyed.
 }
 

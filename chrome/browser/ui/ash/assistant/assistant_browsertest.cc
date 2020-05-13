@@ -44,9 +44,19 @@ constexpr int kStartBrightnessPercent = 50;
 
 }  // namespace
 
-class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
+class AssistantBrowserTest : public MixinBasedInProcessBrowserTest,
+                             public testing::WithParamInterface<bool> {
  public:
-  AssistantBrowserTest() = default;
+  AssistantBrowserTest() {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kAssistantResponseProcessingV2);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kAssistantResponseProcessingV2);
+    }
+  }
+
   ~AssistantBrowserTest() override = default;
 
   void ShowAssistantUi() {
@@ -110,13 +120,14 @@ class AssistantBrowserTest : public MixinBasedInProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
                              kVersion};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest,
                        ShouldOpenAssistantUiWhenPressingAssistantKey) {
   tester()->StartAssistantAndWaitForReady();
 
@@ -125,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest,
   EXPECT_TRUE(tester()->IsVisible());
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayTextResponse) {
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldDisplayTextResponse) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -140,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayTextResponse) {
   });
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayCardResponse) {
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldDisplayCardResponse) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -151,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayCardResponse) {
   tester()->ExpectCardResponse("Mount Everest");
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpVolume) {
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnUpVolume) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -173,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpVolume) {
                                    cras));
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownVolume) {
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownVolume) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -195,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownVolume) {
                                    cras));
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpBrightness) {
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnUpBrightness) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -209,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpBrightness) {
   ExpectBrightnessUp();
 }
 
-IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownBrightness) {
+IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownBrightness) {
   tester()->StartAssistantAndWaitForReady();
 
   ShowAssistantUi();
@@ -223,8 +234,12 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownBrightness) {
   ExpectBrightnessDown();
 }
 
+// We parameterize all AssistantBrowserTests to verify that they work for both
+// response processing v1 as well as response processing v2.
+INSTANTIATE_TEST_SUITE_P(All, AssistantBrowserTest, testing::Bool());
+
 // TODO(b/153485859): Move to assistant_timers_browsertest.cc.
-class AssistantTimersV2BrowserTest : public AssistantBrowserTest {
+class AssistantTimersV2BrowserTest : public MixinBasedInProcessBrowserTest {
  public:
   AssistantTimersV2BrowserTest() {
     feature_list_.InitAndEnableFeature(features::kAssistantTimersV2);
@@ -233,10 +248,20 @@ class AssistantTimersV2BrowserTest : public AssistantBrowserTest {
   AssistantTimersV2BrowserTest(const AssistantTimersV2BrowserTest&) = delete;
   AssistantTimersV2BrowserTest& operator=(const AssistantTimersV2BrowserTest&) =
       delete;
+
   ~AssistantTimersV2BrowserTest() override = default;
+
+  void ShowAssistantUi() {
+    if (!tester()->IsVisible())
+      tester()->PressAssistantKey();
+  }
+
+  AssistantTestMixin* tester() { return &tester_; }
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
+                             kVersion};
 };
 
 IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
@@ -252,8 +277,9 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
 
   // Start a timer for one minute.
   tester()->SendTextQuery("Set a timer for 1 minute.");
+
   // Check for a stable substring of the expected answers.
-  tester()->ExpectTextResponse(", 1 min.");
+  tester()->ExpectTextResponse("1 min.");
 
   // Confirm that an Assistant timer notification is now showing.
   auto notifications = message_center->FindNotificationsByAppId("assistant");

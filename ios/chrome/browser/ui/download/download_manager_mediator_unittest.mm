@@ -124,10 +124,13 @@ TEST_F(DownloadManagerMediatorTest, StartDownload) {
   task()->SetDone(true);
   EXPECT_EQ(kDownloadManagerStateSucceeded, consumer_.state);
   // Download file should be located in download directory.
-  base::FilePath file = mediator_.GetDownloadPath();
   base::FilePath download_dir;
   GetDownloadsDirectory(&download_dir);
-  EXPECT_TRUE(download_dir.IsParent(file));
+  ASSERT_TRUE(
+      WaitUntilConditionOrTimeout(base::test::ios::kWaitForDownloadTimeout, ^{
+        base::RunLoop().RunUntilIdle();
+        return download_dir.IsParent(mediator_.GetDownloadPath());
+      }));
 }
 
 // Tests starting and failing the download. Simulates download failure from

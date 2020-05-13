@@ -273,3 +273,25 @@ function createNamedError(name, msg) {
   error.name = name;
   return error;
 }
+
+/**
+ * Wraps `chai.assert.match` allowing tests to use `assertMatch`.
+ * @param {string} string the string to match
+ * @param {string} regex an escaped regex compatible string
+ * @param {string|undefined} opt_message logged if the assertion fails
+ */
+function assertMatch(string, regex, opt_message) {
+  chai.assert.match(string, new RegExp(regex), opt_message);
+}
+
+/**
+ * Use to match error stack traces.
+ * @param {string} stackTrace the stacktrace
+ * @param {Array<string>} regexLines a list of escaped regex compatible strings,
+ *     used to compare with the stacktrace.
+ * @param {string|undefined} opt_message logged if the assertion fails
+ */
+function assertMatchErrorStack(stackTrace, regexLines, opt_message) {
+  const regex = `(.|\\n)*${regexLines.join('(.|\\n)*')}(.|\\n)*`;
+  assertMatch(stackTrace, regex, opt_message);
+}

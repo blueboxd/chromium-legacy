@@ -21,6 +21,7 @@
 <translation id="1587223624401073077">Google Chrome កំពុងប្រើកាមេរ៉ារបស់អ្នក។</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> មានគ្រោះថ្នាក់ ដូច្នេះ Chrome បានរារាំងវា។</translation>
 <translation id="1619887657840448962">ដើម្បីធ្វើឲ្យ Chrome មានសុវត្ថិភាពជាងមុន យើងបានបិទដំណើរកម្មវិធីបន្ថែមមួយចំនួនដែលមិនត្រូវបានរាយនៅក្នុង <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ហើយអាចត្រូវបានបន្ថែមដោយពុំមានការជូនដំណឹងដល់អ្នក។</translation>
+<translation id="162629503687514352">Chrome OS មិនអាច​ធ្វើសមកាលកម្ម​ពាក្យសម្ងាត់​របស់អ្នក​បានទេ។</translation>
 <translation id="1628000112320670027">ទទួលយកជំនួយពី Chrome</translation>
 <translation id="1662639173275167396">Chrome OS អាចបង្កើត​ឡើងបានដោយ <ph name="BEGIN_LINK_CROS_OSS" />កម្មវិធីកូដ​ចំហ<ph name="END_LINK_CROS_OSS" />បន្ថែម​ ដូចនៅ​ក្នុង <ph name="BEGIN_LINK_LINUX_OSS" />Linux (បេតា)<ph name="END_LINK_LINUX_OSS" /> ដែរ។</translation>
 <translation id="1666409074978194368">ជិតដំឡើង​កំណែរួចរាល់ហើយ! សូមចាប់ផ្ដើម Google Chrome ដើម្បី​បញ្ចប់​ការដំឡើងកំណែ។ ផ្ទាំងឯកជនរបស់អ្នក​នឹង​មិនបើកឡើងវិញទេ។</translation>
@@ -79,6 +80,7 @@
 <translation id="3065168410429928842">ផ្ទាំង Chrome</translation>
 <translation id="3080151273017101988">បន្តដំណើរការកម្មវិធីផ្ទៃខាងក្រោយ នៅពេល Google Chrome ត្រូវបានបិទ</translation>
 <translation id="3089968997497233615">មានកំណែថ្មីដែលមានសុវត្ថិភាពជាងមុនសម្រាប់ Google Chrome។</translation>
+<translation id="3127818369811890733">Chrome OS មិនអាច​ធ្វើសមកាលកម្ម​ទិន្នន័យ​របស់អ្នក​បានទេ។</translation>
 <translation id="3149510190863420837">កម្មវិធី Chrome</translation>
 <translation id="3360895254066713204">ជំនួយការ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome នឹង​ចាប់ផ្ដើមឡើងវិញ​ឥឡូវនេះ}=1{Chrome នឹង​ចាប់ផ្ដើមឡើងវិញ​ក្នុងរយៈពេល 1 វិនាទីទៀត}other{Chrome នឹង​ចាប់ផ្ដើមឡើងវិញ​ក្នុងរយៈពេល # វិនាទីទៀត}}</translation>

@@ -205,7 +205,7 @@ if (use_v8_bind_gen_for_dictionary) {
     target = "dictionary"
     outputs =
         generated_core_dictionary_files + generated_modules_dictionary_files +
-        generated_core_testing_dictionary_files + generated_demo_files
+        generated_core_testing_dictionary_files
   }
 }
 

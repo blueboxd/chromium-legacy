@@ -24,6 +24,7 @@
 <translation id="1966382378801805537">‏Chromium ڈیفالٹ براؤزر کا تعین یا اس کو سیٹ نہیں کر سکتا ہے</translation>
 <translation id="2008474315282236005">‏یہ اس آلہ سے 1 آئٹم کو حذف کر دے گا۔ بعد میں اپنا ڈیٹا بازیافت کرنے کیلئے، Chromium میں <ph name="USER_EMAIL" /> کے بطور سائن ان کریں۔</translation>
 <translation id="2185166961232948079">‏Chromium - نیٹ ورک سائن ان - <ph name="PAGE_TITLE" /></translation>
+<translation id="2225696941839557119">‏Chromium OS آپ کے پاس ورڈز کی مطابقت پذیری نہیں کر سکا۔</translation>
 <translation id="2241627712206172106">‏اگر آپ ایک کمپیوٹر کا اشتراک کرتے ہیں تو دوست اور خاندان الگ الگ براؤز کر سکتے ہیں اور اپنی مرضی کے موافق Chromium کو ترتیب دے سکتے ہیں۔</translation>
 <translation id="2294245788148774212">‏اختیاری: Google کو ڈائیگناسٹک اور استعمال کا ڈیٹا خودکار طور پر بھیج کر Chromium OS کی خصوصیات اور کارکردگی کو بہتر بنانے میں مدد کریں۔</translation>
 <translation id="2347108572062610441">‏آپ کی جانب سے Chromium شروع کرنے پر دکھائی دینے والے صفحہ کو اس ایکسٹینشن نے تبدیل کر دیا ہے۔</translation>
@@ -136,6 +137,7 @@
 <translation id="6134968993075716475">‏محفوظ براؤزنگ آف ہے۔ Chromium اسے آن کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="6212496753309875659">‏اس کمپیوٹر پر Chromium کا ایک مزید حالیہ ورژن پہلے سے ہے۔ اگر سافٹ ویئر کام نہیں کر رہا ہے تو براہ کرم Chromium کو ان انسٹال کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="6219195342503754812">{0,plural, =0{‏ابھی Chromium دوبارہ لانچ ہوگا}=1{‏1 سیکنڈ میں Chromium دوبارہ لانچ ہوگا}other{‏# سیکنڈ میں Chromium دوبارہ لانچ ہوگا}}</translation>
+<translation id="623836266260425961">‏Chromium OS آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔</translation>
 <translation id="6248213926982192922">‏Chromium کو ڈیفالٹ براؤزر بنائیں</translation>
 <translation id="6266342355635466082">‏Chromium اپ ڈیٹس چیک نہیں کرسکتا ہے۔ اپنا انٹرنیٹ کنکشن چیک کرنے کی کوشش کریں۔</translation>
 <translation id="6268381023930128611">‏Chromium سے سائن آؤٹ کریں؟</translation>

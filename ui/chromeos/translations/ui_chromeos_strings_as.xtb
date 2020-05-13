@@ -258,6 +258,7 @@
 <translation id="3958548648197196644">কিৱি</translation>
 <translation id="3966388904776714213">অডিঅ’ প্লেয়াৰ</translation>
 <translation id="4002066346123236978">শিৰোনাম</translation>
+<translation id="4065397611279318371"><ph name="APP_NAME" /> এপ্‌সমূহৰ জৰিয়তে ফাইলসমূহ খুলিবলৈ প্ৰথমে সেইসমূহ <ph name="SHARED_DIRECTORY_LABEL" /> ফ’ল্ডাৰলৈ নিয়ক।</translation>
 <translation id="4070370845051020638">কেণ্ট’নিজ ইনপুট পদ্ধতি</translation>
 <translation id="4072248638558688893">তামিল কীব'র্ড (উচ্চাৰণগত)</translation>
 <translation id="4124935795427217608">এশিঙিয়া ঘোঁৰা</translation>
@@ -348,7 +349,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> ফাইল মচা হ'ব</translation>
 <translation id="509429900233858213">কোনো আসোঁৱাহ হৈছে।</translation>
 <translation id="5098629044894065541">হিব্ৰু</translation>
-<translation id="5112685521274804841">এই ফ'ল্ডাৰটোৰ ফাইলসমূহ কেৱল পঢ়িব পৰা। কিছুমান কার্যকলাপ সমৰ্থিত নহয়।</translation>
 <translation id="5123433949759960244">বাস্কেটবল</translation>
 <translation id="5129662217315786329">প’লিশ্ব</translation>
 <translation id="5144820558584035333">হাংগুল ৩ ছেট (৩৯০)</translation>

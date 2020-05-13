@@ -61,6 +61,7 @@ js_type_check("closure_compile") {
   deps = [
     ":about_page_tests",
     ":advanced_page_test",
+    ":cookies_page_test",
     ":passwords_and_autofill_fake_data",
     ":search_page_test",
     ":settings_page_test_util",
@@ -96,6 +97,19 @@ js_library("advanced_page_test") {
     ":settings_page_test_util",
     "..:chai_assert",
     "//chrome/browser/resources/settings:settings",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("cookies_page_test") {
+  deps = [
+    ":test_metrics_browser_proxy",
+    ":test_site_settings_prefs_browser_proxy",
+    ":test_util",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/settings:lazy_load",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]

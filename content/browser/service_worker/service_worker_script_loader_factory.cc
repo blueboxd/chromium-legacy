@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
@@ -164,17 +165,17 @@ bool ServiceWorkerScriptLoaderFactory::CheckIfScriptRequestIsValid(
     return false;
 
   // Handle only the service worker main script
-  // (blink::mojom::ResourceType::kServiceWorker) or importScripts()
-  // (blink::mojom::ResourceType::kScript).
-  if (resource_request.resource_type !=
-          static_cast<int>(blink::mojom::ResourceType::kServiceWorker) &&
-      resource_request.resource_type !=
-          static_cast<int>(blink::mojom::ResourceType::kScript)) {
+  // (network::mojom::RequestDestination::kServiceWorker) or importScripts()
+  // (network::mojom::RequestDestination::kScript).
+  if (resource_request.destination !=
+          network::mojom::RequestDestination::kServiceWorker &&
+      resource_request.destination !=
+          network::mojom::RequestDestination::kScript) {
     static auto* key = base::debug::AllocateCrashKeyString(
         "swslf_bad_type", base::debug::CrashKeySize::Size32);
     base::debug::SetCrashKeyString(
-        key, base::NumberToString(resource_request.resource_type));
-    mojo::ReportBadMessage("SWSLF_BAD_RESOURCE_TYPE");
+        key, network::RequestDestinationToString(resource_request.destination));
+    mojo::ReportBadMessage("SWSLF_BAD_REQUEST_DESTINATION");
     return false;
   }
 

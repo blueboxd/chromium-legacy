@@ -160,6 +160,7 @@
 <translation id="161042844686301425">Тиркизна</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Спречете ја страницата да направи дополнителни дијалози</translation>
+<translation id="1623253368136559158">Движење на камерата</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Не може да се зачува картичката</translation>
 <translation id="1639239467298939599">Се вчитува</translation>
@@ -443,6 +444,7 @@
 <translation id="2856444702002559011">Напаѓачите можеби се обидуваат да ги украдат вашите информации од <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (на пример, лозинки, пораки или кредитни картички). <ph name="BEGIN_LEARN_MORE_LINK" />Дознајте повеќе<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Превиткување постер</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Поставување прозорец</translation>
 <translation id="2881276955470682203">Сакате ли да ја зачувате картичката?</translation>
 <translation id="2882949212241984732">Двојно превиткување како брошура</translation>
 <translation id="2903493209154104877">Адреси</translation>
@@ -643,6 +645,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Да ги проверите проксито, заштитниот ѕид и DNS-конфигурацијата<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Апликациите што може да ја предизвикаат грешкава опфаќаат антивируси, заштитни ѕидови и веб-филтри или прокси-софтвери.</translation>
 <translation id="373042150751172459">B4 (Плик)</translation>
+<translation id="3731873414101415120">Веб-сајтовите што ги посетувате и содржините од небезбедни страници</translation>
 <translation id="3736520371357197498">Доколку ги разбирате ризиците за вашата безбедност, може <ph name="BEGIN_LINK" />да ја посетите небезбеднава локација<ph name="END_LINK" /> пред да се отстранат опасните програми.</translation>
 <translation id="3744899669254331632">Не може да го посетите <ph name="SITE" /> во моментов бидејќи веб-локацијата испрати измешани акредитиви кои Chromium не може да ги обработи. Грешките и нападите на мрежите се најчесто привремени, па веројатно оваа страница подоцна ќе работи.</translation>
 <translation id="3745099705178523657">Откако ќе потврдите, деталите за картичката од вашата сметка на Google ќе се споделат со сајтов.</translation>
@@ -909,6 +912,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Ниеден}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Пребарување <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Автоматски (стандардно)</translation>
+<translation id="4879725228911483934">Отвора и поставува прозорци на вашиот екран</translation>
 <translation id="4880827082731008257">Историја на пребарување</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4892518386797173871">Заден дел</translation>
@@ -1626,6 +1630,7 @@
 <translation id="7887885240995164102">Влези во „Слика во слика“</translation>
 <translation id="7888575728750733395">Намера за прикажување на печатењето</translation>
 <translation id="7904208859782148177">C3 (плик)</translation>
+<translation id="7923775243649974918">да ја преместува камерата</translation>
 <translation id="7932579305932748336">Омот</translation>
 <translation id="79338296614623784">Внесете важечки телефонски број</translation>
 <translation id="7934052535022478634">Плаќањето е завршено</translation>

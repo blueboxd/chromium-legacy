@@ -37,16 +37,17 @@ InvertedIndex::~InvertedIndex() = default;
 void InvertedIndex::AddDocument(const std::string& document_id,
                                 const std::vector<Token>& tokens) {
   // Removes document if it is already in the inverted index.
-  if (doc_id_list_.find(document_id) != doc_id_list_.end())
+  if (doc_length_.find(document_id) != doc_length_.end())
     RemoveDocument(document_id);
 
   for (const auto& token : tokens) {
     dictionary_[token.content][document_id] = token.positions;
+    doc_length_[document_id] += token.positions.size();
   }
 }
 
 void InvertedIndex::RemoveDocument(const std::string& document_id) {
-  doc_id_list_.erase(document_id);
+  doc_length_.erase(document_id);
 
   for (auto it = dictionary_.begin(); it != dictionary_.end();) {
     it->second.erase(document_id);
@@ -58,5 +59,17 @@ void InvertedIndex::RemoveDocument(const std::string& document_id) {
       it++;
     }
   }
+}
+
+std::vector<TfidfResult> InvertedIndex::GetTfidf(const base::string16& term) {
+  std::vector<TfidfResult> results;
+  const float idf =
+      1.0 + log((1.0 + doc_length_.size()) / (1.0 + dictionary_[term].size()));
+  for (const auto& item : dictionary_[term]) {
+    const float tf =
+        static_cast<float>(item.second.size()) / doc_length_[item.first];
+    results.push_back({item.first, item.second, tf * idf});
+  }
+  return results;
 }
 }  // namespace local_search_service

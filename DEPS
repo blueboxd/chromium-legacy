@@ -178,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'dd68b78917865417e2b9c33672afcacb13823f3f',
+  'skia_revision': 'b34241557068489923895ba81bd4c25168fb097a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '5d1b2589d2dfd3e0472340af6afd43c2162ab657',
+  'v8_revision': 'f920e72bf34a288f5c65e992cdf42e8b68e1d3d3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,11 +190,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'c4734bf6e4fdbb15a1e9b6705940fcc0f368c3b1',
+  'angle_revision': '3b82fdcf1c836f5c7df7c9c76f0c8ccd168d0871',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'd9ba4b7dd30b2a5d824d7230d176c0ff99c2e5a2',
+  'swiftshader_revision': '64da65bd1bd54addc8ab0e74a946e299f16ffa4c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '376279b1a531c1e28b84de3e8099e2126527b630',
+  'catapult_revision': 'ca8802d27b8c8f8731db1cd488eab44ee9881266',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ac18cd0f550fd320179e53c3a39714ccbd6394a0',
+  'devtools_frontend_revision': '623926bb06d4946b9dddf28a27003a63b74828b7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'fce44b5fe1fe63021310bdd50e34e4d22fca7d22',
+  'dawn_revision': 'f4df7916cacb0f8a87abf99454aafc12c1bdae20',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1453,7 +1453,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'b856dc15564ba793a40c82d4f00682e7c097eed2',
+    Var('webrtc_git') + '/src.git' + '@' + '1190f49aeaa1116caf8fd650204052f57cf0ad2d',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@45c48b4cda129fe7febf23792053484d80697b47',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b6e0a07f363e9c1e477e873c704972e6a0f7ca14',
     'condition': 'checkout_src_internal',
   },
 

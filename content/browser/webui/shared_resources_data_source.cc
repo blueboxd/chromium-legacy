@@ -386,28 +386,6 @@ bool SharedResourcesDataSource::ShouldServeMimeTypeAsContentTypeHeader() {
   return true;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
-  // Since WebContentsGetter can only be run on the UI thread, always return
-  // a task runner if we need to choose between Polymer resources based on the
-  // WebContents that is requesting the resource.
-  // TODO (rbpotter): Remove this once the OOBE Polymer 2 migration is complete.
-#if defined(OS_CHROMEOS)
-  if (UsingMultiplePolymerVersions())
-    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-#endif  // defined(OS_CHROMEOS)
-
-  int idr = GetIdrForPath(path);
-  if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS ||
-      idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
-    // Use UI thread to load CSS since its construction touches non-thread-safe
-    // gfx::Font names in ui::ResourceBundle.
-    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-  }
-
-  return nullptr;
-}
-
 std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
     const std::string& origin) {
   // For now we give access only for "chrome://*" origins.

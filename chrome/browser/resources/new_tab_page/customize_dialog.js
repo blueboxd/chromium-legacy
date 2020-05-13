@@ -116,9 +116,13 @@ class CustomizeDialogElement extends PolymerElement {
   ready() {
     super.ready();
     this.intersectionObservers_ = [
-      this.$.menu,
-      this.$.pages,
-    ].map(createScrollBorders);
+      createScrollBorders(
+          this.$.menu, this.$.topPageScrollBorder,
+          this.$.bottomPageScrollBorder, 'show-1'),
+      createScrollBorders(
+          this.$.pages, this.$.topPageScrollBorder,
+          this.$.bottomPageScrollBorder, 'show-2'),
+    ];
     this.pageHandler_.onCustomizeDialogAction(
         newTabPage.mojom.CustomizeDialogAction.OPEN_CLICKED);
   }

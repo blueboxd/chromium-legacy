@@ -6,19 +6,29 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 group("closure_compile") {
   deps = [
-    "cr_components:closure_compile",
-    "cr_elements:closure_compile",
     "js:closure_compile",
     "js:closure_compile_modules",
   ]
+
+  if (!is_android) {
+    deps += [
+      "cr_components:closure_compile",
+      "cr_elements:closure_compile",
+    ]
+  }
 }
 
 group("modulize") {
   public_deps = [
-    "cr_components:polymer3_elements",
-    "cr_elements:polymer3_elements",
     "js:modulize",
     "js/cr:modulize",
     "js/cr/ui:modulize",
   ]
+
+  if (!is_android) {
+    public_deps += [
+      "cr_components:polymer3_elements",
+      "cr_elements:polymer3_elements",
+    ]
+  }
 }

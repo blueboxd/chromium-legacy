@@ -55,8 +55,11 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
   LayoutBlock* inner_editor_layout_object =
       To<LayoutBlock>(inner_editor->GetLayoutObject());
   if (inner_editor_layout_object) {
+    // This is necessary to update the style on the inner_editor based on the
+    // changes in the input element ComputedStyle.
+    // (See TextControlInnerEditorElement::CreateInnerEditorStyle()).
     inner_editor->SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
+        kLocalStyleChange,
         StyleChangeReasonForTracing::Create(style_change_reason::kControl));
 
     // The inner editor element uses the LayoutTextControl's ::selection style

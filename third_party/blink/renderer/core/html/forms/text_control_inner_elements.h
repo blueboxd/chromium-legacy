@@ -51,6 +51,7 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
   void DefaultEventHandler(Event&) override;
 
   void SetVisibility(bool is_visible);
+  void FocusChanged();
   scoped_refptr<ComputedStyle> CreateInnerEditorStyle() const;
 
  private:

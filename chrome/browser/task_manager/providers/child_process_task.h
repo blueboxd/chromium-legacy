@@ -35,7 +35,6 @@ class ChildProcessTask : public Task {
                int64_t refresh_flags) override;
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
-  bool ReportsV8Memory() const;
   int64_t GetV8MemoryAllocated() const override;
   int64_t GetV8MemoryUsed() const override;
 

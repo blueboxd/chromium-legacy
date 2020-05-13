@@ -18,7 +18,7 @@
 <translation id="1359897965706325498">बॅनर</translation>
 <translation id="1589122976691792535">प्रदेश</translation>
 <translation id="1591562245178063882">या महिन्यात</translation>
-<translation id="1637811476055996098">फायली निवडा</translation>
+<translation id="1637811476055996098">फाइल निवडा</translation>
 <translation id="1650423536718072820">पुलकोट</translation>
 <translation id="1727886345390570319">सबटायटल मेनू लपवा</translation>
 <translation id="1729654308190250600">कृपया एक रिक्त नसलेला ईमेल ॲड्रेस एंटर करा.</translation>
@@ -141,7 +141,7 @@
 <translation id="537648784377940524">आधीची तारीख (<ph name="MIN_DATE_OR_TIME" />) नंतरच्या तारखेपूर्वी (<ph name="MAX_DATE_OR_TIME" />) येणे आवश्यक आहे.</translation>
 <translation id="5406322316791861025">आकृती</translation>
 <translation id="5453733299334684579">ट्री आयटम</translation>
-<translation id="5466621249238537318">कृपया एक किंवा अधिक फायली निवडा.</translation>
+<translation id="5466621249238537318">कृपया एक किंवा अधिक फाइल निवडा.</translation>
 <translation id="5468998798572797635">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
 <translation id="5516424706154626233">तारीख निवडक</translation>
 <translation id="5537725057119320332">कास्ट करा</translation>
@@ -249,7 +249,7 @@
 <translation id="8403857369060869934">गेलेला वेळ: <ph name="ELAPSED_TIME" /></translation>
 <translation id="8415319359811155763">भाग</translation>
 <translation id="8433900881053900389">टूलबार</translation>
-<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> फायली</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES" /> फाइल</translation>
 <translation id="8451268428117625855">कृपया एखादी फाइल निवडा.</translation>
 <translation id="8461852803063341183">रेडिओ बटण</translation>
 <translation id="8474886197722836894">अर्पणपत्रिका</translation>

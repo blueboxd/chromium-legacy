@@ -19,6 +19,7 @@
 <translation id="1587223624401073077">Google Chrome está usando tu cámara.</translation>
 <translation id="1587325591171447154">Chrome bloqueó <ph name="FILE_NAME" /> porque es un archivo peligroso.</translation>
 <translation id="1619887657840448962">Para que Chrome sea más seguro, inhabilitamos algunas extensiones que no aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
+<translation id="162629503687514352">El Sistema operativo Chrome no pudo sincronizar tus contraseñas.</translation>
 <translation id="1628000112320670027">Obtener ayuda con Chrome</translation>
 <translation id="1662639173275167396">El Sistema operativo Chrome es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software adicional de código abierto<ph name="END_LINK_CROS_OSS" />, como <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1666409074978194368">Ya casi completas la actualización. Reinicia Google Chrome para finalizar el proceso. No se volverán a abrir las ventanas de incógnito.</translation>
@@ -75,6 +76,7 @@
 <translation id="3065168410429928842">Pestaña de Chrome</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
+<translation id="3127818369811890733">El Sistema operativo Chrome no pudo sincronizar los datos.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
 <translation id="3360895254066713204">Ayuda de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Se reiniciará Chrome ahora}=1{Se reiniciará Chrome en 1 segundo}other{Se reiniciará Chrome en # segundos}}</translation>

@@ -116,19 +116,19 @@ bool ShouldValidateBrowserCacheForScript(
 #if DCHECK_IS_ON()
 void CheckVersionStatusBeforeWorkerScriptLoad(
     ServiceWorkerVersion::Status status,
-    blink::mojom::ResourceType resource_type) {
-  switch (resource_type) {
+    network::mojom::RequestDestination resource_destination) {
+  switch (resource_destination) {
     // The service worker main script should be fetched during worker startup.
-    case blink::mojom::ResourceType::kServiceWorker:
+    case network::mojom::RequestDestination::kServiceWorker:
       DCHECK_EQ(status, ServiceWorkerVersion::NEW);
       break;
     // importScripts() should be called until completion of the install event.
-    case blink::mojom::ResourceType::kScript:
+    case network::mojom::RequestDestination::kScript:
       DCHECK(status == ServiceWorkerVersion::NEW ||
              status == ServiceWorkerVersion::INSTALLING);
       break;
     default:
-      NOTREACHED() << resource_type;
+      NOTREACHED() << resource_destination;
       break;
   }
 }

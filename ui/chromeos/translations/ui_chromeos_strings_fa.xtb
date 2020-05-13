@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3966388904776714213">پخش‌کننده صوتی</translation>
 <translation id="4002066346123236978">عنوان</translation>
+<translation id="4065397611279318371">برای باز کردن فایل‌ها با برنامه‌های <ph name="APP_NAME" />، ابتدا آن‌ها را به پوشه <ph name="SHARED_DIRECTORY_LABEL" /> منتقل کنید.</translation>
 <translation id="4070370845051020638">روش ورودی کانتونی</translation>
 <translation id="4072248638558688893">صفحه‌‌کلید تامیل (آوایی)</translation>
 <translation id="4124935795427217608">تک‌شاخ</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> فایل حذف خواهد شد</translation>
 <translation id="509429900233858213">خطایی روی داد.</translation>
 <translation id="5098629044894065541">عبری</translation>
-<translation id="5112685521274804841">فایل‌های این پوشه فقط خواندنی هستند. برخی از فعالیت‌ها پشتیبانی نمی‌شوند.</translation>
 <translation id="5123433949759960244">بسکتبال</translation>
 <translation id="5129662217315786329">لهستانی</translation>
 <translation id="5144820558584035333">مجموعه هانگول ۳ (۳۹۰‏)</translation>

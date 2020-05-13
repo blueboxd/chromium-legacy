@@ -161,6 +161,7 @@
 <translation id="161042844686301425">បៃតងខ្ចី</translation>
 <translation id="1620510694547887537">កាមេរ៉ា</translation>
 <translation id="1623104350909869708">បង្ការទំព័រនេះពីការបង្កើតប្រអប់បន្ថែម។</translation>
+<translation id="1623253368136559158">ចលនា​កាមេរ៉ា</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">មិនអាចរក្សាទុក​បណ្ណបានទេ</translation>
 <translation id="1639239467298939599">កំពុងដំណើរការ</translation>
@@ -446,6 +447,7 @@
 <translation id="2856444702002559011">អ្នក​វាយ​ប្រហារ​ប្រហែល​ជាកំពុង​លួចយក​ព័ត៌មាន​របស់អ្នក​ពី <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ឧទាហរណ៍៖ ពាក្យសម្ងាត់ សារ ឬបណ្ណឥណទាន)។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">បត់​ផ្ទាំងរូបភាព</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">ការដាក់​វិនដូ</translation>
 <translation id="2881276955470682203">រក្សាទុក​បណ្ណ?</translation>
 <translation id="2882949212241984732">បត់ភ្ជិត​ជាបួនផ្ទាំង</translation>
 <translation id="2903493209154104877">អាសយដ្ឋាន</translation>
@@ -646,6 +648,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ពិនិត្យការកំណត់រចនាសម្ព័ន្ធប្រូកស៊ី firewall និង DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">កម្មវិធីដែលអាចបណ្តាលឱ្យមានបញ្ហានេះ រួមមានកម្មវិធីកម្ចាត់មេរោគ ជញ្ជាំងភ្លើង និងកម្មវិធីត្រងបណ្តាញ ឬប្រូកស៊ី។</translation>
 <translation id="373042150751172459">B4 (ស្រោម​សំបុត្រ)</translation>
+<translation id="3731873414101415120">គេហទំព័រ​ដែលអ្នក​ចូលមើល និង​ខ្លឹមសារ​នៃទំព័រ​ដែលគ្មានសុវត្ថិភាព</translation>
 <translation id="3736520371357197498">ប្រសិនបើអ្នកយល់ពីហានិភ័យសុវត្ថិភាពរបស់អ្នក អ្នកអាច <ph name="BEGIN_LINK" />ទៅកាន់គេហទំព័រដែលមិនមានសុវត្ថិភាពនេះ<ph name="END_LINK" /> មុនពេលកម្មវិធីគ្រោះថ្នាក់នេះត្រូវបានដកចេញ។</translation>
 <translation id="3744899669254331632">អ្នកមិនអាចទៅកាន់ <ph name="SITE" /> ទេឥឡូវនេះ ពីព្រោះគេហទំព័របានផ្ញើអត្តសញ្ញាណសម្គាល់មិនច្បាស់លាស់ ដែល Chromium មិនអាចដំណើរការបាន។ កំហុស និងការវាយប្រហារបណ្តាញជាធម្មតាកើតមានជាបណ្តោះអាសន្នទេ ដូច្នេះទំព័រនេះប្រហែលជាអាចដំណើរការវិញនាពេលក្រោយ។</translation>
 <translation id="3745099705178523657">បន្ទាប់​ពីអ្នក​បញ្ជាក់​ហើយ ព័ត៌មាន​លម្អិត​អំពី​កាតដែល​បានមកពីគណនី Google របស់អ្នក​នឹងត្រូវ​បាន​ចែករំលែក​ជាមួយ​គេហទំព័រ​នេះ។</translation>
@@ -913,6 +916,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{គ្មាន}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">ការស្វែងរក <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">ស្វ័យប្រវត្តិ (លំនាំដើម)</translation>
+<translation id="4879725228911483934">បើក និង​ដាក់​វិនដូ​នៅលើ​អេក្រង់​របស់អ្នក</translation>
 <translation id="4880827082731008257">ប្រវត្តិស្វែងរក</translation>
 <translation id="4881695831933465202">បើក</translation>
 <translation id="4892518386797173871">ខាងក្រោយ</translation>
@@ -1631,6 +1635,7 @@
 <translation id="7887885240995164102">ចូលមុខងារ​រូបក្នុងរូប</translation>
 <translation id="7888575728750733395">ចេតនានៃ​ការបំប្លែង​ការបោះពុម្ព</translation>
 <translation id="7904208859782148177">C3 (ស្រោម​សំបុត្រ)</translation>
+<translation id="7923775243649974918">បង្វែរ​កាមេរ៉ា​របស់អ្នក</translation>
 <translation id="7932579305932748336">ស្រោប</translation>
 <translation id="79338296614623784">បញ្ចូលលេខទូរសព្ទដែលត្រឹមត្រូវ</translation>
 <translation id="7934052535022478634">ការបង់ប្រាក់​បានបញ្ចប់​ហើយ</translation>

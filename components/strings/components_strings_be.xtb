@@ -160,6 +160,7 @@
 <translation id="161042844686301425">Блакітны</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Не дазваляць гэтай старонцы ствараць дадатковыя дыялогавыя вокны</translation>
+<translation id="1623253368136559158">Рух камеры</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Не ўдалося захаваць картку</translation>
 <translation id="1639239467298939599">Ідзе загрузка</translation>
@@ -443,6 +444,7 @@
 <translation id="2856444702002559011">Зламыснікі могуць спрабаваць украсці вашы даныя з сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (напрыклад, паролі, паведамленні або даныя крэдытных картак). <ph name="BEGIN_LEARN_MORE_LINK" />Даведацца больш<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Плакатны згіб</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Размяшчэнне вокнаў</translation>
 <translation id="2881276955470682203">Захаваць картку?</translation>
 <translation id="2882949212241984732">Згіб "двайныя вароты"</translation>
 <translation id="2903493209154104877">Адрасы</translation>
@@ -642,6 +644,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Праверыць проксі-сервер, брандмаўэр і канфігурацыю DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Выклікаць гэту памылку могуць такія праграмы, як антывірусы, брандмаўэры, сістэмы вэб-фільтрацыі і проксі-серверы.</translation>
 <translation id="373042150751172459">B4 (канверт)</translation>
+<translation id="3731873414101415120">Вэб-сайты, якія вы наведваеце, і змесціва на небяспечных старонках</translation>
 <translation id="3736520371357197498">Калі вы разумееце рызыкі бяспекі, можаце <ph name="BEGIN_LINK" />наведаць гэты небяспечны сайт<ph name="END_LINK" /> да таго, як зламысныя праграмы будуць выдалены.</translation>
 <translation id="3744899669254331632">Наведаць сайт <ph name="SITE" /> зараз нельга: ён адправіў зашыфраваныя ўліковыя даныя, якія Chromium не можа апрацаваць. Звычайна сеткавыя памылкі і атакі – часовая з'ява, таму гэта старонка будзе, хутчэй за ўсё, працаваць пазней.</translation>
 <translation id="3745099705178523657">Пасля вашага пацвярджэння даныя карткі з Уліковага запісу Google будуць абагулены з гэтым сайтам.</translation>
@@ -908,6 +911,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Няма}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Пошук па запыце "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Аўтаматычна (стандартна)</translation>
+<translation id="4879725228911483934">Адкрываць і размяшчаць вокны на экранах.</translation>
 <translation id="4880827082731008257">Гісторыя пошуку</translation>
 <translation id="4881695831933465202">Адкрыць</translation>
 <translation id="4892518386797173871">Задні</translation>
@@ -1626,6 +1630,7 @@
 <translation id="7887885240995164102">Уключыць рэжым "Відарыс у відарысе"</translation>
 <translation id="7888575728750733395">Намер візуалізацыі раздрукоўкі</translation>
 <translation id="7904208859782148177">C3 (канверт)</translation>
+<translation id="7923775243649974918">Перамяшчаць камеру</translation>
 <translation id="7932579305932748336">Пакрыццё</translation>
 <translation id="79338296614623784">Увядзіце сапраўдны нумар тэлефона</translation>
 <translation id="7934052535022478634">Аплата завершана</translation>

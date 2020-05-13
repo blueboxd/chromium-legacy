@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_INVERTED_INDEX_H_
 
 #include <string>
+#include <tuple>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -44,6 +44,10 @@ using Posting = std::vector<TokenPosition>;
 // A map from document id to posting.
 using PostingList = std::unordered_map<std::string, Posting>;
 
+// A tuple that stores a document ID, token's positions and token's TF-IDF
+// score.
+using TfidfResult = std::tuple<std::string, Posting, float>;
+
 // InvertedIndex stores the inverted index for local search and provides the
 // abilities to add/remove documents, find term, etc.
 class InvertedIndex {
@@ -66,11 +70,16 @@ class InvertedIndex {
   // not in the index.
   void RemoveDocument(const std::string& document_id);
 
+  // Gets TF-IDF scores for a term.
+  std::vector<TfidfResult> GetTfidf(const base::string16& term);
+
  private:
   friend class InvertedIndexTest;
 
-  // Contains the list of the document ids that are in the index.
-  std::unordered_set<std::string> doc_id_list_;
+  // Contains the length of the document (the number of terms in the document).
+  // The size of this map will always equal to the number of documents in the
+  // index.
+  std::unordered_map<std::string, int> doc_length_;
   // A map from term to PostingList.
   std::unordered_map<base::string16, PostingList> dictionary_;
 };

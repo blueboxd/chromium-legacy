@@ -254,6 +254,9 @@ void TextControlElement::SetFocused(bool flag,
 
   if (!flag)
     DispatchFormControlChangeEvent();
+
+  if (auto* inner_editor = InnerEditorElement())
+    inner_editor->FocusChanged();
 }
 
 void TextControlElement::DispatchFormControlChangeEvent() {

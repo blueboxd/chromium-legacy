@@ -160,6 +160,7 @@
 <translation id="161042844686301425">Κυανό</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
+<translation id="1623253368136559158">Κίνηση κάμερας</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Δεν είναι δυνατή η αποθήκευση της κάρτας</translation>
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
@@ -443,6 +444,7 @@
 <translation id="2856444702002559011">Οι εισβολείς ενδέχεται να προσπαθήσουν να υποκλέψουν τα στοιχεία σας από τον ιστότοπο <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (για παράδειγμα, κωδικούς πρόσβασης, μηνύματα ή πιστωτικές κάρτες). <ph name="BEGIN_LEARN_MORE_LINK" />Μάθετε περισσότερα<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">Δίπλωση αφίσας</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">Τοποθέτηση παραθύρου</translation>
 <translation id="2881276955470682203">Αποθήκευση κάρτας;</translation>
 <translation id="2882949212241984732">Δίπλωση με διπλό παράθυρο</translation>
 <translation id="2903493209154104877">Διευθύνσεις</translation>
@@ -643,6 +645,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Ελέγξτε το διακομιστή μεσολάβησης, το τείχος προστασίας και τη διαμόρφωση DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Οι εφαρμογές που μπορούν να προκαλέσουν αυτό το σφάλμα περιλαμβάνουν λογισμικό προστασίας από ιούς, τείχος προστασίας και λογισμικό φιλτραρίσματος ιστού ή λογισμικό διακομιστή μεσολάβησης.</translation>
 <translation id="373042150751172459">B4 (Φάκελος)</translation>
+<translation id="3731873414101415120">Ιστότοποι που επισκέπτεστε και περιεχόμενα μη ασφαλών σελίδων</translation>
 <translation id="3736520371357197498">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον μη ασφαλή ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>
 <translation id="3744899669254331632">Δεν μπορείτε να επισκεφτείτε τον ιστότοπο <ph name="SITE" /> αυτήν τη στιγμή, επειδή ο ιστότοπος έστειλε κωδικοποιημένα διαπιστευτήρια τα οποία δεν είναι δυνατό να επεξεργαστεί το Chromium. Τα σφάλματα δικτύου και οι επιθέσεις είναι συνήθως προσωρινά φαινόμενα, συνεπώς η σελίδα πιθανότατα θα λειτουργήσει αργότερα.</translation>
 <translation id="3745099705178523657">Μετά την επιβεβαίωση, τα στοιχεία της κάρτας από τον Λογαριασμό Google θα κοινοποιηθούν σε αυτόν τον ιστότοπο.</translation>
@@ -910,6 +913,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{Κανένας}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Αναζήτηση <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Αυτόματο (προεπιλογή)</translation>
+<translation id="4879725228911483934">Άνοιγμα και τοποθέτηση παραθύρων στις οθόνες σας</translation>
 <translation id="4880827082731008257">Αναζήτηση ιστορικού</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4892518386797173871">Πίσω</translation>
@@ -1627,6 +1631,7 @@
 <translation id="7887885240995164102">Είσοδος στη λειτουργία picture-in-picture</translation>
 <translation id="7888575728750733395">Εκτύπωση intent απόδοσης</translation>
 <translation id="7904208859782148177">C3 (Φάκελος)</translation>
+<translation id="7923775243649974918">Μετακίνηση της κάμεράς σας</translation>
 <translation id="7932579305932748336">Επικάλυψη</translation>
 <translation id="79338296614623784">Εισαγάγετε έναν έγκυρο αριθμό τηλεφώνου</translation>
 <translation id="7934052535022478634">Η πληρωμή ολοκληρώθηκε</translation>

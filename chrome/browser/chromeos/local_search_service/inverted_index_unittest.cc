@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/local_search_service/inverted_index.h"
 
+#include <cmath>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -16,24 +16,19 @@
 
 namespace local_search_service {
 
-namespace {
-using testing::ElementsAre;
-}  // namespace
-
 class InvertedIndexTest : public ::testing::Test {
  public:
   InvertedIndexTest() = default;
   void SetUp() override {
-    index_.doc_id_list_ = std::unordered_set<std::string>({"doc1", "doc2"});
+    index_.doc_length_ =
+        std::unordered_map<std::string, int>({{"doc1", 8}, {"doc2", 6}});
 
     index_.dictionary_[base::UTF8ToUTF16("A")] = PostingList(
         {{"doc1",
           Posting({TokenPosition("header", 1, 1), TokenPosition("header", 3, 1),
                    TokenPosition("body", 5, 1), TokenPosition("body", 7, 1)})},
-         {"doc2",
-          Posting({TokenPosition("header", 2, 1), TokenPosition("header", 4, 1),
-                   TokenPosition("body", 6, 1),
-                   TokenPosition("body", 8, 1)})}});
+         {"doc2", Posting({TokenPosition("header", 2, 1),
+                           TokenPosition("header", 4, 1)})}});
 
     index_.dictionary_[base::UTF8ToUTF16("B")] =
         PostingList({{"doc1", Posting({TokenPosition("header", 2, 1),
@@ -61,11 +56,17 @@ class InvertedIndexTest : public ::testing::Test {
     index_.RemoveDocument(doc_id);
   }
 
+  std::vector<TfidfResult> GetTfidf(const base::string16& term) {
+    return index_.GetTfidf(term);
+  }
+
   std::unordered_map<base::string16, PostingList> GetDictionary() {
     return index_.dictionary_;
   }
 
-  std::unordered_set<std::string> GetDocIdList() { return index_.doc_id_list_; }
+  std::unordered_map<std::string, int> GetDocLength() {
+    return index_.doc_length_;
+  }
 
  private:
   InvertedIndex index_;
@@ -81,8 +82,6 @@ TEST_F(InvertedIndexTest, FindTermTest) {
 
   EXPECT_EQ(result["doc2"][0].start, static_cast<uint32_t>(2));
   EXPECT_EQ(result["doc2"][1].start, static_cast<uint32_t>(4));
-  EXPECT_EQ(result["doc2"][2].start, static_cast<uint32_t>(6));
-  EXPECT_EQ(result["doc2"][3].start, static_cast<uint32_t>(8));
 }
 
 TEST_F(InvertedIndexTest, AddNewDocumentTest) {
@@ -92,6 +91,8 @@ TEST_F(InvertedIndexTest, AddNewDocumentTest) {
   AddDocument("doc3",
               {{a_utf16, {{"header", 1, 1}, {"body", 2, 1}, {"header", 4, 1}}},
                {d_utf16, {{"header", 3, 1}, {"body", 5, 1}}}});
+
+  EXPECT_EQ(GetDocLength()["doc3"], 5);
 
   // Find "A"
   PostingList result = FindTerm(a_utf16);
@@ -115,6 +116,9 @@ TEST_F(InvertedIndexTest, ReplaceDocumentTest) {
               {{a_utf16, {{"header", 1, 1}, {"body", 2, 1}, {"header", 4, 1}}},
                {d_utf16, {{"header", 3, 1}, {"body", 5, 1}}}});
 
+  EXPECT_EQ(GetDocLength()["doc1"], 5);
+  EXPECT_EQ(GetDocLength()["doc2"], 6);
+
   // Find "A"
   PostingList result = FindTerm(a_utf16);
   ASSERT_EQ(result.size(), static_cast<unsigned long>(2));
@@ -135,19 +139,18 @@ TEST_F(InvertedIndexTest, ReplaceDocumentTest) {
 
 TEST_F(InvertedIndexTest, RemoveDocumentTest) {
   EXPECT_EQ(GetDictionary().size(), static_cast<unsigned long>(3));
-  EXPECT_EQ(GetDocIdList().size(), static_cast<unsigned long>(2));
+  EXPECT_EQ(GetDocLength().size(), static_cast<unsigned long>(2));
 
   RemoveDocument("doc1");
   EXPECT_EQ(GetDictionary().size(), static_cast<unsigned long>(2));
-  EXPECT_EQ(GetDocIdList().size(), static_cast<unsigned long>(1));
+  EXPECT_EQ(GetDocLength().size(), static_cast<unsigned long>(1));
+  EXPECT_EQ(GetDocLength()["doc2"], 6);
 
   // Find "A"
   PostingList result = FindTerm(base::UTF8ToUTF16("A"));
   ASSERT_EQ(result.size(), static_cast<unsigned long>(1));
   EXPECT_EQ(result["doc2"][0].start, static_cast<uint32_t>(2));
   EXPECT_EQ(result["doc2"][1].start, static_cast<uint32_t>(4));
-  EXPECT_EQ(result["doc2"][2].start, static_cast<uint32_t>(6));
-  EXPECT_EQ(result["doc2"][3].start, static_cast<uint32_t>(8));
 
   // Find "B"
   result = FindTerm(base::UTF8ToUTF16("B"));
@@ -160,5 +163,25 @@ TEST_F(InvertedIndexTest, RemoveDocumentTest) {
   EXPECT_EQ(result["doc2"][1].start, static_cast<uint32_t>(3));
   EXPECT_EQ(result["doc2"][2].start, static_cast<uint32_t>(5));
   EXPECT_EQ(result["doc2"][3].start, static_cast<uint32_t>(7));
+}
+
+TEST_F(InvertedIndexTest, TfidfTest) {
+  std::vector<TfidfResult> results = GetTfidf(base::UTF8ToUTF16("A"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(2));
+  const std::vector<float> idf_scores = {
+      std::roundf(std::get<2>(results[0]) * 100) / 100.0,
+      std::roundf(std::get<2>(results[1]) * 100) / 100.0};
+  EXPECT_THAT(idf_scores, testing::UnorderedElementsAre(0.5, 0.33));
+
+  results = GetTfidf(base::UTF8ToUTF16("B"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(1));
+  EXPECT_NEAR(std::get<2>(results[0]), 0.70, 0.01);
+
+  results = GetTfidf(base::UTF8ToUTF16("C"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(1));
+  EXPECT_NEAR(std::get<2>(results[0]), 0.94, 0.01);
+
+  results = GetTfidf(base::UTF8ToUTF16("D"));
+  EXPECT_EQ(results.size(), static_cast<unsigned long>(0));
 }
 }  // namespace local_search_service

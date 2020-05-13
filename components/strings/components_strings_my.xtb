@@ -446,6 +446,7 @@
 <translation id="2856444702002559011">တိုက်ခိုက်သူများက <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ရှိ သင်၏အချက်အလက်များကို ခိုးယူရန် ကြိုးပမ်းနိုင်ပါသည် (ဥပမာ- စကားဝှက်၊ မက်ဆေ့ဂျ်နှင့် ခရက်ဒစ်ကတ် အချက်အလက်များ)။ <ph name="BEGIN_LEARN_MORE_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2878197950673342043">ပိုစတာပုံ ခေါက်ရန်</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2880660355386638022">ဝင်းဒိုး နေရာချထားမှု</translation>
 <translation id="2881276955470682203">ကတ်ကို သိမ်းလိုပါသလား။</translation>
 <translation id="2882949212241984732">တံခါးနှစ်ရွက်ပုံစံ ခေါက်ရန်</translation>
 <translation id="2903493209154104877">လိပ်စာများ</translation>
@@ -643,6 +644,7 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />ပရောက်စီ၊ firewall နှင့် DNS ပြင်ဆင်သတ်မှတ်မှုကို စစ်ဆေးနေသည်<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">ဤအမှားအယွင်းကို ဖြစ်စေသည့် အပလီကေးရှင်းများတွင် ဗိုင်းရပ်စ်ကာကွယ်ခြင်း၊ firewall နှင့် ဝဘ်စစ်ထုတ်ခြင်း သို့မဟုတ် ပရောက်စီဆော့ဖ်ဝဲတို့ ပါဝင်ပါသည်။</translation>
 <translation id="373042150751172459">B4 (စာအိတ်)</translation>
+<translation id="3731873414101415120">သင်ဝင်ကြည့်သော ဝဘ်ဆိုက်များနှင့် လုံခြုံမှုမရှိသော စာမျက်နှာများတွင် ပါဝင်သည့် အကြောင်းအရာများ</translation>
 <translation id="3736520371357197498">သင်က သင့်အတွက် ရှိနိုင်သည့် အန္တရာယ်များကို နားလည် ဆိုလျှင်၊ သင်သည် <ph name="BEGIN_LINK" />မလုံခြုံသော ဆိုက်ကို<ph name="END_LINK" /> အန္တရာယ် ရှိကြသည့် ပရိုဂရမ်များကို ဖယ်ရှားပေးမှု မတိုင်ခင် ဝင်ကြည့်နိုင်ပါသည်။</translation>
 <translation id="3744899669254331632">ဝက်ဘ်ဆိုက်က ဗလုံးဗထွေး ပို့လိုက်သည့် အထောက်အထားများကို Chromium ဖက်မှ စီမံဆောင်ရွက် မရနိုင်သောကြောင့် သင်သည် <ph name="SITE" /> ကို ယခုချက်ချင်း ဝင်မရနိုင်ပါ။ ကွန်ရက် အမှားများ နှင့် တိုက်ခိုက်မှုများမှာ ယာယီမျှသာ ဖြစ်ကြတာမို့လို့၊ ဒီစာမျက်နှာသည် နောက်ပိုင်းမှာ အလုပ်လုပ်နိုင်ပါမည်။</translation>
 <translation id="3745099705178523657">အတည်ပြုပြီးနောက် သင်၏ Google အကောင့်ရှိ ကဒ်အသေးစိတ် အချက်အလက်များကို ဤဆိုက်အား မျှဝေသွားပါမည်။</translation>
@@ -910,6 +912,7 @@
 <translation id="4877083676943085827">{COUNT,plural, =0{မရှိ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />၊ <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />၊ <ph name="EXAMPLE_DOMAIN_2" />၊ <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> ရှာဖွေမှု</translation>
 <translation id="4879491255372875719">အလိုအလျောက် (မူရင်း)</translation>
+<translation id="4879725228911483934">သင့်ဖန်သားပြင်များတွင် ဝင်းဒိုးများ ဖွင့်ပြီး နေရာချထားခြင်း</translation>
 <translation id="4880827082731008257">ရှာဖွေမှု မှတ်တမ်း</translation>
 <translation id="4881695831933465202">ဖွင့်</translation>
 <translation id="4892518386797173871">နောက်ဘက်</translation>

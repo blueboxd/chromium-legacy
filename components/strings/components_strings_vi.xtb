@@ -1409,7 +1409,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="7050187094878475250">Bạn đã cố gắng truy cập <ph name="DOMAIN" /> nhưng máy chủ đã hiển thị chứng chỉ có thời gian hiệu lực quá dài để có thể tin cậy.</translation>
 <translation id="705310974202322020">{NUM_CARDS,plural, =1{Không thể lưu thẻ này ngay bây giờ}other{Không thể lưu các thẻ này ngay bây giờ}}</translation>
 <translation id="7053983685419859001">Chặn</translation>
-<translation id="7058163556978339998"><ph name="BROWSER" /> xác minh rằng trang web này có chứng chỉ do <ph name="ISSUER" /> cấp.</translation>
+<translation id="7058163556978339998"><ph name="BROWSER" /> đã xác minh rằng trang web này có chứng chỉ do <ph name="ISSUER" /> cấp.</translation>
 <translation id="7062635574500127092">Xanh mòng két</translation>
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
 <translation id="70705239631109039">Kết nối của bạn không đủ an toàn</translation>

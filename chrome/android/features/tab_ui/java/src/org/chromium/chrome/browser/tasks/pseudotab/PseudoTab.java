@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * Representation of a Tab-like card in the Grid Tab Switcher.
  */
@@ -45,6 +47,8 @@ public class PseudoTab {
 
     private final Integer mTabId;
     private final WeakReference<Tab> mTab;
+
+    @GuardedBy("PseudoTab.class")
     private static final Map<Integer, PseudoTab> sAllTabs = new LinkedHashMap<>();
     private static boolean sReadStateFile;
     private static List<PseudoTab> sAllTabsFromStateFile;
@@ -57,7 +61,7 @@ public class PseudoTab {
     /**
      * Construct from a tab ID. An earlier instance with the same ID can be returned.
      */
-    public static PseudoTab fromTabId(int tabId) {
+    public static synchronized PseudoTab fromTabId(int tabId) {
         PseudoTab cached = sAllTabs.get(tabId);
         if (cached != null) return cached;
         return new PseudoTab(tabId);
@@ -72,7 +76,7 @@ public class PseudoTab {
     /**
      * Construct from a {@link Tab}. An earlier instance with the same {@link Tab} can be returned.
      */
-    public static PseudoTab fromTab(@NonNull Tab tab) {
+    public static synchronized PseudoTab fromTab(@NonNull Tab tab) {
         PseudoTab cached = sAllTabs.get(tab.getId());
         if (cached != null && cached.hasRealTab()) {
             assert cached.getTab() == tab;
@@ -222,7 +226,7 @@ public class PseudoTab {
      * Robolectric tests.
      */
     @VisibleForTesting
-    public static void clearForTesting() {
+    public static synchronized void clearForTesting() {
         sAllTabs.clear();
     }
 
@@ -233,7 +237,7 @@ public class PseudoTab {
      * @param provider The {@link TabModelFilterProvider} to query the tab relation
      * @return Related {@link PseudoTab}s
      */
-    public static @NonNull List<PseudoTab> getRelatedTabs(
+    public static synchronized @NonNull List<PseudoTab> getRelatedTabs(
             PseudoTab member, @NonNull TabModelFilterProvider provider) {
         List<Tab> relatedTabs = getRelatedTabList(provider, member.getId());
         if (relatedTabs != null) return getListOfPseudoTab(relatedTabs);
@@ -267,6 +271,11 @@ public class PseudoTab {
             return related;
         }
         return null;
+    }
+
+    @VisibleForTesting
+    static synchronized int getAllTabsCountForTests() {
+        return sAllTabs.size();
     }
 
     @Nullable

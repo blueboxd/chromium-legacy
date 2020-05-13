@@ -956,6 +956,8 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       default:
         continue;
     }
+    if (!gpu_memory_buffer_formats_.Has(buffer_format))
+      continue;
     info.allow_scanout = true;
     info.buffer_format = buffer_format;
     DCHECK_EQ(info.image_internal_format,

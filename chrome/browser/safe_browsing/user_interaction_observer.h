@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SAFE_BROWSING_USER_INTERACTION_OBSERVER_H_
 
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -39,7 +40,10 @@ enum class DelayedWarningEvent {
   // The page tried to initiate a download and we cancelled it. This doesn't
   // show an interstitial.
   kDownloadCancelled = 6,
-  kMaxValue = kDownloadCancelled,
+  // The page triggered a permission request. It was denied and the warning was
+  // shown.
+  kWarningShownOnPermissionRequest = 7,
+  kMaxValue = kWarningShownOnPermissionRequest,
 };
 
 // Name of the histogram.
@@ -51,7 +55,8 @@ extern const char kDelayedWarningsHistogram[];
 // shown, or the tab is closed or navigated away.
 class SafeBrowsingUserInteractionObserver
     : public base::SupportsUserData::Data,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public permissions::PermissionRequestManager::Observer {
  public:
   // Creates an observer for given |web_contents|. |resource| is the unsafe
   // resource for which a delayed interstitial will be displayed.
@@ -82,6 +87,9 @@ class SafeBrowsingUserInteractionObserver
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
+
+  // permissions::PermissionRequestManager::Observer methods:
+  void OnBubbleAdded() override;
 
  private:
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);

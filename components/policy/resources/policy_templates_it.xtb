@@ -2352,15 +2352,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4482640907922304445">Consente di visualizzare il pulsante Pagina iniziale sulla barra degli strumenti di <ph name="PRODUCT_NAME" />. Se attivi questa impostazione il pulsante Pagina iniziale verrà sempre visualizzato, in caso contrario non verrà mai visualizzato. Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se non imposti questa norma gli utenti potranno scegliere se visualizzare o meno il pulsante Pagina iniziale.</translation>
 <translation id="4483649828988077221">Disattiva l'aggiornamento automatico</translation>
 <translation id="4485425108474077672">Configura l'URL per la pagina Nuova scheda</translation>
-<translation id="4487507711538762752">Questo criterio consente di forzare l'esecuzione del codice di networking nel processo del browser.
-
-      Questo criterio è disattivato per impostazione predefinita e, se attivato, rende gli utenti vulnerabili ai problemi di sicurezza dopo che il processo di networking viene limitato tramite sandbox.
-
-      Questo criterio è pensato per offrire alle aziende la possibilità di eseguire la migrazione a programmi software di terze parti che non dipendono dalla combinazione delle API di networking. È consigliabile usare i server proxy anziché LSP e patch di API Win32.
-
-      Se questo criterio non viene impostato, il codice di networking verrà eseguito per impostazione predefinita fuori dal processo del browser.
-
-      Questo criterio verrà rimosso nella versione 84 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4492287494009043413">Disabilita l'acquisizione di screenshot</translation>
 <translation id="4494132853995232608">DTC wilco</translation>
 <translation id="449423975179525290">Imposta le norme relative a <ph name="PLUGIN_VM_NAME" />.</translation>

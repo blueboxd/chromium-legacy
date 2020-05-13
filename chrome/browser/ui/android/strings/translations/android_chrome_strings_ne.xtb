@@ -64,7 +64,7 @@
 <translation id="1409426117486808224">खुला ट्याबहरूका लागि सरलीकृत दृश्य</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> फाइल पहिल्यै अवस्थित भएकाले डाउनलोड रोकियो।</translation>
 <translation id="1414981605391750300">Google मा सम्पर्क गर्दै। यस कार्यमा एक मिनेट जति लाग्नसक्छ…</translation>
-<translation id="1416550906796893042">अनुप्रयोगको संस्करण</translation>
+<translation id="1416550906796893042">एपको संस्करण</translation>
 <translation id="1430915738399379752">प्रिन्ट गर्नुहोस्</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> आदान प्रदान गर्न सकिएन</translation>
 <translation id="1477626028522505441"><ph name="FILE_NAME" /> डाउनलोड सर्भरको समस्याको कारण असफल भयो।</translation>
@@ -369,7 +369,7 @@
 <translation id="4062305924942672200">कानूनी जानकारी</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="4084712963632273211"><ph name="PUBLISHER_ORIGIN" /> द्वारा – <ph name="BEGIN_DEEMPHASIZED" />Google ले डेलिभर गरेको<ph name="END_DEEMPHASIZED" /></translation>
-<translation id="4095146165863963773">अनुप्रयोगको डेटा मेट्ने हो?</translation>
+<translation id="4095146165863963773">एपको डेटा मेट्ने हो?</translation>
 <translation id="4099578267706723511">Google मा प्रयोग तथ्याङ्क र क्रयास रिपोर्टहरू पठाएर Chrome लाई राम्रो बनाउन सहयोग गर्नुहोस्!</translation>
 <translation id="4116038641877404294">पृष्ठहरूलाई अफलाइन हेर्न तिनीहरूलाई डाउनलोड गर्नुहोस्</translation>
 <translation id="4135200667068010335">ट्याब आदान प्रदान गरिनु पर्ने यन्त्रहरूको सूची बन्द छ।</translation>
@@ -569,7 +569,7 @@
 <translation id="5748802427693696783">मानक ट्याबहरूमा स्विच गरियो</translation>
 <translation id="5749068826913805084">Chromeलाई फाइलहरु डाउनलोड गर्न भण्डारणको पहुँच आवश्यक छ ।</translation>
 <translation id="5763382633136178763">इनकग्निटो ट्याबहरू</translation>
-<translation id="5763514718066511291">यस अनुप्रयोगको URL प्रतिलिपि गर्न ट्याप गर्नुहोस्</translation>
+<translation id="5763514718066511291">यस एपको URL प्रतिलिपि गर्न ट्याप गर्नुहोस्</translation>
 <translation id="5765780083710877561">विवरण:</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> मध्ये <ph name="SPACE_USED" /> प्रयोग गरिँदै</translation>
 <translation id="5795872532621730126">खोज्नुहोस् तथा ब्राउज गर्नुहोस्</translation>
@@ -890,6 +890,7 @@
 <translation id="8368027906805972958">अज्ञात वा प्रयोग गर्न नमिल्ने यन्त्र (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">सन्देश पठाउनुहोस्</translation>
 <translation id="8413126021676339697">पूर्ण इतिहास देखाउनुहोस्</translation>
+<translation id="8425213833346101688">परिवर्तन गर्नुहोस्</translation>
 <translation id="8427875596167638501">पूर्वावलोकन ट्याब आधा खुला छ</translation>
 <translation id="8428213095426709021">सेटिङहरू</translation>
 <translation id="8438566539970814960">खोज तथा ब्राउजिङलाई अझ राम्रो बनाउनुहोस्</translation>

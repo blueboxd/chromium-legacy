@@ -260,6 +260,7 @@
 <translation id="3958548648197196644">Quivi</translation>
 <translation id="3966388904776714213">Leitor de Áudio</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4065397611279318371">Para abrir ficheiros com apps <ph name="APP_NAME" />, mova-os primeiro para a pasta <ph name="SHARED_DIRECTORY_LABEL" />.</translation>
 <translation id="4070370845051020638">Método de introdução cantonês</translation>
 <translation id="4072248638558688893">Teclado tâmil (fonético)</translation>
 <translation id="4124935795427217608">Unicórnio</translation>
@@ -351,7 +352,6 @@
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> de ficheiros serão eliminados</translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5098629044894065541">Hebraico</translation>
-<translation id="5112685521274804841">Os ficheiros nestas pastas são só de leitura. Algumas atividades não são suportadas.</translation>
 <translation id="5123433949759960244">Bola de basquetebol</translation>
 <translation id="5129662217315786329">Polaco</translation>
 <translation id="5144820558584035333">Hangul 3 Set (390)</translation>

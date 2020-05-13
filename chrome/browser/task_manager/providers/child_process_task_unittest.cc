@@ -131,7 +131,6 @@ TEST_F(ChildProcessTaskTest, TestAll) {
   EXPECT_EQ(unique_id, task->GetChildProcessUniqueID());
   EXPECT_EQ(base::string16(), task->GetProfileName());
   EXPECT_FALSE(task->ReportsSqliteMemory());
-  EXPECT_FALSE(task->ReportsV8Memory());
   EXPECT_FALSE(task->ReportsWebCacheStats());
 
   // Make sure that indexing by child_id works properly.

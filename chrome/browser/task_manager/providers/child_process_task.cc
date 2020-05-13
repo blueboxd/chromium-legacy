@@ -224,10 +224,6 @@ int ChildProcessTask::GetChildProcessUniqueID() const {
   return unique_child_process_id_;
 }
 
-bool ChildProcessTask::ReportsV8Memory() const {
-  return uses_v8_memory_ && process_resources_sampler_->ReportsV8MemoryStats();
-}
-
 int64_t ChildProcessTask::GetV8MemoryAllocated() const {
   return v8_memory_allocated_;
 }

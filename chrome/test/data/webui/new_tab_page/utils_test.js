@@ -69,16 +69,18 @@ suite('scroll borders', () => {
   }
 
   setup(async () => {
-    document.body.innerHTML =
-        '<div id="container"><div id="content"></div></div>';
+    document.body.innerHTML = `
+        <div scroll-border></div>
+        <div id="container"><div id="content"></div></div>
+        <div scroll-border></div>`;
     container = document.querySelector('#container');
     container.style.height = '100px';
     container.style.overflow = 'auto';
     content = document.querySelector('#content');
     content.style.height = '200px';
-    observer = createScrollBorders(container);
     top = document.body.firstElementChild;
     bottom = document.body.lastElementChild;
+    observer = createScrollBorders(container, top, bottom, 'show');
     await waitAfterNextRender();
   });
 

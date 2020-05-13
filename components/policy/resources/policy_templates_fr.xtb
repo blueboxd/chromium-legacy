@@ -2450,15 +2450,6 @@ Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer 
 Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton Accueil.</translation>
 <translation id="4483649828988077221">Désactiver les mises à jour automatiques</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
-<translation id="4487507711538762752">Cette règle force le code réseau à s'exécuter dans le processus du navigateur.
-
-      Cette règle est désactivée par défaut. Si elle est activée, elle expose les utilisateurs à des problèmes de sécurité une fois le processus de mise en réseau envoyé dans le bac à sable.
-
-      Cette règle est destinée à donner aux entreprises la possibilité de migrer vers un logiciel tiers qui ne dépend pas de la connexion des API de mise en réseau. Il est recommandé d'utiliser des serveurs proxy plutôt que des LSP ou des correctifs de l'API Win32.
-
-      Si cette règle n'est pas configurée, le code réseau s'exécute, par défaut, en dehors du processus du navigateur.
-
-      Cette règle sera supprimée dans la version 84 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
 <translation id="4494132853995232608">Dispositif DTC de Wilco</translation>
 <translation id="449423975179525290">Configurer les règles liées à <ph name="PLUGIN_VM_NAME" />.</translation>
@@ -3384,6 +3375,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si elle est définie sur "False" ou si elle n'est pas définie, les fonctionnalités de Web Components v0 seront désactivées par défaut à compter de la version M80.
 
       Cette règle sera supprimée après Chrome 84.</translation>
+<translation id="5763698334786515749">Activer le bouton permettant d'afficher le mot de passe sur l'écran de connexion et de verrouillage.</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="5774856474228476867">URL de recherche du moteur de recherche par défaut</translation>
@@ -3737,6 +3729,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>
+<translation id="6372105930898423193">Permet de réactiver le cache d'applications même s'il est désactivé par défaut.</translation>
 <translation id="6376659517206731212">Peut être obligatoire</translation>
 <translation id="6377355597423503887">Cette règle est obsolète. Veuillez utiliser "BrowserSignin" à la place.
 
@@ -3956,6 +3949,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6665670272107384733">Définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide</translation>
 <translation id="6672070613706645316">Autoriser les utilisateurs à personnaliser l'arrière-plan sur la page "Nouvel onglet"</translation>
 <translation id="6672630473862787247">Activer l'authentification ambiante pour les sessions standards, Invité et de navigation privée.</translation>
+<translation id="6677797768774898583">Permet à l'utilisateur d'afficher le mot de passe en cliquant sur un bouton situé sur l'écran de connexion et de verrouillage.</translation>
 <translation id="6685903773201985073">Activer l'authentification ambiante pour les sessions Invité et standards.</translation>
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6698632841807204978">Activer l'impression monochrome</translation>
@@ -4272,6 +4266,7 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
 
           Si cette règle est définie sur "False", les demandes de wakelocks forçant l'activation de l'écran seront rétrogradées au rang de demandes de wakelocks système.</translation>
 <translation id="7177857088692019405">Déverrouillage rapide</translation>
+<translation id="718126088895133062">Cette règle définit l'ID utilisateur attribuant des licences <ph name="PLUGIN_VM_NAME" /> pour cet appareil.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Permet d'activer l'alimentation alternée en heures pleines.
 
@@ -5626,6 +5621,9 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9217154963008402249">Fréquence des paquets réseau de contrôle</translation>
 <translation id="922540222991413931">Configurer les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
 <translation id="924557436754151212">Importer les mots de passe enregistrés du navigateur par défaut à la première exécution</translation>
+<translation id="929549405492388749">Si cette règle est définie sur "vrai", le cache d'application est activé de manière forcée, même s'il n'est pas disponible par défaut dans Chrome.
+
+      Si cette règle n'est pas configurée ou si elle est définie sur "faux", le cache d'applications applique les paramètres par défaut de Chrome.</translation>
 <translation id="930930237275114205">Définir le répertoire de données utilisateur de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="940706688964479124">Liste des types de fichier à ouvrir automatiquement après leur téléchargement</translation>
 <translation id="943865157632139008">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé.

@@ -83,20 +83,6 @@ TEST(CallbackHelpersTest, IsOnceCallback) {
   static_assert(!base::IsOnceCallback<decltype(wrapped)>::value, "");
 }
 
-TEST(CallbackHelpersTest, MoveIfOnce) {
-  // MoveIfOnce() on a OnceClosure should behave like std::move().
-  base::OnceClosure once;
-  static_assert(std::is_same<decltype(std::move(once)),
-                             decltype(base::MoveIfOnce(once))>::value,
-                "");
-
-  // MoveIfOnce() on a RepeatingClosure should not behave like std::move().
-  base::RepeatingClosure repeating;
-  static_assert(!std::is_same<decltype(std::move(repeating)),
-                              decltype(base::MoveIfOnce(repeating))>::value,
-                "");
-}
-
 void Increment(int* value) {
   (*value)++;
 }

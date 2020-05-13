@@ -72,7 +72,7 @@ namespace base {
 
 namespace internal {
 
-template <typename T>
+template <typename CallbackListImpl, typename T>
 class CallbackListBase {
  public:
   using CallbackType = T;
@@ -151,17 +151,8 @@ class CallbackListBase {
       AutoReset<bool> iterating(&iterating_, true);
       // Skip any callbacks that are canceled during iteration.
       for (auto it = callbacks_.begin(); it != callbacks_.end();
-           it = std::find_if(it, callbacks_.end(), callback_valid)) {
-        const auto current = it++;  // Must increment before splice() below.
-
-        // OnceCallbacks still have Subscriptions with outstanding iterators;
-        // splice() removes them from |callbacks_| without invalidating those.
-        if (IsOnceCallback<CallbackType>::value)
-          null_callbacks_.splice(null_callbacks_.end(), callbacks_, current);
-
-        // Run the current callback, which may cancel it or any other callbacks.
-        MoveIfOnce(*current).Run(args...);
-      }
+           it = std::find_if(it, callbacks_.end(), callback_valid))
+        static_cast<CallbackListImpl*>(this)->RunCallback(it++, args...);
     }
 
     // Any null callbacks remaining in the list were canceled due to
@@ -180,18 +171,19 @@ class CallbackListBase {
       removal_callback_.Run();  // May delete |this|!
   }
 
- private:
+ protected:
   using Callbacks = std::list<CallbackType>;
 
+  // Holds non-null callbacks, which will be called during Notify().
+  Callbacks callbacks_;
+
+ private:
   // Cancels the callback pointed to by |it|, which is guaranteed to be valid.
   void CancelCallback(const typename Callbacks::iterator& it) {
-    if (it->is_null()) {
-      // Because at most one Subscription can point to a given callback, and
-      // RepeatingCallbacks are only reset by this function, *it must be a
-      // OnceCallback.  Therefore, it must have already been splice()d to
-      // |null_callbacks_|, and it is safe to erase any time.
-      null_callbacks_.erase(it);
-    } else if (iterating_) {
+    if (static_cast<CallbackListImpl*>(this)->CancelNullCallback(it))
+      return;
+
+    if (iterating_) {
       // Calling erase() here is unsafe, since the loop in Notify() may be
       // referencing this same iterator, e.g. if adjacent callbacks'
       // Subscriptions are both destroyed when the first one is Run().  Just
@@ -203,15 +195,6 @@ class CallbackListBase {
         removal_callback_.Run();  // May delete |this|!
     }
   }
-
-  // Holds non-null callbacks, which will be called during Notify().
-  Callbacks callbacks_;
-
-  // Holds null callbacks whose Subscriptions are still alive, so the
-  // Subscriptions will still contain valid iterators.  Only needed for
-  // OnceCallbacks, since RepeatingCallbacks are not canceled except by
-  // Subscription destruction.
-  Callbacks null_callbacks_;
 
   // Set while Notify() is traversing |callbacks_|.  Used primarily to avoid
   // invalidating iterators that may be in use.
@@ -226,10 +209,67 @@ class CallbackListBase {
 }  // namespace internal
 
 template <typename Signature>
-using OnceCallbackList = internal::CallbackListBase<OnceCallback<Signature>>;
+class OnceCallbackList
+    : public internal::CallbackListBase<OnceCallbackList<Signature>,
+                                        OnceCallback<Signature>> {
+ private:
+  using Base = internal::CallbackListBase<OnceCallbackList<Signature>,
+                                          OnceCallback<Signature>>;
+  friend Base;
+
+  // Runs the current callback, which may cancel it or any other callbacks.
+  template <typename... RunArgs>
+  void RunCallback(typename Base::Callbacks::iterator it, RunArgs&&... args) {
+    // OnceCallbacks still have Subscriptions with outstanding iterators;
+    // splice() removes them from |callbacks_| without invalidating those.
+    null_callbacks_.splice(null_callbacks_.end(), Base::callbacks_, it);
+
+    std::move(*it).Run(args...);
+  }
+
+  // If |it| refers to an already-canceled callback, does any necessary cleanup
+  // and returns true.  Otherwise returns false.
+  bool CancelNullCallback(const typename Base::Callbacks::iterator& it) {
+    if (it->is_null()) {
+      null_callbacks_.erase(it);
+      return true;
+    }
+    return false;
+  }
+
+  // Holds null callbacks whose Subscriptions are still alive, so the
+  // Subscriptions will still contain valid iterators.  Only needed for
+  // OnceCallbacks, since RepeatingCallbacks are not canceled except by
+  // Subscription destruction.
+  typename Base::Callbacks null_callbacks_;
+};
+
 template <typename Signature>
-using RepeatingCallbackList =
-    internal::CallbackListBase<RepeatingCallback<Signature>>;
+class RepeatingCallbackList
+    : public internal::CallbackListBase<RepeatingCallbackList<Signature>,
+                                        RepeatingCallback<Signature>> {
+ private:
+  using Base = internal::CallbackListBase<RepeatingCallbackList<Signature>,
+                                          RepeatingCallback<Signature>>;
+  friend Base;
+
+  // Runs the current callback, which may cancel it or any other callbacks.
+  template <typename... RunArgs>
+  void RunCallback(typename Base::Callbacks::iterator it, RunArgs&&... args) {
+    it->Run(args...);
+  }
+
+  // If |it| refers to an already-canceled callback, does any necessary cleanup
+  // and returns true.  Otherwise returns false.
+  bool CancelNullCallback(const typename Base::Callbacks::iterator& it) {
+    // Because at most one Subscription can point to a given callback, and
+    // RepeatingCallbacks are only reset by CancelCallback(), no one should be
+    // able to request cancellation of a canceled RepeatingCallback.
+    DCHECK(!it->is_null());
+    return false;
+  }
+};
+
 template <typename Signature>
 using CallbackList = RepeatingCallbackList<Signature>;
 

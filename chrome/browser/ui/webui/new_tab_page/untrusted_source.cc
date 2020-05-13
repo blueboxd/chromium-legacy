@@ -188,7 +188,7 @@ bool UntrustedSource::ShouldReplaceExistingSource() {
 
 bool UntrustedSource::ShouldServiceRequest(
     const GURL& url,
-    content::ResourceContext* resource_context,
+    content::BrowserContext* browser_context,
     int render_process_id) {
   if (!url.SchemeIs(content::kChromeUIUntrustedScheme) || !url.has_path()) {
     return false;

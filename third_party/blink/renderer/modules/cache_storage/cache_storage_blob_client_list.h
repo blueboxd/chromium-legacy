@@ -7,6 +7,7 @@
 
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/data_pipe_bytes_consumer.h"
 
@@ -19,6 +20,7 @@ class CacheStorageBlobClientList
  public:
   CacheStorageBlobClientList() = default;
   void AddClient(
+      ExecutionContext* context,
       mojo::PendingReceiver<mojom::blink::BlobReaderClient>
           client_pending_receiver,
       DataPipeBytesConsumer::CompletionNotifier* completion_notifier);
